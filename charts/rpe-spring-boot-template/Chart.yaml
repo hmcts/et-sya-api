@@ -1,11 +1,11 @@
 apiVersion: v2
 appVersion: "1.0"
-description: A Helm chart for spring-boot-template App
-name: rpe-spring-boot-template
-home: https://github.com/hmcts/spring-boot-template
+description: A Helm chart for et-sya-api App
+name: et-et-sya-api
+home: https://github.com/hmcts/et-sya-api
 version: 0.0.1
 maintainers:
-  - name: HMCTS rpe team
+  - name: HMCTS et team
 dependencies:
   - name: java
     version: 3.6.0
