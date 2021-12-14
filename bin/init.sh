@@ -89,3 +89,5 @@ rm bin/init.sh
 
 # Return to original directory
 popd > /dev/null
+
+Read-Host -Prompt “Press Enter to exit”
