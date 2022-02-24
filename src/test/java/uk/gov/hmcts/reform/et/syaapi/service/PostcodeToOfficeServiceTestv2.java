@@ -24,6 +24,8 @@ class PostcodeToOfficeServiceTestv2 {
     private static final String EDINBURGH_POSTCODE_FIRST_PART = "EH";
     private static final String EDINBURGH_POSTCODE = EDINBURGH_POSTCODE_FIRST_PART + "3 7HF";
     private static final String UNKNOWN_POSTCODE = "BT9 6DJ";
+    private static final String PETERBOROUGH_POSTCODE  = "PE11DP"; // Should return Watford
+    private static final String SPALDING_POSTCODE = "PE111AE"; // Should return Midlands East
 
     @Mock
     private PostcodeToOfficeMappings mockPostcodeToOfficeMappings;
@@ -63,5 +65,23 @@ class PostcodeToOfficeServiceTestv2 {
 
         Optional<TribunalOffice> result = postcodeToOfficeService.getTribunalOfficeFromPostcode(UNKNOWN_POSTCODE);
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    void shouldDistinguishBetweenOutcodeAndAreaCode() throws InvalidPostcodeException {
+
+        Map<String, String> mockData = Map.of("PE11", TribunalOffice.MIDLANDS_EAST.getOfficeName(),"PE",TribunalOffice.WATFORD.getOfficeName());
+        given(mockPostcodeToOfficeMappings.getPostcodes()).willReturn(mockData);
+        Optional<TribunalOffice> result = postcodeToOfficeService.getTribunalOfficeFromPostcode(SPALDING_POSTCODE);
+        assertThat(result).contains(TribunalOffice.MIDLANDS_EAST);
+    }
+
+    @Test
+    void shouldDistinguishBetweenOutcodeAndAreaCode2() throws InvalidPostcodeException {
+
+        Map<String, String> mockData = Map.of("PE11", TribunalOffice.MIDLANDS_EAST.getOfficeName(),"PE",TribunalOffice.WATFORD.getOfficeName());
+        given(mockPostcodeToOfficeMappings.getPostcodes()).willReturn(mockData);
+        Optional<TribunalOffice> result = postcodeToOfficeService.getTribunalOfficeFromPostcode(PETERBOROUGH_POSTCODE);
+        assertThat(result).contains(TribunalOffice.WATFORD);
     }
 }

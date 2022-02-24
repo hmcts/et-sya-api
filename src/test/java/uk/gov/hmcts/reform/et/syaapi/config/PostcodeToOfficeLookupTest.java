@@ -15,13 +15,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 @EnableConfigurationProperties({PostcodeToOfficeMappings.class})
 class PostcodeToOfficeLookupTest {
 
-    private final static Object[][] TEST_CASES = new Object[][] {
-        { "M3", TribunalOffice.MANCHESTER.getOfficeName()  },
-        { "G2", TribunalOffice.GLASGOW.getOfficeName() },
-        { "AB", TribunalOffice.ABERDEEN.getOfficeName() },
-        { "DD", TribunalOffice.DUNDEE.getOfficeName() },
-        { "EH", TribunalOffice.EDINBURGH.getOfficeName() }
-    };
+//    private final static Object[][] TEST_CASES = new Object[][] {
+//        { "M3", TribunalOffice.MANCHESTER.getOfficeName()  },
+//        { "G2", TribunalOffice.GLASGOW.getOfficeName() },
+//        { "AB", TribunalOffice.ABERDEEN.getOfficeName() },
+//        { "DD", TribunalOffice.DUNDEE.getOfficeName() },
+//        { "EH", TribunalOffice.EDINBURGH.getOfficeName() }
+//    };
 
     @Autowired
     private PostcodeToOfficeMappings postcodeToOfficeLookup;
@@ -44,5 +44,10 @@ class PostcodeToOfficeLookupTest {
     @Test
     void mapMatchesPostcodePartialsToGlasgowOffice(){
         assertThat(postcodeToOfficeLookup.getPostcodes().get("G")).isEqualTo(TribunalOffice.SCOTLAND.getOfficeName());
+    }
+
+    @Test
+    void shouldReturnNullForKeysThatDoNotExist(){
+        assertThat(postcodeToOfficeLookup.getPostcodes().get("ABC")).isNull();
     }
 }
