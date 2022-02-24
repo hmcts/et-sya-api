@@ -2,53 +2,66 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.dwp.regex.InvalidPostcodeException;
-import uk.gov.hmcts.reform.et.syaapi.config.PostcodeToOfficeLookup;
+import uk.gov.hmcts.reform.et.syaapi.config.PostcodeToOfficeMappings;
 import uk.gov.hmcts.reform.et.syaapi.model.helper.TribunalOffice;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
-public class PostcodeToOfficeServiceTestv2 {
-
-    @Mock
-    private PostcodeToOfficeLookup config;
-
-    @InjectMocks
-    private PostcodeToOfficeService cut;
+class PostcodeToOfficeServiceTestv2 {
 
     private static final String INVALID_POSTCODE = "ABC123";
-    private static final String VALID_POSTCODE ="EH3 7HF";
+    private static final String EDINBURGH_POSTCODE_FIRST_PART = "EH";
+    private static final String EDINBURGH_POSTCODE = EDINBURGH_POSTCODE_FIRST_PART + "3 7HF";
+    private static final String UNKNOWN_POSTCODE = "BT9 6DJ";
+
+    @Mock
+    private PostcodeToOfficeMappings mockPostcodeToOfficeMappings;
+
+    @InjectMocks
+    private PostcodeToOfficeService postcodeToOfficeService;
 
     @Test
-    public void shouldNotBeNull() {
-        assertNotNull(config);
-        assertNotNull(cut);
+    void shouldNotBeNull() {
+        assertThat(mockPostcodeToOfficeMappings).isNotNull();
+        assertThat(postcodeToOfficeService).isNotNull();
     }
 
     @Test
-    public void shouldThrowExceptionWhenPostCodeIsInvalid() {
+    void shouldThrowExceptionWhenPostCodeIsInvalid() {
         assertThrows(
             InvalidPostcodeException.class,
-            () -> cut.getTribunalOfficeFromPostcode(INVALID_POSTCODE));
+            () -> postcodeToOfficeService.getTribunalOfficeFromPostcode(INVALID_POSTCODE)
+        );
     }
 
-//    @Test
-//    public void shouldReturnCorrectOfficeWhenPostcodeIsValid() throws InvalidPostcodeException {
-//
-//        String outCode = "EH";
-//        when(config.getPostcodes().containsKey(outCode)).thenReturn(true);
-//        when(cut.getTribunalOffice(config.getPostcodes().get(outCode))).thenReturn(true);
-//        System.out.println("post code to test is "+ VALID_POSTCODE);
-//       TribunalOffice result = cut.getTribunalOfficeFromPostcode(VALID_POSTCODE);
-//        System.out.println("office is " + result.getOfficeName());
-////        String expected = TribunalOffice.EDINBURGH.getOfficeName();
-////        System.out.println("expected is" + expected);
-////        assertEquals(expected, result.getOfficeName());
-//    }
+    @Test
+    void shouldReturnCorrectOfficeWhenPostcodeIsValid() throws InvalidPostcodeException {
+
+        Map<String, String> mockData = Map.of(EDINBURGH_POSTCODE_FIRST_PART, TribunalOffice.EDINBURGH.getOfficeName());
+        given(mockPostcodeToOfficeMappings.getPostcodes()).willReturn(mockData);
+
+        Optional<TribunalOffice> result = postcodeToOfficeService.getTribunalOfficeFromPostcode(EDINBURGH_POSTCODE);
+        assertThat(result).contains(TribunalOffice.EDINBURGH);
+    }
+
+    @Test
+    void shouldReturnUnknownOfficeWhenPostcodeIsValidButNotKnown() throws InvalidPostcodeException {
+
+        Map<String, String> mockData = Collections.emptyMap();
+        given(mockPostcodeToOfficeMappings.getPostcodes()).willReturn(mockData);
+
+        Optional<TribunalOffice> result = postcodeToOfficeService.getTribunalOfficeFromPostcode(UNKNOWN_POSTCODE);
+        assertThat(result).isEmpty();
+    }
 }

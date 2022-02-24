@@ -1,54 +1,64 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.dwp.regex.PostCodeValidator;
-import uk.gov.hmcts.reform.et.syaapi.config.PostcodeToOfficeLookup;
+import uk.gov.hmcts.reform.et.syaapi.config.PostcodeToOfficeMappings;
 import uk.gov.hmcts.reform.et.syaapi.model.helper.TribunalOffice;
-import uk.gov.hmcts.reform.et.syaapi.service.exceptions.PostcodeNotFoundInLookupException;
 
-//@AllArgsConstructor
-@Component
+import java.util.Optional;
+
+/**
+ * This provides services to lookup {@link TribunalOffice}'s
+ */
 @Service
 @Slf4j
 public class PostcodeToOfficeService {
-    @Autowired
-    private PostcodeToOfficeLookup config;
 
-//    public PostcodeToOfficeService(PostcodeToOfficeLookup config) {
-//        this.config = config;
-//    }
+    private final PostcodeToOfficeMappings config;
 
-    public PostCodeValidator createPostCodeValidator(String postcode) throws InvalidPostcodeException {
-        return new PostCodeValidator(postcode);
+    /**
+     * Standard constructor
+     *
+     * @param config the PostcodeToOfficeMappings to use for lookups
+     */
+    public PostcodeToOfficeService(PostcodeToOfficeMappings config) {
+        this.config = config;
     }
 
+    /**
+     * Given an office name, this will retrieve the correct {@link TribunalOffice}
+     *
+     * @param officeName is the name to seek the {@link TribunalOffice} for
+     * @return the associated {@link TribunalOffice} for the office name provided
+     * @throws IllegalArgumentException is a {@link TribunalOffice} doesn't exist for the name given
+     */
     public TribunalOffice getTribunalOffice(String officeName) {
-        System.out.println("get tribunal office called with " + officeName);
         return TribunalOffice.valueOfOfficeName(officeName);
     }
 
-    public TribunalOffice getTribunalOfficeFromPostcode(String postcode) throws InvalidPostcodeException, PostcodeNotFoundInLookupException {
+    /**
+     * The service to obtain the {@link TribunalOffice} for a postcode.  If the postcode is not known, then an empty
+     * Optional will be returned. If the postcode is invalid, then an {@link InvalidPostcodeException} will be thrown.
+     *
+     * @param postcode is the postcode to lookup
+     * @return an Optional of the {@link TribunalOffice} located near the postcode provided
+     * @throws InvalidPostcodeException if the postcode provided doesn't validate
+     */
+    public Optional<TribunalOffice> getTribunalOfficeFromPostcode(String postcode) throws InvalidPostcodeException {
 
-        // validation
-        PostCodeValidator postCodeValidator = createPostCodeValidator(postcode);
+        // validates postcode
+        PostCodeValidator postCodeValidator = new PostCodeValidator(postcode);
         String outCode = postCodeValidator.returnOutwardCode();
         String area = postCodeValidator.returnArea();
 
-        // Lookup exists
-        Boolean boolOutcode = config.getPostcodes().containsKey(outCode);
-        Boolean boolArea = config.getPostcodes().containsKey(area);
-
-        if (boolOutcode) {
-            return getTribunalOffice(config.getPostcodes().get(outCode));
-        } else if (boolArea) {
-            return getTribunalOffice(config.getPostcodes().get(area));
-        } else {
-            throw new PostcodeNotFoundInLookupException("Not found: " + postcode);
+        // example out codes are SW1A or RG1 and areas SW, RG
+        if (config.getPostcodes().containsKey(outCode)) {
+            return Optional.of(getTribunalOffice(config.getPostcodes().get(outCode)));
+        } else if (config.getPostcodes().containsKey(area)) {
+            return Optional.of(getTribunalOffice(config.getPostcodes().get(area)));
         }
+        return Optional.empty();
     }
 }

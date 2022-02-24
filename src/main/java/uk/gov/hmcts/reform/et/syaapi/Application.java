@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.et.syaapi;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import uk.gov.hmcts.reform.et.syaapi.model.helper.TribunalOffice;
 
 @SpringBootApplication
 @SuppressWarnings("HideUtilityClassConstructor")
