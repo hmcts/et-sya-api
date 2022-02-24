@@ -172,6 +172,9 @@ ext {
 }
 
 dependencies {
+ // implementation 'com.github.hmcts:et-common:0.0.21'
+
+  implementation group: 'uk.gov.dwp.regex', name: 'postcode-validation', version: '1.1.0'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
@@ -184,8 +187,9 @@ dependencies {
 
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4JVersion
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
+    implementation 'org.projectlombok:lombok:1.18.20'
 
-  testImplementation(platform('org.junit:junit-bom:5.8.2'))
+    testImplementation(platform('org.junit:junit-bom:5.8.2'))
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
     exclude group: 'junit', module: 'junit'
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
