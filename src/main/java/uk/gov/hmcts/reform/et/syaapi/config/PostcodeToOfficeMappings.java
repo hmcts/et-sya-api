@@ -4,8 +4,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This is a mappings class providing the mappings for all postcodes to appropriate tribunal offices.  Simply first past
@@ -22,10 +22,10 @@ import java.util.Map;
 @PropertySource(value = "classpath:defaults.yml", factory = YamlPropertySourceFactory.class)
 public class PostcodeToOfficeMappings {
 
-    private final Map<String, String> postcodes = new HashMap<>();
+    private final Map<String, String> postcodes = new ConcurrentHashMap<>();
 
     /**
-     * Retrieves the map of postcode to office mappings
+     * Retrieves the map of postcode to office mappings.
      *
      * @return a map of postcode to office mappings
      */

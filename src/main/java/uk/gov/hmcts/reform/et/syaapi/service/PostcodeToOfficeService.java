@@ -4,13 +4,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.dwp.regex.PostCodeValidator;
+import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 import uk.gov.hmcts.reform.et.syaapi.config.PostcodeToOfficeMappings;
-import uk.gov.hmcts.reform.et.syaapi.model.helper.TribunalOffice;
 
 import java.util.Optional;
 
 /**
- * This provides services to lookup {@link TribunalOffice}'s
+ * This provides services to lookup {@link TribunalOffice}'s.
  */
 @Service
 @Slf4j
@@ -19,7 +19,7 @@ public class PostcodeToOfficeService {
     private final PostcodeToOfficeMappings config;
 
     /**
-     * Standard constructor
+     * Standard constructor.
      *
      * @param config the PostcodeToOfficeMappings to use for lookups
      */
@@ -28,7 +28,7 @@ public class PostcodeToOfficeService {
     }
 
     /**
-     * Given an office name, this will retrieve the correct {@link TribunalOffice}
+     * Given an office name, this will retrieve the correct {@link TribunalOffice}.
      *
      * @param officeName is the name to seek the {@link TribunalOffice} for
      * @return the associated {@link TribunalOffice} for the office name provided

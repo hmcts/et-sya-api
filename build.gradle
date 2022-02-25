@@ -172,8 +172,8 @@ ext {
 }
 
 dependencies {
-  // implementation 'com.github.hmcts:et-common:0.0.21'
-
+   implementation 'com.github.hmcts:et-common:0.0.21'
+ // implementation group: 'com.github.hmcts:et-common', name: '', version: '0.0.21'
   implementation group: 'uk.gov.dwp.regex', name: 'postcode-validation', version: '1.1.0'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
