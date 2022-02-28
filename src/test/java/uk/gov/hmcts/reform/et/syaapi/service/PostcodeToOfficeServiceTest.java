@@ -1,78 +1,93 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.rules.SpringClassRule;
-import org.springframework.test.context.junit4.rules.SpringMethodRule;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.dwp.regex.InvalidPostcodeException;
+import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 import uk.gov.hmcts.reform.et.syaapi.config.PostcodeToOfficeMappings;
-import uk.gov.hmcts.reform.et.syaapi.model.helper.TribunalOffice;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
 
-import java.util.Arrays;
-import java.util.Collection;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.BDDMockito.given;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
-@RunWith(Parameterized.class)
-@SpringBootTest(classes = {
-    PostcodeToOfficeService.class,
-})
-@EnableConfigurationProperties({ PostcodeToOfficeMappings.class})
-
+@ExtendWith(MockitoExtension.class)
 class PostcodeToOfficeServiceTest {
-    @ClassRule
-    public static final SpringClassRule SPRING_CLASS_RULE = new SpringClassRule();
-    @Rule
-    public final SpringMethodRule springMethodRule = new SpringMethodRule();
 
-    @Autowired
-    PostcodeToOfficeService postcodeToOfficeService;
+    private static final String INVALID_POSTCODE = "ABC123";
+    private static final String EDINBURGH_POSTCODE_FIRST_PART = "EH";
+    private static final String EDINBURGH_POSTCODE = EDINBURGH_POSTCODE_FIRST_PART + "3 7HF";
+    private static final String UNKNOWN_POSTCODE = "BT9 6DJ";
+    private static final String PETERBOROUGH_POSTCODE  = "PE11DP"; // Should return Watford
+    private static final String SPALDING_POSTCODE = "PE111AE"; // Should return Midlands East
+    private static final String EDINBURGH = "Edinburgh";
+    private static final String MIDLANDS_EAST = "Midlands East";
+    private static final String WATFORD = "Watford";
 
-    private final static Object[][] TEST_CASES = new Object[][] {
-        { "M3 2JA", TribunalOffice.MANCHESTER.getOfficeName()  },
-        { "M3 2JA", TribunalOffice.MANCHESTER.getOfficeName() },
-        { "M3 2JA", TribunalOffice.MANCHESTER.getOfficeName() },
-        { "G2 8GT", TribunalOffice.GLASGOW.getOfficeName() },
-        { "G2 8GT", TribunalOffice.GLASGOW.getOfficeName() },
-        { "G2 8GT", TribunalOffice.GLASGOW.getOfficeName() },
-        { "AB10 1SH", TribunalOffice.ABERDEEN.getOfficeName() },
-        { "AB10 1SH", TribunalOffice.ABERDEEN.getOfficeName() },
-        { "AB10 1SH", TribunalOffice.ABERDEEN.getOfficeName() },
-        { "DD1 4QB", TribunalOffice.DUNDEE.getOfficeName() },
-        { "DD1 4QB", TribunalOffice.DUNDEE.getOfficeName() },
-        { "DD1 4QB", TribunalOffice.DUNDEE.getOfficeName() },
-        { "EH3 7HF", TribunalOffice.EDINBURGH.getOfficeName() },
-        { "EH3 7HF", TribunalOffice.EDINBURGH.getOfficeName() },
-        { "EH3 7HF", TribunalOffice.EDINBURGH.getOfficeName() }
-    };
 
-    private final String postcode;
-    private final String expectedOffice;
+    @Mock
+    private PostcodeToOfficeMappings mockPostcodeToOfficeMappings;
 
-    public PostcodeToOfficeServiceTest(String postcode, String expectedOffice) {
-        this.postcode = postcode;
-        this.expectedOffice = expectedOffice;
-    }
+    @InjectMocks
+    private PostcodeToOfficeService postcodeToOfficeService;
 
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
-        return Arrays.asList(TEST_CASES);
+    @Test
+    void shouldNotBeNull() {
+        assertThat(mockPostcodeToOfficeMappings).isNotNull();
+        assertThat(postcodeToOfficeService).isNotNull();
     }
 
     @Test
-    public void testGetsCorrectTribunalOfficeFromPostcode() throws InvalidPostcodeException  {
-//        Optional<TribunalOffice> tribunalOffice = postcodeToOfficeService.getTribunalOfficeFromPostcode(postcode);
-//        assertThat(tribunalOffice.vaisNotEmpty());
-
+    void shouldThrowExceptionWhenPostCodeIsInvalid() {
+        assertThrows(
+            InvalidPostcodeException.class,
+            () -> postcodeToOfficeService.getTribunalOfficeFromPostcode(INVALID_POSTCODE)
+        );
     }
 
+    @Test
+    void shouldReturnCorrectOfficeWhenPostcodeIsValid() throws InvalidPostcodeException {
 
+        Map<String, String> mockData = Map.of(EDINBURGH_POSTCODE_FIRST_PART, EDINBURGH);
+        given(mockPostcodeToOfficeMappings.getPostcodes()).willReturn(mockData);
+
+        Optional<TribunalOffice> result = postcodeToOfficeService.getTribunalOfficeFromPostcode(EDINBURGH_POSTCODE);
+        assertThat(result).contains(TribunalOffice.EDINBURGH);
+    }
+
+    @Test
+    void shouldReturnUnknownOfficeWhenPostcodeIsValidButNotKnown() throws InvalidPostcodeException {
+
+        Map<String, String> mockData = Collections.emptyMap();
+        given(mockPostcodeToOfficeMappings.getPostcodes()).willReturn(mockData);
+
+        Optional<TribunalOffice> result = postcodeToOfficeService.getTribunalOfficeFromPostcode(UNKNOWN_POSTCODE);
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void shouldDistinguishBetweenOutcodeAndAreaCode() throws InvalidPostcodeException {
+
+        Map<String, String> mockData = Map.of("PE11", MIDLANDS_EAST,
+                                              "PE",WATFORD);
+        given(mockPostcodeToOfficeMappings.getPostcodes()).willReturn(mockData);
+        Optional<TribunalOffice> result = postcodeToOfficeService.getTribunalOfficeFromPostcode(SPALDING_POSTCODE);
+        assertThat(result).contains(TribunalOffice.MIDLANDS_EAST);
+    }
+
+    @Test
+    void shouldDistinguishBetweenOutcodeAndAreaCode2() throws InvalidPostcodeException {
+
+        Map<String, String> mockData = Map.of("PE11", MIDLANDS_EAST,
+                                              "PE",WATFORD);
+        given(mockPostcodeToOfficeMappings.getPostcodes()).willReturn(mockData);
+        Optional<TribunalOffice> result = postcodeToOfficeService.getTribunalOfficeFromPostcode(PETERBOROUGH_POSTCODE);
+        assertThat(result).contains(TribunalOffice.WATFORD);
+    }
 }

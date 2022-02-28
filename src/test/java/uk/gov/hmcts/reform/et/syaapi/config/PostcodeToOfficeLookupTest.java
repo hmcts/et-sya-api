@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.gov.hmcts.reform.et.syaapi.model.helper.TribunalOffice;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -15,13 +14,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @EnableConfigurationProperties({PostcodeToOfficeMappings.class})
 class PostcodeToOfficeLookupTest {
 
-//    private final static Object[][] TEST_CASES = new Object[][] {
-//        { "M3", TribunalOffice.MANCHESTER.getOfficeName()  },
-//        { "G2", TribunalOffice.GLASGOW.getOfficeName() },
-//        { "AB", TribunalOffice.ABERDEEN.getOfficeName() },
-//        { "DD", TribunalOffice.DUNDEE.getOfficeName() },
-//        { "EH", TribunalOffice.EDINBURGH.getOfficeName() }
-//    };
+    private static final String LEEDS = "Leeds";
+    private static final String MANCHESTER = "Manchester";
+    private static final String SCOTLAND = "Scotland";
 
     @Autowired
     private PostcodeToOfficeMappings postcodeToOfficeLookup;
@@ -32,22 +27,22 @@ class PostcodeToOfficeLookupTest {
     }
 
     @Test
-    void mapMatchesPostcodePartialsToLeedsOffice(){
-        assertThat(postcodeToOfficeLookup.getPostcodes().get("BD")).isEqualTo(TribunalOffice.LEEDS.getOfficeName());
+    void mapMatchesPostcodePartialsToLeedsOffice() {
+        assertThat(postcodeToOfficeLookup.getPostcodes().get("BD")).isEqualTo(LEEDS);
     }
 
     @Test
-    void mapMatchesPostcodePartialsToManchesterOffice(){
-        assertThat(postcodeToOfficeLookup.getPostcodes().get("M")).isEqualTo(TribunalOffice.MANCHESTER.getOfficeName());
+    void mapMatchesPostcodePartialsToManchesterOffice() {
+        assertThat(postcodeToOfficeLookup.getPostcodes().get("M")).isEqualTo(MANCHESTER);
     }
 
     @Test
-    void mapMatchesPostcodePartialsToGlasgowOffice(){
-        assertThat(postcodeToOfficeLookup.getPostcodes().get("G")).isEqualTo(TribunalOffice.SCOTLAND.getOfficeName());
+    void mapMatchesPostcodePartialsToGlasgowOffice() {
+        assertThat(postcodeToOfficeLookup.getPostcodes().get("G")).isEqualTo(SCOTLAND);
     }
 
     @Test
-    void shouldReturnNullForKeysThatDoNotExist(){
+    void shouldReturnNullForKeysThatDoNotExist() {
         assertThat(postcodeToOfficeLookup.getPostcodes().get("ABC")).isNull();
     }
 }

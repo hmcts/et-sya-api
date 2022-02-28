@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.dwp.regex.InvalidPostcodeException;
-import uk.gov.hmcts.reform.et.syaapi.model.helper.TribunalOffice;
+import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 import uk.gov.hmcts.reform.et.syaapi.service.PostcodeToOfficeService;
 
 import java.util.Optional;
@@ -14,7 +14,7 @@ import java.util.Optional;
 import static org.springframework.http.ResponseEntity.ok;
 
 /**
- * Used to test the features of postcode lookup
+ * Used to test the features of postcode lookup.
  */
 @RestController
 public class PostcodeController {
@@ -26,7 +26,7 @@ public class PostcodeController {
     }
 
     /**
-     * Interface to retrieve the office for a given postcode
+     * Interface to retrieve the office for a given postcode.
      *
      * @param postcode the postcode to lookup
      * @return an Optional of the {@link TribunalOffice} based upon the postcode provided
