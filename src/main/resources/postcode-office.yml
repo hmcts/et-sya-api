@@ -1,0 +1,312 @@
+tribunal-offices:
+  postcodes:
+    BD: Leeds
+    DN: Leeds
+    HD: Leeds
+    HG: Leeds
+    HU: Leeds
+    HX: Leeds
+    LS: Leeds
+    OL14: Leeds
+    S: Leeds
+    WF: Leeds
+    YO: Leeds
+    AB: Scotland
+    DD: Scotland
+    DG: Scotland
+    EH: Scotland
+    FK: Scotland
+    G: Scotland
+    HS: Scotland
+    IV: Scotland
+    KA: Scotland
+    KW: Scotland
+    KY: Scotland
+    ML: Scotland
+    PA: Scotland
+    PH: Scotland
+    TD1: Scotland
+    TD10: Scotland
+    TD11: Scotland
+    TD13: Scotland
+    TD14: Scotland
+    TD2: Scotland
+    TD3: Scotland
+    TD4: Scotland
+    TD5: Scotland
+    TD6: Scotland
+    TD7: Scotland
+    TD8: Scotland
+    TD9: Scotland
+    ZE: Scotland
+    BN: London South
+    BR: London South
+    CR: London South
+    CT: London South
+    DA: London South
+    KT: London South
+    ME: London South
+    RH: London South
+    SE: London South
+    SM: London South
+    SW: London South
+    SW11: London South
+    SW12: London South
+    SW13: London South
+    SW14: London South
+    SW15: London South
+    SW16: London South
+    SW17: London South
+    SW18: London South
+    SW19: London South
+    TN: London South
+    TW1: London South
+    TW10: London South
+    TW11: London South
+    TW12: London South
+    TW2: London South
+    TW3: London South
+    TW7: London South
+    TW8: London South
+    TW9: London South
+    CM: London East
+    CO: London East
+    E: London East
+    E14: London East
+    IG: London East
+    RM: London East
+    SS: London East
+    EC: London Central
+    N1: London Central
+    NW1: London Central
+    NW3: London Central
+    NW5: London Central
+    NW8: London Central
+    SW1: London Central
+    SW10: London Central
+    SW1A: London Central
+    SW1H: London Central
+    SW1P: London Central
+    SW3: London Central
+    SW5: London Central
+    SW6: London Central
+    SW7: London Central
+    W: London Central
+    AL: Watford
+    CB: Watford
+    EN: Watford
+    GU: Watford
+    HA: Watford
+    HP: Watford
+    IP: Watford
+    LU: Watford
+    MK: Watford
+    N: Watford
+    N10: Watford
+    N11: Watford
+    N12: Watford
+    N13: Watford
+    N14: Watford
+    N15: Watford
+    N16: Watford
+    N17: Watford
+    N18: Watford
+    N19: Watford
+    NN: Watford
+    NR: Watford
+    NW10: Watford
+    NW11: Watford
+    NW2: Watford
+    NW4: Watford
+    NW6: Watford
+    NW7: Watford
+    NW9: Watford
+    OX: Watford
+    PE: Watford
+    RG: Watford
+    SG: Watford
+    SL: Watford
+    SN7: Watford
+    TW13: Watford
+    TW14: Watford
+    TW15: Watford
+    TW16: Watford
+    TW17: Watford
+    TW18: Watford
+    TW19: Watford
+    TW20: Watford
+    TW4: Watford
+    TW5: Watford
+    TW6: Watford
+    UB: Watford
+    WD: Watford
+    BA: Bristol
+    BH: Bristol
+    BN11: Bristol
+    BN12: Bristol
+    BN13: Bristol
+    BN14: Bristol
+    BN15: Bristol
+    BN16: Bristol
+    BN17: Bristol
+    BN18: Bristol
+    BN43: Bristol
+    BN44: Bristol
+    BN45: Bristol
+    BS: Bristol
+    DT: Bristol
+    EX: Bristol
+    GL: Bristol
+    GU26: Bristol
+    GU27: Bristol
+    GU28: Bristol
+    GU29: Bristol
+    GU30: Bristol
+    GU31: Bristol
+    GU32: Bristol
+    GU33: Bristol
+    GU34: Bristol
+    GU35: Bristol
+    PL: Bristol
+    PO: Bristol
+    RG21: Bristol
+    RG22: Bristol
+    RG23: Bristol
+    RG24: Bristol
+    RG25: Bristol
+    RG26: Bristol
+    RG27: Bristol
+    RG28: Bristol
+    SN: Bristol
+    SO: Bristol
+    SP: Bristol
+    TA: Bristol
+    TQ: Bristol
+    TR: Bristol
+    CF: Wales
+    CH4: Wales
+    CH5: Wales
+    CH6: Wales
+    CH7: Wales
+    CH8: Wales
+    LD: Wales
+    LL: Wales
+    NP: Wales
+    SA: Wales
+    SY15: Wales
+    SY16: Wales
+    SY17: Wales
+    SY18: Wales
+    SY19: Wales
+    SY20: Wales
+    SY21: Wales
+    SY22: Wales
+    SY23: Wales
+    SY24: Wales
+    SY25: Wales
+    DE: Midlands East
+    DN21: Midlands East
+    DN22: Midlands East
+    DN31: Midlands East
+    DN32: Midlands East
+    DN33: Midlands East
+    DN34: Midlands East
+    DN35: Midlands East
+    DN36: Midlands East
+    DN37: Midlands East
+    DN41: Midlands East
+    LE: Midlands East
+    LN: Midlands East
+    NG: Midlands East
+    PE10: Midlands East
+    PE11: Midlands East
+    PE12: Midlands East
+    PE20: Midlands East
+    PE21: Midlands East
+    PE22: Midlands East
+    PE23: Midlands East
+    PE24: Midlands East
+    PE25: Midlands East
+    S40: Midlands East
+    S41: Midlands East
+    S42: Midlands East
+    S43: Midlands East
+    S44: Midlands East
+    S45: Midlands East
+    S80: Midlands East
+    S81: Midlands East
+    B: Midlands West
+    CV: Midlands West
+    CW1: Midlands West
+    CW11: Midlands West
+    CW12: Midlands West
+    CW2: Midlands West
+    CW3: Midlands West
+    CW4: Midlands West
+    CW5: Midlands West
+    DY: Midlands West
+    HR: Midlands West
+    ST: Midlands West
+    SY: Midlands West
+    SY2: Midlands West
+    TF: Midlands West
+    WR: Midlands West
+    WS: Midlands West
+    WV: Midlands West
+    DH: Newcastle
+    DL: Newcastle
+    NE: Newcastle
+    SR: Newcastle
+    TS: Newcastle
+    YO21: Newcastle
+    YO22: Newcastle
+    YO7: Newcastle
+    TD15: Newcastle
+    TD12: Newcastle
+    BB: Manchester
+    BL: Manchester
+    CA: Manchester
+    CH: Manchester
+    CH2: Manchester
+    CH3: Manchester
+    CH41: Manchester
+    CH42: Manchester
+    CH43: Manchester
+    CH44: Manchester
+    CH45: Manchester
+    CH46: Manchester
+    CH47: Manchester
+    CH48: Manchester
+    CH49: Manchester
+    CH50: Manchester
+    CH51: Manchester
+    CH52: Manchester
+    CH53: Manchester
+    CH54: Manchester
+    CH55: Manchester
+    CH56: Manchester
+    CH57: Manchester
+    CH58: Manchester
+    CH59: Manchester
+    CH60: Manchester
+    CH61: Manchester
+    CH62: Manchester
+    CH63: Manchester
+    CH64: Manchester
+    CH65: Manchester
+    CH66: Manchester
+    CH88: Manchester
+    CH99: Manchester
+    CW10: Manchester
+    CW6: Manchester
+    CW7: Manchester
+    CW8: Manchester
+    CW9: Manchester
+    FY: Manchester
+    L: Manchester
+    M: Manchester
+    OL: Manchester
+    PR: Manchester
+    SK: Manchester
+    WA: Manchester
+    WN: Manchester
