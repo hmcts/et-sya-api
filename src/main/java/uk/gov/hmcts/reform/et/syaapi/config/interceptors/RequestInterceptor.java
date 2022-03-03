@@ -9,16 +9,16 @@ import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Slf4j
 @Component
 public class RequestInterceptor implements HandlerInterceptor {
 
+    private static final String FAILED_TO_VERIFY_TOKEN = "Failed to verify the following token: {}";
     @Autowired
     VerifyTokenService verifyTokenService;
-
-    private static final String FAILED_TO_VERIFY_TOKEN = "Failed to verify the following token: {}";
 
     @Override
     public boolean preHandle(HttpServletRequest requestServlet, HttpServletResponse responseServlet, Object handler)

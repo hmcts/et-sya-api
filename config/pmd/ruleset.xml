@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<ruleset name="PMD rule set"
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="PMD rule set"
          xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
 
   <description>HMCTS PMD rule set</description>
@@ -19,6 +19,7 @@
     <exclude name="TooManyStaticImports"/>
     <exclude name="DefaultPackage"/>
     <exclude name="CommentDefaultAccessModifier"/>
+    <exclude name="ShortClassName"/>
   </rule>
   <rule ref="category/java/codestyle.xml/ClassNamingConventions">
     <properties>
@@ -41,6 +42,7 @@
     <exclude name="UseUtilityClass"/>
     <exclude name="LoosePackageCoupling"/>
     <exclude name="DataClass"/>
+    <exclude name="AvoidThrowingRawExceptionTypes"/>
   </rule>
   <rule ref="category/java/design.xml/ExcessiveImports">
     <properties>

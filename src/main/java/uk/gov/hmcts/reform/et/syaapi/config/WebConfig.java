@@ -29,6 +29,5 @@ public class WebConfig implements WebMvcConfigurer {
                 "/metrics/**",
                 "/"
             );
-;
     }
 }

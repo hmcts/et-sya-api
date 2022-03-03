@@ -173,7 +173,7 @@ ext {
 }
 
 dependencies {
-  implementation('com.github.hmcts:et-common:0.0.22') { transitive = false}
+  implementation('com.github.hmcts:et-common:0.0.22') { transitive = false }
   implementation group: 'uk.gov.dwp.regex', name: 'postcode-validation', version: '1.1.0'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '3.1.1'
@@ -209,7 +209,7 @@ dependencies {
   }
 }
 
-mainClassName = 'uk.gov.hmcts.reform.et.syaapi.Application'
+mainClassName = 'uk.gov.hmcts.reform.et.syaapi.SyaApiApplication'
 
 bootJar {
   archiveFileName = "et-sya-api.jar"
@@ -225,5 +225,5 @@ rootProject.tasks.named("processSmokeTestResources") {
 }
 
 wrapper {
-    distributionType = Wrapper.DistributionType.ALL
+  distributionType = Wrapper.DistributionType.ALL
 }
