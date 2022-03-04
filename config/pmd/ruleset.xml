@@ -12,11 +12,6 @@
     <exclude name="JUnitAssertionsShouldIncludeMessage"/>
     <exclude name="JUnitTestsShouldIncludeAssert"/>
   </rule>
-  <rule ref="category/java/bestpractices.xml/UnusedPrivateField">
-    <properties>
-      <property name="ignoredAnnotations" value="Autowired"/>
-    </properties>
-  </rule>
   <rule ref="category/java/codestyle.xml">
     <exclude name="AtLeastOneConstructor"/>
     <exclude name="LocalVariableCouldBeFinal"/>
