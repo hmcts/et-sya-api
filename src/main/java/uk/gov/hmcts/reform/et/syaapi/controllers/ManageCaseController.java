@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.et.syaapi.service.CreateCaseService;
+import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 
 import javax.validation.constraints.NotNull;
 
@@ -24,9 +24,9 @@ import static org.springframework.http.ResponseEntity.ok;
 public class ManageCaseController {
 
     @Autowired
-    private CreateCaseService createCaseService;
+    private CaseService caseService;
 
-    @GetMapping("/caseDetails/{id}")
+    @GetMapping("/caseDetails/{caseId}")
     @Operation(summary = "Return case details")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Accessed successfully"),
@@ -36,9 +36,9 @@ public class ManageCaseController {
     })
     public ResponseEntity<CaseDetails> getCaseDetails(
         @RequestHeader("Authorization") String authorization,
-        @PathVariable String id
+        @PathVariable String caseId
     ) {
-        var caseDetails = createCaseService.getCaseData(authorization, id);
+        var caseDetails = caseService.getCaseData(authorization, caseId);
         return ok(caseDetails);
     }
 
@@ -50,13 +50,12 @@ public class ManageCaseController {
         @ApiResponse(responseCode = "403", description = "Calling service is not authorised to use the endpoint"),
         @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
-
     public ResponseEntity<CaseDetails> createCase(
         @RequestHeader("Authorization") String authorization,
         @PathVariable @NotNull String caseType,
         @PathVariable @NotNull String eventType
     ) {
-        var caseDetails = createCaseService.createCase(authorization, caseType, eventType);
+        var caseDetails = caseService.createCase(authorization, caseType, eventType);
         return ok(caseDetails);
     }
 }

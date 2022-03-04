@@ -14,7 +14,7 @@ public class OpenAPIConfiguration {
     public OpenAPI openAPI() {
         return new OpenAPI()
             .info(new Info().title("et-sya-api")
-                     .license(new License().name("MIT").url("https://opensource.org/licenses/MIT")))
+                      .license(new License().name("MIT").url("https://opensource.org/licenses/MIT")))
             .externalDocs(new ExternalDocumentation()
                               .description("README")
                               .url("https://github.com/hmcts/et-sya-api"));

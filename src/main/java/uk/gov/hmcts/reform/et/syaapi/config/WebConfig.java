@@ -18,7 +18,7 @@ public class WebConfig implements WebMvcConfigurer {
             .excludePathPatterns(
                 "/health",
                 "/webjars/springfox-swagger-ui/**",
-                "/swagger-ui.html",
+                "/swagger-ui/**",
                 "/swagger-resources/**",
                 "/v2/**",
                 "/favicon.ico",
@@ -27,6 +27,7 @@ public class WebConfig implements WebMvcConfigurer {
                 "/info",
                 "/metrics",
                 "/metrics/**",
+                "/v3/**",
                 "/"
             );
     }
