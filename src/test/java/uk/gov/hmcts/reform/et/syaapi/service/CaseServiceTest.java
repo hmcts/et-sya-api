@@ -19,8 +19,8 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUT
 
 @ExtendWith(MockitoExtension.class)
 class CaseServiceTest {
-    private static final String caseId = "ET_Scotland";
-    private static final String eventId = "initiateCaseDraft";
+    private static final String CASE_ID = "ET_Scotland";
+    private static final String EVENT_ID = "initiateCaseDraft";
     private final CaseDetails expectedDetails = ResourceLoader.fromString(
         "responses/caseDetails.json",
         CaseDetails.class
@@ -43,31 +43,31 @@ class CaseServiceTest {
         when(ccdApiClient.getCase(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
-            caseId
+            CASE_ID
         )).thenReturn(expectedDetails);
 
-        CaseDetails caseDetails = caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, caseId);
+        CaseDetails caseDetails = caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, CASE_ID);
 
         assertEquals(expectedDetails, caseDetails);
     }
 
     @Test
-    void shouldCreateNewDraftCaseInCCD() {
+    void shouldCreateNewDraftCaseInCcd() {
         CaseDataContent caseDataContent = CaseDataContent.builder()
-            .event(Event.builder().id(eventId).build())
+            .event(Event.builder().id(EVENT_ID).build())
             .eventToken(startEventResponse.getToken())
             .build();
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(ccdApiClient.startCase(TEST_SERVICE_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, caseId, eventId)).thenReturn(
+        when(ccdApiClient.startCase(TEST_SERVICE_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, CASE_ID, EVENT_ID)).thenReturn(
             startEventResponse);
         when(ccdApiClient.createCase(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
-            caseId,
+            CASE_ID,
             caseDataContent
         )).thenReturn(expectedDetails);
 
-        CaseDetails caseDetails = caseService.createCase(TEST_SERVICE_AUTH_TOKEN, caseId, eventId);
+        CaseDetails caseDetails = caseService.createCase(TEST_SERVICE_AUTH_TOKEN, CASE_ID, EVENT_ID);
 
         assertEquals(expectedDetails, caseDetails);
     }

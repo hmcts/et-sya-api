@@ -52,7 +52,10 @@ public class GlobalExceptionHandlerTest {
     public void shouldHandleFeignException() {
         final GlobalExceptionHandler exceptionHandler = new GlobalExceptionHandler();
         final FeignException feignException = mock(FeignException.class);
-        final ErrorResponse errorResponse = ErrorResponse.builder().message("Call failed - service is down.").code(500).build();
+        final ErrorResponse errorResponse = ErrorResponse.builder()
+            .message("Call failed - service is down.")
+            .code(500)
+            .build();
 
         when(feignException.status()).thenReturn(500);
         when(feignException.getMessage()).thenReturn("Call failed");

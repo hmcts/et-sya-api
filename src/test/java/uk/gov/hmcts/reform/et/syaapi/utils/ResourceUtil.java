@@ -16,13 +16,13 @@ public final class ResourceUtil {
     }
 
     public static String resourceAsString(final String resourcePath) throws IOException {
-        ClassLoader classLoader = ResourceUtil.class.getClassLoader();
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         final File file = ResourceUtils.getFile(classLoader.getResource(resourcePath).getFile());
         return new String(Files.readAllBytes(file.toPath()));
     }
 
     public static byte[] resourceAsBytes(final String resourcePath) throws IOException {
-        ClassLoader classLoader = ResourceUtil.class.getClassLoader();
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         final File file = ResourceUtils.getFile(classLoader.getResource(resourcePath).getFile());
         return Files.readAllBytes(file.toPath());
     }

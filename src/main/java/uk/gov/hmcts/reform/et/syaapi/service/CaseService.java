@@ -21,12 +21,12 @@ public class CaseService {
     @Autowired
     private CcdApiClient ccdApiClient;
 
-    @Retryable(value = {FeignException.class, RuntimeException.class})
+    @Retryable({FeignException.class, RuntimeException.class})
     public CaseDetails getCaseData(String authorization, String caseId) {
         return ccdApiClient.getCase(authorization, authTokenGenerator.generate(), caseId);
     }
 
-    @Retryable(value = {FeignException.class, RuntimeException.class})
+    @Retryable({FeignException.class, RuntimeException.class})
     public CaseDetails createCase(String authorization, String caseType, String eventId) {
         String s2sToken = authTokenGenerator.generate();
         var ccdCase = ccdApiClient.startCase(authorization, s2sToken, caseType, eventId);

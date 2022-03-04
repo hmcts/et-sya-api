@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.et.syaapi.config;
 
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -11,6 +10,9 @@ import uk.gov.hmcts.reform.authorisation.exceptions.InvalidTokenException;
 import uk.gov.hmcts.reform.et.syaapi.config.interceptors.UnAuthorisedServiceException;
 import uk.gov.hmcts.reform.et.syaapi.models.ErrorResponse;
 
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -18,10 +20,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(InvalidTokenException.class)
     public ResponseEntity<Object> handleInvalidTokenException(InvalidTokenException exception) {
         log.error(exception.getMessage(), exception);
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+        return ResponseEntity.status(UNAUTHORIZED).body(
             ErrorResponse.builder()
                 .message(exception.getMessage())
-                .code(HttpStatus.UNAUTHORIZED.value())
+                .code(UNAUTHORIZED.value())
                 .build()
         );
     }
@@ -31,10 +33,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         UnAuthorisedServiceException unAuthorisedServiceException
     ) {
         log.error(unAuthorisedServiceException.getMessage(), unAuthorisedServiceException);
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+        return ResponseEntity.status(FORBIDDEN).body(
             ErrorResponse.builder()
                 .message(unAuthorisedServiceException.getMessage())
-                .code(HttpStatus.FORBIDDEN.value())
+                .code(FORBIDDEN.value())
                 .build()
         );
     }

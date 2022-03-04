@@ -13,10 +13,10 @@ import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 @WebMvcTest(
     controllers = {ManageCaseController.class},
@@ -24,11 +24,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
     excludeAutoConfiguration = RequestInterceptor.class
 )
 @Import(ManageCaseController.class)
-public class ManageCaseControllerTest {
+class ManageCaseControllerTest {
 
-    private static final String caseId = "1646225213651590";
-    private static final String caseType = "ET_Scotland";
-    private static final String eventType = "initiateCaseDraft";
+    private static final String CASE_ID = "1646225213651590";
+    private static final String CASE_TYPE = "ET_Scotland";
+    private static final String EVENT_TYPE = "initiateCaseDraft";
     private final CaseDetails expectedDetails = ResourceLoader.fromString(
         "responses/caseDetails.json",
         CaseDetails.class
@@ -43,11 +43,11 @@ public class ManageCaseControllerTest {
     @Test
     void shouldGetCaseDetails() throws Exception {
         // given
-        when(caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, caseId))
+        when(caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, CASE_ID))
             .thenReturn(expectedDetails);
 
         // when
-        mockMvc.perform(get("/caseDetails/{caseId}", caseId)
+        mockMvc.perform(get("/caseDetails/{caseId}", CASE_ID)
                             .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(expectedDetails.getId()))
@@ -61,11 +61,11 @@ public class ManageCaseControllerTest {
     @Test
     void shouldCreateDraftCase() throws Exception {
         // given
-        when(caseService.createCase(TEST_SERVICE_AUTH_TOKEN, caseType, eventType))
+        when(caseService.createCase(TEST_SERVICE_AUTH_TOKEN, CASE_TYPE, EVENT_TYPE))
             .thenReturn(expectedDetails);
 
         // when
-        mockMvc.perform(get("/case-type/{caseType}/event-type/{eventType}/case", caseType, eventType)
+        mockMvc.perform(get("/case-type/{caseType}/event-type/{eventType}/case", CASE_TYPE, EVENT_TYPE)
                             .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(expectedDetails.getId()))
