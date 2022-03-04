@@ -2,3 +2,17 @@ java:
   # Don't modify below here
   image: ${IMAGE_NAME}
   ingressHost: ${SERVICE_FQDN}
+  aadIdentityName: et
+  keyVaults:
+    et:
+      secrets:
+        - AppInsightsInstrumentationKey
+        - name: s2s-case-api-secret
+          alias: ET_COS_S2S_SECRET
+
+  environment:
+    IDAM_API_BASEURL: "https://idam-api.{{ .Values.global.environment }}.platform.hmcts.net"
+    IDAM_JWKS_BASEURL: "https://idam-api.{{ .Values.global.environment }}.platform.hmcts.net/o/jwks"
+    CASE_DATA_STORE_BASEURL: "http://ccd-data-store-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
+    SERVICE_AUTH_PROVIDER_URL: "http://rpe-service-auth-provider-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
+    MICRO_SERVICE: "et_cos"
