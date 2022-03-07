@@ -59,6 +59,15 @@ class ManageCaseControllerTest {
     }
 
     @Test
+    void shouldReturnBadRequestForNonExistingItem() throws Exception {
+        mockMvc.perform(get("/caseDetails/{caseId}", "111")
+                            .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(400))
+            .andExpect(jsonPath("$.messages").exists());
+    }
+
+    @Test
     void shouldCreateDraftCase() throws Exception {
         // given
         when(caseService.createCase(TEST_SERVICE_AUTH_TOKEN, CASE_TYPE, EVENT_TYPE))

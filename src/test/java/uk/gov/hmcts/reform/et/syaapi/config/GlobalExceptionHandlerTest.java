@@ -2,7 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.config;
 
 
 import feign.FeignException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
