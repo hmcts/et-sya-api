@@ -3,10 +3,19 @@ appVersion: "1.0"
 description: A Helm chart for et-sya-api Java API
 name: et-sya-api
 home: https://github.com/hmcts/et-sya-api
-version: 0.0.4
+version: 0.0.6
 maintainers:
   - name: HMCTS et team
 dependencies:
   - name: java
     version: 3.7.3
     repository: '@hmctspublic'
+  - name: ccd
+    version: 6.0.0
+    repository: '@hmctspublic'
+    tags:
+        - ccd-idam-pr
+  - name: xui-webapp
+    version: ~0.2.1
+    repository: '@hmctspublic'
+    condition: xui-webapp.enabled
