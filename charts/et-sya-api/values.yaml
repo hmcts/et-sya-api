@@ -4,11 +4,13 @@ java:
   ingressHost: et-sya-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
   aadIdentityName: et
   keyVaults:
+    et-cos:
+      secrets:
+        - name: et-cos-s2s-secret
+          alias: ET_COS_S2S_SECRET
     et:
       secrets:
         - AppInsightsInstrumentationKey
-        - name: s2s-case-api-secret
-          alias: ET_COS_S2S_SECRET
 
   environment:
     IDAM_API_BASEURL: "https://idam-api.{{ .Values.global.environment }}.platform.hmcts.net"
