@@ -130,7 +130,6 @@ project.tasks['sonarqube'].dependsOn jacocoTestReport
 def sonarExclusions = [
   "**/gov/hmcts/reform/et/syaapi/config/**",
   "**/gov/hmcts/reform/et/syaapi/SyaApiApplication.java",
-  "**/gov/hmcts/reform/et/syaapi/service/VerifyTokenService.java"
 ]
 
 sonarqube {
