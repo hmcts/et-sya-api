@@ -26,7 +26,7 @@ public class GlobalExceptionHandlerTest {
 
         when(invalidTokenException.getMessage()).thenReturn("Unauthorized");
 
-        final ResponseEntity<Object> actualResponse =
+        final ResponseEntity<ErrorResponse> actualResponse =
             exceptionHandler.handleInvalidTokenException(invalidTokenException);
 
         assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
@@ -41,7 +41,7 @@ public class GlobalExceptionHandlerTest {
 
         when(unAuthorisedServiceException.getMessage()).thenReturn("Forbidden");
 
-        final ResponseEntity<Object> actualResponse =
+        final ResponseEntity<ErrorResponse> actualResponse =
             exceptionHandler.handleUnAuthorisedServiceException(unAuthorisedServiceException);
 
         assertEquals(HttpStatus.FORBIDDEN, actualResponse.getStatusCode());
@@ -61,7 +61,7 @@ public class GlobalExceptionHandlerTest {
         when(feignException.getMessage()).thenReturn("Call failed");
         when(feignException.contentUTF8()).thenReturn("service is down.");
 
-        final ResponseEntity<Object> actualResponse =
+        final ResponseEntity<ErrorResponse> actualResponse =
             exceptionHandler.handleFeignException(feignException);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());

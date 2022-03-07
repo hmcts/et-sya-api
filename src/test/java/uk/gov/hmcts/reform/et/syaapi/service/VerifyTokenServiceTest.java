@@ -1,32 +1,38 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
+import lombok.SneakyThrows;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @ExtendWith(MockitoExtension.class)
 class VerifyTokenServiceTest {
 
+
     @InjectMocks
     private VerifyTokenService verifyTokenService;
 
+    @BeforeEach
+    public void setUp() {
+        verifyTokenService = new VerifyTokenService();
+        ReflectionTestUtils.setField(verifyTokenService, "idamJwkUrl", "http://localhost:5555/o/jwks");
+    }
+
     @Test
+    @SneakyThrows
     void verifyTokenSignature() {
         assertFalse(verifyTokenService.verifyTokenSignature(
-            "Bearer eyJ0eXAiOiJKV1QiLCJ6aXAiOiJOT05FIiwia2lkIjoiYi9PNk92VnYxK3krV2dySDVVaTlXVGlvTHQwPSIsImFsZyI6IlJ"
-                + "TMjU2In0.eyJzdWIiOiJzc2NzLWNpdGl6ZW40QGhtY3RzLm5ldCIsImF1dGhfbGV2ZWwiOjAsImF1ZGl0VHJhY2tpbmdJZCI6"
-                + "Ijc1YzEyMTk3LWFjYmYtNDg2Zi1iNDI5LTJlYWEwZjMyNWVkMCIsImlzcyI6Imh0dHA6Ly9mci1hbTo4MDgwL29wZW5h"
-                + "bS9vYXV0aDIvaG1jdHMiLCJ0b2tlbk5hbWUiOiJhY2Nlc3NfdG9rZW4iLCJ0b2tlbl90eXBlIjoiQmVhcmVyIiwiYXV"
-                + "0aEdyYW50SWQiOiIwMGZhYThiNy03OWY5LTRiZWQtODI1OS0zZDE0MDEzOGYzZjIiLCJhdWQiOiJzc2NzIiwibmJmIjox"
-                + "NTc4NTAwNDU0LCJncmFudF90eXBlIjoiYXV0aG9yaXphdGlvbl9jb2RlIiwic2NvcGUiOlsib3BlbmlkIiwicHJvZmlsZSI"
-                + "sInJvbGVzIl0sImF1dGhfdGltZSI6MTU3ODUwMDQ1MTAwMCwicmVhbG0iOiIvaG1jdHMiLCJleHAiOjE1Nzg1MjkyNTQsIml"
-                + "hdCI6MTU3ODUwMDQ1NCwiZXhwaXJlc19pbiI6Mjg4MDAsImp0aSI6ImNkMTgxODM3LTdlMmUtNDY1Ny05ZTgwLTk4NWE3Zj"
-                + "VmZDMzYiJ9.SZOd981fC1bdMWehXKsUl0B9vEXRr7-NBKl6IaFIoS573rNjKgcIzChMaxcmc-anOxJqgF8Lan7RdMCIb4Y-"
-                + "zGG3TzfGAG7elpmXJVsogPKCWJlGFCJm_wU-h_cqAcL2llgqnNkkms43lgvyfIdiXv3J-00qBHzMy3jG5mLOE5YZet1LKf3Ii"
-                + "RNZxI5Vx6L2Afdox1jiKGQGGt2bNx7-rcYS8VVVZI-ovo7lbbWU6Mi5lWI19q2AS9jGcK5U4hcIU06JzoWGsh-Ob1xkq7VtJ"
-                + "KyrOSiUth-SjY5PqQzjvpuEO8MrLWTI0sCaWRHbmbF0bHICGO17bQ42_PfTHgza4A"));
+            "Bearer eyJraWQiOiIyMzQ1Njc4OSIsImFsZyI6IlJTMjU2In0."
+                + "eyJzdWIiOiJDQ0RfU3R1YiIsImlzcyI6Imh0dHA6XC9cL2ZyLWFtOjgwODBcL29wZW5hbVwvb2F1dGgyXC9obWN0cyIsIn"
+                + "Rva2VuTmFtZSI6ImFjY2Vzc190b2tlbiIsImV4cCI6MTY0NjY1NzUwNSwiaWF0IjoxNjQ2NjQzMTA1fQ.IFvpJxJl9Qq6dBbN"
+                + "_QazfbbAFztNPEtPa_5qVhPJcTlX2SDPkhYz4EGH4196_YbHmGghLQQpn1lscCb2hq27c3xXrVkYx-h6Dm0RXJXaz8Fktiw4a"
+                + "BkZ4ZvDxSD_3Q1Hj534Qe-XoS5WelXh4xGD2ay4DrPqtlE4BKwfBGTA_Dbpu6Iree7S7e149zzUaXYbJGoyBv9x_j4Zy2advD9"
+                + "FK52R1CXVCHIa-aPmW7vCkucLxKMr8ktyd5NFnAgNo-XqXMmnAmYp-MYf_-6SHaPLsDsHqO18F68-VA2Rj2WG3S58u6XwvRYJ3"
+                + "28R9yqHZVo_fojRY9pRhFzlVr1Yy9FYOg"));
     }
 }

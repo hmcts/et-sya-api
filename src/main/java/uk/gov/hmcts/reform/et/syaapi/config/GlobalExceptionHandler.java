@@ -18,7 +18,7 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(InvalidTokenException.class)
-    public ResponseEntity<Object> handleInvalidTokenException(InvalidTokenException exception) {
+    public ResponseEntity<ErrorResponse> handleInvalidTokenException(InvalidTokenException exception) {
         log.error(exception.getMessage(), exception);
         return ResponseEntity.status(UNAUTHORIZED).body(
             ErrorResponse.builder()
@@ -29,7 +29,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(UnAuthorisedServiceException.class)
-    public ResponseEntity<Object> handleUnAuthorisedServiceException(
+    public ResponseEntity<ErrorResponse> handleUnAuthorisedServiceException(
         UnAuthorisedServiceException unAuthorisedServiceException
     ) {
         log.error(unAuthorisedServiceException.getMessage(), unAuthorisedServiceException);
@@ -42,7 +42,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(FeignException.class)
-    ResponseEntity<Object> handleFeignException(FeignException exception) {
+    ResponseEntity<ErrorResponse> handleFeignException(FeignException exception) {
         log.error(exception.getMessage(), exception);
 
         return ResponseEntity.status(exception.status()).body(

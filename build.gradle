@@ -131,7 +131,7 @@ sonarqube {
   properties {
     property "sonar.projectName", "Reform :: et-sya-api"
     property "sonar.projectKey", "uk.gov.hmcts.reform:et-sya-api"
-    property "sonar.coverage.exclusions", "**/gov/hmcts/reform/et.syaapi/config/**"
+    property "sonar.coverage.exclusions", "**/gov/hmcts/reform/et/syaapi/config/**, **/gov/hmcts/reform/et/syaapi/SyaApiApplication"
     property "sonar.coverage.jacoco.xmlReportPaths", "${jacocoTestReport.reports.xml.destination.path}"
   }
 }

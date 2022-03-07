@@ -10,10 +10,9 @@ import com.nimbusds.jose.proc.JWSVerifierFactory;
 import com.nimbusds.jwt.SignedJWT;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.exceptions.InvalidTokenException;
-import uk.gov.hmcts.reform.et.syaapi.properties.IdamProperties;
 
 import java.net.URL;
 import java.security.Key;
@@ -24,8 +23,8 @@ public class VerifyTokenService {
 
     private final JWSVerifierFactory jwsVerifierFactory;
 
-    @Autowired
-    private IdamProperties idamProperties;
+    @Value("${idam.api.jwksUrl}")
+    private String idamJwkUrl;
 
     public VerifyTokenService() {
         this.jwsVerifierFactory = new DefaultJWSVerifierFactory();
@@ -36,7 +35,7 @@ public class VerifyTokenService {
             var tokenTocheck = StringUtils.replace(token, "Bearer ", "");
             var signedJwt = SignedJWT.parse(tokenTocheck);
 
-            JWKSet jsonWebKeySet = loadJsonWebKeySet(idamProperties.getApi().getJwksUrl());
+            JWKSet jsonWebKeySet = loadJsonWebKeySet(idamJwkUrl);
 
             var jwsHeader = signedJwt.getHeader();
             var key = findKeyById(jsonWebKeySet, jwsHeader.getKeyID());
