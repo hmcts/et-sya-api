@@ -16,10 +16,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class GlobalExceptionHandlerTest {
+class GlobalExceptionHandlerTest {
 
     @Test
-    public void shouldHandleInvalidTokenException() {
+    void shouldHandleInvalidTokenException() {
         final GlobalExceptionHandler exceptionHandler = new GlobalExceptionHandler();
         final InvalidTokenException invalidTokenException = mock(InvalidTokenException.class);
         final ErrorResponse errorResponse = ErrorResponse.builder().message("Unauthorized").code(401).build();
@@ -34,7 +34,7 @@ public class GlobalExceptionHandlerTest {
     }
 
     @Test
-    public void shouldHandleUnAuthorisedServiceException() {
+    void shouldHandleUnAuthorisedServiceException() {
         final GlobalExceptionHandler exceptionHandler = new GlobalExceptionHandler();
         final UnAuthorisedServiceException unAuthorisedServiceException = mock(UnAuthorisedServiceException.class);
         final ErrorResponse errorResponse = ErrorResponse.builder().message("Forbidden").code(403).build();
@@ -49,7 +49,7 @@ public class GlobalExceptionHandlerTest {
     }
 
     @Test
-    public void shouldHandleFeignException() {
+    void shouldHandleFeignException() {
         final GlobalExceptionHandler exceptionHandler = new GlobalExceptionHandler();
         final FeignException feignException = mock(FeignException.class);
         final ErrorResponse errorResponse = ErrorResponse.builder()
