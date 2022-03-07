@@ -6,10 +6,10 @@ java:
   image: ${IMAGE_NAME}
   ingressHost: ${SERVICE_FQDN}
   keyVaults:
-    et-cos:
+    s2s-aat:
       secrets:
-        - name: et-cos-s2s-secret
-          alias: ET_COS_S2S_SECRET
+        - name: et-sya-api-s2s-secret
+          alias: ET_SYA_S2S_SECRET
     et:
       secrets:
         - AppInsightsInstrumentationKey
@@ -19,7 +19,17 @@ java:
     IDAM_JWKS_BASEURL: "https://idam-api.aat.platform.hmcts.net/o/jwks"
     CASE_DATA_STORE_BASEURL: "http://ccd-data-store-api-pr-${CHANGE_ID}.service.core-compute-preview.internal"
     SERVICE_AUTH_PROVIDER_URL: http://rpe-service-auth-provider-pr-${CHANGE_ID}.service.core-compute-preview.internal
-    MICRO_SERVICE: "et_cos"
+    MICRO_SERVICE: "et_sya"
+
+idam-pr:
+  enabled: true
+  releaseNameOverride: ${SERVICE_NAME}-ccd-idam-pr
+  redirect_uris:
+    CCD Admin:
+      - https://admin-web-${SERVICE_FQDN}/oauth2redirect
+    XUI:
+      - https://xui-${SERVICE_FQDN}/oauth2/callback
+      - http://xui-${SERVICE_FQDN}/oauth2/callback
 
 ccd:
   ccd:
@@ -114,13 +124,7 @@ ccd:
       jurisdictions:
         - EMPLOYMENT
       users:
-        - divorce_as_caseworker_beta@mailinator.com|DIVORCE|NO_FAULT_DIVORCE|Submitted
-        - divorce_as_caseworker_solicitor@mailinator.com|DIVORCE|NO_FAULT_DIVORCE|Submitted
-        - divorce_as_caseworker_bulk_scanner@mailinator.com|DIVORCE|NO_FAULT_DIVORCE|Submitted
-        - divorce_as_caseworker_superuser@mailinator.com|DIVORCE|NO_FAULT_DIVORCE|Submitted
-        - divorce_as_caseworker_la@mailinator.com|DIVORCE|NO_FAULT_DIVORCE|Submitted
-        - divorce_as_caseworker_admin@mailinator.com|DIVORCE|NO_FAULT_DIVORCE|Submitted
-        - divorce_respondent_solicitor@mailinator.com|DIVORCE|NO_FAULT_DIVORCE|Submitted
+        - employment_service@mailinator.com|EMPLOYMENT|ET|Submitted
       userProfileDatabaseHost: ${SERVICE_NAME}-ccd-postgres
       userProfileDatabasePort: 5432
       userProfileDatabaseUser: hmcts

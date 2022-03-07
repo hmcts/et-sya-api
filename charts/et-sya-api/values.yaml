@@ -16,10 +16,10 @@ java:
 #        - name: AppInsightsInstrumentationKey
 #          alias: azure.application-insights.instrumentation-key
   keyVaults:
-    et-cos:
+    s2s-aat:
       secrets:
-        - name: et-cos-s2s-secret
-          alias: ET_COS_S2S_SECRET
+        - name: et-sya-s2s-secret
+          alias: ET_SYA_S2S_SECRET
     et:
       secrets:
         - AppInsightsInstrumentationKey
@@ -29,4 +29,4 @@ java:
     IDAM_JWKS_BASEURL: "https://idam-api.{{ .Values.global.environment }}.platform.hmcts.net/o/jwks"
     CASE_DATA_STORE_BASEURL: "http://ccd-data-store-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     SERVICE_AUTH_PROVIDER_URL: http://rpe-service-auth-provider-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
-    MICRO_SERVICE: "et_cos"
+    MICRO_SERVICE: "et_sya"
