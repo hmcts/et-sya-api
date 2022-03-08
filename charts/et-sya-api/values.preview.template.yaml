@@ -15,11 +15,7 @@ java:
         - AppInsightsInstrumentationKey
 
   environment:
-    IDAM_API_BASEURL: "https://idam-api.aat.platform.hmcts.net"
-    IDAM_JWKS_BASEURL: "https://idam-api.aat.platform.hmcts.net/o/jwks"
-    CASE_DATA_STORE_BASEURL: "http://ccd-data-store-api-pr-${CHANGE_ID}.service.core-compute-preview.internal"
-    SERVICE_AUTH_PROVIDER_URL: http://rpe-service-auth-provider-pr-${CHANGE_ID}.service.core-compute-preview.internal
-    MICRO_SERVICE: "et_sya"
+    CASE_DATA_STORE_BASEURL: "http://ccd-data-store-api-et-sya-api-pr-${CHANGE_ID}.service.core-compute-preview.internal"
 
 idam-pr:
   enabled: true
@@ -73,7 +69,7 @@ ccd:
         DATA_STORE_IDAM_KEY: ${DATA_STORE_S2S_KEY}
         DATA_STORE_DEFAULT_LOG_LEVEL: info
         DATA_STORE_S2S_AUTHORISED_SERVICES: ccd_data,ccd_gw,ccd_admin,ccd_ps,et_cos
-        CCD_S2S_AUTHORISED_SERVICES_CASE_USER_ROLES: nfdiv_case_api
+        CCD_S2S_AUTHORISED_SERVICES_CASE_USER_ROLES: et_sya_api
         ELASTIC_SEARCH_ENABLED: false
         CCD_DM_DOMAIN: http://dm-store-aat.service.core-compute-aat.internal
         CCD_DOCUMENT_URL_PATTERN: ^https?://(((?:api-gateway\.preprod\.dm\.reform\.hmcts\.net|dm-store-aat\.service\.core-compute-aat\.internal(?::\d+)?)\/documents\/[A-Za-z0-9-]+(?:\/binary)?)|(em-hrs-api-aat\.service\.core-compute-aat\.internal(?::\d+)?\/hearing-recordings\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\/segments\/[0-9]))
