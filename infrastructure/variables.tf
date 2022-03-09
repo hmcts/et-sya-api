@@ -3,7 +3,7 @@ variable "product" {
 }
 
 variable "component" {
-  default = "sya"
+  default = "sya-api"
 }
 
 variable "location" {

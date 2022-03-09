@@ -28,7 +28,7 @@ data "azurerm_key_vault" "s2s_vault" {
   resource_group_name = "rpe-service-auth-provider-${var.env}"
 }
 
-data "azurerm_key_vault_secret" "et_sya_s2s_key" {
+data "azurerm_key_vault_secret" "et_sya_api_s2s_key" {
   name         = "microservicekey-et-sya-api"
   key_vault_id = data.azurerm_key_vault.s2s_vault.id
 }
@@ -47,8 +47,8 @@ module "key-vault" {
 }
 
 
-resource "azurerm_key_vault_secret" "et_sya_s2s_secret" {
-  name         = "et-sya-s2s-secret"
-  value        = data.azurerm_key_vault_secret.et_sya_s2s_key.value
+resource "azurerm_key_vault_secret" "et_sya_api_s2s_secret" {
+  name         = "et-sya-api-s2s-secret"
+  value        = data.azurerm_key_vault_secret.et_sya_api_s2s_key.value
   key_vault_id = module.key-vault.key_vault_id
 }
