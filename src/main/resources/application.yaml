@@ -33,7 +33,7 @@ idam:
     jwksUrl: ${IDAM_JWKS_BASEURL:http://localhost:5555/o/jwks}
   s2s-auth:
     url: ${SERVICE_AUTH_PROVIDER_URL:http://localhost:4502}
-    secret: ${ET_COS_S2S_SECRET:AAAAAAAAAAAAAAAC}
+    secret: ${ET_SYA_S2S_SECRET:AAAAAAAAAAAAAAAC}
     microservice: ${MICRO_SERVICE:ccd_gw}
 
 core_case_data:

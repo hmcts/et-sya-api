@@ -3,10 +3,10 @@ java:
   image: ${IMAGE_NAME}
   ingressHost: ${SERVICE_FQDN}
   keyVaults:
-    et-cos:
+    s2s-aat:
       secrets:
-        - name: et-cos-s2s-secret
-          alias: ET_COS_S2S_SECRET
+        - name: microservicekey-et-sya-api
+          alias: ET_SYA_S2S_SECRET
     et:
       secrets:
         - AppInsightsInstrumentationKey

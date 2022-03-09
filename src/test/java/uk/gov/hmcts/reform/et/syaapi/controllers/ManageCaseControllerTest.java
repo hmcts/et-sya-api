@@ -21,6 +21,7 @@ import java.util.Collections;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
@@ -93,7 +94,7 @@ class ManageCaseControllerTest {
             .thenReturn(expectedDetails);
 
         // when
-        mockMvc.perform(get("/case-type/{caseType}/event-type/{eventType}/case", CASE_TYPE, EVENT_TYPE)
+        mockMvc.perform(post("/case-type/{caseType}/event-type/{eventType}/case", CASE_TYPE, EVENT_TYPE)
                             .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(expectedDetails.getId()))
