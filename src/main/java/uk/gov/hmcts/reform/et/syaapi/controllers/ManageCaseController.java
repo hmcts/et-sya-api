@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -54,9 +55,10 @@ public class ManageCaseController {
     public ResponseEntity<CaseDetails> createCase(
         @RequestHeader("Authorization") String authorization,
         @PathVariable @NotNull String caseType,
-        @PathVariable @NotNull String eventType
+        @PathVariable @NotNull String eventType,
+        @RequestBody String caseData
     ) {
-        var caseDetails = caseService.createCase(authorization, caseType, eventType);
+        var caseDetails = caseService.createCase(authorization, caseType, eventType, caseData);
         return ok(caseDetails);
     }
 }

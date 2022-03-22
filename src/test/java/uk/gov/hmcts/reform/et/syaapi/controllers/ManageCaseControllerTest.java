@@ -14,7 +14,9 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
+import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
@@ -39,6 +41,9 @@ class ManageCaseControllerTest {
         "responses/caseDetails.json",
         CaseDetails.class
     );
+    private final String requestCaseData = ResourceUtil.resourceAsString(
+        "requests/caseData.json"
+    );
 
     @Autowired
     private MockMvc mockMvc;
@@ -48,6 +53,10 @@ class ManageCaseControllerTest {
 
     @MockBean
     private VerifyTokenService verifyTokenService;
+
+    ManageCaseControllerTest() throws IOException {
+        // Default constructor
+    }
 
     @Test
     void shouldGetCaseDetails() throws Exception {
@@ -90,17 +99,21 @@ class ManageCaseControllerTest {
     void shouldCreateDraftCase() throws Exception {
         // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(caseService.createCase(TEST_SERVICE_AUTH_TOKEN, CASE_TYPE, EVENT_TYPE))
+        when(caseService.createCase(TEST_SERVICE_AUTH_TOKEN, CASE_TYPE, EVENT_TYPE, requestCaseData))
             .thenReturn(expectedDetails);
 
         // when
         mockMvc.perform(post("/case-type/{caseType}/event-type/{eventType}/case", CASE_TYPE, EVENT_TYPE)
-                            .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
+                            .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                            .content(requestCaseData)
+            )
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(expectedDetails.getId()))
             .andExpect(jsonPath("$.case_type_id").value(expectedDetails.getCaseTypeId()))
+            .andExpect(jsonPath("$.id").value(expectedDetails.getId()))
             .andExpect(jsonPath("$.jurisdiction").value(expectedDetails.getJurisdiction()))
             .andExpect(jsonPath("$.state").value(expectedDetails.getState()))
+            .andExpect(jsonPath("$.case_data.caseType").value("Single"))
+            .andExpect(jsonPath("$.case_data.caseSource").value("Manually Created"))
             .andExpect(jsonPath("$.created_date").exists())
             .andExpect(jsonPath("$.last_modified").exists());
     }
