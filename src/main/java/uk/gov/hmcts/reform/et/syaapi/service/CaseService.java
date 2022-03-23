@@ -16,14 +16,11 @@ import uk.gov.hmcts.reform.et.syaapi.models.EmploymentCaseData;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
+
 @Slf4j
 @Service
 public class CaseService {
-
-    /**
-     * The default jurisdiction for all Employment Tribunal Cases.
-     */
-    private static final String JURISDICTION_ID = "EMPLOYMENT";
 
     @Autowired
     private AuthTokenGenerator authTokenGenerator;

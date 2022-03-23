@@ -7,6 +7,9 @@ import io.swagger.v3.oas.models.info.License;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.MIT_LICENSE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.REMOTE_REPO;
+
 @Configuration
 public class OpenAPIConfiguration {
 
@@ -14,10 +17,10 @@ public class OpenAPIConfiguration {
     public OpenAPI openAPI() {
         return new OpenAPI()
             .info(new Info().title("et-sya-api")
-                      .license(new License().name("MIT").url("https://opensource.org/licenses/MIT")))
+                      .license(new License().name("MIT").url(MIT_LICENSE)))
             .externalDocs(new ExternalDocumentation()
                               .description("README")
-                              .url("https://github.com/hmcts/et-sya-api"));
+                              .url(REMOTE_REPO));
     }
 
 }
