@@ -4,9 +4,9 @@ java:
   ingressHost: et-sya-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
   aadIdentityName: et
   keyVaults:
-    s2s:
+    et-sya-api:
       secrets:
-        - name: microservicekey-et-sya-api
+        - name: et-sya-api-s2s-secret
           alias: ET_SYA_S2S_SECRET
     et:
       secrets:
