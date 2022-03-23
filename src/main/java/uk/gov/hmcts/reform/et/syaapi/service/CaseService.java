@@ -55,11 +55,14 @@ public class CaseService {
      */
     @Retryable({FeignException.class, RuntimeException.class})
     public CaseDetails createCase(String authorization, String caseType, String eventType, String caseData) {
+        log.info("Creating Case");
         EmploymentCaseData data = getEmploymentCaseData(caseData);
         String s2sToken = authTokenGenerator.generate();
+        log.info("Generated s2s");
         UserDetails userDetails = idamClient.getUserDetails(authorization);
         // Temporarily returning hardcoded userId while Idam implementation is worked on
         var userID = userDetails.getId() == null ? "123456" : userDetails.getId();
+        log.info("User Id: " + userID);
         var ccdCase = ccdApiClient.startForCaseworker(
             authorization,
             s2sToken,
@@ -68,6 +71,7 @@ public class CaseService {
             caseType,
             eventType
         );
+        log.info("Started Case: " + ccdCase.getEventId());
         CaseDataContent caseDataContent = CaseDataContent.builder()
             .event(Event.builder().id(eventType).build())
             .eventToken(ccdCase.getToken())
