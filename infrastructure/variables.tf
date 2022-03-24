@@ -1,6 +1,10 @@
-variable "product" {}
+variable "product" {
+  default = "et"
+}
 
-variable "component" {}
+variable "component" {
+  default = "sya-api"
+}
 
 variable "location" {
   default = "UK South"
@@ -10,8 +14,26 @@ variable "env" {}
 
 variable "subscription" {}
 
-variable "deployment_namespace" {}
+variable "tenant_id" {}
+
+variable "jenkins_AAD_objectId" {
+  description = "(Required) The Azure AD object ID of a user, service principal or security group in the Azure Active Directory tenant for the vault. The object ID must be unique for the list of access policies."
+}
+
+variable "deployment_namespace" {
+  default = ""
+}
 
 variable "common_tags" {
-  type = "map"
+  type = map(string)
+}
+
+variable "team_name" {
+  description = "Team name"
+  default     = "Employment Tribunals"
+}
+
+variable "team_contact" {
+  description = "Team contact"
+  default     = "#et-devs"
 }
