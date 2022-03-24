@@ -63,6 +63,8 @@ public class CaseService {
         // Temporarily returning hardcoded userId while Idam implementation is worked on
         var userID = userDetails.getId() == null ? "123456" : userDetails.getId();
         log.info("User Id: " + userID);
+        log.info("User : " + userDetails.getEmail());
+        log.info("Roles : " + userDetails.getRoles());
         var ccdCase = ccdApiClient.startForCaseworker(
             authorization,
             s2sToken,
