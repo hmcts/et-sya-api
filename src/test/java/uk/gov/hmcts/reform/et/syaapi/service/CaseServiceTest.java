@@ -80,9 +80,8 @@ class CaseServiceTest {
 
         List<CaseDetails> caseDetails = caseService.getCaseDataByUser(
             TEST_SERVICE_AUTH_TOKEN,
-            JURISDICTION_ID,
             CASE_ID,
-            emptyMap()
+            ""
         );
 
         assertEquals(expectedDetailsList, caseDetails);

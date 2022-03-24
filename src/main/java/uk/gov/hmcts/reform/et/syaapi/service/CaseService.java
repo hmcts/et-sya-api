@@ -11,13 +11,13 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
+import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.et.syaapi.client.CcdApiClient;
 import uk.gov.hmcts.reform.et.syaapi.models.EmploymentCaseData;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Service
@@ -38,12 +38,9 @@ public class CaseService {
     }
 
     @Retryable({FeignException.class, RuntimeException.class})
-    public List<CaseDetails> getCaseDataByUser(String authorization, String jurisdictionId, String caseType,
-                                               Map<String, String> searchCriteria) {
-        UserDetails userDetails = idamClient.getUserDetails(authorization);
-        return ccdApiClient.searchForCitizen(authorization, authTokenGenerator.generate(),
-                                             userDetails.getId(), jurisdictionId, caseType, searchCriteria
-        );
+    public List<CaseDetails> getCaseDataByUser(String authorization, String caseType, String searchString) {
+        SearchResult searchResult =ccdApiClient.searchCases(authorization, authTokenGenerator.generate(), caseType, searchString);
+        return searchResult.getCases();
     }
 
     @Retryable({FeignException.class, RuntimeException.class})

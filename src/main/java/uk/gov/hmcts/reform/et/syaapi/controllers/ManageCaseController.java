@@ -5,23 +5,18 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.et.syaapi.search.Query;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 
-import java.util.List;
-import java.util.Map;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
-import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptyList;
 import static org.springframework.http.ResponseEntity.ok;
 
 @Slf4j
@@ -48,7 +43,7 @@ public class ManageCaseController {
         return ok(caseDetails);
     }
 
-    @GetMapping("/jurisdictions/{jurisdictionId}/caseTypes/{caseType}/cases")
+    @GetMapping("/caseTypes/{caseType}/cases")
     @Operation(summary = "Return all case details for User")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Accessed successfully"),
@@ -58,25 +53,15 @@ public class ManageCaseController {
     })
     public ResponseEntity<List<CaseDetails>> getCaseDataByUser(
         @RequestHeader("Authorization") String authorization,
-        @PathVariable String jurisdictionId,
         @PathVariable String caseType,
-        @RequestParam Map<String, String> searchCriteria
+        @RequestBody String searchString
     ) {
-        List<CaseDetails> casesByUser = searchCriteria == null ? caseService.getCaseDataByUser(
-            authorization,
-            jurisdictionId,
-            caseType,
-            emptyMap()
-        ) :
-            caseService.getCaseDataByUser(
-                authorization,
-                jurisdictionId,
-                caseType,
-                searchCriteria
-            );
+        Query query = new Query(QueryBuilders.wrapperQuery(searchString), emptyList(), 0);
+        List<CaseDetails> casesByUser = caseService.getCaseDataByUser(authorization, caseType, query.toString());
 
         return ok(casesByUser);
     }
+
 
     @PostMapping("/case-type/{caseType}/event-type/{eventType}/case")
     @Operation(summary = "Create a new default case")
@@ -95,7 +80,7 @@ public class ManageCaseController {
         return ok(caseDetails);
     }
 
-    @PostMapping("/case-type/{caseType}/jurisdiction/{jurisdictionId}/event-type/{eventType}/case")
+    @PostMapping("case-type/{caseType}/jurisdiction/{jurisdictionId}/event-type/{eventType}/case")
     @Operation(summary = "Create a new default case")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Accessed successfully"),

@@ -46,7 +46,7 @@ class ManageCaseControllerTest {
         CaseDetails.class
     );
     private final List<CaseDetails> expectedDetailsList = ResourceLoader.fromStringToList(
-        "responses/caseDetailsList.json",
+        "responses/.json",
         CaseDetails.class
     );
 
@@ -65,17 +65,17 @@ class ManageCaseControllerTest {
     @Test
     void shouldGetCaseDetailsByUser() throws Exception {
         // given
+
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(UserDetails.builder().id(USER_ID).build());
         when(caseService.getCaseDataByUser(
             TEST_SERVICE_AUTH_TOKEN,
-            JURISDICTION_ID,
-            CASE_TYPE, emptyMap()
+            CASE_TYPE, ""
         ))
             .thenReturn(expectedDetailsList);
 
         // when
-        mockMvc.perform(get("/jurisdictions/{jurisdictionId}/caseTypes/{caseType}/cases",
+        mockMvc.perform(get("/caseTypes/{caseType}/cases",
                             JURISDICTION_ID, CASE_TYPE
             )
                             .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
