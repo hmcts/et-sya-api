@@ -3,14 +3,17 @@ package uk.gov.hmcts.reform.et.syaapi.controllers;
 import feign.FeignException;
 import feign.Request;
 import feign.RequestTemplate;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.et.syaapi.search.Query;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
@@ -20,6 +23,7 @@ import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -46,7 +50,7 @@ class ManageCaseControllerTest {
         CaseDetails.class
     );
     private final List<CaseDetails> expectedDetailsList = ResourceLoader.fromStringToList(
-        "responses/.json",
+        "responses/caseDetailsList.json",
         CaseDetails.class
     );
 
@@ -65,20 +69,50 @@ class ManageCaseControllerTest {
     @Test
     void shouldGetCaseDetailsByUser() throws Exception {
         // given
+        String searchString = "{\"match_all\": {}}";
+        Query query = new Query(QueryBuilders.wrapperQuery(searchString), emptyList(), 0);
 
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(UserDetails.builder().id(USER_ID).build());
         when(caseService.getCaseDataByUser(
             TEST_SERVICE_AUTH_TOKEN,
-            CASE_TYPE, ""
+            CASE_TYPE, query.toString()
         ))
             .thenReturn(expectedDetailsList);
 
         // when
-        mockMvc.perform(get("/caseTypes/{caseType}/cases",
-                            JURISDICTION_ID, CASE_TYPE
-            )
-                            .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
+        mockMvc.perform(
+                        get("/caseTypes/{caseType}/cases", CASE_TYPE).contentType(MediaType.APPLICATION_JSON).content(searchString)
+                        .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
+            // then
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("[0].case_type_id").value(expectedDetailsList.get(0).getCaseTypeId()))
+            .andExpect(jsonPath("[0].jurisdiction").value(expectedDetailsList.get(0).getJurisdiction()))
+            .andExpect(jsonPath("[0].state").value(expectedDetailsList.get(0).getState()))
+            .andExpect(jsonPath("[0].created_date").exists())
+            .andExpect(jsonPath("[0].last_modified").exists())
+            .andExpect(jsonPath("[1].case_type_id").value(expectedDetailsList.get(1).getCaseTypeId()));
+    }
+
+    @Test
+    void shouldGetCaseDetailsByUserCase() throws Exception {
+        // given
+        String searchString = "{\"match\": {\"reference\": \"1646225213651590\"}}";
+
+        Query query = new Query(QueryBuilders.wrapperQuery(searchString), emptyList(), 0);
+
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(UserDetails.builder().id(USER_ID).build());
+        when(caseService.getCaseDataByUser(
+            TEST_SERVICE_AUTH_TOKEN,
+            CASE_TYPE, query.toString()
+        ))
+            .thenReturn(expectedDetailsList);
+
+        // when
+        mockMvc.perform(
+                get("/caseTypes/{caseType}/cases", CASE_TYPE).contentType(MediaType.APPLICATION_JSON).content(searchString)
+                    .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
             // then
             .andExpect(status().isOk())
             .andExpect(jsonPath("[0].case_type_id").value(expectedDetailsList.get(0).getCaseTypeId()))
@@ -93,8 +127,7 @@ class ManageCaseControllerTest {
     void shouldGetCaseDetails() throws Exception {
         // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, CASE_ID))
-            .thenReturn(expectedDetails);
+        when(caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, CASE_ID)).thenReturn(expectedDetails);
 
         // when
         mockMvc.perform(get("/caseDetails/{caseId}", CASE_ID)
