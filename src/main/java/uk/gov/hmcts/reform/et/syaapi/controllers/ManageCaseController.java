@@ -43,6 +43,16 @@ public class ManageCaseController {
         return ok(caseDetails);
     }
 
+    /*
+    Service would talk to CCD ElasticSearch API and with one implemented method -
+    * dev shall play around DSL query to get output (couple of examples of request body as below)
+    1. Pull all cases
+        {"match_all": {}}
+    2. Pull specific cases
+        {"terms": {"reference": ["XXX", "YYY"]}}
+    3, Pull specific case
+        {"match": {"reference": "XXX"}}
+    */
     @GetMapping("/caseTypes/{caseType}/cases")
     @Operation(summary = "Return all case details for User")
     @ApiResponses(value = {
