@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
@@ -35,8 +36,6 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUT
 class ManageCaseControllerTest {
 
     private static final String CASE_ID = "1646225213651590";
-    private static final String CASE_TYPE = "ET_Scotland";
-    private static final String EVENT_TYPE = "initiateCaseDraft";
     private final CaseDetails expectedDetails = ResourceLoader.fromString(
         "responses/caseDetails.json",
         CaseDetails.class
@@ -99,11 +98,20 @@ class ManageCaseControllerTest {
     void shouldCreateDraftCase() throws Exception {
         // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(caseService.createCase(TEST_SERVICE_AUTH_TOKEN, CASE_TYPE, EVENT_TYPE, requestCaseData))
+        when(caseService.createCase(
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            EtSyaConstants.DRAFT_EVENT_TYPE,
+            requestCaseData
+        ))
             .thenReturn(expectedDetails);
 
         // when
-        mockMvc.perform(post("/case-type/{caseType}/event-type/{eventType}/case", CASE_TYPE, EVENT_TYPE)
+        mockMvc.perform(post(
+                            "/case-type/{caseType}/event-type/{eventType}/case",
+                            EtSyaConstants.SCOTLAND_CASE_TYPE,
+                            EtSyaConstants.DRAFT_EVENT_TYPE
+                        )
                             .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
                             .content(requestCaseData)
             )

@@ -5,7 +5,7 @@ java:
   keyVaults:
     et-sya-api:
       secrets:
-        - name: microservicekey-et-sya-api
+        - name: et-sya-api-s2s-secret
           alias: ET_SYA_S2S_SECRET
     et:
       secrets:

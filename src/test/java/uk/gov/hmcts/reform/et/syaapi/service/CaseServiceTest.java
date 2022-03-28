@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.client.CcdApiClient;
+import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.models.EmploymentCaseData;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
@@ -25,9 +26,6 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUT
 
 @ExtendWith(MockitoExtension.class)
 class CaseServiceTest {
-    private static final String CASE_ID = "ET_Scotland";
-    private static final String EVENT_ID = "initiateCaseDraft";
-    private static final String JURISDICTION_ID = "EMPLOYMENT";
     private final CaseDetails expectedDetails = ResourceLoader.fromString(
         "responses/caseDetails.json",
         CaseDetails.class
@@ -63,10 +61,10 @@ class CaseServiceTest {
         when(ccdApiClient.getCase(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
-            CASE_ID
+            EtSyaConstants.SCOTLAND_CASE_TYPE
         )).thenReturn(expectedDetails);
 
-        CaseDetails caseDetails = caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, CASE_ID);
+        CaseDetails caseDetails = caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, EtSyaConstants.SCOTLAND_CASE_TYPE);
 
         assertEquals(expectedDetails, caseDetails);
     }
@@ -74,7 +72,7 @@ class CaseServiceTest {
     @Test
     void shouldCreateNewDraftCaseInCcd() {
         CaseDataContent caseDataContent = CaseDataContent.builder()
-            .event(Event.builder().id(EVENT_ID).build())
+            .event(Event.builder().id(EtSyaConstants.DRAFT_EVENT_TYPE).build())
             .eventToken(startEventResponse.getToken())
             .data(caseData)
             .build();
@@ -90,22 +88,27 @@ class CaseServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
             "12",
-            JURISDICTION_ID,
-            CASE_ID,
-            EVENT_ID
+            EtSyaConstants.JURISDICTION_ID,
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            EtSyaConstants.DRAFT_EVENT_TYPE
         )).thenReturn(
             startEventResponse);
         when(ccdApiClient.submitForCaseworker(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
             "12",
-            JURISDICTION_ID,
-            CASE_ID,
+            EtSyaConstants.JURISDICTION_ID,
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
             true,
             caseDataContent
         )).thenReturn(expectedDetails);
 
-        CaseDetails caseDetails = caseService.createCase(TEST_SERVICE_AUTH_TOKEN, CASE_ID, EVENT_ID, requestCaseData);
+        CaseDetails caseDetails = caseService.createCase(
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            EtSyaConstants.DRAFT_EVENT_TYPE,
+            requestCaseData
+        );
 
         assertEquals(expectedDetails, caseDetails);
     }
