@@ -48,7 +48,7 @@ public class CaseService {
 
     @Retryable({FeignException.class, RuntimeException.class})
     public List<CaseDetails> getCaseDataByUser(String authorization, String caseType, String searchString) {
-        SearchResult searchResult =ccdApiClient.searchCases(authorization, authTokenGenerator.generate(), caseType, searchString);
+        SearchResult searchResult=ccdApiClient.searchCases(authorization, authTokenGenerator.generate(), caseType, searchString);
         return searchResult.getCases();
     }
 
