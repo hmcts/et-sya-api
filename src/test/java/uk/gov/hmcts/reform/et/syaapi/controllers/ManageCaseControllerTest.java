@@ -27,7 +27,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
-import static java.util.Collections.emptyList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -98,7 +97,7 @@ class ManageCaseControllerTest {
     void shouldGetCaseDetailsByUser() throws Exception {
         // given
         String searchString = "{\"match_all\": {}}";
-        Query query = new Query(QueryBuilders.wrapperQuery(searchString), emptyList(), 0);
+        Query query = new Query(QueryBuilders.wrapperQuery(searchString), 0);
 
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(UserDetails.builder().id(USER_ID).build());
