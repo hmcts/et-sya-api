@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.et.syaapi.controllers;
 import feign.FeignException;
 import feign.Request;
 import feign.RequestTemplate;
-
 import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.search.Query;
@@ -28,8 +26,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
-import static java.util.Collections.emptyList;
 
+import static java.util.Collections.emptyList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -112,7 +110,8 @@ class ManageCaseControllerTest {
 
         // when
         mockMvc.perform(
-                get("/caseTypes/{caseType}/cases", CASE_TYPE).contentType(MediaType.APPLICATION_JSON).content(searchString)
+                get("/caseTypes/{caseType}/cases", CASE_TYPE)
+                    .contentType(MediaType.APPLICATION_JSON).content(searchString)
                     .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
             // then
             .andExpect(status().isOk())
