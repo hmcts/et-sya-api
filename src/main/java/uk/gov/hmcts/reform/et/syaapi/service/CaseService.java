@@ -11,10 +11,13 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
+import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.et.syaapi.client.CcdApiClient;
 import uk.gov.hmcts.reform.et.syaapi.models.EmploymentCaseData;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
+
+import java.util.List;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 
@@ -41,6 +44,13 @@ public class CaseService {
     @Retryable({FeignException.class, RuntimeException.class})
     public CaseDetails getCaseData(String authorization, String caseId) {
         return ccdApiClient.getCase(authorization, authTokenGenerator.generate(), caseId);
+    }
+
+    @Retryable({FeignException.class, RuntimeException.class})
+    public List<CaseDetails> getCaseDataByUser(String authorization, String caseType, String searchString) {
+        SearchResult searchResult = ccdApiClient.searchCases(
+            authorization, authTokenGenerator.generate(), caseType, searchString);
+        return searchResult.getCases();
     }
 
     /**
