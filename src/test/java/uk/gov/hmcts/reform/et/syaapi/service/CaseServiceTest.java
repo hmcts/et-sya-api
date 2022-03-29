@@ -138,11 +138,11 @@ class CaseServiceTest {
                                      EtSyaConstants.SCOTLAND_CASE_TYPE,
                                      query.toString()).getCases())
             .thenReturn(requestCaseDataList);
-
         List<CaseDetails> caseDetailsList = caseService.getCaseDataByUser(
             TEST_SERVICE_AUTH_TOKEN,
             CASE_TYPE, query.toString()
         );
+        assertEquals(caseDetailsList, requestCaseDataList);
 
     }
 }
