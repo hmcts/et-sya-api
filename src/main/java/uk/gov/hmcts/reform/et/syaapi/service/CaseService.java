@@ -70,15 +70,13 @@ public class CaseService {
         String s2sToken = authTokenGenerator.generate();
         log.info("Generated s2s");
         UserDetails userDetails = idamClient.getUserDetails(authorization);
-        // Temporarily returning hardcoded userId while Idam implementation is worked on
-        var userID = userDetails.getId() == null ? "123456" : userDetails.getId();
+        var userID =  userDetails.getId();
         log.info("User Id: " + userID);
-        log.info("User : " + userDetails.getEmail());
         log.info("Roles : " + userDetails.getRoles());
         var ccdCase = ccdApiClient.startForCaseworker(
             authorization,
             s2sToken,
-            userID,
+            userDetails.getId(),
             JURISDICTION_ID,
             caseType,
             eventType

@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
+import lombok.EqualsAndHashCode;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,19 +15,25 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.client.CcdApiClient;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.models.EmploymentCaseData;
+import uk.gov.hmcts.reform.et.syaapi.search.Query;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
+@EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
 class CaseServiceTest {
+    private static final String CASE_TYPE = "ET_Scotland";
+    private static final String USER_ID = "1234";
+
     private final CaseDetails expectedDetails = ResourceLoader.fromString(
         "responses/caseDetails.json",
         CaseDetails.class
@@ -40,6 +48,11 @@ class CaseServiceTest {
     private final EmploymentCaseData caseData = ResourceLoader.fromString(
         "requests/caseData.json",
         EmploymentCaseData.class
+    );
+
+    private final List<CaseDetails> requestCaseDataList = ResourceLoader.fromStringToList(
+        "responses/caseDetailsList.json",
+        CaseDetails.class
     );
 
     @Mock
@@ -111,5 +124,25 @@ class CaseServiceTest {
         );
 
         assertEquals(expectedDetails, caseDetails);
+    }
+
+    @Test
+    void shouldGetCaseDetailsForUser() {
+        // given
+        String searchString = "{\"match_all\": {}}";
+        Query query = new Query(QueryBuilders.wrapperQuery(searchString), 0);
+
+        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(UserDetails.builder().id(USER_ID).build());
+        when(ccdApiClient.searchCases(TEST_SERVICE_AUTH_TOKEN,
+                                     TEST_SERVICE_AUTH_TOKEN,
+                                     EtSyaConstants.SCOTLAND_CASE_TYPE,
+                                     query.toString()).getCases())
+            .thenReturn(requestCaseDataList);
+
+        List<CaseDetails> caseDetailsList = caseService.getCaseDataByUser(
+            TEST_SERVICE_AUTH_TOKEN,
+            CASE_TYPE, query.toString()
+        );
+
     }
 }
