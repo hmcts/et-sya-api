@@ -2,3 +2,11 @@ java:
   # Don't modify below here
   image: ${IMAGE_NAME}
   ingressHost: ${SERVICE_FQDN}
+  keyVaults:
+    et-sya-api:
+      secrets:
+        - name: et-sya-api-s2s-secret
+          alias: ET_SYA_S2S_SECRET
+    et:
+      secrets:
+        - AppInsightsInstrumentationKey
