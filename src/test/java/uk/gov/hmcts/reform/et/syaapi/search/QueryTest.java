@@ -18,11 +18,12 @@ class QueryTest {
     }
 
     @Test
-    void shouldCheckNegativeScenario()  throws  Exception{
+    void shouldCheckNegativeScenario()  throws  Exception {
         String searchString = "{\"match_all\": {}}";
-        Exception ex = assertThrows(RuntimeException.class
-        , ()-> {
-        new Query(QueryBuilders.wrapperQuery(searchString), -1);});
+        Exception ex = assertThrows(RuntimeException.class, () -> {
+            new Query(QueryBuilders.wrapperQuery(searchString), -1);
+            }
+        );
         assertTrue(ex.getMessage().contains("Start index cannot be less than 0"));
     }
 }
