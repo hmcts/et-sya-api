@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.et.syaapi.search;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class QueryTest {
