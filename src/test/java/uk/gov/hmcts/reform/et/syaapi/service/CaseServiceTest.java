@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.EqualsAndHashCode;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,7 +14,6 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.client.CcdApiClient;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.models.EmploymentCaseData;
-import uk.gov.hmcts.reform.et.syaapi.search.Query;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
@@ -124,25 +122,5 @@ class CaseServiceTest {
         );
 
         assertEquals(expectedDetails, caseDetails);
-    }
-
-    @Test
-    void shouldGetCaseDetailsForUser() {
-        // given
-        String searchString = "{\"match_all\": {}}";
-        Query query = new Query(QueryBuilders.wrapperQuery(searchString), 0);
-
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(UserDetails.builder().id(USER_ID).build());
-        when(ccdApiClient.searchCases(TEST_SERVICE_AUTH_TOKEN,
-                                     TEST_SERVICE_AUTH_TOKEN,
-                                     EtSyaConstants.SCOTLAND_CASE_TYPE,
-                                     query.toString()).getCases())
-            .thenReturn(requestCaseDataList);
-        List<CaseDetails> caseDetailsList = caseService.getCaseDataByUser(
-            TEST_SERVICE_AUTH_TOKEN,
-            CASE_TYPE, query.toString()
-        );
-        assertEquals(caseDetailsList, requestCaseDataList);
-
     }
 }
