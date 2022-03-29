@@ -48,9 +48,8 @@ public class CaseService {
 
     @Retryable({FeignException.class, RuntimeException.class})
     public List<CaseDetails> getCaseDataByUser(String authorization, String caseType, String searchString) {
-        SearchResult searchResult = ccdApiClient.searchCases(
-            authorization, authTokenGenerator.generate(), caseType, searchString);
-        return searchResult.getCases();
+        return ccdApiClient.searchCases(
+            authorization, authTokenGenerator.generate(), caseType, searchString).getCases();
     }
 
     /**
@@ -70,8 +69,7 @@ public class CaseService {
         String s2sToken = authTokenGenerator.generate();
         log.info("Generated s2s");
         UserDetails userDetails = idamClient.getUserDetails(authorization);
-        var userID =  userDetails.getId();
-        log.info("User Id: " + userID);
+        log.info("User Id: " + userDetails.getId());
         log.info("Roles : " + userDetails.getRoles());
         var ccdCase = ccdApiClient.startForCaseworker(
             authorization,
@@ -90,7 +88,7 @@ public class CaseService {
         return ccdApiClient.submitForCaseworker(
             authorization,
             s2sToken,
-            userID,
+            userDetails.getId(),
             JURISDICTION_ID,
             caseType,
             true,

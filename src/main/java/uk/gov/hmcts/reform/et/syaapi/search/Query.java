@@ -6,8 +6,8 @@ import java.util.Objects;
 
 public class Query {
 
-    private final QueryBuilder queryBuilder;
-    private final int startIndex;
+    private QueryBuilder queryBuilder;
+    private int startIndex;
 
     public Query(QueryBuilder queryBuilder, int startIndex) {
         Objects.requireNonNull(queryBuilder, "QueryBuilder cannot be null in search");
