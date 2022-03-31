@@ -13,12 +13,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.ecm.common.model.ccd.CaseData;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.ccd.client.model.Event;
+import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 
+import java.util.Map;
 import javax.validation.constraints.NotNull;
 
 import static org.springframework.http.ResponseEntity.ok;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.submitCaseDraft;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -61,4 +67,40 @@ public class ManageCaseController {
         var caseDetails = caseService.createCase(authorization, caseType, eventType, caseData);
         return ok(caseDetails);
     }
+
+
+    @PostMapping("/case-type/{caseType}/event-type/{eventType}/updatecase")
+    @Operation(summary = "Create a new default case")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Accessed successfully"),
+        @ApiResponse(responseCode = "400", description = "Bad Request"),
+        @ApiResponse(responseCode = "403", description = "Calling service is not authorised to use the endpoint"),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error")
+    })
+    public CaseData updateCase(
+        @RequestHeader("Authorization") String authorization,
+        @PathVariable @NotNull String caseType,
+        @PathVariable @NotNull String eventType,
+        @RequestBody String caseData
+    ) {
+
+        StartEventResponse startEventResponse = caseService.startUpdate(authorization,
+                      "1647940920067703", caseType, submitCaseDraft);
+        CaseData cd = caseService.submitUpdate(authorization, "1647940920067703",
+                                               caseDataContent(startEventResponse), caseType);
+
+        return cd;
+
+    }
+
+    private CaseDataContent caseDataContent(StartEventResponse startEventResponse) {
+        Map<String, Object> data = startEventResponse.getCaseDetails().getData();
+
+        return CaseDataContent.builder()
+            .eventToken(startEventResponse.getToken())
+            .event(Event.builder().id(startEventResponse.getEventId()).build())
+            .data(data)
+            .build();
+    }
+
 }
