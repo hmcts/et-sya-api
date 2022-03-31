@@ -22,6 +22,7 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import static org.springframework.http.ResponseEntity.ok;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ZERO_INTEGER;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -47,15 +48,6 @@ public class ManageCaseController {
         return ok(caseDetails);
     }
 
-    /*
-    Service would talk to CCD ElasticSearch API and with one implemented method -
-    * dev shall play around DSL query to get output (couple of examples of request body as below)
-    1. Pull all cases - {"match_all": {}}
-    2. Pull specific cases
-        {"terms": {"reference": ["XXX", "YYY"]}}
-    3, Pull specific case
-        {"match": {"reference": "XXX"}}
-    */
     @GetMapping("/caseTypes/{caseType}/cases")
     @Operation(summary = "Return all case details for User")
     @ApiResponses(value = {
@@ -69,7 +61,7 @@ public class ManageCaseController {
         @PathVariable String caseType,
         @RequestBody String searchString
     ) {
-        Query query = new Query(QueryBuilders.wrapperQuery(searchString), 0);
+        Query query = new Query(QueryBuilders.wrapperQuery(searchString), ZERO_INTEGER);
         return ok(caseService.getCaseDataByUser(authorization, caseType, query.toString()));
     }
 
