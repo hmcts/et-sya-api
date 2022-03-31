@@ -16,6 +16,8 @@ import uk.gov.hmcts.reform.et.syaapi.models.EmploymentCaseData;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
+import java.util.List;
+
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 
 @Slf4j
@@ -43,6 +45,12 @@ public class CaseService {
         return ccdApiClient.getCase(authorization, authTokenGenerator.generate(), caseId);
     }
 
+    @Retryable({FeignException.class, RuntimeException.class})
+    public List<CaseDetails> getCaseDataByUser(String authorization, String caseType, String searchString) {
+        return ccdApiClient.searchCases(
+            authorization, authTokenGenerator.generate(), caseType, searchString).getCases();
+    }
+
     /**
      * Given a caseID, this will retrieve the correct {@link CaseDetails}.
      *
@@ -60,15 +68,12 @@ public class CaseService {
         String s2sToken = authTokenGenerator.generate();
         log.info("Generated s2s");
         UserDetails userDetails = idamClient.getUserDetails(authorization);
-        // Temporarily returning hardcoded userId while Idam implementation is worked on
-        var userID = userDetails.getId() == null ? "123456" : userDetails.getId();
-        log.info("User Id: " + userID);
-        log.info("User : " + userDetails.getEmail());
+        log.info("User Id: " + userDetails.getId());
         log.info("Roles : " + userDetails.getRoles());
         var ccdCase = ccdApiClient.startForCaseworker(
             authorization,
             s2sToken,
-            userID,
+            userDetails.getId(),
             JURISDICTION_ID,
             caseType,
             eventType
@@ -82,7 +87,7 @@ public class CaseService {
         return ccdApiClient.submitForCaseworker(
             authorization,
             s2sToken,
-            userID,
+            userDetails.getId(),
             JURISDICTION_ID,
             caseType,
             true,

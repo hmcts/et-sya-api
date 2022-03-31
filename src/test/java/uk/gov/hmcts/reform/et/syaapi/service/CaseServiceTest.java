@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
+import lombok.EqualsAndHashCode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,13 +20,18 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
+@EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
 class CaseServiceTest {
+    private static final String CASE_TYPE = "ET_Scotland";
+    private static final String USER_ID = "1234";
+
     private final CaseDetails expectedDetails = ResourceLoader.fromString(
         "responses/caseDetails.json",
         CaseDetails.class
@@ -40,6 +46,11 @@ class CaseServiceTest {
     private final EmploymentCaseData caseData = ResourceLoader.fromString(
         "requests/caseData.json",
         EmploymentCaseData.class
+    );
+
+    private final List<CaseDetails> requestCaseDataList = ResourceLoader.fromStringToList(
+        "responses/caseDetailsList.json",
+        CaseDetails.class
     );
 
     @Mock
