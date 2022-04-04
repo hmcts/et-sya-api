@@ -7,11 +7,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ecm.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
+import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.client.CcdApiClient;
+import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
+import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.models.EmploymentCaseData;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
@@ -32,6 +36,9 @@ public class CaseService {
 
     @Autowired
     private IdamClient idamClient;
+
+    @Autowired
+    private CaseDetailsConverter caseDetailsConverter;
 
     /**
      * Given a caseID, this will retrieve the correct {@link CaseDetails}.
@@ -104,5 +111,37 @@ public class CaseService {
             log.error(e.getMessage());
         }
         return data;
+    }
+
+    public StartEventResponse startUpdate(String authorization, String caseId, String caseType, CaseEvent eventName) {
+        String s2sToken = authTokenGenerator.generate();
+        UserDetails userDetails = idamClient.getUserDetails(authorization);
+
+        return ccdApiClient.startEventForCaseWorker(
+            authorization,
+            s2sToken,
+            "123456",
+            JURISDICTION_ID,
+            caseType,
+            caseId,
+            eventName.name()
+        );
+    }
+
+    public CaseData submitUpdate(String authorization, String caseId,
+                                 CaseDataContent caseDataContent, String caseType) {
+        UserDetails userDetails = idamClient.getUserDetails(authorization);
+        String s2sToken = authTokenGenerator.generate();
+        CaseDetails caseDetails = ccdApiClient.submitEventForCaseWorker(
+            authorization,
+            s2sToken,
+            "123456",
+            JURISDICTION_ID,
+            caseType,
+            caseId,
+            true,
+            caseDataContent
+        );
+        return caseDetailsConverter.toCaseData(caseDetails);
     }
 }
