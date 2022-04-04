@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -18,8 +20,10 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.et.syaapi.models.EmploymentCaseData;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 
+import java.util.HashMap;
 import java.util.Map;
 import javax.validation.constraints.NotNull;
 
@@ -84,17 +88,15 @@ public class ManageCaseController {
         @RequestBody String caseData
     ) {
 
+        EmploymentCaseData ed = getEmploymentCaseData(caseData);
         StartEventResponse startEventResponse = caseService.startUpdate(authorization,
                       "1647940920067703", caseType, submitCaseDraft);
-        CaseData cd = caseService.submitUpdate(authorization, "1647940920067703",
-                                               caseDataContent(startEventResponse), caseType);
-
-        return cd;
+        return caseService.submitUpdate(authorization, "1647940920067703",
+                                        caseDataContent(startEventResponse, ed), caseType);
 
     }
 
-    private CaseDataContent caseDataContent(StartEventResponse startEventResponse) {
-        Map<String, Object> data = startEventResponse.getCaseDetails().getData();
+    private CaseDataContent caseDataContent(StartEventResponse startEventResponse, EmploymentCaseData data) {
 
         return CaseDataContent.builder()
             .eventToken(startEventResponse.getToken())
@@ -103,4 +105,15 @@ public class ManageCaseController {
             .build();
     }
 
+    private EmploymentCaseData getEmploymentCaseData(String caseData) {
+        ObjectMapper mapper = new ObjectMapper();
+        EmploymentCaseData data = null;
+        try {
+            data = mapper.readValue(caseData, EmploymentCaseData.class);
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage());
+        }
+        return data;
+    }
 }
+

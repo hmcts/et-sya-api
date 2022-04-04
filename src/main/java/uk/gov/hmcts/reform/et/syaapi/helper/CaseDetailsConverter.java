@@ -7,8 +7,8 @@ import uk.gov.hmcts.ecm.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseState;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class CaseDetailsConverter {
@@ -21,7 +21,7 @@ public class CaseDetailsConverter {
     }
 
     public CaseData toCaseData(CaseDetails caseDetails) {
-        Map<String, Object> data = new HashMap<>(caseDetails.getData());
+        Map<String, Object> data = new ConcurrentHashMap<>(caseDetails.getData());
         data.put("ccdCaseReference", caseDetails.getId());
         if (caseDetails.getState() != null) {
             data.put("ccdState", CaseState.valueOf(caseDetails.getState()));

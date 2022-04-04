@@ -20,8 +20,6 @@ import uk.gov.hmcts.reform.et.syaapi.models.EmploymentCaseData;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
-import java.util.Map;
-
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 
 @Slf4j
@@ -125,10 +123,10 @@ public class CaseService {
         );
     }
 
-    public CaseData submitUpdate(String authorization, String caseId, CaseDataContent caseDataContent, String caseType) {
+    public CaseData submitUpdate(String authorization, String caseId,
+                                 CaseDataContent caseDataContent, String caseType) {
         UserDetails userDetails = idamClient.getUserDetails(authorization);
         String s2sToken = authTokenGenerator.generate();
-
         CaseDetails caseDetails = ccdApiClient.submitEventForCaseWorker(
             authorization,
             s2sToken,
