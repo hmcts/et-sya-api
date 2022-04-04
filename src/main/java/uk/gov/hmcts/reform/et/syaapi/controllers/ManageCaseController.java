@@ -10,23 +10,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseData;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.models.EmploymentCaseData;
 import uk.gov.hmcts.reform.et.syaapi.search.Query;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 
-import java.util.List;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 import static org.springframework.http.ResponseEntity.ok;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ZERO_INTEGER;
@@ -36,6 +30,8 @@ import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.submitCaseDraft;
 @RequiredArgsConstructor
 @RestController
 public class ManageCaseController {
+
+    private final CaseDetailsConverter caseDetailsConverter;
 
     @Autowired
     private CaseService caseService;
@@ -91,43 +87,34 @@ public class ManageCaseController {
         return ok(caseDetails);
     }
 
-    @PostMapping("/case-type/{caseType}/event-type/{eventType}/updatecase")
-    @Operation(summary = "Create a new default case")
+    @PostMapping("/case-type/{caseType}/event-type/{eventType}/updateCase/{caseId}")
+    @Operation(summary = "Update draft case API method")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Accessed successfully"),
         @ApiResponse(responseCode = "400", description = "Bad Request"),
         @ApiResponse(responseCode = "403", description = "Calling service is not authorised to use the endpoint"),
         @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
-    public CaseData updateCase(
+    public CaseData updateCase (
         @RequestHeader("Authorization") String authorization,
         @PathVariable @NotNull String caseType,
         @PathVariable @NotNull String eventType,
+        @PathVariable @NotNull String caseId,
         @RequestBody String caseData
     ) {
-
-        EmploymentCaseData ed = getEmploymentCaseData(caseData);
+        EmploymentCaseData employmentCaseData = getEmploymentCaseData(caseData);
         StartEventResponse startEventResponse = caseService.startUpdate(authorization,
-                                                                        "1647940920067703", caseType, submitCaseDraft);
-        return caseService.submitUpdate(authorization, "1647940920067703",
-                                        caseDataContent(startEventResponse, ed), caseType);
-
-    }
-
-    private CaseDataContent caseDataContent(StartEventResponse startEventResponse, EmploymentCaseData data) {
-
-        return CaseDataContent.builder()
-            .eventToken(startEventResponse.getToken())
-            .event(Event.builder().id(startEventResponse.getEventId()).build())
-            .data(data)
-            .build();
+                                                                        caseId, caseType, submitCaseDraft);
+        return caseService.submitUpdate(authorization, caseId,
+                                        caseDetailsConverter.caseDataContent(startEventResponse, employmentCaseData),
+                                        caseType);
     }
 
     private EmploymentCaseData getEmploymentCaseData(String caseData) {
         ObjectMapper mapper = new ObjectMapper();
         EmploymentCaseData data = null;
         try {
-            data = mapper.readValue(caseData, EmploymentCaseData.class);
+           data = mapper.readValue(caseData, EmploymentCaseData.class);
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());
         }
