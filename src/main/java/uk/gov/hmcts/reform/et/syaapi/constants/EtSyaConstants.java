@@ -7,6 +7,7 @@ public final class EtSyaConstants {
     public static final String SCOTLAND_CASE_TYPE = "ET_Scotland";
     public static final String DRAFT_EVENT_TYPE = "initiateCaseDraft";
     public static final int ZERO_INTEGER = 0;
+    public static final String TEST_CASE_ID = "TEST_CASE_ID";
 
     private EtSyaConstants() {
         // restrict instantiation

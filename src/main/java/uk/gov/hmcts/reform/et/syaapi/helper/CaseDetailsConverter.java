@@ -33,12 +33,7 @@ public class CaseDetailsConverter {
         return objectMapper.convertValue(data, CaseData.class);
     }
 
-    public CaseData toCaseData(Map<String, Object> caseDataMap) {
-        return objectMapper.convertValue(caseDataMap, CaseData.class);
-    }
-
     public CaseDataContent caseDataContent(StartEventResponse startEventResponse, EmploymentCaseData data) {
-
         return CaseDataContent.builder()
             .eventToken(startEventResponse.getToken())
             .event(Event.builder().id(startEventResponse.getEventId()).build())

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,13 +15,16 @@ import org.springframework.web.bind.annotation.*;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.models.EmploymentCaseData;
 import uk.gov.hmcts.reform.et.syaapi.search.Query;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 
 import javax.validation.constraints.NotNull;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.springframework.http.ResponseEntity.ok;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ZERO_INTEGER;
@@ -87,7 +91,7 @@ public class ManageCaseController {
         return ok(caseDetails);
     }
 
-    @PostMapping("/case-type/{caseType}/event-type/{eventType}/updateCase/{caseId}")
+    @PostMapping("/case-type/{caseType}/event-type/{eventType}/{caseId}")
     @Operation(summary = "Update draft case API method")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Accessed successfully"),
@@ -103,11 +107,13 @@ public class ManageCaseController {
         @RequestBody String caseData
     ) {
         EmploymentCaseData employmentCaseData = getEmploymentCaseData(caseData);
+
         StartEventResponse startEventResponse = caseService.startUpdate(authorization,
-                                                                        caseId, caseType, submitCaseDraft);
+                                                caseId, caseType, CaseEvent.valueOf(eventType)
+        );
         return caseService.submitUpdate(authorization, caseId,
-                                        caseDetailsConverter.caseDataContent(startEventResponse, employmentCaseData),
-                                        caseType);
+                  caseDetailsConverter.caseDataContent(startEventResponse, employmentCaseData),
+                  caseType);
     }
 
     private EmploymentCaseData getEmploymentCaseData(String caseData) {

@@ -120,7 +120,7 @@ public class CaseService {
         return ccdApiClient.startEventForCaseWorker(
             authorization,
             s2sToken,
-            "123456",
+            userDetails.getId(),
             JURISDICTION_ID,
             caseType,
             caseId,
@@ -135,7 +135,7 @@ public class CaseService {
         CaseDetails caseDetails = ccdApiClient.submitEventForCaseWorker(
             authorization,
             s2sToken,
-            "123456",
+            userDetails.getId(),
             JURISDICTION_ID,
             caseType,
             caseId,
