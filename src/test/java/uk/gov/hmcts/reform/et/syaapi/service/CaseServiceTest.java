@@ -143,7 +143,7 @@ class CaseServiceTest {
             null
         ));
 
-      when(ccdApiClient.startEventForCaseWorker(
+        when(ccdApiClient.startEventForCaseWorker(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
             "12",
@@ -154,8 +154,8 @@ class CaseServiceTest {
         )).thenReturn(
             startEventResponse);
 
-        StartEventResponse eventResponse = caseService.startUpdate
-            (TEST_SERVICE_AUTH_TOKEN,
+        StartEventResponse eventResponse = caseService.startUpdate(
+            TEST_SERVICE_AUTH_TOKEN,
              CASE_ID,
             EtSyaConstants.SCOTLAND_CASE_TYPE,
              submitCaseDraft
@@ -204,8 +204,8 @@ class CaseServiceTest {
             caseDataContent
         )).thenReturn(expectedDetails);
 
-        StartEventResponse eventResponse = caseService.startUpdate
-            (TEST_SERVICE_AUTH_TOKEN,
+        StartEventResponse eventResponse = caseService.startUpdate(
+            TEST_SERVICE_AUTH_TOKEN,
              CASE_ID,
              EtSyaConstants.SCOTLAND_CASE_TYPE,
              submitCaseDraft

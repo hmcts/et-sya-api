@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,13 +21,10 @@ import uk.gov.hmcts.reform.et.syaapi.search.Query;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 
 import javax.validation.constraints.NotNull;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.springframework.http.ResponseEntity.ok;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ZERO_INTEGER;
-import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.submitCaseDraft;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -87,6 +83,8 @@ public class ManageCaseController {
         @PathVariable @NotNull String eventType,
         @RequestBody String caseData
     ) {
+
+
         var caseDetails = caseService.createCase(authorization, caseType, eventType, caseData);
         return ok(caseDetails);
     }
@@ -99,7 +97,7 @@ public class ManageCaseController {
         @ApiResponse(responseCode = "403", description = "Calling service is not authorised to use the endpoint"),
         @ApiResponse(responseCode = "500", description = "Internal Server Error")
     })
-    public CaseData updateCase (
+    public CaseData updateCase(
         @RequestHeader("Authorization") String authorization,
         @PathVariable @NotNull String caseType,
         @PathVariable @NotNull String eventType,
@@ -107,7 +105,6 @@ public class ManageCaseController {
         @RequestBody String caseData
     ) {
         EmploymentCaseData employmentCaseData = getEmploymentCaseData(caseData);
-
         StartEventResponse startEventResponse = caseService.startUpdate(authorization,
                                                 caseId, caseType, CaseEvent.valueOf(eventType)
         );
@@ -120,7 +117,7 @@ public class ManageCaseController {
         ObjectMapper mapper = new ObjectMapper();
         EmploymentCaseData data = null;
         try {
-           data = mapper.readValue(caseData, EmploymentCaseData.class);
+            data = mapper.readValue(caseData, EmploymentCaseData.class);
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());
         }

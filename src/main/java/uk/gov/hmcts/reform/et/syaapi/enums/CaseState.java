@@ -4,5 +4,6 @@ public enum CaseState {
     DRAFT,
     SUBMITTED,
     Draft,
-    Submitted
+    Submitted,
+    AWAITING_SUBMISSION_TO_HMCTS
 }
