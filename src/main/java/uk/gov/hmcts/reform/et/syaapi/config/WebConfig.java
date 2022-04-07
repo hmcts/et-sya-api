@@ -28,6 +28,7 @@ public class WebConfig implements WebMvcConfigurer {
                 "/metrics",
                 "/metrics/**",
                 "/v3/**",
+                "/acas",
                 "/"
             );
     }
