@@ -4,12 +4,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Import;
 
 import static org.junit.Assert.assertEquals;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.SUBMIT_CASE_DRAFT;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.INITIATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.UPDATE_CASE_DRAFT;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.SUBMITCASE_DRAFT_LOWER;
 
 @Import(CaseEvent.class)
-public class CaseEventTest {
+class CaseEventTest {
 
     @Test
     void shouldGetUpdateEventName() throws Exception {
@@ -18,11 +17,7 @@ public class CaseEventTest {
 
     @Test
     void shouldGetSubmitEventName() throws Exception {
-        assertEquals(SUBMIT_CASE_DRAFT, String.valueOf(CaseEvent.SUBMIT_CASE_DRAFT));
+        assertEquals(INITIATE_CASE_DRAFT, String.valueOf(CaseEvent.INITIATE_CASE_DRAFT));
     }
 
-    @Test
-    void shouldGetSubmitCaseEventName() throws Exception {
-        assertEquals(SUBMITCASE_DRAFT_LOWER, String.valueOf(CaseEvent.submitCaseDraft));
-    }
 }

@@ -13,9 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseData;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
@@ -88,7 +86,7 @@ class ManageCaseControllerTest {
     private VerifyTokenService verifyTokenService;
 
     @MockBean
-    private CaseDetailsConverter caseDetailsConverter;
+        private CaseDetailsConverter caseDetailsConverter;
 
     ManageCaseControllerTest() throws IOException {
         // Default constructor
@@ -192,14 +190,13 @@ class ManageCaseControllerTest {
             .andExpect(jsonPath("$.last_modified").exists());
     }
 
-
     @Test
     void shouldStartUpdateCase() throws Exception {
-        CaseDataContent caseDataContent = CaseDataContent.builder()
-            .event(Event.builder().id(String.valueOf(CaseEvent.submitCaseDraft)).build())
+        /*CaseDataContent caseDataContent = CaseDataContent.builder()
+            .event(Event.builder().id(String.valueOf(CaseEvent.UPDATE_CASE_DRAFT)).build())
             .eventToken(startEventResponse.getToken())
             .data(caseData)
-            .build();
+            .build();*/
         // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
@@ -214,7 +211,7 @@ class ManageCaseControllerTest {
             TEST_SERVICE_AUTH_TOKEN,
             TEST_CASE_ID,
             EtSyaConstants.SCOTLAND_CASE_TYPE,
-            CaseEvent.submitCaseDraft
+            CaseEvent.UPDATE_CASE_DRAFT
              )
         ).thenReturn(
             startEventResponse);
@@ -222,7 +219,7 @@ class ManageCaseControllerTest {
         when(caseService.submitUpdate(
                  TEST_SERVICE_AUTH_TOKEN,
                 TEST_CASE_ID,
-                 caseDataContent,
+                 caseDetailsConverter.caseDataContent(startEventResponse, null),
                  EtSyaConstants.SCOTLAND_CASE_TYPE)
         ).thenReturn(caseData);
 
@@ -230,7 +227,7 @@ class ManageCaseControllerTest {
         mockMvc.perform(post(
                             "/case-type/{caseType}/event-type/{eventType}/{caseId}}",
                             EtSyaConstants.SCOTLAND_CASE_TYPE,
-                            CaseEvent.submitCaseDraft,
+                            CaseEvent.UPDATE_CASE_DRAFT,
                             TEST_CASE_ID
                         )
                             .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
