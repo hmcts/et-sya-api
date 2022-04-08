@@ -7,12 +7,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ecm.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.et.syaapi.client.CcdApiClient;
-import uk.gov.hmcts.reform.et.syaapi.models.EmploymentCaseData;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
@@ -55,16 +55,16 @@ public class CaseService {
      * Given a caseID, this will retrieve the correct {@link CaseDetails}.
      *
      * @param authorization is used to seek the {@link UserDetails} for request
-     * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
-     * @param eventType is used to determine initiateCaseDraft or initiateCase
-     * @param caseData is used to provide the {@link EmploymentCaseData} in json format
+     * @param caseType      is used to determine if the case is for ET_EnglandWales or ET_Scotland
+     * @param eventType     is used to determine initiateCaseDraft or initiateCase
+     * @param caseData      is used to provide the {@link Et1CaseData} in json format
      * @return the associated {@link CaseDetails} if the case is created
      * @throws Exception if {@link CaseDetails} cannot be created
      */
     @Retryable({FeignException.class, RuntimeException.class})
     public CaseDetails createCase(String authorization, String caseType, String eventType, String caseData) {
         log.info("Creating Case");
-        EmploymentCaseData data = getEmploymentCaseData(caseData);
+        Et1CaseData data = getEmploymentCaseData(caseData);
         String s2sToken = authTokenGenerator.generate();
         log.info("Generated s2s");
         UserDetails userDetails = idamClient.getUserDetails(authorization);
@@ -95,11 +95,11 @@ public class CaseService {
         );
     }
 
-    private EmploymentCaseData getEmploymentCaseData(String caseData) {
+    private Et1CaseData getEmploymentCaseData(String caseData) {
         ObjectMapper mapper = new ObjectMapper();
-        EmploymentCaseData data = null;
+        Et1CaseData data = null;
         try {
-            data = mapper.readValue(caseData, EmploymentCaseData.class);
+            data = mapper.readValue(caseData, Et1CaseData.class);
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());
         }
