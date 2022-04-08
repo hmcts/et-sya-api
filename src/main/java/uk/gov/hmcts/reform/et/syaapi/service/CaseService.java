@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +14,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.client.CcdApiClient;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
+import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.EmploymentCaseData;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
@@ -39,6 +38,9 @@ public class CaseService {
 
     @Autowired
     private CaseDetailsConverter caseDetailsConverter;
+
+    @Autowired
+    private EmployeeObjectMapper employeeObjectMapper;
 
     /**
      * Given a caseID, this will retrieve the correct {@link CaseDetails}.
@@ -71,7 +73,6 @@ public class CaseService {
     @Retryable({FeignException.class, RuntimeException.class})
     public CaseDetails createCase(String authorization, String caseType, String eventType, String caseData) {
         log.info("Creating Case");
-        EmploymentCaseData data = getEmploymentCaseData(caseData);
         String s2sToken = authTokenGenerator.generate();
         log.info("Generated s2s");
         UserDetails userDetails = idamClient.getUserDetails(authorization);
@@ -89,7 +90,7 @@ public class CaseService {
         CaseDataContent caseDataContent = CaseDataContent.builder()
             .event(Event.builder().id(eventType).build())
             .eventToken(ccdCase.getToken())
-            .data(data)
+            .data(employeeObjectMapper.getEmploymentCaseData(caseData))
             .build();
         return ccdApiClient.submitForCaseworker(
             authorization,
@@ -102,15 +103,15 @@ public class CaseService {
         );
     }
 
-    private EmploymentCaseData getEmploymentCaseData(String caseData) {
-        ObjectMapper mapper = new ObjectMapper();
-        EmploymentCaseData data = null;
-        try {
-            data = mapper.readValue(caseData, EmploymentCaseData.class);
-        } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
-        }
-        return data;
+    public CaseData triggerEvent(String authorization, String caseId, String caseType, CaseEvent eventName, String caseData) {
+        return triggerEvent(authorization, caseId, eventName, caseType, caseData);
+    }
+
+    public CaseData triggerEvent(String authorization, String caseId, CaseEvent eventName, String caseType, String caseData) {
+        StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
+        return submitUpdate(authorization, caseId,
+                     caseDetailsConverter.caseDataContent(startEventResponse, employeeObjectMapper.getEmploymentCaseData(caseData)),
+                     caseType);
     }
 
     public StartEventResponse startUpdate(String authorization, String caseId, String caseType, CaseEvent eventName) {

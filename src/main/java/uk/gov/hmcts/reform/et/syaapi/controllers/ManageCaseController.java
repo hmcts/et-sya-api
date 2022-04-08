@@ -1,31 +1,22 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
-import uk.gov.hmcts.reform.et.syaapi.models.EmploymentCaseData;
 import uk.gov.hmcts.reform.et.syaapi.search.Query;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 
-import java.util.List;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 import static org.springframework.http.ResponseEntity.ok;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
@@ -35,8 +26,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ZERO_INTEGE
 @RequiredArgsConstructor
 @RestController
 public class ManageCaseController {
-
-    private final CaseDetailsConverter caseDetailsConverter;
 
     @Autowired
     private CaseService caseService;
@@ -73,8 +62,6 @@ public class ManageCaseController {
         @PathVariable @NotNull String eventType,
         @RequestBody String caseData
     ) {
-
-
         var caseDetails = caseService.createCase(authorization, caseType, eventType, caseData);
         return ok(caseDetails);
     }
@@ -89,23 +76,6 @@ public class ManageCaseController {
         @PathVariable @NotNull String caseId,
         @RequestBody String caseData
     ) {
-        EmploymentCaseData employmentCaseData = getEmploymentCaseData(caseData);
-        StartEventResponse startEventResponse = caseService.startUpdate(authorization,
-                                                caseId, caseType, CaseEvent.valueOf(eventType)
-        );
-        return caseService.submitUpdate(authorization, caseId,
-                  caseDetailsConverter.caseDataContent(startEventResponse, employmentCaseData),
-                  caseType);
-    }
-
-    private EmploymentCaseData getEmploymentCaseData(String caseData) {
-        ObjectMapper mapper = new ObjectMapper();
-        EmploymentCaseData data = null;
-        try {
-            data = mapper.readValue(caseData, EmploymentCaseData.class);
-        } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
-        }
-        return data;
+        return caseService.triggerEvent(authorization, caseId, caseType, CaseEvent.valueOf(eventType), caseData);
     }
 }
