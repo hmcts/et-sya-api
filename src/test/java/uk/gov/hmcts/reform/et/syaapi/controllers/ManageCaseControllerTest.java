@@ -35,6 +35,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.TEST_CASE_ID;
@@ -221,7 +222,7 @@ class ManageCaseControllerTest {
         ).thenReturn(caseData);
 
         // when
-        mockMvc.perform(post(
+        mockMvc.perform(put(
                 "/case-type/{caseType}/event-type/{eventType}/{caseId}}",
                 EtSyaConstants.SCOTLAND_CASE_TYPE,
                 CaseEvent.UPDATE_CASE_DRAFT,
