@@ -222,7 +222,7 @@ class ManageCaseControllerTest {
             TEST_SERVICE_AUTH_TOKEN,
             TEST_CASE_ID,
             caseDetailsConverter.caseDataContent(startEventResponse, null),
-            EtSyaConstants.SCOTLAND_CASE_TYPE)
+            EtSyaConstants.SCOTLAND_CASE_TYPE, caseDetailsConverter)
         ).thenReturn(caseData);
 
         // when

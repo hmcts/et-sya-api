@@ -38,12 +38,6 @@ public class CaseService {
     @Autowired
     private IdamClient idamClient;
 
-    @Autowired
-    private CaseDetailsConverter caseDetailsConverter;
-
-    @Autowired
-    private EmployeeObjectMapper employeeObjectMapper;
-
     /**
      * Given a caseID, this will retrieve the correct {@link CaseDetails}.
      *
@@ -113,14 +107,18 @@ public class CaseService {
 
     public CaseData triggerEvent(String authorization, String caseId, CaseEvent eventName,
                                  String caseType, String caseData) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
+        EmployeeObjectMapper employeeObjectMapper = new EmployeeObjectMapper();
         StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
         return submitUpdate(authorization, caseId,
                             caseDetailsConverter.caseDataContent(startEventResponse,
                             employeeObjectMapper.getEmploymentCaseData(caseData)),
-                            caseType);
+                            caseType, caseDetailsConverter);
     }
 
-    public StartEventResponse startUpdate(String authorization, String caseId, String caseType, CaseEvent eventName) {
+    public StartEventResponse startUpdate(String authorization, String caseId,
+                                          String caseType, CaseEvent eventName) {
         String s2sToken = authTokenGenerator.generate();
         UserDetails userDetails = idamClient.getUserDetails(authorization);
 
@@ -136,7 +134,8 @@ public class CaseService {
     }
 
     public CaseData submitUpdate(String authorization, String caseId,
-                                 CaseDataContent caseDataContent, String caseType) {
+                                 CaseDataContent caseDataContent, String caseType,
+                                CaseDetailsConverter caseDetailsConverter) {
         UserDetails userDetails = idamClient.getUserDetails(authorization);
         String s2sToken = authTokenGenerator.generate();
         CaseDetails caseDetails = ccdApiClient.submitEventForCaseWorker(

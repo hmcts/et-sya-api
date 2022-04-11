@@ -239,7 +239,7 @@ class CaseServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             CASE_ID,
             caseDataContent,
-            EtSyaConstants.SCOTLAND_CASE_TYPE
+            EtSyaConstants.SCOTLAND_CASE_TYPE, caseDetailsConverter
         );
 
         assertNull(caseData);
