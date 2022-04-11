@@ -116,7 +116,7 @@ public class CaseService {
         StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
         return submitUpdate(authorization, caseId,
                             caseDetailsConverter.caseDataContent(startEventResponse,
-                                                                 employeeObjectMapper.getEmploymentCaseData(caseData)),
+                            employeeObjectMapper.getEmploymentCaseData(caseData)),
                             caseType);
     }
 

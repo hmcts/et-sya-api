@@ -1,21 +1,21 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.EqualsAndHashCode;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseData;
+import uk.gov.hmcts.ecm.common.model.ccd.CaseSearchResult;
 import uk.gov.hmcts.ecm.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.ccd.client.model.Event;
-import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.ccd.client.model.*;
 import uk.gov.hmcts.reform.et.syaapi.client.CcdApiClient;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
+import uk.gov.hmcts.reform.et.syaapi.search.Query;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
 import uk.gov.hmcts.reform.et.syaapi.utils.TestConstants;
@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -72,6 +73,9 @@ class CaseServiceTest {
     @Mock
     private CaseDetailsConverter caseDetailsConverter;
 
+    @Mock
+    SearchResult searchResult;
+
     CaseServiceTest() throws IOException {
         // Default constructor
     }
@@ -88,6 +92,25 @@ class CaseServiceTest {
         CaseDetails caseDetails = caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, EtSyaConstants.SCOTLAND_CASE_TYPE);
 
         assertEquals(expectedDetails, caseDetails);
+    }
+
+    @Test
+    void shouldGetCaseDetailsbyUser() {
+        searchResult.setCases(requestCaseDataList);
+        String searchString = "{\"match_all\": {}}";
+        Query query = new Query(QueryBuilders.wrapperQuery(searchString), 0);
+
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            query.toString()
+        )).thenReturn(searchResult);
+
+        List<CaseDetails> expectedDataList = caseService.getCaseDataByUser(TEST_SERVICE_AUTH_TOKEN,
+                                  EtSyaConstants.SCOTLAND_CASE_TYPE, query.toString());
+        assertEquals(Collections.emptyList(), expectedDataList);
     }
 
     @Test
