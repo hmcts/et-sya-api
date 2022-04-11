@@ -19,11 +19,18 @@ public class CaseDetailsConverter {
 
     private final ObjectMapper objectMapper;
 
+    /**
+     * @param objectMapper jackson {$ObjectMapper}object to initialize object
+     */
     public CaseDetailsConverter(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
         this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
     }
 
+    /**
+     * @param caseDetails would represent CaseData for the case
+     * @return caseData represent cases in java object model
+     */
     public CaseData toCaseData(CaseDetails caseDetails) {
         Map<String, Object> data = new ConcurrentHashMap<>(caseDetails.getData());
         data.put("ccdCaseReference", caseDetails.getId());
@@ -33,11 +40,16 @@ public class CaseDetailsConverter {
         return objectMapper.convertValue(data, CaseData.class);
     }
 
-    public CaseDataContent caseDataContent(StartEventResponse startEventResponse, Et1CaseData data) {
+    /**
+     * @param startEventResponse associated case details updated
+     * @param et1CaseData orginal json format represented object
+     * @return {@link CaseDataContent} which returns overall contents of the case
+     */
+    public CaseDataContent caseDataContent(StartEventResponse startEventResponse, Et1CaseData et1CaseData) {
         return CaseDataContent.builder()
             .eventToken(startEventResponse.getToken())
             .event(Event.builder().id(startEventResponse.getEventId()).build())
-            .data(data)
+            .data(et1CaseData)
             .build();
     }
 }

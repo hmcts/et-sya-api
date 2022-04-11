@@ -10,6 +10,10 @@ import uk.gov.hmcts.ecm.common.model.ccd.Et1CaseData;
 @Service
 public class EmployeeObjectMapper {
 
+    /**
+     * @param caseData which would be in json format
+     * @return @link Et1CaseData format of input json object
+     */
     public Et1CaseData getEmploymentCaseData(String caseData) {
         ObjectMapper mapper = new ObjectMapper();
         Et1CaseData data = null;

@@ -100,11 +100,27 @@ public class CaseService {
         );
     }
 
+    /**
+     * @param authorization is used to seek the {@link UserDetails} for request
+     * @param caseId used to retrive get case details
+     * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
+     * @param eventName is used to determine INITIATE_CASE_DRAFT or UPDATE_CASE_DRAFT
+     * @param caseData is used to provide the {@link Et1CaseData} in json format
+     * @return the associated {@link CaseData} if the case is updated
+     */
     public CaseData triggerEvent(String authorization, String caseId, String caseType,
                                  CaseEvent eventName, String caseData) {
         return triggerEvent(authorization, caseId, eventName, caseType, caseData);
     }
 
+    /**
+     * @param authorization is used to seek the {@link UserDetails} for request
+     * @param caseId used to retrive get case details
+     * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
+     * @param eventName is used to determine INITIATE_CASE_DRAFT or UPDATE_CASE_DRAFT
+     * @param caseData is used to provide the {@link Et1CaseData} in json format
+     * @return the associated {@link CaseData} if the case is updated
+     */
     public CaseData triggerEvent(String authorization, String caseId, CaseEvent eventName,
                                  String caseType, String caseData) {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -117,6 +133,13 @@ public class CaseService {
                             caseType, caseDetailsConverter);
     }
 
+    /**
+     * @param authorization is used to seek the {@link UserDetails} for request
+     * @param caseId used to retrive get case details
+     * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
+     * @param eventName is used to determine INITIATE_CASE_DRAFT or UPDATE_CASE_DRAFT
+     * @return startEventResponse associated case details updated
+     */
     public StartEventResponse startUpdate(String authorization, String caseId,
                                           String caseType, CaseEvent eventName) {
         String s2sToken = authTokenGenerator.generate();
@@ -133,6 +156,14 @@ public class CaseService {
         );
     }
 
+    /**
+     * @param authorization is used to seek the {@link UserDetails} for request
+     * @param caseId used to retrive get case details
+     * @param caseDataContent provides overall content of the case
+     * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
+     * @param caseDetailsConverter used to convert {@link Et1CaseData} from json format to generic java object
+     * @return the associated {@link CaseData} if the case is updated
+     */
     public CaseData submitUpdate(String authorization, String caseId,
                                  CaseDataContent caseDataContent, String caseType,
                                 CaseDetailsConverter caseDetailsConverter) {
