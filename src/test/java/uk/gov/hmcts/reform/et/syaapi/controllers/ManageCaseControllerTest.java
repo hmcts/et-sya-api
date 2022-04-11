@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.et.syaapi.controllers;
 import feign.FeignException;
 import feign.Request;
 import feign.RequestTemplate;
+import lombok.SneakyThrows;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,8 +94,9 @@ class ManageCaseControllerTest {
         // Default constructor
     }
 
+    @SneakyThrows
     @Test
-    void shouldGetCaseDetails() throws Exception {
+    void shouldGetCaseDetails() {
         // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, CASE_ID))
@@ -112,8 +114,9 @@ class ManageCaseControllerTest {
             .andExpect(jsonPath("$.last_modified").exists());
     }
 
+    @SneakyThrows
     @Test
-    void shouldGetCaseDetailsByUser() throws Exception {
+    void shouldGetCaseDetailsByUser() {
         // given
         String searchString = "{\"match_all\": {}}";
         Query query = new Query(QueryBuilders.wrapperQuery(searchString), 0);
@@ -141,8 +144,9 @@ class ManageCaseControllerTest {
             .andExpect(jsonPath("[1].case_type_id").value(requestCaseDataList.get(1).getCaseTypeId()));
     }
 
+    @SneakyThrows
     @Test
-    void shouldReturnBadRequestForNonExistingItem() throws Exception {
+    void shouldReturnBadRequestForNonExistingItem() {
         Request request = Request.create(
             Request.HttpMethod.GET, "/test", Collections.emptyMap(), null, new RequestTemplate());
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
@@ -159,8 +163,9 @@ class ManageCaseControllerTest {
             .andExpect(jsonPath("$.message").value("Bad request - incorrect payload"));
     }
 
+    @SneakyThrows
     @Test
-    void shouldCreateDraftCase() throws Exception {
+    void shouldCreateDraftCase() {
         // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(caseService.createCase(
@@ -191,8 +196,9 @@ class ManageCaseControllerTest {
             .andExpect(jsonPath("$.last_modified").exists());
     }
 
+    @SneakyThrows
     @Test
-    void shouldStartUpdateCase() throws Exception {
+    void shouldStartUpdateCase() {
         // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
@@ -202,8 +208,6 @@ class ManageCaseControllerTest {
             "Bloggs",
             null
         ));
-
-
 
         when(caseService.startUpdate(
                  TEST_SERVICE_AUTH_TOKEN,
