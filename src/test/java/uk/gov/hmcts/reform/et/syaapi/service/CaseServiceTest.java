@@ -8,7 +8,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseData;
-import uk.gov.hmcts.ecm.common.model.ccd.CaseSearchResult;
 import uk.gov.hmcts.ecm.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.model.*;
@@ -28,7 +27,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
@@ -110,7 +108,7 @@ class CaseServiceTest {
 
         List<CaseDetails> expectedDataList = caseService.getCaseDataByUser(TEST_SERVICE_AUTH_TOKEN,
                                   EtSyaConstants.SCOTLAND_CASE_TYPE, query.toString());
-        assertEquals(Collections.emptyList(), expectedDataList);
+        assertEquals(searchResult.getCases(), expectedDataList);
     }
 
     @Test
@@ -188,7 +186,6 @@ class CaseServiceTest {
 
         assertEquals(eventResponse.getCaseDetails().getCaseTypeId(), CASE_TYPE);
     }
-
 
     @Test
     void shouldSubmitUpdateCaseInCcd() {
