@@ -7,12 +7,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ecm.common.model.ccd.CaseData;
 import uk.gov.hmcts.ecm.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
+import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.client.CcdApiClient;
+import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
+import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
+import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
@@ -32,6 +37,12 @@ public class CaseService {
 
     @Autowired
     private IdamClient idamClient;
+
+    @Autowired
+    private CaseDetailsConverter caseDetailsConverter;
+
+    @Autowired
+    private EmployeeObjectMapper employeeObjectMapper;
 
     /**
      * Given a caseID, this will retrieve the correct {@link CaseDetails}.
@@ -55,9 +66,9 @@ public class CaseService {
      * Given a caseID, this will retrieve the correct {@link CaseDetails}.
      *
      * @param authorization is used to seek the {@link UserDetails} for request
-     * @param caseType      is used to determine if the case is for ET_EnglandWales or ET_Scotland
-     * @param eventType     is used to determine initiateCaseDraft or initiateCase
-     * @param caseData      is used to provide the {@link Et1CaseData} in json format
+     * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
+     * @param eventType is used to determine initiateCaseDraft or initiateCase
+     * @param caseData is used to provide the {@link Et1CaseData} in json format
      * @return the associated {@link CaseDetails} if the case is created
      * @throws Exception if {@link CaseDetails} cannot be created
      */
@@ -93,6 +104,52 @@ public class CaseService {
             true,
             caseDataContent
         );
+    }
+
+    public CaseData triggerEvent(String authorization, String caseId, String caseType,
+                                 CaseEvent eventName, String caseData) {
+        return triggerEvent(authorization, caseId, eventName, caseType, caseData);
+    }
+
+    public CaseData triggerEvent(String authorization, String caseId, CaseEvent eventName,
+                                 String caseType, String caseData) {
+        StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
+        return submitUpdate(authorization, caseId,
+                            caseDetailsConverter.caseDataContent(startEventResponse,
+                                                                 employeeObjectMapper.getEmploymentCaseData(caseData)),
+                            caseType);
+    }
+
+    public StartEventResponse startUpdate(String authorization, String caseId, String caseType, CaseEvent eventName) {
+        String s2sToken = authTokenGenerator.generate();
+        UserDetails userDetails = idamClient.getUserDetails(authorization);
+
+        return ccdApiClient.startEventForCaseWorker(
+            authorization,
+            s2sToken,
+            userDetails.getId(),
+            JURISDICTION_ID,
+            caseType,
+            caseId,
+            eventName.name()
+        );
+    }
+
+    public CaseData submitUpdate(String authorization, String caseId,
+                                 CaseDataContent caseDataContent, String caseType) {
+        UserDetails userDetails = idamClient.getUserDetails(authorization);
+        String s2sToken = authTokenGenerator.generate();
+        CaseDetails caseDetails = ccdApiClient.submitEventForCaseWorker(
+            authorization,
+            s2sToken,
+            userDetails.getId(),
+            JURISDICTION_ID,
+            caseType,
+            caseId,
+            true,
+            caseDataContent
+        );
+        return caseDetailsConverter.toCaseData(caseDetails);
     }
 
     private Et1CaseData getEmploymentCaseData(String caseData) {

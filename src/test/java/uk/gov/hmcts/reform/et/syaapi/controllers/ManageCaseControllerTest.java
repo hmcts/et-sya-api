@@ -12,8 +12,12 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.hmcts.ecm.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
+import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
+import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.search.Query;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
@@ -33,6 +37,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.TEST_CASE_ID;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 @WebMvcTest(
@@ -58,6 +63,16 @@ class ManageCaseControllerTest {
         CaseDetails.class
     );
 
+    private final StartEventResponse startEventResponse = ResourceLoader.fromString(
+        "responses/startEventResponse.json",
+        StartEventResponse.class
+    );
+
+    private final CaseData caseData = ResourceLoader.fromString(
+        "requests/caseData.json",
+        CaseData.class
+    );
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -69,6 +84,9 @@ class ManageCaseControllerTest {
 
     @MockBean
     private VerifyTokenService verifyTokenService;
+
+    @MockBean
+    private CaseDetailsConverter caseDetailsConverter;
 
     ManageCaseControllerTest() throws IOException {
         // Default constructor
@@ -171,4 +189,53 @@ class ManageCaseControllerTest {
             .andExpect(jsonPath("$.created_date").exists())
             .andExpect(jsonPath("$.last_modified").exists());
     }
+
+    @Test
+    void shouldStartUpdateCase() throws Exception {
+        /*CaseDataContent caseDataContent = CaseDataContent.builder()
+            .event(Event.builder().id(String.valueOf(CaseEvent.UPDATE_CASE_DRAFT)).build())
+            .eventToken(startEventResponse.getToken())
+            .data(caseData)
+            .build();*/
+        // given
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+            "12",
+            "test@gmail.com",
+            "Joe",
+            "Bloggs",
+            null
+        ));
+
+
+
+        when(caseService.startUpdate(
+                 TEST_SERVICE_AUTH_TOKEN,
+                 TEST_CASE_ID,
+                 EtSyaConstants.SCOTLAND_CASE_TYPE,
+                 CaseEvent.UPDATE_CASE_DRAFT
+             )
+        ).thenReturn(
+            startEventResponse);
+
+        when(caseService.submitUpdate(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_CASE_ID,
+            caseDetailsConverter.caseDataContent(startEventResponse, null),
+            EtSyaConstants.SCOTLAND_CASE_TYPE)
+        ).thenReturn(caseData);
+
+        // when
+        mockMvc.perform(post(
+                "/case-type/{caseType}/event-type/{eventType}/{caseId}}",
+                EtSyaConstants.SCOTLAND_CASE_TYPE,
+                CaseEvent.UPDATE_CASE_DRAFT,
+                TEST_CASE_ID
+                        )
+                            .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                            .content(requestCaseData)
+            )
+            .andExpect(status().isOk());
+    }
+
 }

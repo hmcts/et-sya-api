@@ -1,27 +1,25 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import uk.gov.hmcts.ecm.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
+import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
+import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.search.Query;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 
-import java.util.List;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 import static org.springframework.http.ResponseEntity.ok;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ZERO_INTEGER;
 
 @Slf4j
@@ -34,14 +32,9 @@ public class ManageCaseController {
 
     @GetMapping("/caseDetails/{caseId}")
     @Operation(summary = "Return case details")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Accessed successfully"),
-        @ApiResponse(responseCode = "400", description = "Bad Request"),
-        @ApiResponse(responseCode = "403", description = "Calling service is not authorised to use the endpoint"),
-        @ApiResponse(responseCode = "500", description = "Internal Server Error")
-    })
+    @ApiResponseGroup
     public ResponseEntity<CaseDetails> getCaseDetails(
-        @RequestHeader("Authorization") String authorization,
+        @RequestHeader(AUTHORIZATION) String authorization,
         @PathVariable String caseId
     ) {
         var caseDetails = caseService.getCaseData(authorization, caseId);
@@ -50,14 +43,9 @@ public class ManageCaseController {
 
     @GetMapping("/caseTypes/{caseType}/cases")
     @Operation(summary = "Return all case details for User")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Accessed successfully"),
-        @ApiResponse(responseCode = "400", description = "Bad Request"),
-        @ApiResponse(responseCode = "403", description = "Calling service is not authorised to use the endpoint"),
-        @ApiResponse(responseCode = "500", description = "Internal Server Error")
-    })
+    @ApiResponseGroup
     public ResponseEntity<List<CaseDetails>> getCaseDataByUser(
-        @RequestHeader("Authorization") String authorization,
+        @RequestHeader(AUTHORIZATION) String authorization,
         @PathVariable String caseType,
         @RequestBody String searchString
     ) {
@@ -67,19 +55,27 @@ public class ManageCaseController {
 
     @PostMapping("/case-type/{caseType}/event-type/{eventType}/case")
     @Operation(summary = "Create a new default case")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Accessed successfully"),
-        @ApiResponse(responseCode = "400", description = "Bad Request"),
-        @ApiResponse(responseCode = "403", description = "Calling service is not authorised to use the endpoint"),
-        @ApiResponse(responseCode = "500", description = "Internal Server Error")
-    })
+    @ApiResponseGroup
     public ResponseEntity<CaseDetails> createCase(
-        @RequestHeader("Authorization") String authorization,
+        @RequestHeader(AUTHORIZATION) String authorization,
         @PathVariable @NotNull String caseType,
         @PathVariable @NotNull String eventType,
         @RequestBody String caseData
     ) {
         var caseDetails = caseService.createCase(authorization, caseType, eventType, caseData);
         return ok(caseDetails);
+    }
+
+    @PostMapping("/case-type/{caseType}/event-type/{eventType}/{caseId}")
+    @Operation(summary = "Update draft case API method")
+    @ApiResponseGroup
+    public CaseData updateCase(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @PathVariable @NotNull String caseType,
+        @PathVariable @NotNull String eventType,
+        @PathVariable @NotNull String caseId,
+        @RequestBody String caseData
+    ) {
+        return caseService.triggerEvent(authorization, caseId, caseType, CaseEvent.valueOf(eventType), caseData);
     }
 }
