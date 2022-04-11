@@ -9,11 +9,7 @@ import uk.gov.hmcts.ecm.common.model.ccd.Et1CaseData;
 import static org.junit.Assert.assertEquals;
 
 @Import(EmployeeObjectMapper.class)
-public class EmploymentObjectMapperTest {
-    private static final String TEST_STRING = "TEST";
-    private static final String SINGLE = "Single";
-    private static final String MANUALLY_CREATED = "Manually Created";
-
+class EmploymentObjectMapperTest {
     @Mock
     private EmployeeObjectMapper employmentObjectMapper;
 

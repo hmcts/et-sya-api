@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 
 import static org.junit.Assert.assertEquals;
 
-public class CaseDetailsConverterTest {
+class CaseDetailsConverterTest {
 
     private final CaseDetails expectedDetails = ResourceLoader.fromString(
         "responses/caseDetails.json",
@@ -27,7 +27,7 @@ public class CaseDetailsConverterTest {
     private Et1CaseData et1CaseData;
 
     @BeforeEach
-    void setUp(){
+    void setUp() {
         et1CaseData = new Et1CaseData();
         et1CaseData.setCaseNotes("TEST_STRING");
         et1CaseData.setCaseSource("MANUALLY_CREATED");
