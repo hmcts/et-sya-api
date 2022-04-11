@@ -1,12 +1,16 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import uk.gov.hmcts.reform.et.syaapi.model.AcasCertificate;
-import uk.gov.hmcts.reform.et.syaapi.model.AcasCertificateRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
+import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificateRequest;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,92 +19,108 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 /**
- * This provides services to access the ACAS external service.
+ * This provides services to access the ACAS external service for retrieving ACAS Certificate's held in {@link
+ * AcasCertificate} objects.
  */
 @Service
 public class AcasService {
-    private final String acasBaseUrl = "https://api-dev-acas-01.azure-api.net/ECCLDev";   // todo - push this in to an env variable
+
+    public static final String OCP_APIM_SUBSCRIPTION_KEY = "Ocp-Apim-Subscription-Key";
     public static final String VALID_ACAS_NUMBER_REGEX = "[a-zA-Z]{1,2}[\\d]{6}/[\\d]{2}/[\\d]{2}";
+    public static final int MAX_ACAS_RETRIES = 5;
     private final RestTemplate restTemplate;
-    private static final String ACAS_KEY = "380e7fad52b2403abf42575ca8fba6e2";  // todo - config or secret vault
+    private final String acasApiUrl;
+    private final String acasApiKey;
 
     /**
-     * Returns a list of JSON objects.
+     * Constructs an {@link AcasService} instance with the RestTemplate to use for talking with the ACAS service.
      *
-     * @param restTemplate (todo)
+     * @param restTemplate the RestTemplate to use for talking with the ACAS service
+     * @param acasApiUrl   the URL to access the ACAS API
+     * @param acasApiKey   the OCP APIM Subscription Key used in the header to authenticate when contacting ACAS
      */
-    public AcasService(RestTemplate restTemplate) {
+    public AcasService(RestTemplate restTemplate,
+                       @Value("${acas.api.url}") String acasApiUrl,
+                       @Value("${acas.api.key}") String acasApiKey) {
         this.restTemplate = restTemplate;
+        this.acasApiUrl = acasApiUrl;
+        this.acasApiKey = acasApiKey;
     }
 
     /**
-     * This will call upon ACAS with a set of ACAS case numbers to retrieve their associated certificates, provided in.
-     * JSON format containing BASE64 certificate data in the following format:
-     * <pre>
-     * [
-     *     {
-     *         "CertificateNumber": "R444444/89/74",
-     *         "CertificateDocument": "JVBERi0xLjcNCiW1tbW1...
-     *     },
-     *     {
-     *         "CertificateNumber": "R465745/34/08",
-     *         "CertificateDocument": "JVBERi0xLjcNCiW1tbW...
-     *    }
-     * ]
-     * </pre>
-     *
-     * <p> A CertificateDocument is the blob for the PDF document todo - JS to add in here relevant information (done) </p>
+     * This will call upon ACAS with a set of ACAS case numbers to retrieve their associated certificates. Validation of
+     * the ACAS numbers is first applied and may result in an {@link InvalidAcasNumbersException} being thrown should
+     * there be any problems found. If all ACAS numbers are valid, then the service will attempt to retrieve a list of
+     * available {@link AcasCertificate}'s associated to the ACAS numbers provided. The service will retry up to 5 times
+     * to retrieve them if the call results in a 404 or 401 before then throwing an {@link AcasException} with the
+     * associated cause.
      *
      * @param acasNumbers are the ACAS numbers we are seeking Certificates for
-     * @return a JSONArray of document data
+     * @return a List of {@link AcasCertificate}'s associated to the provided acasNumbers that are available at ACAS
+     * @throws AcasException               if a problem occurs obtaining the certificates.
+     * @throws InvalidAcasNumbersException if any of the acas numbers provided are invalid.
      */
-    public List<AcasCertificate> getCertificates(String... acasNumbers) throws InvalidAcasNumbersException {
+    public List<AcasCertificate> getCertificates(String... acasNumbers)
+        throws InvalidAcasNumbersException, AcasException {
+
+        validateAcasNumbers(acasNumbers);
+        return attemptWithRetriesToFetchAcasCertificates(0, acasNumbers);
+    }
+
+    private List<AcasCertificate> attemptWithRetriesToFetchAcasCertificates(int attempts, String... acasNumbers)
+        throws AcasException {
+        try {
+            return fetchAcasCertificates(acasNumbers).getBody();
+        } catch (HttpClientErrorException e) {
+            if (attempts < MAX_ACAS_RETRIES) {
+                return attemptWithRetriesToFetchAcasCertificates(attempts + 1, acasNumbers);
+            }
+            throw new AcasException("Failed to obtain certificates for acas numbers" + Arrays.toString(acasNumbers), e);
+        }
+    }
+
+    private ResponseEntity<List<AcasCertificate>> fetchAcasCertificates(String... acasNumbers) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(OCP_APIM_SUBSCRIPTION_KEY, acasApiKey);
+        AcasCertificateRequest acasCertificateRequest = new AcasCertificateRequest();
+        acasCertificateRequest.setCertificateNumbers(acasNumbers);
+        HttpEntity<AcasCertificateRequest> request = new HttpEntity<>(acasCertificateRequest, headers);
+        return restTemplate.exchange(
+            acasApiUrl,
+            HttpMethod.POST,
+            request,
+            new ParameterizedTypeReference<>() {
+            }
+        );
+    }
+
+    private void validateAcasNumbers(String... acasNumbers) throws InvalidAcasNumbersException {
         if (acasNumbers == null) {
-            throw new NullPointerException("Null ACAS numbers");
+            throw new InvalidAcasNumbersException("Null ACAS numbers");
         }
 
         AtomicInteger index = new AtomicInteger(0);
+        StringBuilder nullValueError = new StringBuilder();
         List<String> invalidAcasNumbers = new ArrayList<>();
 
         Arrays.stream(acasNumbers).forEach(acasNumber -> validateAcasNumber(
             acasNumber,
             invalidAcasNumbers,
+            nullValueError,
             index.getAndIncrement()
         ));
-
-        if (!invalidAcasNumbers.isEmpty()) {
-            throw new InvalidAcasNumbersException(invalidAcasNumbers);
+        if (!invalidAcasNumbers.isEmpty() || nullValueError.length() > 0) {
+            throw new InvalidAcasNumbersException(nullValueError.toString(), invalidAcasNumbers.toArray(new String[0]));
         }
-        // call ACAS with ALL numbers and retrieve the certs
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Ocp-Apim-Subscription-Key", ACAS_KEY);
-        HttpEntity<AcasCertificateRequest> request = new HttpEntity<>(new AcasCertificateRequest(acasNumbers), headers);
-        ResponseEntity<AcasCertificate> responseEntity = restTemplate.postForEntity(
-            acasBaseUrl,
-            request,
-//            List<AcasCertificate>.class -- todo: couldn't find the solution due to type erasure
-            null
-        );
-
-//        ResponseEntity<List<AcasCertificate>> responseEntity = restTemplate.exchange(
-//            acasBaseUrl,
-//            HttpMethod.POST,
-//            request,
-//            new ParameterizedTypeReference<List<AcasCertificate>>() {
-//            }
-//        );
-
-//        List<AcasCertificate> certificates = responseEntity.getBody(); -- todo: uncomment
-
-        // todo - what happens if the ACAS service isn't available?
-
-        return null;
     }
 
-
-    private void validateAcasNumber(String acasNumber, List<String> invalidAcasNumbers, int index) {
+    private void validateAcasNumber(String acasNumber, List<String> invalidAcasNumbers,
+                                    StringBuilder nullValue, int index) {
         if (acasNumber == null) {
-            throw new NullPointerException("ACAS number at position #" + index + " must not be null");
+            nullValue.append("[ACAS number at position #")
+                .append(index)
+                .append(" must not be null]");
+            return;
         }
         if (!Pattern.compile(VALID_ACAS_NUMBER_REGEX).matcher(acasNumber).matches()) {
             invalidAcasNumbers.add(acasNumber);

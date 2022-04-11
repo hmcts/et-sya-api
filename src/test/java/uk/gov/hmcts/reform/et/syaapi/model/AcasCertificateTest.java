@@ -1,7 +1,8 @@
 package uk.gov.hmcts.reform.et.syaapi.model;
 
-import org.junit.jupiter.api.Test;
 import nl.jqno.equalsverifier.EqualsVerifier;
+import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 
 class AcasCertificateTest {
 

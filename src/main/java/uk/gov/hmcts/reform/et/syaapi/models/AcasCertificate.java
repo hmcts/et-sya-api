@@ -1,19 +1,14 @@
-package uk.gov.hmcts.reform.et.syaapi.model;
+package uk.gov.hmcts.reform.et.syaapi.models;
 
 import java.util.Objects;
 
 /**
- * Simply holds the certificate string along with the associated ACAS number.
+ * Simply holds the certificate blob data as a string (in Base64 encoded format) along with the associated ACAS number.
  */
 public class AcasCertificate {
 
     private String certificateDocument;
     private String certificateNumber;
-
-    public AcasCertificate(String certificateData, String acasNumber) {
-        this.certificateDocument = certificateData;
-        this.certificateNumber = acasNumber;
-    }
 
     public String getCertificateNumber() {
         return certificateNumber;
@@ -32,14 +27,14 @@ public class AcasCertificate {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object object) {
+        if (this == object) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (object == null || getClass() != object.getClass()) {
             return false;
         }
-        AcasCertificate that = (AcasCertificate) o;
+        AcasCertificate that = (AcasCertificate) object;
         return Objects.equals(certificateDocument, that.certificateDocument)
             && Objects.equals(certificateNumber, that.certificateNumber);
     }
