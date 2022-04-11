@@ -192,11 +192,6 @@ class ManageCaseControllerTest {
 
     @Test
     void shouldStartUpdateCase() throws Exception {
-        /*CaseDataContent caseDataContent = CaseDataContent.builder()
-            .event(Event.builder().id(String.valueOf(CaseEvent.UPDATE_CASE_DRAFT)).build())
-            .eventToken(startEventResponse.getToken())
-            .data(caseData)
-            .build();*/
         // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
