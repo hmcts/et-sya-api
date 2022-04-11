@@ -16,7 +16,7 @@ public class EmployeeObjectMapper {
         try {
             data = mapper.readValue(caseData, Et1CaseData.class);
         } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
+            log.error("Failed to parse the input json request body , {}", e);
         }
         return data;
     }

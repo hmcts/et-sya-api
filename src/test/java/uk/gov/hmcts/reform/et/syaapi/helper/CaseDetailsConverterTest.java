@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class CaseDetailsConverterTest {
 
@@ -38,6 +38,7 @@ class CaseDetailsConverterTest {
         ObjectMapper objectMapper = new ObjectMapper();
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         caseDetailsConverter.caseDataContent(startEventResponse, et1CaseData);
-        assertEquals("Manually Created", caseDetailsConverter.toCaseData(expectedDetails).getCaseSource());
+        assertThat("Manually Created".equalsIgnoreCase(
+            caseDetailsConverter.toCaseData(expectedDetails).getCaseSource())).isTrue();
     }
 }

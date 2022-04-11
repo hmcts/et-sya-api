@@ -6,7 +6,7 @@ import org.mockito.Mock;
 import org.springframework.context.annotation.Import;
 import uk.gov.hmcts.ecm.common.model.ccd.Et1CaseData;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Import(EmployeeObjectMapper.class)
 class EmploymentObjectMapperTest {
@@ -19,14 +19,14 @@ class EmploymentObjectMapperTest {
     }
 
     @Test
-    void shouldGetEmployeeObjetMapper() throws Exception {
+    void shouldGetEmployeeObjetMapper() {
         Et1CaseData et1CaseData = employmentObjectMapper.getEmploymentCaseData("{\"caseNotes\": \"TEST\"}");
-        assertEquals("TEST", et1CaseData.getCaseNotes());
+        assertThat("TEST".equalsIgnoreCase(et1CaseData.getCaseNotes())).isTrue();
     }
 
     @Test
-    void shouldGetNullData() throws Exception {
-        Et1CaseData employmentCaseData = employmentObjectMapper.getEmploymentCaseData("\"caseType\": \"Single\"");
-        assertEquals(null, employmentCaseData);
+    void shouldGetNullData() {
+        Et1CaseData et1CaseData = employmentObjectMapper.getEmploymentCaseData("\"caseType\": \"Single\"");
+        assertThat(et1CaseData).isNull();
     }
 }

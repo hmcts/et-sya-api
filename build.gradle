@@ -219,6 +219,7 @@ dependencies {
     exclude group: 'junit', module: 'junit'
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
+  testImplementation('org.assertj:assertj-core:3.21.0')
 }
 
 mainClassName = 'uk.gov.hmcts.reform.et.syaapi.SyaApiApplication'
