@@ -207,6 +207,8 @@ class ManageCaseControllerTest {
             null
         ));
 
+
+
         when(caseService.startUpdate(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_CASE_ID,

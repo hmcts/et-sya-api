@@ -103,14 +103,17 @@ public class CaseService {
         );
     }
 
-    public CaseData triggerEvent(String authorization, String caseId, String caseType, CaseEvent eventName, String caseData) {
+    public CaseData triggerEvent(String authorization, String caseId, String caseType,
+                                 CaseEvent eventName, String caseData) {
         return triggerEvent(authorization, caseId, eventName, caseType, caseData);
     }
 
-    public CaseData triggerEvent(String authorization, String caseId, CaseEvent eventName, String caseType, String caseData) {
+    public CaseData triggerEvent(String authorization, String caseId, CaseEvent eventName,
+                                 String caseType, String caseData) {
         StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
         return submitUpdate(authorization, caseId,
-                     caseDetailsConverter.caseDataContent(startEventResponse, employeeObjectMapper.getEmploymentCaseData(caseData)),
+                     caseDetailsConverter.caseDataContent(startEventResponse,
+                     employeeObjectMapper.getEmploymentCaseData(caseData)),
                      caseType);
     }
 
