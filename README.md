@@ -68,7 +68,7 @@ Local
 
 AAT
 ```
-  https://idam-api.aat.platform.hmcts.net/swagger-ui.html#/
+  http://et-sya-api-aat.service.core-compute-aat.internal/swagger-ui/index.html#/
 ```
 
 ### Alternative script to run application
