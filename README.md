@@ -57,6 +57,20 @@ You should get a response similar to this:
   {"status":"UP","diskSpace":{"status":"UP","total":249644974080,"free":137188298752,"threshold":10485760}}
 ```
 
+### Viewing the API specification and consuming
+
+In order to view API endpoints and consume the API directly, you can use the OpenAPI specification by navigating to the site with the following route appended (swagger-ui/index.html). Swagger UI (https://swagger.io/tools/swagger-ui/) allows anyone — be it your development team or your end consumers — to visualize and interact with the API’s resources without having any of the implementation logic in place. It’s automatically generated from your OpenAPI (formerly known as Swagger) Specification, with the visual documentation making it easy for back end implementation and client side consumption.
+
+Local
+```
+  http://localhost:4550/swagger-ui/index.html
+```
+
+AAT
+```
+  http://et-sya-api-aat.service.core-compute-aat.internal/swagger-ui/index.html#/
+```
+
 ### Alternative script to run application
 
 To skip all the setting up and building, just execute the following command:
