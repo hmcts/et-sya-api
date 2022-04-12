@@ -5,9 +5,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.ClientHttpRequest;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.test.web.client.ResponseCreator;
 import org.springframework.web.client.RestTemplate;
+
+import java.io.IOException;
+import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -230,5 +236,34 @@ class AcasServiceTest {
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
         assertThrows(AcasException.class, () -> acasService.getCertificates(A123456_12_12));
+    }
+
+    @Test
+    void theGetAcasCertWithBadApiKeyFirstTimeProducesCertificates()
+        throws AcasException, InvalidAcasNumbersException {
+        mockServer.expect(ExpectedCount.times(2), requestTo(ACAS_DEV_API_URL))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(new DelegateResponseCreator(withStatus(HttpStatus.UNAUTHORIZED),
+                                                    withStatus(HttpStatus.OK)
+                                                        .contentType(MediaType.APPLICATION_JSON)
+                                                        .body(TWO_CERTS_JSON)));
+        assertThat(acasService.getCertificates(A123456_12_12, AB123456_12_12))
+            .hasSize(2);
+    }
+
+    public static class DelegateResponseCreator implements ResponseCreator {
+        private final ResponseCreator[] delegates;
+        private int toExecute;
+
+        public DelegateResponseCreator(final ResponseCreator... delegates) {
+            this.delegates = Arrays.copyOf(delegates, delegates.length);
+        }
+
+        @Override
+        public ClientHttpResponse createResponse(final ClientHttpRequest request)
+            throws IOException {
+            return this.delegates[toExecute++ % delegates.length]
+                .createResponse(request);
+        }
     }
 }
