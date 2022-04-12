@@ -95,10 +95,6 @@ public class AcasService {
     }
 
     private void validateAcasNumbers(String... acasNumbers) throws InvalidAcasNumbersException {
-        if (acasNumbers == null) {
-            throw new InvalidAcasNumbersException("Null ACAS numbers");
-        }
-
         AtomicInteger index = new AtomicInteger(0);
         StringBuilder nullValueError = new StringBuilder();
         List<String> invalidAcasNumbers = new ArrayList<>();
