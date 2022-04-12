@@ -11,6 +11,9 @@ import uk.gov.hmcts.ecm.common.model.ccd.Et1CaseData;
 public class EmployeeObjectMapper {
 
     /**
+     * Converts caseData string to @{@link Et1CaseData} object.
+     *
+     *
      * @param caseData which would be in json format
      * @return @link Et1CaseData format of input json object
      */

@@ -101,6 +101,8 @@ public class CaseService {
     }
 
     /**
+     * Given a caseId, triggers update events for the case.
+     *
      * @param authorization is used to seek the {@link UserDetails} for request
      * @param caseId used to retrive get case details
      * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
@@ -114,6 +116,8 @@ public class CaseService {
     }
 
     /**
+     * Given a caseId, initialization of trigger event to start and submit update for case.
+     *
      * @param authorization is used to seek the {@link UserDetails} for request
      * @param caseId used to retrive get case details
      * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
@@ -134,6 +138,8 @@ public class CaseService {
     }
 
     /**
+     * Given a caseId, start update for the case.
+     *
      * @param authorization is used to seek the {@link UserDetails} for request
      * @param caseId used to retrive get case details
      * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
@@ -157,6 +163,8 @@ public class CaseService {
     }
 
     /**
+     * Given a caseId, submit update for the case.
+     *
      * @param authorization is used to seek the {@link UserDetails} for request
      * @param caseId used to retrive get case details
      * @param caseDataContent provides overall content of the case

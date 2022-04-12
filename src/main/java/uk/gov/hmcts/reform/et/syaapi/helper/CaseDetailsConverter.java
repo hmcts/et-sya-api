@@ -20,6 +20,8 @@ public class CaseDetailsConverter {
     private final ObjectMapper objectMapper;
 
     /**
+     * Constructor for @ObjectMapper class.
+     *
      * @param objectMapper jackson {$ObjectMapper}object to initialize object
      */
     public CaseDetailsConverter(ObjectMapper objectMapper) {
@@ -28,6 +30,8 @@ public class CaseDetailsConverter {
     }
 
     /**
+     * For a case, Converts @CaseDetails.data to @CaseData object.
+     *
      * @param caseDetails would represent CaseData for the case
      * @return caseData represent cases in java object model
      */
@@ -41,6 +45,8 @@ public class CaseDetailsConverter {
     }
 
     /**
+     * Converts Case related datails to CaseDataContent which gets saved to CCD.
+     *
      * @param startEventResponse associated case details updated
      * @param et1CaseData orginal json format represented object
      * @return {@link CaseDataContent} which returns overall contents of the case
