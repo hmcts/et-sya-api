@@ -8,6 +8,8 @@ java:
       secrets:
         - name: et-sya-api-s2s-secret
           alias: ET_SYA_S2S_SECRET
+        - name: Ocp-Apim-Subscription-Key
+          alias: ACAS_KEY
     et:
       secrets:
         - AppInsightsInstrumentationKey
@@ -17,4 +19,5 @@ java:
     IDAM_JWKS_BASEURL: "https://idam-api.{{ .Values.global.environment }}.platform.hmcts.net/o/jwks"
     CASE_DATA_STORE_BASEURL: "http://ccd-data-store-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     SERVICE_AUTH_PROVIDER_URL: "http://rpe-service-auth-provider-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
+    ACAS_URL: "https://api-dev-acas-01.azure-api.net/ECCLDev"
     MICRO_SERVICE: "et_sya_api"
