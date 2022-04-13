@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -190,26 +192,16 @@ class AcasServiceTest {
             .hasSize(1);
     }
 
-    @Test
-    void theGetAcasCertWithLessThanMinLengthAcasNumberProducesInvalidAcasNumbersException() {
-        // Min: 13 (including two fwd slashes)
+    // testing acas number too long, too short and wrong format entirely
+    @ParameterizedTest
+    @ValueSource(strings = {"AB123456/12/123", "A123456/12/1", "ACAS1234567890"})
+    void theGetAcasCertWithInvalidAcasNumberProducesInvalidAcasNumbersException(String value) {
         InvalidAcasNumbersException exception = assertThrows(
             InvalidAcasNumbersException.class,
-            () -> acasService.getCertificates("A123456/12/1")
+            () -> acasService.getCertificates(value)
         );
         assertThat(exception.getInvalidAcasNumbers())
-            .containsExactly("A123456/12/1");
-    }
-
-    @Test
-    void theGetAcasCertWithMoreThanMaxLengthAcasNumberProducesInvalidAcasNumbersException() {
-        // Max: 14 (including two fwd slashes)
-        InvalidAcasNumbersException exception = assertThrows(
-            InvalidAcasNumbersException.class,
-            () -> acasService.getCertificates("AB123456/12/123")
-        );
-        assertThat(exception.getInvalidAcasNumbers())
-            .containsExactly("AB123456/12/123");
+            .containsExactly(value);
     }
 
     @Test

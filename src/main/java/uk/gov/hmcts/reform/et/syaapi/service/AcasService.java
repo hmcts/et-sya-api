@@ -8,6 +8,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificateRequest;
@@ -52,7 +53,7 @@ public class AcasService {
      * the ACAS numbers is first applied and may result in an {@link InvalidAcasNumbersException} being thrown should
      * there be any problems found. If all ACAS numbers are valid, then the service will attempt to retrieve a list of
      * available {@link AcasCertificate}'s associated to the ACAS numbers provided. The service will retry up to 5 times
-     * to retrieve them if the call results in a 404 or 401 before then throwing an {@link AcasException} with the
+     * to retrieve them if the call results in an error before then throwing an {@link AcasException} with the
      * associated cause.
      *
      * @param acasNumbers are the ACAS numbers we are seeking Certificates for
@@ -71,7 +72,7 @@ public class AcasService {
         throws AcasException {
         try {
             return fetchAcasCertificates(acasNumbers).getBody();
-        } catch (HttpClientErrorException e) {
+        } catch (RestClientResponseException e) {
             if (attempts < MAX_ACAS_RETRIES) {
                 return attemptWithRetriesToFetchAcasCertificates(attempts + 1, acasNumbers);
             }
