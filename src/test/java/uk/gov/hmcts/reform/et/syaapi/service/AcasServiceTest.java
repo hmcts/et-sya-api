@@ -90,6 +90,18 @@ class AcasServiceTest {
             .isBlank();
     }
 
+    // testing acas number too long, too short and wrong format entirely
+    @ParameterizedTest
+    @ValueSource(strings = {"AB123456/12/123", "A123456/12/1", "ACAS1234567890"})
+    void theGetAcasCertWithInvalidAcasNumberProducesInvalidAcasNumbersException(String value) {
+        InvalidAcasNumbersException exception = assertThrows(
+            InvalidAcasNumbersException.class,
+            () -> acasService.getCertificates(value)
+        );
+        assertThat(exception.getInvalidAcasNumbers())
+            .containsExactly(value);
+    }
+
     @Test
     void theGetAcasCertsWithInvalidAcasNumbersProducesInvalidAcasNumbersException() {
         InvalidAcasNumbersException exception = assertThrows(
@@ -190,18 +202,6 @@ class AcasServiceTest {
         // Inalid: ZZ123456/12/12
         assertThat(acasService.getCertificates(A123456_12_12, "ZZ123456/12/12"))
             .hasSize(1);
-    }
-
-    // testing acas number too long, too short and wrong format entirely
-    @ParameterizedTest
-    @ValueSource(strings = {"AB123456/12/123", "A123456/12/1", "ACAS1234567890"})
-    void theGetAcasCertWithInvalidAcasNumberProducesInvalidAcasNumbersException(String value) {
-        InvalidAcasNumbersException exception = assertThrows(
-            InvalidAcasNumbersException.class,
-            () -> acasService.getCertificates(value)
-        );
-        assertThat(exception.getInvalidAcasNumbers())
-            .containsExactly(value);
     }
 
     @Test
