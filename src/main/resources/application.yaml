@@ -46,3 +46,7 @@ acas:
   api:
     url: ${ACAS_BASE_URL:https://api-dev-acas-01.azure-api.net/ECCLDev}
     key: ${ACAS_KEY:0000} # This environment variable can be set in your local environment. Do not change this value.
+
+notifications:
+  govNotifyApiKey: ${GOV_NOTIFY_API_KEY:}
+  sampleEmailTemplate: "8835039a-3544-439b-a3da-882490d959eb"

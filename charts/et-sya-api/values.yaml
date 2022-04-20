@@ -13,6 +13,7 @@ java:
     et:
       secrets:
         - AppInsightsInstrumentationKey
+        - gov-notify-api-key
 
   environment:
     IDAM_API_BASEURL: "https://idam-api.{{ .Values.global.environment }}.platform.hmcts.net"
