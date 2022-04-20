@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.et.syaapi.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.et.syaapi.config.notification.NotificationsProperties;
 import uk.gov.service.notify.NotificationClient;
 
