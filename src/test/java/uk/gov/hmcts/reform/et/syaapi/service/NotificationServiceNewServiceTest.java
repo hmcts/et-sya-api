@@ -2,8 +2,6 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import uk.gov.hmcts.reform.et.syaapi.config.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.SendEmailResponse;
@@ -14,10 +12,11 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class NotificationServiceTest {
-    private final String GOV_NOTIFY_API_KEY = "secret-21beac2b-d979-4771-bbb5-e34b62cba543-8b49a864-15de-4a07-935c-32693e4c374d";
+class NotificationServiceNewServiceTest {
 
-    private final String SAMPLE_TEMPLATE_API_KEY = "905ac179-cfe3-40c0-ba33-93323b25f149";
+    private final String GOV_NOTIFY_API_KEY = "et_test_api_key-002d2170-e381-4545-8251-5e87dab724e7-190d8b02-2bb8-4fc9-a471-5486b77782c0";
+
+    private final String SAMPLE_TEMPLATE_ID = "8835039a-3544-439b-a3da-882490d959eb";
 
     private final String REFERENCE = "TEST_EMAIL_Alert";
 
@@ -34,9 +33,11 @@ class NotificationServiceTest {
     void shouldSendEmailWithProperties() {
         String targetEmail = "vinoth.kumarsrinivasan@HMCTS.NET";
         Map<String, String> parameters = new HashMap<>();
-        parameters.put("multipleReference", "1234567890");
+        parameters.put("references", "1234567890");
+        parameters.put("firstname", "Vinothkumar");
+
         SendEmailResponse sendEmailResponse = notificationService.sendMail(
-            SAMPLE_TEMPLATE_API_KEY, targetEmail, parameters, REFERENCE);
+            SAMPLE_TEMPLATE_ID, targetEmail, parameters, REFERENCE);
         assertThat(sendEmailResponse.getReference().get()).isEqualTo(REFERENCE);
     }
 
@@ -48,7 +49,7 @@ class NotificationServiceTest {
         parameters.put("firstname", "Vinothkumar");
         String reference = "TEST EMAIL Alert";
         assertThatThrownBy( () -> {
-                notificationService.sendMail(SAMPLE_TEMPLATE_API_KEY, targetEmail, parameters, reference);
+                notificationService.sendMail(SAMPLE_TEMPLATE_ID, targetEmail, parameters, reference);
             }).isInstanceOf(NotificationException.class)
             .hasMessageContaining("send to this recipient using a team-only API key");
     }

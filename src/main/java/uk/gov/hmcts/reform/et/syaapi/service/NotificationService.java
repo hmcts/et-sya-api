@@ -25,6 +25,7 @@ public class NotificationService {
         SendEmailResponse sendEmailResponse = null;
         try {
             sendEmailResponse = notificationClient.sendEmail(templateId, targetEmail, parameters, reference);
+            log.info("Email sent successfully with templateId - {} to {}", templateId, targetEmail);
         } catch (NotificationClientException ne) {
             log.error("Error while trying to sending notification to client", ne);
             throw new NotificationException(ne);

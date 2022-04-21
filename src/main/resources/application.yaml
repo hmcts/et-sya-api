@@ -49,4 +49,4 @@ acas:
 
 notifications:
   govNotifyApiKey: ${gov-notify-api-key:}
-  sampleEmailTemplateId: "8835039a-3544-439b-a3da-882490d959eb"
+  sampleEmailTemplateId: "4ea3cf16-0cbb-4f27-8cfb-a084b126086e"
