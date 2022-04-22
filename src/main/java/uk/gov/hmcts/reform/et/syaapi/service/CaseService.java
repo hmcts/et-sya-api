@@ -78,7 +78,7 @@ public class CaseService {
         var ccdCase = ccdApiClient.startForCaseworker(
             authorization,
             s2sToken,
-            "123456",
+            userDetails.getId(),
             JURISDICTION_ID,
             caseType,
             eventType
@@ -92,7 +92,7 @@ public class CaseService {
         return ccdApiClient.submitForCaseworker(
             authorization,
             s2sToken,
-            "123456",
+            userDetails.getId(),
             JURISDICTION_ID,
             caseType,
             true,
