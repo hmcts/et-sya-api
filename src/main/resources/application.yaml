@@ -34,7 +34,7 @@ idam:
   s2s-auth:
     url: ${SERVICE_AUTH_PROVIDER_URL:http://localhost:4502}
     secret: ${ET_SYA_S2S_SECRET:AAAAAAAAAAAAAAAC}
-    microservice: ${MICRO_SERVICE:ccd_gw}
+    microservice: ${MICRO_SERVICE:et_sya_api}
 
 core_case_data:
   api:
