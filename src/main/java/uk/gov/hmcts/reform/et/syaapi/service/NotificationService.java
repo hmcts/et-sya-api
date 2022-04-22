@@ -22,7 +22,7 @@ public class NotificationService {
         Map<String, String> parameters,
         String reference
     ) {
-        SendEmailResponse sendEmailResponse = null;
+        SendEmailResponse sendEmailResponse;
         try {
             sendEmailResponse = notificationClient.sendEmail(templateId, targetEmail, parameters, reference);
             log.info("Email sent successfully with templateId - {} to {}", templateId, targetEmail);
