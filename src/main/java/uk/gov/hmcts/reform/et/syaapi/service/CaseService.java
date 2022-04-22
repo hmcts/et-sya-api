@@ -7,8 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.ecm.common.model.ccd.CaseData;
-import uk.gov.hmcts.ecm.common.model.ccd.Et1CaseData;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -78,7 +78,7 @@ public class CaseService {
         var ccdCase = ccdApiClient.startForCaseworker(
             authorization,
             s2sToken,
-            userDetails.getId(),
+            "123456",
             JURISDICTION_ID,
             caseType,
             eventType
@@ -92,7 +92,7 @@ public class CaseService {
         return ccdApiClient.submitForCaseworker(
             authorization,
             s2sToken,
-            userDetails.getId(),
+            "123456",
             JURISDICTION_ID,
             caseType,
             true,
