@@ -9,7 +9,9 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_STRING;
 
 class AcasCertificateTest {
 
-    private static final String NUM_STRING= "123456";
+
+    private static final String NUM_STRING = "123456";
+
     @Test
     void acasCertMeetsEqualsContract() {
         EqualsVerifier.simple()
@@ -25,5 +27,4 @@ class AcasCertificateTest {
         assertThat(NUM_STRING).isEqualTo(acasCertificate.getCertificateNumber());
         assertThat(TEST_STRING).isEqualTo(acasCertificate.getCertificateDocument());
     }
-
 }

@@ -16,6 +16,16 @@ import java.util.Map;
 public class NotificationService {
     private final NotificationClient notificationClient;
 
+    /**
+     * Given a caseId, initialization of trigger event to start and submit update for case.
+     *
+     * @param templateId - pass gov notify template id for each use case
+     * @param targetEmail - recepient target email id
+     * @param parameters - map of strings to add this to the template
+     * @param reference - reference string for email template
+     * @return response from notification api
+     */
+
     public SendEmailResponse sendMail(
         String templateId,
         String targetEmail,
