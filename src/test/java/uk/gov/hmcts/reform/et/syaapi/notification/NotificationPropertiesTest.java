@@ -4,10 +4,9 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.et.syaapi.config.notification.NotificationsProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_STRING;
 
-public class NotificationPropertiesTest {
-
-    private static final String TEST_STRING = "TEST";
+class NotificationPropertiesTest {
 
     @Test
     void expectedNotificationPropertiesObject() {
