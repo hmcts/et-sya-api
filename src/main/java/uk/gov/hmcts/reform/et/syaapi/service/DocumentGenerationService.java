@@ -3,19 +3,23 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestClientResponseException;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.reform.et.syaapi.models.TornadoDocument;
 
+import java.util.Locale;
+
 /**
  * This is a service to generate documents given relevant data and the necessary template.
+ * <p/>
+ * <b><i>Note that Docmosis is an instance of Tornado running in an environment.</i></b>
  * <p/>
  * This service relies upon Docmosis as it's engine to generate required documents.
  * <p/>
@@ -28,13 +32,13 @@ import uk.gov.hmcts.reform.et.syaapi.models.TornadoDocument;
  * Docmosis is typically installed on all environments within HMCTS.  You can see more information about these
  * environments at: https://tools.hmcts.net/confluence/pages/viewpage.action?pageId=1343291506
  * </p>
- * <b>Note:</b></br>
+ * <b>Note:</b><br/>
  * The templates are stored within the repo: https://github.com/hmcts/rdo-docmosis
- * </br>
+ * <br/>
  * There is a catch.  This applies to all NON-PRODUCTION environments.  The production environment follows a different
  * path, whereby the template would need to be uploaded to a sharepoint location which is documented in the page above.
  */
-@Slf4j
+@Service
 public class DocumentGenerationService {
 
     public static final String UNKNOWN_TEMPLATE_ERROR = "Unknown Template: ";
@@ -46,7 +50,7 @@ public class DocumentGenerationService {
     private final String tornadoAccessKey;
 
     /**
-     * Creates a new instance of {@link DocumentGenerationService} with the specified Tornado details to use it's
+     * Creates a new instance of {@link DocumentGenerationService} with the specified Tornado details to use its
      * service in generating the document.
      *
      * @param restTemplate     the RestTemplate to use for talking with the Tornado service
@@ -74,35 +78,46 @@ public class DocumentGenerationService {
      */
     public byte[] genPdfDocument(String templateName, String outputFileName, TornadoDocument sourceData)
         throws DocumentGenerationException {
-        if (Strings.isBlank(templateName)) {
+        validateGenDocInputs(templateName, outputFileName, sourceData);
+
+        try {
+            return generateDocument(generateTornadoRequestWrapper(templateName, outputFileName, sourceData));
+        } catch (RestClientException e) {
+            throw new DocumentGenerationException("Failed to connect with Tornado", e);
+        }
+    }
+
+    private void validateGenDocInputs(String templateName, String outputFileName, TornadoDocument sourceData)
+        throws DocumentGenerationException {
+        if (Strings.isBlank(templateName) || !templateName.toLowerCase(Locale.ROOT).endsWith(".docx")) {
             throw new DocumentGenerationException(UNKNOWN_TEMPLATE_ERROR + templateName);
         }
-        if (Strings.isBlank(outputFileName) || !outputFileName.toLowerCase().endsWith(".pdf")) {
+        if (Strings.isBlank(outputFileName) || !outputFileName.toLowerCase(Locale.ROOT).endsWith(".pdf")) {
             throw new DocumentGenerationException(INVALID_OUTPUT_FILE_NAME_ERROR + outputFileName);
         }
+        if (sourceData == null) {
+            throw new DocumentGenerationException("sourceData MUST NOT be null");
+        }
+    }
+
+    private TornadoRequestWrapper generateTornadoRequestWrapper(String templateName, String outputFileName,
+                                                                TornadoDocument sourceData) {
         TornadoRequestWrapper requestWrapper = new TornadoRequestWrapper();
         requestWrapper.setAccessKey(tornadoAccessKey);
         requestWrapper.setTemplateName(templateName);
         requestWrapper.setOutputName(outputFileName);
         requestWrapper.setData(sourceData);
-
-        try {
-            return generateDocument(requestWrapper);
-        } catch (RestClientResponseException e) {
-            throw new DocumentGenerationException("Failed to generate the PDF document", e);
-        }
+        return requestWrapper;
     }
 
     private byte[] generateDocument(TornadoRequestWrapper requestWrapper)
         throws DocumentGenerationException {
-
         String body;
         try {
             body = OBJECT_MAPPER.writeValueAsString(requestWrapper);
         } catch (JsonProcessingException e) {
             throw new DocumentGenerationException("Failed to convert the TornadoRequestWrapper to a string", e);
         }
-        log.info("Request body::\n{}", body);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json; charset=utf-8");
         HttpEntity<byte[]> request = new HttpEntity<>(body.getBytes(), headers);

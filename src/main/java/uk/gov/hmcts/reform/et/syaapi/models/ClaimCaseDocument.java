@@ -8,5 +8,5 @@ import lombok.Data;
  */
 @Data
 public class ClaimCaseDocument implements TornadoDocument {
-    String test_message;
+    String testMessage;
 }
