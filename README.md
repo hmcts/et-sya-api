@@ -1,6 +1,6 @@
 # et-sya-api
 
-[![Build Status](https://travis-ci.org/hmcts/et-sya-api.svg?branch=master)](https://travis-ci.org/hmcts/et-sya-api)
+[![Build Status](https://travis-ci.org/hmcts/et-sya-api.svg?branch=master)](https://travis-ci.org/hmcts/et-sya-api) 
 
 ## Notes
 
