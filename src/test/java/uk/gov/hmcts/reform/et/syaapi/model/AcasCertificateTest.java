@@ -20,11 +20,18 @@ class AcasCertificateTest {
     }
 
     @Test
-    void testAcasCertificatePojo() {
+    void testAcasCertificateNumber() {
+        AcasCertificate acasCertificate = new AcasCertificate();
+        acasCertificate.setCertificateNumber(NUM_STRING);
+        assertThat(NUM_STRING).isEqualTo(acasCertificate.getCertificateNumber());
+
+    }
+
+    @Test
+    void testAcasCertificateDocument() {
         AcasCertificate acasCertificate = new AcasCertificate();
         acasCertificate.setCertificateDocument(TEST_STRING);
         acasCertificate.setCertificateNumber(NUM_STRING);
-        assertThat(NUM_STRING).isEqualTo(acasCertificate.getCertificateNumber());
         assertThat(TEST_STRING).isEqualTo(acasCertificate.getCertificateDocument());
     }
 }
