@@ -41,11 +41,11 @@ import java.util.Locale;
 @Service
 public class DocumentGenerationService {
 
-    public static final String UNKNOWN_TEMPLATE_ERROR = "Unknown Template: ";
-    public static final String INVALID_OUTPUT_FILE_NAME_ERROR = "Invalid output file name: ";
-    public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final String UNKNOWN_TEMPLATE_ERROR = "Unknown Template: ";
+    private static final String INVALID_OUTPUT_FILE_NAME_ERROR = "Invalid output file name: ";
 
     private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
     private final String tornadoUrl;
     private final String tornadoAccessKey;
 
@@ -54,13 +54,15 @@ public class DocumentGenerationService {
      * service in generating the document.
      *
      * @param restTemplate     the RestTemplate to use for talking with the Tornado service
+     * @param objectMapper     the {@link ObjectMapper} to generate JSON from
      * @param tornadoUrl       the Tornado URL endpoint to call to generate the document
      * @param tornadoAccessKey the access key Tornado will require for authentication
      */
-    public DocumentGenerationService(RestTemplate restTemplate,
+    public DocumentGenerationService(RestTemplate restTemplate, ObjectMapper objectMapper,
                                      @Value("${tornado.url:http://localhost:8090/rs/render}") String tornadoUrl,
                                      @Value("${tornado.access.key}") String tornadoAccessKey) {
         this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
         this.tornadoUrl = tornadoUrl;
         this.tornadoAccessKey = tornadoAccessKey;
     }
@@ -114,7 +116,7 @@ public class DocumentGenerationService {
         throws DocumentGenerationException {
         String body;
         try {
-            body = OBJECT_MAPPER.writeValueAsString(requestWrapper);
+            body = objectMapper.writeValueAsString(requestWrapper);
         } catch (JsonProcessingException e) {
             throw new DocumentGenerationException("Failed to convert the TornadoRequestWrapper to a string", e);
         }

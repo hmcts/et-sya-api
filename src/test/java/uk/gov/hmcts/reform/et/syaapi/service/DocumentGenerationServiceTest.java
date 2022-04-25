@@ -1,5 +1,8 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
@@ -16,6 +19,9 @@ import java.net.UnknownHostException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
@@ -38,7 +44,8 @@ class DocumentGenerationServiceTest {
     @BeforeEach
     void setup() {
         RestTemplate restTemplate = new RestTemplate();
-        documentGenerationService = new DocumentGenerationService(restTemplate,
+        ObjectMapper objectMapper = new ObjectMapper();
+        documentGenerationService = new DocumentGenerationService(restTemplate, objectMapper,
             TORNADO_API_URL, SOME_KEY);
         mockServer = MockRestServiceServer.createServer(restTemplate);
     }
@@ -58,6 +65,24 @@ class DocumentGenerationServiceTest {
         byte[] pdfDocument = documentGenerationService.genPdfDocument(
             EM_TRB_HELLO_WORLD_DOCX, DOCUMENT_PDF, claimCaseDocument);
         assertThat(pdfDocument).hasSize(RESPONSE_BODY.length);
+    }
+
+    @Test
+    void genDocumentWithDataFailingToConvertToJsonThrowsDocumentGenerationException()
+        throws JsonProcessingException {
+        RestTemplate restTemplate = new RestTemplate();
+        ObjectMapper objectMapper = mock(ObjectMapper.class);
+        given(objectMapper.writeValueAsString(any()))
+            .willThrow(new JsonParseException(null, "wellthatworkednot"));
+        DocumentGenerationService localDocumentGenerationService = new DocumentGenerationService(restTemplate,
+            objectMapper,
+            TORNADO_API_URL, SOME_KEY);
+
+        DocumentGenerationException exception = assertThrows(
+            DocumentGenerationException.class,
+            () -> localDocumentGenerationService.genPdfDocument(
+                EM_TRB_HELLO_WORLD_DOCX, DOCUMENT_PDF, new ClaimCaseDocument()));
+        assertThat(exception.getMessage()).isEqualTo("Failed to convert the TornadoRequestWrapper to a string");
     }
 
     @Test
