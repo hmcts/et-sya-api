@@ -13,7 +13,7 @@ public class RestTemplateConfiguration {
     /**
      * Gets the RestTemplate bean to be used/injected into project code where needed.
      *
-     * @return the RestTemplate to be injected into project modules using it
+     * @return the RestTemplate to be injected into project modules using it.
      */
     @Bean
     public RestTemplate getRestTemplate() {
