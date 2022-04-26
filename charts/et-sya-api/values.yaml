@@ -13,8 +13,6 @@ java:
     et:
       secrets:
         - AppInsightsInstrumentationKey
-    et-aat:
-      secrets:
         - name: tornado-access-key
           alias: TORNADO_ACCESS_KEY
 
