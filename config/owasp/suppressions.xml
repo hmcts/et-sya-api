@@ -26,4 +26,7 @@
     <packageUrl regex="true">^pkg:maven/org\.springframework\.retry/spring\-retry@.*$</packageUrl>
     <cpe>cpe:/a:vmware:spring_framework</cpe>
   </suppress>
+  <suppress until="2022-07-25">
+    <cve>CVE-2022-22968</cve>
+  </suppress>
 </suppressions>
