@@ -26,7 +26,7 @@ public class NotificationService {
      * @return response from notification api
      */
 
-    public SendEmailResponse sendMail(
+    public SendEmailResponse sendEMail(
         String templateId,
         String targetEmail,
         Map<String, String> parameters,
@@ -35,7 +35,6 @@ public class NotificationService {
         SendEmailResponse sendEmailResponse;
         try {
             sendEmailResponse = notificationClient.sendEmail(templateId, targetEmail, parameters, reference);
-            log.info("Email sent successfully with templateId - {} to {}", templateId, targetEmail);
         } catch (NotificationClientException ne) {
             log.error("Error while trying to sending notification to client", ne);
             throw new NotificationException(ne);
