@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.context.annotation.Import;
-import uk.gov.hmcts.ecm.common.model.ccd.Et1CaseData;
+import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

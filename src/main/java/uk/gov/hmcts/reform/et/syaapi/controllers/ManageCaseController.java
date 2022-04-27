@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.ecm.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
