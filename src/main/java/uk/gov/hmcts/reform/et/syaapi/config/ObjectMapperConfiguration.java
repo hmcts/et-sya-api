@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.NoArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -8,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
  * The configuration used to create a ObjectMapper for injection purposes.
  */
 @Configuration
+@NoArgsConstructor
 public class ObjectMapperConfiguration {
 
     /**
