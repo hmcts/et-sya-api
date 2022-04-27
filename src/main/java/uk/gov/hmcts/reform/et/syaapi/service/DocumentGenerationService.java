@@ -33,7 +33,7 @@ import java.util.Locale;
  * environments at: https://tools.hmcts.net/confluence/pages/viewpage.action?pageId=1343291506
  * </p>
  * <b>Note:</b><br/>
- * The templates are stored within the repo: https://github.com/hmcts/rdo-docmosis
+ * The templates are stored within the repo: https://github.com/hmcts/rdo-docmosis.
  * <br/>
  * There is a catch.  This applies to all NON-PRODUCTION environments.  The production environment follows a different
  * path, whereby the template would need to be uploaded to a sharepoint location which is documented in the page above.
