@@ -75,12 +75,12 @@ public class CaseService {
         String s2sToken = authTokenGenerator.generate();
         log.info("Generated s2s");
         UserDetails userDetails = idamClient.getUserDetails(authorization);
-        log.info("User Id: " + "123456");
+        log.info("User Id: " + userDetails.getId());
         log.info("Roles : " + userDetails.getRoles());
         var ccdCase = ccdApiClient.startForCaseworker(
             authorization,
             s2sToken,
-            "123456",
+            userDetails.getId(),
             JURISDICTION_ID,
             caseType,
             eventType
@@ -94,7 +94,7 @@ public class CaseService {
         return ccdApiClient.submitForCaseworker(
             authorization,
             s2sToken,
-            "123456",
+            userDetails.getId(),
             JURISDICTION_ID,
             caseType,
             true,
@@ -156,7 +156,7 @@ public class CaseService {
         return ccdApiClient.startEventForCaseWorker(
             authorization,
             s2sToken,
-            "123456",
+            userDetails.getId(),
             JURISDICTION_ID,
             caseType,
             caseId,
@@ -182,7 +182,7 @@ public class CaseService {
         CaseDetails caseDetails = ccdApiClient.submitEventForCaseWorker(
             authorization,
             s2sToken,
-            "123456",
+            userDetails.getId(),
             JURISDICTION_ID,
             caseType,
             caseId,
