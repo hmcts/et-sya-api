@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.et.syaapi.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +16,6 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
-import uk.gov.hmcts.reform.et.syaapi.search.Query;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 
 import java.util.List;
@@ -25,7 +23,6 @@ import javax.validation.constraints.NotNull;
 
 import static org.springframework.http.ResponseEntity.ok;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ZERO_INTEGER;
 
 @Slf4j
 @RequiredArgsConstructor
