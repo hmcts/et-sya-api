@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 
+import java.util.Map;
+
 @Slf4j
 @Service
 public class EmployeeObjectMapper {
@@ -25,6 +27,13 @@ public class EmployeeObjectMapper {
         } catch (JsonProcessingException e) {
             log.error("Failed to parse the input json request body,", e);
         }
+        return data;
+    }
+
+
+    public Et1CaseData getEmploymentCaseData(Map<String, Object> caseData) {
+        ObjectMapper mapper = new ObjectMapper();
+        Et1CaseData data = mapper.convertValue(caseData, Et1CaseData.class);
         return data;
     }
 }

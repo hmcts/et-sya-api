@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -151,7 +152,7 @@ class CaseServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             EtSyaConstants.SCOTLAND_CASE_TYPE,
             EtSyaConstants.DRAFT_EVENT_TYPE,
-            requestCaseData
+            new HashMap<>()
         );
 
         assertEquals(expectedDetails, caseDetails);

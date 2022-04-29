@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.reform.ccd.client.model.CallbackRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
@@ -58,29 +59,36 @@ public class ManageCaseController {
         return ok(caseService.getCaseDataByUser(authorization, caseType, query.toString()));
     }
 
-    @PostMapping("/case-type/{caseType}/event-type/{eventType}/case")
+    @PostMapping("/initiate-case")
     @Operation(summary = "Create a new default case")
     @ApiResponseGroup
     public ResponseEntity<CaseDetails> createCase(
         @RequestHeader(AUTHORIZATION) String authorization,
-        @PathVariable @NotNull String caseType,
-        @PathVariable @NotNull String eventType,
-        @RequestBody String caseData
+        @NotNull @RequestBody CallbackRequest callback
     ) {
-        var caseDetails = caseService.createCase(authorization, caseType, eventType, caseData);
+        log.info("Received initiate-case request - caseTypeId: {} eventId: {}",
+                 callback.getCaseDetails().getCaseTypeId(), callback.getEventId());
+
+        var caseDetails = caseService.createCase(authorization, callback.getCaseDetails().getCaseTypeId(),
+                                                            callback.getEventId(),
+                                                            callback.getCaseDetails().getData());
         return ok(caseDetails);
     }
 
-    @PutMapping("/case-type/{caseType}/event-type/{eventType}/{caseId}")
+    @PutMapping("/manage-case")
     @Operation(summary = "Update draft case API method")
     @ApiResponseGroup
     public CaseData updateCase(
         @RequestHeader(AUTHORIZATION) String authorization,
-        @PathVariable @NotNull String caseType,
-        @PathVariable @NotNull String eventType,
-        @PathVariable @NotNull String caseId,
-        @RequestBody String caseData
+        @NotNull @RequestBody CallbackRequest callback
     ) {
-        return caseService.triggerEvent(authorization, caseId, caseType, CaseEvent.valueOf(eventType), caseData);
+
+        log.info("Received manage-case request - caseTypeId: {} eventId: {}",
+                 callback.getCaseDetails().getCaseTypeId(), callback.getEventId());
+
+        return caseService.triggerEvent(authorization, String.valueOf(callback.getCaseDetails().getId()),
+                                        callback.getCaseDetails().getCaseTypeId(),
+                                        CaseEvent.valueOf(callback.getEventId()),
+                                        callback.getCaseDetails().getData());
     }
 }

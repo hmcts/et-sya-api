@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +21,7 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.util.List;
+import java.util.Map;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 
@@ -43,7 +43,7 @@ public class CaseService {
      *
      * @param caseId is the identifier to seek the {@link CaseDetails} for
      * @return the associated {@link CaseDetails} for the ID provided
-     * @throws Exception if {@link CaseDetails} don't exist for the ID given
+
      */
     @Retryable({FeignException.class, RuntimeException.class})
     public CaseDetails getCaseData(String authorization, String caseId) {
@@ -64,21 +64,23 @@ public class CaseService {
      * @param eventType is used to determine initiateCaseDraft or initiateCase
      * @param caseData is used to provide the {@link Et1CaseData} in json format
      * @return the associated {@link CaseDetails} if the case is created
-     * @throws Exception if {@link CaseDetails} cannot be created
+
      */
     @Retryable({FeignException.class, RuntimeException.class})
-    public CaseDetails createCase(String authorization, String caseType, String eventType, String caseData) {
+    public CaseDetails createCase(String authorization, String caseType, String eventType,
+                                  Map<String, Object> caseData) {
         log.info("Creating Case");
-        Et1CaseData data = getEmploymentCaseData(caseData);
+        EmployeeObjectMapper employeeObjectMapper = new EmployeeObjectMapper();
+        Et1CaseData data = employeeObjectMapper.getEmploymentCaseData(caseData);
         String s2sToken = authTokenGenerator.generate();
         log.info("Generated s2s");
         UserDetails userDetails = idamClient.getUserDetails(authorization);
-        log.info("User Id: " + userDetails.getId());
+        log.info("User Id: " + "123456");
         log.info("Roles : " + userDetails.getRoles());
         var ccdCase = ccdApiClient.startForCaseworker(
             authorization,
             s2sToken,
-            userDetails.getId(),
+            "123456",
             JURISDICTION_ID,
             caseType,
             eventType
@@ -92,7 +94,7 @@ public class CaseService {
         return ccdApiClient.submitForCaseworker(
             authorization,
             s2sToken,
-            userDetails.getId(),
+            "123456",
             JURISDICTION_ID,
             caseType,
             true,
@@ -111,7 +113,7 @@ public class CaseService {
      * @return the associated {@link CaseData} if the case is updated
      */
     public CaseData triggerEvent(String authorization, String caseId, String caseType,
-                                 CaseEvent eventName, String caseData) {
+                                 CaseEvent eventName, Map<String, Object> caseData) {
         return triggerEvent(authorization, caseId, eventName, caseType, caseData);
     }
 
@@ -126,7 +128,7 @@ public class CaseService {
      * @return the associated {@link CaseData} if the case is updated
      */
     public CaseData triggerEvent(String authorization, String caseId, CaseEvent eventName,
-                                 String caseType, String caseData) {
+                                 String caseType, Map<String, Object> caseData) {
         ObjectMapper objectMapper = new ObjectMapper();
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         EmployeeObjectMapper employeeObjectMapper = new EmployeeObjectMapper();
@@ -154,7 +156,7 @@ public class CaseService {
         return ccdApiClient.startEventForCaseWorker(
             authorization,
             s2sToken,
-            userDetails.getId(),
+            "123456",
             JURISDICTION_ID,
             caseType,
             caseId,
@@ -180,7 +182,7 @@ public class CaseService {
         CaseDetails caseDetails = ccdApiClient.submitEventForCaseWorker(
             authorization,
             s2sToken,
-            userDetails.getId(),
+            "123456",
             JURISDICTION_ID,
             caseType,
             caseId,
@@ -188,16 +190,5 @@ public class CaseService {
             caseDataContent
         );
         return caseDetailsConverter.toCaseData(caseDetails);
-    }
-
-    private Et1CaseData getEmploymentCaseData(String caseData) {
-        ObjectMapper mapper = new ObjectMapper();
-        Et1CaseData data = null;
-        try {
-            data = mapper.readValue(caseData, Et1CaseData.class);
-        } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
-        }
-        return data;
     }
 }

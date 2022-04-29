@@ -30,6 +30,7 @@ import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -172,7 +173,7 @@ class ManageCaseControllerTest {
             TEST_SERVICE_AUTH_TOKEN,
             EtSyaConstants.SCOTLAND_CASE_TYPE,
             EtSyaConstants.DRAFT_EVENT_TYPE,
-            requestCaseData
+            new HashMap<>()
         ))
             .thenReturn(expectedDetails);
 
