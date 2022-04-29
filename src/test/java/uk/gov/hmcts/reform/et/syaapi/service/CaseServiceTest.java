@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.EqualsAndHashCode;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,7 +16,6 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.client.CcdApiClient;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
-import uk.gov.hmcts.reform.et.syaapi.search.Query;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
 import uk.gov.hmcts.reform.et.syaapi.utils.TestConstants;
@@ -41,6 +39,9 @@ class CaseServiceTest {
     private static final String CASE_ID = "TEST_CASE_ID";
     private static final String USER_ID = "TEST_USER_ID";
     private static final String JURISDICTION_ID = "EMPLOYMENT";
+    private static final String USER_EMAIL = "test@gmail.com";
+    private static final String USER_FORENAME = "Joe";
+    private static final String USER_SURNAME = "Bloggs";
 
     private final CaseDetails expectedDetails = ResourceLoader.fromString(
         "responses/caseDetails.json",
@@ -96,15 +97,12 @@ class CaseServiceTest {
 
     @Test
     void shouldGetCaseDetailsbyUser() {
-        String searchString = "{\"match_all\": {}}";
-        Query query = new Query(QueryBuilders.wrapperQuery(searchString), 0);
-
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
             USER_ID,
-            "test@gmail.com",
-            "Joe",
-            "Bloggs",
+            USER_EMAIL,
+            USER_FORENAME,
+            USER_SURNAME,
             null
         ));
         when(ccdApiClient.searchForCitizen(
@@ -132,9 +130,9 @@ class CaseServiceTest {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
             USER_ID,
-            "test@gmail.com",
-            "Joe",
-            "Bloggs",
+            USER_EMAIL,
+            USER_FORENAME,
+            USER_SURNAME,
             null
         ));
         when(ccdApiClient.startForCitizen(
@@ -171,9 +169,9 @@ class CaseServiceTest {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
             USER_ID,
-            "test@gmail.com",
-            "Joe",
-            "Bloggs",
+            USER_EMAIL,
+            USER_FORENAME,
+            USER_SURNAME,
             null
         ));
 
@@ -209,9 +207,9 @@ class CaseServiceTest {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
             USER_ID,
-            "test@gmail.com",
-            "Joe",
-            "Bloggs",
+            USER_EMAIL,
+            USER_FORENAME,
+            USER_SURNAME,
             null
         ));
 
