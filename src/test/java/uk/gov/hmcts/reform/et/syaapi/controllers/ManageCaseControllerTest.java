@@ -125,7 +125,7 @@ class ManageCaseControllerTest {
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(UserDetails.builder().id(USER_ID).build());
         when(caseService.getCaseDataByUser(
             TEST_SERVICE_AUTH_TOKEN,
-            CASE_TYPE, query.toString()
+            CASE_TYPE
         ))
             .thenReturn(requestCaseDataList);
 

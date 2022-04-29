@@ -54,8 +54,7 @@ public class ManageCaseController {
         @PathVariable String caseType,
         @RequestBody String searchString
     ) {
-        Query query = new Query(QueryBuilders.wrapperQuery(searchString), ZERO_INTEGER);
-        return ok(caseService.getCaseDataByUser(authorization, caseType, query.toString()));
+        return ok(caseService.getCaseDataByUser(authorization, caseType));
     }
 
     @PostMapping("/case-type/{caseType}/event-type/{eventType}/case")
