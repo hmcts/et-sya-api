@@ -112,7 +112,7 @@ public class CaseService {
      * @param caseData is used to provide the {@link Et1CaseData} in json format
      * @return the associated {@link CaseData} if the case is updated
      */
-    public CaseData triggerEvent(String authorization, String caseId, String caseType,
+    public CaseDetails triggerEvent(String authorization, String caseId, String caseType,
                                  CaseEvent eventName, Map<String, Object> caseData) {
         return triggerEvent(authorization, caseId, eventName, caseType, caseData);
     }
@@ -127,7 +127,7 @@ public class CaseService {
      * @param caseData is used to provide the {@link Et1CaseData} in json format
      * @return the associated {@link CaseData} if the case is updated
      */
-    public CaseData triggerEvent(String authorization, String caseId, CaseEvent eventName,
+    public CaseDetails triggerEvent(String authorization, String caseId, CaseEvent eventName,
                                  String caseType, Map<String, Object> caseData) {
         ObjectMapper objectMapper = new ObjectMapper();
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
@@ -136,7 +136,7 @@ public class CaseService {
         return submitUpdate(authorization, caseId,
                             caseDetailsConverter.caseDataContent(startEventResponse,
                             employeeObjectMapper.getEmploymentCaseData(caseData)),
-                            caseType, caseDetailsConverter);
+                            caseType);
     }
 
     /**
@@ -171,15 +171,14 @@ public class CaseService {
      * @param caseId used to retrive get case details
      * @param caseDataContent provides overall content of the case
      * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
-     * @param caseDetailsConverter used to convert {@link Et1CaseData} from json format to generic java object
      * @return the associated {@link CaseData} if the case is updated
      */
-    public CaseData submitUpdate(String authorization, String caseId,
-                                 CaseDataContent caseDataContent, String caseType,
-                                CaseDetailsConverter caseDetailsConverter) {
+    public CaseDetails submitUpdate(String authorization, String caseId,
+                                 CaseDataContent caseDataContent, String caseType
+                                ) {
         UserDetails userDetails = idamClient.getUserDetails(authorization);
         String s2sToken = authTokenGenerator.generate();
-        CaseDetails caseDetails = ccdApiClient.submitEventForCaseWorker(
+        return ccdApiClient.submitEventForCaseWorker(
             authorization,
             s2sToken,
             userDetails.getId(),
@@ -189,6 +188,5 @@ public class CaseService {
             true,
             caseDataContent
         );
-        return caseDetailsConverter.toCaseData(caseDetails);
     }
 }

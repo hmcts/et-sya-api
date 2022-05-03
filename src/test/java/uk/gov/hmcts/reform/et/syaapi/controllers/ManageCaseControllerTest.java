@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
@@ -69,11 +68,6 @@ class ManageCaseControllerTest {
     private final StartEventResponse startEventResponse = ResourceLoader.fromString(
         "responses/startEventResponse.json",
         StartEventResponse.class
-    );
-
-    private final CaseData caseData = ResourceLoader.fromString(
-        "requests/caseData.json",
-        CaseData.class
     );
 
     @Autowired
@@ -179,7 +173,7 @@ class ManageCaseControllerTest {
 
         // when
         mockMvc.perform(post(
-                            "/case-type/{caseType}/event-type/{eventType}/case",
+                            "/initiate-case",
                             EtSyaConstants.SCOTLAND_CASE_TYPE,
                             EtSyaConstants.DRAFT_EVENT_TYPE
                         )
@@ -223,15 +217,13 @@ class ManageCaseControllerTest {
             TEST_SERVICE_AUTH_TOKEN,
             TEST_CASE_ID,
             caseDetailsConverter.caseDataContent(startEventResponse, null),
-            EtSyaConstants.SCOTLAND_CASE_TYPE, caseDetailsConverter)
-        ).thenReturn(caseData);
+            EtSyaConstants.SCOTLAND_CASE_TYPE)
+        ).thenReturn(expectedDetails);
 
         // when
         mockMvc.perform(put(
-                "/case-type/{caseType}/event-type/{eventType}/{caseId}}",
-                EtSyaConstants.SCOTLAND_CASE_TYPE,
-                CaseEvent.UPDATE_CASE_DRAFT,
-                TEST_CASE_ID
+                "/manage-case",
+                "1646225213651590"
                         )
                             .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
                             .content(requestCaseData)

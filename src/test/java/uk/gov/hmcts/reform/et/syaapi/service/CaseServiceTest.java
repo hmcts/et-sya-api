@@ -7,7 +7,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -29,8 +28,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
@@ -138,6 +136,7 @@ class CaseServiceTest {
             EtSyaConstants.DRAFT_EVENT_TYPE
         )).thenReturn(
             startEventResponse);
+
         when(ccdApiClient.submitForCaseworker(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
@@ -229,21 +228,13 @@ class CaseServiceTest {
             caseDataContent
         )).thenReturn(expectedDetails);
 
-        StartEventResponse eventResponse = caseService.startUpdate(
-            TEST_SERVICE_AUTH_TOKEN,
-            CASE_ID,
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
-            UPDATE_CASE_DRAFT
-        );
-
-        CaseData caseData = caseService.submitUpdate(
+        CaseDetails caseDetails = caseService.submitUpdate(
             TEST_SERVICE_AUTH_TOKEN,
             CASE_ID,
             caseDataContent,
-            EtSyaConstants.SCOTLAND_CASE_TYPE, caseDetailsConverter
+            EtSyaConstants.SCOTLAND_CASE_TYPE
         );
 
-        assertNull(caseData);
-        assertEquals(eventResponse.getCaseDetails().getJurisdiction(), "EMPLOYMENT");
+        assertEquals(caseDetails, expectedDetails);
     }
 }
