@@ -85,9 +85,10 @@ public class ManageCaseController {
         log.info("Received manage-case request - caseTypeId: {} eventId: {}",
                  callback.getCaseDetails().getCaseTypeId(), callback.getEventId());
 
-        return caseService.triggerEvent(authorization, String.valueOf(callback.getCaseDetails().getId()),
+        var caseDetails = caseService.triggerEvent(authorization, String.valueOf(callback.getCaseDetails().getId()),
                                         callback.getCaseDetails().getCaseTypeId(),
                                         CaseEvent.valueOf(callback.getEventId()),
-                                        callback.getCaseDetails().getData());
+                                        callback.getCaseDetails().getData());;
+        return caseDetails;
     }
 }

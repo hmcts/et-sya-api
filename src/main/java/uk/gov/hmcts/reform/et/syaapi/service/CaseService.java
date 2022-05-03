@@ -61,7 +61,7 @@ public class CaseService {
      *
      * @param authorization is used to seek the {@link UserDetails} for request
      * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
-     * @param eventType is used to determine initiateCaseDraft or initiateCase
+     * @param eventType is used to determine INITIATE_CASE_DRAFT
      * @param caseData is used to provide the {@link Et1CaseData} in json format
      * @return the associated {@link CaseDetails} if the case is created
 
@@ -171,7 +171,6 @@ public class CaseService {
      * @param caseId used to retrive get case details
      * @param caseDataContent provides overall content of the case
      * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
-     * @return the associated {@link CaseData} if the case is updated
      */
     public CaseDetails submitUpdate(String authorization, String caseId,
                                  CaseDataContent caseDataContent, String caseType

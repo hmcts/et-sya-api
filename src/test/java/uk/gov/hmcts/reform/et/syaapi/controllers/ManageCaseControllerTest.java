@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import feign.Request;
 import feign.RequestTemplate;
@@ -13,6 +15,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.hmcts.reform.ccd.client.model.CallbackRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
@@ -161,24 +164,29 @@ class ManageCaseControllerTest {
     @SneakyThrows
     @Test
     void shouldCreateDraftCase() {
+
+        CallbackRequest callbackRequest = CallbackRequest.builder()
+            .eventId("INITIATE_CASE_DRAFT")
+            .caseDetails(CaseDetails.builder().caseTypeId("ET_Scotland").build())
+            .build();
+
         // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(caseService.createCase(
             TEST_SERVICE_AUTH_TOKEN,
             EtSyaConstants.SCOTLAND_CASE_TYPE,
             EtSyaConstants.DRAFT_EVENT_TYPE,
-            new HashMap<>()
+            null
         ))
             .thenReturn(expectedDetails);
 
         // when
         mockMvc.perform(post(
-                            "/initiate-case",
-                            EtSyaConstants.SCOTLAND_CASE_TYPE,
-                            EtSyaConstants.DRAFT_EVENT_TYPE
+                            "/initiate-case"
                         )
                             .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
-                            .content(requestCaseData)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(toJson(callbackRequest))
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.case_type_id").value(expectedDetails.getCaseTypeId()))
@@ -194,6 +202,11 @@ class ManageCaseControllerTest {
     @SneakyThrows
     @Test
     void shouldStartUpdateCase() {
+
+        CallbackRequest callbackRequest = CallbackRequest.builder()
+            .eventId("UPDATE_CASE_DRAFT")
+            .caseDetails(CaseDetails.builder().caseTypeId("ET_Scotland").build())
+            .build();
         // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
@@ -204,21 +217,13 @@ class ManageCaseControllerTest {
             null
         ));
 
-        when(caseService.startUpdate(
-                 TEST_SERVICE_AUTH_TOKEN,
-                 TEST_CASE_ID,
-                 EtSyaConstants.SCOTLAND_CASE_TYPE,
-                 CaseEvent.UPDATE_CASE_DRAFT
-             )
-        ).thenReturn(
-            startEventResponse);
-
-        when(caseService.submitUpdate(
+        when(caseService.triggerEvent(
             TEST_SERVICE_AUTH_TOKEN,
-            TEST_CASE_ID,
-            caseDetailsConverter.caseDataContent(startEventResponse, null),
-            EtSyaConstants.SCOTLAND_CASE_TYPE)
-        ).thenReturn(expectedDetails);
+            "1646225213651590",
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            CaseEvent.valueOf("UPDATE_CASE_DRAFT"),
+            null
+        )).thenReturn(expectedDetails);
 
         // when
         mockMvc.perform(put(
@@ -226,9 +231,21 @@ class ManageCaseControllerTest {
                 "1646225213651590"
                         )
                             .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
-                            .content(requestCaseData)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(toJson(callbackRequest))
             )
             .andExpect(status().isOk());
+    }
+
+    protected String toJson(Object input) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.writeValueAsString(input);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(
+                String.format("Failed to serialize '%s' to JSON", input.getClass().getSimpleName()), e
+            );
+        }
     }
 
 }

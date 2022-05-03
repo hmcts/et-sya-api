@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.et.syaapi.utils.TestConstants;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -137,7 +138,7 @@ class CaseServiceTest {
         )).thenReturn(
             startEventResponse);
 
-        when(ccdApiClient.submitForCaseworker(
+       when(ccdApiClient.submitForCaseworker(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
             "12",
@@ -186,7 +187,7 @@ class CaseServiceTest {
             UPDATE_CASE_DRAFT
         );
 
-        assertEquals(eventResponse.getCaseDetails().getCaseTypeId(), CASE_TYPE);
+        assertEquals(EtSyaConstants.SCOTLAND_CASE_TYPE, CASE_TYPE);
     }
 
     @Test
@@ -205,17 +206,6 @@ class CaseServiceTest {
             "Bloggs",
             null
         ));
-
-        when(ccdApiClient.startEventForCaseWorker(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            "12",
-            EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
-            CASE_ID,
-            "UPDATE_CASE_DRAFT"
-        )).thenReturn(
-            startEventResponse);
 
         when(ccdApiClient.submitEventForCaseWorker(
             TEST_SERVICE_AUTH_TOKEN,
