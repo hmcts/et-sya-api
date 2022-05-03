@@ -24,12 +24,11 @@ import uk.gov.hmcts.reform.et.syaapi.utils.TestConstants;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
@@ -138,7 +137,7 @@ class CaseServiceTest {
         )).thenReturn(
             startEventResponse);
 
-       when(ccdApiClient.submitForCaseworker(
+        when(ccdApiClient.submitForCaseworker(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
             "12",
@@ -187,7 +186,7 @@ class CaseServiceTest {
             UPDATE_CASE_DRAFT
         );
 
-        assertEquals(EtSyaConstants.SCOTLAND_CASE_TYPE, CASE_TYPE);
+        assertEquals(eventResponse.getCaseDetails().getCaseTypeId(), CASE_TYPE);
     }
 
     @Test

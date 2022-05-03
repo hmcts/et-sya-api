@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import feign.Request;
 import feign.RequestTemplate;
@@ -17,22 +15,18 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
-import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.search.Query;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
-import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -42,7 +36,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.TEST_CASE_ID;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 @WebMvcTest(
@@ -59,18 +52,10 @@ class ManageCaseControllerTest {
         "responses/caseDetails.json",
         CaseDetails.class
     );
-    private final String requestCaseData = ResourceUtil.resourceAsString(
-        "requests/caseData.json"
-    );
 
     private final List<CaseDetails> requestCaseDataList = ResourceLoader.fromStringToList(
         "responses/caseDetailsList.json",
         CaseDetails.class
-    );
-
-    private final StartEventResponse startEventResponse = ResourceLoader.fromString(
-        "responses/startEventResponse.json",
-        StartEventResponse.class
     );
 
     @Autowired
@@ -84,9 +69,6 @@ class ManageCaseControllerTest {
 
     @MockBean
     private VerifyTokenService verifyTokenService;
-
-    @MockBean
-    private CaseDetailsConverter caseDetailsConverter;
 
     ManageCaseControllerTest() throws IOException {
         // Default constructor
@@ -186,7 +168,7 @@ class ManageCaseControllerTest {
                         )
                             .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(toJson(callbackRequest))
+                            .content(ResourceLoader.toJson(callbackRequest))
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.case_type_id").value(expectedDetails.getCaseTypeId()))
@@ -232,20 +214,10 @@ class ManageCaseControllerTest {
                         )
                             .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(toJson(callbackRequest))
+                            .content(ResourceLoader.toJson(callbackRequest))
             )
             .andExpect(status().isOk());
     }
 
-    protected String toJson(Object input) {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.writeValueAsString(input);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(
-                String.format("Failed to serialize '%s' to JSON", input.getClass().getSimpleName()), e
-            );
-        }
-    }
 
 }

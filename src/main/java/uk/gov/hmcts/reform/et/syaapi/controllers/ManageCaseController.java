@@ -77,7 +77,7 @@ public class ManageCaseController {
     @PutMapping("/manage-case")
     @Operation(summary = "Update draft case API method")
     @ApiResponseGroup
-    public CaseDetails updateCase(
+    public ResponseEntity<CaseDetails> updateCase(
         @RequestHeader(AUTHORIZATION) String authorization,
         @NotNull @RequestBody CallbackRequest callback
     ) {
@@ -88,7 +88,7 @@ public class ManageCaseController {
         var caseDetails = caseService.triggerEvent(authorization, String.valueOf(callback.getCaseDetails().getId()),
                                         callback.getCaseDetails().getCaseTypeId(),
                                         CaseEvent.valueOf(callback.getEventId()),
-                                        callback.getCaseDetails().getData());;
-        return caseDetails;
+                                        callback.getCaseDetails().getData());
+        return ok(caseDetails);
     }
 }

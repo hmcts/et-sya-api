@@ -173,8 +173,7 @@ public class CaseService {
      * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
      */
     public CaseDetails submitUpdate(String authorization, String caseId,
-                                 CaseDataContent caseDataContent, String caseType
-                                ) {
+                                    CaseDataContent caseDataContent, String caseType) {
         UserDetails userDetails = idamClient.getUserDetails(authorization);
         String s2sToken = authTokenGenerator.generate();
         return ccdApiClient.submitEventForCaseWorker(
