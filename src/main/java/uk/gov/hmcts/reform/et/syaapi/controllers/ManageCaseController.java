@@ -4,6 +4,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +21,7 @@ import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 
+import java.io.IOException;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 
@@ -78,5 +82,27 @@ public class ManageCaseController {
         @RequestBody String caseData
     ) {
         return caseService.triggerEvent(authorization, caseId, caseType, CaseEvent.valueOf(eventType), caseData);
+    }
+
+    @GetMapping("/generate-pdf/{caseId}")
+    @Operation(summary = "Generated submitted case pdf")
+    @ApiResponseGroup
+    public ResponseEntity<InputStreamResource> generatePdf(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @PathVariable String caseId
+    )  throws IOException {
+
+        /*
+         todo: confirm if authorization is required
+         todo: add DocumentGenerationService
+        */
+        ClassPathResource pdfFile = new ClassPathResource("HelloWorld.pdf");
+        return ResponseEntity
+            .ok()
+            .contentLength(pdfFile.contentLength())
+            .contentType(
+                MediaType.parseMediaType("application/octet-stream"))
+            .body(new InputStreamResource(pdfFile.getInputStream()));
+
     }
 }
