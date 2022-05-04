@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.EqualsAndHashCode;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -12,12 +11,10 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
-import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.client.CcdApiClient;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
-import uk.gov.hmcts.reform.et.syaapi.search.Query;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
 import uk.gov.hmcts.reform.et.syaapi.utils.TestConstants;
@@ -26,6 +23,7 @@ import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,6 +36,11 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUT
 class CaseServiceTest {
     private static final String CASE_TYPE = "ET_Scotland";
     private static final String CASE_ID = "TEST_CASE_ID";
+    private static final String USER_ID = "TEST_USER_ID";
+    private static final String JURISDICTION_ID = "EMPLOYMENT";
+    private static final String USER_EMAIL = "test@gmail.com";
+    private static final String USER_FORENAME = "Joe";
+    private static final String USER_SURNAME = "Bloggs";
 
     private final CaseDetails expectedDetails = ResourceLoader.fromString(
         "responses/caseDetails.json",
@@ -72,8 +75,6 @@ class CaseServiceTest {
     @Mock
     private CaseDetailsConverter caseDetailsConverter;
 
-    @Mock
-    SearchResult searchResult;
 
     CaseServiceTest() throws IOException {
         // Default constructor
@@ -95,21 +96,27 @@ class CaseServiceTest {
 
     @Test
     void shouldGetCaseDetailsbyUser() {
-        searchResult.setCases(requestCaseDataList);
-        String searchString = "{\"match_all\": {}}";
-        Query query = new Query(QueryBuilders.wrapperQuery(searchString), 0);
-
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(ccdApiClient.searchCases(
+        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+            USER_ID,
+            USER_EMAIL,
+            USER_FORENAME,
+            USER_SURNAME,
+            null
+        ));
+        when(ccdApiClient.searchForCitizen(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
+            USER_ID,
+            JURISDICTION_ID,
             EtSyaConstants.SCOTLAND_CASE_TYPE,
-            query.toString()
-        )).thenReturn(searchResult);
+            Collections.emptyMap()
+        )).thenReturn(requestCaseDataList);
+
 
         List<CaseDetails> expectedDataList = caseService.getCaseDataByUser(TEST_SERVICE_AUTH_TOKEN,
-                                  EtSyaConstants.SCOTLAND_CASE_TYPE, query.toString());
-        assertEquals(searchResult.getCases(), expectedDataList);
+                                  EtSyaConstants.SCOTLAND_CASE_TYPE);
+        assertEquals(requestCaseDataList, expectedDataList);
     }
 
     @Test
@@ -121,26 +128,26 @@ class CaseServiceTest {
             .build();
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
-            "12",
-            "test@gmail.com",
-            "Joe",
-            "Bloggs",
+            USER_ID,
+            USER_EMAIL,
+            USER_FORENAME,
+            USER_SURNAME,
             null
         ));
-        when(ccdApiClient.startForCaseworker(
+        when(ccdApiClient.startForCitizen(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
-            "12",
+            USER_ID,
             EtSyaConstants.JURISDICTION_ID,
             EtSyaConstants.SCOTLAND_CASE_TYPE,
             EtSyaConstants.DRAFT_EVENT_TYPE
         )).thenReturn(
             startEventResponse);
 
-        when(ccdApiClient.submitForCaseworker(
+        when(ccdApiClient.submitForCitizen(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
-            "12",
+            USER_ID,
             EtSyaConstants.JURISDICTION_ID,
             EtSyaConstants.SCOTLAND_CASE_TYPE,
             true,
@@ -161,17 +168,17 @@ class CaseServiceTest {
     void shouldStartUpdateCaseInCcd() {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
-            "12",
-            "test@gmail.com",
-            "Joe",
-            "Bloggs",
+            USER_ID,
+            USER_EMAIL,
+            USER_FORENAME,
+            USER_SURNAME,
             null
         ));
 
-        when(ccdApiClient.startEventForCaseWorker(
+        when(ccdApiClient.startEventForCitizen(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
-            "12",
+            USER_ID,
             EtSyaConstants.JURISDICTION_ID,
             EtSyaConstants.SCOTLAND_CASE_TYPE,
             CASE_ID,
@@ -199,17 +206,28 @@ class CaseServiceTest {
 
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
-            "12",
-            "test@gmail.com",
-            "Joe",
-            "Bloggs",
+            USER_ID,
+            USER_EMAIL,
+            USER_FORENAME,
+            USER_SURNAME,
             null
         ));
 
-        when(ccdApiClient.submitEventForCaseWorker(
+        when(ccdApiClient.startEventForCitizen(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
-            "12",
+            USER_ID,
+            EtSyaConstants.JURISDICTION_ID,
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            CASE_ID,
+            "UPDATE_CASE_DRAFT"
+        )).thenReturn(
+            startEventResponse);
+
+        when(ccdApiClient.submitEventForCitizen(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            USER_ID,
             EtSyaConstants.JURISDICTION_ID,
             EtSyaConstants.SCOTLAND_CASE_TYPE,
             CASE_ID,

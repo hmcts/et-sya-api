@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -51,9 +52,11 @@ public class CaseService {
     }
 
     @Retryable({FeignException.class, RuntimeException.class})
-    public List<CaseDetails> getCaseDataByUser(String authorization, String caseType, String searchString) {
-        return ccdApiClient.searchCases(
-            authorization, authTokenGenerator.generate(), caseType, searchString).getCases();
+    public List<CaseDetails> getCaseDataByUser(String authorization, String caseType) {
+        UserDetails userDetails = idamClient.getUserDetails(authorization);
+        return ccdApiClient.searchForCitizen(
+            authorization, authTokenGenerator.generate(),
+            userDetails.getId(), JURISDICTION_ID, caseType, Collections.emptyMap());
     }
 
     /**
@@ -77,7 +80,7 @@ public class CaseService {
         UserDetails userDetails = idamClient.getUserDetails(authorization);
         log.info("User Id: " + userDetails.getId());
         log.info("Roles : " + userDetails.getRoles());
-        var ccdCase = ccdApiClient.startForCaseworker(
+        var ccdCase = ccdApiClient.startForCitizen(
             authorization,
             s2sToken,
             userDetails.getId(),
@@ -91,7 +94,7 @@ public class CaseService {
             .eventToken(ccdCase.getToken())
             .data(data)
             .build();
-        return ccdApiClient.submitForCaseworker(
+        return ccdApiClient.submitForCitizen(
             authorization,
             s2sToken,
             userDetails.getId(),
@@ -153,7 +156,7 @@ public class CaseService {
         String s2sToken = authTokenGenerator.generate();
         UserDetails userDetails = idamClient.getUserDetails(authorization);
 
-        return ccdApiClient.startEventForCaseWorker(
+        return ccdApiClient.startEventForCitizen(
             authorization,
             s2sToken,
             userDetails.getId(),
@@ -176,6 +179,7 @@ public class CaseService {
                                     CaseDataContent caseDataContent, String caseType) {
         UserDetails userDetails = idamClient.getUserDetails(authorization);
         String s2sToken = authTokenGenerator.generate();
+
         return ccdApiClient.submitEventForCaseWorker(
             authorization,
             s2sToken,
