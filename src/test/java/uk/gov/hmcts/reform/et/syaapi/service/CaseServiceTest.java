@@ -22,8 +22,8 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -212,17 +212,6 @@ class CaseServiceTest {
             USER_SURNAME,
             null
         ));
-
-        when(ccdApiClient.startEventForCitizen(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            USER_ID,
-            EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
-            CASE_ID,
-            "UPDATE_CASE_DRAFT"
-        )).thenReturn(
-            startEventResponse);
 
         when(ccdApiClient.submitEventForCitizen(
             TEST_SERVICE_AUTH_TOKEN,

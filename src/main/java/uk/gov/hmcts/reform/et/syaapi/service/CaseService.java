@@ -180,7 +180,7 @@ public class CaseService {
         UserDetails userDetails = idamClient.getUserDetails(authorization);
         String s2sToken = authTokenGenerator.generate();
 
-        return ccdApiClient.submitEventForCaseWorker(
+        return ccdApiClient.submitEventForCitizen(
             authorization,
             s2sToken,
             userDetails.getId(),
