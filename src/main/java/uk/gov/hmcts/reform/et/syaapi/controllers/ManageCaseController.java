@@ -55,9 +55,9 @@ public class ManageCaseController {
     }
 
     @PostMapping("/initiate-case")
-    @Operation(summary = "Create a new default case")
+    @Operation(summary = "Create a draft case for the user")
     @ApiResponseGroup
-    public ResponseEntity<CaseDetails> createCase(
+    public ResponseEntity<CaseDetails> createDraftCase(
         @RequestHeader(AUTHORIZATION) String authorization,
         @NotNull @RequestBody CallbackRequest callback
     ) {
