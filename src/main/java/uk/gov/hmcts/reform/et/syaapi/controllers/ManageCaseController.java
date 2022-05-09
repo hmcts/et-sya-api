@@ -85,7 +85,7 @@ public class ManageCaseController {
     }
 
     @GetMapping("/generate-pdf/{caseId}")
-    @Operation(summary = "Generated submitted case pdf")
+    @Operation(summary = "Generate submitted case pdf")
     @ApiResponseGroup
     public ResponseEntity<InputStreamResource> generatePdf(
         @RequestHeader(AUTHORIZATION) String authorization,
@@ -93,8 +93,9 @@ public class ManageCaseController {
     )  throws IOException {
 
         /*
-         todo: confirm if authorization is required
-         todo: add DocumentGenerationService
+         generate a submitted case PDF
+         This is a stub which returns a blank pdf.
+         It should use the documentGenerationService in the future
         */
         ClassPathResource pdfFile = new ClassPathResource("HelloWorld.pdf");
         return ResponseEntity
