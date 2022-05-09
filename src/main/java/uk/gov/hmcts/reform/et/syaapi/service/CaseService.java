@@ -3,9 +3,11 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -17,12 +19,17 @@ import uk.gov.hmcts.reform.et.syaapi.client.CcdApiClient;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.search.Query;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.util.List;
 import java.util.Map;
 
+import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ELASTIC_SEARCH_STRING;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 
 @Slf4j
@@ -38,56 +45,71 @@ public class CaseService {
     @Autowired
     private IdamClient idamClient;
 
+    @Autowired
+    private PostcodeToOfficeService postcodeToOfficeService;
+
     /**
-     * Given a caseID, this will retrieve the correct {@link CaseDetails}.
+     * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
      *
-     * @param caseId is the identifier to seek the {@link CaseDetails} for
+     * @param caseRequest contains case id get the {@link CaseDetails} for
      * @return the associated {@link CaseDetails} for the ID provided
 
      */
     @Retryable({FeignException.class, RuntimeException.class})
-    public CaseDetails getCaseData(String authorization, String caseId) {
-        return ccdApiClient.getCase(authorization, authTokenGenerator.generate(), caseId);
+    public CaseDetails getUserCase(String authorization, CaseRequest caseRequest) {
+        return ccdApiClient.getCase(authorization, authTokenGenerator.generate(), caseRequest.getCaseId());
     }
 
+    /**
+     * Given a case type in the case request, this will all user cases {@link CaseDetails}.
+     *
+     * @param caseRequest contains case type get the {@link CaseDetails} for
+     * @return the associated {@link CaseDetails} for the ID provided
+
+     */
     @Retryable({FeignException.class, RuntimeException.class})
-    public List<CaseDetails> getCaseDataByUser(String authorization, String caseType, String searchString) {
+    public List<CaseDetails> getAllUserCases(String authorization, CaseRequest caseRequest) {
+        Query query = new Query(QueryBuilders.wrapperQuery(ELASTIC_SEARCH_STRING), 0);
         return ccdApiClient.searchCases(
-            authorization, authTokenGenerator.generate(), caseType, searchString).getCases();
+            authorization, authTokenGenerator.generate(), caseRequest.getCaseTypeId(), query.toString()).getCases();
     }
 
     /**
      * Given a caseID, this will retrieve the correct {@link CaseDetails}.
      *
      * @param authorization is used to seek the {@link UserDetails} for request
-     * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
-     * @param eventType is used to determine INITIATE_CASE_DRAFT
-     * @param caseData is used to provide the {@link Et1CaseData} in json format
+     * @param caseRequest  case data for request
      * @return the associated {@link CaseDetails} if the case is created
 
      */
     @Retryable({FeignException.class, RuntimeException.class})
-    public CaseDetails createCase(String authorization, String caseType, String eventType,
-                                  Map<String, Object> caseData) {
+    public CaseDetails createCase(String authorization,
+                                  CaseRequest caseRequest) {
         log.info("Creating Case");
         EmployeeObjectMapper employeeObjectMapper = new EmployeeObjectMapper();
-        Et1CaseData data = employeeObjectMapper.getEmploymentCaseData(caseData);
+        Et1CaseData data = employeeObjectMapper.getEmploymentCaseData(caseRequest.getCaseData());
         String s2sToken = authTokenGenerator.generate();
         log.info("Generated s2s");
         UserDetails userDetails = idamClient.getUserDetails(authorization);
         log.info("User Id: " + userDetails.getId());
         log.info("Roles : " + userDetails.getRoles());
+        log.info("postcode: " + caseRequest.getPostCode());
+
+        var caseType = getCaseType(caseRequest);
+        var eventType = CaseEvent.INITIATE_CASE_DRAFT;
         var ccdCase = ccdApiClient.startForCaseworker(
             authorization,
             s2sToken,
             userDetails.getId(),
             JURISDICTION_ID,
             caseType,
-            eventType
+            eventType.name()
         );
+
         log.info("Started Case: " + ccdCase.getEventId());
+
         CaseDataContent caseDataContent = CaseDataContent.builder()
-            .event(Event.builder().id(eventType).build())
+            .event(Event.builder().id(eventType.name()).build())
             .eventToken(ccdCase.getToken())
             .data(data)
             .build();
@@ -100,6 +122,29 @@ public class CaseService {
             true,
             caseDataContent
         );
+    }
+
+    private String getCaseType(CaseRequest caseRequest) {
+        try {
+            return getCaseTypeId(
+                postcodeToOfficeService.getTribunalOfficeFromPostcode(caseRequest.getPostCode())
+                    .orElse(DEFAULT_TRIBUNAL_OFFICE).getOfficeName());
+        } catch (InvalidPostcodeException e) {
+            log.info("Failed to find tribunal office : {} ", e.getMessage());
+            return getCaseTypeId(DEFAULT_TRIBUNAL_OFFICE.getOfficeName());
+        }
+    }
+
+    public CaseDetails updateCase(String authorization,
+                                  CaseRequest caseRequest) {
+        return triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.UPDATE_CASE_DRAFT,
+                            caseRequest.getCaseTypeId(), caseRequest.getCaseData());
+    }
+
+    public CaseDetails submitCase(String authorization,
+                                  CaseRequest caseRequest) {
+        return triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.SUBMIT_CASE_DRAFT,
+                            caseRequest.getCaseTypeId(), caseRequest.getCaseData());
     }
 
     /**

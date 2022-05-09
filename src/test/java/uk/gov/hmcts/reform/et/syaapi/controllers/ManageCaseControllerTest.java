@@ -4,7 +4,6 @@ import feign.FeignException;
 import feign.Request;
 import feign.RequestTemplate;
 import lombok.SneakyThrows;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -13,11 +12,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.hmcts.reform.ccd.client.model.CallbackRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
-import uk.gov.hmcts.reform.et.syaapi.search.Query;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
@@ -27,11 +25,11 @@ import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -77,14 +75,19 @@ class ManageCaseControllerTest {
     @SneakyThrows
     @Test
     void shouldGetCaseDetails() {
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseId(CASE_ID).build();
+
         // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, CASE_ID))
+        when(caseService.getUserCase(TEST_SERVICE_AUTH_TOKEN, caseRequest))
             .thenReturn(expectedDetails);
 
         // when
-        mockMvc.perform(get("/caseDetails/{caseId}", CASE_ID)
-                            .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
+        mockMvc.perform(post("/cases/user-case", CASE_ID)
+                            .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(ResourceLoader.toJson(caseRequest)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(expectedDetails.getId()))
             .andExpect(jsonPath("$.case_type_id").value(expectedDetails.getCaseTypeId()))
@@ -97,22 +100,22 @@ class ManageCaseControllerTest {
     @SneakyThrows
     @Test
     void shouldGetCaseDetailsByUser() {
-        // given
-        String searchString = "{\"match_all\": {}}";
-        Query query = new Query(QueryBuilders.wrapperQuery(searchString), 0);
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseTypeId(CASE_TYPE).build();
 
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(UserDetails.builder().id(USER_ID).build());
-        when(caseService.getCaseDataByUser(
+        when(caseService.getAllUserCases(
             TEST_SERVICE_AUTH_TOKEN,
-            CASE_TYPE, query.toString()
+            caseRequest
         ))
             .thenReturn(requestCaseDataList);
 
         // when
         mockMvc.perform(
-                get("/caseTypes/{caseType}/cases", CASE_TYPE)
-                    .contentType(MediaType.APPLICATION_JSON).content(searchString)
+                post("/cases/user-cases", CASE_TYPE)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(ResourceLoader.toJson(caseRequest))
                     .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
             // then
             .andExpect(status().isOk())
@@ -127,16 +130,21 @@ class ManageCaseControllerTest {
     @SneakyThrows
     @Test
     void shouldReturnBadRequestForNonExistingItem() {
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseId(CASE_ID).build();
+
         Request request = Request.create(
             Request.HttpMethod.GET, "/test", Collections.emptyMap(), null, new RequestTemplate());
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(caseService.getCaseData(any(), any())).thenThrow(new FeignException.BadRequest(
+        when(caseService.getUserCase(any(), any())).thenThrow(new FeignException.BadRequest(
             "Bad request",
             request,
             "incorrect payload".getBytes(StandardCharsets.UTF_8),
             Collections.emptyMap()
         ));
-        mockMvc.perform(get("/caseDetails/{caseId}", CASE_ID)
+        mockMvc.perform(post("/cases/user-case")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(ResourceLoader.toJson(caseRequest))
                             .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value(400))
@@ -147,28 +155,25 @@ class ManageCaseControllerTest {
     @Test
     void shouldCreateDraftCase() {
 
-        CallbackRequest callbackRequest = CallbackRequest.builder()
-            .eventId("INITIATE_CASE_DRAFT")
-            .caseDetails(CaseDetails.builder().caseTypeId("ET_Scotland").build())
+        CaseRequest caseRequest = CaseRequest.builder()
+            .postCode("AB4 8DJ")
             .build();
 
         // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(caseService.createCase(
             TEST_SERVICE_AUTH_TOKEN,
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
-            EtSyaConstants.DRAFT_EVENT_TYPE,
-            null
+            caseRequest
         ))
             .thenReturn(expectedDetails);
 
         // when
         mockMvc.perform(post(
-                            "/initiate-case"
+                            "/cases/initiate-case"
                         )
                             .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(ResourceLoader.toJson(callbackRequest))
+                            .content(ResourceLoader.toJson(caseRequest))
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.case_type_id").value(expectedDetails.getCaseTypeId()))
@@ -184,11 +189,11 @@ class ManageCaseControllerTest {
     @SneakyThrows
     @Test
     void shouldStartUpdateCase() {
-
-        CallbackRequest callbackRequest = CallbackRequest.builder()
-            .eventId("UPDATE_CASE_DRAFT")
-            .caseDetails(CaseDetails.builder().caseTypeId("ET_Scotland").build())
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseTypeId("ET_Scotland")
+            .caseId("12")
             .build();
+
         // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
@@ -209,15 +214,52 @@ class ManageCaseControllerTest {
 
         // when
         mockMvc.perform(put(
-                "/manage-case",
+                "/cases/update-case",
                 "1646225213651590"
                         )
                             .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(ResourceLoader.toJson(callbackRequest))
+                            .content(ResourceLoader.toJson(caseRequest))
             )
             .andExpect(status().isOk());
     }
 
+    @SneakyThrows
+    @Test
+    void shouldStartSubmitCase() {
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseTypeId("ET_Scotland")
+            .caseId("12")
+            .caseData(new HashMap<>())
+            .build();
 
+        // given
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+            "12",
+            "test@gmail.com",
+            "Joe",
+            "Bloggs",
+            null
+        ));
+
+        when(caseService.triggerEvent(
+            TEST_SERVICE_AUTH_TOKEN,
+            "1646225213651590",
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            CaseEvent.valueOf("SUBMIT_CASE_DRAFT"),
+            null
+        )).thenReturn(expectedDetails);
+
+        // when
+        mockMvc.perform(put(
+                            "/cases/submit-case",
+                            "1646225213651590"
+                        )
+                            .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(ResourceLoader.toJson(caseRequest))
+            )
+            .andExpect(status().isOk());
+    }
 }
