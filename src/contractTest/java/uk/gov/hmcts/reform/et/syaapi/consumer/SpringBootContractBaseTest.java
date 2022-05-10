@@ -8,8 +8,6 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -21,7 +19,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @SpringBootTest({
     "core_case_data.api.url : localhost:8890"
 })
-public abstract class SpringBootContractBaseTest {
+public class SpringBootContractBaseTest {
     public static final String AUTHORIZATION_BEARER_TOKEN = "Bearer eyJ0eXAiOiJKV1QiLCJraWQiOiJiL082T3ZWdeRre";
     public static final String SERVICE_BEARER_TOKEN = "Bearer eyJ0eXAiOiJKV1QiLCJ6aXAiOiJOT05FIiwia2lkIjoiYi9PNk92V";
     public static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";

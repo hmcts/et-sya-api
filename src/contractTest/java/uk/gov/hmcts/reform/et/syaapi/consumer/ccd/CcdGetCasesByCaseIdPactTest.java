@@ -8,8 +8,6 @@ import au.com.dius.pact.core.model.annotations.Pact;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.consumer.SpringBootContractBaseTest;
@@ -18,9 +16,11 @@ import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpStatus.OK;
 
 @PactTestFor(providerName = "ccd_data_store_get_casebyid", port = "8890")
-public class CcdGetCasesByCaseIdPactTest extends SpringBootContractBaseTest {
+class CcdGetCasesByCaseIdPactTest extends SpringBootContractBaseTest {
 
     private static final String TEST_CASE_ID = "1593694526480034";
     private static final String CCD_CASE_URL = "/cases/" + TEST_CASE_ID;
@@ -28,13 +28,8 @@ public class CcdGetCasesByCaseIdPactTest extends SpringBootContractBaseTest {
     @Autowired
     protected CoreCaseDataApi coreCaseDataApi;
 
-    @BeforeEach
-    void setUp() {
-
-    }
-
     @Pact(provider = "ccd_data_store_get_case_by_id", consumer = "et_sya_api_service")
-    public RequestResponsePact executeCcdGetCasesByCaseId(PactDslWithProvider builder) {
+    RequestResponsePact executeCcdGetCasesByCaseId(PactDslWithProvider builder) {
 
         Map<String, String> responseHeaders = Map.of("Content-Type", "application/json");
 
@@ -42,9 +37,9 @@ public class CcdGetCasesByCaseIdPactTest extends SpringBootContractBaseTest {
             .given("a case exists")
             .uponReceiving("Provider receives a GET /cases/{caseId} request from et-sya-api API")
             .path(CCD_CASE_URL)
-            .method(HttpMethod.GET.toString())
+            .method(GET.toString())
             .willRespondWith()
-            .status(HttpStatus.OK.value())
+            .status(OK.value())
             .headers(responseHeaders)
             .body(createCasesResponse())
             .toPact();
@@ -52,7 +47,7 @@ public class CcdGetCasesByCaseIdPactTest extends SpringBootContractBaseTest {
 
     @Test
     @PactTestFor(pactMethod = "executeCcdGetCasesByCaseId")
-    public void verifyGetCaseById() {
+    void verifyGetCaseById() {
         CaseDetails caseDetails = coreCaseDataApi.getCase(SERVICE_AUTH_TOKEN, AUTH_TOKEN, TEST_CASE_ID);
 
         assertThat(caseDetails.getSecurityClassification().name(), is("PUBLIC"));
