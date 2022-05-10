@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 
 import java.io.IOException;
 
-
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
 
 @Slf4j
@@ -36,11 +35,9 @@ public class DocumentGenerationController {
         headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
         ResponseEntity<byte[]> response = new ResponseEntity<>(contents, headers, HttpStatus.OK);
         return response;
-
     }
 
     private byte[] pdfStub() throws IOException {
-
         byte[] helloWorldPdf = this.getClass().getClassLoader().getResourceAsStream("HelloWorld.pdf").readAllBytes();
         return helloWorldPdf;
     }
