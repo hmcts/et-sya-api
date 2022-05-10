@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -20,16 +19,15 @@ import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
-import uk.gov.hmcts.reform.et.syaapi.search.Query;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ELASTIC_SEARCH_STRING;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 
 @Slf4j
@@ -69,9 +67,10 @@ public class CaseService {
      */
     @Retryable({FeignException.class, RuntimeException.class})
     public List<CaseDetails> getAllUserCases(String authorization, CaseRequest caseRequest) {
-        Query query = new Query(QueryBuilders.wrapperQuery(ELASTIC_SEARCH_STRING), 0);
-        return ccdApiClient.searchCases(
-            authorization, authTokenGenerator.generate(), caseRequest.getCaseTypeId(), query.toString()).getCases();
+        UserDetails userDetails = idamClient.getUserDetails(authorization);
+        return ccdApiClient.searchForCitizen(
+            authorization, authTokenGenerator.generate(),
+            userDetails.getId(), JURISDICTION_ID, caseRequest.getCaseTypeId(), Collections.emptyMap());
     }
 
     /**
@@ -97,7 +96,7 @@ public class CaseService {
 
         var caseType = getCaseType(caseRequest);
         var eventType = CaseEvent.INITIATE_CASE_DRAFT;
-        var ccdCase = ccdApiClient.startForCaseworker(
+        var ccdCase = ccdApiClient.startForCitizen(
             authorization,
             s2sToken,
             userDetails.getId(),
@@ -113,7 +112,7 @@ public class CaseService {
             .eventToken(ccdCase.getToken())
             .data(data)
             .build();
-        return ccdApiClient.submitForCaseworker(
+        return ccdApiClient.submitForCitizen(
             authorization,
             s2sToken,
             userDetails.getId(),
@@ -198,7 +197,7 @@ public class CaseService {
         String s2sToken = authTokenGenerator.generate();
         UserDetails userDetails = idamClient.getUserDetails(authorization);
 
-        return ccdApiClient.startEventForCaseWorker(
+        return ccdApiClient.startEventForCitizen(
             authorization,
             s2sToken,
             userDetails.getId(),
@@ -221,7 +220,8 @@ public class CaseService {
                                     CaseDataContent caseDataContent, String caseType) {
         UserDetails userDetails = idamClient.getUserDetails(authorization);
         String s2sToken = authTokenGenerator.generate();
-        return ccdApiClient.submitEventForCaseWorker(
+
+        return ccdApiClient.submitEventForCitizen(
             authorization,
             s2sToken,
             userDetails.getId(),

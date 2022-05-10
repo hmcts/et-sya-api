@@ -206,7 +206,7 @@ class ManageCaseControllerTest {
 
         when(caseService.triggerEvent(
             TEST_SERVICE_AUTH_TOKEN,
-            "1646225213651590",
+            CASE_ID,
             EtSyaConstants.SCOTLAND_CASE_TYPE,
             CaseEvent.valueOf("UPDATE_CASE_DRAFT"),
             null
@@ -215,7 +215,7 @@ class ManageCaseControllerTest {
         // when
         mockMvc.perform(put(
                 "/cases/update-case",
-                "1646225213651590"
+                CASE_ID
                         )
                             .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -245,7 +245,7 @@ class ManageCaseControllerTest {
 
         when(caseService.triggerEvent(
             TEST_SERVICE_AUTH_TOKEN,
-            "1646225213651590",
+            CASE_ID,
             EtSyaConstants.SCOTLAND_CASE_TYPE,
             CaseEvent.valueOf("SUBMIT_CASE_DRAFT"),
             null
@@ -254,7 +254,7 @@ class ManageCaseControllerTest {
         // when
         mockMvc.perform(put(
                             "/cases/submit-case",
-                            "1646225213651590"
+                            CASE_ID
                         )
                             .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
                             .contentType(MediaType.APPLICATION_JSON)
