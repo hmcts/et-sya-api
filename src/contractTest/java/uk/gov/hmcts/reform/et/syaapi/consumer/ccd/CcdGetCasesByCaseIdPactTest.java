@@ -7,44 +7,40 @@ import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.client.CcdApiClient;
+import uk.gov.hmcts.reform.et.syaapi.consumer.SpringBootContractBaseTest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.et.syaapi.consumer.SpringBootContractBaseTest.SERVICE_AUTH_TOKEN;
 
-public class CcdGetCasesByCaseIdPactTest {
+@PactTestFor(providerName = "ccd_data_store_get_case_by_id", port = "8890")
+public class CcdGetCasesByCaseIdPactTest extends SpringBootContractBaseTest {
 
     private static final String TEST_CASE_ID = "1607103938250138";
     private static final String CCD_CASE_URL = "/cases/" + TEST_CASE_ID;
 
-    @Autowired
-    CcdApiClient ccdApiClient;
-
-    @MockBean
+    @Mock
     AuthTokenGenerator authTokenGenerator;
 
-    @MockBean
-    IdamClient idamClient;
-
+    @InjectMocks
     private CaseService caseService;
+
+    @Mock
+    private CcdApiClient ccdApiClient;
 
     @BeforeEach
     void setUp() {
-        when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
-        //ccdDataService = new CcdDataService(ccdApiClient, authTokenGenerator, systemTokenGenerator);
-        caseService = new CaseService();
+        //when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
     }
 
     @Pact(provider = "ccd_data_store_get_case_by_id", consumer = "et_sya_api")
@@ -69,7 +65,7 @@ public class CcdGetCasesByCaseIdPactTest {
     public void verifyGetCaseById() {
         CaseDetails caseDetails = caseService.getCaseData(SERVICE_AUTH_TOKEN, TEST_CASE_ID);
 
-        assertThat(caseDetails.getSecurityClassification(), is("PRIVATE"));
+        assertThat(caseDetails.getSecurityClassification(), is("PUBLIC"));
         assertThat(caseDetails.getJurisdiction(), is("EMPLOYMENT"));
     }
 
