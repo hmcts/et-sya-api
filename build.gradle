@@ -245,6 +245,7 @@ dependencies {
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
     exclude group: 'junit', module: 'junit'
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    exclude group: 'com.vaadin.external.google', module: 'android-json'
   }
   testImplementation group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version: '3.10'
   testImplementation('org.assertj:assertj-core:3.22.0')
@@ -296,12 +297,8 @@ project.ext {
 
 pact {
   publish {
-    pactDirectory = 'target/pacts'
+    pactDirectory = 'pacts'
     pactBrokerUrl = System.getenv("PACT_BROKER_FULL_URL") ?: 'https://pact-broker.platform.hmcts.net/'
-    if(pactBrokerUrl == 'https://et-claims.pactflow.io/') {
-      excludes = ['et_sya_api-Idam_api']
-      pactBrokerToken = System.getenv("PACT_BROKER_TOKEN")
-    }
     tags = [System.getenv("PACT_BRANCH_NAME") ?: getCheckedOutGitCommitHash(), 'latest']
     version = project.pactVersion
   }
