@@ -84,26 +84,4 @@ public class ManageCaseController {
         return caseService.triggerEvent(authorization, caseId, caseType, CaseEvent.valueOf(eventType), caseData);
     }
 
-    @GetMapping("/generate-pdf/{caseId}")
-    @Operation(summary = "Generate submitted case pdf")
-    @ApiResponseGroup
-    public ResponseEntity<InputStreamResource> generatePdf(
-        @RequestHeader(AUTHORIZATION) String authorization,
-        @PathVariable String caseId
-    )  throws IOException {
-
-        /*
-         generate a submitted case PDF
-         This is a stub which returns a blank pdf.
-         It should use the documentGenerationService in the future
-        */
-        ClassPathResource pdfFile = new ClassPathResource("HelloWorld.pdf");
-        return ResponseEntity
-            .ok()
-            .contentLength(pdfFile.contentLength())
-            .contentType(
-                MediaType.parseMediaType("application/octet-stream"))
-            .body(new InputStreamResource(pdfFile.getInputStream()));
-
-    }
 }
