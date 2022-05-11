@@ -8,5 +8,5 @@ def component = "sya-api"
 
 withPipeline(type, product, component) {
   disableLegacyDeployment()
-  enablePactAs([PactRoles.CONSUMER])
+  enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
 }
