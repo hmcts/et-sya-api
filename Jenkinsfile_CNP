@@ -6,9 +6,10 @@ def type = "java"
 def product = "et"
 def component = "sya-api"
 
-withPipeline(type, product, component) {}
+withPipeline(type, product, component) {
 
 enablePactAs([
   AppPipelineDsl.PactRoles.CONSUMER
 ])
 
+}
