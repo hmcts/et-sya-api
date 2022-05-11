@@ -8,9 +8,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimCaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.models.TornadoDocument;
+import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationService;
 
 import java.io.IOException;
 
@@ -37,6 +39,7 @@ public class DocumentGenerationController {
 
     /**
      * Stub returns a HelloWorld.pdf byte array.
+     * The unused parameters match the signature of genPdfDocument method from {@link DocumentGenerationService}.
      * @param templateName The name of the template
      * @param outputFileName filename for the generated pdf
      * @param sourceData The case data being used
