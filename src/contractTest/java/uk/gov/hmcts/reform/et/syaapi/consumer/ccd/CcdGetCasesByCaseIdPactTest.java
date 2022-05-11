@@ -24,8 +24,6 @@ class CcdGetCasesByCaseIdPactTest extends SpringBootContractBaseTest {
     private static final String TEST_CASE_ID = "1593694526480034";
     private static final String CCD_CASE_URL = "/cases/" + TEST_CASE_ID;
 
-    @Autowired
-    protected CoreCaseDataApi coreCaseDataApi;
 
     @Pact(provider = "ccd_data_store_get_case_by_id", consumer = "et_sya_api_service")
     RequestResponsePact executeCcdGetCasesByCaseId(PactDslWithProvider builder) {
