@@ -40,11 +40,11 @@ public class DocumentGenerationController {
     /**
      * Stub returns a HelloWorld.pdf byte array.
      * The unused parameters match the signature of genPdfDocument method from {@link DocumentGenerationService}.
-     * @param templateName The name of the template
+     * @param templateName The name of the template used to create the pdf
      * @param outputFileName filename for the generated pdf
      * @param sourceData The case data being used
      * @return byte[] pdf binary
-     * @throws IOException if there is an issue reading the pdf from the sorurce folder
+     * @throws IOException if there is an issue reading the pdf from the source folder
      */
     protected byte[] genPdfDocumentStub(String templateName,
                                       String outputFileName,
