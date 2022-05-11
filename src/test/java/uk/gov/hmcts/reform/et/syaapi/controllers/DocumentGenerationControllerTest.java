@@ -1,5 +1,8 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
+import feign.FeignException;
+import feign.Request;
+import feign.RequestTemplate;
 import lombok.SneakyThrows;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
@@ -16,12 +19,15 @@ import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 @WebMvcTest(
@@ -51,7 +57,7 @@ class DocumentGenerationControllerTest {
 
     @SneakyThrows
     @Test
-    void shouldReturnOk(){
+    void shouldReturnPdfAsByteArray(){
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
 
         byte[] expectedResult = this.getClass().getClassLoader().getResourceAsStream("HelloWorld.pdf").readAllBytes();
@@ -67,5 +73,19 @@ class DocumentGenerationControllerTest {
         byte[] receivedContent = result.getResponse().getContentAsByteArray();
         Assert.assertArrayEquals(receivedContent, expectedResult );
 
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldReturnBadRequestForNonExistingItem() {
+        Request request = Request.create(
+            Request.HttpMethod.POST, "/generatePDF", Collections.emptyMap(), null, new RequestTemplate());
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+
+        mockMvc.perform(post("/generatePDF")
+                            .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(400))
+            .andExpect(jsonPath("$.message").value("Bad request - incorrect payload"));
     }
 }
