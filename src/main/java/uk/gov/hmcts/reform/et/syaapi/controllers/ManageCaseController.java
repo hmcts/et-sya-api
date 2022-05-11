@@ -3,8 +3,8 @@ package uk.gov.hmcts.reform.et.syaapi.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,8 +28,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 @RequestMapping("/cases")
 public class ManageCaseController {
 
-    @Autowired
-    private CaseService caseService;
+    private final CaseService caseService;
 
     @PostMapping("/user-case")
     @Operation(summary = "Return individual case details")
@@ -41,13 +40,12 @@ public class ManageCaseController {
         return ok(caseDetails);
     }
 
-    @PostMapping("/user-cases")
+    @GetMapping("/user-cases")
     @Operation(summary = "Return list of case details for a given user")
     @ApiResponseGroup
     public ResponseEntity<List<CaseDetails>> getUserCasesDetails(
-        @RequestHeader(AUTHORIZATION) String authorization,
-        @RequestBody CaseRequest caseRequest) {
-        var caseDetails = caseService.getAllUserCases(authorization, caseRequest);
+        @RequestHeader(AUTHORIZATION) String authorization) {
+        var caseDetails = caseService.getAllUserCases(authorization);
         return ok(caseDetails);
     }
 

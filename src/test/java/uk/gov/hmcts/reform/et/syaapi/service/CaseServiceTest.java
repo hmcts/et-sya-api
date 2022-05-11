@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
+import static  org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -54,6 +55,22 @@ class CaseServiceTest {
         "responses/caseDetails.json",
         CaseDetails.class
     );
+
+    private final List<CaseDetails> requestCaseDataListEngland = ResourceLoader.fromStringToList(
+        "responses/caseDetailsEngland.json",
+        CaseDetails.class
+    );
+
+    private final List<CaseDetails> requestCaseDataListScotland = ResourceLoader.fromStringToList(
+        "responses/caseDetailsScotland.json",
+        CaseDetails.class
+    );
+
+    private final List<CaseDetails> expectedCaseDataListCombined = ResourceLoader.fromStringToList(
+        "responses/caseDetailsCombined.json",
+        CaseDetails.class
+    );
+
     private final StartEventResponse startEventResponse = ResourceLoader.fromString(
         "responses/startEventResponse.json",
         StartEventResponse.class
@@ -124,11 +141,42 @@ class CaseServiceTest {
             Collections.emptyMap()
         )).thenReturn(requestCaseDataList);
 
-        CaseRequest caseRequest = CaseRequest.builder()
-            .caseTypeId(EtSyaConstants.SCOTLAND_CASE_TYPE).build();
+        List<CaseDetails> caseDetails = caseService.getAllUserCases(TEST_SERVICE_AUTH_TOKEN);
 
-        List<CaseDetails> expectedDataList = caseService.getAllUserCases(TEST_SERVICE_AUTH_TOKEN, caseRequest);
-        assertEquals(requestCaseDataList, expectedDataList);
+        assertEquals(requestCaseDataList, caseDetails);
+    }
+
+    @Test
+    void shouldGetAllUserCasesDifferentCaseType() {
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+            USER_ID,
+            USER_EMAIL,
+            USER_FORENAME,
+            USER_SURNAME,
+            null
+        ));
+        when(ccdApiClient.searchForCitizen(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            USER_ID,
+            JURISDICTION_ID,
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            Collections.emptyMap()
+        )).thenReturn(requestCaseDataListScotland);
+
+        when(ccdApiClient.searchForCitizen(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            USER_ID,
+            JURISDICTION_ID,
+            EtSyaConstants.ENGLAND_CASE_TYPE,
+            Collections.emptyMap()
+        )).thenReturn(requestCaseDataListEngland);
+
+        List<CaseDetails> caseDetails = caseService.getAllUserCases(TEST_SERVICE_AUTH_TOKEN);
+
+        assertThat(expectedCaseDataListCombined).hasSize(caseDetails.size()).hasSameElementsAs(caseDetails);
     }
 
     @Test

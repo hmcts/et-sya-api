@@ -30,6 +30,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -100,22 +101,16 @@ class ManageCaseControllerTest {
     @SneakyThrows
     @Test
     void shouldGetCaseDetailsByUser() {
-        CaseRequest caseRequest = CaseRequest.builder()
-            .caseTypeId(CASE_TYPE).build();
-
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(UserDetails.builder().id(USER_ID).build());
         when(caseService.getAllUserCases(
-            TEST_SERVICE_AUTH_TOKEN,
-            caseRequest
-        ))
-            .thenReturn(requestCaseDataList);
+            TEST_SERVICE_AUTH_TOKEN
+        )).thenReturn(requestCaseDataList);
 
         // when
         mockMvc.perform(
-                post("/cases/user-cases", CASE_TYPE)
+                get("/cases/user-cases", CASE_TYPE)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(ResourceLoader.toJson(caseRequest))
                     .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
             // then
             .andExpect(status().isOk())

@@ -2,8 +2,8 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import uk.gov.dwp.regex.InvalidPostcodeException;
@@ -22,29 +22,31 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.toList;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class CaseService {
 
-    @Autowired
-    private AuthTokenGenerator authTokenGenerator;
+    private final AuthTokenGenerator authTokenGenerator;
 
-    @Autowired
-    private CcdApiClient ccdApiClient;
+    private final CcdApiClient ccdApiClient;
 
-    @Autowired
-    private IdamClient idamClient;
+    private final IdamClient idamClient;
 
-    @Autowired
-    private PostcodeToOfficeService postcodeToOfficeService;
+    private final PostcodeToOfficeService postcodeToOfficeService;
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
@@ -61,17 +63,25 @@ public class CaseService {
     /**
      * Given a case type in the case request, this will all user cases {@link CaseDetails}.
      *
-     * @param caseRequest contains case type get the {@link CaseDetails} for
+     * @param authorization is used to seek the {@link UserDetails} for request
      * @return the associated {@link CaseDetails} for the ID provided
 
      */
     @Retryable({FeignException.class, RuntimeException.class})
-    public List<CaseDetails> getAllUserCases(String authorization, CaseRequest caseRequest) {
+    public List<CaseDetails> getAllUserCases(String authorization) {
         UserDetails userDetails = idamClient.getUserDetails(authorization);
-        return ccdApiClient.searchForCitizen(
+
+        List<CaseDetails> scotlandCases = ccdApiClient.searchForCitizen(
             authorization, authTokenGenerator.generate(),
-            userDetails.getId(), JURISDICTION_ID, caseRequest.getCaseTypeId(), Collections.emptyMap());
+            userDetails.getId(), JURISDICTION_ID, SCOTLAND_CASE_TYPE, Collections.emptyMap());
+
+        List<CaseDetails> englandCases = ccdApiClient.searchForCitizen(
+            authorization, authTokenGenerator.generate(),
+            userDetails.getId(), JURISDICTION_ID, ENGLAND_CASE_TYPE, Collections.emptyMap());
+
+        return Stream.of(scotlandCases, englandCases).flatMap(Collection::stream).collect(toList());
     }
+
 
     /**
      * Given a caseID, this will retrieve the correct {@link CaseDetails}.
@@ -92,7 +102,6 @@ public class CaseService {
         UserDetails userDetails = idamClient.getUserDetails(authorization);
         log.info("User Id: " + userDetails.getId());
         log.info("Roles : " + userDetails.getRoles());
-        log.info("postcode: " + caseRequest.getPostCode());
 
         var caseType = getCaseType(caseRequest);
         var eventType = CaseEvent.INITIATE_CASE_DRAFT;
