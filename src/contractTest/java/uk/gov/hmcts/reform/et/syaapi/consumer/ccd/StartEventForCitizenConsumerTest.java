@@ -21,8 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class StartEventForCitizenConsumerTest extends SpringBootContractBaseTest {
 
-    private static final String ALPHABETIC_REGEX = "[/^[A-Za-z_]+$/]+";
-
     @Pact(provider = "ccd_data_store_cases_start_event", consumer = "et_sya_api_service")
         public RequestResponsePact startEventForCitizen(PactDslWithProvider builder) {
 

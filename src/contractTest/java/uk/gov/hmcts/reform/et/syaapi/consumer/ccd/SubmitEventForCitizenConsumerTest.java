@@ -22,16 +22,16 @@ import java.util.Map;
 
 import static io.pactfoundation.consumer.dsl.LambdaDsl.newJsonBody;
 
-public class SubmitForCitizenConsumerTest extends SpringBootContractBaseTest {
+public class SubmitEventForCitizenConsumerTest extends SpringBootContractBaseTest {
 
     @Pact(provider = "ccd_data_store_api_cases", consumer = "et_sya_api_service")
-        public RequestResponsePact submitForCitizen(PactDslWithProvider builder) {
+        public RequestResponsePact submitEventForCitizen(PactDslWithProvider builder) {
 
         Map<String, String> responseHeaders = Map.of("Content-Type", "application/json");
 
         return  builder
-                .given("A Submit case for a Citizen is requested", setUpStateMapForProviderWithoutCaseData())
-                .uponReceiving("A Submit case for a Citizen")
+                .given("A Submit event for a Citizen is requested", setUpStateMapForProviderWithoutCaseData())
+                .uponReceiving("A Submit event for a Citizen")
                 .path(buildPath())
                 .query("ignore-warning=true")
                 .method(HttpMethod.POST.toString())
@@ -40,50 +40,52 @@ public class SubmitForCitizenConsumerTest extends SpringBootContractBaseTest {
                 //.body("{}")
                 .willRespondWith()
                 .matchHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .status(HttpStatus.OK.value())
+                .status(HttpStatus.CREATED.value())
                 .body(buildStartEventResponseWithEmptyCaseDetails())
                 .toPact();
         }
 
         @Test
-        @PactTestFor(pactMethod = "submitForCitizen")
-        public void verifySubmitForCitizen() throws JSONException {
+        @PactTestFor(pactMethod = "submitEventForCitizen")
+        public void verifysubmitEventForCitizen() throws JSONException {
             Et1CaseData caseData = ResourceLoader.fromString(
                 "requests/caseData.json",
                 Et1CaseData.class
             );
 
            CaseDataContent caseDataContent = CaseDataContent.builder()
-                .event(Event.builder().id(INITIATE_CASE_DRAFT).build())
+                .event(Event.builder().id(UPDATE_CASE_DRAFT).build())
                 .eventToken(AUTH_TOKEN)
                 .data(caseData)
                 .build();
 
-            CaseDetails caseDetails = coreCaseDataApi.submitForCitizen(
+            CaseDetails caseDetails = coreCaseDataApi.submitEventForCitizen(
                 SERVICE_AUTH_TOKEN, AUTH_TOKEN, USER_ID, "EMPLOYMENT",
-                "ET_EnglandWales", true, caseDataContent);
+                "ET_EnglandWales", CASE_ID.toString(), true, caseDataContent);
 
+            System.out.println(caseDetails);
         }
 
         @Override
         protected Map<String, Object> setUpStateMapForProviderWithoutCaseData() throws JSONException {
             Map<String, Object> caseDataContentMap = super.setUpStateMapForProviderWithoutCaseData();
-            caseDataContentMap.put("EVENT_ID", INITIATE_CASE_DRAFT);
+            caseDataContentMap.put("EVENT_ID", UPDATE_CASE_DRAFT);
             return caseDataContentMap;
         }
 
-        private String buildPath() {
-            return new StringBuilder()
-                .append("/citizens/")
-                .append(USER_ID)
-                .append("/jurisdictions/")
-                .append("EMPLOYMENT")
-                .append("/case-types/")
-                .append("ET_EnglandWales")
-                .append("/cases")
-                .toString();
-        }
-
+    private String buildPath() {
+        return new StringBuilder()
+            .append("/citizens/")
+            .append(USER_ID)
+            .append("/jurisdictions/")
+            .append("EMPLOYMENT")
+            .append("/case-types/")
+            .append("ET_EnglandWales")
+            .append("/cases/")
+            .append(CASE_ID)
+            .append("/events")
+            .toString();
+    }
     public static DslPart buildStartEventResponseWithEmptyCaseDetails() {
         return newJsonBody((o) -> {
             o.numberType("id", CASE_ID)

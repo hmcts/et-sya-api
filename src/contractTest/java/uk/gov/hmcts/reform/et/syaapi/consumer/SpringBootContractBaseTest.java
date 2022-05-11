@@ -43,6 +43,7 @@ public class SpringBootContractBaseTest {
 
     public static final int SLEEP_TIME = 2000;
 
+    protected static final String ALPHABETIC_REGEX = "[/^[A-Za-z_]+$/]+";
     @Autowired
     protected CoreCaseDataApi coreCaseDataApi;
 
