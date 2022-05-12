@@ -249,6 +249,7 @@ dependencies {
   }
   testImplementation group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version: '3.10'
   testImplementation('org.assertj:assertj-core:3.22.0')
+  testImplementation group: 'io.rest-assured', name: 'rest-assured'
 
   // Pact Contract Tests
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: '4.1.7'
@@ -257,9 +258,9 @@ dependencies {
   contractTestRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.8.1'
   contractTestImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.8.1'
   contractTestRuntimeOnly group: 'org.junit.platform', name: 'junit-platform-commons', version: '1.8.2'
+
   contractTestImplementation sourceSets.main.runtimeClasspath
   contractTestImplementation sourceSets.test.runtimeClasspath
-
 }
 
 mainClassName = 'uk.gov.hmcts.reform.et.syaapi.SyaApiApplication'
