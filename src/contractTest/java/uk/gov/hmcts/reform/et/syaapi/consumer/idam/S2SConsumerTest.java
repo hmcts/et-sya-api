@@ -26,13 +26,13 @@ import static org.springframework.http.HttpStatus.OK;
 public class S2SConsumerTest {
     private static final String S2S_URL = "/lease";
 
-    @Pact(provider="s2-auth-api", consumer= "et-sya-api-service")
+    @Pact(provider="s2-auth-api", consumer= "et_sya_api_service")
     RequestResponsePact executeServiceAuthApiGetToken(PactDslWithProvider builder) {
 
         Map<String, String> responseHeaders = Map.of(HttpHeaders.AUTHORIZATION, "someToken");
 
         return builder
-            .given("a case exists")
+            .given("a secret exists")
             .uponReceiving("Provider receives a token request request from et-sya-api API")
             .path(S2S_URL)
             .method(GET.toString())

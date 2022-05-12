@@ -8,6 +8,8 @@ import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import io.restassured.RestAssured;
+import org.assertj.core.api.Assertions;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.http.HttpHeaders;
@@ -28,7 +30,7 @@ public class JwksConsumerTest {
     @Pact(provider="idam_jwks_api", consumer= "et-sya-api-service")
     RequestResponsePact executeServiceAuthApiGetToke(PactDslWithProvider builder) {
 
-        Map<String, String> responseHeaders = Map.of(HttpHeaders.AUTHORIZATION, "someToken");
+        Map<String, String> responseHeaders = Map.of(HttpHeaders.AUTHORIZATION, "Bearer UserAuthToken");
 
         return builder
             .given("a case exists")
@@ -49,7 +51,6 @@ public class JwksConsumerTest {
         String responseBody = RestAssured
             .given()
             .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-            //.body(createRequestBody())
             .log().all(true)
             .when()
             .get(mockServer.getUrl() + JWKS_AUTH_URL)
@@ -58,18 +59,29 @@ public class JwksConsumerTest {
             .and()
             .extract()
             .asString();
+
+        System.out.println(responseBody);
+        JSONObject response = new JSONObject(responseBody);
+        Assertions.assertThat(response).isNotNull();
     }
 
 
     private PactDslJsonBody createAuthResponse() {
         return new PactDslJsonBody()
-            .stringType("access_token", "some-long-value")
-            .stringType("refresh_token", "another-long-value")
-            .stringType("scope", "openid roles profile")
-            .stringType("id_token", "some-value")
-            .stringType("token_type", "Bearer")
-            .stringType("expires_in", "12345");
-    }
+            .stringType("kid", "KeyId1")
+            .stringType("kty", "RSA")
+            .stringType("alg", "RSA256")
+            .stringType("use", "Public Key Use1")
+            .stringType("typ", "JWKS");
 
+
+        /*.stringType("kid", "KeyId2")
+            .stringType("kty", "RSA")
+            .stringType("alg", "RSA256")
+            .stringType("use", "Public Key Use2")
+            .stringType("typ", "JWKS");*/
+
+
+    }
 
 }
