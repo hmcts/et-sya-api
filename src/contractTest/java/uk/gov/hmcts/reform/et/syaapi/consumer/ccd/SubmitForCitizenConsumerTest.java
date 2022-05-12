@@ -41,7 +41,7 @@ public class SubmitForCitizenConsumerTest extends SpringBootContractBaseTest {
                 .willRespondWith()
                 .matchHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .status(HttpStatus.OK.value())
-                .body(buildStartEventResponseWithEmptyCaseDetails())
+                .body(buildCaseDetailsDsl(CASE_ID))
                 .toPact();
         }
 
@@ -62,6 +62,8 @@ public class SubmitForCitizenConsumerTest extends SpringBootContractBaseTest {
             CaseDetails caseDetails = coreCaseDataApi.submitForCitizen(
                 SERVICE_AUTH_TOKEN, AUTH_TOKEN, USER_ID, "EMPLOYMENT",
                 "ET_EnglandWales", true, caseDataContent);
+
+            System.out.println(caseDetails);
 
         }
 
@@ -84,17 +86,16 @@ public class SubmitForCitizenConsumerTest extends SpringBootContractBaseTest {
                 .toString();
         }
 
-    public static DslPart buildStartEventResponseWithEmptyCaseDetails() {
+    public static DslPart buildCaseDetailsDsl(Long caseId) {
         return newJsonBody((o) -> {
-            o.numberType("id", CASE_ID)
-                .stringType("token", null)
-                .object("case_details", (cd) -> {
-                    cd.numberType("id", null);
-                    cd.stringMatcher("jurisdiction", ALPHABETIC_REGEX, "EMPLOYMENT");
-                    cd.stringType("callback_response_status", null);
-                    cd.stringMatcher("case_type_id", ALPHABETIC_REGEX, "ET_EnglandWales");
-                    cd.object("case_data", data -> {
-                    });
+            o.numberType("id", caseId)
+                .stringType("jurisdiction", "EMPLOYMENT")
+                .stringType("state", "ADMISSION_TO_HMCTS")
+                .stringValue("case_type_id", "ET_EnglandWales")
+                .object("case_data", (dataMap) -> {
+                    dataMap
+                        .stringType("caseType", "Single")
+                        .stringType("caseSource", "Manually Created");
                 });
         }).build();
     }

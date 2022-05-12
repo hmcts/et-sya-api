@@ -36,8 +36,7 @@ public class SpringBootContractBaseTest {
     public static final String UPDATE_CASE_DRAFT = "UPDATE_CASE_DRAFT";
     protected static final String USER_ID = "123456";
     protected static final Long CASE_ID = 1593694526480033L;
-    public static final String CASEWORKER_USERNAME = "caseworkerUsername";
-    public static final String CASEWORKER_PASSWORD = "caseworkerPassword";
+
     public static final String JURISDICTION = "jurisdictionId";
     public static final String CASE_TYPE = "caseType";
 
@@ -63,8 +62,6 @@ public class SpringBootContractBaseTest {
         Map<String, Object> map = new HashMap<>();
         map.put(JURISDICTION, "EMPLOYMENT");
         map.put(CASE_TYPE, "ET_EnglandWales");
-        map.put(CASEWORKER_USERNAME, CASEWORKER_USERNAME);
-        map.put(CASEWORKER_PASSWORD, CASEWORKER_PASSWORD);
         return map;
     }
 }
