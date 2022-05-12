@@ -80,7 +80,7 @@ public class StartEventForCitizenConsumerTest extends SpringBootContractBaseTest
             o.stringType("event_id", eventId)
                 .stringType("token", null)
                 .object("case_details", (cd) -> {
-                    cd.numberType("id", null);
+                    cd.numberType("id", CASE_ID);
                     cd.stringMatcher("jurisdiction", ALPHABETIC_REGEX, "EMPLOYMENT");
                     cd.stringType("callback_response_status", null);
                     cd.stringMatcher("case_type_id", ALPHABETIC_REGEX, "ET_EnglandWales");
