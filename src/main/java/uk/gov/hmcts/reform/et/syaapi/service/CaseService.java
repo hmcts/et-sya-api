@@ -10,11 +10,11 @@ import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
-import uk.gov.hmcts.reform.et.syaapi.client.CcdApiClient;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
@@ -42,7 +42,7 @@ public class CaseService {
 
     private final AuthTokenGenerator authTokenGenerator;
 
-    private final CcdApiClient ccdApiClient;
+    private final CoreCaseDataApi ccdApiClient;
 
     private final IdamClient idamClient;
 
@@ -61,9 +61,10 @@ public class CaseService {
     }
 
     /**
-     * Given a case type in the case request, this will all user cases {@link CaseDetails}.
+     * Given a user derived from the authorisation token in the request,
+     * this will get all cases {@link CaseDetails} for that user.
      *
-     * @param authorization is used to seek the {@link UserDetails} for request
+     * @param authorization is used to get the {@link UserDetails} for the request
      * @return the associated {@link CaseDetails} for the ID provided
 
      */
@@ -86,7 +87,7 @@ public class CaseService {
     /**
      * Given a caseID, this will retrieve the correct {@link CaseDetails}.
      *
-     * @param authorization is used to seek the {@link UserDetails} for request
+     * @param authorization is used to find the {@link UserDetails} for request
      * @param caseRequest  case data for request
      * @return the associated {@link CaseDetails} if the case is created
 
