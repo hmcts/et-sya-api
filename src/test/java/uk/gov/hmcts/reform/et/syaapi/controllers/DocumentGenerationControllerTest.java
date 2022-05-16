@@ -41,12 +41,12 @@ class DocumentGenerationControllerTest {
     private VerifyTokenService verifyTokenService;
 
     DocumentGenerationControllerTest() throws IOException {
-        // Default constructor
+        // This default constructor is intentionally empty
     }
 
     @SneakyThrows
     @Test
-    void shouldReturnPdfAsByteArray() {
+    void happyRequestReturnsExpectedByteArray() {
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
 
         byte[] expectedResult =
@@ -67,7 +67,7 @@ class DocumentGenerationControllerTest {
 
     @SneakyThrows
     @Test
-    void shouldReturnBadRequestWhenNoRequestBodyProvided() {
+    void noRequestBodyProvidedReturnsBadRequest() {
 
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
 

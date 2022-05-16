@@ -17,11 +17,26 @@ import java.io.IOException;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
 
+/**
+ * Rest Controller will use {@link DocumentGenerationService} for document retrieval
+ * from Doc Store API / Docmosis.
+ * Docmosis (Tornado) exposes an API to create PDF, Doc, DocX, and HTML documents and reports based
+ * on the templates and data that we provide.
+ */
 @Slf4j
 @RequiredArgsConstructor
 @RestController
 public class DocumentGenerationController {
 
+    /**
+     * Method returns a HelloWorld pdf byte array.
+     * Will be updated in the future to use {@link DocumentGenerationService}
+     * for the retrieval of generated PDFs from the Doc Store API.
+     * @param authorization jwt token for authentication
+     * @param caseId id for the submitted case
+     * @return byte[] pdf binary of the submitted case
+     * @throws IOException if there is an issue reading the pdf from source
+     */
     @PostMapping(value = "/generate-pdf", produces = "application/pdf")
     @Operation(summary = "Generate submitted case pdf")
     @ApiResponseGroup
@@ -41,7 +56,7 @@ public class DocumentGenerationController {
      * The unused parameters match the signature of genPdfDocument method from {@link DocumentGenerationService}.
      * @param templateName The name of the template used to create the pdf
      * @param outputFileName filename for the generated pdf
-     * @param sourceData The case data being used
+     * @param sourceData The JSON format case data with which to populate the template
      * @return byte[] pdf binary
      * @throws IOException if there is an issue reading the pdf from the source folder
      */
