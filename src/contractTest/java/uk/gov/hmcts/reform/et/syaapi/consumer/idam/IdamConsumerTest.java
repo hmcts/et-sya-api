@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.et.syaapi.consumer.idam;
 
 import au.com.dius.pact.consumer.MockServer;
 import au.com.dius.pact.consumer.dsl.DslPart;
-import au.com.dius.pact.consumer.dsl.PactDslJsonBody;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
 import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
@@ -25,18 +24,16 @@ import static org.springframework.http.HttpStatus.OK;
 
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
-public class IdamConsumerTest {
+class IdamConsumerTest {
     private static final String IDAM_USER_DETAILS = "/details";
 
-    @Pact(provider="idam_user_details", consumer= "et-sya-api-service")
+    @Pact(provider = "idam_user_details", consumer = "et-sya-api-service")
     RequestResponsePact exeucteIdamUserDetailApi(PactDslWithProvider builder) {
-
         Map<String, String> responseHeaders = Map.of(HttpHeaders.AUTHORIZATION, "Bearer UserAuthToken");
 
         return builder
             .given("a user exists")
-            .uponReceiving("Provider receives a token request " +
-                               "and send user details to the API")
+            .uponReceiving("Provider receives a token request and send user details to the API")
             .path(IDAM_USER_DETAILS)
             .method(GET.toString())
             .willRespondWith()

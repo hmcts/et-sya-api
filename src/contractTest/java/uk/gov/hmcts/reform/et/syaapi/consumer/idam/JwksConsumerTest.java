@@ -18,16 +18,15 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Map;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpStatus.OK;
 
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
-public class JwksConsumerTest {
+class JwksConsumerTest {
     private static final String JWKS_AUTH_URL = "/o/jwks";
 
-    @Pact(provider="idam_jwks_api", consumer= "et-sya-api-service")
+    @Pact(provider = "idam_jwks_api", consumer = "et-sya-api-service")
     RequestResponsePact executeServiceAuthApiGetToke(PactDslWithProvider builder) {
 
         Map<String, String> responseHeaders = Map.of(HttpHeaders.AUTHORIZATION, "Bearer UserAuthToken");
@@ -60,28 +59,17 @@ public class JwksConsumerTest {
             .extract()
             .asString();
 
-        System.out.println(responseBody);
         JSONObject response = new JSONObject(responseBody);
         Assertions.assertThat(response).isNotNull();
     }
 
-
     private PactDslJsonBody createAuthResponse() {
         return new PactDslJsonBody()
-            .stringType("kid", "KeyId1")
-            .stringType("kty", "RSA")
-            .stringType("alg", "RSA256")
-            .stringType("use", "Public Key Use1")
-            .stringType("typ", "JWKS");
-
-
-        /*.stringType("kid", "KeyId2")
-            .stringType("kty", "RSA")
-            .stringType("alg", "RSA256")
-            .stringType("use", "Public Key Use2")
-            .stringType("typ", "JWKS");*/
-
-
+            .eachLike("keys")
+                .stringType("kid", "KeyId1")
+                .stringType("kty", "RSA")
+                .stringType("e", "AQAB")
+                .stringType("use", "Public Key Use1")
+                .stringType("n", "someToken");
     }
-
 }

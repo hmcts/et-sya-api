@@ -5,11 +5,9 @@ import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
-import org.json.JSONException;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -21,8 +19,9 @@ import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import java.util.Map;
 
 import static io.pactfoundation.consumer.dsl.LambdaDsl.newJsonBody;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class SubmitEventForCitizenConsumerTest extends SpringBootContractBaseTest {
+class SubmitEventForCitizenConsumerTest extends SpringBootContractBaseTest {
 
     @Pact(provider = "ccd_data_store_api_cases", consumer = "et_sya_api_service")
         public RequestResponsePact submitEventForCitizen(PactDslWithProvider builder) {
@@ -30,47 +29,49 @@ public class SubmitEventForCitizenConsumerTest extends SpringBootContractBaseTes
         Map<String, String> responseHeaders = Map.of("Content-Type", "application/json");
 
         return  builder
-                .given("A Submit event for a Citizen is requested", setUpStateMapForProviderWithoutCaseData())
-                .uponReceiving("A Submit event for a Citizen")
+                .given("A Submit event for a Citizen is requested", addCaseTypeJurdisticaton())
+                .uponReceiving("A Submit event for a Citizen against CCD API")
                 .path(buildPath())
                 .query("ignore-warning=true")
-                .method(HttpMethod.POST.toString())
+                .method("POST")
                 .headers(responseHeaders)
                 .matchHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .willRespondWith()
                 .matchHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .status(HttpStatus.CREATED.value())
+                .status(201)
                 .body(buildCaseDetailsDsl(CASE_ID))
                 .toPact();
-        }
+    }
 
-        @Test
-        @PactTestFor(pactMethod = "submitEventForCitizen")
-        public void verifysubmitEventForCitizen() throws JSONException {
-            Et1CaseData caseData = ResourceLoader.fromString(
-                "requests/caseData.json",
-                Et1CaseData.class
-            );
+    @Test
+    @SneakyThrows
+    @PactTestFor(pactMethod = "submitEventForCitizen")
+    void verifysubmitEventForCitizen() {
+        Et1CaseData caseData = ResourceLoader.fromString(
+            "requests/caseData.json",
+            Et1CaseData.class
+        );
 
-           CaseDataContent caseDataContent = CaseDataContent.builder()
-                .event(Event.builder().id(UPDATE_CASE_DRAFT).build())
-                .eventToken(AUTH_TOKEN)
-                .data(caseData)
-                .build();
+        CaseDataContent caseDataContent = CaseDataContent.builder()
+            .event(Event.builder().id(UPDATE_CASE_DRAFT).build())
+            .eventToken(AUTH_TOKEN)
+            .data(caseData)
+            .build();
 
-            CaseDetails caseDetails = coreCaseDataApi.submitEventForCitizen(
-                SERVICE_AUTH_TOKEN, AUTH_TOKEN, USER_ID, "EMPLOYMENT",
-                "ET_EnglandWales", CASE_ID.toString(), true, caseDataContent);
+        CaseDetails caseDetails = coreCaseDataApi.submitEventForCitizen(
+            SERVICE_AUTH_TOKEN, AUTH_TOKEN, USER_ID, "EMPLOYMENT",
+            "ET_EnglandWales", CASE_ID.toString(), true, caseDataContent);
 
-            System.out.println(caseDetails);
-        }
+        assertNotNull(caseDetails);
+    }
 
-        @Override
-        protected Map<String, Object> setUpStateMapForProviderWithoutCaseData() throws JSONException {
-            Map<String, Object> caseDataContentMap = super.setUpStateMapForProviderWithoutCaseData();
-            caseDataContentMap.put("EVENT_ID", UPDATE_CASE_DRAFT);
-            return caseDataContentMap;
-        }
+    @Override
+    @SneakyThrows
+    protected Map<String, Object> addCaseTypeJurdisticaton() {
+        Map<String, Object> caseDataContentMap = super.addCaseTypeJurdisticaton();
+        caseDataContentMap.put("EVENT_ID", UPDATE_CASE_DRAFT);
+        return caseDataContentMap;
+    }
 
     private String buildPath() {
         return new StringBuilder()
@@ -85,6 +86,7 @@ public class SubmitEventForCitizenConsumerTest extends SpringBootContractBaseTes
             .append("/events")
             .toString();
     }
+
     public static DslPart buildCaseDetailsDsl(Long caseId) {
         return newJsonBody((o) -> {
             o.numberType("id", caseId)

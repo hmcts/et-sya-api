@@ -23,10 +23,10 @@ import static org.springframework.http.HttpStatus.OK;
 
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
-public class S2SConsumerTest {
+class S2SConsumerTest {
     private static final String S2S_URL = "/lease";
 
-    @Pact(provider="s2-auth-api", consumer= "et_sya_api_service")
+    @Pact(provider = "s2-auth-api", consumer = "et_sya_api_service")
     RequestResponsePact executeServiceAuthApiGetToken(PactDslWithProvider builder) {
 
         Map<String, String> responseHeaders = Map.of(HttpHeaders.AUTHORIZATION, "someToken");

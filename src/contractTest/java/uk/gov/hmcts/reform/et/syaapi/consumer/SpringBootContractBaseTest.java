@@ -12,8 +12,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -35,8 +35,7 @@ public class SpringBootContractBaseTest {
     public static final String INITIATE_CASE_DRAFT = "INITIATE_CASE_DRAFT";
     public static final String UPDATE_CASE_DRAFT = "UPDATE_CASE_DRAFT";
     protected static final String USER_ID = "123456";
-    protected static final Long CASE_ID = 1593694526480033L;
-
+    protected static final Long CASE_ID = 159_369_452_648_003_3L;
     public static final String JURISDICTION = "jurisdictionId";
     public static final String CASE_TYPE = "caseType";
 
@@ -58,8 +57,8 @@ public class SpringBootContractBaseTest {
         Thread.sleep(SLEEP_TIME);
     }
 
-    protected Map<String, Object> setUpStateMapForProviderWithoutCaseData() {
-        Map<String, Object> map = new HashMap<>();
+    protected Map<String, Object> addCaseTypeJurdisticaton() {
+        Map<String, Object> map = new ConcurrentHashMap<>();
         map.put(JURISDICTION, "EMPLOYMENT");
         map.put(CASE_TYPE, "ET_EnglandWales");
         return map;
