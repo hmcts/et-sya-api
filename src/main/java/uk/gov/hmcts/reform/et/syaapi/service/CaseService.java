@@ -56,7 +56,7 @@ public class CaseService {
         UserDetails userDetails = idamClient.getUserDetails(authorization);
         return ccdApiClient.searchForCitizen(
             authorization, authTokenGenerator.generate(),
-            "123456", JURISDICTION_ID, caseType, Collections.emptyMap());
+            userDetails.getId(), JURISDICTION_ID, caseType, Collections.emptyMap());
     }
 
     /**
@@ -76,12 +76,12 @@ public class CaseService {
         String s2sToken = authTokenGenerator.generate();
         log.info("Generated s2s");
         UserDetails userDetails = idamClient.getUserDetails(authorization);
-        log.info("User Id: " + "123456");
+        log.info("User Id: " + userDetails.getId());
         log.info("Roles : " + userDetails.getRoles());
         var ccdCase = ccdApiClient.startForCitizen(
             authorization,
             s2sToken,
-            "123456",
+            userDetails.getId(),
             JURISDICTION_ID,
             caseType,
             eventType
@@ -95,7 +95,7 @@ public class CaseService {
         return ccdApiClient.submitForCitizen(
             authorization,
             s2sToken,
-            "123456",
+            userDetails.getId(),
             JURISDICTION_ID,
             caseType,
             true,
@@ -157,7 +157,7 @@ public class CaseService {
         return ccdApiClient.startEventForCitizen(
             authorization,
             s2sToken,
-            "123456",
+            userDetails.getId(),
             JURISDICTION_ID,
             caseType,
             caseId,
@@ -183,7 +183,7 @@ public class CaseService {
         CaseDetails caseDetails = ccdApiClient.submitEventForCitizen(
             authorization,
             s2sToken,
-            "123456",
+            userDetails.getId(),
             JURISDICTION_ID,
             caseType,
             caseId,

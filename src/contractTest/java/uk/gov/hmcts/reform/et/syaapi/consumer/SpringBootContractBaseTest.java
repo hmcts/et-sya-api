@@ -35,7 +35,7 @@ public class SpringBootContractBaseTest {
     public static final String INITIATE_CASE_DRAFT = "INITIATE_CASE_DRAFT";
     public static final String UPDATE_CASE_DRAFT = "UPDATE_CASE_DRAFT";
     protected static final String USER_ID = "123456";
-    protected static final Long CASE_ID = 159_369_452_648_003_3L;
+    protected static final Long CASE_ID = 1_593_694_526_480_033L;
     public static final String JURISDICTION = "jurisdictionId";
     public static final String CASE_TYPE = "caseType";
 
