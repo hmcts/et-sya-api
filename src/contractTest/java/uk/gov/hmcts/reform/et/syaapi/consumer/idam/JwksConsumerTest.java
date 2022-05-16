@@ -7,6 +7,7 @@ import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
+import au.com.dius.pact.core.model.annotations.PactFolder;
 import io.restassured.RestAssured;
 import org.assertj.core.api.Assertions;
 import org.json.JSONObject;
@@ -23,10 +24,11 @@ import static org.springframework.http.HttpStatus.OK;
 
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
+@PactFolder("pacts")
 class JwksConsumerTest {
     private static final String JWKS_AUTH_URL = "/o/jwks";
 
-    @Pact(provider = "idam_jwks_api", consumer = "et-sya-api-service")
+    @Pact(provider = "idam_jwks_api", consumer = "et_sya_api_service")
     RequestResponsePact executeServiceAuthApiGetToke(PactDslWithProvider builder) {
 
         Map<String, String> responseHeaders = Map.of(HttpHeaders.AUTHORIZATION, "Bearer UserAuthToken");
@@ -61,6 +63,8 @@ class JwksConsumerTest {
 
         JSONObject response = new JSONObject(responseBody);
         Assertions.assertThat(response).isNotNull();
+        System.out.println(response);
+
     }
 
     private PactDslJsonBody createAuthResponse() {

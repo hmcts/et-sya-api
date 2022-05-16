@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class StartEventForCitizenConsumerTest extends SpringBootContractBaseTest {
 
-    @Pact(provider = "ccd_data_store_cases_start_event", consumer = "et_sya_api_service")
+    @Pact(provider = "ccd_data_store_api_cases", consumer = "et_sya_api_service")
     public RequestResponsePact startEventForCitizen(PactDslWithProvider builder) {
 
         Map<String, String> responseHeaders = Map.of("Content-Type", "application/json");

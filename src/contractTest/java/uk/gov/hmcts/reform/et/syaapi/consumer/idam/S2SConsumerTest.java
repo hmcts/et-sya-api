@@ -7,6 +7,7 @@ import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
+import au.com.dius.pact.core.model.annotations.PactFolder;
 import io.restassured.RestAssured;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,7 @@ import static org.springframework.http.HttpStatus.OK;
 
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
+@PactFolder("pacts")
 class S2SConsumerTest {
     private static final String S2S_URL = "/lease";
 
