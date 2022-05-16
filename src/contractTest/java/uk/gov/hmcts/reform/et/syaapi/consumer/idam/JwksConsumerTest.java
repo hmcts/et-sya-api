@@ -63,7 +63,6 @@ class JwksConsumerTest {
 
         JSONObject response = new JSONObject(responseBody);
         Assertions.assertThat(response).isNotNull();
-        System.out.println(response);
 
     }
 
