@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimCaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.models.TornadoDocument;
@@ -23,7 +22,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 @RestController
 public class DocumentGenerationController {
 
-    @PostMapping(value = "/generatePDF", produces = "application/pdf")
+    @PostMapping(value = "/generate-pdf", produces = "application/pdf")
     @Operation(summary = "Generate submitted case pdf")
     @ApiResponseGroup
     public ResponseEntity<byte[]> generatePdf(

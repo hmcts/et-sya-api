@@ -52,7 +52,7 @@ class DocumentGenerationControllerTest {
         byte[] expectedResult =
             Thread.currentThread().getContextClassLoader().getResourceAsStream("HelloWorld.pdf").readAllBytes();
 
-        MvcResult result = mockMvc.perform(post("/generatePDF")
+        MvcResult result = mockMvc.perform(post("/generate-pdf")
                             .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
                             .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_PDF_VALUE)
             .content(requestJson))
@@ -71,7 +71,7 @@ class DocumentGenerationControllerTest {
 
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
 
-        mockMvc.perform(post("/generatePDF")
+        mockMvc.perform(post("/generate-pdf")
                             .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
             .andExpect(status().isBadRequest());
 
