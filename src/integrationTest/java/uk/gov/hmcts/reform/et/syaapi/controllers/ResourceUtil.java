@@ -11,9 +11,9 @@ public final class ResourceUtil {
     private ResourceUtil() {
     }
 
-    public static String expectedResponse(final String resourcePath) throws IOException {
-        return resourceAsString(resourcePath);
-    }
+//    public static String expectedResponse(final String resourcePath) throws IOException {
+//        return resourceAsString(resourcePath);
+//    }
 
     public static String resourceAsString(final String resourcePath) throws IOException {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -21,9 +21,9 @@ public final class ResourceUtil {
         return new String(Files.readAllBytes(file.toPath()));
     }
 
-    public static byte[] resourceAsBytes(final String resourcePath) throws IOException {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        final File file = ResourceUtils.getFile(classLoader.getResource(resourcePath).getFile());
-        return Files.readAllBytes(file.toPath());
-    }
+//    public static byte[] resourceAsBytes(final String resourcePath) throws IOException {
+//        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+//        final File file = ResourceUtils.getFile(classLoader.getResource(resourcePath).getFile());
+//        return Files.readAllBytes(file.toPath());
+//    }
 }

@@ -48,8 +48,7 @@ public class ManageCaseController {
     @ApiResponseGroup
     public ResponseEntity<List<CaseDetails>> getCaseDataByUser(
         @RequestHeader(AUTHORIZATION) String authorization,
-        @PathVariable String caseType,
-        @RequestBody String searchString
+        @PathVariable String caseType
     ) {
         return ok(caseService.getCaseDataByUser(authorization, caseType));
     }
