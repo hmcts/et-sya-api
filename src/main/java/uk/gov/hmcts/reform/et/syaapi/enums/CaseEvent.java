@@ -7,5 +7,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum CaseEvent {
     INITIATE_CASE_DRAFT,
-    UPDATE_CASE_DRAFT
+    UPDATE_CASE_DRAFT,
+    SUBMIT_CASE_DRAFT
 }
