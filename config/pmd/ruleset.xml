@@ -49,7 +49,7 @@
   </rule>
   <rule ref="category/java/design.xml/ExcessiveImports">
     <properties>
-      <property name="minimum" value="40"/><!-- should be reduced -->
+      <property name="minimum" value="45"/><!-- should be reduced -->
     </properties>
   </rule>
   <rule ref="category/java/design.xml/LawOfDemeter">
