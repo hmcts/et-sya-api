@@ -14,7 +14,6 @@ import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.json.JSONException;
 import org.junit.After;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,32 +21,28 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimCaseDocument;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.springframework.http.HttpMethod.POST;
 
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@PactTestFor(providerName = "rpePdfService_PDFGenerationEndpointV2", port = "8891")
+@PactTestFor(providerName = "etSyaService_pdfgenerationEndpoint", port = "8891")
 @PactFolder("pacts")
 @SpringBootTest({
     "service.pdf-service.uri : http://localhost:8891/pdfs"
 })
 class PdfGenerationServiceConsumerTest {
     private static final String SERVICE_AUTHORIZATION_HEADER = "ServiceAuthorization";
-
     @Autowired
     ObjectMapper objectMapper;
-
-    private final String someServiceAuthToken = "someServiceAuthToken";
-    private Map placeholders = Map.of("caseNo", "12345");
+    private static final String PDF_URL = "/pdfs";
+    private static final String SOME_SERVICE_AUTH_TOKEN = "someServiceAuthToken";
 
     @BeforeEach
     void setUpEachTest() throws InterruptedException, IOException {
@@ -59,16 +54,16 @@ class PdfGenerationServiceConsumerTest {
         Executor.closeIdleConnections();
     }
 
-    @Pact(provider = "rpePdfService_PDFGenerationEndpointV2", consumer = "fprl_documentGeneratorClient")
-    RequestResponsePact generatePdfFromTemplate(PactDslWithProvider builder) throws JSONException, IOException {
+    @Pact(provider = "etsyaService_pdfgenerationEndpoint", consumer = "et_sya_api_service")
+    RequestResponsePact generatePdfFromTemplate(PactDslWithProvider builder) throws Exception {
         return builder
             .given("A request to generate a pdf document")
             .uponReceiving("a request to generate a pdf document with a template")
-            .method("POST")
-            .headers(SERVICE_AUTHORIZATION_HEADER, someServiceAuthToken)
+            .method(POST.toString())
+            .headers(SERVICE_AUTHORIZATION_HEADER, SOME_SERVICE_AUTH_TOKEN)
             .body(createJsonObject(createClaimCase()),
                   "application/vnd.uk.gov.hmcts.pdf-service.v2+json;charset=UTF-8")
-            .path("/pdfs")
+            .path(PDF_URL)
             .willRespondWith()
             .withBinaryData("".getBytes(), "application/octet-stream")
             .matchHeader(org.springframework.http.HttpHeaders.CONTENT_TYPE,
@@ -79,26 +74,23 @@ class PdfGenerationServiceConsumerTest {
 
     @Test
     @PactTestFor(pactMethod = "generatePdfFromTemplate")
-    public void verifyGeneratePdfFromTemplatePact(MockServer mockServer) throws IOException, JSONException {
-
+    void verifyGeneratePdfFromTemplatePact(MockServer mockServer) throws Exception {
         HttpClient httpClient = HttpClientBuilder.create().build();
 
-        HttpPost request = new HttpPost(mockServer.getUrl() + "/pdfs");
+        HttpPost request = new HttpPost(mockServer.getUrl() + PDF_URL);
         StringEntity json = new StringEntity(createJsonObject(createClaimCase()));
-        request.addHeader(SERVICE_AUTHORIZATION_HEADER, someServiceAuthToken);
+        request.addHeader(SERVICE_AUTHORIZATION_HEADER, SOME_SERVICE_AUTH_TOKEN);
         request.addHeader("content-type", "application/vnd.uk.gov.hmcts.pdf-service.v2+json;charset=UTF-8");
         request.setEntity(json);
 
         HttpResponse generateDocumentResponse = httpClient.execute(request);
-
         String responseContentType = generateDocumentResponse.getEntity().getContentType().toString();
 
         assertEquals(200, generateDocumentResponse.getStatusLine().getStatusCode());
         assertEquals("Content-Type: application/pdf", responseContentType);
     }
 
-
-    protected String createJsonObject(Object obj) throws JSONException, IOException {
+    protected String createJsonObject(Object obj) throws Exception {
         return objectMapper.writeValueAsString(obj);
     }
 

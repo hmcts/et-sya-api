@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.consumer.ccd;
 
-import au.com.dius.pact.consumer.dsl.DslPart;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.RequestResponsePact;
@@ -16,24 +15,21 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.et.syaapi.consumer.SpringBootContractBaseTest;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 
-import java.util.Map;
-
-import static io.pactfoundation.consumer.dsl.LambdaDsl.newJsonBody;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.http.HttpMethod.POST;
 
 class SubmitForCitizenConsumerTest extends SpringBootContractBaseTest {
 
     @Pact(provider = "ccd_data_store_api_cases", consumer = "et_sya_api_service")
-        public RequestResponsePact submitForCitizen(PactDslWithProvider builder) {
-        Map<String, String> responseHeaders = Map.of("Content-Type", "application/json");
+    RequestResponsePact submitForCitizen(PactDslWithProvider builder) {
 
         return  builder
                 .given("A Submit case for a Citizen is requested", addCaseTypeJurdisticaton())
                 .uponReceiving("A Submit case for a Citizen by calling CCD API")
                 .path(buildPath())
                 .query("ignore-warning=true")
-                .method("POST")
-                .headers(responseHeaders)
+                .method(POST.toString())
+                .headers(RESPONSE_HEADERS)
                 .matchHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .willRespondWith()
                 .matchHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -46,10 +42,7 @@ class SubmitForCitizenConsumerTest extends SpringBootContractBaseTest {
     @SneakyThrows
     @PactTestFor(pactMethod = "submitForCitizen")
     void verifySubmitForCitizen() {
-        Et1CaseData caseData = ResourceLoader.fromString(
-            "requests/caseData.json",
-            Et1CaseData.class
-        );
+        Et1CaseData caseData = ResourceLoader.fromString("requests/caseData.json", Et1CaseData.class);
 
         CaseDataContent caseDataContent = CaseDataContent.builder()
             .event(Event.builder().id(INITIATE_CASE_DRAFT).build())
@@ -58,18 +51,10 @@ class SubmitForCitizenConsumerTest extends SpringBootContractBaseTest {
             .build();
 
         CaseDetails caseDetails = coreCaseDataApi.submitForCitizen(
-            SERVICE_AUTH_TOKEN, AUTH_TOKEN, USER_ID, "EMPLOYMENT",
-            "ET_EnglandWales", true, caseDataContent);
+            SERVICE_AUTH_TOKEN, AUTH_TOKEN, USER_ID, JURISDICTION_ID,
+            CASE_TYPE_ID,true, caseDataContent);
 
         assertNotNull(caseDetails);
-    }
-
-    @Override
-    @SneakyThrows
-    protected Map<String, Object> addCaseTypeJurdisticaton() {
-        Map<String, Object> caseDataContentMap = super.addCaseTypeJurdisticaton();
-        caseDataContentMap.put("EVENT_ID", INITIATE_CASE_DRAFT);
-        return caseDataContentMap;
     }
 
     private String buildPath() {
@@ -77,25 +62,11 @@ class SubmitForCitizenConsumerTest extends SpringBootContractBaseTest {
             .append("/citizens/")
             .append(USER_ID)
             .append("/jurisdictions/")
-            .append("EMPLOYMENT")
+            .append(JURISDICTION_ID)
             .append("/case-types/")
-            .append("ET_EnglandWales")
+            .append(CASE_TYPE_ID)
             .append("/cases")
             .toString();
-    }
-
-    public static DslPart buildCaseDetailsDsl(Long caseId) {
-        return newJsonBody((o) -> {
-            o.numberType("id", caseId)
-                .stringType("jurisdiction", "EMPLOYMENT")
-                .stringType("state", "ADMISSION_TO_HMCTS")
-                .stringValue("case_type_id", "ET_EnglandWales")
-                .object("case_data", (dataMap) -> {
-                    dataMap
-                        .stringType("caseType", "Single")
-                        .stringType("caseSource", "Manually Created");
-                });
-        }).build();
     }
 
 }

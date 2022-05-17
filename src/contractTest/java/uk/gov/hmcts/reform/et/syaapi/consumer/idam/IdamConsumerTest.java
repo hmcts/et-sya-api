@@ -65,7 +65,6 @@ class IdamConsumerTest {
         Assertions.assertThat(response).isNotNull();
     }
 
-
     private DslPart createAuthResponse() {
         return newJsonBody((o) -> {
             o.stringType("id",
@@ -78,6 +77,5 @@ class IdamConsumerTest {
             ;
         }).build();
     }
-
 }
 
