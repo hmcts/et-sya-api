@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.utils;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.type.TypeFactory;
@@ -38,5 +39,16 @@ public final class ResourceLoader {
             List.class,
             className
         ));
+    }
+
+    public static String toJson(Object input) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.writeValueAsString(input);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(
+                String.format("Failed to serialize '%s' to JSON", input.getClass().getSimpleName()), e
+            );
+        }
     }
 }
