@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.et.syaapi.controllers;
 
 import lombok.SneakyThrows;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -32,19 +34,20 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUT
 
 class DocumentGenerationControllerTest {
 
-    private final String requestJson = ResourceUtil.resourceAsString(
-        "requests/caseId.json"
-    );
+    private String requestJson;
+
+    @BeforeEach
+    public void setUp() throws IOException {
+        requestJson = ResourceUtil.resourceAsString(
+            "requests/caseId.json"
+        );
+    }
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
     private VerifyTokenService verifyTokenService;
-
-    DocumentGenerationControllerTest() throws IOException {
-        // This default constructor is intentionally empty
-    }
 
     @SneakyThrows
     @Test
