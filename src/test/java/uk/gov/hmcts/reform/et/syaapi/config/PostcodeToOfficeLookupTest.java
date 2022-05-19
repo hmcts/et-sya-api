@@ -16,7 +16,8 @@ class PostcodeToOfficeLookupTest {
 
     private static final String LEEDS = "Leeds";
     private static final String MANCHESTER = "Manchester";
-    private static final String SCOTLAND = "Scotland";
+    private static final String GLASGOW = "Glasgow";
+    private static final String EDINGBURGH = "Edinburgh";
 
     @Autowired
     private PostcodeToOfficeMappings postcodeToOfficeLookup;
@@ -38,7 +39,12 @@ class PostcodeToOfficeLookupTest {
 
     @Test
     void mapMatchesPostcodePartialsToGlasgowOffice() {
-        assertThat(postcodeToOfficeLookup.getPostcodes().get("G")).isEqualTo(SCOTLAND);
+        assertThat(postcodeToOfficeLookup.getPostcodes().get("G")).isEqualTo(GLASGOW);
+    }
+
+    @Test
+    void mapMatchesPostcodePartialsToEdinburghOffice() {
+        assertThat(postcodeToOfficeLookup.getPostcodes().get("EH")).isEqualTo(EDINGBURGH);
     }
 
     @Test
