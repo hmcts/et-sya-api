@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.et.syaapi.controllers;
 
 import lombok.SneakyThrows;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,23 +35,23 @@ class DocumentGenerationControllerTest {
 
     private String requestJson;
 
-    @BeforeEach
-    public void setUp() throws IOException {
-        requestJson = ResourceUtil.resourceAsString(
-            "requests/caseId.json"
-        );
-    }
-
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
     private VerifyTokenService verifyTokenService;
 
+    @BeforeEach
+    public void setUp() throws IOException {
+        requestJson = ResourceUtil.resourceAsString(
+            "requests/caseId.json"
+        );
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+    }
+
     @SneakyThrows
     @Test
     void happyRequestReturnsExpectedByteArray() {
-        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
 
         byte[] expectedResult = Files.readAllBytes(Paths.get("src/main/resources/HelloWorld.pdf"));
 
@@ -72,8 +71,6 @@ class DocumentGenerationControllerTest {
     @SneakyThrows
     @Test
     void noRequestBodyProvidedReturnsBadRequest() {
-
-        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
 
         mockMvc.perform(post("/generate-pdf")
                             .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
