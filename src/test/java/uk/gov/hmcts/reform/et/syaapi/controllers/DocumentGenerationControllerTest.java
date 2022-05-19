@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -49,8 +51,7 @@ class DocumentGenerationControllerTest {
     void happyRequestReturnsExpectedByteArray() {
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
 
-        byte[] expectedResult =
-            Thread.currentThread().getContextClassLoader().getResourceAsStream("HelloWorld.pdf").readAllBytes();
+        byte[] expectedResult = Files.readAllBytes(Paths.get("src/main/resources/HelloWorld.pdf"));
 
         MvcResult result = mockMvc.perform(post("/generate-pdf")
                             .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)

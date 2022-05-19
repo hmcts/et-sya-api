@@ -14,6 +14,8 @@ import uk.gov.hmcts.reform.et.syaapi.models.TornadoDocument;
 import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationService;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
 
@@ -63,6 +65,7 @@ public class DocumentGenerationController {
     protected byte[] genPdfDocumentStub(String templateName,
                                       String outputFileName,
                                       TornadoDocument sourceData) throws IOException {
-        return Thread.currentThread().getContextClassLoader().getResourceAsStream("HelloWorld.pdf").readAllBytes();
+        return Files.readAllBytes(Paths.get("src/main/resources/HelloWorld.pdf"));
+
     }
 }
