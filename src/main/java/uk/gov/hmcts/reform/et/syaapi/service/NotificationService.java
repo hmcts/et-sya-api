@@ -10,6 +10,10 @@ import uk.gov.service.notify.SendEmailResponse;
 
 import java.util.Map;
 
+/**
+ * Holds details for sending email to user(s) provided template been created before-hand.
+ */
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -27,10 +31,7 @@ public class NotificationService {
      */
 
     public SendEmailResponse sendEMail(
-        String templateId,
-        String targetEmail,
-        Map<String, String> parameters,
-        String reference ) {
+        String templateId, String targetEmail, Map<String, String> parameters,  String reference) {
         SendEmailResponse sendEmailResponse;
         try {
             sendEmailResponse = notificationClient.sendEmail(templateId, targetEmail, parameters, reference);

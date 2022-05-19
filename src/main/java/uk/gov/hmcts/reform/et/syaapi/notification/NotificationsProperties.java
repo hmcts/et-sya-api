@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
 
 /**
- * Holds gov-notify api key and templateId details
+ * Holds gov-notify api key and templateId details.
  */
 
 @Validated

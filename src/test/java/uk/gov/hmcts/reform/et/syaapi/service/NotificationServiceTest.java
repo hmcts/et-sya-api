@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -19,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 
+@SuppressWarnings({"PMD.TooManyMethods"})
 class NotificationServiceTest {
     private static final String TEST_GOV_NOTIFY_API_KEY =
         "test_test_key-002d2170-e381-4545-8251-5e87dab724e7-190d8b02-2bb8-4fc9-a471-5486b77782c0";
@@ -55,12 +55,6 @@ class NotificationServiceTest {
                    + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
                    + "  }\n"
                    + "}\n");
-    }
-
-    @AfterEach
-    void tearDown() {
-        notificationClient = null;
-        notificationService = null;
     }
 
     @SneakyThrows
