@@ -3,19 +3,17 @@ package uk.gov.hmcts.reform.et.syaapi.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
-import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 
 import java.util.List;
@@ -27,55 +25,69 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 @Slf4j
 @RequiredArgsConstructor
 @RestController
+@RequestMapping("/cases")
 public class ManageCaseController {
 
-    @Autowired
-    private CaseService caseService;
+    private final CaseService caseService;
 
-    @GetMapping("/caseDetails/{caseId}")
-    @Operation(summary = "Return case details")
+    @PostMapping("/user-case")
+    @Operation(summary = "Return individual case details")
     @ApiResponseGroup
-    public ResponseEntity<CaseDetails> getCaseDetails(
+    public ResponseEntity<CaseDetails> getUserCaseDetails(
         @RequestHeader(AUTHORIZATION) String authorization,
-        @PathVariable String caseId
-    ) {
-        var caseDetails = caseService.getCaseData(authorization, caseId);
+        @RequestBody CaseRequest caseRequest) {
+        var caseDetails = caseService.getUserCase(authorization, caseRequest);
         return ok(caseDetails);
     }
 
-    @GetMapping("/caseTypes/{caseType}/cases")
-    @Operation(summary = "Return all case details for User")
+    @GetMapping("/user-cases")
+    @Operation(summary = "Return list of case details for a given user")
     @ApiResponseGroup
-    public ResponseEntity<List<CaseDetails>> getCaseDataByUser(
-        @RequestHeader(AUTHORIZATION) String authorization,
-        @PathVariable String caseType
-    ) {
-        return ok(caseService.getCaseDataByUser(authorization, caseType));
-    }
-
-    @PostMapping("/case-type/{caseType}/event-type/{eventType}/case")
-    @Operation(summary = "Create a new default case")
-    @ApiResponseGroup
-    public ResponseEntity<CaseDetails> createCase(
-        @RequestHeader(AUTHORIZATION) String authorization,
-        @PathVariable @NotNull String caseType,
-        @PathVariable @NotNull String eventType,
-        @RequestBody String caseData
-    ) {
-        var caseDetails = caseService.createCase(authorization, caseType, eventType, caseData);
+    public ResponseEntity<List<CaseDetails>> getUserCasesDetails(
+        @RequestHeader(AUTHORIZATION) String authorization) {
+        var caseDetails = caseService.getAllUserCases(authorization);
         return ok(caseDetails);
     }
 
-    @PutMapping("/case-type/{caseType}/event-type/{eventType}/{caseId}")
+    @PostMapping("/initiate-case")
+    @Operation(summary = "Create a draft case for the user")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> createDraftCase(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody CaseRequest caseRequest
+    ) {
+        log.info("Received initiate-case request - caseTypeId: {}",
+                 caseRequest.getCaseId());
+
+        var caseDetails = caseService.createCase(authorization, caseRequest);
+        return ok(caseDetails);
+    }
+
+    @PutMapping("/update-case")
     @Operation(summary = "Update draft case API method")
     @ApiResponseGroup
-    public CaseData updateCase(
+    public ResponseEntity<CaseDetails> updateCase(
         @RequestHeader(AUTHORIZATION) String authorization,
-        @PathVariable @NotNull String caseType,
-        @PathVariable @NotNull String eventType,
-        @PathVariable @NotNull String caseId,
-        @RequestBody String caseData
+        @NotNull @RequestBody CaseRequest caseRequest
     ) {
-        return caseService.triggerEvent(authorization, caseId, caseType, CaseEvent.valueOf(eventType), caseData);
+        log.info("Received update-case request - caseTypeId: {} caseId: {}",
+                 caseRequest.getCaseTypeId(), caseRequest.getCaseId());
+
+        var caseDetails = caseService.updateCase(authorization, caseRequest);
+        return ok(caseDetails);
+    }
+
+    @PutMapping("/submit-case")
+    @Operation(summary = "Submit a draft case API method")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> submitCase(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody CaseRequest caseRequest
+    ) {
+        log.info("Received submit-case request - caseTypeId: {} caseId: {}",
+                 caseRequest.getCaseTypeId(), caseRequest.getCaseId());
+
+        var caseDetails = caseService.submitCase(authorization, caseRequest);
+        return ok(caseDetails);
     }
 }
