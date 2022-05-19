@@ -10,3 +10,4 @@ java:
     et:
       secrets:
         - AppInsightsInstrumentationKey
+        - gov-notify-api-key
