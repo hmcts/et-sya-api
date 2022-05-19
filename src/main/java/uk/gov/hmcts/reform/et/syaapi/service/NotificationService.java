@@ -30,8 +30,7 @@ public class NotificationService {
         String templateId,
         String targetEmail,
         Map<String, String> parameters,
-        String reference
-    ) {
+        String reference ) {
         SendEmailResponse sendEmailResponse;
         try {
             sendEmailResponse = notificationClient.sendEmail(templateId, targetEmail, parameters, reference);
