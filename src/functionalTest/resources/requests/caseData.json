@@ -1,4 +1,7 @@
 {
-  "caseType": "Single",
-  "caseSource": "Manually Created"
+  "post_code": "EX13UD",
+  "case_data": {
+    "caseType": "Single",
+    "caseSource": "Manually Created"
+  }
 }

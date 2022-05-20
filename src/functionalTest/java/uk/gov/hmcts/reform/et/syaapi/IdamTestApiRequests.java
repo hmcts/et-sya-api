@@ -21,9 +21,7 @@ import java.util.List;
 
 import static org.apache.http.client.methods.RequestBuilder.post;
 import static org.apache.http.entity.ContentType.APPLICATION_JSON;
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
 
 @Slf4j
@@ -83,6 +81,6 @@ public class IdamTestApiRequests {
             log.error("Failed to get access token from loginResponse");
         }
 
-        return accessToken;
+        return "Bearer " + accessToken;
     }
 }

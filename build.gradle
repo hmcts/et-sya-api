@@ -234,6 +234,7 @@ dependencies {
 
   implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.15.2'
   implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.6.7'
+  implementation 'org.json:json:20220320'
 
   compileOnly 'org.projectlombok:lombok'
   annotationProcessor group: 'org.projectlombok', name: 'lombok'

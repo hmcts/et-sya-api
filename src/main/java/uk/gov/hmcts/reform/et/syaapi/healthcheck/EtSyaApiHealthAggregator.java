@@ -4,7 +4,7 @@ import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.actuate.health.StatusAggregator;
 import java.util.Set;
 
-public class ETCaseApiHealthAggregator implements StatusAggregator {
+public class EtSyaApiHealthAggregator implements StatusAggregator {
 
     @Override
     public Status getAggregateStatus(Set<Status> statuses) {

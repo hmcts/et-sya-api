@@ -1,19 +1,17 @@
 package uk.gov.hmcts.reform.et.syaapi.healthcheck;
 
 import org.junit.Before;
-import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-class ETCaseApiHealthAggregatorTest {
+class EtSyaApiHealthAggregatorTest {
 
-    private  ETCaseApiHealthAggregator etCaseApiHealthAggregator;
+    private EtSyaApiHealthAggregator etSyaApiHealthAggregator;
 
     @Before
     public void setUp() {
         openMocks(this);
-        etCaseApiHealthAggregator = new ETCaseApiHealthAggregator();
+        etSyaApiHealthAggregator = new EtSyaApiHealthAggregator();
     }
 
 //    @Test
