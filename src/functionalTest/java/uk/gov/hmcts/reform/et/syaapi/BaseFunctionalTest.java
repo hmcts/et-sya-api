@@ -24,7 +24,7 @@ import java.security.NoSuchAlgorithmException;
 @Slf4j
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class BaseFunctionalTest {
-    protected final String baseUrl = System.getenv("TEST_URL") == null ? "http://et-sya-api-aat.service.core-compute-aat.internal" : System.getenv("TEST_URL");
+    protected final String baseUrl = System.getenv("TEST_URL") == null ? "http://localhost:4550" : System.getenv("TEST_URL");
     protected String userToken;
     protected CloseableHttpClient client;
     protected IdamTestApiRequests idamTestApiRequests;

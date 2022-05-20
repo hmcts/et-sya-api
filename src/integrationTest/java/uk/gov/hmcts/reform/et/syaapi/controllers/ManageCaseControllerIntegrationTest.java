@@ -40,6 +40,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 class ManageCaseControllerIntegrationTest {
 
     private static final String CASE_DETAILS_JSON = "responses/caseDetails.json";
+    private static final String CASE_LIST_DETAILS_JSON = "responses/caseListDetails.json";
 
     private final CaseDetails caseDetailsResponse = ResourceLoader.fromString(
         CASE_DETAILS_JSON,
@@ -101,7 +102,7 @@ class ManageCaseControllerIntegrationTest {
 
         mockMvc.perform(get("/cases/user-cases").header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN))
             .andExpect(status().isOk())
-            .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
+            .andExpect(content().json(getSerialisedMessage(CASE_LIST_DETAILS_JSON)));
     }
 
     @DisplayName("Should create case and return case details")
@@ -166,7 +167,7 @@ class ManageCaseControllerIntegrationTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(ResourceLoader.toJson(caseRequest)))
             .andExpect(status().isOk())
-            .andExpect(content().json(getSerialisedMessage("responses/caseDetails.json")));
+            .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
     }
 
     private String getSerialisedMessage(String fileName) {

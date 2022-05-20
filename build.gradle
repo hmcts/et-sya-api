@@ -283,11 +283,11 @@ rootProject.tasks.named("processSmokeTestResources") {
 }
 
 rootProject.tasks.named("processIntegrationTestResources") {
-  duplicatesStrategy = 'exclude'
+  duplicatesStrategy = 'include'
 }
 
 rootProject.tasks.named("processFunctionalTestResources") {
-  duplicatesStrategy = 'exclude'
+  duplicatesStrategy = 'include'
 }
 
 
