@@ -7,7 +7,6 @@ import uk.gov.hmcts.reform.authorisation.ServiceAuthorisationApi;
 import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.reform.ccd.client.CaseUserApi;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
-import uk.gov.hmcts.reform.et.syaapi.client.CcdApiClient;
 import uk.gov.hmcts.reform.idam.client.IdamApi;
 
 @SpringBootApplication(
@@ -16,7 +15,6 @@ import uk.gov.hmcts.reform.idam.client.IdamApi;
 @SuppressWarnings("HideUtilityClassConstructor") // Spring needs a constructor, its not a utility class
 @EnableFeignClients(
     clients = {
-        CcdApiClient.class,
         IdamApi.class,
         ServiceAuthorisationApi.class,
         CaseUserApi.class,
