@@ -12,7 +12,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,6 +21,8 @@ import java.util.List;
 import static org.apache.http.client.methods.RequestBuilder.post;
 import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 import static org.junit.Assert.assertEquals;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
 
 @Slf4j
@@ -45,17 +46,17 @@ public class IdamTestApiRequests {
         );
 
         String body = new ObjectMapper().writeValueAsString(createUser);
-        makePostRequest(baseIdamApiUrl + "/testing-support/accounts", body, email);
+        makePostRequest(baseIdamApiUrl + "/testing-support/accounts", body);
 
         return createUser;
     }
 
-    private void makePostRequest(String uri, String body, String email) throws IOException {
+    private void makePostRequest(String uri, String body) throws IOException {
         HttpResponse createUserResponse = client.execute(post(uri)
                                                        .setEntity(new StringEntity(body, APPLICATION_JSON))
                                                        .build());
 
-        assertEquals(HttpStatus.CREATED.value(), createUserResponse.getStatusLine().getStatusCode());
+        assertEquals(CREATED.value(), createUserResponse.getStatusLine().getStatusCode());
 
 
     }
@@ -69,7 +70,7 @@ public class IdamTestApiRequests {
                                                         .setHeader("Content-type", APPLICATION_FORM_URLENCODED_VALUE)
                                                         .setEntity(entity)
                                                         .build());
-        assertEquals(HttpStatus.OK.value(), loginResponse.getStatusLine().getStatusCode());
+        assertEquals(OK.value(), loginResponse.getStatusLine().getStatusCode());
 
         String tokens = EntityUtils.toString(loginResponse.getEntity());
         JSONObject jsonObject;

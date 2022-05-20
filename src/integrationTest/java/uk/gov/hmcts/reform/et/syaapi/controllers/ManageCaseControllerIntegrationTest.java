@@ -28,24 +28,30 @@ import java.util.Collections;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class ManageCaseControllerIntegrationTest {
+class ManageCaseControllerIntegrationTest {
 
-    private CaseDetails caseDetailsResponse = ResourceLoader.fromString(
-        "responses/caseDetails.json",
+    private static final String CASE_DETAILS_JSON = "responses/caseDetails.json";
+
+    private final CaseDetails caseDetailsResponse = ResourceLoader.fromString(
+        CASE_DETAILS_JSON,
         CaseDetails.class
     );
 
-    private StartEventResponse startEventResponse = ResourceLoader.fromString(
+    private final StartEventResponse startEventResponse = ResourceLoader.fromString(
         "responses/caseStartEvent.json",
         StartEventResponse.class
     );
+
+    private static final String AUTH_TOKEN = "testToken";
 
     @Autowired
     private MockMvc mockMvc;
@@ -61,6 +67,7 @@ public class ManageCaseControllerIntegrationTest {
     private CoreCaseDataApi ccdApiClient;
 
     public ManageCaseControllerIntegrationTest() throws IOException {
+        // Just to avoid multiple try-catch
     }
 
     @BeforeEach
@@ -80,21 +87,21 @@ public class ManageCaseControllerIntegrationTest {
 
         mockMvc.perform(post("/cases/user-case")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .header(HttpHeaders.AUTHORIZATION, "abc")
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                             .content(ResourceLoader.toJson(caseRequest)))
             .andExpect(status().isOk())
-            .andExpect(content().json(getSerialisedMessage("responses/caseDetails.json")));
+            .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
     }
 
     @DisplayName("Should get all case details list by user")
     @Test
-    void getCasesByUserEndpoint() throws Exception {
+    void returnCasesByUserEndpoint() throws Exception {
         when(ccdApiClient.searchForCitizen(any(),any(),any(),any(),any(),any()))
             .thenReturn(Collections.singletonList(caseDetailsResponse));
 
-        mockMvc.perform(get("/cases/user-cases").header(HttpHeaders.AUTHORIZATION, "abc"))
+        mockMvc.perform(get("/cases/user-cases").header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN))
             .andExpect(status().isOk())
-            .andExpect(content().json(getSerialisedMessage("responses/caseListDetails.json")));
+            .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
     }
 
     @DisplayName("Should create case and return case details")
@@ -111,11 +118,11 @@ public class ManageCaseControllerIntegrationTest {
 
         mockMvc.perform(
             post("/cases/initiate-case")
-                .header(HttpHeaders.AUTHORIZATION, "abc")
+                .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(ResourceLoader.toJson(caseRequest)))
             .andExpect(status().isOk())
-            .andExpect(content().json(getSerialisedMessage("responses/caseDetails.json")));
+            .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
     }
 
     @DisplayName("Should update case and return case data")
@@ -133,11 +140,11 @@ public class ManageCaseControllerIntegrationTest {
 
         mockMvc.perform(
                 put("/cases/update-case")
-                    .header(HttpHeaders.AUTHORIZATION, "abc")
+                    .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(ResourceLoader.toJson(caseRequest)))
             .andExpect(status().isOk())
-            .andExpect(content().json(getSerialisedMessage("responses/caseDetails.json")));
+            .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
     }
 
     @DisplayName("Should submit case and return case data")
@@ -155,7 +162,7 @@ public class ManageCaseControllerIntegrationTest {
 
         mockMvc.perform(
                 put("/cases/submit-case")
-                    .header(HttpHeaders.AUTHORIZATION, "abc")
+                    .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(ResourceLoader.toJson(caseRequest)))
             .andExpect(status().isOk())
@@ -164,12 +171,11 @@ public class ManageCaseControllerIntegrationTest {
 
     private String getSerialisedMessage(String fileName) {
         try {
-            ClassLoader classLoader = getClass().getClassLoader();
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
             File file = new File(classLoader.getResource(fileName).getFile());
             return new String(Files.readAllBytes(file.toPath()));
 
         } catch (IOException e) {
-            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }

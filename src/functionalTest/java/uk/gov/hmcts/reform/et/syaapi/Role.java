@@ -4,16 +4,16 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@JsonInclude(value = JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Role {
-    private String code;
+    private final String code;
 
     public Role(String code) {
         this.code = code;
     }
 
-    @JsonProperty(value = "code")
+    @JsonProperty("code")
     public String getCode() {
         return code;
     }

@@ -6,14 +6,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
-@JsonInclude(value = JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CreateUser {
-    private String email;
-    private String forename;
-    private String surname;
-    private String password;
-    private List<Role> roles;
+    private final String email;
+    private final String forename;
+    private final String surname;
+    private final String password;
+    private final List<Role> roles;
 
     public CreateUser(String email, String forename, String surname, String password, List<Role> roles) {
         this.email = email;
@@ -23,27 +23,27 @@ public class CreateUser {
         this.roles = roles;
     }
 
-    @JsonProperty(value = "email")
+    @JsonProperty("email")
     public String getEmail() {
         return email;
     }
 
-    @JsonProperty(value = "forename")
+    @JsonProperty("forename")
     public String getForename() {
         return forename;
     }
 
-    @JsonProperty(value = "surname")
+    @JsonProperty("surname")
     public String getSurname() {
         return surname;
     }
 
-    @JsonProperty(value = "password")
+    @JsonProperty("password")
     public String getPassword() {
         return password;
     }
 
-    @JsonProperty(value = "roles")
+    @JsonProperty("roles")
     public List<Role> getRoles() {
         return roles;
     }

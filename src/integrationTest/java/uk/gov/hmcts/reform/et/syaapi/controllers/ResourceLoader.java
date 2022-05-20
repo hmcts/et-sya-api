@@ -8,8 +8,11 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
+import org.springframework.util.ResourceUtils;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 public final class ResourceLoader {
 
@@ -24,9 +27,8 @@ public final class ResourceLoader {
         // Utility class
     }
 
-
     public static <T> T fromString(String jsonFileName, Class<T> clazz) throws IOException {
-        String json = ResourceUtil.resourceAsString(jsonFileName);
+        String json = resourceAsString(jsonFileName);
         return OBJECT_MAPPER.readValue(json, clazz);
     }
 
@@ -39,6 +41,12 @@ public final class ResourceLoader {
                 String.format("Failed to serialize '%s' to JSON", input.getClass().getSimpleName()), e
             );
         }
+    }
+
+    private static String resourceAsString(final String resourcePath) throws IOException {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        final File file = ResourceUtils.getFile(classLoader.getResource(resourcePath).getFile());
+        return new String(Files.readAllBytes(file.toPath()));
     }
 
 }

@@ -101,6 +101,19 @@ docker image rm <image-id>
 
 There is no need to remove postgres and java or similar core images.
 
+### Health check endpoint
+In order to test if the application is up, you can call its health endpoint:
+
+```
+  curl http://localhost:4550/health
+```
+
+You should get a response similar to this:
+
+```
+  {"status":"UP"}
+```
+
 ### Other
 
 Hystrix offers much more than Circuit Breaker pattern implementation or command monitoring.
