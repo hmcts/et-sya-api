@@ -34,12 +34,9 @@ import static org.springframework.http.HttpMethod.POST;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @PactTestFor(providerName = "etSyaService_pdfgenerationEndpoint", port = "8891")
 @PactFolder("pacts")
-@SpringBootTest({
-    "service.pdf-service.uri : http://localhost:8891/pdfs"
-})
 class PdfGenerationServiceConsumerTest {
     private static final String SERVICE_AUTHORIZATION_HEADER = "ServiceAuthorization";
-    @Autowired
+    //@Autowired
     ObjectMapper objectMapper;
     private static final String PDF_URL = "/pdfs";
     private static final String SOME_SERVICE_AUTH_TOKEN = "someServiceAuthToken";
@@ -47,6 +44,7 @@ class PdfGenerationServiceConsumerTest {
     @BeforeEach
     void setUpEachTest() throws InterruptedException, IOException {
         Thread.sleep(2000);
+        objectMapper = new ObjectMapper();
     }
 
     @After
