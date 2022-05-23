@@ -14,8 +14,6 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static io.restassured.RestAssured.baseURI;
-import static io.restassured.RestAssured.useRelaxedHTTPSValidation;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
@@ -28,12 +26,6 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
     private static final String CASE_TYPE = "ET_EnglandWales";
     private static final String CLAIMANT_EMAIL = "citizen-user-test@test.co.uk";
     private static final String AUTHORIZATION = "Authorization";
-
-    public ManageCaseControllerFunctionalTest() {
-        super();
-        baseURI = baseUrl;
-        useRelaxedHTTPSValidation();
-    }
 
     @Test
     void stage1CreateCaseShouldReturnCaseData() {

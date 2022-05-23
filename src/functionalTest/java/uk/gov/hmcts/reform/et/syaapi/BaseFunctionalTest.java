@@ -18,17 +18,21 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
+import static io.restassured.RestAssured.baseURI;
+import static io.restassured.RestAssured.useRelaxedHTTPSValidation;
+
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {SyaApiApplication.class})
 @Slf4j
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class BaseFunctionalTest {
-    protected final String baseUrl = "http://et-sya-api-aat.service.core-compute-aat.internal";
     protected String userToken;
     protected CloseableHttpClient client;
     protected IdamTestApiRequests idamTestApiRequests;
 
+    @Value("${sya.api.test.url}")
+    protected String baseUrl;
     @Value("${idam.url}")
     private String idamApiUrl;
 
@@ -38,6 +42,8 @@ public class BaseFunctionalTest {
         idamTestApiRequests = new IdamTestApiRequests(client, idamApiUrl);
         CreateUser user = idamTestApiRequests.createUser(createRandomEmail());
         userToken = idamTestApiRequests.getAccessToken(user.getEmail());
+        baseURI = baseUrl;
+        useRelaxedHTTPSValidation();
     }
 
     private String createRandomEmail() {

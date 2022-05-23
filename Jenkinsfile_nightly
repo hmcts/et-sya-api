@@ -2,10 +2,7 @@
 
 properties([
   // H allow predefined but random minute see https://en.wikipedia.org/wiki/Cron#Non-standard_characters
-  pipelineTriggers([cron('H 05 * * *')]),
-  parameters([
-    string(name: 'URL_TO_TEST', defaultValue: 'http://et-sya-api-aat.service.core-compute-aat.internal', description: 'The URL you want to run these tests against'),
-  ])
+  pipelineTriggers([cron('H 05 * * *')])
 ])
 
 @Library("Infrastructure")
@@ -14,6 +11,3 @@ def type = "java"
 def product = "rpe"
 def component = "spring-boot-template"
 
-withNightlyPipeline(type, product, component) {
-  env.TEST_URL = params.URL_TO_TEST
-}
