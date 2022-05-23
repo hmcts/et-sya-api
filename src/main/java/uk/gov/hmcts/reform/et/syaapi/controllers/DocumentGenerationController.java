@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
+import com.microsoft.applicationinsights.boot.dependencies.apachecommons.io.IOUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.TornadoDocument;
 import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationService;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -70,6 +72,8 @@ public class DocumentGenerationController {
     protected byte[] genPdfDocumentStub(String templateName,
                                       String outputFileName,
                                       TornadoDocument sourceData) throws IOException {
-        return Files.readAllBytes(Paths.get("src/main/resources/HelloWorld.pdf"));
+        //return Files.readAllBytes(Paths.get("src/main/resources/HelloWorld.pdf"));
+        InputStream in = getClass().getResourceAsStream("/resources/HelloWorld.pdf");
+        return IOUtils.toByteArray(in);
     }
 }
