@@ -19,8 +19,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimCaseDocument;
 
@@ -34,12 +32,8 @@ import static org.springframework.http.HttpMethod.POST;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @PactTestFor(providerName = "etSyaService_pdfgenerationEndpoint", port = "8891")
 @PactFolder("pacts")
-@SpringBootTest({
-    "service.pdf-service.uri : http://localhost:8891/pdfs"
-})
 class PdfGenerationServiceConsumerTest {
     private static final String SERVICE_AUTHORIZATION_HEADER = "ServiceAuthorization";
-    @Autowired
     ObjectMapper objectMapper;
     private static final String PDF_URL = "/pdfs";
     private static final String SOME_SERVICE_AUTH_TOKEN = "someServiceAuthToken";
@@ -47,6 +41,7 @@ class PdfGenerationServiceConsumerTest {
     @BeforeEach
     void setUpEachTest() throws InterruptedException, IOException {
         Thread.sleep(2000);
+        objectMapper = new ObjectMapper();
     }
 
     @After

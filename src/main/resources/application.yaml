@@ -51,3 +51,7 @@ tornado:
   api:
     url: ${TORNADO_URL:http://localhost:8090/rs/render}
     key: ${TORNADO_ACCESS_KEY:ignored_default_value}
+
+notifications:
+  govNotifyApiKey: ${gov-notify-api-key:}
+  sampleEmailTemplateId: "4ea3cf16-0cbb-4f27-8cfb-a084b126086e"
