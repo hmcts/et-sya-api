@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.et.syaapi.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -52,7 +53,7 @@ public class DocumentGenerationController {
             pdfDocument =
                 genPdfDocumentStub("add-template-name", "outputFileName.pdf", tornadoDoc);
         } catch (IOException ex) {
-            return ResponseEntity.ok("io exception" + ex);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return ResponseEntity.ok(pdfDocument);
     }
