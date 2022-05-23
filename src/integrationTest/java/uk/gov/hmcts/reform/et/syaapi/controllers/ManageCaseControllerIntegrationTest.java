@@ -1,8 +1,11 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,7 +13,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.context.WebApplicationContext;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -33,31 +35,22 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
+@AutoConfigureMockMvc(addFilters = false)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest
-@AutoConfigureMockMvc
 class ManageCaseControllerIntegrationTest {
 
     private static final String CASE_DETAILS_JSON = "responses/caseDetails.json";
     private static final String CASE_LIST_DETAILS_JSON = "responses/caseListDetails.json";
 
-    private final CaseDetails caseDetailsResponse = ResourceLoader.fromString(
-        CASE_DETAILS_JSON,
-        CaseDetails.class
-    );
-
-    private final StartEventResponse startEventResponse = ResourceLoader.fromString(
-        "responses/caseStartEvent.json",
-        StartEventResponse.class
-    );
+    private CaseDetails caseDetailsResponse;
+    private StartEventResponse startEventResponse;
 
     private static final String AUTH_TOKEN = "testToken";
 
     @Autowired
     private MockMvc mockMvc;
-    @Autowired
-    private WebApplicationContext wac;
     @MockBean
     private VerifyTokenService verifyTokenService;
     @MockBean
@@ -67,13 +60,25 @@ class ManageCaseControllerIntegrationTest {
     @MockBean
     private CoreCaseDataApi ccdApiClient;
 
-    public ManageCaseControllerIntegrationTest() throws IOException {
-        // Just to avoid multiple try-catch
+    @Autowired
+    private ObjectMapper objectMapper;
+    private ResourceLoader resourceLoader;
+
+    @BeforeAll
+    void setUp() throws IOException {
+        resourceLoader = new ResourceLoader(objectMapper);
+        caseDetailsResponse = resourceLoader.fromString(
+            CASE_DETAILS_JSON,
+            CaseDetails.class
+        );
+        startEventResponse = resourceLoader.fromString(
+            "responses/caseStartEvent.json",
+            StartEventResponse.class
+        );
     }
 
     @BeforeEach
-    void setUp() {
-        mockMvc = webAppContextSetup(wac).build();
+    void setUpBeforeEach() {
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(authTokenGenerator.generate()).thenReturn("token");
         when(idamClient.getUserDetails(any())).thenReturn(UserDetails.builder().id("1234").build());
@@ -89,7 +94,7 @@ class ManageCaseControllerIntegrationTest {
         mockMvc.perform(post("/cases/user-case")
                             .contentType(MediaType.APPLICATION_JSON)
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
-                            .content(ResourceLoader.toJson(caseRequest)))
+                            .content(resourceLoader.toJson(caseRequest)))
             .andExpect(status().isOk())
             .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
     }
@@ -121,7 +126,7 @@ class ManageCaseControllerIntegrationTest {
             post("/cases/initiate-case")
                 .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(ResourceLoader.toJson(caseRequest)))
+                .content(resourceLoader.toJson(caseRequest)))
             .andExpect(status().isOk())
             .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
     }
@@ -143,7 +148,7 @@ class ManageCaseControllerIntegrationTest {
                 put("/cases/update-case")
                     .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(ResourceLoader.toJson(caseRequest)))
+                    .content(resourceLoader.toJson(caseRequest)))
             .andExpect(status().isOk())
             .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
     }
@@ -165,7 +170,7 @@ class ManageCaseControllerIntegrationTest {
                 put("/cases/submit-case")
                     .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(ResourceLoader.toJson(caseRequest)))
+                    .content(resourceLoader.toJson(caseRequest)))
             .andExpect(status().isOk())
             .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
     }

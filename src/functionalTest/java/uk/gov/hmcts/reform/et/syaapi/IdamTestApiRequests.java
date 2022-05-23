@@ -21,6 +21,7 @@ import java.util.List;
 import static org.apache.http.client.methods.RequestBuilder.post;
 import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
@@ -57,8 +58,6 @@ public class IdamTestApiRequests {
                                                        .build());
 
         assertEquals(CREATED.value(), createUserResponse.getStatusLine().getStatusCode());
-
-
     }
 
     public String getAccessToken(String email) throws IOException {
@@ -79,9 +78,9 @@ public class IdamTestApiRequests {
             jsonObject = new JSONObject(tokens);
             accessToken = jsonObject.get("access_token").toString();
         } catch (JSONException e) {
-            log.error("Failed to get access token from loginResponse");
+            log.error("Failed to get access token from loginResponse, error: ", e);
         }
-
+        assertNotNull(accessToken);
         return "Bearer " + accessToken;
     }
 }
