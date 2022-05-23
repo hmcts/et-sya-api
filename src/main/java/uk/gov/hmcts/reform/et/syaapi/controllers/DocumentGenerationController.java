@@ -42,14 +42,18 @@ public class DocumentGenerationController {
     @PostMapping(value = "/generate-pdf", produces = "application/pdf")
     @Operation(summary = "Generate submitted case pdf")
     @ApiResponseGroup
-    public ResponseEntity<byte[]> generatePdf(
+    public ResponseEntity<?> generatePdf(
         @RequestHeader(AUTHORIZATION) String authorization,
         @RequestBody String caseId
-    ) throws IOException {
+    ) {
         ClaimCaseDocument tornadoDoc = new ClaimCaseDocument();
-        byte[] pdfDocument =
-            genPdfDocumentStub("add-template-name", "outputFileName.pdf", tornadoDoc);
-        log.info("Generated document");
+        byte[] pdfDocument;
+        try {
+            pdfDocument =
+                genPdfDocumentStub("add-template-name", "outputFileName.pdf", tornadoDoc);
+        } catch (IOException ex) {
+            return ResponseEntity.ok("io exception" + ex);
+        }
         return ResponseEntity.ok(pdfDocument);
     }
 
@@ -66,6 +70,5 @@ public class DocumentGenerationController {
                                       String outputFileName,
                                       TornadoDocument sourceData) throws IOException {
         return Files.readAllBytes(Paths.get("src/main/resources/HelloWorld.pdf"));
-
     }
 }
