@@ -92,7 +92,7 @@ class NotificationServiceTest {
     void shouldReturnInValidEmailId() {
         initializeClientService();
         assertThatThrownBy(() -> {
-            notificationService.sendEMail(TEST_TEMPLATE_API_KEY, null, parameters, REFERENCE_STRING);
+            notificationService.sendEmail(TEST_TEMPLATE_API_KEY, null, parameters, REFERENCE_STRING);
         }).isInstanceOf(NotificationException.class)
             .hasMessageContaining("email_address is a required property");
     }
@@ -102,7 +102,7 @@ class NotificationServiceTest {
     void shouldReturnTemplateIdRequired() {
         initializeClientService();
         assertThatThrownBy(() -> {
-            notificationService.sendEMail(null, TEST_EMAIL, parameters, REFERENCE_STRING);
+            notificationService.sendEmail(null, TEST_EMAIL, parameters, REFERENCE_STRING);
         }).isInstanceOf(NotificationException.class)
             .hasMessageContaining("template_id is a required property");
     }
@@ -112,7 +112,7 @@ class NotificationServiceTest {
         initializeClientService();
 
         assertThatThrownBy(() -> {
-            notificationService.sendEMail(TEST_TEMPLATE_API_KEY, TEST_EMAIL, parameters, REFERENCE_STRING);
+            notificationService.sendEmail(TEST_TEMPLATE_API_KEY, TEST_EMAIL, parameters, REFERENCE_STRING);
         }).isInstanceOf(NotificationException.class)
             .hasMessageContaining("Template not found");
     }
@@ -129,7 +129,7 @@ class NotificationServiceTest {
 
         doReturn(inputSendEmailResponse).when(notificationClient).sendEmail(TEST_TEMPLATE_API_KEY,
                                                                             TEST_EMAIL, parameters, REFERENCE_STRING);
-        return notificationService.sendEMail(TEST_TEMPLATE_API_KEY,
+        return notificationService.sendEmail(TEST_TEMPLATE_API_KEY,
                                              TEST_EMAIL, parameters, REFERENCE_STRING);
     }
 }

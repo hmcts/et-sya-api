@@ -11,7 +11,6 @@ public final class TestConstants {
     public static final String TEST_STRING = "TEST";
 
     private TestConstants() {
-        // Utility clasa
     }
 }
 

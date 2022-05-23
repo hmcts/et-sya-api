@@ -30,7 +30,7 @@ public class NotificationService {
      * @return response from notification api
      */
 
-    public SendEmailResponse sendEMail(
+    public SendEmailResponse sendEmail(
         String templateId, String targetEmail, Map<String, String> parameters,  String reference) {
         SendEmailResponse sendEmailResponse;
         try {
