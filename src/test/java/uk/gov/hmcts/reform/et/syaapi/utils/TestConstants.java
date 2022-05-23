@@ -8,9 +8,9 @@ public final class TestConstants {
     public static final String DRAFT = "DRAFT";
     public static final String AWAITING_SUBMISSION_TO_HMCTS = "AWAITING_SUBMISSION_TO_HMCTS";
     public static final String SUBMITTED = "SUBMITTED";
+    public static final String TEST_STRING = "TEST";
 
     private TestConstants() {
-        // Utility clasa
     }
 }
 

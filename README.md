@@ -101,6 +101,20 @@ docker image rm <image-id>
 
 There is no need to remove postgres and java or similar core images.
 
+### Running contract or pact tests
+You can run contract or pact tests as follows:
+```bash
+./gradlew contract
+```
+and then using it to publish your tests:
+```bash
+./gradlew pactPublish
+```
+In order to run both contract and publish, use the below command
+```bash
+./gradlew runAndPublishConsumerPactTests
+```
+
 ### Other
 
 Hystrix offers much more than Circuit Breaker pattern implementation or command monitoring.

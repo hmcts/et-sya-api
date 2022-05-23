@@ -15,6 +15,7 @@ java:
         - AppInsightsInstrumentationKey
         - name: tornado-access-key
           alias: TORNADO_ACCESS_KEY
+        - gov-notify-api-key
 
 
   environment:
