@@ -101,6 +101,7 @@ docker image rm <image-id>
 
 There is no need to remove postgres and java or similar core images.
 
+
 ### Health check endpoint
 In order to test if the application is up, you can call its health endpoint:
 
@@ -112,6 +113,21 @@ You should get a response similar to this:
 
 ```
   {"status":"UP"}
+
+
+### Running contract or pact tests
+You can run contract or pact tests as follows:
+```bash
+./gradlew contract
+```
+and then using it to publish your tests:
+```bash
+./gradlew pactPublish
+```
+In order to run both contract and publish, use the below command
+```bash
+./gradlew runAndPublishConsumerPactTests
+
 ```
 
 ### Other
