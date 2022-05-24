@@ -38,7 +38,6 @@ public class DocumentGenerationController {
      * @param authorization jwt token for authentication
      * @param caseId id for the submitted case
      * @return byte[] pdf binary of the submitted case
-     * @throws IOException if there is an issue reading the pdf from source
      */
     @PostMapping(value = "/generate-pdf", produces = "application/pdf")
     @Operation(summary = "Generate submitted case pdf")
