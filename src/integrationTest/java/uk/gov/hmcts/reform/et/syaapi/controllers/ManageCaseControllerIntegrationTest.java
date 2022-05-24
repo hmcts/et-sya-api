@@ -35,6 +35,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 
 @AutoConfigureMockMvc(addFilters = false)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -135,7 +136,7 @@ class ManageCaseControllerIntegrationTest {
     @Test
     void updateCaseEndpoint() throws Exception {
         CaseRequest caseRequest = CaseRequest.builder()
-            .caseTypeId("ET_Scotland")
+            .caseTypeId(SCOTLAND_CASE_TYPE)
             .caseId("12")
             .build();
 
@@ -157,7 +158,7 @@ class ManageCaseControllerIntegrationTest {
     @Test
     void submitCaseEndpoint() throws Exception {
         CaseRequest caseRequest = CaseRequest.builder()
-            .caseTypeId("ET_Scotland")
+            .caseTypeId(SCOTLAND_CASE_TYPE)
             .caseId("12")
             .build();
 
