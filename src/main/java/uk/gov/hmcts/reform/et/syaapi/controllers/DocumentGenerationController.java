@@ -43,7 +43,7 @@ public class DocumentGenerationController {
     @PostMapping(value = "/generate-pdf", produces = "application/pdf")
     @Operation(summary = "Generate submitted case pdf")
     @ApiResponseGroup
-    public ResponseEntity<?> generatePdf(
+    public ResponseEntity<byte[]> generatePdf(
         @RequestHeader(AUTHORIZATION) String authorization,
         @RequestBody String caseId
     ) {
