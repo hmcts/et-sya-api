@@ -70,9 +70,6 @@ public class DocumentGenerationController {
     protected byte[] genPdfDocumentStub(String templateName,
                                       String outputFileName,
                                       TornadoDocument sourceData) throws IOException {
-        //return Files.readAllBytes(Paths.get("src/main/resources/HelloWorld.pdf"));
-        //  InputStream in = getClass().getResourceAsStream("/resources/HelloWorld.pdf");
-        //        return IOUtils.toByteArray(in);
 
         try (InputStream in = DocumentGenerationController.class.getResourceAsStream("/HelloWorld.pdf")) {
             return IOUtils.toByteArray(in);
