@@ -1,12 +1,10 @@
 package uk.gov.hmcts.reform.et.syaapi;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 
 import java.util.List;
 
-@Getter
-@AllArgsConstructor
+@Data
 public class CreateUser {
     private final String email;
     private final String forename;

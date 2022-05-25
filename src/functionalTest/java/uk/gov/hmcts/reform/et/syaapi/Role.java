@@ -1,10 +1,8 @@
 package uk.gov.hmcts.reform.et.syaapi;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
-@AllArgsConstructor
+@Data
 public class Role {
     private final String code;
 }

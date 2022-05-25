@@ -3,14 +3,15 @@ package uk.gov.hmcts.reform.et.syaapi.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-
-public final class ResourceLoader {
+@Service
+public class ResourceLoader {
 
     private final ObjectMapper objectMapper;
 
@@ -33,7 +34,7 @@ public final class ResourceLoader {
         }
     }
 
-    private static String resourceAsString(final String resourcePath) throws IOException {
+    private String resourceAsString(final String resourcePath) throws IOException {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         final File file = ResourceUtils.getFile(classLoader.getResource(resourcePath).getFile());
         return new String(Files.readAllBytes(file.toPath()));

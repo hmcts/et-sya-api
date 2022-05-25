@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -62,12 +61,10 @@ class ManageCaseControllerIntegrationTest {
     private CoreCaseDataApi ccdApiClient;
 
     @Autowired
-    private ObjectMapper objectMapper;
     private ResourceLoader resourceLoader;
 
     @BeforeAll
     void setUp() throws IOException {
-        resourceLoader = new ResourceLoader(objectMapper);
         caseDetailsResponse = resourceLoader.fromString(
             CASE_DETAILS_JSON,
             CaseDetails.class
