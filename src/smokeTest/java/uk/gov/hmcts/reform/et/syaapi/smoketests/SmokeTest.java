@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.et.syaapi.smoketests;
 import io.restassured.RestAssured;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 
@@ -12,11 +13,12 @@ import static org.hamcrest.Matchers.equalTo;
 @SpringBootTest
 class SmokeTest {
 
-    private static final String SYA_API_TEST_URL = System.getenv("SYA_API_TEST_URL");
+    @Value("${test.url}")
+    protected String syaApiTestUrl;
 
     @Test
     void healthCheckTest() {
-        RestAssured.baseURI = SYA_API_TEST_URL;
+        RestAssured.baseURI = syaApiTestUrl;
         RestAssured.useRelaxedHTTPSValidation();
 
         RestAssured.given()

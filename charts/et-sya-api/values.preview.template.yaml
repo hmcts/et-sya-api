@@ -2,7 +2,7 @@ java:
   # Don't modify below here
   image: ${IMAGE_NAME}
   ingressHost: ${SERVICE_FQDN}
-  envirnment:
+  environment:
     SYA_API_TEST_URL: http://${SERVICE_FQDN}
   keyVaults:
     et-sya-api:
