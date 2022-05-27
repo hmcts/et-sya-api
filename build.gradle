@@ -235,10 +235,13 @@ dependencies {
 
   implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.15.2'
   implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.6.7'
+  implementation 'org.json:json:20220320'
 
   compileOnly 'org.projectlombok:lombok'
   annotationProcessor group: 'org.projectlombok', name: 'lombok'
   testAnnotationProcessor group: 'org.projectlombok', name: 'lombok'
+  functionalTestAnnotationProcessor group: 'org.projectlombok', name: 'lombok'
+  integrationTestAnnotationProcessor group: 'org.projectlombok', name: 'lombok'
 
   testImplementation group: 'io.github.openfeign', name: 'feign-jackson', version: '11.8'
   testImplementation(platform('org.junit:junit-bom:5.8.2'))
@@ -251,6 +254,7 @@ dependencies {
   testImplementation group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version: '3.10'
   testImplementation('org.assertj:assertj-core:3.22.0')
   testImplementation group: 'io.rest-assured', name: 'rest-assured'
+  testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit', version: '2.28.0'
 
   // Pact Contract Tests
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: '4.1.7'
@@ -278,6 +282,15 @@ bootJar {
 rootProject.tasks.named("processSmokeTestResources") {
   duplicatesStrategy = 'include'
 }
+
+rootProject.tasks.named("processIntegrationTestResources") {
+  duplicatesStrategy = 'include'
+}
+
+rootProject.tasks.named("processFunctionalTestResources") {
+  duplicatesStrategy = 'include'
+}
+
 
 wrapper {
   distributionType = Wrapper.DistributionType.ALL

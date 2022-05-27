@@ -29,6 +29,7 @@
   <suppress until="2022-07-25">
     <cve>CVE-2022-22968</cve>
   </suppress>
+
   <suppress>
     <notes><![CDATA[
      file name: spring-aop-5.3.19.jar
