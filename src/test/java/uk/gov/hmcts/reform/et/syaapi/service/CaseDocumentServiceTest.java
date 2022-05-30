@@ -19,7 +19,9 @@ import java.net.URI;
 
 import static java.util.Collections.singletonList;
 import static junit.framework.TestCase.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
@@ -34,6 +36,8 @@ public class CaseDocumentServiceTest {
 
     private static final String MOCK_HREF = "http://dm-store:8080/documents/ee26acd5-3e51-48d5-9aa4-126a033be9ee";
 
+    private static final String EMPTY_DOCUMENT_MESSAGE = "Unable to upload document hello.txt to document management";
+
     private static final MockMultipartFile MOCK_FILE = new MockMultipartFile(
         "file",
         "hello.txt",
@@ -45,12 +49,16 @@ public class CaseDocumentServiceTest {
         "responses/caseDocumentUploaded.json",
         UploadResponse.class
     );
+
+    private final UploadResponse requestCaseDocumentEmpty = ResourceLoader.fromString(
+        "responses/caseDocumentEmpty.json",
+        UploadResponse.class
+    );
+
     @Mock
     private AuthTokenGenerator authTokenGenerator;
     @Mock
     private CaseDocumentClient caseDocumentClient;
-
-
 
     @InjectMocks
     private CaseDocumentService caseService;
@@ -74,8 +82,7 @@ public class CaseDocumentServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhe() throws DocumentManagementException {
-        Throwable documentException = new DocumentManagementException("Document to be uploaded cannot be null");
+    void shouldThrowExceptionWhenNoFileReturned() {
 
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(caseDocumentClient.uploadDocuments(MOCK_TOKEN, authTokenGenerator.generate(),
@@ -84,8 +91,11 @@ public class CaseDocumentServiceTest {
                                                 Classification.PUBLIC))
             .thenReturn(requestCaseDocumentEmpty);
 
-        URI documentEndpoint = caseService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE);
-        assertThatThrownBy(() -> caseService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE))
-            .hasCause(documentException);
+        DocumentManagementException documentException = assertThrows(
+            DocumentManagementException.class, () -> caseService.uploadDocument
+                (MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
+
+        assertThat(documentException.getMessage())
+            .isEqualTo(EMPTY_DOCUMENT_MESSAGE);
     }
 }

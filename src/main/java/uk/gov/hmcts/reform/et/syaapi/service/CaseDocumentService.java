@@ -15,6 +15,10 @@ import java.net.URI;
 
 import static java.util.Collections.singletonList;
 
+/**
+ * CaseDocumentService provides access to the document
+ * upload service API
+ */
 @Slf4j
 @Service
 public class CaseDocumentService {
