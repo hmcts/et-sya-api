@@ -32,6 +32,15 @@ public class CaseDocumentService {
         this.caseDocumentClient = caseDocumentClient;
     }
 
+    /**
+     * When given a file to upload, this call with upload the file to the CCD document API
+     * and return a URI pointing to the uploaded file if successful
+     * @param authToken the caller's bearer token used to verify the caller
+     * @param caseTypeId defines the area the file belongs to e.g. ET_EnglandWales
+     * @param file the file to be uploaded
+     * @return the URL of the document we have just uploaded
+     * @throws DocumentManagementException  if a problem occurs whilst uploading the document via API
+     */
     @Retryable({FeignException.class, RuntimeException.class, DocumentManagementException.class})
     public URI uploadDocument(String authToken, String caseTypeId, MultipartFile file) {
         log.info("Using Case Document Client");

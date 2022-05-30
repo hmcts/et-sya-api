@@ -20,9 +20,7 @@ import java.net.URI;
 import static java.util.Collections.singletonList;
 import static junit.framework.TestCase.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
@@ -68,7 +66,7 @@ public class CaseDocumentServiceTest {
     }
 
     @Test
-    void shouldUploadDocument() {
+    void theUploadDocWithFileProducesSuccessWithFileURI() {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(caseDocumentClient.uploadDocuments(MOCK_TOKEN, authTokenGenerator.generate(),
                                                 CASE_TYPE, JURISDICTION_ID,
@@ -78,11 +76,11 @@ public class CaseDocumentServiceTest {
 
         URI documentEndpoint = caseService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE);
 
-        assertEquals(MOCK_HREF, documentEndpoint.toString());
+        assertThat(documentEndpoint.toString()).isEqualTo(MOCK_HREF);
     }
 
     @Test
-    void shouldThrowExceptionWhenNoFileReturned() {
+    void theUploadDocWhenNoFileReturnedProducesDocException() {
 
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(caseDocumentClient.uploadDocuments(MOCK_TOKEN, authTokenGenerator.generate(),
