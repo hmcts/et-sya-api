@@ -21,14 +21,12 @@ import java.net.URI;
 import java.util.List;
 
 /**
- * CaseDocumentService provides access to the document
- * upload service API
+ * CaseDocumentService provides access to the document upload service API
  * This relies upon the following configurations to be set at an environment level:
  * <ul>
  *     <li>case_document_am.url</li>
  * </ul>
  */
-@Slf4j
 @Service
 public class CaseDocumentService {
     private static final String JURISDICTION = "EMPLOYMENT";
@@ -75,11 +73,10 @@ public class CaseDocumentService {
                 request,
                 DocumentUploadResponse.class
             );
-            log.info(response.toString());
             CaseDocument caseDocument = validateDocument(response.getBody(), file.getOriginalFilename());
             return URI.create(caseDocument.getLinks().get("self").get("href"));
         } catch (RestClientException e) {
-            throw new DocumentManagementException("Failed to connect with API :" + e.getMessage(), e);
+            throw new DocumentManagementException("Failed to connect with case document upload API", e);
         } catch (IOException e) {
             throw new DocumentManagementException("Failed serialize multipartFile", e);
         }
@@ -92,7 +89,7 @@ public class CaseDocumentService {
         return response.getDocuments().stream()
             .findFirst()
             .orElseThrow(() ->
-                             new DocumentManagementException("Document management failed uploading file"
+                             new DocumentManagementException("Document management failed uploading file: "
                                                                  + originalFilename));
     }
 

@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.EqualsAndHashCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,8 +14,6 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.ecm.common.exceptions.DocumentManagementException;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.ccd.document.am.model.UploadResponse;
-import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 
 import java.net.URI;
 
@@ -32,23 +29,28 @@ public class CaseDocumentServiceTest {
 
     private static final String DOCUMENT_UPLOAD_API_URL = "http://someurl.com";
 
+    private static final String DOCUMENT_NAME = "hello.txt";
+
     private static final String CASE_TYPE = "ET_EnglandWales";
-    private static final String JURISDICTION_ID = "EMPLOYMENT";
     private static final String MOCK_TOKEN = "Bearer Token";
 
     private static final String MOCK_HREF = "http://test:8080/img";
 
-    private static final String EMPTY_DOCUMENT_MESSAGE = "Unable to upload document hello.txt to document management";
+    private static final String EMPTY_DOCUMENT_MESSAGE = "Document management failed uploading file: " + DOCUMENT_NAME;
+
+    private static final String SERVER_ERROR_MESSAGE = "Failed to connect with case document upload API";
 
     private static final MockMultipartFile MOCK_FILE = new MockMultipartFile(
         "file",
-        "hello.txt",
+        DOCUMENT_NAME,
         MediaType.TEXT_PLAIN_VALUE,
         "Hello, World!".getBytes()
       );
 
-    private static final String MOCK_RESPONSE = "{\"documents\":[{\"originalDocumentName\":\"claim-submit.png\"," +
+    private static final String MOCK_RESPONSE_WITH_DOCUMENT = "{\"documents\":[{\"originalDocumentName\":\"claim-submit.png\"," +
         "\"links\":{\"self\":{\"href\": \"" + MOCK_HREF + "\"}}}]}";
+
+    private static final String MOCK_RESPONSE_WITHOUT_DOCUMENT = "{\"documents\":[]}";
 
     private CaseDocumentService caseDocumentService;
 
@@ -71,7 +73,7 @@ public class CaseDocumentServiceTest {
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .body(MOCK_RESPONSE));
+                            .body(MOCK_RESPONSE_WITH_DOCUMENT));
 
         URI documentEndpoint = caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE);
 
@@ -81,12 +83,11 @@ public class CaseDocumentServiceTest {
     @Test
     void theUploadDocWhenNoFileReturnedProducesDocException() {
 
-//        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-//        when(caseDocumentClient.uploadDocuments(MOCK_TOKEN, authTokenGenerator.generate(),
-//                                                CASE_TYPE, JURISDICTION_ID,
-//                                                singletonList(MOCK_FILE),
-//                                                Classification.PUBLIC))
-//            .thenReturn(requestCaseDocumentEmpty);
+        mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_UPLOAD_API_URL))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(withStatus(HttpStatus.OK)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .body(MOCK_RESPONSE_WITHOUT_DOCUMENT));
 
         DocumentManagementException documentException = assertThrows(
             DocumentManagementException.class, () -> caseDocumentService.uploadDocument
@@ -94,5 +95,19 @@ public class CaseDocumentServiceTest {
 
         assertThat(documentException.getMessage())
             .isEqualTo(EMPTY_DOCUMENT_MESSAGE);
+    }
+
+    @Test
+    void theUploadDocWhenRestTemplateFailsProducesDocException() {
+        mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_UPLOAD_API_URL))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(withStatus(HttpStatus.BAD_REQUEST));
+
+        DocumentManagementException documentException = assertThrows(
+            DocumentManagementException.class, () -> caseDocumentService.uploadDocument
+                (MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
+
+        assertThat(documentException.getMessage())
+            .isEqualTo(SERVER_ERROR_MESSAGE);
     }
 }
