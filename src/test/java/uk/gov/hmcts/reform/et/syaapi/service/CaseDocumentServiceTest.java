@@ -77,7 +77,7 @@ class CaseDocumentServiceTest {
 
         URI documentEndpoint = caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE);
 
-        assertThat(documentEndpoint.toString()).isEqualTo(MOCK_HREF);
+        assertThat(documentEndpoint).hasToString(MOCK_HREF);
     }
 
     @Test
