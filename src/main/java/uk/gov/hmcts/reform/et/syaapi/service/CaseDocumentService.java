@@ -78,7 +78,7 @@ public class CaseDocumentService {
             return URI.create(caseDocument.getLinks().get("self").get("href"));
         } catch (RestClientException e) {
             throw new DocumentManagementException("Failed to connect with case document upload API", e);
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
             throw new DocumentManagementException("Failed serialize multipartFile", e);
         }
     }
