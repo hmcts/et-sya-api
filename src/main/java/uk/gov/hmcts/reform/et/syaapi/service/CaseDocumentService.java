@@ -78,12 +78,18 @@ public class CaseDocumentService {
             return URI.create(caseDocument.getLinks().get("self").get("href"));
         } catch (RestClientException e) {
             throw new DocumentManagementException("Failed to connect with case document upload API", e);
-        } catch (IOException | NullPointerException e) {
+        } catch (IOException e) {
             throw new DocumentManagementException("Failed serialize multipartFile", e);
         }
     }
 
     private CaseDocument validateDocument(DocumentUploadResponse response, String originalFilename) {
+
+        if (response.getDocuments() == null) {
+            throw new DocumentManagementException("Document management failed uploading file: "
+                                                      + originalFilename);
+        }
+
         return response.getDocuments().stream()
             .findFirst()
             .orElseThrow(() ->
