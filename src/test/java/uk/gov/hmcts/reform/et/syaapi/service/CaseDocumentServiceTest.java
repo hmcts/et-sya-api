@@ -25,7 +25,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
-public class CaseDocumentServiceTest {
+class CaseDocumentServiceTest {
 
     private static final String DOCUMENT_UPLOAD_API_URL = "http://someurl.com";
 

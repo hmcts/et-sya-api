@@ -59,8 +59,7 @@ public class CaseDocumentService {
      * @return the URL of the document we have just uploaded
      * @throws DocumentManagementException  if a problem occurs whilst uploading the document via API
      */
-    public URI uploadDocument(String authToken, String caseTypeId, MultipartFile file)
-        throws DocumentManagementException  {
+    public URI uploadDocument(String authToken, String caseTypeId, MultipartFile file) {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.AUTHORIZATION, authToken);
         headers.add(SERVICE_AUTHORIZATION, authTokenGenerator.generate());
@@ -103,7 +102,7 @@ public class CaseDocumentService {
             }
         };
 
-        MultiValueMap<String, Object> body = new LinkedMultiValueMap<String, Object>();
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("file", fileAsResource);
         body.add("fileName", file.getOriginalFilename());
         body.add("classification", classification);
