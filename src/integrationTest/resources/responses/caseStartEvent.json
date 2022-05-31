@@ -1,0 +1,17 @@
+{
+  "case_details" : {
+    "id": 1646225213651590,
+    "jurisdiction": "EMPLOYMENT",
+    "state": "AWAITING_SUBMISSION_TO_HMCTS",
+    "case_type_id": "ET_Scotland",
+    "created_date": "2022-03-02T12:46:53.673626",
+    "last_modified": "2022-03-02T12:46:53.676743",
+    "case_data": {
+      "caseType": "Single",
+      "caseSource": "Manually Created"
+    },
+    "security_classification": "PUBLIC"
+  },
+  "event_id": "testEventId",
+  "token": "testToken"
+}
