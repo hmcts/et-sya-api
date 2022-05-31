@@ -1,10 +1,13 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -15,13 +18,12 @@ import uk.gov.hmcts.ecm.common.exceptions.DocumentManagementException;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.document.am.model.Classification;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
-
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
 /**
- * CaseDocumentService provides access to the document upload service API
+ * CaseDocumentService provides access to the document upload service API.
  * This relies upon the following configurations to be set at an environment level:
  * <ul>
  *     <li>case_document_am.url</li>
@@ -48,24 +50,23 @@ public class CaseDocumentService {
     }
 
     /**
-     * When given a file to upload, this call with upload the file to the CCD document API
-     * and return a URI pointing to the uploaded file if successful
+     * When given a file to upload, this call with upload the file to the CCD document API.
+     * return a URI pointing to the uploaded file if successful.
      * @param authToken the caller's bearer token used to verify the caller
      * @param caseTypeId defines the area the file belongs to e.g. ET_EnglandWales
      * @param file the file to be uploaded
      * @return the URL of the document we have just uploaded
      * @throws DocumentManagementException  if a problem occurs whilst uploading the document via API
      */
-    public URI uploadDocument(String authToken, String caseTypeId, MultipartFile file) throws DocumentManagementException  {
-        validateDocUploadInputs();
-
+    public URI uploadDocument(String authToken, String caseTypeId, MultipartFile file)
+        throws DocumentManagementException  {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.AUTHORIZATION, authToken);
         headers.add(SERVICE_AUTHORIZATION, authTokenGenerator.generate());
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         try {
-            MultiValueMap<String, Object> body = generateUploadRequest
-                (Classification.PUBLIC, caseTypeId, JURISDICTION, file);
+            MultiValueMap<String, Object> body = generateUploadRequest(
+                Classification.PUBLIC, caseTypeId, JURISDICTION, file);
             HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
             ResponseEntity<DocumentUploadResponse> response = restTemplate.exchange(
                 caseDocApiUrl,
@@ -82,9 +83,6 @@ public class CaseDocumentService {
         }
     }
 
-    private void validateDocUploadInputs() {
-
-    }
     private CaseDocument validateDocument(DocumentUploadResponse response, String originalFilename ) {
         return response.getDocuments().stream()
             .findFirst()
