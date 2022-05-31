@@ -47,8 +47,8 @@ public class CaseDocumentServiceTest {
         "Hello, World!".getBytes()
       );
 
-    private static final String MOCK_RESPONSE_WITH_DOCUMENT = "{\"documents\":[{\"originalDocumentName\":\"claim-submit.png\"," +
-        "\"links\":{\"self\":{\"href\": \"" + MOCK_HREF + "\"}}}]}";
+    private static final String MOCK_RESPONSE_WITH_DOCUMENT = "{\"documents\":[{\"originalDocumentName\":"
+        + "\"claim-submit.png\",\"links\":{\"self\":{\"href\": \"" + MOCK_HREF + "\"}}}]}";
 
     private static final String MOCK_RESPONSE_WITHOUT_DOCUMENT = "{\"documents\":[]}";
 
@@ -68,7 +68,7 @@ public class CaseDocumentServiceTest {
     }
 
     @Test
-    void theUploadDocWithFileProducesSuccessWithFileURI() {
+    void theUploadDocWithFileProducesSuccessWithFileUri() {
         mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_UPLOAD_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
@@ -90,8 +90,8 @@ public class CaseDocumentServiceTest {
                             .body(MOCK_RESPONSE_WITHOUT_DOCUMENT));
 
         DocumentManagementException documentException = assertThrows(
-            DocumentManagementException.class, () -> caseDocumentService.uploadDocument
-                (MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
+            DocumentManagementException.class, () -> caseDocumentService.uploadDocument(
+                MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
 
         assertThat(documentException.getMessage())
             .isEqualTo(EMPTY_DOCUMENT_MESSAGE);
@@ -104,8 +104,8 @@ public class CaseDocumentServiceTest {
             .andRespond(withStatus(HttpStatus.BAD_REQUEST));
 
         DocumentManagementException documentException = assertThrows(
-            DocumentManagementException.class, () -> caseDocumentService.uploadDocument
-                (MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
+            DocumentManagementException.class, () -> caseDocumentService.uploadDocument(
+                MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
 
         assertThat(documentException.getMessage())
             .isEqualTo(SERVER_ERROR_MESSAGE);
