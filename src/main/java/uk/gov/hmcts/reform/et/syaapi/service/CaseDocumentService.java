@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * CaseDocumentService provides access to the document upload service API.
@@ -74,7 +75,8 @@ public class CaseDocumentService {
                 request,
                 DocumentUploadResponse.class
             );
-            CaseDocument caseDocument = validateDocument(response.getBody(), file.getOriginalFilename());
+            CaseDocument caseDocument = validateDocument(
+                Objects.requireNonNull(response.getBody()), file.getOriginalFilename());
             return URI.create(caseDocument.getLinks().get("self").get("href"));
         } catch (RestClientException e) {
             throw new DocumentManagementException("Failed to connect with case document upload API", e);
@@ -84,12 +86,6 @@ public class CaseDocumentService {
     }
 
     private CaseDocument validateDocument(DocumentUploadResponse response, String originalFilename) {
-
-        if (response.getDocuments() == null) {
-            throw new DocumentManagementException("Document management failed uploading file: "
-                                                      + originalFilename);
-        }
-
         return response.getDocuments().stream()
             .findFirst()
             .orElseThrow(() ->
