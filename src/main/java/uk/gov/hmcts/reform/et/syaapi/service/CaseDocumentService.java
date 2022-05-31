@@ -18,6 +18,7 @@ import uk.gov.hmcts.ecm.common.exceptions.DocumentManagementException;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.document.am.model.Classification;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
@@ -83,7 +84,7 @@ public class CaseDocumentService {
         }
     }
 
-    private CaseDocument validateDocument(DocumentUploadResponse response, String originalFilename ) {
+    private CaseDocument validateDocument(DocumentUploadResponse response, String originalFilename) {
         return response.getDocuments().stream()
             .findFirst()
             .orElseThrow(() ->
