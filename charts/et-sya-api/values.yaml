@@ -26,3 +26,4 @@ java:
     ACAS_URL: "https://api-dev-acas-01.azure-api.net/ECCLDev"
     MICRO_SERVICE: "et_sya_api"
     TORNADO_URL: "https://docmosis.{{ .Values.global.environment }}.platform.hmcts.net/rs/render"
+    CASE_DOCUMENT_AM_URL: "http://ccd-case-document-am-api:4455"
