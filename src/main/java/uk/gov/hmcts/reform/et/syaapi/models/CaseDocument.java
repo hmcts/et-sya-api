@@ -1,9 +1,11 @@
 package uk.gov.hmcts.reform.et.syaapi.models;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
 import java.util.Map;
+
 
 @Data
 @Builder
