@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
-import lombok.EqualsAndHashCode;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,10 +11,11 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import uk.gov.hmcts.ecm.common.exceptions.DocumentManagementException;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 
+import java.io.IOException;
 import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,7 +24,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
-@EqualsAndHashCode
+@Slf4j
 @ExtendWith(MockitoExtension.class)
 class CaseDocumentServiceTest {
 
@@ -38,7 +39,7 @@ class CaseDocumentServiceTest {
 
     private static final String EMPTY_DOCUMENT_MESSAGE = "Document management failed uploading file: " + DOCUMENT_NAME;
 
-    private static final String SERVER_ERROR_MESSAGE = "Failed to connect with case document upload API";
+    private static final String SERVER_ERROR_MESSAGE = "Failed to upload Case Document";
 
     private static final MockMultipartFile MOCK_FILE = new MockMultipartFile(
         "file",
@@ -51,6 +52,12 @@ class CaseDocumentServiceTest {
         + "\"claim-submit.png\",\"links\":{\"self\":{\"href\": \"" + MOCK_HREF + "\"}}}]}";
 
     private static final String MOCK_RESPONSE_WITHOUT_DOCUMENT = "{\"documents\":[]}";
+
+    private static final String MOCK_RESPONSE_WITHOUT_LINKS = "{\"documents\":[{\"originalDocumentName\":"
+        + "\"claim-submit.png\"}]}";
+
+    private static final String MOCK_RESPONSE_WITHOUT_HREF = "{\"documents\":[{\"originalDocumentName\":"
+        + "\"claim-submit.png\",\"links\":{\"self\":{}}]}";
 
     private CaseDocumentService caseDocumentService;
 
@@ -68,7 +75,7 @@ class CaseDocumentServiceTest {
     }
 
     @Test
-    void theUploadDocWithFileProducesSuccessWithFileUri() {
+    void theUploadDocWithFileProducesSuccessWithFileUri() throws CaseDocumentException {
         mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_UPLOAD_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
@@ -89,8 +96,8 @@ class CaseDocumentServiceTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .body(MOCK_RESPONSE_WITHOUT_DOCUMENT));
 
-        DocumentManagementException documentException = assertThrows(
-            DocumentManagementException.class, () -> caseDocumentService.uploadDocument(
+        CaseDocumentException documentException = assertThrows(
+            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
                 MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
 
         assertThat(documentException.getMessage())
@@ -103,11 +110,93 @@ class CaseDocumentServiceTest {
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.BAD_REQUEST));
 
-        DocumentManagementException documentException = assertThrows(
-            DocumentManagementException.class, () -> caseDocumentService.uploadDocument(
+        CaseDocumentException documentException = assertThrows(
+            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
                 MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
 
         assertThat(documentException.getMessage())
             .isEqualTo(SERVER_ERROR_MESSAGE);
     }
+
+    @Test
+    void theUploadDocWhenIOExceptionProducesDocException() {
+
+        IOException ioException = new IOException("Test throw");
+
+        MockMultipartFile MOCK_FILE_IO_EXCEPTION = new MockMultipartFile(
+            "file",
+            DOCUMENT_NAME,
+            MediaType.TEXT_PLAIN_VALUE,
+            "Hello, World!".getBytes()
+        ) {
+            @Override
+            public byte[] getBytes() throws IOException {
+                throw ioException;
+            }
+        };
+
+        CaseDocumentException documentException = assertThrows(
+            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
+                MOCK_TOKEN, CASE_TYPE, MOCK_FILE_IO_EXCEPTION));
+
+        assertThat(documentException.getCause()).isEqualTo(ioException);
+    }
+
+    @Test
+    void theUploadDocWhenRestExceptionProducesDocException() {
+
+        RestClientException restClientException = new RestClientException("Test throw");
+
+        mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_UPLOAD_API_URL))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond((response) -> {
+                throw restClientException;
+            });
+
+        CaseDocumentException documentException = assertThrows(
+            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
+                MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
+
+        assertThat(documentException.getCause()).isEqualTo(restClientException);
+    }
+
+    @Test
+    void theUploadDocWhenResponseNoLinkProducesDocException() {
+        mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_UPLOAD_API_URL))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(withStatus(HttpStatus.OK)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .body(MOCK_RESPONSE_WITHOUT_LINKS));
+
+        CaseDocumentException documentException = assertThrows(
+            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
+                MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
+
+        assertThat(documentException.getCause().getClass()).isEqualTo(NullPointerException.class);
+    }
+
+    @Test
+    void theUploadDocWhenResponseNoHrefProducesDocException() {
+        mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_UPLOAD_API_URL))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(withStatus(HttpStatus.OK)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .body(MOCK_RESPONSE_WITHOUT_HREF));
+
+        CaseDocumentException documentException = assertThrows(
+            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
+                MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
+
+        assertThat(documentException.getCause().getClass()).isEqualTo(NullPointerException.class);
+
+        log.info(documentException.getCause().getMessage());
+    }
+
+
+    // TODO: 01/06/2022 What if the response doesn't convert?
+    // TODO: 01/06/2022 What if it converts but doesn't have the values you'd expect?
+    // TODO: 01/06/2022 What if the links are there, but no href's?
+    // TODO: 01/06/2022 What if the headers are not configured correctly?
+    // TODO: 01/06/2022 What if the MultiPartFile is corrupt?
+    // TODO: 01/06/2022 What if the MultiPartFile for some reason doesn't have a filename?
 }

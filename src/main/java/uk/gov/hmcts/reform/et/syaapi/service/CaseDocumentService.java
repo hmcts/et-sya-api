@@ -75,13 +75,23 @@ public class CaseDocumentService {
      */
     public URI uploadDocument(String authToken, String caseTypeId, MultipartFile file) throws CaseDocumentException{
         try {
-            ResponseEntity<DocumentUploadResponse>
-                response = getDocumentUploadResponseResponseEntity(authToken, caseTypeId, file);
+            ResponseEntity<DocumentUploadResponse> response = getDocumentUploadResponseResponseEntity(
+                authToken, caseTypeId, file);
+
             CaseDocument caseDocument = validateDocument(
                 Objects.requireNonNull(response.getBody()), file.getOriginalFilename());
-            return URI.create(caseDocument.getLinks().get("self").get("href"));
+
+            return getUriFromFile(caseDocument);
         } catch (RestClientException | IOException e) {
             throw new CaseDocumentException("Failed to upload Case Document", e);
+        }
+    }
+
+    private URI getUriFromFile(CaseDocument caseDocument) throws CaseDocumentException {
+        try {
+            return URI.create(caseDocument.getLinks().get("self").get("href"));
+        } catch (NullPointerException e) {
+            throw new CaseDocumentException("Failed to generate Case Document URI", e);
         }
     }
 
@@ -92,7 +102,9 @@ public class CaseDocumentService {
         throws IOException {
         MultiValueMap<String, Object> body = generateUploadRequest(
             caseTypeId, file);
+
         HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, getHttpHeaders(authToken));
+
         return restTemplate.exchange(
             caseDocApiUrl,
             HttpMethod.POST,
