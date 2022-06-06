@@ -75,6 +75,8 @@ public class CaseDocumentService {
      */
     public URI uploadDocument(String authToken, String caseTypeId, MultipartFile file) throws CaseDocumentException{
         try {
+            validateFile(file);
+
             ResponseEntity<DocumentUploadResponse> response = getDocumentUploadResponseResponseEntity(
                 authToken, caseTypeId, file);
 
@@ -126,8 +128,19 @@ public class CaseDocumentService {
         return headers;
     }
 
+    private void validateFile(MultipartFile file) throws CaseDocumentException {
+        if(file.getOriginalFilename() == null) {
+            throw new CaseDocumentException("File does not pass validation");
+        }
+    }
+
     private CaseDocument validateDocument(DocumentUploadResponse response, String originalFilename)
         throws CaseDocumentException {
+        if(response.documents == null) {
+            throw new CaseDocumentException("Document management failed uploading file: "
+                + originalFilename);
+        }
+
         return response.getDocuments().stream()
             .findFirst()
             .orElseThrow(() -> new CaseDocumentException("Document management failed uploading file: "

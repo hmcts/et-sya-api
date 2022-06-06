@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -41,12 +42,21 @@ class CaseDocumentServiceTest {
 
     private static final String SERVER_ERROR_MESSAGE = "Failed to upload Case Document";
 
+    private static final String NO_FILENAME_MESSAGE = "File does not pass validation";
+
     private static final MockMultipartFile MOCK_FILE = new MockMultipartFile(
         "file",
         DOCUMENT_NAME,
         MediaType.TEXT_PLAIN_VALUE,
         "Hello, World!".getBytes()
       );
+
+    private static final MockMultipartFile MOCK_FILE_WITHOUT_NAME = new MockMultipartFile(
+        "file",
+        null,
+        MediaType.TEXT_PLAIN_VALUE,
+        "Hello, World!".getBytes()
+    );
 
     private static final String MOCK_RESPONSE_WITH_DOCUMENT = "{\"documents\":[{\"originalDocumentName\":"
         + "\"claim-submit.png\",\"links\":{\"self\":{\"href\": \"" + MOCK_HREF + "\"}}}]}";
@@ -58,6 +68,11 @@ class CaseDocumentServiceTest {
 
     private static final String MOCK_RESPONSE_WITHOUT_HREF = "{\"documents\":[{\"originalDocumentName\":"
         + "\"claim-submit.png\",\"links\":{\"self\":{}}]}";
+
+    private static final String MOCK_RESPONSE_INCORRECT = "{\"doucments\":[{\"originalDocumentName\":"
+        + "\"claim-submit.png\",\"links\":{\"self\":{\"href\": \"" + MOCK_HREF + "\"}}}]}";
+
+    private static final String MOCK_RESPONSE_WITHOUT_NAME = "{\"documents\":[{\"links\":{\"self\":{\"href\": \"" + MOCK_HREF + "\"}}}]}";
 
     private CaseDocumentService caseDocumentService;
 
@@ -187,16 +202,54 @@ class CaseDocumentServiceTest {
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
                 MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
 
-        assertThat(documentException.getCause().getClass()).isEqualTo(NullPointerException.class);
+        assertThat(documentException.getCause().getClass()).isEqualTo(RestClientException.class);
+    }
 
-        log.info(documentException.getCause().getMessage());
+    @Test
+    void theUploadDocWhenResponseIncorrectProducesDocException() {
+        mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_UPLOAD_API_URL))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(withStatus(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(MOCK_RESPONSE_INCORRECT));
+
+        CaseDocumentException documentException = assertThrows(
+            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
+                MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
+
+        assertThat(documentException.getMessage()).isEqualTo(EMPTY_DOCUMENT_MESSAGE);
+    }
+
+    @Test
+    void theUploadDocWhenResponseWithoutFilenameProducesDocException() {
+
+        CaseDocumentException documentException = assertThrows(
+            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
+                MOCK_TOKEN, CASE_TYPE, MOCK_FILE_WITHOUT_NAME));
+
+        assertThat(documentException.getMessage()).isEqualTo(NO_FILENAME_MESSAGE);
+    }
+
+    @Test
+    void theUploadDocWhenAuthGenFailProducesDocException() {
+
+    }
+
+    @Test
+    void theUploadDocWhenUnauthorizedProducesHttpException() {
+        mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_UPLOAD_API_URL))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
+
+        CaseDocumentException documentException = assertThrows(
+            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
+                MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
+
+        assertThat(documentException.getCause().getClass()).isEqualTo(HttpClientErrorException.Unauthorized.class);
     }
 
 
-    // TODO: 01/06/2022 What if the response doesn't convert?
+
     // TODO: 01/06/2022 What if it converts but doesn't have the values you'd expect?
-    // TODO: 01/06/2022 What if the links are there, but no href's?
-    // TODO: 01/06/2022 What if the headers are not configured correctly?
     // TODO: 01/06/2022 What if the MultiPartFile is corrupt?
-    // TODO: 01/06/2022 What if the MultiPartFile for some reason doesn't have a filename?
 }
