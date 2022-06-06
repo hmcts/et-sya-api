@@ -25,7 +25,6 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
-@Slf4j
 @ExtendWith(MockitoExtension.class)
 class CaseDocumentServiceTest {
 
@@ -71,8 +70,6 @@ class CaseDocumentServiceTest {
 
     private static final String MOCK_RESPONSE_INCORRECT = "{\"doucments\":[{\"originalDocumentName\":"
         + "\"claim-submit.png\",\"links\":{\"self\":{\"href\": \"" + MOCK_HREF + "\"}}}]}";
-
-    private static final String MOCK_RESPONSE_WITHOUT_NAME = "{\"documents\":[{\"links\":{\"self\":{\"href\": \"" + MOCK_HREF + "\"}}}]}";
 
     private CaseDocumentService caseDocumentService;
 
@@ -228,11 +225,6 @@ class CaseDocumentServiceTest {
                 MOCK_TOKEN, CASE_TYPE, MOCK_FILE_WITHOUT_NAME));
 
         assertThat(documentException.getMessage()).isEqualTo(NO_FILENAME_MESSAGE);
-    }
-
-    @Test
-    void theUploadDocWhenAuthGenFailProducesDocException() {
-
     }
 
     @Test

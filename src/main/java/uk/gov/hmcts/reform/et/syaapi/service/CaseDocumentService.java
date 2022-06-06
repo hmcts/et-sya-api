@@ -129,14 +129,15 @@ public class CaseDocumentService {
     }
 
     private void validateFile(MultipartFile file) throws CaseDocumentException {
-        if(file.getOriginalFilename() == null) {
+        String filename = file.getOriginalFilename();
+        if(filename == null || filename.isEmpty()) {
             throw new CaseDocumentException("File does not pass validation");
         }
     }
 
     private CaseDocument validateDocument(DocumentUploadResponse response, String originalFilename)
         throws CaseDocumentException {
-        if(response.documents == null) {
+        if(response.documents == null || response.documents.isEmpty()) {
             throw new CaseDocumentException("Document management failed uploading file: "
                 + originalFilename);
         }
