@@ -262,19 +262,23 @@ class CaseDocumentServiceTest {
     }
 
     @Test
-    void theUploadDocWhenFilenameWithSpaceProducesDocException() {
+    void theUploadDocWhenFilenameWithSpaceProducesSuccessWithFileUri() throws CaseDocumentException {
         MockMultipartFile fileWithInvalidName = new MockMultipartFile(
             "file",
-            "invalid .xyz",
+            "valid file.xyz",
             MediaType.TEXT_PLAIN_VALUE,
             "Hello, World!".getBytes()
         );
 
-        CaseDocumentException documentException = assertThrows(
-            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
-                MOCK_TOKEN, CASE_TYPE, fileWithInvalidName));
+        mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_UPLOAD_API_URL))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(withStatus(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(MOCK_RESPONSE_WITH_DOCUMENT));
 
-        assertThat(documentException.getMessage()).isEqualTo(NO_FILENAME_MESSAGE);
+        URI documentEndpoint = caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, fileWithInvalidName);
+
+        assertThat(documentEndpoint).hasToString(MOCK_HREF);
     }
 
     @Test
@@ -308,10 +312,6 @@ class CaseDocumentServiceTest {
         assertThat(documentException.getMessage())
             .isEqualTo(EMPTY_DOCUMENT_MESSAGE);
     }
-
-    // TODO: 01/06/2022 What if it converts but doesn't have the values you'd expect?
-    // incorrect filename
-    // incorrect URL
 
     // TODO: 01/06/2022 What if the MultiPartFile is corrupt?
     // create 4-byte array with control ascii characters as corrupt data

@@ -43,7 +43,7 @@ public class CaseDocumentService {
 
     private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
 
-    private static final String FILE_NAME_REGEX_PATTERN = "^[\\w-]{1,256}+\\.[A-Za-z]{3,4}$";
+    private static final String FILE_NAME_REGEX_PATTERN = "^[\\w-_ ]{1,256}+\\.[A-Za-z]{3,4}$";
 
     private static final String HTTPS_URL_REGEX_PATTERN =
         "^(http:\\/\\/www\\.|https:\\/\\/www\\.|http:\\/\\/|https:\\/\\/)?[\\w\\d]+([\\-\\.]{1}[\\w\\d]+)" +
