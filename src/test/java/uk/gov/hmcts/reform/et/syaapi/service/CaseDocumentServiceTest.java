@@ -25,10 +25,31 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
+@Slf4j
 @ExtendWith(MockitoExtension.class)
 class CaseDocumentServiceTest {
 
-    private static final String DOCUMENT_UPLOAD_API_URL = "http://someurl.com";
+    private static String AUTH_TOKEN_TOKEN = "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJldF9zeWFfYXBpIiwiZX" +
+        "hwIjoxNjU0NjIzNTM4fQ.X3CfXLygNoxCYcPlx5P1OHMp9JmX7sXFoz6Q0s7r0bsv4yX6sxGVWv7" +
+        "IdUa9Ak4mCiUxh6hzj2isVxHxB7oVfw";
+
+    private static String BEARER_TOKEN = "eyJ6aXAiOiJOT05FIiwidHlwIjoiSldU" +
+        "IiwiYWxnIjoiUlMyNTYiLCJraWQiOiJNVFV5TWpReU5UUTJORFl5TWprMiJ9.eyJzdWIiOiJl" +
+        "dC5kZXZAaG1jdHMubmV0IiwiYXV0aF9sZXZlbCI6MCwiYXVkaXRUcmFja2luZ0lkIjoiOTdhZG" +
+        "M5NGQtMjdlZC00ODg2LTkzZmYtZjY5MDcwZWVjM2ExIiwiaXNzIjoiaHR0cDpcL1wvbG9jYWxob" +
+        "3N0OjU1NTYiLCJ0b2tlbk5hbWUiOiJhY2Nlc3NfdG9rZW4iLCJ0b2tlbl90eXBlIjoiQmVhcmVyIi" +
+        "wiYXV0aEdyYW50SWQiOiJlNGVmOTU5Zi02MThlLTQxMWUtOWY0Yi05OTM2Yjc1ODZiMDkiLCJhdWQiOiJ" +
+        "zeWEtYXBpIiwibmJmIjoxNjU0NjA0NzU1LCJncmFudF90eXBlIjoiYXV0aG9yaXphdGlvbl9jb2RlIi" +
+        "wiYXV0aF90aW1lIjoxNjU0NjA0NzU1MjAwLCJzY29wZSI6WyJvcGVuaWQiLCJwcm9maWxlIiwicm9" +
+        "sZXMiXSwicmVhbG0iOiJcL2htY3RzIiwiZXhwIjoxNjU0NjMzNTU1LCJpYXQiOjE2NTQ2MDQ3NTUsIm" +
+        "V4cGlyZXNfaW4iOjI4ODAwLCJqdGkiOiIwZTY5M2EyYi02ZDQ4LTRhZmMtOTM2Ni02NjI5NmFmYmFl" +
+        "MDUifQ.eWU-w1PI4Rc7m601_sRZlSfJ5nVb5i_HhSUGCb-2Cb4kMpeVLaEmVaZOy-7JGsJqig72H0zC" +
+        "5Bez2cN4a5wyKUGiQpOJYZhCipzXaoGxPXoFze6Tbq56yzSdkHFdywFOXtYHrEc9pisXsYoZsL1uw96" +
+        "7x4Flnsy53YObCEv5yAWoIQeTztxHysripgF6GDF3z_5pcFA96UGrMS7e1Hh79bBkYrdJTrH3fGQxgm" +
+        "cWwYspXlgqjkDx9cQdkUqK8Ze2JsxDKpKUKrEQlEmFjtlqjPmddA9vXOP_z0wGtr9lsE2wlrjXy06y" +
+        "vTy50YsSoBq1uEZE4_koGxoWCimWiHKDUw";
+
+    private static final String DOCUMENT_UPLOAD_API_URL = "http://localhost:4455/cases/documents";
 
     private static final String DOCUMENT_NAME = "hello.txt";
 
@@ -83,7 +104,7 @@ class CaseDocumentServiceTest {
     @BeforeEach
     void setup() {
         RestTemplate restTemplate = new RestTemplate();
-        AuthTokenGenerator authTokenGenerator = () -> "test";
+        AuthTokenGenerator authTokenGenerator = () -> "Bearer Mock";
         caseDocumentService = new CaseDocumentService(restTemplate,
                                                       authTokenGenerator,
                                                       DOCUMENT_UPLOAD_API_URL);
@@ -311,6 +332,19 @@ class CaseDocumentServiceTest {
 
         assertThat(documentException.getMessage())
             .isEqualTo(EMPTY_DOCUMENT_MESSAGE);
+    }
+    @Test
+    void callAPI() throws CaseDocumentException {
+
+        RestTemplate restTemplate = new RestTemplate();
+        AuthTokenGenerator authTokenGenerator = () -> AUTH_TOKEN_TOKEN;
+        CaseDocumentService apiService = new CaseDocumentService(restTemplate,
+            authTokenGenerator,
+            DOCUMENT_UPLOAD_API_URL);
+
+        URI result = apiService.uploadDocument(BEARER_TOKEN, CASE_TYPE, MOCK_FILE);
+
+        log.info(result.toString());
     }
 
     // TODO: 01/06/2022 What if the MultiPartFile is corrupt?
