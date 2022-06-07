@@ -37,6 +37,8 @@ class CaseDocumentServiceTest {
 
     private static final String MOCK_HREF = "http://test:8080/img";
 
+    private static final String MOCK_HREF_MALFORMED = "http:/test:80/";
+
     private static final String EMPTY_DOCUMENT_MESSAGE = "Document management failed uploading file: " + DOCUMENT_NAME;
 
     private static final String SERVER_ERROR_MESSAGE = "Failed to upload Case Document";
@@ -70,6 +72,9 @@ class CaseDocumentServiceTest {
 
     private static final String MOCK_RESPONSE_INCORRECT = "{\"doucments\":[{\"originalDocumentName\":"
         + "\"claim-submit.png\",\"links\":{\"self\":{\"href\": \"" + MOCK_HREF + "\"}}}]}";
+
+    private static final String MOCK_RESPONSE_WITH_MALFORMED_URI = "{\"documents\":[{\"originalDocumentName\":"
+        + "\"claim-submit.png\",\"links\":{\"self\":{\"href\": \"" + MOCK_HREF_MALFORMED + "\"}}}]}";
 
     private CaseDocumentService caseDocumentService;
 
@@ -135,7 +140,7 @@ class CaseDocumentServiceTest {
 
         IOException ioException = new IOException("Test throw");
 
-        MockMultipartFile MOCK_FILE_IO_EXCEPTION = new MockMultipartFile(
+        MockMultipartFile mockMultipartFile = new MockMultipartFile(
             "file",
             DOCUMENT_NAME,
             MediaType.TEXT_PLAIN_VALUE,
@@ -149,7 +154,7 @@ class CaseDocumentServiceTest {
 
         CaseDocumentException documentException = assertThrows(
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
-                MOCK_TOKEN, CASE_TYPE, MOCK_FILE_IO_EXCEPTION));
+                MOCK_TOKEN, CASE_TYPE, mockMultipartFile));
 
         assertThat(documentException.getCause()).isEqualTo(ioException);
     }
@@ -240,8 +245,75 @@ class CaseDocumentServiceTest {
         assertThat(documentException.getCause().getClass()).isEqualTo(HttpClientErrorException.Unauthorized.class);
     }
 
+    @Test
+    void theUploadDocWhenInvalidFilenameProducesDocException() {
+        MockMultipartFile fileWithInvalidName = new MockMultipartFile(
+            "file",
+            "invalid",
+            MediaType.TEXT_PLAIN_VALUE,
+            "Hello, World!".getBytes()
+        );
 
+        CaseDocumentException documentException = assertThrows(
+            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
+                MOCK_TOKEN, CASE_TYPE, fileWithInvalidName));
+
+        assertThat(documentException.getMessage()).isEqualTo(NO_FILENAME_MESSAGE);
+    }
+
+    @Test
+    void theUploadDocWhenFilenameWithSpaceProducesDocException() {
+        MockMultipartFile fileWithInvalidName = new MockMultipartFile(
+            "file",
+            "invalid .xyz",
+            MediaType.TEXT_PLAIN_VALUE,
+            "Hello, World!".getBytes()
+        );
+
+        CaseDocumentException documentException = assertThrows(
+            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
+                MOCK_TOKEN, CASE_TYPE, fileWithInvalidName));
+
+        assertThat(documentException.getMessage()).isEqualTo(NO_FILENAME_MESSAGE);
+    }
+
+    @Test
+    void theUploadDocWhenFilenameWithIllegalCharProducesDocException() {
+        MockMultipartFile fileWithInvalidName = new MockMultipartFile(
+            "file",
+            "@invalid!|.xyz",
+            MediaType.TEXT_PLAIN_VALUE,
+            "Hello, World!".getBytes()
+        );
+
+        CaseDocumentException documentException = assertThrows(
+            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
+                MOCK_TOKEN, CASE_TYPE, fileWithInvalidName));
+
+        assertThat(documentException.getMessage()).isEqualTo(NO_FILENAME_MESSAGE);
+    }
+
+    @Test
+    void theUploadDocWhenResponseUriInvalidProducesException() {
+        mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_UPLOAD_API_URL))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(withStatus(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(MOCK_RESPONSE_WITH_MALFORMED_URI));
+
+        CaseDocumentException documentException = assertThrows(
+            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
+                MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
+
+        assertThat(documentException.getMessage())
+            .isEqualTo(EMPTY_DOCUMENT_MESSAGE);
+    }
 
     // TODO: 01/06/2022 What if it converts but doesn't have the values you'd expect?
+    // incorrect filename
+    // incorrect URL
+
     // TODO: 01/06/2022 What if the MultiPartFile is corrupt?
+    // create 4-byte array with control ascii characters as corrupt data
+    // find out how api manages file uploads
 }

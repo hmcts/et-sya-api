@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * CaseDocumentService provides access to the document upload service API, used to upload documents that are
@@ -40,6 +42,12 @@ public class CaseDocumentService {
     private static final String JURISDICTION = "EMPLOYMENT";
 
     private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
+
+    private static final String FILE_NAME_REGEX_PATTERN = "^[\\w-]{1,256}+\\.[A-Za-z]{3,4}$";
+
+    private static final String HTTPS_URL_REGEX_PATTERN =
+        "^(http:\\/\\/www\\.|https:\\/\\/www\\.|http:\\/\\/|https:\\/\\/)?[\\w\\d]+([\\-\\.]{1}[\\w\\d]+)" +
+            "*(\\.[a-z]{2,5})?(:\\d{1,5})?(\\/.*)?$";
 
     private final RestTemplate restTemplate;
 
@@ -133,6 +141,12 @@ public class CaseDocumentService {
         if(filename == null || filename.isEmpty()) {
             throw new CaseDocumentException("File does not pass validation");
         }
+
+        Pattern pattern = Pattern.compile(FILE_NAME_REGEX_PATTERN);
+        Matcher matcher = pattern.matcher(filename);
+        if(!matcher.matches()) {
+            throw new CaseDocumentException("File does not pass validation");
+        }
     }
 
     private CaseDocument validateDocument(DocumentUploadResponse response, String originalFilename)
@@ -142,10 +156,21 @@ public class CaseDocumentService {
                 + originalFilename);
         }
 
-        return response.getDocuments().stream()
+        CaseDocument document = response.getDocuments().stream()
             .findFirst()
             .orElseThrow(() -> new CaseDocumentException("Document management failed uploading file: "
                 + originalFilename));
+
+        String uri = getUriFromFile(document).toString();
+
+        Pattern pattern = Pattern.compile(HTTPS_URL_REGEX_PATTERN);
+        Matcher matcher = pattern.matcher(uri);
+        if(!matcher.matches()) {
+            throw new CaseDocumentException("Document management failed uploading file: "
+                + originalFilename);
+        }
+
+        return document;
     }
 
     private MultiValueMap<String, Object> generateUploadRequest(String caseTypeId,
