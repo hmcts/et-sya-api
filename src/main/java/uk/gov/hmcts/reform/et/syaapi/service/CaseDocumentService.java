@@ -49,6 +49,8 @@ public class CaseDocumentService {
         "^(http:\\/\\/www\\.|https:\\/\\/www\\.|http:\\/\\/|https:\\/\\/)?[\\w\\d]+([\\-\\.]{1}[\\w\\d]+)" +
             "*(\\.[a-z]{2,5})?(:\\d{1,5})?(\\/.*)?$";
 
+    private static final String UPLOAD_FILE_EXCEPTION_MESSAGE = "Document management failed uploading file: ";
+
     private final RestTemplate restTemplate;
 
     private final AuthTokenGenerator authTokenGenerator;
@@ -152,22 +154,19 @@ public class CaseDocumentService {
     private CaseDocument validateDocument(DocumentUploadResponse response, String originalFilename)
         throws CaseDocumentException {
         if(response.documents == null || response.documents.isEmpty()) {
-            throw new CaseDocumentException("Document management failed uploading file: "
-                + originalFilename);
+            throw new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename);
         }
 
         CaseDocument document = response.getDocuments().stream()
             .findFirst()
-            .orElseThrow(() -> new CaseDocumentException("Document management failed uploading file: "
-                + originalFilename));
+            .orElseThrow(() -> new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename));
 
         String uri = getUriFromFile(document).toString();
 
         Pattern pattern = Pattern.compile(HTTPS_URL_REGEX_PATTERN);
         Matcher matcher = pattern.matcher(uri);
         if(!matcher.matches()) {
-            throw new CaseDocumentException("Document management failed uploading file: "
-                + originalFilename);
+            throw new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename);
         }
 
         return document;
@@ -184,7 +183,7 @@ public class CaseDocumentService {
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("files", fileAsResource);
-        body.add("classification", Classification.PUBLIC);
+        body.add("classification", Classification.PUBLIC.toString());
         body.add("caseTypeId", caseTypeId);
         body.add("jurisdictionId", JURISDICTION);
 

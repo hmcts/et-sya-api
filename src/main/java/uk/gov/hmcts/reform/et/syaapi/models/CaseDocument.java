@@ -7,6 +7,9 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.util.Map;
 
+/**
+ * Defines the Document object returned from the CCD Document AM API.
+ */
 @Data
 @Builder
 @Jacksonized
@@ -14,6 +17,6 @@ public class CaseDocument {
     @JsonProperty("originalDocumentName")
     String originalDocumentName;
 
-    @JsonProperty("links")
+    @JsonProperty("_links")
     Map<String, Map<String, String>> links;
 }
