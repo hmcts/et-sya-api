@@ -183,8 +183,7 @@ public class CaseDocumentService {
         };
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.add("file", fileAsResource);
-        body.add("fileName", file.getOriginalFilename());
+        body.add("files", fileAsResource);
         body.add("classification", Classification.PUBLIC);
         body.add("caseTypeId", caseTypeId);
         body.add("jurisdictionId", JURISDICTION);

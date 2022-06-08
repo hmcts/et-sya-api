@@ -33,21 +33,8 @@ class CaseDocumentServiceTest {
         "hwIjoxNjU0NjIzNTM4fQ.X3CfXLygNoxCYcPlx5P1OHMp9JmX7sXFoz6Q0s7r0bsv4yX6sxGVWv7" +
         "IdUa9Ak4mCiUxh6hzj2isVxHxB7oVfw";
 
-    private static String BEARER_TOKEN = "eyJ6aXAiOiJOT05FIiwidHlwIjoiSldU" +
-        "IiwiYWxnIjoiUlMyNTYiLCJraWQiOiJNVFV5TWpReU5UUTJORFl5TWprMiJ9.eyJzdWIiOiJl" +
-        "dC5kZXZAaG1jdHMubmV0IiwiYXV0aF9sZXZlbCI6MCwiYXVkaXRUcmFja2luZ0lkIjoiOTdhZG" +
-        "M5NGQtMjdlZC00ODg2LTkzZmYtZjY5MDcwZWVjM2ExIiwiaXNzIjoiaHR0cDpcL1wvbG9jYWxob" +
-        "3N0OjU1NTYiLCJ0b2tlbk5hbWUiOiJhY2Nlc3NfdG9rZW4iLCJ0b2tlbl90eXBlIjoiQmVhcmVyIi" +
-        "wiYXV0aEdyYW50SWQiOiJlNGVmOTU5Zi02MThlLTQxMWUtOWY0Yi05OTM2Yjc1ODZiMDkiLCJhdWQiOiJ" +
-        "zeWEtYXBpIiwibmJmIjoxNjU0NjA0NzU1LCJncmFudF90eXBlIjoiYXV0aG9yaXphdGlvbl9jb2RlIi" +
-        "wiYXV0aF90aW1lIjoxNjU0NjA0NzU1MjAwLCJzY29wZSI6WyJvcGVuaWQiLCJwcm9maWxlIiwicm9" +
-        "sZXMiXSwicmVhbG0iOiJcL2htY3RzIiwiZXhwIjoxNjU0NjMzNTU1LCJpYXQiOjE2NTQ2MDQ3NTUsIm" +
-        "V4cGlyZXNfaW4iOjI4ODAwLCJqdGkiOiIwZTY5M2EyYi02ZDQ4LTRhZmMtOTM2Ni02NjI5NmFmYmFl" +
-        "MDUifQ.eWU-w1PI4Rc7m601_sRZlSfJ5nVb5i_HhSUGCb-2Cb4kMpeVLaEmVaZOy-7JGsJqig72H0zC" +
-        "5Bez2cN4a5wyKUGiQpOJYZhCipzXaoGxPXoFze6Tbq56yzSdkHFdywFOXtYHrEc9pisXsYoZsL1uw96" +
-        "7x4Flnsy53YObCEv5yAWoIQeTztxHysripgF6GDF3z_5pcFA96UGrMS7e1Hh79bBkYrdJTrH3fGQxgm" +
-        "cWwYspXlgqjkDx9cQdkUqK8Ze2JsxDKpKUKrEQlEmFjtlqjPmddA9vXOP_z0wGtr9lsE2wlrjXy06y" +
-        "vTy50YsSoBq1uEZE4_koGxoWCimWiHKDUw";
+    private static String BEARER_TOKEN =
+        "eyJ6aXAiOiJOT05FIiwidHlwIjoiSldUIiwiYWxnIjoiUlMyNTYiLCJraWQiOiJNemN3T0RnME5UQTNOamc0In0.eyJzdWIiOiJldC5kZXZAaG1jdHMubmV0IiwiYXV0aF9sZXZlbCI6MCwiYXVkaXRUcmFja2luZ0lkIjoiNzQ3MGVlZDQtZGRhOC00Yjk3LWJiZWEtYzI3NDJhMjJmZTBlIiwiaXNzIjoiaHR0cDpcL1wvbG9jYWxob3N0OjU1NTYiLCJ0b2tlbk5hbWUiOiJhY2Nlc3NfdG9rZW4iLCJ0b2tlbl90eXBlIjoiQmVhcmVyIiwiYXV0aEdyYW50SWQiOiI2NGZiMTIxNi1jY2Y4LTRhZDMtYjczMS1mM2FlNjMwNjk4ZWIiLCJhdWQiOiJzeWEtYXBpIiwibmJmIjoxNjU0Njk0OTU5LCJncmFudF90eXBlIjoiYXV0aG9yaXphdGlvbl9jb2RlIiwiYXV0aF90aW1lIjoxNjU0Njk0OTU5MjAwLCJzY29wZSI6WyJvcGVuaWQiLCJwcm9maWxlIiwicm9sZXMiXSwicmVhbG0iOiJcL2htY3RzIiwiZXhwIjoxNjU0NzIzNzU5LCJpYXQiOjE2NTQ2OTQ5NTksImV4cGlyZXNfaW4iOjI4ODAwLCJqdGkiOiJiODNmZTM2My1lYzBmLTQ0MjgtYmZlZC05MjA5ODI5ZWU5YjEifQ.WMzaQNDsaeZ8lx0G6L90wwuUWBlXk954uvecyWDF9xVLrlO_BU5KrfdOzYck3iXTDRlCDPKthUUiSFbKA_WMlKCH4WYTfx5WhmFozmEpliuoqd8Xu0kKJ6uogg1-hnGKcam1HiGkV_FBxmur3cvpNRzVKMvUmSWemNIvson3XaI7Yu_PIC6pz6Q9asTDSNewaTqfkaNj6mnPl8Y2PNYsxseLXzhFFDgPMD1UjIYC1Vh4X6RvYsGg5j6jR9kHBrj3k2E4LVom9Kfbaj2UepJpobiJcQ-RXvy9Kl9yNkPTqCq4VX9AteJkeyodt_Gu80AZXoWmFacasRKEaTGQkdRyZA";
 
     private static final String DOCUMENT_UPLOAD_API_URL = "http://localhost:4455/cases/documents";
 
