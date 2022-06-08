@@ -29,11 +29,6 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @ExtendWith(MockitoExtension.class)
 class CaseDocumentServiceTest {
 
-    private static String AUTH_TOKEN_TOKEN = "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJldF9zeWFfYXBpIiwiZXhwIjoxNjU0NzEwOTMxfQ.gDQfwRhpgbvKJvHHyHBqMX8_3ayGMhPNd9IzZn4YAceggXHZArdkJ3sU4tmiBHSMH7qDtsNjowr1DcTsJsTakw";
-
-    private static String BEARER_TOKEN =
-        "Bearer eyJ6aXAiOiJOT05FIiwidHlwIjoiSldUIiwiYWxnIjoiUlMyNTYiLCJraWQiOiJNemN3T0RnME5UQTNOamc0In0.eyJzdWIiOiJldC5kZXZAaG1jdHMubmV0IiwiYXV0aF9sZXZlbCI6MCwiYXVkaXRUcmFja2luZ0lkIjoiNzQ3MGVlZDQtZGRhOC00Yjk3LWJiZWEtYzI3NDJhMjJmZTBlIiwiaXNzIjoiaHR0cDpcL1wvbG9jYWxob3N0OjU1NTYiLCJ0b2tlbk5hbWUiOiJhY2Nlc3NfdG9rZW4iLCJ0b2tlbl90eXBlIjoiQmVhcmVyIiwiYXV0aEdyYW50SWQiOiI2NGZiMTIxNi1jY2Y4LTRhZDMtYjczMS1mM2FlNjMwNjk4ZWIiLCJhdWQiOiJzeWEtYXBpIiwibmJmIjoxNjU0Njk0OTU5LCJncmFudF90eXBlIjoiYXV0aG9yaXphdGlvbl9jb2RlIiwiYXV0aF90aW1lIjoxNjU0Njk0OTU5MjAwLCJzY29wZSI6WyJvcGVuaWQiLCJwcm9maWxlIiwicm9sZXMiXSwicmVhbG0iOiJcL2htY3RzIiwiZXhwIjoxNjU0NzIzNzU5LCJpYXQiOjE2NTQ2OTQ5NTksImV4cGlyZXNfaW4iOjI4ODAwLCJqdGkiOiJiODNmZTM2My1lYzBmLTQ0MjgtYmZlZC05MjA5ODI5ZWU5YjEifQ.WMzaQNDsaeZ8lx0G6L90wwuUWBlXk954uvecyWDF9xVLrlO_BU5KrfdOzYck3iXTDRlCDPKthUUiSFbKA_WMlKCH4WYTfx5WhmFozmEpliuoqd8Xu0kKJ6uogg1-hnGKcam1HiGkV_FBxmur3cvpNRzVKMvUmSWemNIvson3XaI7Yu_PIC6pz6Q9asTDSNewaTqfkaNj6mnPl8Y2PNYsxseLXzhFFDgPMD1UjIYC1Vh4X6RvYsGg5j6jR9kHBrj3k2E4LVom9Kfbaj2UepJpobiJcQ-RXvy9Kl9yNkPTqCq4VX9AteJkeyodt_Gu80AZXoWmFacasRKEaTGQkdRyZA"
-;
     private static final String DOCUMENT_UPLOAD_API_URL = "http://localhost:4455/cases/documents";
 
     private static final String DOCUMENT_NAME = "hello.txt";
@@ -49,7 +44,7 @@ class CaseDocumentServiceTest {
 
     private static final String SERVER_ERROR_MESSAGE = "Failed to upload Case Document";
 
-    private static final String NO_FILENAME_MESSAGE = "File does not pass validation";
+    private static final String FILE_DOES_NOT_PASS_VALIDATION = "File does not pass validation";
 
     private static final MockMultipartFile MOCK_FILE = new MockMultipartFile(
         "file",
@@ -63,6 +58,13 @@ class CaseDocumentServiceTest {
         null,
         MediaType.TEXT_PLAIN_VALUE,
         "Hello, World!".getBytes()
+    );
+
+    private static final MockMultipartFile MOCK_FILE_CORRUPT = new MockMultipartFile(
+        "file",
+        DOCUMENT_NAME,
+        MediaType.IMAGE_GIF_VALUE,
+        (byte[]) null
     );
 
     private static final String MOCK_RESPONSE_WITH_DOCUMENT = "{\"documents\":[{\"originalDocumentName\":"
@@ -235,7 +237,16 @@ class CaseDocumentServiceTest {
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
                 MOCK_TOKEN, CASE_TYPE, MOCK_FILE_WITHOUT_NAME));
 
-        assertThat(documentException.getMessage()).isEqualTo(NO_FILENAME_MESSAGE);
+        assertThat(documentException.getMessage()).isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
+    }
+
+    @Test
+    void theUploadDocWhenContentTypeDoesNotMatchActualFileTypeProducesDocException() {
+        CaseDocumentException documentException = assertThrows(
+            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
+                MOCK_TOKEN, CASE_TYPE, MOCK_FILE_CORRUPT));
+
+        assertThat(documentException.getMessage()).isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
     }
 
     @Test
@@ -264,7 +275,7 @@ class CaseDocumentServiceTest {
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
                 MOCK_TOKEN, CASE_TYPE, fileWithInvalidName));
 
-        assertThat(documentException.getMessage()).isEqualTo(NO_FILENAME_MESSAGE);
+        assertThat(documentException.getMessage()).isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
     }
 
     @Test
@@ -300,7 +311,7 @@ class CaseDocumentServiceTest {
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
                 MOCK_TOKEN, CASE_TYPE, fileWithInvalidName));
 
-        assertThat(documentException.getMessage()).isEqualTo(NO_FILENAME_MESSAGE);
+        assertThat(documentException.getMessage()).isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
     }
 
     @Test
@@ -318,21 +329,4 @@ class CaseDocumentServiceTest {
         assertThat(documentException.getMessage())
             .isEqualTo(EMPTY_DOCUMENT_MESSAGE);
     }
-    @Test
-    void callAPI() throws CaseDocumentException {
-
-        RestTemplate restTemplate = new RestTemplate();
-        AuthTokenGenerator authTokenGenerator = () -> AUTH_TOKEN_TOKEN;
-        CaseDocumentService apiService = new CaseDocumentService(restTemplate,
-            authTokenGenerator,
-            DOCUMENT_UPLOAD_API_URL);
-
-        URI result = apiService.uploadDocument(BEARER_TOKEN, CASE_TYPE, MOCK_FILE);
-
-        log.info(result.toString());
-    }
-
-    // TODO: 01/06/2022 What if the MultiPartFile is corrupt?
-    // create 4-byte array with control ascii characters as corrupt data
-    // find out how api manages file uploads
 }

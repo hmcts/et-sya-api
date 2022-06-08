@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.Data;
+import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
@@ -51,6 +52,8 @@ public class CaseDocumentService {
 
     private static final String UPLOAD_FILE_EXCEPTION_MESSAGE = "Document management failed uploading file: ";
 
+    private static final String VALIDATE_FILE_EXCEPTION_MESSAGE = "File does not pass validation";
+
     private final RestTemplate restTemplate;
 
     private final AuthTokenGenerator authTokenGenerator;
@@ -67,7 +70,8 @@ public class CaseDocumentService {
      */
     public CaseDocumentService(RestTemplate restTemplate,
                                AuthTokenGenerator authTokenGenerator,
-                               @Value("${case_document_am.url}/cases/documents}") String caseDocApiUrl) {
+                               @Value("${case_document_am.url}/cases/documents}")
+                               String caseDocApiUrl) {
         this.restTemplate = restTemplate;
         this.authTokenGenerator = authTokenGenerator;
         this.caseDocApiUrl = caseDocApiUrl;
@@ -138,16 +142,23 @@ public class CaseDocumentService {
         return headers;
     }
 
-    private void validateFile(MultipartFile file) throws CaseDocumentException {
+    private void validateFile(MultipartFile file) throws CaseDocumentException, IOException {
         String filename = file.getOriginalFilename();
         if(filename == null || filename.isEmpty()) {
-            throw new CaseDocumentException("File does not pass validation");
+            throw new CaseDocumentException(VALIDATE_FILE_EXCEPTION_MESSAGE);
         }
 
         Pattern pattern = Pattern.compile(FILE_NAME_REGEX_PATTERN);
         Matcher matcher = pattern.matcher(filename);
         if(!matcher.matches()) {
-            throw new CaseDocumentException("File does not pass validation");
+            throw new CaseDocumentException(VALIDATE_FILE_EXCEPTION_MESSAGE);
+        }
+
+        Tika tika = new Tika();
+        String detectedType = tika.detect(file.getBytes());
+
+        if(!detectedType.equals(file.getContentType())) {
+            throw new CaseDocumentException(VALIDATE_FILE_EXCEPTION_MESSAGE);
         }
     }
 
