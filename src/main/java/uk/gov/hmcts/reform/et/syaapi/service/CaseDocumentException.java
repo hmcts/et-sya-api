@@ -5,6 +5,8 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 */
 public class CaseDocumentException extends Exception {
 
+    private static final long serialVersionUID = -3042682221658047294L;
+
     /**
      * Creates an {@link CaseDocumentException} with a message and the cause.
      *

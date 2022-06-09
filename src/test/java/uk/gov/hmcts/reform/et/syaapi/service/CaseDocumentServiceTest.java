@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -21,10 +22,12 @@ import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
+@SuppressWarnings({"PMD.TooManyMethods"})
 @Slf4j
 @ExtendWith(MockitoExtension.class)
 class CaseDocumentServiceTest {
@@ -38,34 +41,55 @@ class CaseDocumentServiceTest {
     private static final String EMPTY_DOCUMENT_MESSAGE = "Document management failed uploading file: " + DOCUMENT_NAME;
     private static final String SERVER_ERROR_MESSAGE = "Failed to upload Case Document";
     private static final String FILE_DOES_NOT_PASS_VALIDATION = "File does not pass validation";
+    private static final Integer MAX_API_CALL_ATTEMPTS = 4;
+    private static final String MOCK_FILE_BODY = "Hello, World!";
     private static final MockMultipartFile MOCK_FILE = new MockMultipartFile(
-        "file",
+        "mock_file",
         DOCUMENT_NAME,
         MediaType.TEXT_PLAIN_VALUE,
-        "Hello, World!".getBytes()
+        MOCK_FILE_BODY.getBytes()
       );
     private static final MockMultipartFile MOCK_FILE_WITHOUT_NAME = new MockMultipartFile(
-        "file",
+        "mock_file_without_name",
         null,
         MediaType.TEXT_PLAIN_VALUE,
-        "Hello, World!".getBytes()
+        MOCK_FILE_BODY.getBytes()
     );
     private static final MockMultipartFile MOCK_FILE_CORRUPT = new MockMultipartFile(
-        "file",
+        "mock_file_corrupt",
         DOCUMENT_NAME,
         MediaType.IMAGE_GIF_VALUE,
         (byte[]) null
     );
-    private static final String MOCK_RESPONSE_WITH_DOCUMENT = "{\"documents\":[{\"originalDocumentName\":"
+    private static final MockMultipartFile MOCK_FILE_INVALID_NAME = new MockMultipartFile(
+        "mock_file_with_invalid_name",
+        "invalid",
+        MediaType.TEXT_PLAIN_VALUE,
+        MOCK_FILE_BODY.getBytes()
+    );
+    private static final MockMultipartFile MOCK_FILE_NAME_SPACING = new MockMultipartFile(
+        "mock_file_with_name_spacing",
+        "valid file.xyz",
+        MediaType.TEXT_PLAIN_VALUE,
+        MOCK_FILE_BODY.getBytes()
+    );
+    private static final MockMultipartFile MOCK_FILE_NAME_ILLEGAL_CHAR = new MockMultipartFile(
+        "mock_file_name_with_illegal_char",
+        "@invalid!|.xyz",
+        MediaType.TEXT_PLAIN_VALUE,
+        MOCK_FILE_BODY.getBytes()
+    );
+    private static final String RESPONSE_BODY = "{\"documents\":[{\"originalDocumentName\":";
+    private static final String MOCK_RESPONSE_WITH_DOCUMENT = RESPONSE_BODY
         + "\"claim-submit.png\",\"_links\":{\"self\":{\"href\": \"" + MOCK_HREF + "\"}}}]}";
     private static final String MOCK_RESPONSE_WITHOUT_DOCUMENT = "{\"documents\":[]}";
-    private static final String MOCK_RESPONSE_WITHOUT_LINKS = "{\"documents\":[{\"originalDocumentName\":"
+    private static final String MOCK_RESPONSE_WITHOUT_LINKS = RESPONSE_BODY
         + "\"claim-submit.png\"}]}";
-    private static final String MOCK_RESPONSE_WITHOUT_HREF = "{\"documents\":[{\"originalDocumentName\":"
+    private static final String MOCK_RESPONSE_WITHOUT_HREF = RESPONSE_BODY
         + "\"claim-submit.png\",\"_links\":{\"self\":{}}]}";
     private static final String MOCK_RESPONSE_INCORRECT = "{\"doucments\":[{\"originalDocumentName\":"
         + "\"claim-submit.png\",\"_links\":{\"self\":{\"href\": \"" + MOCK_HREF + "\"}}}]}";
-    private static final String MOCK_RESPONSE_WITH_MALFORMED_URI = "{\"documents\":[{\"originalDocumentName\":"
+    private static final String MOCK_RESPONSE_WITH_MALFORMED_URI = RESPONSE_BODY
         + "\"claim-submit.png\",\"_links\":{\"self\":{\"href\": \"" + MOCK_HREF_MALFORMED + "\"}}}]}";
 
     private CaseDocumentService caseDocumentService;
@@ -98,7 +122,6 @@ class CaseDocumentServiceTest {
 
     @Test
     void theUploadDocWhenNoFileReturnedProducesDocException() {
-
         mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_UPLOAD_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
@@ -115,7 +138,7 @@ class CaseDocumentServiceTest {
 
     @Test
     void theUploadDocWhenRestTemplateFailsProducesDocException() {
-        mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_UPLOAD_API_URL))
+        mockServer.expect(ExpectedCount.max(MAX_API_CALL_ATTEMPTS), requestTo(DOCUMENT_UPLOAD_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.BAD_REQUEST));
 
@@ -128,25 +151,19 @@ class CaseDocumentServiceTest {
     }
 
     @Test
-    void theUploadDocWhenIoExceptionProducesDocException() {
-
+    void theUploadDocWhenIoExceptionProducesDocException() throws IOException {
         IOException ioException = new IOException("Test throw");
 
-        MockMultipartFile mockMultipartFile = new MockMultipartFile(
-            "file",
+        MockMultipartFile mockMultipartFileSpy = Mockito.spy(new MockMultipartFile("mock_file_spy",
             DOCUMENT_NAME,
             MediaType.TEXT_PLAIN_VALUE,
-            "Hello, World!".getBytes()
-        ) {
-            @Override
-            public byte[] getBytes() throws IOException {
-                throw ioException;
-            }
-        };
+            "Hello, World!".getBytes()));
+
+        doThrow(ioException).when(mockMultipartFileSpy).getBytes();
 
         CaseDocumentException documentException = assertThrows(
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
-                MOCK_TOKEN, CASE_TYPE, mockMultipartFile));
+                MOCK_TOKEN, CASE_TYPE, mockMultipartFileSpy));
 
         assertThat(documentException.getCause())
             .isEqualTo(ioException);
@@ -154,10 +171,9 @@ class CaseDocumentServiceTest {
 
     @Test
     void theUploadDocWhenRestExceptionProducesDocException() {
-
         RestClientException restClientException = new RestClientException("Test throw");
 
-        mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_UPLOAD_API_URL))
+        mockServer.expect(ExpectedCount.max(MAX_API_CALL_ATTEMPTS), requestTo(DOCUMENT_UPLOAD_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond((response) -> {
                 throw restClientException;
@@ -173,7 +189,7 @@ class CaseDocumentServiceTest {
 
     @Test
     void theUploadDocWhenResponseNoLinkProducesDocException() {
-        mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_UPLOAD_API_URL))
+        mockServer.expect(ExpectedCount.max(MAX_API_CALL_ATTEMPTS), requestTo(DOCUMENT_UPLOAD_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -183,13 +199,13 @@ class CaseDocumentServiceTest {
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
                 MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
 
-        assertThat(documentException.getCause().getClass())
-            .isEqualTo(NullPointerException.class);
+        assertThat(documentException.getMessage())
+            .isEqualTo(EMPTY_DOCUMENT_MESSAGE);
     }
 
     @Test
     void theUploadDocWhenResponseNoHrefProducesDocException() {
-        mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_UPLOAD_API_URL))
+        mockServer.expect(ExpectedCount.max(MAX_API_CALL_ATTEMPTS), requestTo(DOCUMENT_UPLOAD_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -205,7 +221,7 @@ class CaseDocumentServiceTest {
 
     @Test
     void theUploadDocWhenResponseIncorrectProducesDocException() {
-        mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_UPLOAD_API_URL))
+        mockServer.expect(ExpectedCount.max(MAX_API_CALL_ATTEMPTS), requestTo(DOCUMENT_UPLOAD_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -221,7 +237,6 @@ class CaseDocumentServiceTest {
 
     @Test
     void theUploadDocWhenResponseWithoutFilenameProducesDocException() {
-
         CaseDocumentException documentException = assertThrows(
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
                 MOCK_TOKEN, CASE_TYPE, MOCK_FILE_WITHOUT_NAME));
@@ -242,7 +257,7 @@ class CaseDocumentServiceTest {
 
     @Test
     void theUploadDocWhenUnauthorizedProducesHttpException() {
-        mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_UPLOAD_API_URL))
+        mockServer.expect(ExpectedCount.max(MAX_API_CALL_ATTEMPTS), requestTo(DOCUMENT_UPLOAD_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
 
@@ -256,16 +271,9 @@ class CaseDocumentServiceTest {
 
     @Test
     void theUploadDocWhenInvalidFilenameProducesDocException() {
-        MockMultipartFile fileWithInvalidName = new MockMultipartFile(
-            "file",
-            "invalid",
-            MediaType.TEXT_PLAIN_VALUE,
-            "Hello, World!".getBytes()
-        );
-
         CaseDocumentException documentException = assertThrows(
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
-                MOCK_TOKEN, CASE_TYPE, fileWithInvalidName));
+                MOCK_TOKEN, CASE_TYPE, MOCK_FILE_INVALID_NAME));
 
         assertThat(documentException.getMessage())
             .isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
@@ -273,20 +281,14 @@ class CaseDocumentServiceTest {
 
     @Test
     void theUploadDocWhenFilenameWithSpaceProducesSuccessWithFileUri() throws CaseDocumentException {
-        MockMultipartFile fileWithInvalidName = new MockMultipartFile(
-            "file",
-            "valid file.xyz",
-            MediaType.TEXT_PLAIN_VALUE,
-            "Hello, World!".getBytes()
-        );
-
         mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_UPLOAD_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(MOCK_RESPONSE_WITH_DOCUMENT));
 
-        URI documentEndpoint = caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, fileWithInvalidName);
+        URI documentEndpoint = caseDocumentService.uploadDocument(
+            MOCK_TOKEN, CASE_TYPE, MOCK_FILE_NAME_SPACING);
 
         assertThat(documentEndpoint)
             .hasToString(MOCK_HREF);
@@ -294,16 +296,9 @@ class CaseDocumentServiceTest {
 
     @Test
     void theUploadDocWhenFilenameWithIllegalCharProducesDocException() {
-        MockMultipartFile fileWithInvalidName = new MockMultipartFile(
-            "file",
-            "@invalid!|.xyz",
-            MediaType.TEXT_PLAIN_VALUE,
-            "Hello, World!".getBytes()
-        );
-
         CaseDocumentException documentException = assertThrows(
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
-                MOCK_TOKEN, CASE_TYPE, fileWithInvalidName));
+                MOCK_TOKEN, CASE_TYPE, MOCK_FILE_NAME_ILLEGAL_CHAR));
 
         assertThat(documentException.getMessage())
             .isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
@@ -311,7 +306,7 @@ class CaseDocumentServiceTest {
 
     @Test
     void theUploadDocWhenResponseUriInvalidProducesException() {
-        mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_UPLOAD_API_URL))
+        mockServer.expect(ExpectedCount.max(MAX_API_CALL_ATTEMPTS), requestTo(DOCUMENT_UPLOAD_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)

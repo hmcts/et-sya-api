@@ -8,11 +8,8 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -20,7 +17,6 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.ccd.client.model.Classification;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 
 import java.io.IOException;
@@ -54,6 +50,7 @@ public class CaseDocumentService {
     private static final Pattern HTTPS_URL_PATTERN = Pattern.compile(HTTPS_URL_REGEX_PATTERN);
     private static final String UPLOAD_FILE_EXCEPTION_MESSAGE = "Document management failed uploading file: ";
     private static final String VALIDATE_FILE_EXCEPTION_MESSAGE = "File does not pass validation";
+    public static final int MAX_API_RETRIES = 3;
     private final RestTemplate restTemplate;
     private final AuthTokenGenerator authTokenGenerator;
     private final String caseDocApiUrl;
@@ -86,35 +83,46 @@ public class CaseDocumentService {
      * @throws CaseDocumentException if a problem occurs whilst uploading the document via API
      */
     public URI uploadDocument(String authToken, String caseTypeId, MultipartFile file) throws CaseDocumentException {
+        DocumentUploadResponse response = attemptWithRetriesToUploadDocumentToCaseDocumentApi(
+            0, authToken, caseTypeId, file);
+
+        CaseDocument caseDocument = validateResponse(
+            Objects.requireNonNull(response), file.getOriginalFilename());
+
+        return getUriFromFile(caseDocument);
+    }
+
+    private URI getUriFromFile(CaseDocument caseDocument) {
+        if (caseDocument.getLinks() != null
+            && caseDocument.getLinks().get("self") != null
+            && caseDocument.getLinks().get("self").get("href") != null) {
+            return URI.create(caseDocument.getLinks().get("self").get("href"));
+        }
+        return URI.create("");
+    }
+
+    private DocumentUploadResponse attemptWithRetriesToUploadDocumentToCaseDocumentApi(int attempts,
+                                                                                      String authToken,
+                                                                                      String caseTypeId,
+                                                                                      MultipartFile file)
+        throws CaseDocumentException {
         try {
-            validateFile(file);
-
-            ResponseEntity<DocumentUploadResponse> response = uploadDocumentToCaseDocumentApi(
-                authToken, caseTypeId, file);
-
-            CaseDocument caseDocument = validateResponse(
-                Objects.requireNonNull(response.getBody()), file.getOriginalFilename());
-
-            return getUriFromFile(caseDocument);
-        } catch (RestClientException | IOException e) {
+            return uploadDocumentToCaseDocumentApi(authToken, caseTypeId, file).getBody();
+        } catch (IOException | RestClientException e) {
+            if (attempts < MAX_API_RETRIES) {
+                return attemptWithRetriesToUploadDocumentToCaseDocumentApi(
+                    attempts + 1, authToken, caseTypeId, file);
+            }
             throw new CaseDocumentException("Failed to upload Case Document", e);
         }
     }
 
-    private URI getUriFromFile(CaseDocument caseDocument) throws CaseDocumentException {
-        try {
-            return URI.create(caseDocument.getLinks().get("self").get("href"));
-            // TODO: 09/06/2022 Don't catch a NPE, but instead verify the getLinks has a "self" that has a "href"
-        } catch (NullPointerException e) {
-            throw new CaseDocumentException("Failed to generate Case Document URI", e);
-        }
-    }
-
-    @Retryable(IOException.class)
     private ResponseEntity<DocumentUploadResponse> uploadDocumentToCaseDocumentApi(String authToken,
                                                                                    String caseTypeId,
                                                                                    MultipartFile file)
-        throws IOException {
+        throws IOException, CaseDocumentException {
+        validateFile(file);
+
         MultiValueMap<String, Object> body = generateUploadRequest(caseTypeId, file);
 
         HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, getHttpHeaders(authToken));
@@ -125,14 +133,6 @@ public class CaseDocumentService {
             request,
             DocumentUploadResponse.class
         );
-    }
-
-    @Recover
-    ResponseEntity<DocumentUploadResponse> recover(IOException e, String authToken,
-                                                   String caseTypeId,
-                                                   MultipartFile file) {
-        log.error("Failed to upload file to Case Document API", e);
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     private HttpHeaders getHttpHeaders(String authToken) {
@@ -164,7 +164,7 @@ public class CaseDocumentService {
 
     private CaseDocument validateResponse(DocumentUploadResponse response, String originalFilename)
         throws CaseDocumentException {
-        if (response.documents == null || response.documents.isEmpty()) {
+        if (response.documents == null || response.isEmpty()) {
             throw new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename);
         }
 
@@ -184,13 +184,7 @@ public class CaseDocumentService {
 
     private MultiValueMap<String, Object> generateUploadRequest(String caseTypeId,
                                                                 MultipartFile file) throws IOException {
-        ByteArrayResource fileAsResource = new ByteArrayResource(file.getBytes()) {
-            // TODO: 09/06/2022 I don't like embedding code like this.  How can you achieve this in a neater way?
-            @Override
-            public String getFilename() {
-                return file.getOriginalFilename();
-            }
-        };
+        ByteArrayResource fileAsResource = new ByteArrayResource(file.getBytes());
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("files", fileAsResource);
@@ -204,5 +198,14 @@ public class CaseDocumentService {
     @Data
     private static class DocumentUploadResponse {
         private List<CaseDocument> documents;
+
+        /**
+         * Accessor for revealing if the response has any documents.
+         *
+         * @return a boolean that is false if documents list is empty
+         */
+        public Boolean isEmpty() {
+            return documents.isEmpty();
+        }
     }
 }
