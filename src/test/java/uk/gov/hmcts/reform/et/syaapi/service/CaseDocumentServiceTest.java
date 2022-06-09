@@ -55,12 +55,6 @@ class CaseDocumentServiceTest {
         MediaType.TEXT_PLAIN_VALUE,
         MOCK_FILE_BODY.getBytes()
     );
-    private static final MockMultipartFile MOCK_FILE_CORRUPT = new MockMultipartFile(
-        "mock_file_corrupt",
-        DOCUMENT_NAME,
-        MediaType.IMAGE_GIF_VALUE,
-        (byte[]) null
-    );
     private static final MockMultipartFile MOCK_FILE_INVALID_NAME = new MockMultipartFile(
         "mock_file_with_invalid_name",
         "invalid",
