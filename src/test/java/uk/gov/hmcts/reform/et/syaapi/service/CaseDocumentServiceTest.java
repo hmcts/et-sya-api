@@ -246,16 +246,6 @@ class CaseDocumentServiceTest {
     }
 
     @Test
-    void theUploadDocWhenContentTypeDoesNotMatchActualFileTypeProducesDocException() {
-        CaseDocumentException documentException = assertThrows(
-            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
-                MOCK_TOKEN, CASE_TYPE, MOCK_FILE_CORRUPT));
-
-        assertThat(documentException.getMessage())
-            .isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
-    }
-
-    @Test
     void theUploadDocWhenUnauthorizedProducesHttpException() {
         mockServer.expect(ExpectedCount.max(MAX_API_CALL_ATTEMPTS), requestTo(DOCUMENT_UPLOAD_API_URL))
             .andExpect(method(HttpMethod.POST))
