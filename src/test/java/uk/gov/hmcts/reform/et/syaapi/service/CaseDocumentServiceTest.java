@@ -30,62 +30,45 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 class CaseDocumentServiceTest {
 
     private static final String DOCUMENT_UPLOAD_API_URL = "http://localhost:4455/cases/documents";
-
     private static final String DOCUMENT_NAME = "hello.txt";
-
     private static final String CASE_TYPE = "ET_EnglandWales";
     private static final String MOCK_TOKEN = "Bearer Token";
-
     private static final String MOCK_HREF = "http://test:8080/img";
-
     private static final String MOCK_HREF_MALFORMED = "http:/test:80/";
-
     private static final String EMPTY_DOCUMENT_MESSAGE = "Document management failed uploading file: " + DOCUMENT_NAME;
-
     private static final String SERVER_ERROR_MESSAGE = "Failed to upload Case Document";
-
     private static final String FILE_DOES_NOT_PASS_VALIDATION = "File does not pass validation";
-
     private static final MockMultipartFile MOCK_FILE = new MockMultipartFile(
         "file",
         DOCUMENT_NAME,
         MediaType.TEXT_PLAIN_VALUE,
         "Hello, World!".getBytes()
       );
-
     private static final MockMultipartFile MOCK_FILE_WITHOUT_NAME = new MockMultipartFile(
         "file",
         null,
         MediaType.TEXT_PLAIN_VALUE,
         "Hello, World!".getBytes()
     );
-
     private static final MockMultipartFile MOCK_FILE_CORRUPT = new MockMultipartFile(
         "file",
         DOCUMENT_NAME,
         MediaType.IMAGE_GIF_VALUE,
         (byte[]) null
     );
-
     private static final String MOCK_RESPONSE_WITH_DOCUMENT = "{\"documents\":[{\"originalDocumentName\":"
         + "\"claim-submit.png\",\"_links\":{\"self\":{\"href\": \"" + MOCK_HREF + "\"}}}]}";
-
     private static final String MOCK_RESPONSE_WITHOUT_DOCUMENT = "{\"documents\":[]}";
-
     private static final String MOCK_RESPONSE_WITHOUT_LINKS = "{\"documents\":[{\"originalDocumentName\":"
         + "\"claim-submit.png\"}]}";
-
     private static final String MOCK_RESPONSE_WITHOUT_HREF = "{\"documents\":[{\"originalDocumentName\":"
         + "\"claim-submit.png\",\"_links\":{\"self\":{}}]}";
-
     private static final String MOCK_RESPONSE_INCORRECT = "{\"doucments\":[{\"originalDocumentName\":"
         + "\"claim-submit.png\",\"_links\":{\"self\":{\"href\": \"" + MOCK_HREF + "\"}}}]}";
-
     private static final String MOCK_RESPONSE_WITH_MALFORMED_URI = "{\"documents\":[{\"originalDocumentName\":"
         + "\"claim-submit.png\",\"_links\":{\"self\":{\"href\": \"" + MOCK_HREF_MALFORMED + "\"}}}]}";
 
     private CaseDocumentService caseDocumentService;
-
     private MockRestServiceServer mockServer;
 
     @BeforeEach
@@ -109,7 +92,8 @@ class CaseDocumentServiceTest {
 
         URI documentEndpoint = caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE);
 
-        assertThat(documentEndpoint).hasToString(MOCK_HREF);
+        assertThat(documentEndpoint)
+            .hasToString(MOCK_HREF);
     }
 
     @Test
@@ -144,7 +128,7 @@ class CaseDocumentServiceTest {
     }
 
     @Test
-    void theUploadDocWhenIOExceptionProducesDocException() {
+    void theUploadDocWhenIoExceptionProducesDocException() {
 
         IOException ioException = new IOException("Test throw");
 
@@ -164,7 +148,8 @@ class CaseDocumentServiceTest {
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
                 MOCK_TOKEN, CASE_TYPE, mockMultipartFile));
 
-        assertThat(documentException.getCause()).isEqualTo(ioException);
+        assertThat(documentException.getCause())
+            .isEqualTo(ioException);
     }
 
     @Test
@@ -182,7 +167,8 @@ class CaseDocumentServiceTest {
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
                 MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
 
-        assertThat(documentException.getCause()).isEqualTo(restClientException);
+        assertThat(documentException.getCause())
+            .isEqualTo(restClientException);
     }
 
     @Test
@@ -197,7 +183,8 @@ class CaseDocumentServiceTest {
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
                 MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
 
-        assertThat(documentException.getCause().getClass()).isEqualTo(NullPointerException.class);
+        assertThat(documentException.getCause().getClass())
+            .isEqualTo(NullPointerException.class);
     }
 
     @Test
@@ -212,7 +199,8 @@ class CaseDocumentServiceTest {
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
                 MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
 
-        assertThat(documentException.getCause().getClass()).isEqualTo(RestClientException.class);
+        assertThat(documentException.getCause().getClass())
+            .isEqualTo(RestClientException.class);
     }
 
     @Test
@@ -227,7 +215,8 @@ class CaseDocumentServiceTest {
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
                 MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
 
-        assertThat(documentException.getMessage()).isEqualTo(EMPTY_DOCUMENT_MESSAGE);
+        assertThat(documentException.getMessage())
+            .isEqualTo(EMPTY_DOCUMENT_MESSAGE);
     }
 
     @Test
@@ -237,7 +226,8 @@ class CaseDocumentServiceTest {
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
                 MOCK_TOKEN, CASE_TYPE, MOCK_FILE_WITHOUT_NAME));
 
-        assertThat(documentException.getMessage()).isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
+        assertThat(documentException.getMessage())
+            .isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
     }
 
     @Test
@@ -246,7 +236,8 @@ class CaseDocumentServiceTest {
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
                 MOCK_TOKEN, CASE_TYPE, MOCK_FILE_CORRUPT));
 
-        assertThat(documentException.getMessage()).isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
+        assertThat(documentException.getMessage())
+            .isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
     }
 
     @Test
@@ -259,7 +250,8 @@ class CaseDocumentServiceTest {
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
                 MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
 
-        assertThat(documentException.getCause().getClass()).isEqualTo(HttpClientErrorException.Unauthorized.class);
+        assertThat(documentException.getCause().getClass())
+            .isEqualTo(HttpClientErrorException.Unauthorized.class);
     }
 
     @Test
@@ -275,7 +267,8 @@ class CaseDocumentServiceTest {
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
                 MOCK_TOKEN, CASE_TYPE, fileWithInvalidName));
 
-        assertThat(documentException.getMessage()).isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
+        assertThat(documentException.getMessage())
+            .isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
     }
 
     @Test
@@ -295,7 +288,8 @@ class CaseDocumentServiceTest {
 
         URI documentEndpoint = caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, fileWithInvalidName);
 
-        assertThat(documentEndpoint).hasToString(MOCK_HREF);
+        assertThat(documentEndpoint)
+            .hasToString(MOCK_HREF);
     }
 
     @Test
@@ -311,7 +305,8 @@ class CaseDocumentServiceTest {
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
                 MOCK_TOKEN, CASE_TYPE, fileWithInvalidName));
 
-        assertThat(documentException.getMessage()).isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
+        assertThat(documentException.getMessage())
+            .isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
     }
 
     @Test
