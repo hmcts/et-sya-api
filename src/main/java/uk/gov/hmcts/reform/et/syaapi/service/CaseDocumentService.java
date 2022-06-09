@@ -17,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
+import org.apache.tika.Tika;
 
 import java.io.IOException;
 import java.net.URI;
@@ -150,6 +151,13 @@ public class CaseDocumentService {
 
         Matcher matcher = FILE_NAME_PATTERN.matcher(filename);
         if (!matcher.matches()) {
+            throw new CaseDocumentException(VALIDATE_FILE_EXCEPTION_MESSAGE);
+        }
+
+        Tika tika = new Tika();
+        String detectedType = tika.detect(file.getBytes());
+
+        if (!detectedType.equals(file.getContentType())) {
             throw new CaseDocumentException(VALIDATE_FILE_EXCEPTION_MESSAGE);
         }
     }

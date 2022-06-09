@@ -73,6 +73,12 @@ class CaseDocumentServiceTest {
         MediaType.TEXT_PLAIN_VALUE,
         MOCK_FILE_BODY.getBytes()
     );
+    private static final MockMultipartFile MOCK_FILE_CORRUPT = new MockMultipartFile(
+        "mock_file_corrupt",
+        DOCUMENT_NAME,
+        MediaType.IMAGE_GIF_VALUE,
+        (byte[]) null
+    );
     private static final String RESPONSE_BODY = "{\"documents\":[{\"originalDocumentName\":";
     private static final String MOCK_RESPONSE_WITH_DOCUMENT = RESPONSE_BODY
         + "\"claim-submit.png\",\"_links\":{\"self\":{\"href\": \"" + MOCK_HREF + "\"}}}]}";
@@ -302,5 +308,15 @@ class CaseDocumentServiceTest {
 
         assertThat(documentException.getMessage())
             .isEqualTo(EMPTY_DOCUMENT_MESSAGE);
+    }
+
+    @Test
+    void theUploadDocWhenContentTypeDoesNotMatchActualFileTypeProducesDocException() {
+        CaseDocumentException documentException = assertThrows(
+            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
+                MOCK_TOKEN, CASE_TYPE, MOCK_FILE_CORRUPT));
+
+        assertThat(documentException.getMessage())
+            .isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
     }
 }
