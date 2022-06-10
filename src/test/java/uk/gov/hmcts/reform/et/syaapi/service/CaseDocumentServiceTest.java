@@ -101,7 +101,7 @@ class CaseDocumentServiceTest {
         AuthTokenGenerator authTokenGenerator = () -> "Bearer Mock";
         caseDocumentService = new CaseDocumentService(restTemplate,
                                                       authTokenGenerator,
-                                                      DOCUMENT_UPLOAD_API_URL);
+                                                      DOCUMENT_UPLOAD_API_URL, 3);
         mockServer = MockRestServiceServer.createServer(restTemplate);
 
     }
