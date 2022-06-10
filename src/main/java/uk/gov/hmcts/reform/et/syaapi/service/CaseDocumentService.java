@@ -35,6 +35,7 @@ import static uk.gov.hmcts.reform.ccd.client.model.Classification.PUBLIC;
  * This relies upon the following configurations to be set at an environment level:
  * <ul>
  *     <li>CASE_DOCUMENT_AM_URL</li>
+ *     <li>CASE_DOCUMENT_AM_MAX_RETRIES</li>
  * </ul>
  */
 @Slf4j
@@ -50,7 +51,7 @@ public class CaseDocumentService {
     private static final Pattern HTTPS_URL_PATTERN = Pattern.compile(HTTPS_URL_REGEX_PATTERN);
     private static final String UPLOAD_FILE_EXCEPTION_MESSAGE = "Document management failed uploading file: ";
     private static final String VALIDATE_FILE_EXCEPTION_MESSAGE = "File does not pass validation";
-    public static final int MAX_API_RETRIES = 3;
+    public final int maxApiRetries;
     private final RestTemplate restTemplate;
     private final AuthTokenGenerator authTokenGenerator;
     private final String caseDocApiUrl;
@@ -66,10 +67,12 @@ public class CaseDocumentService {
     public CaseDocumentService(RestTemplate restTemplate,
                                AuthTokenGenerator authTokenGenerator,
                                @Value("${case_document_am.url}/cases/documents}")
-                                   String caseDocApiUrl) {
+                                   String caseDocApiUrl,
+                               @Value("${CASE_DOCUMENT_AM_MAX_RETRIES}") Integer maxApiRetries) {
         this.restTemplate = restTemplate;
         this.authTokenGenerator = authTokenGenerator;
         this.caseDocApiUrl = caseDocApiUrl;
+        this.maxApiRetries = maxApiRetries;
     }
 
     /**
@@ -89,16 +92,16 @@ public class CaseDocumentService {
         CaseDocument caseDocument = validateResponse(
             Objects.requireNonNull(response), file.getOriginalFilename());
 
-        return getUriFromFile(caseDocument);
+        return getUriFromFile(caseDocument, file.getOriginalFilename());
     }
 
-    private URI getUriFromFile(CaseDocument caseDocument) {
-        if (caseDocument.getLinks() != null
-            && caseDocument.getLinks().get("self") != null
-            && caseDocument.getLinks().get("self").get("href") != null) {
-            return URI.create(caseDocument.getLinks().get("self").get("href"));
+    private URI getUriFromFile(CaseDocument caseDocument, String originalFilename) throws CaseDocumentException {
+        if (caseDocument.getLinks() == null
+            || caseDocument.getLinks().get("self") == null
+            || caseDocument.getLinks().get("self").get("href") == null) {
+            throw new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename);
         }
-        return URI.create("");
+        return URI.create(caseDocument.getLinks().get("self").get("href"));
     }
 
     private DocumentUploadResponse attemptWithRetriesToUploadDocumentToCaseDocumentApi(int attempts,
@@ -109,7 +112,7 @@ public class CaseDocumentService {
         try {
             return uploadDocumentToCaseDocumentApi(authToken, caseTypeId, file).getBody();
         } catch (IOException | RestClientException e) {
-            if (attempts < MAX_API_RETRIES) {
+            if (attempts < maxApiRetries) {
                 return attemptWithRetriesToUploadDocumentToCaseDocumentApi(
                     attempts + 1, authToken, caseTypeId, file);
             }
@@ -172,7 +175,7 @@ public class CaseDocumentService {
             .findFirst()
             .orElseThrow(() -> new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename));
 
-        String uri = getUriFromFile(document).toString();
+        String uri = getUriFromFile(document, originalFilename).toString();
 
         Matcher matcher = HTTPS_URL_PATTERN.matcher(uri);
         if (!matcher.matches()) {
