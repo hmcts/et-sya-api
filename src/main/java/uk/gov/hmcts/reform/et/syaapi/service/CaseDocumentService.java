@@ -68,7 +68,7 @@ public class CaseDocumentService {
                                AuthTokenGenerator authTokenGenerator,
                                @Value("${case_document_am.url}/cases/documents}")
                                    String caseDocApiUrl,
-                               @Value("${CASE_DOCUMENT_AM_MAX_RETRIES}") Integer maxApiRetries) {
+                               @Value("${case_document_am.max_retries}") Integer maxApiRetries) {
         this.restTemplate = restTemplate;
         this.authTokenGenerator = authTokenGenerator;
         this.caseDocApiUrl = caseDocApiUrl;
