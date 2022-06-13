@@ -100,7 +100,10 @@
     <packageUrl regex="true">^pkg:maven/org.apache.tomcat.embed/tomcat-embed-websocket@.*$</packageUrl>
     <cve>CVE-2022-29885</cve>
   </suppress>
-  <suppress until="2022-20-06">
+  <suppress until="2022-11-20">
     <cve>CVE-2022-22976</cve>
+  </suppress>
+  <suppress until="2022-11-20">
+    <cve>CVE-2022-22978</cve>
   </suppress>
 </suppressions>
