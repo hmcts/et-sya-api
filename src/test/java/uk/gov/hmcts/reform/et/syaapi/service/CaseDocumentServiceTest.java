@@ -55,6 +55,12 @@ class CaseDocumentServiceTest {
         MediaType.TEXT_PLAIN_VALUE,
         MOCK_FILE_BODY.getBytes()
     );
+    private static final MockMultipartFile MOCK_FILE_WITH_EMPTY_NAME = new MockMultipartFile(
+        "mock_file_without_name",
+        "",
+        MediaType.TEXT_PLAIN_VALUE,
+        MOCK_FILE_BODY.getBytes()
+    );
     private static final MockMultipartFile MOCK_FILE_INVALID_NAME = new MockMultipartFile(
         "mock_file_with_invalid_name",
         "invalid",
@@ -91,6 +97,8 @@ class CaseDocumentServiceTest {
         + "\"claim-submit.png\",\"_links\":{\"self\":{\"href\": \"" + MOCK_HREF + "\"}}}]}";
     private static final String MOCK_RESPONSE_WITH_MALFORMED_URI = RESPONSE_BODY
         + "\"claim-submit.png\",\"_links\":{\"self\":{\"href\": \"" + MOCK_HREF_MALFORMED + "\"}}}]}";
+    private static final String MOCK_RESPONSE_WITHOUT_SELF = RESPONSE_BODY
+        + "\"claim-submit.png\",\"_links\":{}}]}";
 
     private CaseDocumentService caseDocumentService;
     private MockRestServiceServer mockServer;
@@ -220,6 +228,22 @@ class CaseDocumentServiceTest {
     }
 
     @Test
+    void theUploadDocWhenResponseNoSelfNameProducesDocException() {
+        mockServer.expect(ExpectedCount.max(MAX_API_CALL_ATTEMPTS), requestTo(DOCUMENT_UPLOAD_API_URL))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(withStatus(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(MOCK_RESPONSE_WITHOUT_SELF));
+
+        CaseDocumentException documentException = assertThrows(
+            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
+                MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
+
+        assertThat(documentException.getMessage())
+            .isEqualTo(EMPTY_DOCUMENT_MESSAGE);
+    }
+
+    @Test
     void theUploadDocWhenResponseIncorrectProducesDocException() {
         mockServer.expect(ExpectedCount.max(MAX_API_CALL_ATTEMPTS), requestTo(DOCUMENT_UPLOAD_API_URL))
             .andExpect(method(HttpMethod.POST))
@@ -240,6 +264,16 @@ class CaseDocumentServiceTest {
         CaseDocumentException documentException = assertThrows(
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
                 MOCK_TOKEN, CASE_TYPE, MOCK_FILE_WITHOUT_NAME));
+
+        assertThat(documentException.getMessage())
+            .isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
+    }
+
+    @Test
+    void theUploadDocWhenResponseWithEmptyFilenameProducesDocException() {
+        CaseDocumentException documentException = assertThrows(
+            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
+                MOCK_TOKEN, CASE_TYPE, MOCK_FILE_WITH_EMPTY_NAME));
 
         assertThat(documentException.getMessage())
             .isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
