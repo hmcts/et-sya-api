@@ -42,6 +42,10 @@ core_case_data:
   search:
     page_size: ${CCD_SEARCH_PAGE_SIZE:100}
 
+case_document_am:
+  url: ${CASE_DOCUMENT_AM_URL:http://localhost:4455}
+  max_retries: 3
+
 acas:
   api:
     url: ${ACAS_BASE_URL:https://api-dev-acas-01.azure-api.net/ECCLDev}
