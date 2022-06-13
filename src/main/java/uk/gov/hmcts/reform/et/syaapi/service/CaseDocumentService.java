@@ -51,7 +51,7 @@ public class CaseDocumentService {
     private static final Pattern HTTPS_URL_PATTERN = Pattern.compile(HTTPS_URL_REGEX_PATTERN);
     private static final String UPLOAD_FILE_EXCEPTION_MESSAGE = "Document management failed uploading file: ";
     private static final String VALIDATE_FILE_EXCEPTION_MESSAGE = "File does not pass validation";
-    public final int maxApiRetries;
+    private final Integer maxApiRetries;
     private final RestTemplate restTemplate;
     private final AuthTokenGenerator authTokenGenerator;
     private final String caseDocApiUrl;
