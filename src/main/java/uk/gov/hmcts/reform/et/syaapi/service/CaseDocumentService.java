@@ -148,9 +148,6 @@ public class CaseDocumentService {
 
     private void validateFile(MultipartFile file) throws CaseDocumentException, IOException {
         String filename = file.getOriginalFilename();
-        if (filename == null) {
-            throw new CaseDocumentException(VALIDATE_FILE_EXCEPTION_MESSAGE);
-        }
 
         Matcher matcher = FILE_NAME_PATTERN.matcher(filename);
         if (!matcher.matches()) {

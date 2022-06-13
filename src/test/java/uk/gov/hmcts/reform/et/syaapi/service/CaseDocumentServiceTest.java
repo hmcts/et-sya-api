@@ -55,12 +55,6 @@ class CaseDocumentServiceTest {
         MediaType.TEXT_PLAIN_VALUE,
         MOCK_FILE_BODY.getBytes()
     );
-    private static final MockMultipartFile MOCK_FILE_WITH_EMPTY_NAME = new MockMultipartFile(
-        "mock_file_without_name",
-        "",
-        MediaType.TEXT_PLAIN_VALUE,
-        MOCK_FILE_BODY.getBytes()
-    );
     private static final MockMultipartFile MOCK_FILE_INVALID_NAME = new MockMultipartFile(
         "mock_file_with_invalid_name",
         "invalid",
@@ -264,16 +258,6 @@ class CaseDocumentServiceTest {
         CaseDocumentException documentException = assertThrows(
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
                 MOCK_TOKEN, CASE_TYPE, MOCK_FILE_WITHOUT_NAME));
-
-        assertThat(documentException.getMessage())
-            .isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
-    }
-
-    @Test
-    void theUploadDocWhenResponseWithEmptyFilenameProducesDocException() {
-        CaseDocumentException documentException = assertThrows(
-            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
-                MOCK_TOKEN, CASE_TYPE, MOCK_FILE_WITH_EMPTY_NAME));
 
         assertThat(documentException.getMessage())
             .isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
