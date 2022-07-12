@@ -34,6 +34,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRI
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.INITIATE_CASE_DRAFT;
 
 @Slf4j
 @Service
@@ -53,7 +54,6 @@ public class CaseService {
      *
      * @param caseRequest contains case id get the {@link CaseDetails} for
      * @return the associated {@link CaseDetails} for the ID provided
-
      */
     @Retryable({FeignException.class, RuntimeException.class})
     public CaseDetails getUserCase(String authorization, CaseRequest caseRequest) {
@@ -66,7 +66,6 @@ public class CaseService {
      *
      * @param authorization is used to get the {@link UserDetails} for the request
      * @return the associated {@link CaseDetails} for the ID provided
-
      */
     @Retryable({FeignException.class, RuntimeException.class})
     public List<CaseDetails> getAllUserCases(String authorization) {
@@ -83,49 +82,41 @@ public class CaseService {
         return Stream.of(scotlandCases, englandCases).flatMap(Collection::stream).collect(toList());
     }
 
-
     /**
      * Given a caseID, this will retrieve the correct {@link CaseDetails}.
      *
      * @param authorization is used to find the {@link UserDetails} for request
      * @param caseRequest  case data for request
      * @return the associated {@link CaseDetails} if the case is created
-
      */
     @Retryable({FeignException.class, RuntimeException.class})
     public CaseDetails createCase(String authorization,
                                   CaseRequest caseRequest) {
-        log.info("Creating Case");
-        EmployeeObjectMapper employeeObjectMapper = new EmployeeObjectMapper();
-        Et1CaseData data = employeeObjectMapper.getEmploymentCaseData(caseRequest.getCaseData());
         String s2sToken = authTokenGenerator.generate();
-        log.info("Generated s2s");
-        UserDetails userDetails = idamClient.getUserDetails(authorization);
-        log.info("User Id: " + userDetails.getId());
-        log.info("Roles : " + userDetails.getRoles());
+        String userId = idamClient.getUserDetails(authorization).getId();
+        String caseType = getCaseType(caseRequest);
+        String eventTypeName = INITIATE_CASE_DRAFT.name();
 
-        var caseType = getCaseType(caseRequest);
-        var eventType = CaseEvent.INITIATE_CASE_DRAFT;
-        var ccdCase = ccdApiClient.startForCitizen(
+        StartEventResponse ccdCase = ccdApiClient.startForCitizen(
             authorization,
             s2sToken,
-            userDetails.getId(),
+            userId,
             JURISDICTION_ID,
             caseType,
-            eventType.name()
+            eventTypeName
         );
 
-        log.info("Started Case: " + ccdCase.getEventId());
-
+        Et1CaseData data = new EmployeeObjectMapper().getEmploymentCaseData(caseRequest.getCaseData());
         CaseDataContent caseDataContent = CaseDataContent.builder()
-            .event(Event.builder().id(eventType.name()).build())
+            .event(Event.builder().id(eventTypeName).build())
             .eventToken(ccdCase.getToken())
             .data(data)
             .build();
+
         return ccdApiClient.submitForCitizen(
             authorization,
             s2sToken,
-            userDetails.getId(),
+            userId,
             JURISDICTION_ID,
             caseType,
             true,
@@ -160,7 +151,7 @@ public class CaseService {
      * Given a caseId, triggers update events for the case.
      *
      * @param authorization is used to seek the {@link UserDetails} for request
-     * @param caseId used to retrive get case details
+     * @param caseId used to retrieve get case details
      * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
      * @param eventName is used to determine INITIATE_CASE_DRAFT or UPDATE_CASE_DRAFT
      * @param caseData is used to provide the {@link Et1CaseData} in json format
@@ -175,7 +166,7 @@ public class CaseService {
      * Given a caseId, initialization of trigger event to start and submit update for case.
      *
      * @param authorization is used to seek the {@link UserDetails} for request
-     * @param caseId used to retrive get case details
+     * @param caseId used to retrieve get case details
      * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
      * @param eventName is used to determine INITIATE_CASE_DRAFT or UPDATE_CASE_DRAFT
      * @param caseData is used to provide the {@link Et1CaseData} in json format
@@ -197,7 +188,7 @@ public class CaseService {
      * Given a caseId, start update for the case.
      *
      * @param authorization is used to seek the {@link UserDetails} for request
-     * @param caseId used to retrive get case details
+     * @param caseId used to retrieve get case details
      * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
      * @param eventName is used to determine INITIATE_CASE_DRAFT or UPDATE_CASE_DRAFT
      * @return startEventResponse associated case details updated
@@ -222,7 +213,7 @@ public class CaseService {
      * Given a caseId, submit update for the case.
      *
      * @param authorization is used to seek the {@link UserDetails} for request
-     * @param caseId used to retrive get case details
+     * @param caseId used to retrieve get case details
      * @param caseDataContent provides overall content of the case
      * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
      */
