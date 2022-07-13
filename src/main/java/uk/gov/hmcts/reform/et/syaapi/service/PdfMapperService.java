@@ -33,7 +33,9 @@ public class PdfMapperService {
         "Ms", "Ms"
     );
 
-    public Map<String, String> mapHeadersToPdf(CaseData caseData) {
+    public Map<String, String> mapHeadersToPdf(CaseData caseData) throws PdfMapperException {
+        verifyCase(caseData);
+
         Map<String, String> printFields = new HashMap<>();
         printFields.put("tribunal office", caseData.getManagingOffice());
         printFields.put("case number", caseData.getCcdID());
@@ -42,6 +44,12 @@ public class PdfMapperService {
         printFields.putAll(printRespondantDetails(caseData));
 
         return printFields;
+    }
+
+    private void verifyCase(CaseData caseData) throws PdfMapperException {
+        if(caseData == null) {
+            throw new PdfMapperException("pdfMapperService: Case provided was null");
+        }
     }
 
     private Map<String, String> printPersonalDetails(CaseData caseData) {
