@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.ClaimantOtherType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 
 import java.time.LocalDate;
@@ -42,6 +43,10 @@ public class PdfMapperService {
         printFields.put("date received", caseData.getReceiptDate());
         printFields.putAll(printPersonalDetails(caseData));
         printFields.putAll(printRespondantDetails(caseData));
+
+        // TODO: write other claims
+
+
 
         return printFields;
     }
@@ -160,4 +165,62 @@ public class PdfMapperService {
         return printFields;
     }
 
+    private Map<String, String> printEmploymentDetails(CaseData caseData) {
+        Map<String, String> printFields = new HashMap<>();
+        ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
+
+        String employerYesNo = !claimantOtherType.getClaimantEmployedFrom().isEmpty()
+            ? "Yes" : "No";
+
+
+        if(employerYesNo.equals("Yes")) {
+            printFields.put("4.1 did you work for the respondent you're making your claim against? Yes",
+                employerYesNo);
+
+            printFields.put("5.1 when did your employment start?", claimantOtherType.getClaimantEmployedFrom());
+
+            String currentlyEmployedYesNo = !claimantOtherType.getClaimantEmployedCurrently().isEmpty()
+                ? claimantOtherType.getClaimantEmployedCurrently() : "No";
+
+            if("Yes".equals(currentlyEmployedYesNo)) {
+                printFields.put("5.1 is your employment continuing? Yes", currentlyEmployedYesNo);
+
+                // TODO: Is this the correct place?
+                printFields.put("5.1 if your employment has not ended", claimantOtherType.getClaimantEmployedTo());
+            } else {
+                printFields.put("5.1 is your employment continuing? No", currentlyEmployedYesNo);
+
+                // TODO: Is this the correct place?
+                printFields.put("5.1 if your employment has ended, when did it end?",
+                    claimantOtherType.getClaimantEmployedTo());
+            }
+
+            printFields.put("5.2 Please say what job you do or did.", claimantOtherType.getClaimantOccupation());
+
+            printFields.putAll(printRenumeration(claimantOtherType));
+        }
+
+        printFields.put("4.1 did you work for the respondent you're making your claim agaisnt No",
+            employerYesNo);
+
+        return printFields;
+    }
+
+    private Map<String, String> printRenumeration(ClaimantOtherType claimantOtherType) {
+        Map<String, String> printFields = new HashMap<>();
+
+        printFields.put("6.1 How many hours on average do, or did you work",
+            claimantOtherType.getClaimantAverageWeeklyHours());
+
+        printFields.put("6.2 Pay before tax", claimantOtherType.getClaimantPayBeforeTax());
+
+        // TODO: implement cycle
+
+        printFields.put("6.2 Normal take-home pay", claimantOtherType.getClaimantPayAfterTax());
+
+
+
+
+        return printFields;
+    }
 }

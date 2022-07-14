@@ -1,29 +1,37 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.ClaimantOtherType;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantType;
-import uk.gov.hmcts.reform.et.syaapi.models.ClaimCaseDocument;
+import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 
 @Slf4j
 class PdfMapperServiceTest {
-
+    private final Map<String, String> MAP_KEYS = Map.of(
+        "emailContact", "1.8 How should we contact you - Email",
+        "postContact", "1.8 How should we contact you - Post",
+        "earlyConciliationCertNumQ1", "2.3 Do you have an Acas early conciliation certificate number? Yes",
+        "employmentStart", "5.1 when did your employment start?",
+        "employmentContinued", "5.1 is your employment continuing? Yes",
+        "employmentEnded", "5.1 is your employment continuing? No"
+    );
     private final Integer TOTAL_VALUES = 27;
-
     private PdfMapperService pdfMapperService;
-
     private CaseData caseData;
-
 
     @BeforeEach
     void setup() throws IOException {
@@ -37,11 +45,7 @@ class PdfMapperServiceTest {
     @Test
     void givenCaseProducesPdfHeaderMap() throws PdfMapperException {
         Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-
         assertEquals(TOTAL_VALUES, pdfMap.size());
-
-        // test by measure length
-        log.info(pdfMap.toString());
     }
 
     @Test
@@ -57,7 +61,7 @@ class PdfMapperServiceTest {
         claimantType.setClaimantContactPreference("Email");
         caseData.setClaimantType(claimantType);
         Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNotNull(pdfMap.get("1.8 How should we contact you - Email"));
+        assertNotNull(pdfMap.get(MAP_KEYS.get("emailContact")));
     }
 
     @Test
@@ -66,17 +70,31 @@ class PdfMapperServiceTest {
         claimantType.setClaimantContactPreference("Post");
         caseData.setClaimantType(claimantType);
         Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNotNull(pdfMap.get("1.8 How should we contact you - Post"));
+        assertNotNull(pdfMap.get(MAP_KEYS.get("postContact")));
     }
 
     @Test
-    void givenAcasEarlyCertificateNumberReflectsInMap() {
-
+    void givenAcasEarlyConciliationCertificateNumberReflectsInMap() throws PdfMapperException {
+        RespondentSumType respondentSumType = caseData.getRespondentCollection().get(0).getValue();
+        respondentSumType.setRespondentACASQuestion("Yes");
+        respondentSumType.setRespondentACAS("1111");
+        RespondentSumTypeItem respondentSumTypeItem = new RespondentSumTypeItem();
+        respondentSumTypeItem.setValue(respondentSumType);
+        caseData.setRespondentCollection(List.of(respondentSumTypeItem));
+        Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
+        assertNotNull(pdfMap.get(MAP_KEYS.get("earlyConciliationCertNumQ1")));
     }
 
     @Test
-    void withoutAcasEarlyCertficateReflectsInMap() {
-
+    void withoutAcasEarlyCertficateReflectsInMap() throws PdfMapperException {
+        RespondentSumType respondentSumType = caseData.getRespondentCollection().get(0).getValue();
+        respondentSumType.setRespondentACASQuestion("No");
+        respondentSumType.setRespondentACAS(null);
+        RespondentSumTypeItem respondentSumTypeItem = new RespondentSumTypeItem();
+        respondentSumTypeItem.setValue(respondentSumType);
+        caseData.setRespondentCollection(List.of(respondentSumTypeItem));
+        Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
+        assertNull(pdfMap.get(MAP_KEYS.get("earlyConciliationCertNumQ1")));
     }
 
     @Test
@@ -88,14 +106,54 @@ class PdfMapperServiceTest {
     void givenThreeRespondentsReflectsInMap() {
 
     }
+
+    @Test
+    void givenClaimentDidntWorkForRespondentSkipsSection() throws PdfMapperException {
+        ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
+        claimantOtherType.setClaimantEmployedFrom(null);
+        caseData.setClaimantOtherType(claimantOtherType);
+        Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
+        assertNull(pdfMap.get(MAP_KEYS.get("employmentStart")));
+    }
+
+    void givenContinuedEmploymentReflectsInMap() throws PdfMapperException {
+        ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
+        claimantOtherType.setClaimantEmployedCurrently("Yes");
+        caseData.setClaimantOtherType(claimantOtherType);
+        Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
+        assertNotNull(pdfMap.get(MAP_KEYS.get("employmentContinued")));
+        assertNull(pdfMap.get(MAP_KEYS.get("employmentEnded")));
+    }
+
+    void givenDiscontinuedEmploymentReflectsInMap() throws PdfMapperException {
+        ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
+        claimantOtherType.setClaimantEmployedCurrently("No");
+        caseData.setClaimantOtherType(claimantOtherType);
+        Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
+        assertNotNull(pdfMap.get(MAP_KEYS.get("employmentEnded")));
+        assertNull(pdfMap.get(MAP_KEYS.get("employmentContinued")));
+    }
+
+    private RespondentSumTypeItem generateRespondent() {
+        return null;
+    }
 }
 
-// TODO: Accepted Test
-// TODO: Empty case data
-// TODO: contact preferance -email
-// TODO: contact preferance -post
 // TODO: claimant work address different to respondent
-// TODO: With acas early cert number
-// TODO: Without acas early cert number
-// TODO: With 2 respondents
-// TODO: 3 respondents
+// TODO: Aware of multiple Cases
+
+// employment details
+// TODO: Pension Scheme
+// TODO: Another Job details
+
+// Claim details
+// TODO: Test discrimination grounds
+// TODO: what is owed
+
+// representative
+// TODO: communication prefernces
+
+// Additional Respondents
+// TODO: 4 Respondents
+// TODO: 5 Respondents
+
