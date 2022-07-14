@@ -127,9 +127,9 @@ public class PdfMapperService {
 
             if(respondentSumTypeList.size() > 2) {
                 RespondentSumType thirdRespondent = respondentSumTypeList.get(2).getValue();
-                printFields.put("2.7 name", secondRespondent.getRespondentName());
-                printFields.putAll(printRespondantAddress(secondRespondent, "2.7"));
-                printFields.putAll(printRespondantAcas(secondRespondent, "2.8"));
+                printFields.put("2.7 name", thirdRespondent.getRespondentName());
+                printFields.putAll(printRespondantAddress(thirdRespondent, "2.7"));
+                printFields.putAll(printRespondantAcas(thirdRespondent, "2.8"));
             }
         }
 
