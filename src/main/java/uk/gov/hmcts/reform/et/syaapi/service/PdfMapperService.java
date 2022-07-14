@@ -46,7 +46,9 @@ public class PdfMapperService {
 
         // TODO: write other claims
 
+        // TODO: make conditionals none case-sensitive
 
+        printFields.putAll(printEmploymentDetails(caseData));
 
         return printFields;
     }
@@ -169,8 +171,8 @@ public class PdfMapperService {
         Map<String, String> printFields = new HashMap<>();
         ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
 
-        String employerYesNo = !claimantOtherType.getClaimantEmployedFrom().isEmpty()
-            ? "Yes" : "No";
+        String employerYesNo = claimantOtherType.getClaimantEmployedFrom() == null
+            ? "No" : "Yes";
 
 
         if(employerYesNo.equals("Yes")) {
@@ -218,8 +220,25 @@ public class PdfMapperService {
 
         printFields.put("6.2 Normal take-home pay", claimantOtherType.getClaimantPayAfterTax());
 
+        // TODO: Notice period, need confirmation
 
+        String pensionContributionYesNo = !claimantOtherType.getClaimantPensionContribution().isEmpty()
+            ? claimantOtherType.getClaimantPensionContribution() : "No";
 
+        if("Yes".equals(pensionContributionYesNo)) {
+            printFields.put("6.4 Were you in your employer's pension scheme? Yes",
+                claimantOtherType.getClaimantPensionContribution());
+
+            printFields.put("6.4 If Yes, give your employers weekly contributions",
+                claimantOtherType.getClaimantPensionWeeklyContribution());
+
+        } else {
+            printFields.put("6.4 Were you in your employer's pension scheme? No",
+                claimantOtherType.getClaimantPensionContribution());
+        }
+
+        printFields.put("6.5 If you received any other benefits",
+            claimantOtherType.getClaimantBenefitsDetail());
 
         return printFields;
     }

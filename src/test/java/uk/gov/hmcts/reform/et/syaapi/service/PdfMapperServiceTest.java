@@ -27,9 +27,12 @@ class PdfMapperServiceTest {
         "earlyConciliationCertNumQ1", "2.3 Do you have an Acas early conciliation certificate number? Yes",
         "employmentStart", "5.1 when did your employment start?",
         "employmentContinued", "5.1 is your employment continuing? Yes",
-        "employmentEnded", "5.1 is your employment continuing? No"
+        "employmentEnded", "5.1 is your employment continuing? No",
+        "withPension", "6.4 Were you in your employer's pension scheme? Yes",
+        "withoutPension", "6.4 Were you in your employer's pension scheme? No",
+        "weeklyPensionContribution", "6.4 If Yes, give your employers weekly contributions"
     );
-    private final Integer TOTAL_VALUES = 27;
+    private final Integer TOTAL_VALUES = 39;
     private PdfMapperService pdfMapperService;
     private CaseData caseData;
 
@@ -116,6 +119,7 @@ class PdfMapperServiceTest {
         assertNull(pdfMap.get(MAP_KEYS.get("employmentStart")));
     }
 
+    @Test
     void givenContinuedEmploymentReflectsInMap() throws PdfMapperException {
         ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
         claimantOtherType.setClaimantEmployedCurrently("Yes");
@@ -125,6 +129,7 @@ class PdfMapperServiceTest {
         assertNull(pdfMap.get(MAP_KEYS.get("employmentEnded")));
     }
 
+    @Test
     void givenDiscontinuedEmploymentReflectsInMap() throws PdfMapperException {
         ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
         claimantOtherType.setClaimantEmployedCurrently("No");
@@ -132,6 +137,28 @@ class PdfMapperServiceTest {
         Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
         assertNotNull(pdfMap.get(MAP_KEYS.get("employmentEnded")));
         assertNull(pdfMap.get(MAP_KEYS.get("employmentContinued")));
+    }
+
+    @Test
+    void givenPensionContributionReflectsInMap() throws PdfMapperException {
+        ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
+        claimantOtherType.setClaimantPensionContribution("Yes");
+        claimantOtherType.setClaimantPensionWeeklyContribution("100");
+        caseData.setClaimantOtherType(claimantOtherType);
+        Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
+        assertNotNull(pdfMap.get(MAP_KEYS.get("withPension")));
+        assertNotNull(pdfMap.get(MAP_KEYS.get("weeklyPensionContribution")));
+    }
+
+    @Test
+    void givenNoPensionContributionReflectsInMap() throws PdfMapperException {
+        ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
+        claimantOtherType.setClaimantPensionContribution("No");
+        claimantOtherType.setClaimantPensionWeeklyContribution(null);
+        caseData.setClaimantOtherType(claimantOtherType);
+        Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
+        assertNotNull(pdfMap.get(MAP_KEYS.get("withoutPension")));
+        assertNull(pdfMap.get(MAP_KEYS.get("weeklyPensionContribution")));
     }
 
     private RespondentSumTypeItem generateRespondent() {
