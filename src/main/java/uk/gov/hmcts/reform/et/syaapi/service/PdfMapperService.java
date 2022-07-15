@@ -6,6 +6,7 @@ import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantOtherType;
+import uk.gov.hmcts.et.common.model.ccd.types.NewEmploymentType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 
 import java.time.LocalDate;
@@ -36,20 +37,16 @@ public class PdfMapperService {
 
     public Map<String, String> mapHeadersToPdf(CaseData caseData) throws PdfMapperException {
         verifyCase(caseData);
-
         Map<String, String> printFields = new HashMap<>();
         printFields.put("tribunal office", caseData.getManagingOffice());
         printFields.put("case number", caseData.getCcdID());
         printFields.put("date received", caseData.getReceiptDate());
         printFields.putAll(printPersonalDetails(caseData));
         printFields.putAll(printRespondantDetails(caseData));
-
         // TODO: write other claims
-
         // TODO: make conditionals none case-sensitive
-
         printFields.putAll(printEmploymentDetails(caseData));
-
+        printFields.putAll(printClaimDetails(caseData));
         return printFields;
     }
 
@@ -170,41 +167,40 @@ public class PdfMapperService {
     private Map<String, String> printEmploymentDetails(CaseData caseData) {
         Map<String, String> printFields = new HashMap<>();
         ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
-
         String employerYesNo = claimantOtherType.getClaimantEmployedFrom() == null
             ? "No" : "Yes";
-
-
         if(employerYesNo.equals("Yes")) {
             printFields.put("4.1 did you work for the respondent you're making your claim against? Yes",
                 employerYesNo);
-
             printFields.put("5.1 when did your employment start?", claimantOtherType.getClaimantEmployedFrom());
-
             String currentlyEmployedYesNo = !claimantOtherType.getClaimantEmployedCurrently().isEmpty()
                 ? claimantOtherType.getClaimantEmployedCurrently() : "No";
-
             if("Yes".equals(currentlyEmployedYesNo)) {
                 printFields.put("5.1 is your employment continuing? Yes", currentlyEmployedYesNo);
-
                 // TODO: Is this the correct place?
                 printFields.put("5.1 if your employment has not ended", claimantOtherType.getClaimantEmployedTo());
             } else {
                 printFields.put("5.1 is your employment continuing? No", currentlyEmployedYesNo);
-
                 // TODO: Is this the correct place?
                 printFields.put("5.1 if your employment has ended, when did it end?",
                     claimantOtherType.getClaimantEmployedTo());
             }
-
             printFields.put("5.2 Please say what job you do or did.", claimantOtherType.getClaimantOccupation());
-
             printFields.putAll(printRenumeration(claimantOtherType));
+            NewEmploymentType newEmploymentType = caseData.getNewEmploymentType();
+            if(newEmploymentType != null) {
+                printFields.put("7.1 Have you got another job? Yes", "Yes");
+                printFields.put("7.2 Please say when you started (or will start) work.",
+                    newEmploymentType.getNewlyEmployedFrom());
+                printFields.put("7.3 Please say how much you are now earning (or will earn).",
+                    newEmploymentType.getNewPayBeforeTax());
+                // TODO: need to consider weekly, monthly, annual
+            } else {
+                printFields.put("7.1 Have you got another job? No", "No");
+            }
         }
-
         printFields.put("4.1 did you work for the respondent you're making your claim agaisnt No",
             employerYesNo);
-
         return printFields;
     }
 
@@ -224,11 +220,9 @@ public class PdfMapperService {
 
         String pensionContributionYesNo = !claimantOtherType.getClaimantPensionContribution().isEmpty()
             ? claimantOtherType.getClaimantPensionContribution() : "No";
-
         if("Yes".equals(pensionContributionYesNo)) {
             printFields.put("6.4 Were you in your employer's pension scheme? Yes",
                 claimantOtherType.getClaimantPensionContribution());
-
             printFields.put("6.4 If Yes, give your employers weekly contributions",
                 claimantOtherType.getClaimantPensionWeeklyContribution());
 
@@ -236,9 +230,14 @@ public class PdfMapperService {
             printFields.put("6.4 Were you in your employer's pension scheme? No",
                 claimantOtherType.getClaimantPensionContribution());
         }
-
         printFields.put("6.5 If you received any other benefits",
             claimantOtherType.getClaimantBenefitsDetail());
+
+        return printFields;
+    }
+
+    private Map<String, String> printClaimDetails(CaseData caseData) {
+        Map<String, String> printFields = new HashMap<>();
 
         return printFields;
     }

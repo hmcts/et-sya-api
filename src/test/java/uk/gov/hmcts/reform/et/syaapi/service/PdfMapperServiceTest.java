@@ -16,6 +16,7 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantOtherType;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantType;
+import uk.gov.hmcts.et.common.model.ccd.types.NewEmploymentType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 
@@ -35,9 +36,11 @@ class PdfMapperServiceTest {
         "employmentEnded", "5.1 is your employment continuing? No",
         "withPension", "6.4 Were you in your employer's pension scheme? Yes",
         "withoutPension", "6.4 Were you in your employer's pension scheme? No",
-        "weeklyPensionContribution", "6.4 If Yes, give your employers weekly contributions"
+        "weeklyPensionContribution", "6.4 If Yes, give your employers weekly contributions",
+        "newEmployment", "7.1 Have you got another job? Yes",
+        "withoutNewEmployment", "7.1 Have you got another job? No"
     );
-    private final Integer TOTAL_VALUES = 39;
+    private final Integer TOTAL_VALUES = 40;
     private PdfMapperService pdfMapperService;
     private CaseData caseData;
 
@@ -191,14 +194,27 @@ class PdfMapperServiceTest {
         assertNotNull(pdfMap.get(MAP_KEYS_EMPLOYMENT.get("withoutPension")));
         assertNull(pdfMap.get(MAP_KEYS_EMPLOYMENT.get("weeklyPensionContribution")));
     }
+
+    @Test
+    void givenNewEmploymentReflectsInMap() throws PdfMapperException {
+        NewEmploymentType newEmploymentType = new NewEmploymentType();
+        newEmploymentType.setNewlyEmployedFrom("26/09/2022");
+        newEmploymentType.setNewPayBeforeTax("50000");
+        caseData.setNewEmploymentType(newEmploymentType);
+        Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
+        assertNotNull(pdfMap.get(MAP_KEYS_EMPLOYMENT.get("newEmployment")));
+    }
+
+    @Test
+    void givenNoNewEmploymentReflectsInMap() throws PdfMapperException {
+        caseData.setNewEmploymentType(null);
+        Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
+        assertNotNull(pdfMap.get(MAP_KEYS_EMPLOYMENT.get("withoutNewEmployment")));
+    }
 }
 
 // TODO: claimant work address different to respondent
 // TODO: Aware of multiple Cases
-
-// employment details
-// TODO: Pension Scheme
-// TODO: Another Job details
 
 // Claim details
 // TODO: Test discrimination grounds
