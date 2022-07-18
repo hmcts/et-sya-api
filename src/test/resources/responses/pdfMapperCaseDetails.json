@@ -109,7 +109,7 @@
       "claimantOtherType": {
         "claimant_occupation": "Builder",
         "claimant_employed_from": "2009-05-14",
-        "claimant_employed_currently": "No",
+        "claimant_employed_currently": "Yes",
         "claimant_employed_to": "2021-04-20",
         "claimant_employed_notice_period": null,
         "claimant_disabled": "No",

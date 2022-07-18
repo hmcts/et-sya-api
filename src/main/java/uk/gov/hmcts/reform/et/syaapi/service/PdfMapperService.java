@@ -2,13 +2,17 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ResourceUtils;
 import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantOtherType;
 import uk.gov.hmcts.et.common.model.ccd.types.NewEmploymentType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
+import uk.gov.hmcts.reform.et.syaapi.constants.PdfMapperConstants;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -22,10 +26,10 @@ import java.util.Map;
 @Service
 public class PdfMapperService {
     public final static Map<String, String> TITLES = Map.of(
-        "Mr", "1.1 Title Mr",
-        "Mrs", "1.1 Title Mrs",
-        "Miss", "1.1 Title Miss",
-        "Ms", "1.1 Title Ms"
+        "Mr", PdfMapperConstants.Q1_TITLE_MR,
+        "Mrs", PdfMapperConstants.Q1_TITLE_MRS,
+        "Miss", PdfMapperConstants.Q1_TITLE_MISS,
+        "Ms", PdfMapperConstants.Q1_TITLE_MS
     );
 
     public static final Map<String, String> TITLE_MAP = Map.of(
@@ -38,9 +42,9 @@ public class PdfMapperService {
     public Map<String, String> mapHeadersToPdf(CaseData caseData) throws PdfMapperException {
         verifyCase(caseData);
         Map<String, String> printFields = new HashMap<>();
-        printFields.put("tribunal office", caseData.getManagingOffice());
-        printFields.put("case number", caseData.getCcdID());
-        printFields.put("date received", caseData.getReceiptDate());
+        printFields.put(PdfMapperConstants.TRIBUNAL_OFFICE, caseData.getManagingOffice());
+        printFields.put(PdfMapperConstants.CASE_NUMBER, caseData.getCcdID());
+        printFields.put(PdfMapperConstants.DATE_RECEIVED, caseData.getReceiptDate());
         printFields.putAll(printPersonalDetails(caseData));
         printFields.putAll(printRespondantDetails(caseData));
         // TODO: write other claims
@@ -64,26 +68,32 @@ public class PdfMapperService {
                 TITLE_MAP.get(caseData.getClaimantIndType().getClaimantTitle())
             );
         }
-        printFields.put("1.2 first names", caseData.getClaimantIndType().getClaimantFirstNames());
-        printFields.put("1.3 surname", caseData.getClaimantIndType().getClaimantLastName());
+        printFields.put(PdfMapperConstants.Q1_FIRST_NAME, caseData.getClaimantIndType().getClaimantFirstNames());
+        printFields.put(PdfMapperConstants.Q1_SURNAME, caseData.getClaimantIndType().getClaimantLastName());
         LocalDate dob = LocalDate.parse(caseData.getClaimantIndType().getClaimantDateOfBirth());
-        printFields.put("1.4 DOB day", StringUtils.leftPad(String.valueOf(dob.getDayOfMonth()), 2, "0"));
-        printFields.put("1.4 DOB month", StringUtils.leftPad(String.valueOf(dob.getMonthValue()), 2, "0"));
-        printFields.put("1.4 DOB year", String.valueOf(dob.getYear()));
-        printFields.put("1.5 sex", caseData.getClaimantIndType().getClaimantSex());
-        printFields.put("1.5 number", caseData.getClaimantType().getClaimantAddressUK().getAddressLine1());
-        printFields.put("1.5 street", caseData.getClaimantType().getClaimantAddressUK().getAddressLine2());
-        printFields.put("1.5 town city", caseData.getClaimantType().getClaimantAddressUK().getPostTown());
-        printFields.put("1.5 county", caseData.getClaimantType().getClaimantAddressUK().getCounty());
-        printFields.put("1.5 postcode", caseData.getClaimantType().getClaimantAddressUK().getPostCode());
-        printFields.put("1.6 phone number", caseData.getClaimantType().getClaimantPhoneNumber());
-        printFields.put("1.7 mobile number", caseData.getClaimantType().getClaimantMobileNumber());
-        printFields.put("1.11 email", caseData.getClaimantType().getClaimantEmailAddress());
+        printFields.put(PdfMapperConstants.Q1_DOB_DAY, StringUtils.leftPad(String.valueOf(dob.getDayOfMonth()), 2, "0"));
+        printFields.put(PdfMapperConstants.Q1_DOB_MONTH, StringUtils.leftPad(String.valueOf(dob.getMonthValue()), 2, "0"));
+        printFields.put(PdfMapperConstants.Q1_DOB_YEAR, String.valueOf(dob.getYear()));
+        printFields.put(PdfMapperConstants.Q1_SEX, caseData.getClaimantIndType().getClaimantSex());
+        printFields.put(String.format(PdfMapperConstants.QX_HOUSE_NUMBER, "1.5"),
+            caseData.getClaimantType().getClaimantAddressUK().getAddressLine1());
+        printFields.put(String.format(PdfMapperConstants.QX_STREET, "1.5"),
+            caseData.getClaimantType().getClaimantAddressUK().getAddressLine2());
+        printFields.put(String.format(PdfMapperConstants.QX_POST_TOWN, "1.5"),
+            caseData.getClaimantType().getClaimantAddressUK().getPostTown());
+        printFields.put(String.format(PdfMapperConstants.QX_COUNTY, "1.5"),
+            caseData.getClaimantType().getClaimantAddressUK().getCounty());
+        printFields.put(String.format(PdfMapperConstants.QX_POSTCODE, "1.5"),
+            caseData.getClaimantType().getClaimantAddressUK().getPostCode());
+        printFields.put(String.format(PdfMapperConstants.QX_PHONE_NUMBER, "1.6"),
+            caseData.getClaimantType().getClaimantPhoneNumber());
+        printFields.put(PdfMapperConstants.Q1_MOBILE_NUMBER, caseData.getClaimantType().getClaimantMobileNumber());
+        printFields.put(PdfMapperConstants.Q1_EMAIL, caseData.getClaimantType().getClaimantEmailAddress());
         String contactPreference = caseData.getClaimantType().getClaimantContactPreference();
         if ("Email".equals(contactPreference)) {
-            printFields.put("1.8 How should we contact you - Email", contactPreference);
+            printFields.put(PdfMapperConstants.Q1_CONTACT_EMAIL, contactPreference);
         } else if ("Post".equals(contactPreference)) {
-            printFields.put("1.8 How should we contact you - Post", contactPreference);
+            printFields.put(PdfMapperConstants.Q1_CONTACT_POST, contactPreference);
         }
         return printFields;
     }
@@ -96,36 +106,31 @@ public class PdfMapperService {
         RespondentSumType respondent = respondentSumTypeList.get(0).getValue();
 
         printFields.put(
-            "2.1 Give the name of your employer or the person or organisation you are claiming against",
-            respondent.getRespondentName()
+            PdfMapperConstants.Q2_EMPLOYER_NAME, respondent.getRespondentName()
         );
-        printFields.putAll(printRespondantAddress(respondent, "2.2"));
+        printFields.putAll(printRespondant(respondent, "2.2"));
         printFields.putAll(printRespondantAcas(respondent, "2.3"));
-
-        // TODO: if worked at different address from 2.2 - add if statement
 
         if(caseData.getClaimantWorkAddress() != null) {
             Address claimantworkAddress = caseData.getClaimantWorkAddress().getClaimantWorkAddress();
-            printFields.put("2.4 number", claimantworkAddress.getAddressLine1());
-            printFields.put("2.4 street", claimantworkAddress.getAddressLine2());
-            printFields.put("2.4 town", claimantworkAddress.getPostTown());
-            printFields.put("2.4 county", claimantworkAddress.getCounty());
-            printFields.put("2.4 postcode", claimantworkAddress.getPostCode());
+            printFields.put(PdfMapperConstants.Q2_DIFFADDRESS_NUMBER, claimantworkAddress.getAddressLine1());
+            printFields.put(PdfMapperConstants.Q2_DIFFADDRESS_STREET, claimantworkAddress.getAddressLine2());
+            printFields.put(PdfMapperConstants.Q2_DIFFADDRESS_TOWN, claimantworkAddress.getPostTown());
+            printFields.put(PdfMapperConstants.Q2_DIFFADDRESS_COUNTY, claimantworkAddress.getCounty());
+            printFields.put(PdfMapperConstants.Q2_DIFFADDRESS_POSTCODE, claimantworkAddress.getPostCode());
         }
 
         if(respondentSumTypeList.size() > 1) {
             // TODO: need to add a tick?
-            printFields.put("2.5 other respondents", "");
+            printFields.put(PdfMapperConstants.Q2_OTHER_RESPONDENTS, "YES");
 
             RespondentSumType secondRespondent = respondentSumTypeList.get(1).getValue();
-            printFields.put("2.5 name", secondRespondent.getRespondentName());
-            printFields.putAll(printRespondantAddress(secondRespondent, "2.5"));
+            printFields.putAll(printRespondant(secondRespondent, "2.5"));
             printFields.putAll(printRespondantAcas(secondRespondent, "2.6"));
 
             if(respondentSumTypeList.size() > 2) {
                 RespondentSumType thirdRespondent = respondentSumTypeList.get(2).getValue();
-                printFields.put("2.7 name", thirdRespondent.getRespondentName());
-                printFields.putAll(printRespondantAddress(thirdRespondent, "2.7"));
+                printFields.putAll(printRespondant(thirdRespondent, "2.7"));
                 printFields.putAll(printRespondantAcas(thirdRespondent, "2.8"));
             }
         }
@@ -133,15 +138,20 @@ public class PdfMapperService {
         return printFields;
     }
 
-    private Map<String, String> printRespondantAddress(RespondentSumType respondent, String questionPrefix) {
+    private Map<String, String> printRespondant(RespondentSumType respondent, String questionPrefix) {
         Map<String, String> printFields = new HashMap<>();
-
-        printFields.put(questionPrefix + " number", respondent.getRespondentAddress().getAddressLine1());
-        printFields.put(questionPrefix + " street", respondent.getRespondentAddress().getAddressLine2());
-        printFields.put(questionPrefix + " town city", respondent.getRespondentAddress().getPostTown());
-        printFields.put(questionPrefix + " county", respondent.getRespondentAddress().getCounty());
-        printFields.put(questionPrefix + " postcode", respondent.getRespondentAddress().getPostCode());
-
+        printFields.put(String.format(PdfMapperConstants.QX_NAME, questionPrefix),
+            respondent.getRespondentName());
+        printFields.put(String.format(PdfMapperConstants.QX_HOUSE_NUMBER, questionPrefix),
+            respondent.getRespondentAddress().getAddressLine1());
+        printFields.put(String.format(PdfMapperConstants.QX_STREET, questionPrefix),
+            respondent.getRespondentAddress().getAddressLine2());
+        printFields.put(String.format(PdfMapperConstants.QX_POST_TOWN, questionPrefix),
+            respondent.getRespondentAddress().getPostTown());
+        printFields.put(String.format(PdfMapperConstants.QX_COUNTY, questionPrefix),
+            respondent.getRespondentAddress().getCounty());
+        printFields.put(String.format(PdfMapperConstants.QX_POSTCODE, questionPrefix),
+            respondent.getRespondentAddress().getPostCode());
         return printFields;
     }
 
@@ -153,13 +163,16 @@ public class PdfMapperService {
             ? respondent.getRespondentACASQuestion() : "No";
 
         if (acasYesNo.equals("Yes")) {
-            printFields.put(questionPrefix + " Do you have an Acas early conciliation certificate number? Yes",
+            printFields.put(String.format(PdfMapperConstants.QX_HAVE_ACAS_YES, questionPrefix),
                 acasYesNo);
-            printFields.put(questionPrefix + " please give the Acas early conciliation certificate number",
+            printFields.put(String.format(PdfMapperConstants.QX_ACAS_NUMBER, questionPrefix),
                 respondent.getRespondentACAS());
-        }
+        } else {
+            printFields.put(String.format(PdfMapperConstants.QX_HAVE_ACAS_NO, questionPrefix),
+                "Yes");
 
-        // TODO: 2.3 why dont you have this number
+            // TODO: 2.3 why dont you have this number
+        }
 
         return printFields;
     }
@@ -170,51 +183,56 @@ public class PdfMapperService {
         String employerYesNo = claimantOtherType.getClaimantEmployedFrom() == null
             ? "No" : "Yes";
         if(employerYesNo.equals("Yes")) {
-            printFields.put("4.1 did you work for the respondent you're making your claim against? Yes",
-                employerYesNo);
-            printFields.put("5.1 when did your employment start?", claimantOtherType.getClaimantEmployedFrom());
+            printFields.put(PdfMapperConstants.Q4_EMPLOYED_BY_YES, employerYesNo);
+            printFields.put(PdfMapperConstants.Q5_EMPLOYMENT_START, claimantOtherType.getClaimantEmployedFrom());
             String currentlyEmployedYesNo = !claimantOtherType.getClaimantEmployedCurrently().isEmpty()
                 ? claimantOtherType.getClaimantEmployedCurrently() : "No";
             if("Yes".equals(currentlyEmployedYesNo)) {
-                printFields.put("5.1 is your employment continuing? Yes", currentlyEmployedYesNo);
-                // TODO: Is this the correct place?
-                printFields.put("5.1 if your employment has not ended", claimantOtherType.getClaimantEmployedTo());
+                printFields.put(PdfMapperConstants.Q5_CONTINUING_YES, currentlyEmployedYesNo);
+                printFields.put(PdfMapperConstants.Q5_NOT_ENDED, claimantOtherType.getClaimantEmployedTo());
             } else {
-                printFields.put("5.1 is your employment continuing? No", currentlyEmployedYesNo);
-                // TODO: Is this the correct place?
-                printFields.put("5.1 if your employment has ended, when did it end?",
+                printFields.put(PdfMapperConstants.Q5_CONTINUING_NO, "Yes");
+                printFields.put(PdfMapperConstants.Q5_EMPLOYMENT_END,
                     claimantOtherType.getClaimantEmployedTo());
             }
-            printFields.put("5.2 Please say what job you do or did.", claimantOtherType.getClaimantOccupation());
+            printFields.put(PdfMapperConstants.Q5_DESCRIPTION, claimantOtherType.getClaimantOccupation());
             printFields.putAll(printRenumeration(claimantOtherType));
             NewEmploymentType newEmploymentType = caseData.getNewEmploymentType();
             if(newEmploymentType != null) {
-                printFields.put("7.1 Have you got another job? Yes", "Yes");
-                printFields.put("7.2 Please say when you started (or will start) work.",
-                    newEmploymentType.getNewlyEmployedFrom());
-                printFields.put("7.3 Please say how much you are now earning (or will earn).",
-                    newEmploymentType.getNewPayBeforeTax());
+                printFields.put(PdfMapperConstants.Q7_OTHER_JOB_YES, "Yes");
+                printFields.put(PdfMapperConstants.Q7_START_WORK, newEmploymentType.getNewlyEmployedFrom());
+                printFields.put(PdfMapperConstants.Q7_EARNING, newEmploymentType.getNewPayBeforeTax());
                 // TODO: need to consider weekly, monthly, annual
             } else {
-                printFields.put("7.1 Have you got another job? No", "No");
+                printFields.put(PdfMapperConstants.Q7_OTHER_JOB_NO, "Yes");
             }
         }
-        printFields.put("4.1 did you work for the respondent you're making your claim agaisnt No",
-            employerYesNo);
+        printFields.put(PdfMapperConstants.Q4_EMPLOYED_BY_NO, employerYesNo);
         return printFields;
     }
 
     private Map<String, String> printRenumeration(ClaimantOtherType claimantOtherType) {
         Map<String, String> printFields = new HashMap<>();
 
-        printFields.put("6.1 How many hours on average do, or did you work",
-            claimantOtherType.getClaimantAverageWeeklyHours());
-
-        printFields.put("6.2 Pay before tax", claimantOtherType.getClaimantPayBeforeTax());
-
-        // TODO: implement cycle
-
-        printFields.put("6.2 Normal take-home pay", claimantOtherType.getClaimantPayAfterTax());
+        printFields.put(PdfMapperConstants.Q6_HOURS, claimantOtherType.getClaimantAverageWeeklyHours());
+        printFields.put(PdfMapperConstants.Q6_GROSS_PAY, claimantOtherType.getClaimantPayBeforeTax());
+        printFields.put(PdfMapperConstants.Q6_NET_PAY, claimantOtherType.getClaimantPayAfterTax());
+        String cycle = claimantOtherType.getClaimantPayCycle();
+        switch(cycle.toUpperCase()) {
+            case "WEEKLY":
+                printFields.put(PdfMapperConstants.Q6_GROSS_PAY_WEEKLY, "Yes");
+                printFields.put(PdfMapperConstants.Q6_NET_PAY_WEEKLY, "Yes");
+                break;
+            case "MONTHLY":
+                printFields.put(PdfMapperConstants.Q6_GROSS_PAY_MONTHLY, "Yes");
+                printFields.put(PdfMapperConstants.Q6_NET_PAY_MONTHLY, "Yes");
+                break;
+            case "ANNUALLY":
+                printFields.put(PdfMapperConstants.Q6_GROSS_PAY_ANNUAL, "Yes");
+                printFields.put(PdfMapperConstants.Q6_NET_PAY_ANNUAL, "Yes");
+                break;
+        }
+        printFields.put(PdfMapperConstants.Q6_NET_PAY, claimantOtherType.getClaimantPayAfterTax());
 
         // TODO: Notice period, need confirmation
 
@@ -238,6 +256,8 @@ public class PdfMapperService {
 
     private Map<String, String> printClaimDetails(CaseData caseData) {
         Map<String, String> printFields = new HashMap<>();
+
+        // TODO: CLAIM DETAILS TO BE ADDED
 
         return printFields;
     }
