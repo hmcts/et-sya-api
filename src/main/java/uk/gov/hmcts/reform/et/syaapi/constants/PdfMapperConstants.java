@@ -116,15 +116,16 @@ public final class PdfMapperConstants {
     public static final String QX_HAVE_ACAS_NO =        "%s Do you have an Acas early conciliation certificate " +
         "number? No";
     public static final String QX_ACAS_NUMBER =         "%s please give the Acas early conciliation certificate number";
-    public static final String QX_ACAS_A1 =             "%s why don't you have an Acas early conciliation certificate" +
-        " number? My claim consists only of a complaint of unfair dismissal which contains an application for interim" +
-        " relief. (See guidance)";
-    public static final String QX_ACAS_A2 =             "%s why don't you have an Acas early conciliation certificate" +
-        " number? Another person I'm making the claim with has an Acas early conciliation certificate number";
-    public static final String QX_ACAS_A3 =             "%s why don't you have an Acas early conciliation certificate" +
-        " number? Acas doesn’t have the power to conciliate on some or all of my claim";
-    public static final String QX_ACAS_A4 =             "%s why don't you have an Acas early conciliation certificate" +
-        " number? My employer has already been in touch with Acas";
+    private static final String ACAS_NO_CERT =          "%s why don't you have an Acas early conciliation certificate" +
+        " number?";
+    public static final String QX_ACAS_A1 =             ACAS_NO_CERT + " My claim consists only of a complaint of" +
+        " unfair dismissal which contains an application for interim relief. (See guidance)";
+    public static final String QX_ACAS_A2 =             ACAS_NO_CERT + " Another person I'm making the claim with has" +
+        " an Acas early conciliation certificate number";
+    public static final String QX_ACAS_A3 =             ACAS_NO_CERT + " Acas doesn’t have the power to conciliate on" +
+        " some or all of my claim";
+    public static final String QX_ACAS_A4 =             ACAS_NO_CERT + " My employer has already been in touch with " +
+        "Acas";
 
     private PdfMapperConstants() { }
 }

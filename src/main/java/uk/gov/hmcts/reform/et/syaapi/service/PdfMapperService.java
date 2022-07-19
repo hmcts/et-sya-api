@@ -25,21 +25,21 @@ import java.util.Map;
  */
 @Service
 public class PdfMapperService {
-    public final static Map<String, String> TITLES = Map.of(
+    private static final  Map<String, String> TITLES = Map.of(
         "Mr", PdfMapperConstants.Q1_TITLE_MR,
         "Mrs", PdfMapperConstants.Q1_TITLE_MRS,
         "Miss", PdfMapperConstants.Q1_TITLE_MISS,
         "Ms", PdfMapperConstants.Q1_TITLE_MS
     );
 
-    public static final Map<String, String> TITLE_MAP = Map.of(
+    private static final Map<String, String> TITLE_MAP = Map.of(
         "Mr", "Mister",
         "Mrs", "Mrs",
         "Miss", "Mis",
         "Ms", "Ms"
     );
 
-    public static final String[] ADDRESS_PREFIX = {
+    private static final String[] ADDRESS_PREFIX = {
         "2.2",
         "2.5 R2",
         "2.7 R3",
@@ -47,7 +47,9 @@ public class PdfMapperService {
         "13 R5"
     };
 
-    public static final String[] ACAS_PREFIX = {
+    private static final String REP_ADDRESS_PREFIX = "11.3 Representative's address:";
+
+    private static final String[] ACAS_PREFIX = {
         "2.3",
         "2.6",
         "2.8",
@@ -72,7 +74,6 @@ public class PdfMapperService {
         printFields.putAll(printPersonalDetails(caseData));
         printFields.putAll(printRespondantDetails(caseData));
         printFields.putAll(printEmploymentDetails(caseData));
-        printFields.putAll(printClaimDetails(caseData));
         printFields.putAll(printRepresentative(caseData.getRepresentativeClaimantType()));
         return printFields;
     }
@@ -121,7 +122,7 @@ public class PdfMapperService {
         return printFields;
     }
 
-    private Map<String, String> printRespondantDetails(CaseData caseData) {
+    private Map<String, String> printRespondantDetails(CaseData caseData) throws PdfMapperException {
         Map<String, String> printFields = new HashMap<>();
         List<RespondentSumTypeItem> respondentSumTypeList = caseData.getRespondentCollection();
         if(respondentSumTypeList.size() > 1) {
@@ -165,7 +166,7 @@ public class PdfMapperService {
     }
 
     private Map<String, String> printRespondantAcas(RespondentSumType respondent,
-                                                    String questionPrefix) {
+                                                    String questionPrefix) throws PdfMapperException {
         Map<String, String> printFields = new HashMap<>();
         String acasYesNo = !respondent.getRespondentACASQuestion().isEmpty()
             ? respondent.getRespondentACASQuestion() : "No";
@@ -190,6 +191,8 @@ public class PdfMapperService {
                 case "Employer already in touch":
                     printFields.put(String.format(PdfMapperConstants.QX_ACAS_A4, questionPrefix), "Yes");
                     break;
+                default:
+                    throw new PdfMapperException("No ACAS given with no reason");
             }
         }
         return printFields;
@@ -220,7 +223,6 @@ public class PdfMapperService {
                 printFields.put(PdfMapperConstants.Q7_OTHER_JOB_YES, "Yes");
                 printFields.put(PdfMapperConstants.Q7_START_WORK, newEmploymentType.getNewlyEmployedFrom());
                 printFields.put(PdfMapperConstants.Q7_EARNING, newEmploymentType.getNewPayBeforeTax());
-                // TODO: need to consider weekly, monthly, annual
             } else {
                 printFields.put(PdfMapperConstants.Q7_OTHER_JOB_NO, "Yes");
             }
@@ -244,6 +246,7 @@ public class PdfMapperService {
                 printFields.put(PdfMapperConstants.Q6_GROSS_PAY_MONTHLY, "Yes");
                 printFields.put(PdfMapperConstants.Q6_NET_PAY_MONTHLY, "Yes");
                 break;
+            default:
             case "ANNUALLY":
                 printFields.put(PdfMapperConstants.Q6_GROSS_PAY_ANNUAL, "Yes");
                 printFields.put(PdfMapperConstants.Q6_NET_PAY_ANNUAL, "Yes");
@@ -278,37 +281,30 @@ public class PdfMapperService {
         return printFields;
     }
 
-    private Map<String, String> printClaimDetails(CaseData caseData) {
-        Map<String, String> printFields = new HashMap<>();
-
-        // TODO: CLAIM DETAILS TO BE ADDED
-
-        return printFields;
-    }
-
     private Map<String, String> printRepresentative(RepresentedTypeC representativeClaimantType) {
         Map<String, String> printFields = new HashMap<>();
         printFields.put(PdfMapperConstants.Q11_REP_NAME, representativeClaimantType.getNameOfRepresentative());
         printFields.put(PdfMapperConstants.Q11_REP_ORG, representativeClaimantType.getNameOfOrganisation());
-        printFields.put(PdfMapperConstants.Q11_REP_NUMBER, ""); // TODO - Where is this?
+        printFields.put(PdfMapperConstants.Q11_REP_NUMBER, "");
         Address repAddress = representativeClaimantType.getRepresentativeAddress();
-        printFields.put(String.format(PdfMapperConstants.QX_HOUSE_NUMBER, "11.3 Representative's address:"),
+        printFields.put(String.format(PdfMapperConstants.QX_HOUSE_NUMBER, REP_ADDRESS_PREFIX),
             repAddress.getAddressLine1());
-        printFields.put(String.format(PdfMapperConstants.QX_STREET, "11.3 Representative's address:"),
+        printFields.put(String.format(PdfMapperConstants.QX_STREET, REP_ADDRESS_PREFIX),
             repAddress.getAddressLine2());
-        printFields.put(String.format(PdfMapperConstants.QX_POST_TOWN, "11.3 Representative's address:"),
+        printFields.put(String.format(PdfMapperConstants.QX_POST_TOWN, REP_ADDRESS_PREFIX),
             repAddress.getPostTown());
-        printFields.put(String.format(PdfMapperConstants.QX_COUNTY, "11.3 Representative's address:"),
+        printFields.put(String.format(PdfMapperConstants.QX_COUNTY, REP_ADDRESS_PREFIX),
             repAddress.getCounty());
-        printFields.put(String.format(PdfMapperConstants.QX_POSTCODE, "11.3 Representative's address:"),
+        printFields.put(String.format(PdfMapperConstants.QX_POSTCODE, REP_ADDRESS_PREFIX),
             repAddress.getPostCode());
-        printFields.put(String.format(PdfMapperConstants.QX_PHONE_NUMBER, "11.3 Representative's address:"),
+        printFields.put(String.format(PdfMapperConstants.QX_PHONE_NUMBER, REP_ADDRESS_PREFIX),
             representativeClaimantType.getRepresentativePhoneNumber());
         printFields.put(PdfMapperConstants.Q11_MOBILE_NUMBER, representativeClaimantType.getRepresentativeMobileNumber());
         printFields.put(PdfMapperConstants.Q11_EMAIL, representativeClaimantType.getRepresentativeEmailAddress());
         printFields.put(PdfMapperConstants.Q11_REFERENCE, representativeClaimantType.getRepresentativeReference());
         String representativePreference = representativeClaimantType.getRepresentativePreference();
         switch(representativePreference.toUpperCase()) {
+            default:
             case "EMAIL":
                 printFields.put(PdfMapperConstants.Q11_CONTACT_EMAIL, "Yes");
                 break;
