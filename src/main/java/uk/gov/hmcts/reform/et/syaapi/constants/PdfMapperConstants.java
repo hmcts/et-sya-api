@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.constants;
 
 public final class PdfMapperConstants {
-
     public static final String TRIBUNAL_OFFICE =        "tribunal office";
     public static final String CASE_NUMBER =            "case number";
     public static final String DATE_RECEIVED =          "date received";
@@ -9,9 +8,6 @@ public final class PdfMapperConstants {
     public static final String Q1_TITLE_MRS =           "1.1 Title Mrs";
     public static final String Q1_TITLE_MISS =          "1.1 Title Miss";
     public static final String Q1_TITLE_MS =            "1.1 Title Ms";
-//    public static final String Q1_TITLE_MX =            "1.1 Title Mx";
-//    public static final String Q1_TITLE_OTHER =         "1.1 Title other";
-//    public static final String Q1_TITLE_NR =            "1.1 Title prefer not to say";
     public static final String Q1_FIRST_NAME =          "1.2 first names";
     public static final String Q1_SURNAME =             "1.3 surname";
     public static final String Q1_DOB_DAY =             "1.4 DOB day";
@@ -75,114 +71,26 @@ public final class PdfMapperConstants {
     public static final String Q7_EARNING_WEEKLY =      "7.3 weekly";
     public static final String Q7_EARNING_MONTHLY =     "7.3 monthly";
     public static final String Q7_EARNING_ANNUAL =      "7.3 annually";
-//        9.1 If claiming unfair dismissal, to get another job with the same employer or associated employer and compensation (re-engagement) : Off
-//        9.1 If claiming unfair dismissal, to get your old job back and compensation (reinstatement) : Off
-//        9.1 Compensation only : Off
-//        9.1 If claiming discrimination, a recommendation (see Guidance) : Off
-//        9.2 What compensation or remedy are you seeking? :
-//        9 :
-//        11.1 Name of representative :
-//        11.2 Name of organisation :
-//        11.3 Representative's address: street :
-//        11.3 Representative's address: number or name :
-//        11.3 Representative's address: town or city :
-//        11.3 Representative's address: county :
-//        11.3 Representative's address: postcode :
-//        11.4 Representative's DX number (if known) :
-//        11.5 Phone number :
-//        11.6 mobile number (if different) :
-//        11.7 Their reference for correspondence :
-//        11.8 Email address :
-//        11.9 How would you prefer us to communicate with them? Post : Off
-//        11.9 How would you prefer us to communicate with them? Email : Off
-//        11.9 How would you prefer us to communicate with them? Fax : Off
-//        11.10 Fax number :
-//        11 :
-//        14 satisfied tick box : Off
-//        sex a : Off
-//        other religion :
-//        10.1 If your claim consists of, or includes, a claim that you are making a protected disclosure under the Employment Rights Act 1996 (otherwise known as a ‘whistleblowing’ claim), please tick the box if you want a copy of this form, or information from it, to be forwarded on your behalf to a relevant regulator (known as a ‘prescribed person’ under the relevant legislation) by tribunal staff. (See Guidance) : Off
-//        10.1 If your claim consists of, or includes, a claim that you are making a protected disclosure under the Employment Rights Act 1996 (otherwise known as a ‘whistleblowing’ claim), please tick the box if you want a copy of this form, or information from it, to be forwarded on your behalf to a relevant regulator (known as a ‘prescribed person’ under the relevant legislation) by tribunal staff :
-//        10 :
-//        15 Additional information :
-//        claim type b discrimination : Off
-//        claim type a unfair dismissal or constructive dismissal : Off
-//        claim type c redundancy payment : Off
-//        claim type d other payments you are owed : Off
-//        claim type e other complaints : Off
-//        sex b : Off
-//        sex c : Off
-//        age group a : Off
-//        age group b : Off
-//        age group c : Off
-//        age group d : Off
-//        age group e : Off
-//        age group f : Off
-//        age group g : Off
-//        ethnicity a White English / Welsh / Scottish / Northern Irish / British : Off
-//        ethnicity b White Irish : Off
-//        ethnicity c White Gypsy or Irish Traveller : Off
-//        ethnicity d White other : Off
-//        Mixed / multiple ethnic groups h other : Off
-//        Mixed / multiple ethnic groups e White and Black Caribbean : Off
-//        Mixed / multiple ethnic groups f White and Black African : Off
-//        Mixed / multiple ethnic groups g White and Asian : Off
-//        Asian / Asian British i Indian : Off
-//        Asian / Asian British j Pakistani : Off
-//        Asian / Asian British k Bangladeshi : Off
-//        Asian / Asian British l Chinese : Off
-//        Asian / Asian British m other : Off
-//        Black / African / Caribbean / Black British n African : Off
-//        Black / African / Caribbean / Black British o Caribbean : Off
-//        Black / African / Caribbean / Black British p other : Off
-//        other ethnic group q Arab : Off
-//        other ethnic group r other : Off
-//        Ethnicity s prefer not to say : Off
-//        marriage (a) : Off
-//        disability (a) : Off
-//        disability (b) : Off
-//        disability (c) : Off
-//        marriage (b) : Off
-//        marriage (c) : Off
-//        marriage (d) : Off
-//        marriage (e) : Off
-//        marriage (f) : Off
-//        marriage (g) : Off
-//        marriage (h) : Off
-//        marriage (i) : Off
-//        marriage (j) : Off
-//        religion (a) : Off
-//        religion (b) : Off
-//        religion (c) : Off
-//        religion (d) : Off
-//        religion (e) : Off
-//        religion (f) : Off
-//        religion (g) : Off
-//        religion (h) : Off
-//        religion (i) : Off
-//        caring (a) : Off
-//        caring (b) : Off
-//        caring (c) : Off
-//        sexual identity (a) : Off
-//        sexual identity (b) : Off
-//        sexual identity (c) : Off
-//        sexual identity (d) : Off
-//        sexual identity (e) : Off
-//        pregnancy (a) : Off
-//        pregnancy (b) : Off
-//        pregnancy (c) : Off
-//        Text2 :
-//        Check Box4 : Off
-//        Check Box5 : Off
-//        Check Box6 : Off
-//        Check Box7 : Off
-//        Check Box8 : Off
-//        Check Box9 : Off
-//        Text10 :
-
-//        Text13 :
-//        Check Box14 : Off
-//        Text15 :
+    public static final String Q10_WHISTLEBLOW_TICK =   "10.1 If your claim consists of, or includes, a claim that " +
+        "you are making a protected disclosure under the Employment Rights Act 1996 (otherwise known as a " +
+        "‘whistleblowing’ claim), please tick the box if you want a copy of this form, or information from it, to be " +
+        "forwarded on your behalf to a relevant regulator (known as a ‘prescribed person’ under the relevant " +
+        "legislation) by tribunal staff.";
+    public static final String Q10_WHITLEBLOW_NAME =    "10.1 If your claim consists of, or includes, a claim that " +
+        "you are making a protected disclosure under the Employment Rights Act 1996 (otherwise known as a " +
+        "‘whistleblowing’ claim), please tick the box if you want a copy of this form, or information from it, to be " +
+        "forwarded on your behalf to a relevant regulator (known as a ‘prescribed person’ under the relevant " +
+        "legislation) by tribunal staff";
+    public static final String Q11_REP_NAME =           "11.1 Name of representative";
+    public static final String Q11_REP_ORG =            "11.2 Name of organisation";
+    public static final String Q11_REP_NUMBER =         "11.4 Representative's DX number (if known)";
+    public static final String Q11_MOBILE_NUMBER =      "11.6 mobile number (if different)";
+    public static final String Q11_REFERENCE =          "11.7 Their reference for correspondence";
+    public static final String Q11_EMAIL =              "11.8 Email address";
+    public static final String Q11_CONTACT_POST =       "11.9 How would you prefer us to communicate with them? Post";
+    public static final String Q11_CONTACT_EMAIL =      "11.9 How would you prefer us to communicate with them? Email";
+    public static final String Q11_CONTACT_FAX =        "11.9 How would you prefer us to communicate with them? Fax";
+    public static final String Q14_SATISFIED =          "14 satisfied tick box";
     // multiple places in pdf
     // claimant - "1.5"
     // R1 - "2.2"
@@ -190,6 +98,7 @@ public final class PdfMapperConstants {
     // R3 - "2.7 R3"
     // R4 - "13 R4"
     // R5 - "13 R5"
+    // rep - "11.3 Representative's address:"
     public static final String QX_NAME =                "%s name";
     public static final String QX_HOUSE_NUMBER =        "%s number";
     public static final String QX_STREET =              "%s street";
@@ -211,12 +120,11 @@ public final class PdfMapperConstants {
         " number? My claim consists only of a complaint of unfair dismissal which contains an application for interim" +
         " relief. (See guidance)";
     public static final String QX_ACAS_A2 =             "%s why don't you have an Acas early conciliation certificate" +
-        " number? My claim consists only of a complaint of unfair dismissal which contains an application for interim" +
-        " relief";
-    public static final String QX_ACAS_A3 =             "%s why don't you have an Acas early conciliation certificate" +
         " number? Another person I'm making the claim with has an Acas early conciliation certificate number";
-    public static final String QX_ACAS_A4 =             "%s why don't you have an Acas early conciliation certificate" +
+    public static final String QX_ACAS_A3 =             "%s why don't you have an Acas early conciliation certificate" +
         " number? Acas doesn’t have the power to conciliate on some or all of my claim";
-    public static final String QX_ACAS_A5 =             "%s why don't you have an Acas early conciliation certificate" +
+    public static final String QX_ACAS_A4 =             "%s why don't you have an Acas early conciliation certificate" +
         " number? My employer has already been in touch with Acas";
+
+    private PdfMapperConstants() { }
 }

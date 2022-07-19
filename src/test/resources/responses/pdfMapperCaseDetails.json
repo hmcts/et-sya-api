@@ -41,9 +41,9 @@
         {
           "value": {
             "respondent_name": "Granite Construction Ltd",
-            "respondent_ACAS_question": "Yes",
+            "respondent_ACAS_question": "No",
             "respondent_ACAS": "1456",
-            "respondent_ACAS_no": null,
+            "respondent_ACAS_no": "No Power",
             "respondent_phone1": null,
             "responseReceived": "Yes",
             "responseContinue": null,
@@ -135,6 +135,25 @@
         "claimant_compensation_amount": "75000",
         "claimant_tribunal_recommendation": null
       },
-      "claimantRepresentedQuestion": "No",
-      "representativeClaimantType": null
+   "representativeClaimantType": {
+     "name_of_organisation": "test",
+     "name_of_representative": "Test",
+     "representative_address": {
+       "AddressLine1": "25 Beverley Close",
+       "AddressLine2": "",
+       "AddressLine3": "",
+       "PostTown": "Exeter",
+       "County": "",
+       "Country": "United Kingdom",
+       "PostCode": "EX2 5NN"
+     },
+     "representative_reference": "tesst",
+     "representative_occupation": "Solicitor",
+     "representative_preference": "Email",
+     "representative_phone_number": "07777777777",
+     "representative_email_address": "a@hotmail.com",
+     "representative_mobile_number": "07777777777",
+     "representative_occupation_other": null
+   },
+   "claimantRepresentedQuestion": "Yes"
  }

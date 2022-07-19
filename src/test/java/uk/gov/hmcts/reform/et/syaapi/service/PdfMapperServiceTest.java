@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -18,34 +17,17 @@ import uk.gov.hmcts.et.common.model.ccd.types.ClaimantOtherType;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantType;
 import uk.gov.hmcts.et.common.model.ccd.types.NewEmploymentType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
+import uk.gov.hmcts.reform.et.syaapi.constants.PdfMapperConstants;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 
 @Slf4j
 class PdfMapperServiceTest {
-    private final Map<String, String> MAP_KEYS_RESPONDENT = Map.of(
-        "emailContact", "1.8 How should we contact you - Email",
-        "postContact", "1.8 How should we contact you - Post",
-        "respondentA", "2.1 Give the name of your employer or the person or organisation you are claiming against",
-        "respondentB", "2.5 name",
-        "respondentC", "2.7 name",
-        "earlyConciliationCertNumQ1", "2.3 Do you have an Acas early conciliation certificate number? Yes"
-        );
-    private final Map<String, String> MAP_KEYS_EMPLOYMENT= Map.of(
-        "employmentStart", "5.1 when did your employment start?",
-        "employmentContinued", "5.1 is your employment continuing? Yes",
-        "employmentEnded", "5.1 is your employment continuing? No",
-        "withPension", "6.4 Were you in your employer's pension scheme? Yes",
-        "withoutPension", "6.4 Were you in your employer's pension scheme? No",
-        "weeklyPensionContribution", "6.4 If Yes, give your employers weekly contributions",
-        "newEmployment", "7.1 Have you got another job? Yes",
-        "withoutNewEmployment", "7.1 Have you got another job? No"
-    );
-    private final Integer TOTAL_VALUES = 40;
+    private final Integer TOTAL_VALUES = 54;
     private PdfMapperService pdfMapperService;
     private CaseData caseData;
 
     @BeforeEach
-    void setup() throws IOException {
+    void setup() {
         pdfMapperService = new PdfMapperService();
 
         caseData = ResourceLoader.fromString(
@@ -72,7 +54,7 @@ class PdfMapperServiceTest {
         claimantType.setClaimantContactPreference("Email");
         caseData.setClaimantType(claimantType);
         Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNotNull(pdfMap.get(MAP_KEYS_RESPONDENT.get("emailContact")));
+        assertNotNull(pdfMap.get(PdfMapperConstants.Q1_CONTACT_EMAIL));
     }
 
     @Test
@@ -81,7 +63,7 @@ class PdfMapperServiceTest {
         claimantType.setClaimantContactPreference("Post");
         caseData.setClaimantType(claimantType);
         Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNotNull(pdfMap.get(MAP_KEYS_RESPONDENT.get("postContact")));
+        assertNotNull(pdfMap.get(PdfMapperConstants.Q1_CONTACT_POST));
     }
 
     @Test
@@ -89,23 +71,63 @@ class PdfMapperServiceTest {
         RespondentSumType respondentSumType = caseData.getRespondentCollection().get(0).getValue();
         respondentSumType.setRespondentACASQuestion("Yes");
         respondentSumType.setRespondentACAS("1111");
+        respondentSumType.setRespondentACASNo(null);
         RespondentSumTypeItem respondentSumTypeItem = new RespondentSumTypeItem();
         respondentSumTypeItem.setValue(respondentSumType);
         caseData.setRespondentCollection(List.of(respondentSumTypeItem));
         Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNotNull(pdfMap.get(MAP_KEYS_RESPONDENT.get("earlyConciliationCertNumQ1")));
+        assertNotNull(pdfMap.get(String.format(PdfMapperConstants.QX_ACAS_NUMBER, "2.3")));
     }
 
     @Test
-    void withoutAcasEarlyCertficateReflectsInMap() throws PdfMapperException {
+    void withoutAcasEarlyCertficateWithReasonUnfairDismissalReflectsInMap() throws PdfMapperException {
         RespondentSumType respondentSumType = caseData.getRespondentCollection().get(0).getValue();
         respondentSumType.setRespondentACASQuestion("No");
         respondentSumType.setRespondentACAS(null);
+        respondentSumType.setRespondentACASNo("Unfair Dismissal");
         RespondentSumTypeItem respondentSumTypeItem = new RespondentSumTypeItem();
         respondentSumTypeItem.setValue(respondentSumType);
         caseData.setRespondentCollection(List.of(respondentSumTypeItem));
         Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNull(pdfMap.get(MAP_KEYS_RESPONDENT.get("earlyConciliationCertNumQ1")));
+        assertNotNull(pdfMap.get(String.format(PdfMapperConstants.QX_ACAS_A1, "2.3")));
+    }
+    @Test
+    void withoutAcasEarlyCertficateWithReasonAnotherPersonReflectsInMap() throws PdfMapperException {
+        RespondentSumType respondentSumType = caseData.getRespondentCollection().get(0).getValue();
+        respondentSumType.setRespondentACASQuestion("No");
+        respondentSumType.setRespondentACAS(null);
+        respondentSumType.setRespondentACASNo("Another person");
+        RespondentSumTypeItem respondentSumTypeItem = new RespondentSumTypeItem();
+        respondentSumTypeItem.setValue(respondentSumType);
+        caseData.setRespondentCollection(List.of(respondentSumTypeItem));
+        Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
+        assertNotNull(pdfMap.get(String.format(PdfMapperConstants.QX_ACAS_A2, "2.3")));
+    }
+
+    @Test
+    void withoutAcasEarlyCertficateWithReasonNoPowerReflectsInMap() throws PdfMapperException {
+        RespondentSumType respondentSumType = caseData.getRespondentCollection().get(0).getValue();
+        respondentSumType.setRespondentACASQuestion("No");
+        respondentSumType.setRespondentACAS(null);
+        respondentSumType.setRespondentACASNo("No Power");
+        RespondentSumTypeItem respondentSumTypeItem = new RespondentSumTypeItem();
+        respondentSumTypeItem.setValue(respondentSumType);
+        caseData.setRespondentCollection(List.of(respondentSumTypeItem));
+        Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
+        assertNotNull(pdfMap.get(String.format(PdfMapperConstants.QX_ACAS_A3, "2.3")));
+    }
+
+    @Test
+    void withoutAcasEarlyCertficateWithReasonEmployerInTouchReflectsInMap() throws PdfMapperException {
+        RespondentSumType respondentSumType = caseData.getRespondentCollection().get(0).getValue();
+        respondentSumType.setRespondentACASQuestion("No");
+        respondentSumType.setRespondentACAS(null);
+        respondentSumType.setRespondentACASNo("Employer already in touch");
+        RespondentSumTypeItem respondentSumTypeItem = new RespondentSumTypeItem();
+        respondentSumTypeItem.setValue(respondentSumType);
+        caseData.setRespondentCollection(List.of(respondentSumTypeItem));
+        Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
+        assertNotNull(pdfMap.get(String.format(PdfMapperConstants.QX_ACAS_A4, "2.3")));
     }
 
     @Test
@@ -119,8 +141,8 @@ class PdfMapperServiceTest {
 
         caseData.setRespondentCollection(List.of(respondentSumTypeItemA, respondentSumTypeItemB));
         Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNotNull(pdfMap.get(MAP_KEYS_RESPONDENT.get("respondentA")));
-        assertNotNull(pdfMap.get(MAP_KEYS_RESPONDENT.get("respondentB")));
+        assertNotNull(pdfMap.get(PdfMapperConstants.Q2_EMPLOYER_NAME));
+        assertNotNull(pdfMap.get(String.format(PdfMapperConstants.QX_NAME, "2.5 R2")));
     }
 
     @Test
@@ -139,9 +161,9 @@ class PdfMapperServiceTest {
         caseData.setRespondentCollection(List.of(respondentSumTypeItemA, respondentSumTypeItemB,
             respondentSumTypeItemC));
         Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNotNull(pdfMap.get(MAP_KEYS_RESPONDENT.get("respondentA")));
-        assertNotNull(pdfMap.get(MAP_KEYS_RESPONDENT.get("respondentB")));
-        assertNotNull(pdfMap.get(MAP_KEYS_RESPONDENT.get("respondentC")));
+        assertNotNull(pdfMap.get(PdfMapperConstants.Q2_EMPLOYER_NAME));
+        assertNotNull(pdfMap.get(String.format(PdfMapperConstants.QX_NAME, "2.5 R2")));
+        assertNotNull(pdfMap.get(String.format(PdfMapperConstants.QX_NAME, "2.7 R3")));;
     }
 
     @Test
@@ -150,7 +172,7 @@ class PdfMapperServiceTest {
         claimantOtherType.setClaimantEmployedFrom(null);
         caseData.setClaimantOtherType(claimantOtherType);
         Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNull(pdfMap.get(MAP_KEYS_RESPONDENT.get("employmentStart")));
+        assertNull(pdfMap.get(PdfMapperConstants.Q5_EMPLOYMENT_START));
     }
 
     @Test
@@ -159,8 +181,8 @@ class PdfMapperServiceTest {
         claimantOtherType.setClaimantEmployedCurrently("Yes");
         caseData.setClaimantOtherType(claimantOtherType);
         Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNotNull(pdfMap.get(MAP_KEYS_EMPLOYMENT.get("employmentContinued")));
-        assertNull(pdfMap.get(MAP_KEYS_EMPLOYMENT.get("employmentEnded")));
+        assertNotNull(pdfMap.get(PdfMapperConstants.Q5_CONTINUING_YES));
+        assertNull(pdfMap.get(PdfMapperConstants.Q5_EMPLOYMENT_END));
     }
 
     @Test
@@ -169,8 +191,8 @@ class PdfMapperServiceTest {
         claimantOtherType.setClaimantEmployedCurrently("No");
         caseData.setClaimantOtherType(claimantOtherType);
         Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNotNull(pdfMap.get(MAP_KEYS_EMPLOYMENT.get("employmentEnded")));
-        assertNull(pdfMap.get(MAP_KEYS_EMPLOYMENT.get("employmentContinued")));
+        assertNotNull(pdfMap.get(PdfMapperConstants.Q5_EMPLOYMENT_END));
+        assertNull(pdfMap.get(PdfMapperConstants.Q5_CONTINUING_YES));
     }
 
     @Test
@@ -180,8 +202,8 @@ class PdfMapperServiceTest {
         claimantOtherType.setClaimantPensionWeeklyContribution("100");
         caseData.setClaimantOtherType(claimantOtherType);
         Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNotNull(pdfMap.get(MAP_KEYS_EMPLOYMENT.get("withPension")));
-        assertNotNull(pdfMap.get(MAP_KEYS_EMPLOYMENT.get("weeklyPensionContribution")));
+        assertNotNull(pdfMap.get(PdfMapperConstants.Q6_PENSION_YES));
+        assertNotNull(pdfMap.get(PdfMapperConstants.Q6_PENSION_WEEKLY));
     }
 
     @Test
@@ -191,8 +213,8 @@ class PdfMapperServiceTest {
         claimantOtherType.setClaimantPensionWeeklyContribution(null);
         caseData.setClaimantOtherType(claimantOtherType);
         Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNotNull(pdfMap.get(MAP_KEYS_EMPLOYMENT.get("withoutPension")));
-        assertNull(pdfMap.get(MAP_KEYS_EMPLOYMENT.get("weeklyPensionContribution")));
+        assertNotNull(pdfMap.get(PdfMapperConstants.Q6_PENSION_NO));
+        assertNull(pdfMap.get(PdfMapperConstants.Q6_PENSION_WEEKLY));
     }
 
     @Test
@@ -202,24 +224,20 @@ class PdfMapperServiceTest {
         newEmploymentType.setNewPayBeforeTax("50000");
         caseData.setNewEmploymentType(newEmploymentType);
         Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNotNull(pdfMap.get(MAP_KEYS_EMPLOYMENT.get("newEmployment")));
+        assertNotNull(pdfMap.get(PdfMapperConstants.Q7_OTHER_JOB_YES));
     }
 
     @Test
     void givenNoNewEmploymentReflectsInMap() throws PdfMapperException {
         caseData.setNewEmploymentType(null);
         Map<String, String> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNotNull(pdfMap.get(MAP_KEYS_EMPLOYMENT.get("withoutNewEmployment")));
+        assertNotNull(pdfMap.get(PdfMapperConstants.Q7_OTHER_JOB_NO));
     }
 }
 
 // TODO: claimant work address different to respondent
 // TODO: Aware of multiple Cases
 // TODO: Different Pay Cycles
-
-// Claim details
-// TODO: Test discrimination grounds
-// TODO: what is owed
 
 // representative
 // TODO: communication prefernces
