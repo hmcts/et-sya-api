@@ -11,5 +11,7 @@ public class PdfMapperException extends Exception {
      *
      * @param message the message explaining why the error occurred
      */
-    public PdfMapperException(String message) { super(message);}
+    public PdfMapperException(String message) {
+        super(message);
+    }
 }
