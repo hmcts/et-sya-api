@@ -1,5 +1,8 @@
-package uk.gov.hmcts.reform.et.syaapi.constants;
+package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
+/**
+ * Defines the input labels within the template PDF document as constants.
+ */
 public final class PdfMapperConstants {
     public static final String TRIBUNAL_OFFICE =        "tribunal office";
     public static final String CASE_NUMBER =            "case number";
@@ -127,6 +130,6 @@ public final class PdfMapperConstants {
         + "Acas";
 
     private PdfMapperConstants() {
-
+        // private due to being class of constants
     }
 }
