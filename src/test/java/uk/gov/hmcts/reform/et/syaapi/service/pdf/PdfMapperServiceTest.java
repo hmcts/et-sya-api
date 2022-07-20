@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.et.syaapi.service;
+package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

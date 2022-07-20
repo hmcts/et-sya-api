@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
 /**
- * Defines the input labels within the template PDF document as constants.
+ * Defines the input labels within the template 'Employment tribunal claim form' document as constants.
  */
 public final class PdfMapperConstants {
     public static final String TRIBUNAL_OFFICE =        "tribunal office";
