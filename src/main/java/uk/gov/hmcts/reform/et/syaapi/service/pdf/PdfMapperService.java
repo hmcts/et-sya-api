@@ -24,7 +24,8 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 /**
  * Maps Case Data attributes to fields within the PDF template.
  * Inputs that are accepted from the ET1 form can then be mapped to
- * the corresponding questions within the template PDF Provided
+ * the corresponding questions within the template PDF (ver. ET1_0722)
+ * as described in {@link PdfMapperConstants}
  */
 @Service
 public class PdfMapperService {
