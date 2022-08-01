@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,7 +58,7 @@ public class PdfServiceTest {
     }
 
     @Test
-    void givenPdfValuesProducesAPdfDocument() throws IOException {
+    void givenPdfValuesProducesAPdfDocument() throws PdfServiceException {
         when(pdfMapperService.mapHeadersToPdf(caseData)).thenReturn(PDF_VALUES);
         byte[] pdfBytes = pdfService.convertCaseToPdf(caseData);
 
@@ -65,7 +66,7 @@ public class PdfServiceTest {
     }
 
     @Test
-    void givenPdf() throws IOException{
+    void givenPdf() throws PdfServiceException, FileNotFoundException {
         when(pdfMapperService.mapHeadersToPdf(caseData)).thenReturn(PDF_VALUES);
         byte[] pdfBytes = pdfService.convertCaseToPdf(caseData);
 
@@ -80,6 +81,8 @@ public class PdfServiceTest {
                     assertThat(templatePdfValues.get(label)).isEqualTo(actualPdfValues.get(label));
                 }
             }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

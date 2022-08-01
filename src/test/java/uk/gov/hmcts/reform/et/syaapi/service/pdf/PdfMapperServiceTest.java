@@ -67,9 +67,9 @@ class PdfMapperServiceTest {
     @Test
     void givenAcasEarlyConciliationCertificateNumberReflectsInMap() {
         RespondentSumType respondentSumType = caseData.getRespondentCollection().get(0).getValue();
-        respondentSumType.setRespondentACASQuestion(YES);
-        respondentSumType.setRespondentACAS("1111");
-        respondentSumType.setRespondentACASNo(null);
+        respondentSumType.setRespondentAcasQuestion(YES);
+        respondentSumType.setRespondentAcas("1111");
+        respondentSumType.setRespondentAcasNo(null);
         RespondentSumTypeItem respondentSumTypeItem = new RespondentSumTypeItem();
         respondentSumTypeItem.setValue(respondentSumType);
         caseData.setRespondentCollection(List.of(respondentSumTypeItem));
@@ -80,9 +80,9 @@ class PdfMapperServiceTest {
     @Test
     void withoutAcasEarlyCertficateWithReasonUnfairDismissalReflectsInMap() {
         RespondentSumType respondentSumType = caseData.getRespondentCollection().get(0).getValue();
-        respondentSumType.setRespondentACASQuestion(NO);
-        respondentSumType.setRespondentACAS(null);
-        respondentSumType.setRespondentACASNo("Unfair Dismissal");
+        respondentSumType.setRespondentAcasQuestion(NO);
+        respondentSumType.setRespondentAcas(null);
+        respondentSumType.setRespondentAcasNo("Unfair Dismissal");
         RespondentSumTypeItem respondentSumTypeItem = new RespondentSumTypeItem();
         respondentSumTypeItem.setValue(respondentSumType);
         caseData.setRespondentCollection(List.of(respondentSumTypeItem));
@@ -93,9 +93,9 @@ class PdfMapperServiceTest {
     @Test
     void withoutAcasEarlyCertficateWithReasonAnotherPersonReflectsInMap() {
         RespondentSumType respondentSumType = caseData.getRespondentCollection().get(0).getValue();
-        respondentSumType.setRespondentACASQuestion(NO);
-        respondentSumType.setRespondentACAS(null);
-        respondentSumType.setRespondentACASNo("Another person");
+        respondentSumType.setRespondentAcasQuestion(NO);
+        respondentSumType.setRespondentAcas(null);
+        respondentSumType.setRespondentAcasNo("Another person");
         RespondentSumTypeItem respondentSumTypeItem = new RespondentSumTypeItem();
         respondentSumTypeItem.setValue(respondentSumType);
         caseData.setRespondentCollection(List.of(respondentSumTypeItem));
@@ -106,9 +106,9 @@ class PdfMapperServiceTest {
     @Test
     void withoutAcasEarlyCertficateWithReasonNoPowerReflectsInMap() {
         RespondentSumType respondentSumType = caseData.getRespondentCollection().get(0).getValue();
-        respondentSumType.setRespondentACASQuestion(NO);
-        respondentSumType.setRespondentACAS(null);
-        respondentSumType.setRespondentACASNo("No Power");
+        respondentSumType.setRespondentAcasQuestion(NO);
+        respondentSumType.setRespondentAcas(null);
+        respondentSumType.setRespondentAcasNo("No Power");
         RespondentSumTypeItem respondentSumTypeItem = new RespondentSumTypeItem();
         respondentSumTypeItem.setValue(respondentSumType);
         caseData.setRespondentCollection(List.of(respondentSumTypeItem));
@@ -119,9 +119,9 @@ class PdfMapperServiceTest {
     @Test
     void withoutAcasEarlyCertficateWithReasonEmployerInTouchReflectsInMap() {
         RespondentSumType respondentSumType = caseData.getRespondentCollection().get(0).getValue();
-        respondentSumType.setRespondentACASQuestion(NO);
-        respondentSumType.setRespondentACAS(null);
-        respondentSumType.setRespondentACASNo("Employer already in touch");
+        respondentSumType.setRespondentAcasQuestion(NO);
+        respondentSumType.setRespondentAcas(null);
+        respondentSumType.setRespondentAcasNo("Employer already in touch");
         RespondentSumTypeItem respondentSumTypeItem = new RespondentSumTypeItem();
         respondentSumTypeItem.setValue(respondentSumType);
         caseData.setRespondentCollection(List.of(respondentSumTypeItem));
