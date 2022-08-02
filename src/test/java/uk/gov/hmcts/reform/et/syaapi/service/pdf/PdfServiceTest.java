@@ -1,14 +1,13 @@
 package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import org.apache.pdfbox.Loader;
@@ -18,7 +17,6 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDNonTerminalField;
 import org.elasticsearch.core.Tuple;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -27,22 +25,27 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.util.ResourceUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class PdfServiceTest {
+class PdfServiceTest {
 
     private static final Map<String, Optional<String>> PDF_VALUES = Map.of(
-        PdfMapperConstants.TRIBUNAL_OFFICE, ofNullable("Manchester"),
-        PdfMapperConstants.CASE_NUMBER, ofNullable("001"),
-        PdfMapperConstants.DATE_RECEIVED, ofNullable("21-07-2022"),
-        PdfMapperConstants.Q1_FIRST_NAME, ofNullable("TEST NAME"),
-        PdfMapperConstants.Q1_SURNAME, ofNullable("TEST SURNAME")
+        PdfMapperConstants.TRIBUNAL_OFFICE, Optional.of("Manchester"),
+        PdfMapperConstants.CASE_NUMBER, Optional.of("001"),
+        PdfMapperConstants.DATE_RECEIVED, Optional.of("21-07-2022"),
+        PdfMapperConstants.Q1_FIRST_NAME, Optional.of("TEST NAME"),
+        PdfMapperConstants.Q1_SURNAME, Optional.of("TEST SURNAME")
     );
-
+    private static final Map<String, Optional<String>> PDF_VALUES_WITH_NULL = Map.of(
+        PdfMapperConstants.TRIBUNAL_OFFICE, Optional.of("Manchester"),
+        PdfMapperConstants.CASE_NUMBER, Optional.of("001"),
+        PdfMapperConstants.DATE_RECEIVED, Optional.empty(),
+        PdfMapperConstants.Q1_FIRST_NAME, Optional.of("TEST NAME"),
+        PdfMapperConstants.Q1_SURNAME, Optional.empty()
+    );
     @Mock
     private CaseData caseData;
 
@@ -52,48 +55,52 @@ public class PdfServiceTest {
     @InjectMocks
     private PdfService pdfService;
 
-    @BeforeEach
-    void setup() {
+    @Test
+    void givenPdfValuesProducesAPdfDocument() throws PdfServiceException, IOException {
         ReflectionTestUtils.setField(pdfService, "pdfTemplateSource", "classpath:ET1_0722_mod.pdf");
-    }
-
-    @Test
-    void givenPdfValuesProducesAPdfDocument() throws PdfServiceException {
         when(pdfMapperService.mapHeadersToPdf(caseData)).thenReturn(PDF_VALUES);
         byte[] pdfBytes = pdfService.convertCaseToPdf(caseData);
 
-        assertThat(pdfBytes).isNotNull();
-    }
+        try(PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
+            Map<String, Optional<String>> actualPdfValues = processPdf(actualPdf);
 
-    @Test
-    void givenPdf() throws PdfServiceException, FileNotFoundException {
-        when(pdfMapperService.mapHeadersToPdf(caseData)).thenReturn(PDF_VALUES);
-        byte[] pdfBytes = pdfService.convertCaseToPdf(caseData);
-
-        try (PDDocument templatePdf = Loader.loadPDF(ResourceUtils.getFile("classpath:ET1_0722_mod.pdf"))) {
-            Map<String, Optional<String>> templatePdfValues = processPdf(templatePdf);
-
-            try(PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
-                Map<String, Optional<String>> actualPdfValues = processPdf(actualPdf);
-
-                for(String label : actualPdfValues.keySet()) {
-                    assertThat(templatePdfValues.containsKey(label)).isTrue();
-                    assertThat(templatePdfValues.get(label)).isEqualTo(actualPdfValues.get(label));
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            assertThat(actualPdfValues).containsOnlyKeys(PDF_VALUES.keySet());
         }
     }
 
-    private Map<String, Optional<String>> processPdf(PDDocument pdDocument) throws IOException {
+    @Test
+    void givenNoPdfTemplateProducesException() {
+        ReflectionTestUtils.setField(pdfService, "pdfTemplateSource", "classpath:none.pdf");
+
+        PdfServiceException exception = assertThrows(
+            PdfServiceException.class,
+            () -> pdfService.convertCaseToPdf(caseData));
+
+        assertThat(exception.getMessage()).isEqualTo("Failed to convert to PDF");
+    }
+
+    @Test
+    void givenNullValuesProducesDocumentWithoutGivenValues() throws PdfServiceException, IOException {
+        ReflectionTestUtils.setField(pdfService, "pdfTemplateSource", "classpath:ET1_0722_mod.pdf");
+        when(pdfMapperService.mapHeadersToPdf(caseData)).thenReturn(PDF_VALUES_WITH_NULL);
+        byte[] pdfBytes = pdfService.convertCaseToPdf(caseData);
+
+        try(PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
+            Map<String, Optional<String>> actualPdfValues = processPdf(actualPdf);
+
+            assertThat(actualPdfValues).doesNotContainKey(PdfMapperConstants.Q1_SURNAME);
+            assertThat(actualPdfValues).doesNotContainKey(PdfMapperConstants.DATE_RECEIVED);
+        }
+    }
+
+    private Map<String, Optional<String>> processPdf(PDDocument pdDocument) {
         PDDocumentCatalog pdDocumentCatalog = pdDocument.getDocumentCatalog();
         PDAcroForm pdfForm = pdDocumentCatalog.getAcroForm();
         Map<String, Optional<String>> returnFields = new HashMap<>();
         pdfForm.getFields().forEach(
             field -> {
-                Tuple fieldTuple = processField(field);
-                returnFields.put(fieldTuple.v1().toString(), Optional.ofNullable(fieldTuple.v2().toString()));
+                Tuple<String, String> fieldTuple = processField(field);
+                returnFields.put(fieldTuple.v1(), Optional.ofNullable(fieldTuple.v2()));
             }
         );
         return returnFields;

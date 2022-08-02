@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Map;
+import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.pdfbox.Loader;
@@ -32,26 +34,31 @@ public class PdfService {
      * @return              a byte array that contains the pdf document.
      */
     public byte[] convertCaseToPdf(CaseData caseData) throws PdfServiceException {
-        try (PDDocument pdfDocument = Loader.loadPDF(ResourceUtils.getFile(this.pdfTemplateSource))) {
-            PDDocumentCatalog pdDocumentCatalog = pdfDocument.getDocumentCatalog();
-            PDAcroForm pdfForm = pdDocumentCatalog.getAcroForm();
-            this.pdfMapperService.mapHeadersToPdf(caseData).forEach((k, v) -> {
-                PDField pdfField = pdfForm.getField(k);
-                try {
-                    pdfField.setValue(v.get());
-                } catch (Exception e) {
-                    //continue if field mapping error
-                    e.printStackTrace();
-                    return;
-                }
-            });
-            pdfForm.flatten();
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            pdfDocument.save(byteArrayOutputStream);
-            pdfDocument.close();
-            return byteArrayOutputStream.toByteArray();
+        byte[] pdfDocumentBytes;
+        try {
+            pdfDocumentBytes = createPdf(caseData);
         } catch (IOException ex) {
-            throw new PdfServiceException("", ex);
+            throw new PdfServiceException("Failed to convert to PDF", ex);
         }
+        return pdfDocumentBytes;
+    }
+
+    private byte[] createPdf(CaseData caseData) throws IOException {
+        PDDocument pdfDocument = Loader.loadPDF(ResourceUtils.getFile(this.pdfTemplateSource));
+        PDDocumentCatalog pdDocumentCatalog = pdfDocument.getDocumentCatalog();
+        PDAcroForm pdfForm = pdDocumentCatalog.getAcroForm();
+        for (Map.Entry<String, Optional<String>> entry : this.pdfMapperService.mapHeadersToPdf(caseData).entrySet()) {
+            String k = entry.getKey();
+            Optional<String> v = entry.getValue();
+            if(v.isPresent()) {
+                PDField pdfField = pdfForm.getField(k);
+                pdfField.setValue(v.get());
+            }
+        }
+        pdfForm.flatten();
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        pdfDocument.save(byteArrayOutputStream);
+        pdfDocument.close();
+        return byteArrayOutputStream.toByteArray();
     }
 }
