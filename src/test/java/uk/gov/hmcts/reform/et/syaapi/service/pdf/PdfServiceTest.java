@@ -27,44 +27,34 @@ import org.mockito.quality.Strictness;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 
-@SuppressWarnings({"PMD.TooManyMethods"})
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class PdfServiceTest {
-
     private static final Map<String, Optional<String>> PDF_VALUES = Map.of(
         PdfMapperConstants.TRIBUNAL_OFFICE, Optional.of("Manchester"),
         PdfMapperConstants.CASE_NUMBER, Optional.of("001"),
-        PdfMapperConstants.DATE_RECEIVED, Optional.of("21-07-2022"),
-        PdfMapperConstants.Q1_FIRST_NAME, Optional.of("TEST NAME"),
-        PdfMapperConstants.Q1_SURNAME, Optional.of("TEST SURNAME")
+        PdfMapperConstants.DATE_RECEIVED, Optional.of("21-07-2022")
     );
     private static final Map<String, Optional<String>> PDF_VALUES_WITH_NULL = Map.of(
         PdfMapperConstants.TRIBUNAL_OFFICE, Optional.of("Manchester"),
         PdfMapperConstants.CASE_NUMBER, Optional.of("001"),
-        PdfMapperConstants.DATE_RECEIVED, Optional.empty(),
-        PdfMapperConstants.Q1_FIRST_NAME, Optional.of("TEST NAME"),
-        PdfMapperConstants.Q1_SURNAME, Optional.empty()
+        PdfMapperConstants.DATE_RECEIVED, Optional.of("")
     );
     @Mock
     private CaseData caseData;
-
     @Mock
     private PdfMapperService pdfMapperService;
-
     @InjectMocks
     private PdfService pdfService;
 
     @Test
     void givenPdfValuesProducesAPdfDocument() throws PdfServiceException, IOException {
-        ReflectionTestUtils.setField(pdfService, "pdfTemplateSource", "classpath:ET1_0722_mod.pdf");
+        ReflectionTestUtils.setField(pdfService, "pdfTemplateSource", "classpath:ET1_0722.pdf");
         when(pdfMapperService.mapHeadersToPdf(caseData)).thenReturn(PDF_VALUES);
         byte[] pdfBytes = pdfService.convertCaseToPdf(caseData);
-
         try(PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
             Map<String, Optional<String>> actualPdfValues = processPdf(actualPdf);
-
-            assertThat(actualPdfValues).containsOnlyKeys(PDF_VALUES.keySet());
+            PDF_VALUES.forEach((k, v) -> assertThat(actualPdfValues).containsEntry(k, v));
         }
     }
 
@@ -81,15 +71,12 @@ class PdfServiceTest {
 
     @Test
     void givenNullValuesProducesDocumentWithoutGivenValues() throws PdfServiceException, IOException {
-        ReflectionTestUtils.setField(pdfService, "pdfTemplateSource", "classpath:ET1_0722_mod.pdf");
+        ReflectionTestUtils.setField(pdfService, "pdfTemplateSource", "classpath:ET1_0722.pdf");
         when(pdfMapperService.mapHeadersToPdf(caseData)).thenReturn(PDF_VALUES_WITH_NULL);
         byte[] pdfBytes = pdfService.convertCaseToPdf(caseData);
-
         try(PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
             Map<String, Optional<String>> actualPdfValues = processPdf(actualPdf);
-
-            assertThat(actualPdfValues).doesNotContainKey(PdfMapperConstants.Q1_SURNAME);
-            assertThat(actualPdfValues).doesNotContainKey(PdfMapperConstants.DATE_RECEIVED);
+            PDF_VALUES_WITH_NULL.forEach((k, v) -> assertThat(actualPdfValues).containsEntry(k, v));
         }
     }
 
@@ -107,7 +94,6 @@ class PdfServiceTest {
     }
 
     private Tuple<String, String> processField(PDField field) {
-
         if (field instanceof PDNonTerminalField) {
             for (PDField child : ((PDNonTerminalField) field).getChildren()) {
                 processField(child);
