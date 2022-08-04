@@ -1,15 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
-
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
@@ -26,6 +16,15 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -52,7 +51,7 @@ class PdfServiceTest {
         ReflectionTestUtils.setField(pdfService, "pdfTemplateSource", "classpath:ET1_0722.pdf");
         when(pdfMapperService.mapHeadersToPdf(caseData)).thenReturn(PDF_VALUES);
         byte[] pdfBytes = pdfService.convertCaseToPdf(caseData);
-        try(PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
+        try (PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
             Map<String, Optional<String>> actualPdfValues = processPdf(actualPdf);
             PDF_VALUES.forEach((k, v) -> assertThat(actualPdfValues).containsEntry(k, v));
         }
@@ -74,7 +73,7 @@ class PdfServiceTest {
         ReflectionTestUtils.setField(pdfService, "pdfTemplateSource", "classpath:ET1_0722.pdf");
         when(pdfMapperService.mapHeadersToPdf(caseData)).thenReturn(PDF_VALUES_WITH_NULL);
         byte[] pdfBytes = pdfService.convertCaseToPdf(caseData);
-        try(PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
+        try (PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
             Map<String, Optional<String>> actualPdfValues = processPdf(actualPdf);
             PDF_VALUES_WITH_NULL.forEach((k, v) -> assertThat(actualPdfValues).containsEntry(k, v));
         }
@@ -83,7 +82,7 @@ class PdfServiceTest {
     private Map<String, Optional<String>> processPdf(PDDocument pdDocument) {
         PDDocumentCatalog pdDocumentCatalog = pdDocument.getDocumentCatalog();
         PDAcroForm pdfForm = pdDocumentCatalog.getAcroForm();
-        Map<String, Optional<String>> returnFields = new HashMap<>();
+        Map<String, Optional<String>> returnFields = new ConcurrentHashMap<>();
         pdfForm.getFields().forEach(
             field -> {
                 Tuple<String, String> fieldTuple = processField(field);

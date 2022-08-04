@@ -1,10 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Map;
-import java.util.Optional;
-
 import lombok.RequiredArgsConstructor;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -15,6 +10,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Uses {@link PdfMapperService} to convert a given case into a Pdf Document.
@@ -44,21 +44,21 @@ public class PdfService {
     }
 
     private byte[] createPdf(CaseData caseData) throws IOException {
-        PDDocument pdfDocument = Loader.loadPDF(ResourceUtils.getFile(this.pdfTemplateSource));
-        PDDocumentCatalog pdDocumentCatalog = pdfDocument.getDocumentCatalog();
-        PDAcroForm pdfForm = pdDocumentCatalog.getAcroForm();
-        for (Map.Entry<String, Optional<String>> entry : this.pdfMapperService.mapHeadersToPdf(caseData).entrySet()) {
-            String k = entry.getKey();
-            Optional<String> v = entry.getValue();
-            if(v.isPresent()) {
-                PDField pdfField = pdfForm.getField(k);
-                pdfField.setValue(v.get());
+        try (PDDocument pdfDocument = Loader.loadPDF(ResourceUtils.getFile(this.pdfTemplateSource))) {
+            PDDocumentCatalog pdDocumentCatalog = pdfDocument.getDocumentCatalog();
+            PDAcroForm pdfForm = pdDocumentCatalog.getAcroForm();
+            for (Map.Entry<String, Optional<String>> entry : this.pdfMapperService.mapHeadersToPdf(caseData)
+                .entrySet()) {
+                String entryKey = entry.getKey();
+                Optional<String> entryValue = entry.getValue();
+                if (entryValue.isPresent()) {
+                    PDField pdfField = pdfForm.getField(entryKey);
+                    pdfField.setValue(entryValue.get());
+                }
             }
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            pdfDocument.save(byteArrayOutputStream);
+            return byteArrayOutputStream.toByteArray();
         }
-        pdfForm.flatten();
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        pdfDocument.save(byteArrayOutputStream);
-        pdfDocument.close();
-        return byteArrayOutputStream.toByteArray();
     }
 }
