@@ -168,16 +168,16 @@ public class PdfMapperService {
     private Map<String, Optional<String>> printRespondantAcas(RespondentSumType respondent,
                                                     String questionPrefix) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
-        String acasYesNo = respondent.getRespondentACASQuestion().isEmpty() ? NO :
-            respondent.getRespondentACASQuestion();
+        String acasYesNo = respondent.getRespondentAcasQuestion().isEmpty() ? NO :
+            respondent.getRespondentAcasQuestion();
         if (YES.equals(acasYesNo)) {
             printFields.put(String.format(PdfMapperConstants.QX_HAVE_ACAS_YES, questionPrefix),
                 Optional.of(acasYesNo));
             printFields.put(String.format(PdfMapperConstants.QX_ACAS_NUMBER, questionPrefix),
-                ofNullable(respondent.getRespondentACAS()));
+                ofNullable(respondent.getRespondentAcas()));
         } else {
             printFields.put(String.format(PdfMapperConstants.QX_HAVE_ACAS_NO, questionPrefix), Optional.of(YES));
-            switch (respondent.getRespondentACASNo()) {
+            switch (respondent.getRespondentAcasNo()) {
                 case "Unfair Dismissal":
                     printFields.put(String.format(PdfMapperConstants.QX_ACAS_A1, questionPrefix), Optional.of(YES));
                     break;
