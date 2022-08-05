@@ -29,8 +29,8 @@ azure:
 
 idam:
   api:
-    url: ${IDAM_API_BASEURL:http://localhost:5555}
-    jwksUrl: ${IDAM_JWKS_BASEURL:http://localhost:5555/o/jwks}
+    url: ${IDAM_API_BASEURL:http://localhost:5000}
+    jwksUrl: ${IDAM_JWKS_BASEURL:http://localhost:5000/o/jwks}
   s2s-auth:
     url: ${SERVICE_AUTH_PROVIDER_URL:http://localhost:4502}
     secret: ${ET_SYA_S2S_SECRET:AAAAAAAAAAAAAAAC}
