@@ -230,6 +230,8 @@ dependencies {
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '3.17.2-RELEASE'
   implementation 'org.apache.tika:tika-core:2.4.1'
 
+  implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '3.0.0-RC1'
+
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4JVersion
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
   implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.22'
