@@ -18,7 +18,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentException;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
@@ -55,17 +54,13 @@ public class DocumentUploadControllerTest {
     @SneakyThrows
     @Test
     void givenCallWithCaseNumberAndDocumentProducesUpload() {
-        CaseDocumentRequest caseRequest = CaseDocumentRequest.builder()
-            .caseTypeId(CASE_TYPE).multipartFile(MOCK_FILE).build();
 
-        when(caseDocumentService.uploadDocument(TEST_SERVICE_AUTH_TOKEN, caseRequest.getCaseTypeId(),
-            caseRequest.getMultipartFile())).thenReturn(URI.create("Success"));
+        when(caseDocumentService.uploadDocument(TEST_SERVICE_AUTH_TOKEN, CASE_TYPE,
+            MOCK_FILE)).thenReturn(URI.create("Success"));
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
 
         mockMvc.perform(post("/cases/convert-to-pdf")
-                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(ResourceLoader.toJson(caseRequest)))
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
             .andExpect(status().isOk());
     }
 
