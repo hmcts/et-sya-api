@@ -19,17 +19,17 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
-import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
+import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 
 @WebMvcTest(
-    controllers = {PdfMapperController.class}
+    controllers = {DocumentUploadController.class}
 )
-@Import(PdfMapperController.class)
-public class PdfMapperControllerTest {
+@Import(DocumentUploadController.class)
+public class DocumentUploadControllerTest {
 
     private static final String CASE_ID = "1646225213651590";
 
@@ -39,22 +39,22 @@ public class PdfMapperControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private PdfService pdfService;
+    private CaseDocumentService caseDocumentService;
 
     @MockBean
     private VerifyTokenService verifyTokenService;
 
-    PdfMapperControllerTest() {
+    DocumentUploadControllerTest() {
 
     }
 
     @SneakyThrows
     @Test
-    void givenCallWithCaseProducesPdfDocument() {
+    void givenCallWithCaseNumberAndDocumentProducesUpload() {
         CaseRequest caseRequest = CaseRequest.builder()
             .caseId(CASE_ID).caseData(CASE_DATA).build();
 
-        when(pdfService.convertCaseToPdf(new CaseData())).thenReturn("".getBytes());
+        when(caseDocumentService.uploadDocument(new CaseData())).thenReturn("".getBytes());
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
 
         mockMvc.perform(post("/cases/convert-to-pdf")
@@ -73,7 +73,7 @@ public class PdfMapperControllerTest {
         when(pdfService.convertCaseToPdf(new CaseData())).thenThrow(PdfServiceException.class);
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
 
-        mockMvc.perform(post("/cases/convert-to-pdf")
+        mockMvc.perform(post("/generate-pdf")
                 .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(ResourceLoader.toJson(caseRequest)))

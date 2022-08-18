@@ -36,9 +36,4 @@ public class EmployeeObjectMapper {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.convertValue(caseData, Et1CaseData.class);
     }
-
-    public CaseData getEmploymentCaseDataFull(Map<String, Object> caseData) {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.convertValue(caseData, CaseData.class);
-    }
 }
