@@ -1,14 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
-import java.net.URI;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
-
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -18,21 +11,31 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.hmcts.et.common.model.ccd.CaseDocumentResponse;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentException;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
-import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
+
+import java.net.URI;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 @WebMvcTest(
     controllers = {DocumentUploadController.class}
 )
 @Import(DocumentUploadController.class)
-public class DocumentUploadControllerTest {
+class DocumentUploadControllerTest {
     private static final String DOCUMENT_NAME = "hello.txt";
-    private static final String CASE_TYPE = "ET_EnglandWales";
     private static final String MOCK_FILE_BODY = "Hello, World!";
+    private static final String MOCK_HREF = "http://test:8080/img";
     private static final MockMultipartFile MOCK_FILE = new MockMultipartFile(
-        "mock_file",
+        "document_upload",
         DOCUMENT_NAME,
         MediaType.TEXT_PLAIN_VALUE,
         MOCK_FILE_BODY.getBytes()
@@ -40,51 +43,57 @@ public class DocumentUploadControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-
     @MockBean
     private CaseDocumentService caseDocumentService;
-
     @MockBean
     private VerifyTokenService verifyTokenService;
 
-    DocumentUploadControllerTest() {
-
+    @BeforeEach
+    public void setUp() {
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
     }
 
     @SneakyThrows
     @Test
     void givenCallWithCaseNumberAndDocumentProducesUpload() {
-
-        when(caseDocumentService.uploadDocument(TEST_SERVICE_AUTH_TOKEN, CASE_TYPE,
-            MOCK_FILE)).thenReturn(URI.create("Success"));
-        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-
-        mockMvc.perform(post("/cases/convert-to-pdf")
-                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
+        CaseDocumentResponse response = CaseDocumentResponse.builder().documentName(DOCUMENT_NAME).documentUri(
+            URI.create(MOCK_HREF)).build();
+        when(caseDocumentService.uploadDocument(TEST_SERVICE_AUTH_TOKEN, ENGLAND_CASE_TYPE,
+            MOCK_FILE)).thenReturn(response);
+        mockMvc.perform(multipart("/documents/upload/" + ENGLAND_CASE_TYPE)
+                .file(MOCK_FILE)
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.MULTIPART_FORM_DATA))
             .andExpect(status().isOk());
     }
 
     @SneakyThrows
     @Test
     void givenPdfServiceExpectionProducesServerError() {
-        CaseDocumentRequest caseRequest = CaseDocumentRequest.builder()
-            .caseTypeId(CASE_TYPE).multipartFile(MOCK_FILE).build();
-
-        when(caseDocumentService.uploadDocument(TEST_SERVICE_AUTH_TOKEN, caseRequest.getCaseTypeId(),
-            caseRequest.getMultipartFile())).thenThrow(CaseDocumentException.class);
-        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-
-        mockMvc.perform(post("/generate-pdf")
+        when(caseDocumentService.uploadDocument(TEST_SERVICE_AUTH_TOKEN, ENGLAND_CASE_TYPE,
+            MOCK_FILE)).thenThrow(CaseDocumentException.class);
+        mockMvc.perform(multipart("/documents/upload/" + ENGLAND_CASE_TYPE)
+                .file(MOCK_FILE)
                 .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(ResourceLoader.toJson(caseRequest)))
+                .contentType(MediaType.MULTIPART_FORM_DATA))
             .andExpect(status().isInternalServerError());
     }
 
-//
-//    @SneakyThrows
-//    @Test
-//    void givenEmptyCaseProduces() {
-//
-//    }
+    @SneakyThrows
+    @Test
+    void givenEmptyDocumentProducesBadRequestResponse() {
+        mockMvc.perform(post("/documents/upload/" + ENGLAND_CASE_TYPE)
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.MULTIPART_FORM_DATA))
+            .andExpect(status().isBadRequest());
+    }
+
+    @SneakyThrows
+    @Test
+    void givenNoCaseTypeProducesBadRequestResponse() {
+        mockMvc.perform(post("/documents/upload/none")
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.MULTIPART_FORM_DATA))
+            .andExpect(status().isBadRequest());
+    }
 }

@@ -1,9 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
-import javax.validation.constraints.NotNull;
-
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,36 +7,60 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import uk.gov.hmcts.et.common.model.ccd.CaseDocumentResponse;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentException;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
+
+import javax.validation.constraints.NotNull;
+
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 
 /**
- * Rest Controller for {@link PdfService} to convert CaseData into a PDF document
+ * Rest Controller for {@link CaseDocumentService} for uploading a document to CCD.
  */
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/document")
+@RequestMapping("/documents")
 public class DocumentUploadController {
 
     private final CaseDocumentService caseDocumentService;
 
-
-    @PostMapping(value = "/upload", produces = "application/pdf")
-    public ResponseEntity<String> convertCaseToPdf(
+    /**
+     * Uploads a document to CCD and produces confirmation response.
+     * @param authorization     Required to authenticate caller
+     * @param caseTypeId        Which area this case document belongs to e.g. ET_EnglandWales
+     * @param multipartFile     File to be uploaded
+     * @return                  type {@link CaseDocumentResponse} which provides information on the uploaded document
+     */
+    @PostMapping(value = "/upload/{caseTypeId}", produces = "application/json")
+    public ResponseEntity<CaseDocumentResponse> convertCaseToPdf(
         @RequestHeader(AUTHORIZATION) String authorization,
         @PathVariable @NotNull String caseTypeId,
-        @RequestParam("file") MultipartFile multipartFile
+        @RequestPart(name = "document_upload") MultipartFile multipartFile
     ) {
+        if (!validateRequest(caseTypeId, multipartFile)) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         try {
-            caseDocumentService.uploadDocument(authorization, caseTypeId,
-                multipartFile);
+            return ResponseEntity.ok(caseDocumentService.uploadDocument(authorization, caseTypeId,
+                multipartFile));
         } catch (CaseDocumentException ex) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return ResponseEntity.ok("Test");
+    }
+
+    private boolean validateRequest(String caseTypeId, MultipartFile multipartFile) {
+        if (!caseTypeId.equals(ENGLAND_CASE_TYPE) && !caseTypeId.equals(SCOTLAND_CASE_TYPE)) {
+            return false;
+        }
+        if (multipartFile != null) {
+            return !multipartFile.isEmpty();
+        }
+        return false;
     }
 }

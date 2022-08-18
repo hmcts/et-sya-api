@@ -16,6 +16,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import uk.gov.hmcts.et.common.model.ccd.CaseDocumentResponse;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 
@@ -66,7 +67,7 @@ public class CaseDocumentService {
      */
     public CaseDocumentService(RestTemplate restTemplate,
                                AuthTokenGenerator authTokenGenerator,
-                               @Value("${case_document_am.url}/cases/documents}")
+                               @Value("${case_document_am.url}/cases/documents")
                                    String caseDocApiUrl,
                                @Value("${case_document_am.max_retries}") Integer maxApiRetries) {
         this.restTemplate = restTemplate;
@@ -85,23 +86,28 @@ public class CaseDocumentService {
      * @return the URL of the document we have just uploaded
      * @throws CaseDocumentException if a problem occurs whilst uploading the document via API
      */
-    public URI uploadDocument(String authToken, String caseTypeId, MultipartFile file) throws CaseDocumentException {
+    public CaseDocumentResponse uploadDocument(String authToken, String caseTypeId, MultipartFile file)
+        throws CaseDocumentException {
         DocumentUploadResponse response = attemptWithRetriesToUploadDocumentToCaseDocumentApi(
             0, authToken, caseTypeId, file);
 
         CaseDocument caseDocument = validateResponse(
             Objects.requireNonNull(response), file.getOriginalFilename());
 
-        return getUriFromFile(caseDocument, file.getOriginalFilename());
+        return convertToCaseDocumentResponse(caseDocument, file.getOriginalFilename());
     }
 
-    private URI getUriFromFile(CaseDocument caseDocument, String originalFilename) throws CaseDocumentException {
+    private CaseDocumentResponse convertToCaseDocumentResponse(CaseDocument caseDocument, String originalFilename)
+        throws CaseDocumentException {
         if (caseDocument.getLinks() == null
             || caseDocument.getLinks().get("self") == null
             || caseDocument.getLinks().get("self").get("href") == null) {
             throw new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename);
         }
-        return URI.create(caseDocument.getLinks().get("self").get("href"));
+
+        return CaseDocumentResponse.builder().documentUri(
+            URI.create(caseDocument.getLinks().get("self").get("href"))).documentName(
+                caseDocument.getOriginalDocumentName()).build();
     }
 
     private DocumentUploadResponse attemptWithRetriesToUploadDocumentToCaseDocumentApi(int attempts,
@@ -172,7 +178,8 @@ public class CaseDocumentService {
             .findFirst()
             .orElseThrow(() -> new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename));
 
-        String uri = getUriFromFile(document, originalFilename).toString();
+        String uri = convertToCaseDocumentResponse(
+            document, originalFilename).getDocumentUri().toString();
 
         Matcher matcher = HTTPS_URL_PATTERN.matcher(uri);
         if (!matcher.matches()) {

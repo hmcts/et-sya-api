@@ -116,7 +116,7 @@ class CaseDocumentServiceTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .body(MOCK_RESPONSE_WITH_DOCUMENT));
 
-        URI documentEndpoint = caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE);
+        URI documentEndpoint = caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE).getDocumentUri();
 
         assertThat(documentEndpoint)
             .hasToString(MOCK_HREF);
@@ -296,7 +296,7 @@ class CaseDocumentServiceTest {
                 .body(MOCK_RESPONSE_WITH_DOCUMENT));
 
         URI documentEndpoint = caseDocumentService.uploadDocument(
-            MOCK_TOKEN, CASE_TYPE, MOCK_FILE_NAME_SPACING);
+            MOCK_TOKEN, CASE_TYPE, MOCK_FILE_NAME_SPACING).getDocumentUri();
 
         assertThat(documentEndpoint)
             .hasToString(MOCK_HREF);
