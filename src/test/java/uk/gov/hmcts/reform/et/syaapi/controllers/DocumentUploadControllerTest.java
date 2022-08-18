@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
-import java.util.Map;
+import java.net.URI;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -16,13 +16,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.hmcts.et.common.model.ccd.CaseData;
-import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentException;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 
 @WebMvcTest(
@@ -30,10 +29,15 @@ import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 )
 @Import(DocumentUploadController.class)
 public class DocumentUploadControllerTest {
-
-    private static final String CASE_ID = "1646225213651590";
-
-    private static final Map<String, Object> CASE_DATA = Map.of();
+    private static final String DOCUMENT_NAME = "hello.txt";
+    private static final String CASE_TYPE = "ET_EnglandWales";
+    private static final String MOCK_FILE_BODY = "Hello, World!";
+    private static final MockMultipartFile MOCK_FILE = new MockMultipartFile(
+        "mock_file",
+        DOCUMENT_NAME,
+        MediaType.TEXT_PLAIN_VALUE,
+        MOCK_FILE_BODY.getBytes()
+    );
 
     @Autowired
     private MockMvc mockMvc;
@@ -51,10 +55,11 @@ public class DocumentUploadControllerTest {
     @SneakyThrows
     @Test
     void givenCallWithCaseNumberAndDocumentProducesUpload() {
-        CaseRequest caseRequest = CaseRequest.builder()
-            .caseId(CASE_ID).caseData(CASE_DATA).build();
+        CaseDocumentRequest caseRequest = CaseDocumentRequest.builder()
+            .caseTypeId(CASE_TYPE).multipartFile(MOCK_FILE).build();
 
-        when(caseDocumentService.uploadDocument(new CaseData())).thenReturn("".getBytes());
+        when(caseDocumentService.uploadDocument(TEST_SERVICE_AUTH_TOKEN, caseRequest.getCaseTypeId(),
+            caseRequest.getMultipartFile())).thenReturn(URI.create("Success"));
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
 
         mockMvc.perform(post("/cases/convert-to-pdf")
@@ -67,10 +72,11 @@ public class DocumentUploadControllerTest {
     @SneakyThrows
     @Test
     void givenPdfServiceExpectionProducesServerError() {
-        CaseRequest caseRequest = CaseRequest.builder()
-            .caseId(CASE_ID).caseData(CASE_DATA).build();
+        CaseDocumentRequest caseRequest = CaseDocumentRequest.builder()
+            .caseTypeId(CASE_TYPE).multipartFile(MOCK_FILE).build();
 
-        when(pdfService.convertCaseToPdf(new CaseData())).thenThrow(PdfServiceException.class);
+        when(caseDocumentService.uploadDocument(TEST_SERVICE_AUTH_TOKEN, caseRequest.getCaseTypeId(),
+            caseRequest.getMultipartFile())).thenThrow(CaseDocumentException.class);
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
 
         mockMvc.perform(post("/generate-pdf")
