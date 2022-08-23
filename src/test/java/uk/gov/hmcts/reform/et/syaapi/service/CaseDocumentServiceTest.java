@@ -15,7 +15,9 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import uk.gov.hmcts.et.common.model.ccd.CaseDocumentResponse;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
 
 import java.io.IOException;
 import java.net.URI;
@@ -31,6 +33,22 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @Slf4j
 @ExtendWith(MockitoExtension.class)
 class CaseDocumentServiceTest {
+
+    private static final String AUTH_TOKEN =
+        "Bearer eyJ6aXAiOiJOT05FIiwidHlwIjoiSldUIiwiYWxnIjoiUlMyNTYiLCJraWQiOiJNakF6TXpRd09UVTRPVFl4TmpJPSJ9.ey" +
+            "JzdWIiOiJldC5kZXZAaG1jdHMubmV0IiwiYXV0aF9sZXZlbCI6MCwiYXVkaXRUcmFja2luZ0lkIjoiZmM0NzgxOTctOGZlNC0" +
+            "0YTZlLTg5YjQtZWE0ODgyMjA0NzkyIiwiaXNzIjoiaHR0cDpcL1wvbG9jYWxob3N0OjU1NTYiLCJ0b2tlbk5hbWUiOiJhY2Nlc3" +
+            "NfdG9rZW4iLCJ0b2tlbl90eXBlIjoiQmVhcmVyIiwiYXV0aEdyYW50SWQiOiIzOWU1NzNlOS04YmUxLTQxYTUtYTgwNy02MDdkO" +
+            "WI3MzhkMzMiLCJhdWQiOiJzeWEtYXBpIiwibmJmIjoxNjYxMjYzMTkyLCJncmFudF90eXBlIjoiYXV0aG9yaXphdGlvbl9jb2RlI" +
+            "iwiYXV0aF90aW1lIjoxNjYxMjYzMTkyMjIwLCJzY29wZSI6WyJvcGVuaWQiLCJwcm9maWxlIiwicm9sZXMiXSwicmVhbG0iOiJc" +
+            "L2htY3RzIiwiZXhwIjoxNjYxMjkxOTkyLCJpYXQiOjE2NjEyNjMxOTIsImV4cGlyZXNfaW4iOjI4ODAwLCJqdGkiOiIyNWMwYzA1" +
+            "Mi1iYjg4LTRmMmEtYTc3NC1lMmNhZGIzODY1NGIifQ.J1gajKWx-hN8fpG2gtyBapQiaUv53XwpeWFf1Yt4SYBsuYcR_3o2_Ml7QG" +
+            "dKJcDuIX3RKjNVzem9HZvl29_UlfNz8QPNf8zHYR3fTX7dLQ0vehUHOm4R1eHb1P2xyPSduWRq7rzZRuLPMK1jgqeUMGL7r_eX4KXdt" +
+            "8sE0RUHI1M-nYo2oVXHu-Ndws-vTzy-mxP-CR-2hEMkm3rWnzbAB1YNsC6xUrxWuEEAWxwI_NUkAx5JJ1dm8dZNoo0th7OFvd34h" +
+            "4XcPkJkmxa5WWOZpzXHfm7lMnQ1CZArcf-XeScOkuPsvGu-66HoCdAmFP22JHJFHskWlH2m8LZwroqGSw";
+
+    private static final String SERVICE_AUTH = "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJldF9zeWFfYXBpIiwiZXhwIjoxN" +
+        "jYxMjc3NzMwfQ.kyWYDbE4-o_Gmw98bVqWC8OWyNowAk9g18oRlruG4yzCTsbPzn7DcPx4RTqnjmU2XOgWoAHE0mWx6GYUqp6KyA";
 
     private static final String DOCUMENT_UPLOAD_API_URL = "http://localhost:4455/cases/documents";
     private static final String DOCUMENT_NAME = "hello.txt";
@@ -93,14 +111,20 @@ class CaseDocumentServiceTest {
         + "\"claim-submit.png\",\"_links\":{\"self\":{\"href\": \"" + MOCK_HREF_MALFORMED + "\"}}}]}";
     private static final String MOCK_RESPONSE_WITHOUT_SELF = RESPONSE_BODY
         + "\"claim-submit.png\",\"_links\":{}}]}";
+    private final String FULL_JSON_RESPONSE = ResourceUtil.resourceAsString(
+        "responses/caseDocumentUpload.json"
+    );
 
     private CaseDocumentService caseDocumentService;
     private MockRestServiceServer mockServer;
 
+    CaseDocumentServiceTest() throws IOException {
+    }
+
     @BeforeEach
     void setup() {
         RestTemplate restTemplate = new RestTemplate();
-        AuthTokenGenerator authTokenGenerator = () -> "Bearer Mock";
+        AuthTokenGenerator authTokenGenerator = () -> SERVICE_AUTH;
         caseDocumentService = new CaseDocumentService(restTemplate,
                                                       authTokenGenerator,
                                                       DOCUMENT_UPLOAD_API_URL, 3);
@@ -116,7 +140,21 @@ class CaseDocumentServiceTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .body(MOCK_RESPONSE_WITH_DOCUMENT));
 
-        URI documentEndpoint = caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE).getDocumentUri();
+        String documentEndpoint = caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE).links.self.href;
+
+        assertThat(documentEndpoint)
+            .hasToString(MOCK_HREF);
+    }
+
+    @Test
+    void fullJsonResponseIsSuccessful() throws CaseDocumentException {
+        mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_UPLOAD_API_URL))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(withStatus(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(FULL_JSON_RESPONSE));
+
+        String documentEndpoint = caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE).links.self.href;
 
         assertThat(documentEndpoint)
             .hasToString(MOCK_HREF);
@@ -295,8 +333,8 @@ class CaseDocumentServiceTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(MOCK_RESPONSE_WITH_DOCUMENT));
 
-        URI documentEndpoint = caseDocumentService.uploadDocument(
-            MOCK_TOKEN, CASE_TYPE, MOCK_FILE_NAME_SPACING).getDocumentUri();
+        String documentEndpoint = caseDocumentService.uploadDocument(
+            MOCK_TOKEN, CASE_TYPE, MOCK_FILE_NAME_SPACING).links.self.href;
 
         assertThat(documentEndpoint)
             .hasToString(MOCK_HREF);
@@ -337,4 +375,15 @@ class CaseDocumentServiceTest {
         assertThat(documentException.getMessage())
             .isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
     }
+
+//    @Test
+//    void callAPI() throws CaseDocumentException {
+//        RestTemplate realRT = new RestTemplate();
+//        AuthTokenGenerator realTG = () -> SERVICE_AUTH;
+//        caseDocumentService = new CaseDocumentService(realRT,
+//            realTG,
+//            DOCUMENT_UPLOAD_API_URL, 1);
+//        DocumentResponse response = caseDocumentService.uploadDocument(AUTH_TOKEN, CASE_TYPE, MOCK_FILE);
+//        assertThat(response).isNotNull();
+//    }
 }
