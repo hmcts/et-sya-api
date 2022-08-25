@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import uk.gov.hmcts.et.common.model.ccd.CaseDocumentResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentException;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
@@ -36,7 +35,7 @@ public class DocumentUploadController {
      * @param authorization     Required to authenticate caller
      * @param caseTypeId        Which area this case document belongs to e.g. ET_EnglandWales
      * @param multipartFile     File to be uploaded
-     * @return                  type {@link CaseDocumentResponse} which provides information on the uploaded document
+     * @return                  type {@link CaseDocument} which provides information on the uploaded document
      */
     @PostMapping(value = "/upload/{caseTypeId}")
     public ResponseEntity<CaseDocument> uploadDocument(

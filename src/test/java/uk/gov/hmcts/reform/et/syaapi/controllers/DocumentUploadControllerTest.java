@@ -11,7 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.hmcts.et.common.model.ccd.CaseDocumentResponse;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentException;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
@@ -33,7 +33,6 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUT
 class DocumentUploadControllerTest {
     private static final String DOCUMENT_NAME = "hello.txt";
     private static final String MOCK_FILE_BODY = "Hello, World!";
-    private static final String MOCK_HREF = "http://test:8080/img";
     private static final MockMultipartFile MOCK_FILE = new MockMultipartFile(
         "document_upload",
         DOCUMENT_NAME,
@@ -56,8 +55,7 @@ class DocumentUploadControllerTest {
     @SneakyThrows
     @Test
     void givenCallWithCaseNumberAndDocumentProducesUpload() {
-        CaseDocumentResponse response = CaseDocumentResponse.builder().documentName(DOCUMENT_NAME).documentUri(
-            URI.create(MOCK_HREF)).build();
+        CaseDocument response = CaseDocument.builder().originalDocumentName(DOCUMENT_NAME).build();
         when(caseDocumentService.uploadDocument(TEST_SERVICE_AUTH_TOKEN, ENGLAND_CASE_TYPE,
             MOCK_FILE)).thenReturn(response);
         mockMvc.perform(multipart("/documents/upload/" + ENGLAND_CASE_TYPE)

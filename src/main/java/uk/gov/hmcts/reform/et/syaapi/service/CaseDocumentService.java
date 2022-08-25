@@ -16,7 +16,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import uk.gov.hmcts.et.common.model.ccd.CaseDocumentResponse;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 
@@ -95,19 +94,6 @@ public class CaseDocumentService {
             Objects.requireNonNull(response), file.getOriginalFilename());
     }
 
-    private CaseDocumentResponse convertToCaseDocumentResponse(CaseDocument caseDocument, String originalFilename)
-        throws CaseDocumentException {
-        if (caseDocument.getLinks() == null
-            || caseDocument.getLinks().get("self") == null
-            || caseDocument.getLinks().get("self").get("href") == null) {
-            throw new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename);
-        }
-
-        return CaseDocumentResponse.builder().documentUri(
-            URI.create(caseDocument.getLinks().get("self").get("href"))).documentName(
-                caseDocument.getOriginalDocumentName()).build();
-    }
-
     private DocumentUploadResponse attemptWithRetriesToUploadDocumentToCaseDocumentApi(int attempts,
                                                                                String authToken,
                                                                                String caseTypeId,
@@ -176,10 +162,13 @@ public class CaseDocumentService {
             .findFirst()
             .orElseThrow(() -> new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename));
 
-        String uri = convertToCaseDocumentResponse(
-            document, originalFilename).getDocumentUri().toString();
+        if (document.getLinks() == null
+            || document.getLinks().get("self") == null
+            || document.getLinks().get("self").get("href") == null) {
+            throw new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename);
+        }
 
-        Matcher matcher = HTTPS_URL_PATTERN.matcher(uri);
+        Matcher matcher = HTTPS_URL_PATTERN.matcher(document.getLinks().get("self").get("href"));
         if (!matcher.matches()) {
             throw new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename);
         }
