@@ -32,9 +32,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @Slf4j
 @ExtendWith(MockitoExtension.class)
 class CaseDocumentServiceTest {
-
     private static final String SERVICE_AUTH = "Bearer MOCK";
-
     private static final String DOCUMENT_UPLOAD_API_URL = "http://localhost:4455/cases/documents";
     private static final String DOCUMENT_NAME = "hello.txt";
     private static final String CASE_TYPE = "ET_EnglandWales";
@@ -320,8 +318,8 @@ class CaseDocumentServiceTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(MOCK_RESPONSE_WITH_DOCUMENT));
 
-        String documentEndpoint = caseDocumentService.uploadDocument(
-            MOCK_TOKEN, CASE_TYPE, MOCK_FILE_NAME_SPACING).getLinks().get("self").get("href");
+        URI documentEndpoint = caseDocumentService.uploadDocument(
+            MOCK_TOKEN, CASE_TYPE, MOCK_FILE_NAME_SPACING).getUri();
 
         assertThat(documentEndpoint)
             .hasToString(MOCK_HREF);
