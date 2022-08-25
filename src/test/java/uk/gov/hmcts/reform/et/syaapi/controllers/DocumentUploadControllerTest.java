@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
+import java.util.Map;
+
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,6 +39,9 @@ class DocumentUploadControllerTest {
         MediaType.TEXT_PLAIN_VALUE,
         MOCK_FILE_BODY.getBytes()
     );
+    private static final CaseDocument MOCK_RESPONSE = CaseDocument.builder()
+        .originalDocumentName(DOCUMENT_NAME).classification("PUBLIC").links(Map.of("self", Map.of("href",
+            "TestURL.com"))).build();
 
     @Autowired
     private MockMvc mockMvc;
@@ -53,10 +58,8 @@ class DocumentUploadControllerTest {
     @SneakyThrows
     @Test
     void givenCallWithCaseNumberAndDocumentProducesUpload() {
-        CaseDocument response = CaseDocument.builder().originalDocumentName(DOCUMENT_NAME).build();
-
         when(caseDocumentService.uploadDocument(TEST_SERVICE_AUTH_TOKEN, ENGLAND_CASE_TYPE,
-            MOCK_FILE)).thenReturn(response);
+            MOCK_FILE)).thenReturn(MOCK_RESPONSE);
 
         mockMvc.perform(multipart("/documents/upload/" + ENGLAND_CASE_TYPE)
                 .file(MOCK_FILE)
