@@ -37,7 +37,7 @@ public class DocumentUploadController {
      * @param multipartFile     File to be uploaded
      * @return                  type {@link CaseDocument} which provides information on the uploaded document
      */
-    @PostMapping(value = "/upload/{caseTypeId}")
+    @PostMapping("/upload/{caseTypeId}")
     public ResponseEntity<CaseDocument> uploadDocument(
         @RequestHeader(AUTHORIZATION) String authorization,
         @PathVariable @NotNull String caseTypeId,

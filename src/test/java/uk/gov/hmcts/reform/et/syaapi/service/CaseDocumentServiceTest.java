@@ -94,7 +94,7 @@ class CaseDocumentServiceTest {
         + "\"claim-submit.png\",\"_links\":{\"self\":{\"href\": \"" + MOCK_HREF_MALFORMED + "\"}}}]}";
     private static final String MOCK_RESPONSE_WITHOUT_SELF = RESPONSE_BODY
         + "\"claim-submit.png\",\"_links\":{}}]}";
-    private final String FULL_JSON_RESPONSE = ResourceUtil.resourceAsString(
+    private final String fullJsonResponse = ResourceUtil.resourceAsString(
         "responses/caseDocumentUpload.json"
     );
 
@@ -102,6 +102,7 @@ class CaseDocumentServiceTest {
     private MockRestServiceServer mockServer;
 
     CaseDocumentServiceTest() throws IOException {
+        // constructor for case document series test
     }
 
     @BeforeEach
@@ -136,7 +137,7 @@ class CaseDocumentServiceTest {
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(FULL_JSON_RESPONSE));
+                .body(fullJsonResponse));
 
         URI documentEndpoint =
             caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE).getUri();

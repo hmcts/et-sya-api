@@ -41,7 +41,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTIO
 @Slf4j
 @Service
 public class CaseDocumentService {
-
     private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
     private static final String FILE_NAME_REGEX_PATTERN = "^[\\w\\- ]{1,256}+\\.[A-Za-z]{3,4}$";
     private static final Pattern FILE_NAME_PATTERN = Pattern.compile(FILE_NAME_REGEX_PATTERN);
@@ -108,6 +107,7 @@ public class CaseDocumentService {
             throw new CaseDocumentException("Failed to upload Case Document", e);
         }
     }
+
     private ResponseEntity<DocumentUploadResponse> uploadDocumentToCaseDocumentApi(String authToken,
                                                            String caseTypeId,
                                                            MultipartFile file)

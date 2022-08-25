@@ -16,8 +16,6 @@ import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentException;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 
-import java.net.URI;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -56,8 +54,10 @@ class DocumentUploadControllerTest {
     @Test
     void givenCallWithCaseNumberAndDocumentProducesUpload() {
         CaseDocument response = CaseDocument.builder().originalDocumentName(DOCUMENT_NAME).build();
+
         when(caseDocumentService.uploadDocument(TEST_SERVICE_AUTH_TOKEN, ENGLAND_CASE_TYPE,
             MOCK_FILE)).thenReturn(response);
+
         mockMvc.perform(multipart("/documents/upload/" + ENGLAND_CASE_TYPE)
                 .file(MOCK_FILE)
                 .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
