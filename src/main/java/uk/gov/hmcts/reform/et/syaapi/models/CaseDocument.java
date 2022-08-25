@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
 import org.joda.time.DateTime;
 
+import java.net.URI;
 import java.util.Map;
 
 /**
@@ -39,4 +40,7 @@ public class CaseDocument {
     Map<String, String> metadata;
     @JsonProperty("_links")
     Map<String, Map<String, String>> links;
+    public URI getUri() {
+        return URI.create(links.get("self").get("href"));
+    }
 }

@@ -20,7 +20,6 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -164,11 +163,11 @@ public class CaseDocumentService {
 
         if (document.getLinks() == null
             || document.getLinks().get("self") == null
-            || document.getLinks().get("self").get("href") == null) {
+            || document.getUri() == null) {
             throw new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename);
         }
 
-        Matcher matcher = HTTPS_URL_PATTERN.matcher(document.getLinks().get("self").get("href"));
+        Matcher matcher = HTTPS_URL_PATTERN.matcher(document.getUri().toString());
         if (!matcher.matches()) {
             throw new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename);
         }

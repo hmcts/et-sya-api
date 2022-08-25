@@ -33,21 +33,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @ExtendWith(MockitoExtension.class)
 class CaseDocumentServiceTest {
 
-    private static final String AUTH_TOKEN =
-        "Bearer eyJ6aXAiOiJOT05FIiwidHlwIjoiSldUIiwiYWxnIjoiUlMyNTYiLCJraWQiOiJNakF6TXpRd09UVTRPVFl4TmpJPSJ9.ey" +
-            "JzdWIiOiJldC5kZXZAaG1jdHMubmV0IiwiYXV0aF9sZXZlbCI6MCwiYXVkaXRUcmFja2luZ0lkIjoiZmM0NzgxOTctOGZlNC0" +
-            "0YTZlLTg5YjQtZWE0ODgyMjA0NzkyIiwiaXNzIjoiaHR0cDpcL1wvbG9jYWxob3N0OjU1NTYiLCJ0b2tlbk5hbWUiOiJhY2Nlc3" +
-            "NfdG9rZW4iLCJ0b2tlbl90eXBlIjoiQmVhcmVyIiwiYXV0aEdyYW50SWQiOiIzOWU1NzNlOS04YmUxLTQxYTUtYTgwNy02MDdkO" +
-            "WI3MzhkMzMiLCJhdWQiOiJzeWEtYXBpIiwibmJmIjoxNjYxMjYzMTkyLCJncmFudF90eXBlIjoiYXV0aG9yaXphdGlvbl9jb2RlI" +
-            "iwiYXV0aF90aW1lIjoxNjYxMjYzMTkyMjIwLCJzY29wZSI6WyJvcGVuaWQiLCJwcm9maWxlIiwicm9sZXMiXSwicmVhbG0iOiJc" +
-            "L2htY3RzIiwiZXhwIjoxNjYxMjkxOTkyLCJpYXQiOjE2NjEyNjMxOTIsImV4cGlyZXNfaW4iOjI4ODAwLCJqdGkiOiIyNWMwYzA1" +
-            "Mi1iYjg4LTRmMmEtYTc3NC1lMmNhZGIzODY1NGIifQ.J1gajKWx-hN8fpG2gtyBapQiaUv53XwpeWFf1Yt4SYBsuYcR_3o2_Ml7QG" +
-            "dKJcDuIX3RKjNVzem9HZvl29_UlfNz8QPNf8zHYR3fTX7dLQ0vehUHOm4R1eHb1P2xyPSduWRq7rzZRuLPMK1jgqeUMGL7r_eX4KXdt" +
-            "8sE0RUHI1M-nYo2oVXHu-Ndws-vTzy-mxP-CR-2hEMkm3rWnzbAB1YNsC6xUrxWuEEAWxwI_NUkAx5JJ1dm8dZNoo0th7OFvd34h" +
-            "4XcPkJkmxa5WWOZpzXHfm7lMnQ1CZArcf-XeScOkuPsvGu-66HoCdAmFP22JHJFHskWlH2m8LZwroqGSw";
-
-    private static final String SERVICE_AUTH = "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJldF9zeWFfYXBpIiwiZXhwIjoxN" +
-        "jYxMjc3NzMwfQ.kyWYDbE4-o_Gmw98bVqWC8OWyNowAk9g18oRlruG4yzCTsbPzn7DcPx4RTqnjmU2XOgWoAHE0mWx6GYUqp6KyA";
+    private static final String SERVICE_AUTH = "Bearer MOCK";
 
     private static final String DOCUMENT_UPLOAD_API_URL = "http://localhost:4455/cases/documents";
     private static final String DOCUMENT_NAME = "hello.txt";
@@ -139,8 +125,8 @@ class CaseDocumentServiceTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .body(MOCK_RESPONSE_WITH_DOCUMENT));
 
-        String documentEndpoint =
-            caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE).getLinks().get("self").get("href");
+        URI documentEndpoint =
+            caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE).getUri();
 
         assertThat(documentEndpoint)
             .hasToString(MOCK_HREF);
@@ -154,8 +140,8 @@ class CaseDocumentServiceTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(FULL_JSON_RESPONSE));
 
-        String documentEndpoint =
-            caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE).getLinks().get("self").get("href");
+        URI documentEndpoint =
+            caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE).getUri();
 
         assertThat(documentEndpoint)
             .hasToString(MOCK_HREF);
