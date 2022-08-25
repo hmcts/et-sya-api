@@ -140,7 +140,8 @@ class CaseDocumentServiceTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .body(MOCK_RESPONSE_WITH_DOCUMENT));
 
-        String documentEndpoint = caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE).links.self.href;
+        String documentEndpoint =
+            caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE).getLinks().get("self").get("href");
 
         assertThat(documentEndpoint)
             .hasToString(MOCK_HREF);
@@ -154,7 +155,8 @@ class CaseDocumentServiceTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(FULL_JSON_RESPONSE));
 
-        String documentEndpoint = caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE).links.self.href;
+        String documentEndpoint =
+            caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE).getLinks().get("self").get("href");
 
         assertThat(documentEndpoint)
             .hasToString(MOCK_HREF);
@@ -334,7 +336,7 @@ class CaseDocumentServiceTest {
                 .body(MOCK_RESPONSE_WITH_DOCUMENT));
 
         String documentEndpoint = caseDocumentService.uploadDocument(
-            MOCK_TOKEN, CASE_TYPE, MOCK_FILE_NAME_SPACING).links.self.href;
+            MOCK_TOKEN, CASE_TYPE, MOCK_FILE_NAME_SPACING).getLinks().get("self").get("href");
 
         assertThat(documentEndpoint)
             .hasToString(MOCK_HREF);
@@ -375,15 +377,4 @@ class CaseDocumentServiceTest {
         assertThat(documentException.getMessage())
             .isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
     }
-
-//    @Test
-//    void callAPI() throws CaseDocumentException {
-//        RestTemplate realRT = new RestTemplate();
-//        AuthTokenGenerator realTG = () -> SERVICE_AUTH;
-//        caseDocumentService = new CaseDocumentService(realRT,
-//            realTG,
-//            DOCUMENT_UPLOAD_API_URL, 1);
-//        DocumentResponse response = caseDocumentService.uploadDocument(AUTH_TOKEN, CASE_TYPE, MOCK_FILE);
-//        assertThat(response).isNotNull();
-//    }
 }

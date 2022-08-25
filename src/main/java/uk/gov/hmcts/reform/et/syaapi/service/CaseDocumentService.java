@@ -4,14 +4,12 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -20,14 +18,10 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import uk.gov.hmcts.et.common.model.ccd.CaseDocumentResponse;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClient;
-import uk.gov.hmcts.reform.ccd.document.am.model.Document;
-import uk.gov.hmcts.reform.ccd.document.am.model.UploadResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -62,7 +56,6 @@ public class CaseDocumentService {
     private final RestTemplate restTemplate;
     private final AuthTokenGenerator authTokenGenerator;
     private final String caseDocApiUrl;
-//    private final CaseDocumentClient caseDocumentClient;
 
     /**
      * Default constructor with injected parameters.
@@ -80,7 +73,6 @@ public class CaseDocumentService {
         this.restTemplate = restTemplate;
         this.authTokenGenerator = authTokenGenerator;
         this.caseDocApiUrl = caseDocApiUrl;
-//        this.caseDocumentClient = caseDocumentClient;
         this.maxApiRetries = maxApiRetries;
     }
 
@@ -94,31 +86,29 @@ public class CaseDocumentService {
      * @return the URL of the document we have just uploaded
      * @throws CaseDocumentException if a problem occurs whilst uploading the document via API
      */
-    public Document uploadDocument(String authToken, String caseTypeId, MultipartFile file)
+    public CaseDocument uploadDocument(String authToken, String caseTypeId, MultipartFile file)
         throws CaseDocumentException {
-        UploadResponse response = attemptWithRetriesToUploadDocumentToCaseDocumentApi(
+        DocumentUploadResponse response = attemptWithRetriesToUploadDocumentToCaseDocumentApi(
             0, authToken, caseTypeId, file);
 
-        Document caseDocument = validateResponse(
+        return validateResponse(
             Objects.requireNonNull(response), file.getOriginalFilename());
-
-        return caseDocument;
     }
 
-    private CaseDocumentResponse convertToCaseDocumentResponse(Document caseDocument, String originalFilename)
+    private CaseDocumentResponse convertToCaseDocumentResponse(CaseDocument caseDocument, String originalFilename)
         throws CaseDocumentException {
-        if (caseDocument.links == null
-            || caseDocument.links.self == null
-            || caseDocument.links.self.href == null) {
+        if (caseDocument.getLinks() == null
+            || caseDocument.getLinks().get("self") == null
+            || caseDocument.getLinks().get("self").get("href") == null) {
             throw new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename);
         }
 
         return CaseDocumentResponse.builder().documentUri(
-            URI.create(caseDocument.links.self.href)).documentName(
-                caseDocument.originalDocumentName).build();
+            URI.create(caseDocument.getLinks().get("self").get("href"))).documentName(
+                caseDocument.getOriginalDocumentName()).build();
     }
 
-    private UploadResponse attemptWithRetriesToUploadDocumentToCaseDocumentApi(int attempts,
+    private DocumentUploadResponse attemptWithRetriesToUploadDocumentToCaseDocumentApi(int attempts,
                                                                                String authToken,
                                                                                String caseTypeId,
                                                                                MultipartFile file)
@@ -133,14 +123,11 @@ public class CaseDocumentService {
             throw new CaseDocumentException("Failed to upload Case Document", e);
         }
     }
-    private ResponseEntity<UploadResponse> uploadDocumentToCaseDocumentApi(String authToken,
+    private ResponseEntity<DocumentUploadResponse> uploadDocumentToCaseDocumentApi(String authToken,
                                                            String caseTypeId,
                                                            MultipartFile file)
         throws IOException, CaseDocumentException {
         validateFile(file);
-
-//        return caseDocumentClient.uploadDocuments(authToken, authTokenGenerator.generate(),
-//            caseTypeId, JURISDICTION_ID, List.of(file));
 
         MultiValueMap<String, Object> body = generateUploadRequest(caseTypeId, file);
 
@@ -150,7 +137,7 @@ public class CaseDocumentService {
             caseDocApiUrl,
             HttpMethod.POST,
             request,
-            UploadResponse.class
+            DocumentUploadResponse.class
         );
     }
 
@@ -165,6 +152,7 @@ public class CaseDocumentService {
     private void validateFile(MultipartFile file) throws CaseDocumentException, IOException {
         String filename = file.getOriginalFilename();
 
+        assert filename != null;
         Matcher matcher = FILE_NAME_PATTERN.matcher(filename);
         if (!matcher.matches()) {
             throw new CaseDocumentException(VALIDATE_FILE_EXCEPTION_MESSAGE);
@@ -178,13 +166,13 @@ public class CaseDocumentService {
         }
     }
 
-    private Document validateResponse(UploadResponse response, String originalFilename)
+    private CaseDocument validateResponse(DocumentUploadResponse response, String originalFilename)
         throws CaseDocumentException {
         if (response.getDocuments() == null) {
             throw new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename);
         }
 
-        Document document = response.getDocuments().stream()
+        CaseDocument document = response.getDocuments().stream()
             .findFirst()
             .orElseThrow(() -> new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename));
 
@@ -201,7 +189,12 @@ public class CaseDocumentService {
 
     private MultiValueMap<String, Object> generateUploadRequest(String caseTypeId,
                                                                 MultipartFile file) throws IOException {
-        ByteArrayResource fileAsResource = new ByteArrayResource(file.getBytes());
+        ByteArrayResource fileAsResource = new ByteArrayResource(file.getBytes()) {
+            @Override
+            public String getFilename() {
+                return file.getOriginalFilename();
+            }
+        };
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("files", fileAsResource);

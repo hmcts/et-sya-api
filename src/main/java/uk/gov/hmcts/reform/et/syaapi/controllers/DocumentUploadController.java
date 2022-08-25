@@ -8,11 +8,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import uk.gov.hmcts.et.common.model.ccd.CaseDocumentResponse;
-import uk.gov.hmcts.reform.ccd.document.am.model.Document;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentException;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 
@@ -40,7 +39,7 @@ public class DocumentUploadController {
      * @return                  type {@link CaseDocumentResponse} which provides information on the uploaded document
      */
     @PostMapping(value = "/upload/{caseTypeId}")
-    public ResponseEntity<Document> uploadDocument(
+    public ResponseEntity<CaseDocument> uploadDocument(
         @RequestHeader(AUTHORIZATION) String authorization,
         @PathVariable @NotNull String caseTypeId,
         @RequestParam("document_upload") MultipartFile multipartFile
