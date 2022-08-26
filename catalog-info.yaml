@@ -1,0 +1,18 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: "et-sya-api"
+  annotations:
+    # This must match folder-name/job-name in Jenkins.
+    jenkins.io/job-full-name: cft:HMCTS_d_to_i/et-sya-api
+    github.com/project-slug: hmcts/et-sya-api
+  tags:
+    - java
+  links:
+    - url: https://hmcts-reform.slack.com/app_redirect?channel=et-tech
+      title: "#et-tech on Slack"
+      icon: chat
+spec:
+  type: service
+  lifecycle: production
+  owner: dts_employment_tribunals
