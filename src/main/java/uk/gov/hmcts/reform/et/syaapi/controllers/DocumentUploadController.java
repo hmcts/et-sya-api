@@ -58,9 +58,6 @@ public class DocumentUploadController {
         if (!caseTypeId.equals(ENGLAND_CASE_TYPE) && !caseTypeId.equals(SCOTLAND_CASE_TYPE)) {
             return false;
         }
-        if (multipartFile != null) {
-            return !multipartFile.isEmpty();
-        }
-        return false;
+        return !multipartFile.isEmpty();
     }
 }

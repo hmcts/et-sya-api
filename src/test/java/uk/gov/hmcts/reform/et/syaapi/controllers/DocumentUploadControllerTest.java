@@ -39,6 +39,12 @@ class DocumentUploadControllerTest {
         MediaType.TEXT_PLAIN_VALUE,
         MOCK_FILE_BODY.getBytes()
     );
+    private static final MockMultipartFile MOCK_FILE_EMPTY = new MockMultipartFile(
+        "document_upload",
+        DOCUMENT_NAME,
+        MediaType.TEXT_PLAIN_VALUE,
+        (byte[]) null
+    );
     private static final CaseDocument MOCK_RESPONSE = CaseDocument.builder()
         .originalDocumentName(DOCUMENT_NAME).classification("PUBLIC").links(Map.of("self", Map.of("href",
             "TestURL.com"))).build();
@@ -83,7 +89,8 @@ class DocumentUploadControllerTest {
     @SneakyThrows
     @Test
     void givenEmptyDocumentProducesBadRequestResponse() {
-        mockMvc.perform(post("/documents/upload/" + ENGLAND_CASE_TYPE)
+        mockMvc.perform(multipart("/documents/upload/" + ENGLAND_CASE_TYPE)
+                .file(MOCK_FILE_EMPTY)
                 .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
             .andExpect(status().isBadRequest());
@@ -92,7 +99,8 @@ class DocumentUploadControllerTest {
     @SneakyThrows
     @Test
     void givenNoCaseTypeProducesBadRequestResponse() {
-        mockMvc.perform(post("/documents/upload/none")
+        mockMvc.perform(multipart("/documents/upload/none")
+                .file(MOCK_FILE)
                 .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
             .andExpect(status().isBadRequest());
