@@ -31,6 +31,7 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CASE_FIELD_MANAGING_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
@@ -168,8 +169,8 @@ public class CaseService {
      */
     public CaseDetails submitCase(String authorization,
                                   CaseRequest caseRequest) {
-        caseRequest.getCaseData().put("managingOffice",
-                                      getTribunalOfficeFromPostCode(caseRequest.getPostCode()).getOfficeName());
+        caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE,
+            getTribunalOfficeFromPostCode(caseRequest.getPostCode()).getOfficeName());
         return triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.SUBMIT_CASE_DRAFT,
                             caseRequest.getCaseTypeId(), caseRequest.getCaseData());
     }

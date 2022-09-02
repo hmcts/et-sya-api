@@ -12,6 +12,8 @@ public final class EtSyaConstants {
     public static final String AUTHORIZATION = "Authorization";
     public static final TribunalOffice DEFAULT_TRIBUNAL_OFFICE = TribunalOffice.LONDON_SOUTH;
 
+    public static final String CASE_FIELD_MANAGING_OFFICE = "managingOffice";
+
     private EtSyaConstants() {
         // restrict instantiation
     }
