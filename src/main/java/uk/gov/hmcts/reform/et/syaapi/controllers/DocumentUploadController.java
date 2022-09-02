@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,6 +24,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CA
 /**
  * Rest Controller for {@link CaseDocumentService} for uploading a document to CCD.
  */
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/documents")
@@ -50,6 +52,7 @@ public class DocumentUploadController {
             return ResponseEntity.ok(caseDocumentService.uploadDocument(authorization, caseTypeId,
                 multipartFile));
         } catch (CaseDocumentException ex) {
+            log.warn("documentUploadController - error occured whilst making call", ex);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

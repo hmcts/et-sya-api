@@ -161,9 +161,7 @@ public class CaseDocumentService {
             .findFirst()
             .orElseThrow(() -> new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename));
 
-        if (document.getLinks() == null
-            || document.getLinks().get("self") == null
-            || document.getUri() == null) {
+        if (document.verifyUri()) {
             throw new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename);
         }
 
