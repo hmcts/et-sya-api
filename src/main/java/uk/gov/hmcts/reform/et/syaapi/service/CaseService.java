@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import uk.gov.dwp.regex.InvalidPostcodeException;
+import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -94,7 +95,7 @@ public class CaseService {
                                   CaseRequest caseRequest) {
         String s2sToken = authTokenGenerator.generate();
         String userId = idamClient.getUserDetails(authorization).getId();
-        String caseType = getCaseType(caseRequest);
+        String caseType = getCaseType(getTribunalOfficeFromPostCode(caseRequest.getPostCode()));
         String eventTypeName = INITIATE_CASE_DRAFT.name();
 
         StartEventResponse ccdCase = ccdApiClient.startForCitizen(
@@ -124,14 +125,30 @@ public class CaseService {
         );
     }
 
-    private String getCaseType(CaseRequest caseRequest) {
+    /**
+     * Given a tribunal office, this will retrieve the correct case type id.
+     *
+     * @param office is used to get office name to find case type id
+     * @return the associated case type id if the case type id is found by given office name
+     */
+    private String getCaseType(TribunalOffice office) {
+        return getCaseTypeId(office.getOfficeName());
+    }
+
+    /**
+     * Given a post code, this will retrieve the matching Tribunal Office. If no Tribunal Office found
+     * returns the Default one which is LONDON_SOUTH
+     *
+     * @param postCode is used to find the closest Tribunal Office
+     * @return the associated Tribunal Office if any found by the given postcode. If not returns default one
+     */
+    private TribunalOffice getTribunalOfficeFromPostCode(String postCode) {
         try {
-            return getCaseTypeId(
-                postcodeToOfficeService.getTribunalOfficeFromPostcode(caseRequest.getPostCode())
-                    .orElse(DEFAULT_TRIBUNAL_OFFICE).getOfficeName());
+            return postcodeToOfficeService.getTribunalOfficeFromPostcode(postCode)
+                .orElse(DEFAULT_TRIBUNAL_OFFICE);
         } catch (InvalidPostcodeException e) {
             log.info("Failed to find tribunal office : {} ", e.getMessage());
-            return getCaseTypeId(DEFAULT_TRIBUNAL_OFFICE.getOfficeName());
+            return DEFAULT_TRIBUNAL_OFFICE;
         }
     }
 
@@ -141,8 +158,18 @@ public class CaseService {
                             caseRequest.getCaseTypeId(), caseRequest.getCaseData());
     }
 
+    /**
+     * Given Case Request, triggers submit case events for the case. Before submitting case events
+     * sets managing office (tribunal office), created PDF file for the case and saves PDF file.
+     *
+     * @param authorization is used to seek the {UserDetails} for request
+     * @param caseRequest is used to provide the caseId, caseTypeId and {@link CaseData} in JSON Format
+     * @return the associated {@link CaseData} if the case is submitted
+     */
     public CaseDetails submitCase(String authorization,
                                   CaseRequest caseRequest) {
+        caseRequest.getCaseData().put("managingOffice",
+                                      getTribunalOfficeFromPostCode(caseRequest.getPostCode()).getOfficeName());
         return triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.SUBMIT_CASE_DRAFT,
                             caseRequest.getCaseTypeId(), caseRequest.getCaseData());
     }

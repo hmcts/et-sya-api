@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
+import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
@@ -33,6 +34,7 @@ import java.util.Optional;
 import static  org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
@@ -47,9 +49,6 @@ class CaseServiceTest {
     private static final String USER_EMAIL = "test@gmail.com";
     private static final String USER_FORENAME = "Joe";
     private static final String USER_SURNAME = "Bloggs";
-
-    @Mock
-    private PostcodeToOfficeService postcodeToOfficeService;
 
     private final CaseDetails expectedDetails = ResourceLoader.fromString(
         "responses/caseDetails.json",
@@ -99,6 +98,10 @@ class CaseServiceTest {
     private CaseService caseService;
     @Mock
     private CaseDetailsConverter caseDetailsConverter;
+    @Mock
+    private EmployeeObjectMapper employeeObjectMapper;
+    @Mock
+    private PostcodeToOfficeService postcodeToOfficeService;
 
 
     CaseServiceTest() throws IOException {
@@ -228,6 +231,60 @@ class CaseServiceTest {
         );
 
         assertEquals(expectedDetails, caseDetails);
+    }
+
+    @Test
+    void shouldSubmitCaseInCcd() throws InvalidPostcodeException {
+        // Given
+        caseData.setManagingOffice("Aberdeen");
+        CaseDataContent caseDataContent = CaseDataContent.builder()
+            .event(Event.builder().id(TestConstants.DRAFT_EVENT_ID).build())
+            .eventToken(startEventResponse.getToken())
+            .data(caseData)
+            .build();
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+            USER_ID,
+            USER_EMAIL,
+            USER_FORENAME,
+            USER_SURNAME,
+            null
+        ));
+        CaseRequest caseRequest = CaseRequest.builder()
+            .postCode("AB10 1AH")
+            .caseId(CASE_ID)
+            .caseTypeId(EtSyaConstants.SCOTLAND_CASE_TYPE)
+            .caseData(new HashMap<String, Object>())
+            .build();
+        when(postcodeToOfficeService.getTribunalOfficeFromPostcode(anyString()))
+            .thenReturn(Optional.of(TribunalOffice.ABERDEEN));
+
+        when(ccdApiClient.startEventForCitizen(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            USER_ID,
+            EtSyaConstants.JURISDICTION_ID,
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            CASE_ID,
+            TestConstants.SUBMIT_CASE_DRAFT
+        )).thenReturn(
+            startEventResponse);
+
+        when(ccdApiClient.submitEventForCitizen(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            USER_ID,
+            EtSyaConstants.JURISDICTION_ID,
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            CASE_ID,
+            true,
+            caseDataContent
+        )).thenReturn(expectedDetails);
+
+
+        CaseDetails caseDetails = caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseRequest);
+        caseData.setManagingOffice(null);
+        assertEquals(caseDetails, expectedDetails);
     }
 
     @Test
