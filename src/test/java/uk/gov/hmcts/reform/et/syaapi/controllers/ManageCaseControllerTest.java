@@ -10,8 +10,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.server.ResponseStatusException;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
@@ -19,6 +21,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.PostcodeToOfficeService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
@@ -192,7 +195,7 @@ class ManageCaseControllerTest {
     @Test
     void shouldStartUpdateCase() {
         CaseRequest caseRequest = CaseRequest.builder()
-            .caseTypeId("ET_Scotland")
+            .caseTypeId(CASE_TYPE)
             .caseId("12")
             .build();
 
@@ -230,7 +233,7 @@ class ManageCaseControllerTest {
     @Test
     void shouldStartSubmitCase() {
         CaseRequest caseRequest = CaseRequest.builder()
-            .caseTypeId("ET_Scotland")
+            .caseTypeId(CASE_TYPE)
             .caseId("12")
             .caseData(new HashMap<>())
             .build();
@@ -265,5 +268,51 @@ class ManageCaseControllerTest {
                             .content(ResourceLoader.toJson(caseRequest))
             )
             .andExpect(status().isOk());
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldHaveResponseStatusExceptionWhenSubmitCaseWithPdfError() {
+        // given
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+            "12",
+            "test@gmail.com",
+            "Joe",
+            "Bloggs",
+            null
+        ));
+        when(postcodeToOfficeService.getTribunalOfficeFromPostcode(anyString()))
+            .thenReturn(Optional.of(DEFAULT_TRIBUNAL_OFFICE));
+        PdfServiceException pdfServiceException = new PdfServiceException("Failed to convert to PDF",
+                                                                          new IOException());
+        when(caseService.triggerEvent(
+            TEST_SERVICE_AUTH_TOKEN,
+            CASE_ID,
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            CaseEvent.valueOf("SUBMIT_CASE_DRAFT"),
+            null
+        )).thenReturn(expectedDetails);
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseTypeId(CASE_TYPE)
+            .caseId("12")
+            .caseData(new HashMap<>())
+            .build();
+        when(caseService.submitCase(
+            TEST_SERVICE_AUTH_TOKEN,
+            caseRequest
+        )).thenThrow(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                                                 pdfServiceException.getMessage(), pdfServiceException));
+
+        // when
+        mockMvc.perform(put(
+                            "/cases/submit-case",
+                            CASE_ID
+                        )
+                            .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(ResourceLoader.toJson(caseRequest))
+            )
+            .andExpect(status().isInternalServerError());
     }
 }
