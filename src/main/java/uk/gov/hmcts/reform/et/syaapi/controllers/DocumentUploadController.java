@@ -33,7 +33,7 @@ public class DocumentUploadController {
     private final CaseDocumentService caseDocumentService;
 
     /**
-     * Uploads a document to CCD and produces confirmation response.
+     * uploads the document to Case Document API and adds linked metadata to the case data within CCD.
      * @param authorization     Required to authenticate caller
      * @param caseTypeId        Which area this case document belongs to e.g. ET_EnglandWales
      * @param multipartFile     File to be uploaded
