@@ -94,15 +94,16 @@ class CaseDocumentServiceTest {
         + "\"claim-submit.png\",\"_links\":{\"self\":{\"href\": \"" + MOCK_HREF_MALFORMED + "\"}}}]}";
     private static final String MOCK_RESPONSE_WITHOUT_SELF = RESPONSE_BODY
         + "\"claim-submit.png\",\"_links\":{}}]}";
-    private final String fullJsonResponse = ResourceUtil.resourceAsString(
-        "responses/caseDocumentUpload.json"
-    );
+    private final String fullJsonResponse;
 
     private CaseDocumentService caseDocumentService;
     private MockRestServiceServer mockServer;
 
     CaseDocumentServiceTest() throws IOException {
         // constructor for case document series test
+        fullJsonResponse = ResourceUtil.resourceAsString(
+            "responses/caseDocumentUpload.json"
+        );
     }
 
     @BeforeEach
