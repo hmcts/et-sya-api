@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
 import uk.gov.hmcts.reform.et.syaapi.utils.TestConstants;
@@ -254,7 +255,7 @@ class CaseServiceTest {
             .postCode("AB10 1AH")
             .caseId(CASE_ID)
             .caseTypeId(EtSyaConstants.SCOTLAND_CASE_TYPE)
-            .caseData(new HashMap<String, Object>())
+            .caseData(new HashMap<>())
             .build();
         when(postcodeToOfficeService.getTribunalOfficeFromPostcode(anyString()))
             .thenReturn(Optional.of(TribunalOffice.ABERDEEN));
@@ -281,10 +282,14 @@ class CaseServiceTest {
             caseDataContent
         )).thenReturn(expectedDetails);
 
+        try {
+            CaseDetails caseDetails = caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseRequest);
+            caseData.setManagingOffice(null);
+            assertEquals(caseDetails, expectedDetails);
+        } catch (PdfServiceException e) {
+            throw new RuntimeException(e);
+        }
 
-        CaseDetails caseDetails = caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseRequest);
-        caseData.setManagingOffice(null);
-        assertEquals(caseDetails, expectedDetails);
     }
 
     @Test
