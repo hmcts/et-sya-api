@@ -38,6 +38,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CASE_FIELD_MANAGING_OFFICE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
@@ -370,5 +371,73 @@ class CaseServiceTest {
         );
 
         assertEquals(caseDetails, expectedDetails);
+    }
+
+    @Test
+    void shouldGetDefaultTribunalOfficeForEmptyPostCodeWhenSubmitCaseInCcd()
+        throws InvalidPostcodeException, PdfServiceException {
+        caseData.setManagingOffice(DEFAULT_TRIBUNAL_OFFICE.getOfficeName());
+        CaseDataContent caseDataContent = CaseDataContent.builder()
+            .event(Event.builder().id(TestConstants.DRAFT_EVENT_ID).build())
+            .eventToken(startEventResponse.getToken())
+            .data(caseData)
+            .build();
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+            USER_ID,
+            USER_EMAIL,
+            USER_FORENAME,
+            USER_SURNAME,
+            null
+        ));
+
+        CaseRequest caseRequest = CaseRequest.builder()
+            .postCode("YUMMY")
+            .caseId(CASE_ID)
+            .caseTypeId(EtSyaConstants.SCOTLAND_CASE_TYPE)
+            .caseData(new HashMap<>())
+            .build();
+        caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE, DEFAULT_TRIBUNAL_OFFICE.getOfficeName());
+        when(postcodeToOfficeService.getTribunalOfficeFromPostcode("YUMMY"))
+            .thenThrow(new InvalidPostcodeException("YUMMY is invalid"));
+        when(pdfService.convertCaseToPdf(new EmployeeObjectMapper().getCaseData(caseRequest.getCaseData())))
+            .thenReturn(new byte[] {});
+        when(ccdApiClient.startEventForCitizen(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            USER_ID,
+            EtSyaConstants.JURISDICTION_ID,
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            CASE_ID,
+            TestConstants.SUBMIT_CASE_DRAFT
+        )).thenReturn(
+            startEventResponse);
+
+        when(ccdApiClient.submitEventForCitizen(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            USER_ID,
+            EtSyaConstants.JURISDICTION_ID,
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            CASE_ID,
+            true,
+            caseDataContent
+        )).thenReturn(expectedDetails);
+
+        when(ccdApiClient.submitEventForCitizen(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            USER_ID,
+            EtSyaConstants.JURISDICTION_ID,
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            CASE_ID,
+            true,
+            caseDataContent
+        )).thenReturn(expectedDetails);
+
+
+        CaseDetails caseDetails = caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseRequest);
+        assertEquals(caseDetails, expectedDetails);
+
     }
 }
