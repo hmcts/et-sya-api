@@ -20,138 +20,143 @@ import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class TestModelCreator {
-    public static final String COUNTRY = "United Kingdom";
+    private static final String COUNTRY = "United Kingdom";
     public static final String TYPE_OF_CLAIM_BREACH_OF_CONTRACT = "breachOfContract";
     public static final String TYPE_OF_CLAIM_DISCRIMINATION = "discrimination";
     public static final String TYPE_OF_CLAIM_PAY_RELATED_CLAIM = "payRelated";
     public static final String TYPE_OF_CLAIM_UNFAIR_DISMISSAL = "unfairDismissal";
     public static final String TYPE_OF_CLAIM_WHISTLE_BLOWING = "whistleBlowing";
-    public static final String MANAGING_OFFICE = "ET_Scotland";
-    public static final String CASE_NOTES = "Dummy Case Notes";
-    public static final String CASE_TYPE_SINGLE = "Single";
-    public static final String CASE_SOURCE_INTERNET = "Internet";
-    public static final String YES_OR_NO_YES = "Yes";
-    public static final String CLAIMANT_SEX_MALE = "Male";
-    public static final String CLAIMANT_FIRST_NAME = "Michael";
-    public static final String CLAIMANT_LAST_NAME = "Jackson";
-    public static final String CLAIMANT_TITLE = "Pop star";
-    public static final String CLAIMANT_PREFERRED_TITLE = "Mr";
-    public static final String CLAIMANT_GENDER_IDENTITY = "Heterosexual";
-    public static final String CLAIMANT_DATE_OF_BIRTH = new DateTime(DateTime.parse("1979-08-05T07:22:05Z")).toString();
-    public static final String CLAIMANT_ADDRESS_LINE_1 = "40 Furrow way";
-    public static final String CLAIMANT_COUNTRY = COUNTRY;
-    public static final String CLAIMANT_COUNTY = "Berkshire";
-    public static final String CLAIMANT_POST_CODE = "SL6 3NY";
-    public static final String CLAIMANT_POST_TOWN = "Maidenhead";
-    public static final String CLAIMANT_PHONE_NUMBER = "07444518903";
-    public static final String CLAIMANT_MOBILE_NUMBER = "07444518903";
-    public static final String CLAIMANT_EMAIL_ADDRESS = "michael.jackson@gmail.com";
-    public static final String CLAIMANT_CONTACT_PREFERENCE = "Email";
-    public static final String CLAIMANT_CONTACT_LANGUAGE = "English";
+    private static final String MANAGING_OFFICE = "ET_Scotland";
+    private static final String CASE_NOTES = "Dummy Case Notes";
+    private static final String CASE_TYPE_SINGLE = "Single";
+    private static final String CASE_SOURCE_INTERNET = "Internet";
+    private static final String YES_OR_NO_YES = "Yes";
+    private static final String CLAIMANT_SEX_MALE = "Male";
+    private static final String CLAIMANT_FIRST_NAME = "Michael";
+    private static final String CLAIMANT_LAST_NAME = "Jackson";
+    private static final String CLAIMANT_TITLE = "Pop star";
+    private static final String CLAIMANT_PREFERRED_TITLE = "Mr";
+    private static final String CLAIMANT_GENDER_IDENTITY = "Heterosexual";
+    private static final String CLAIMANT_DATE_OF_BIRTH =
+        new DateTime(DateTime.parse("1979-08-05T07:22:05Z")).toString();
+    private static final String CLAIMANT_ADDRESS_LINE_1 = "40 Furrow way";
+    private static final String CLAIMANT_COUNTRY = COUNTRY;
+    private static final String CLAIMANT_COUNTY = "Berkshire";
+    private static final String CLAIMANT_POST_CODE = "SL6 3NY";
+    private static final String CLAIMANT_POST_TOWN = "Maidenhead";
+    private static final String CLAIMANT_PHONE_NUMBER = "07444518903";
+    private static final String CLAIMANT_MOBILE_NUMBER = "07444518903";
+    private static final String CLAIMANT_EMAIL_ADDRESS = "michael.jackson@gmail.com";
+    private static final String CLAIMANT_CONTACT_PREFERENCE = "Email";
+    private static final String CLAIMANT_CONTACT_LANGUAGE = "English";
 
-    public static final String CLAIMANT_OCCUPATION = "Software Engineer";
-    public static final String CLAIMANT_EMPLOYED_FROM = new DateTime(DateTime.parse("2020-01-01T07:22:05Z")).toString();
-    public static final String CLAIMANT_EMPLOYED_CURRENTLY = "No";
-    public static final String CLAIMANT_EMPLOYED_TO = new DateTime(DateTime.parse("2022-01-01T07:22:05Z")).toString();
-    public static final String CLAIMANT_EMPLOYED_NOTICE_PERIOD = YES_OR_NO_YES;
-    public static final String CLAIMANT_DISABLED = "No";
-    public static final String CLAIMANT_NOTICE_PERIOD = YES_OR_NO_YES;
-    public static final String CLAIMANT_NOTICE_PERIOD_UNIT = "Weeks";
-    public static final String CLAIMANT_NOTICE_PERIOD_DURATION = "2";
-    public static final String CLAIMANT_AVERAGE_WEEKLY_HOURS = "36.5";
-    public static final String CLAIMANT_PAY_BEFORE_TAX = "27000";
-    public static final String CLAIMANT_PAY_AFTER_TAX = "22000";
-    public static final String CLAIMANT_PAY_CYCLE = "Annual";
-    public static final String CLAIMANT_PENSION_CONTRIBUTION = YES_OR_NO_YES;
-    public static final String CLAIMANT_PENSION_WEEKLY_CONTRIBUTION = "100";
-    public static final String CLAIMANT_BENEFITS = YES_OR_NO_YES;
-    public static final String CLAIMANT_BENEFITS_DETAIL = "Car";
-    public static final String CLAIMANT_PAST_EMPLOYER = "Test Soft";
-    public static final String CLAIMANT_STILL_WORKING = "No";
-    public static final String CLAIMANT_WORK_ADDRESS_LINE_1 = "9 Furrow way";
-    public static final String CLAIMANT_WORK_COUNTRY = COUNTRY;
-    public static final String CLAIMANT_WORK_COUNTY = "Belfast";
-    public static final String CLAIMANT_WORK_POST_CODE = "BL2 1AS";
-    public static final String CLAIMANT_WORK_POST_TOWN = "Belfast Center";
-    public static final String CLAIMANT_WORK_PHONE_NUMBER = "07444518999";
-    public static final String CLAIMANT_COMPENSATION = YES_OR_NO_YES;
-    public static final String CLAIMANT_TRIBUNAL = "I want tribunal";
-    public static final String CLAIMANT_OLD_JOB = "No";
-    public static final String CLAIMANT_ANOTHER_JOB = YES_OR_NO_YES;
-    public static final String CLAIMANT_COMPENSATION_AMOUNT = "2000";
-    public static final String CLAIMANT_TRIBUNAL_RECOMMENDATION = YES_OR_NO_YES;
+    private static final String CLAIMANT_OCCUPATION = "Software Engineer";
+    private static final String CLAIMANT_EMPLOYED_FROM =
+        new DateTime(DateTime.parse("2020-01-01T07:22:05Z")).toString();
+    private static final String CLAIMANT_EMPLOYED_CURRENTLY = "No";
+    private static final String CLAIMANT_EMPLOYED_TO =
+        new DateTime(DateTime.parse("2022-01-01T07:22:05Z")).toString();
+    private static final String CLAIMANT_EMPLOYED_NOTICE_PERIOD = YES_OR_NO_YES;
+    private static final String CLAIMANT_DISABLED = "No";
+    private static final String CLAIMANT_NOTICE_PERIOD = YES_OR_NO_YES;
+    private static final String CLAIMANT_NOTICE_PERIOD_UNIT = "Weeks";
+    private static final String CLAIMANT_NOTICE_PERIOD_DURATION = "2";
+    private static final String CLAIMANT_AVERAGE_WEEKLY_HOURS = "36.5";
+    private static final String CLAIMANT_PAY_BEFORE_TAX = "27000";
+    private static final String CLAIMANT_PAY_AFTER_TAX = "22000";
+    private static final String CLAIMANT_PAY_CYCLE = "Annual";
+    private static final String CLAIMANT_PENSION_CONTRIBUTION = YES_OR_NO_YES;
+    private static final String CLAIMANT_PENSION_WEEKLY_CONTRIBUTION = "100";
+    private static final String CLAIMANT_BENEFITS = YES_OR_NO_YES;
+    private static final String CLAIMANT_BENEFITS_DETAIL = "Car";
+    private static final String CLAIMANT_PAST_EMPLOYER = "Test Soft";
+    private static final String CLAIMANT_STILL_WORKING = "No";
+    private static final String CLAIMANT_WORK_ADDRESS_LINE_1 = "9 Furrow way";
+    private static final String CLAIMANT_WORK_COUNTRY = COUNTRY;
+    private static final String CLAIMANT_WORK_COUNTY = "Belfast";
+    private static final String CLAIMANT_WORK_POST_CODE = "BL2 1AS";
+    private static final String CLAIMANT_WORK_POST_TOWN = "Belfast Center";
+    private static final String CLAIMANT_WORK_PHONE_NUMBER = "07444518999";
+    private static final String CLAIMANT_COMPENSATION = YES_OR_NO_YES;
+    private static final String CLAIMANT_TRIBUNAL = "I want tribunal";
+    private static final String CLAIMANT_OLD_JOB = "No";
+    private static final String CLAIMANT_ANOTHER_JOB = YES_OR_NO_YES;
+    private static final String CLAIMANT_COMPENSATION_AMOUNT = "2000";
+    private static final String CLAIMANT_TRIBUNAL_RECOMMENDATION = YES_OR_NO_YES;
 
-    public static final String REPRESENTATIVE_NAME = "Christiano Ronaldo";
-    public static final String REPRESENTATIVE_ORGANISATION = "London Law Firm";
-    public static final String REPRESENTATIVE_OCCUPATION = "Lawyer";
-    public static final String REPRESENTATIVE_PHONE_NUMBER = "07444518911";
-    public static final String REPRESENTATIVE_MOBILE_NUMBER = "07444518911";
-    public static final String REPRESENTATIVE_EMAIL_ADDRESS = "christiano.ronaldo@gmail.com";
-    public static final String REPRESENTATIVE_PREFERENCE = "Email";
-    public static final String REPRESENTATIVE_ADDRESS_LINE_1 = "12 Gunthrope Rode";
-    public static final String REPRESENTATIVE_COUNTRY = COUNTRY;
-    public static final String REPRESENTATIVE_COUNTY = "Buckinghamshire";
-    public static final String REPRESENTATIVE_POST_CODE = "SL2 5XC";
-    public static final String REPRESENTATIVE_POST_TOWN = "Marlow";
-    public static final String RESPONDENT1_ID = "1";
-    public static final String RESPONDENT1_NAME = "Marc Judge";
-    public static final String RESPONDENT1_ACAS_QUESTION = YES_OR_NO_YES;
-    public static final String RESPONDENT1_ACAS = YES_OR_NO_YES;
-    public static final String RESPONDENT1_ACAS_NO = "R12/45678901";
-    public static final String RESPONDENT1_ADDRESS_LINE_1 = "23 Furrow way";
-    public static final String RESPONDENT1_COUNTRY = COUNTRY;
-    public static final String RESPONDENT1_COUNTY = "Liverpool";
-    public static final String RESPONDENT1_POST_CODE = "LV1 1AA";
-    public static final String RESPONDENT1_POST_TOWN = "Liverpool Center";
-    public static final String RESPONDENT1_PHONE1 = "074441567897";
-    public static final String RESPONDENT1_PHONE2 = "074441894561";
-    public static final String RESPONDENT1_EMAIL = "marc.judge@gmail.com";
-    public static final String RESPONDENT1_CONTACT_PREFERENCE = "Post";
-    public static final String RESPONDENT2_ID = "2";
-    public static final String RESPONDENT2_NAME = "Mehmet Tahir Dede";
-    public static final String RESPONDENT2_ACAS_QUESTION = YES_OR_NO_YES;
-    public static final String RESPONDENT2_ACAS = YES_OR_NO_YES;
-    public static final String RESPONDENT2_ACAS_NO = "R12/31278901";
-    public static final String RESPONDENT2_ADDRESS_LINE_1 = "33 Furrow way";
-    public static final String RESPONDENT2_COUNTRY = COUNTRY;
-    public static final String RESPONDENT2_COUNTY = "Lake Distrcit";
-    public static final String RESPONDENT2_POST_CODE = "LD1 1AA";
-    public static final String RESPONDENT2_POST_TOWN = "Lake District Center";
-    public static final String RESPONDENT2_PHONE1 = "07444123456";
-    public static final String RESPONDENT2_PHONE2 = "07444124567";
-    public static final String RESPONDENT2_EMAIL = "mehmet.dede@gmail.com";
-    public static final String RESPONDENT2_CONTACT_PREFERENCE = "Email";
+    private static final String REPRESENTATIVE_NAME = "Christiano Ronaldo";
+    private static final String REPRESENTATIVE_ORGANISATION = "London Law Firm";
+    private static final String REPRESENTATIVE_OCCUPATION = "Lawyer";
+    private static final String REPRESENTATIVE_PHONE_NUMBER = "07444518911";
+    private static final String REPRESENTATIVE_MOBILE_NUMBER = "07444518911";
+    private static final String REPRESENTATIVE_EMAIL_ADDRESS = "christiano.ronaldo@gmail.com";
+    private static final String REPRESENTATIVE_PREFERENCE = "Email";
+    private static final String REPRESENTATIVE_ADDRESS_LINE_1 = "12 Gunthrope Rode";
+    private static final String REPRESENTATIVE_COUNTRY = COUNTRY;
+    private static final String REPRESENTATIVE_COUNTY = "Buckinghamshire";
+    private static final String REPRESENTATIVE_POST_CODE = "SL2 5XC";
+    private static final String REPRESENTATIVE_POST_TOWN = "Marlow";
+    private static final String RESPONDENT1_ID = "1";
+    private static final String RESPONDENT1_NAME = "Marc Judge";
+    private static final String RESPONDENT1_ACAS_QUESTION = YES_OR_NO_YES;
+    private static final String RESPONDENT1_ACAS = YES_OR_NO_YES;
+    private static final String RESPONDENT1_ACAS_NO = "R12/45678901";
+    private static final String RESPONDENT1_ADDRESS_LINE_1 = "23 Furrow way";
+    private static final String RESPONDENT1_COUNTRY = COUNTRY;
+    private static final String RESPONDENT1_COUNTY = "Liverpool";
+    private static final String RESPONDENT1_POST_CODE = "LV1 1AA";
+    private static final String RESPONDENT1_POST_TOWN = "Liverpool Center";
+    private static final String RESPONDENT1_PHONE1 = "074441567897";
+    private static final String RESPONDENT1_PHONE2 = "074441894561";
+    private static final String RESPONDENT1_EMAIL = "marc.judge@gmail.com";
+    private static final String RESPONDENT1_CONTACT_PREFERENCE = "Post";
+    private static final String RESPONDENT2_ID = "2";
+    private static final String RESPONDENT2_NAME = "Mehmet Tahir Dede";
+    private static final String RESPONDENT2_ACAS_QUESTION = YES_OR_NO_YES;
+    private static final String RESPONDENT2_ACAS = YES_OR_NO_YES;
+    private static final String RESPONDENT2_ACAS_NO = "R12/31278901";
+    private static final String RESPONDENT2_ADDRESS_LINE_1 = "33 Furrow way";
+    private static final String RESPONDENT2_COUNTRY = COUNTRY;
+    private static final String RESPONDENT2_COUNTY = "Lake Distrcit";
+    private static final String RESPONDENT2_POST_CODE = "LD1 1AA";
+    private static final String RESPONDENT2_POST_TOWN = "Lake District Center";
+    private static final String RESPONDENT2_PHONE1 = "07444123456";
+    private static final String RESPONDENT2_PHONE2 = "07444124567";
+    private static final String RESPONDENT2_EMAIL = "mehmet.dede@gmail.com";
+    private static final String RESPONDENT2_CONTACT_PREFERENCE = "Email";
 
-    public static final String NEW_JOB = "Software Specialist";
-    public static final String NEWLY_EMPLOYED_FROM = new DateTime(DateTime.parse("2022-03-01T07:22:05Z")).toString();
-    public static final String NEW_PAY_BEFORE_TAX = "30000";
-    public static final String NEW_JOB_PAY_INTERVAL = "Annual";
+    private static final String NEW_JOB = "Software Specialist";
+    private static final String NEWLY_EMPLOYED_FROM = new DateTime(DateTime.parse("2022-03-01T07:22:05Z")).toString();
+    private static final String NEW_PAY_BEFORE_TAX = "30000";
+    private static final String NEW_JOB_PAY_INTERVAL = "Annual";
 
-    public static final String HEARING_PREFERENCE_VIDEO = "Video";
-    public static final String HEARING_PREFERENCE_PHONE = "Phone";
-    public static final String HEARING_ASSISTANCE = "Yes I want";
-    public static final String REASONABLE_ADJUSTMENTS = YES_OR_NO_YES;
-    public static final String REASONABLE_ADJUSTMENTS_DETAIL = "I need a wheelchair";
+    private static final String HEARING_PREFERENCE_VIDEO = "Video";
+    private static final String HEARING_PREFERENCE_PHONE = "Phone";
+    private static final String HEARING_ASSISTANCE = "Yes I want";
+    private static final String REASONABLE_ADJUSTMENTS = YES_OR_NO_YES;
+    private static final String REASONABLE_ADJUSTMENTS_DETAIL = "I need a wheelchair";
 
-    public static final String WHISTLE_BLOWING = YES_OR_NO_YES;
-    public static final String WHISTLE_BLOWING_AUTHORITY = "Whistle Blowing Authority";
-    public static final String CLAIM_DESCRIPTION = "This is a test claim";
+    private static final String WHISTLE_BLOWING = YES_OR_NO_YES;
+    private static final String WHISTLE_BLOWING_AUTHORITY = "Whistle Blowing Authority";
+    private static final String CLAIM_DESCRIPTION = "This is a test claim";
 
-    public static final String DOCUMENT_BINARY_URL = "https://document.binary.url";
-    public static final String DOCUMENT_FILE_NAME = "filename";
-    public static final String DOCUMENT_URL = "https://document.url";
+    private static final String DOCUMENT_BINARY_URL = "https://document.binary.url";
+    private static final String DOCUMENT_FILE_NAME = "filename";
+    private static final String DOCUMENT_URL = "https://document.url";
 
-    public static final String PERSONAL_DETAILS_CHECK = YES_OR_NO_YES;
-    public static final String EMPLOYMENT_AND_RESPONDENT_CHECK = YES_OR_NO_YES;
-    public static final String CLAIM_DETAILS_CHECK = YES_OR_NO_YES;
+    private static final String PERSONAL_DETAILS_CHECK = YES_OR_NO_YES;
+    private static final String EMPLOYMENT_AND_RESPONDENT_CHECK = YES_OR_NO_YES;
+    private static final String CLAIM_DETAILS_CHECK = YES_OR_NO_YES;
 
     private TestModelCreator() {
 
     }
 
-    public static List<JurCodesTypeItem> getJureCodesTypeItemList() {
+    private static List<JurCodesTypeItem> getJureCodesTypeItemList() {
         JurCodesTypeItem jurCodesTypeItem = new JurCodesTypeItem();
         jurCodesTypeItem.setId("1");
         JurCodesType jurCodesType = new JurCodesType();
@@ -164,7 +169,7 @@ public final class TestModelCreator {
         return List.of(jurCodesTypeItem);
     }
 
-    public static String[] getTypeOfClaimArray() {
+    private static String[] getTypeOfClaimArray() {
         return new String[] {
             TYPE_OF_CLAIM_DISCRIMINATION,
             TYPE_OF_CLAIM_BREACH_OF_CONTRACT,
@@ -173,7 +178,7 @@ public final class TestModelCreator {
             TYPE_OF_CLAIM_WHISTLE_BLOWING};
     }
 
-    public static ClaimantIndType getClaimantIndType() {
+    private static ClaimantIndType getClaimantIndType() {
         ClaimantIndType claimantIndType = new ClaimantIndType();
         claimantIndType.setClaimantDateOfBirth(CLAIMANT_DATE_OF_BIRTH);
         claimantIndType.setClaimantFirstNames(CLAIMANT_FIRST_NAME);
@@ -196,7 +201,7 @@ public final class TestModelCreator {
         return address;
     }
 
-    public static ClaimantType getClaimantType() {
+    private static ClaimantType getClaimantType() {
         ClaimantType claimantType = new ClaimantType();
         claimantType.setClaimantAddressUK(getAddress(
             CLAIMANT_ADDRESS_LINE_1,
@@ -213,7 +218,7 @@ public final class TestModelCreator {
         return claimantType;
     }
 
-    public static RepresentedTypeC getRepresentativeClaimantTypeType() {
+    private static RepresentedTypeC getRepresentativeClaimantTypeType() {
         RepresentedTypeC representedType = new RepresentedTypeC();
         representedType.setNameOfRepresentative(REPRESENTATIVE_NAME);
         representedType.setRepresentativeAddress(getAddress(
@@ -233,7 +238,7 @@ public final class TestModelCreator {
         return representedType;
     }
 
-    public static ClaimantOtherType getClaimantOtherType() {
+    private static ClaimantOtherType getClaimantOtherType() {
         ClaimantOtherType claimantOtherType = new ClaimantOtherType();
         claimantOtherType.setClaimantBenefits(CLAIMANT_BENEFITS);
         claimantOtherType.setClaimantDisabled(CLAIMANT_DISABLED);
@@ -257,7 +262,7 @@ public final class TestModelCreator {
         return claimantOtherType;
     }
 
-    public static List<RespondentSumTypeItem> getRespondentCollection() {
+    private static List<RespondentSumTypeItem> getRespondentCollection() {
         RespondentSumTypeItem respondentSumTypeItem1 = new RespondentSumTypeItem();
         RespondentSumType respondentSumType1 = new RespondentSumType();
         respondentSumTypeItem1.setId(RESPONDENT1_ID);
@@ -303,7 +308,7 @@ public final class TestModelCreator {
         return respondentSumTypeItems;
     }
 
-    public static ClaimantWorkAddressType getClaimantWorkAddress() {
+    private static ClaimantWorkAddressType getClaimantWorkAddress() {
         ClaimantWorkAddressType claimantWorkAddressType = new ClaimantWorkAddressType();
         claimantWorkAddressType.setClaimantWorkAddress(getAddress(
             CLAIMANT_WORK_ADDRESS_LINE_1,
@@ -316,7 +321,7 @@ public final class TestModelCreator {
         return claimantWorkAddressType;
     }
 
-    public static NewEmploymentType getNewEmploymentType() {
+    private static NewEmploymentType getNewEmploymentType() {
         NewEmploymentType newEmploymentType = new NewEmploymentType();
         newEmploymentType.setNewJob(NEW_JOB);
         newEmploymentType.setNewJobPayInterval(NEW_JOB_PAY_INTERVAL);
@@ -333,7 +338,7 @@ public final class TestModelCreator {
         return uploadedDocumentType;
     }
 
-    public static ClaimantRequestType getClaimantRequests() {
+    private static ClaimantRequestType getClaimantRequests() {
         ClaimantRequestType claimantRequestType = new ClaimantRequestType();
         claimantRequestType.setClaimantCompensation(CLAIMANT_COMPENSATION);
         claimantRequestType.setClaimantTribunal(CLAIMANT_TRIBUNAL);
@@ -349,7 +354,7 @@ public final class TestModelCreator {
         return claimantRequestType;
     }
 
-    public static ClaimantHearingPreference getClaimantHearingPreference() {
+    private static ClaimantHearingPreference getClaimantHearingPreference() {
         ClaimantHearingPreference claimantHearingPreference = new ClaimantHearingPreference();
         claimantHearingPreference.setHearingPreferences(Arrays.asList(HEARING_PREFERENCE_VIDEO,
                                                                       HEARING_PREFERENCE_PHONE));
@@ -359,11 +364,33 @@ public final class TestModelCreator {
         return claimantHearingPreference;
     }
 
-    public static TaskListCheckType getClaimantTaskListChecks() {
+    private static TaskListCheckType getClaimantTaskListChecks() {
         TaskListCheckType taskListCheckType = new TaskListCheckType();
         taskListCheckType.setClaimDetailsCheck(CLAIM_DETAILS_CHECK);
         taskListCheckType.setPersonalDetailsCheck(PERSONAL_DETAILS_CHECK);
         taskListCheckType.setEmploymentAndRespondentCheck(EMPLOYMENT_AND_RESPONDENT_CHECK);
         return taskListCheckType;
+    }
+
+    public static Map<String, Object> createRequestCaseData() {
+        Map<String, Object> requestCaseData = new ConcurrentHashMap<>();
+        requestCaseData.put("typeOfClaim", TestModelCreator.getTypeOfClaimArray());
+        requestCaseData.put("caseType", TestModelCreator.CASE_TYPE_SINGLE);
+        requestCaseData.put("caseSource", TestModelCreator.CASE_SOURCE_INTERNET);
+        requestCaseData.put("claimantRepresentedQuestion", TestModelCreator.YES_OR_NO_YES);
+        requestCaseData.put("jurCodesCollection", TestModelCreator.getJureCodesTypeItemList());
+        requestCaseData.put("claimantIndType", TestModelCreator.getClaimantIndType());
+        requestCaseData.put("claimantType", TestModelCreator.getClaimantType());
+        requestCaseData.put("representativeClaimantType", TestModelCreator.getRepresentativeClaimantTypeType());
+        requestCaseData.put("claimantOtherType", TestModelCreator.getClaimantOtherType());
+        requestCaseData.put("respondentCollection", TestModelCreator.getRespondentCollection());
+        requestCaseData.put("claimantWorkAddress", TestModelCreator.getClaimantWorkAddress());
+        requestCaseData.put("caseNotes", TestModelCreator.CASE_NOTES);
+        requestCaseData.put("managingOffice", TestModelCreator.MANAGING_OFFICE);
+        requestCaseData.put("newEmploymentType", TestModelCreator.getNewEmploymentType());
+        requestCaseData.put("claimantRequests", TestModelCreator.getClaimantRequests());
+        requestCaseData.put("claimantHearingPreference", TestModelCreator.getClaimantHearingPreference());
+        requestCaseData.put("claimantTaskListChecks", TestModelCreator.getClaimantTaskListChecks());
+        return requestCaseData;
     }
 }
