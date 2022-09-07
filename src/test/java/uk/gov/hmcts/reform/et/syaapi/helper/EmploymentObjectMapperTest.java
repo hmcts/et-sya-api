@@ -26,8 +26,6 @@ class EmploymentObjectMapperTest {
         employmentObjectMapper = new EmployeeObjectMapper();
     }
 
-
-
     @Test
     void shouldGetEmployeeObjetMapper() {
         Et1CaseData et1CaseData = employmentObjectMapper.getEmploymentCaseData("{\"caseNotes\": \"TEST\"}");
@@ -69,10 +67,5 @@ class EmploymentObjectMapperTest {
         assertThat(caseData.getClaimantHearingPreference()).isEqualTo(
             requestCaseData.get("claimantHearingPreference"));
         assertThat(caseData.getClaimantTaskListChecks()).isEqualTo(requestCaseData.get("claimantTaskListChecks"));
-
-
-
-
-
     }
 }
