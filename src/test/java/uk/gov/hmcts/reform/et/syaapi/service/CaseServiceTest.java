@@ -16,9 +16,9 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
-import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
@@ -37,13 +37,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CASE_FIELD_MANAGING_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
 class CaseServiceTest {
-    private static final String CASE_TYPE = "ET_Scotland";
+
     private static final String CASE_ID = "TEST_CASE_ID";
     private static final String USER_ID = "TEST_USER_ID";
     private static final String JURISDICTION_ID = "EMPLOYMENT";
@@ -98,11 +99,9 @@ class CaseServiceTest {
     @InjectMocks
     private CaseService caseService;
     @Mock
-    private CaseDetailsConverter caseDetailsConverter;
-    @Mock
-    private EmployeeObjectMapper employeeObjectMapper;
-    @Mock
     private PostcodeToOfficeService postcodeToOfficeService;
+    @Mock
+    private PdfService pdfService;
 
 
     CaseServiceTest() throws IOException {
@@ -235,7 +234,7 @@ class CaseServiceTest {
     }
 
     @Test
-    void shouldSubmitCaseInCcd() throws InvalidPostcodeException {
+    void shouldSubmitCaseInCcd() throws InvalidPostcodeException, PdfServiceException {
         // Given
         caseData.setManagingOffice("Aberdeen");
         CaseDataContent caseDataContent = CaseDataContent.builder()
@@ -251,15 +250,18 @@ class CaseServiceTest {
             USER_SURNAME,
             null
         ));
+
         CaseRequest caseRequest = CaseRequest.builder()
             .postCode("AB10 1AH")
             .caseId(CASE_ID)
             .caseTypeId(EtSyaConstants.SCOTLAND_CASE_TYPE)
             .caseData(new HashMap<>())
             .build();
+        caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE, "Aberdeen");
         when(postcodeToOfficeService.getTribunalOfficeFromPostcode(anyString()))
             .thenReturn(Optional.of(TribunalOffice.ABERDEEN));
-
+        when(pdfService.convertCaseToPdf(new EmployeeObjectMapper().getCaseData(caseRequest.getCaseData())))
+            .thenReturn(new byte[] {});
         when(ccdApiClient.startEventForCitizen(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
@@ -282,13 +284,21 @@ class CaseServiceTest {
             caseDataContent
         )).thenReturn(expectedDetails);
 
-        try {
-            CaseDetails caseDetails = caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseRequest);
-            caseData.setManagingOffice(null);
-            assertEquals(caseDetails, expectedDetails);
-        } catch (PdfServiceException e) {
-            throw new RuntimeException(e);
-        }
+        when(ccdApiClient.submitEventForCitizen(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            USER_ID,
+            EtSyaConstants.JURISDICTION_ID,
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            CASE_ID,
+            true,
+            caseDataContent
+        )).thenReturn(expectedDetails);
+
+
+        CaseDetails caseDetails = caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseRequest);
+        assertEquals(caseDetails, expectedDetails);
+
 
     }
 
@@ -321,7 +331,7 @@ class CaseServiceTest {
             UPDATE_CASE_DRAFT
         );
 
-        assertEquals(eventResponse.getCaseDetails().getCaseTypeId(), CASE_TYPE);
+        assertEquals(eventResponse.getCaseDetails().getCaseTypeId(), EtSyaConstants.SCOTLAND_CASE_TYPE);
     }
 
     @Test

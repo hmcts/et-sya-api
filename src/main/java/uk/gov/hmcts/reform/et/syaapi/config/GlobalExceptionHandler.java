@@ -59,7 +59,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.error(exception.getMessage(), exception);
         return ResponseEntity.status(exception.getStatus()).body(
             ErrorResponse.builder()
-                .message(exception.getMessage())
+                .message(exception.getLocalizedMessage())
                 .code(exception.getStatus().value())
                 .build()
         );

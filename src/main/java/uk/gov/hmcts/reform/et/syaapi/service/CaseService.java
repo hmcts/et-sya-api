@@ -175,7 +175,7 @@ public class CaseService {
                                   CaseRequest caseRequest) throws PdfServiceException {
         caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE,
             getTribunalOfficeFromPostCode(caseRequest.getPostCode()).getOfficeName());
-        // pdfService.convertCaseToPdf((CaseData) caseRequest.getCaseData());
+        pdfService.convertCaseToPdf(new EmployeeObjectMapper().getCaseData(caseRequest.getCaseData()));
         return triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.SUBMIT_CASE_DRAFT,
                             caseRequest.getCaseTypeId(), caseRequest.getCaseData());
     }

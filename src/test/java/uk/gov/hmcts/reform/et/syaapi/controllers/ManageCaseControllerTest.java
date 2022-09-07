@@ -10,10 +10,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.server.ResponseStatusException;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
@@ -78,10 +76,6 @@ class ManageCaseControllerTest {
 
     @MockBean
     private PostcodeToOfficeService postcodeToOfficeService;
-
-    ManageCaseControllerTest() throws IOException {
-        // Default constructor
-    }
 
     @SneakyThrows
     @Test
@@ -282,27 +276,13 @@ class ManageCaseControllerTest {
             "Bloggs",
             null
         ));
-        when(postcodeToOfficeService.getTribunalOfficeFromPostcode(anyString()))
-            .thenReturn(Optional.of(DEFAULT_TRIBUNAL_OFFICE));
-        PdfServiceException pdfServiceException = new PdfServiceException("Failed to convert to PDF",
-                                                                          new IOException());
-        when(caseService.triggerEvent(
-            TEST_SERVICE_AUTH_TOKEN,
-            CASE_ID,
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
-            CaseEvent.valueOf("SUBMIT_CASE_DRAFT"),
-            null
-        )).thenReturn(expectedDetails);
         CaseRequest caseRequest = CaseRequest.builder()
             .caseTypeId(CASE_TYPE)
             .caseId("12")
             .caseData(new HashMap<>())
             .build();
-        when(caseService.submitCase(
-            TEST_SERVICE_AUTH_TOKEN,
-            caseRequest
-        )).thenThrow(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                                                 pdfServiceException.getMessage(), pdfServiceException));
+        when(caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseRequest))
+            .thenThrow(new PdfServiceException("Failed to convert to PDF", new IOException()));
 
         // when
         mockMvc.perform(put(
