@@ -18,11 +18,13 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
+import uk.gov.hmcts.reform.et.syaapi.models.DocumentDetailsResponse;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -66,7 +68,7 @@ public class CaseDocumentService {
      */
     public CaseDocumentService(RestTemplate restTemplate,
                                AuthTokenGenerator authTokenGenerator,
-                               @Value("${case_document_am.url}/cases/documents}")
+                               @Value("${case_document_am.url}")
                                    String caseDocApiUrl,
                                @Value("${case_document_am.max_retries}") Integer maxApiRetries) {
         this.restTemplate = restTemplate;
@@ -93,6 +95,34 @@ public class CaseDocumentService {
             Objects.requireNonNull(response), file.getOriginalFilename());
 
         return getUriFromFile(caseDocument, file.getOriginalFilename());
+    }
+
+    public ResponseEntity<ByteArrayResource> downloadDocument(String authToken, UUID documentId) {
+        HttpHeaders headers = new HttpHeaders();
+//        headers.add(HttpHeaders.AUTHORIZATION, authToken);
+        headers.add(SERVICE_AUTHORIZATION, authTokenGenerator.generate());
+        HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(headers);
+
+        return restTemplate.exchange(
+            caseDocApiUrl + "/cases/documents/" + documentId + "/binary",
+            HttpMethod.GET,
+            request,
+            ByteArrayResource.class
+        );
+    }
+
+    public ResponseEntity<DocumentDetailsResponse> getDocumentDetails(String authToken, UUID documentId) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.AUTHORIZATION, authToken);
+        headers.add(SERVICE_AUTHORIZATION, authTokenGenerator.generate());
+        HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(headers);
+
+        return restTemplate.exchange(
+            caseDocApiUrl + "/cases/documents/" + documentId,
+            HttpMethod.GET,
+            request,
+            DocumentDetailsResponse.class
+        );
     }
 
     private URI getUriFromFile(CaseDocument caseDocument, String originalFilename) throws CaseDocumentException {
@@ -131,7 +161,7 @@ public class CaseDocumentService {
         HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, getHttpHeaders(authToken));
 
         return restTemplate.exchange(
-            caseDocApiUrl,
+            caseDocApiUrl + "/cases/documents",
             HttpMethod.POST,
             request,
             DocumentUploadResponse.class
