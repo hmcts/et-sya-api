@@ -135,4 +135,7 @@
   <suppress until="2022-11-20">
     <cve>CVE-2022-31569</cve>
   </suppress>
+  <suppress until="2022-11-20">
+    <cve>CVE-2022-25857</cve>
+  </suppress>
 </suppressions>
