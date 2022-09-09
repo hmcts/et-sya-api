@@ -6,6 +6,7 @@ import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDNonTerminalField;
+import org.apache.tika.Tika;
 import org.elasticsearch.core.Tuple;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.et.syaapi.service.CaseService.CREATED_PDF_FILE_TIKA_CONTENT_TYPE;
+
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -119,7 +122,7 @@ class PdfServiceTest {
     @Test
     void shouldCreatePdfFile() throws IOException {
         byte[] pdfData = pdfService.createPdf(caseData);
-        assertThat(pdfData).isNotEmpty();
+        assertThat(new Tika().detect(pdfData)).isEqualTo(CREATED_PDF_FILE_TIKA_CONTENT_TYPE);
     }
 
     @Test

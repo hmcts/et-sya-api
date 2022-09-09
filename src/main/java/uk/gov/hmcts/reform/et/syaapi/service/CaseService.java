@@ -47,6 +47,7 @@ import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.INITIATE_CASE_DRAFT;
 @RequiredArgsConstructor
 public class CaseService {
 
+    public static final String CREATED_PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private final AuthTokenGenerator authTokenGenerator;
 
     private final CoreCaseDataApi ccdApiClient;
@@ -186,7 +187,7 @@ public class CaseService {
                             caseRequest.getCaseTypeId(),
                             new PdfDecodedMultipartFile(pdfData,
                                                         pdfService.createPdfDocumentNameFromCaseData(caseData),
-                                                        "JSON/PDF"
+                                                        CREATED_PDF_FILE_TIKA_CONTENT_TYPE
                             ));
         CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.SUBMIT_CASE_DRAFT,
                                                caseRequest.getCaseTypeId(), caseRequest.getCaseData());
