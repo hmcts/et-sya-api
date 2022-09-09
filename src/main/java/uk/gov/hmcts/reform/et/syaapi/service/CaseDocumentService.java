@@ -16,6 +16,9 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 
@@ -203,5 +206,16 @@ public class CaseDocumentService {
         public Boolean isEmpty() {
             return documents.isEmpty();
         }
+    }
+
+    public DocumentTypeItem createDocumentTypeItemFromCaseDocument(CaseDocument caseDocument) {
+        DocumentType documentType = new DocumentType();
+        UploadedDocumentType uploadedDocumentType = new UploadedDocumentType();
+        uploadedDocumentType.setDocumentFilename(caseDocument.getOriginalDocumentName());
+        uploadedDocumentType.setDocumentUrl(caseDocument.getLinks().get("binary").get("href"));
+        documentType.setUploadedDocument(uploadedDocumentType);
+        DocumentTypeItem documentTypeItem = new DocumentTypeItem();
+        documentTypeItem.setValue(documentType);
+        return documentTypeItem;
     }
 }

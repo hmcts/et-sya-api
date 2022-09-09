@@ -25,7 +25,7 @@ public class PdfService {
 
     private final PdfMapperService pdfMapperService;
     @Value("${pdf.source}")
-    private String pdfTemplateSource;
+    public String pdfTemplateSource;
 
     /**
      * Converts a {@link CaseData} class object into a pdf document
@@ -60,5 +60,12 @@ public class PdfService {
             pdfDocument.save(byteArrayOutputStream);
             return byteArrayOutputStream.toByteArray();
         }
+    }
+
+    public String createPdfDocumentNameFromCaseData(CaseData caseData) {
+        return "ET1_"
+            + caseData.getClaimantIndType().getClaimantFirstNames()
+            + "_"
+            + caseData.getClaimantIndType().getClaimantLastName();
     }
 }

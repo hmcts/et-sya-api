@@ -16,6 +16,8 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
+import uk.gov.hmcts.reform.et.syaapi.helper.TestModelCreator;
 
 import java.io.IOException;
 import java.util.Map;
@@ -100,5 +102,14 @@ class PdfServiceTest {
         }
 
         return new Tuple<>(field.getFullyQualifiedName(), field.getValueAsString());
+    }
+
+    @Test
+    void shouldCreatePdfFile() throws PdfServiceException {
+        PdfService pdfService1 = new PdfService(new PdfMapperService());
+        pdfService1.pdfTemplateSource = "classpath:ET1_0722.pdf";
+        CaseData caseData = new EmployeeObjectMapper().getCaseData(TestModelCreator.createRequestCaseData());
+        byte[] pdfData = pdfService1.convertCaseToPdf(caseData);
+        assertThat(pdfData).isNotEmpty();
     }
 }

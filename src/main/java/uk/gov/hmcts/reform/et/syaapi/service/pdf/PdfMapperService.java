@@ -49,6 +49,7 @@ public class PdfMapperService {
         "13 R5"
     };
     private static final String REP_ADDRESS_PREFIX = "11.3 Representative's address:";
+    private static final String REP_ADDRESS_PHONE_NUMBER = "13 R4 phone number";
     private static final String CLAIMANT_ADDRESS_PREFIX = "1.5";
     private static final int MULTIPLE_RESPONDENTS = 2;
     private static final int MAX_RESPONDENTS = 5;
@@ -59,6 +60,15 @@ public class PdfMapperService {
         "13 R4",
         "13 R5"
     };
+    // This constant is defined because of the error in the pdf template file
+    // The field for pay before tax options checked value in the pdf template
+    // for annually apy before tax was monthly
+    private static final String MONTHLY = "Monthly";
+    private static final String WEEKLY = "Weekly";
+    private static final String EMAIL = "Email";
+    private static final String POST = "Post";
+    private static final String FAX = "Fax";
+    private static final String OFF = "Off";
 
     /**
      * Maps the parameters within case data to the inputs of the PDF Template.
@@ -100,11 +110,11 @@ public class PdfMapperService {
                 2, "0")));
         printFields.put(PdfMapperConstants.Q1_DOB_YEAR, Optional.of(String.valueOf(dob.getYear())));
         printFields.put(PdfMapperConstants.Q1_SEX, ofNullable(caseData.getClaimantIndType().getClaimantSex()));
-        printFields.put(String.format(PdfMapperConstants.QX_HOUSE_NUMBER, CLAIMANT_ADDRESS_PREFIX),
+        printFields.put(String.format(PdfMapperConstants.RP2_HOUSE_NUMBER, CLAIMANT_ADDRESS_PREFIX),
             ofNullable(caseData.getClaimantType().getClaimantAddressUK().getAddressLine1()));
         printFields.put(String.format(PdfMapperConstants.QX_STREET, CLAIMANT_ADDRESS_PREFIX),
             ofNullable(caseData.getClaimantType().getClaimantAddressUK().getAddressLine2()));
-        printFields.put(String.format(PdfMapperConstants.QX_POST_TOWN, CLAIMANT_ADDRESS_PREFIX),
+        printFields.put(String.format(PdfMapperConstants.RP_POST_TOWN, CLAIMANT_ADDRESS_PREFIX),
             ofNullable(caseData.getClaimantType().getClaimantAddressUK().getPostTown()));
         printFields.put(String.format(PdfMapperConstants.QX_COUNTY, CLAIMANT_ADDRESS_PREFIX),
             ofNullable(caseData.getClaimantType().getClaimantAddressUK().getCounty()));
@@ -152,12 +162,23 @@ public class PdfMapperService {
 
     private Map<String, Optional<String>> printRespondant(RespondentSumType respondent, String questionPrefix) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
-        printFields.put(String.format(PdfMapperConstants.QX_HOUSE_NUMBER, questionPrefix),
+        String respondentTownOrCityPrefix = PdfMapperConstants.RP_POST_TOWN;
+        String respondentHouseNumberPrefix = PdfMapperConstants.QX_HOUSE_NUMBER;
+        if ("2.5 R2".equals(questionPrefix)) {
+            respondentTownOrCityPrefix = PdfMapperConstants.RP2_POST_TOWN;
+            respondentHouseNumberPrefix = PdfMapperConstants.RP2_HOUSE_NUMBER;
+        }
+        if ("2.2".equals(questionPrefix)) {
+            respondentHouseNumberPrefix = PdfMapperConstants.RP2_HOUSE_NUMBER;
+        }
+        printFields.put(String.format(respondentHouseNumberPrefix, questionPrefix),
             ofNullable(respondent.getRespondentAddress().getAddressLine1()));
         printFields.put(String.format(PdfMapperConstants.QX_STREET, questionPrefix),
             ofNullable(respondent.getRespondentAddress().getAddressLine2()));
-        printFields.put(String.format(PdfMapperConstants.QX_POST_TOWN, questionPrefix),
-            ofNullable(respondent.getRespondentAddress().getPostTown()));
+        printFields.put(
+            String.format(respondentTownOrCityPrefix, questionPrefix),
+            ofNullable(respondent.getRespondentAddress().getPostTown())
+        );
         printFields.put(String.format(PdfMapperConstants.QX_COUNTY, questionPrefix),
             ofNullable(respondent.getRespondentAddress().getCounty()));
         printFields.put(String.format(PdfMapperConstants.QX_POSTCODE, questionPrefix),
@@ -228,7 +249,7 @@ public class PdfMapperService {
                 printFields.put(PdfMapperConstants.Q5_NOT_ENDED,
                     ofNullable(claimantOtherType.getClaimantEmployedTo()));
             } else {
-                printFields.put(PdfMapperConstants.Q5_CONTINUING_NO, Optional.of(YES));
+                printFields.put(PdfMapperConstants.Q5_CONTINUING_NO, Optional.of("no"));
                 printFields.put(PdfMapperConstants.Q5_EMPLOYMENT_END,
                     ofNullable(claimantOtherType.getClaimantEmployedTo()));
             }
@@ -246,7 +267,7 @@ public class PdfMapperService {
                     ofNullable(newEmploymentType.getNewPayBeforeTax()));
             }
         }
-        printFields.put(PdfMapperConstants.Q4_EMPLOYED_BY_NO, Optional.of(employerYesNo));
+        printFields.put(PdfMapperConstants.Q4_EMPLOYED_BY_NO, Optional.of(employerYesNo.equals(YES) ? OFF : NO));
         return printFields;
     }
 
@@ -259,17 +280,17 @@ public class PdfMapperService {
         printFields.put(PdfMapperConstants.Q6_NET_PAY, ofNullable(claimantOtherType.getClaimantPayAfterTax()));
         switch (claimantOtherType.getClaimantPayCycle()) {
             case "Weekly":
-                printFields.put(PdfMapperConstants.Q6_GROSS_PAY_WEEKLY, Optional.of(YES));
-                printFields.put(PdfMapperConstants.Q6_NET_PAY_WEEKLY, Optional.of(YES));
+                printFields.put(PdfMapperConstants.Q6_GROSS_PAY_WEEKLY, Optional.of(WEEKLY));
+                printFields.put(PdfMapperConstants.Q6_NET_PAY_WEEKLY, Optional.of(WEEKLY));
                 break;
             case "Monthly":
-                printFields.put(PdfMapperConstants.Q6_GROSS_PAY_MONTHLY, Optional.of(YES));
-                printFields.put(PdfMapperConstants.Q6_NET_PAY_MONTHLY, Optional.of(YES));
+                printFields.put(PdfMapperConstants.Q6_GROSS_PAY_MONTHLY, Optional.of(MONTHLY));
+                printFields.put(PdfMapperConstants.Q6_NET_PAY_MONTHLY, Optional.of(MONTHLY));
                 break;
             case "Annually":
             default:
-                printFields.put(PdfMapperConstants.Q6_GROSS_PAY_ANNUAL, Optional.of(YES));
-                printFields.put(PdfMapperConstants.Q6_NET_PAY_ANNUAL, Optional.of(YES));
+                printFields.put(PdfMapperConstants.Q6_GROSS_PAY_ANNUAL, Optional.of(MONTHLY));
+                printFields.put(PdfMapperConstants.Q6_NET_PAY_ANNUAL, Optional.of(MONTHLY));
                 break;
         }
         printFields.put(PdfMapperConstants.Q6_NET_PAY, ofNullable(claimantOtherType.getClaimantPayAfterTax()));
@@ -324,7 +345,7 @@ public class PdfMapperService {
                 ofNullable(repAddress.getCounty()));
             printFields.put(String.format(PdfMapperConstants.QX_POSTCODE, REP_ADDRESS_PREFIX),
                 ofNullable(repAddress.getPostCode()));
-            printFields.put(String.format(PdfMapperConstants.QX_PHONE_NUMBER, REP_ADDRESS_PREFIX),
+            printFields.put(REP_ADDRESS_PHONE_NUMBER,
                 ofNullable(representativeClaimantType.getRepresentativePhoneNumber()));
             printFields.put(PdfMapperConstants.Q11_MOBILE_NUMBER,
                 ofNullable(representativeClaimantType.getRepresentativeMobileNumber()));
@@ -334,9 +355,11 @@ public class PdfMapperService {
                 ofNullable(representativeClaimantType.getRepresentativeReference()));
             String representativePreference = representativeClaimantType.getRepresentativePreference();
             if ("Email".equals(representativePreference)) {
-                printFields.put(PdfMapperConstants.Q11_CONTACT_EMAIL, Optional.of(YES));
+                printFields.put(PdfMapperConstants.Q11_CONTACT_EMAIL, Optional.of(EMAIL));
+            } else if ("Post".equals(representativePreference)) {
+                printFields.put(PdfMapperConstants.Q11_CONTACT_POST, Optional.of(POST));
             } else {
-                printFields.put(PdfMapperConstants.Q11_CONTACT_POST, Optional.of(YES));
+                printFields.put(PdfMapperConstants.Q11_CONTACT_POST, Optional.of(FAX));
             }
             return printFields;
         }

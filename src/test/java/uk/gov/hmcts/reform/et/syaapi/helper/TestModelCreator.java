@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.helper;
 
 import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
@@ -38,11 +39,10 @@ public final class TestModelCreator {
     private static final String CLAIMANT_SEX_MALE = "Male";
     private static final String CLAIMANT_FIRST_NAME = "Michael";
     private static final String CLAIMANT_LAST_NAME = "Jackson";
-    private static final String CLAIMANT_TITLE = "Pop star";
+    private static final String CLAIMANT_TITLE = "Mr";
     private static final String CLAIMANT_PREFERRED_TITLE = "Mr";
     private static final String CLAIMANT_GENDER_IDENTITY = "Heterosexual";
-    private static final String CLAIMANT_DATE_OF_BIRTH =
-        new DateTime(DateTime.parse("1979-08-05T07:22:05Z")).toString();
+    private static final String CLAIMANT_DATE_OF_BIRTH = new LocalDate("1979-08-05").toString();
     private static final String CLAIMANT_ADDRESS_LINE_1 = "40 Furrow way";
     private static final String CLAIMANT_COUNTRY = COUNTRY;
     private static final String CLAIMANT_COUNTY = "Berkshire";
@@ -250,6 +250,7 @@ public final class TestModelCreator {
         claimantOtherType.setClaimantEmployedCurrently(CLAIMANT_EMPLOYED_CURRENTLY);
         claimantOtherType.setClaimantEmployedFrom(CLAIMANT_EMPLOYED_FROM);
         claimantOtherType.setClaimantEmployedNoticePeriod(CLAIMANT_NOTICE_PERIOD);
+        claimantOtherType.setClaimantNoticePeriod(CLAIMANT_NOTICE_PERIOD);
         claimantOtherType.setClaimantNoticePeriodDuration(CLAIMANT_NOTICE_PERIOD_DURATION);
         claimantOtherType.setClaimantNoticePeriodUnit(CLAIMANT_NOTICE_PERIOD_UNIT);
         claimantOtherType.setClaimantPayAfterTax(CLAIMANT_PAY_AFTER_TAX);
