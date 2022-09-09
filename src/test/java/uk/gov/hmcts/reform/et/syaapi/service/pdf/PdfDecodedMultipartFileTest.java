@@ -50,6 +50,11 @@ class PdfDecodedMultipartFileTest {
     }
 
     @Test
+    void shouldIsEmptyReturnTrueWhenFileContentIsNull() {
+        assertThat(new PdfDecodedMultipartFile(null, ORIGINAL_FILE_NAME, CONTENT_TYPE).isEmpty()).isTrue();
+    }
+
+    @Test
     void shouldGetSizeReturnZero() {
         assertThat(pdfDecodedMultipartFile.getSize()).isZero();
     }
