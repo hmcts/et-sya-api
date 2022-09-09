@@ -66,6 +66,7 @@ public class PdfService {
         return "ET1_"
             + caseData.getClaimantIndType().getClaimantFirstNames()
             + "_"
-            + caseData.getClaimantIndType().getClaimantLastName();
+            + caseData.getClaimantIndType().getClaimantLastName()
+            + ".pdf";
     }
 }

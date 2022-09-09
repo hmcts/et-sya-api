@@ -4,9 +4,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Arrays;
-
 
 /*
  *<p>
@@ -14,6 +15,7 @@ import java.util.Arrays;
  * from a PDF encoded String
  *</p>
  */
+@SuppressWarnings({"NullableProblems", "resource"})
 public class PdfDecodedMultipartFile implements MultipartFile {
     private final byte[] fileContent;
 
@@ -67,8 +69,7 @@ public class PdfDecodedMultipartFile implements MultipartFile {
     }
 
     @Override
-    public void transferTo(File dest) {
-
+    public void transferTo(File dest) throws IOException {
+        Files.newOutputStream(dest.toPath()).write(fileContent);
     }
-
 }

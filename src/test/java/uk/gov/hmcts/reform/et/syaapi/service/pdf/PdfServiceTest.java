@@ -44,7 +44,7 @@ class PdfServiceTest {
     );
 
     private CaseData caseData;
-    private static final String EXPECTED_PDF_NAME = "ET1_Michael_Jackson";
+    private static final String EXPECTED_PDF_NAME = "ET1_Michael_Jackson.pdf";
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME = "pdfTemplateSource";
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE = "classpath:ET1_0722.pdf";
     @Mock
