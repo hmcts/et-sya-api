@@ -127,7 +127,7 @@ public class PdfMapperService {
         printFields.put(PdfMapperConstants.Q1_EMAIL,
             ofNullable(caseData.getClaimantType().getClaimantEmailAddress()));
         String contactPreference = caseData.getClaimantType().getClaimantContactPreference();
-        if ("Email".equals(contactPreference)) {
+        if (EMAIL.equals(contactPreference)) {
             printFields.put(PdfMapperConstants.Q1_CONTACT_EMAIL, Optional.of(contactPreference));
         } else if ("Post".equals(contactPreference)) {
             printFields.put(PdfMapperConstants.Q1_CONTACT_POST, Optional.of(contactPreference));

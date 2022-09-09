@@ -45,12 +45,17 @@ class PdfDecodedMultipartFileTest {
 
     @Test
     void shouldIsEmptyReturnTrue() {
-        assertThat(pdfDecodedMultipartFile.isEmpty()).isEqualTo(true);
+        assertThat(pdfDecodedMultipartFile.isEmpty()).isTrue();
     }
 
     @Test
     void shouldGetSizeReturnZero() {
-        assertThat(pdfDecodedMultipartFile.getSize()).isEqualTo(0);
+        assertThat(pdfDecodedMultipartFile.getSize()).isZero();
+    }
+
+    @Test
+    void shouldGetSizeReturnZeroWhenFileContentNull() {
+        assertThat(new PdfDecodedMultipartFile(null, ORIGINAL_FILE_NAME, CONTENT_TYPE).getSize()).isZero();
     }
 
     @Test
