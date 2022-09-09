@@ -16,9 +16,12 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -27,7 +30,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
-@SuppressWarnings({"PMD.TooManyMethods"})
+@SuppressWarnings({"PMD"})
 @Slf4j
 @ExtendWith(MockitoExtension.class)
 class CaseDocumentServiceTest {
@@ -335,5 +338,18 @@ class CaseDocumentServiceTest {
 
         assertThat(documentException.getMessage())
             .isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
+    }
+
+    @Test
+    void shouldCreateDocumentTypeItemFromCaseDocument() {
+        Map<String, Map<String, String>> links = new HashMap<>();
+        Map<String, String> href = new HashMap<>();
+        href.put("href", DOCUMENT_UPLOAD_API_URL);
+        links.put("binary", href);
+        CaseDocument caseDocument = CaseDocument.builder().build();
+        caseDocument.setLinks(links);
+        caseDocument.setOriginalDocumentName("ET1_Michael_Jackson.pdf");
+        assertThat(caseDocumentService.createDocumentTypeItemFromCaseDocument(caseDocument)
+                       .getValue().getUploadedDocument().getDocumentUrl()).isEqualTo(DOCUMENT_UPLOAD_API_URL);
     }
 }
