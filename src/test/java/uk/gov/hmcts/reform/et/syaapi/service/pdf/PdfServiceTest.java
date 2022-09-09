@@ -122,6 +122,7 @@ class PdfServiceTest {
     @Test
     void shouldCreatePdfFile() throws IOException {
         byte[] pdfData = pdfService.createPdf(caseData);
+        assertThat(pdfData).isNotEmpty();
         assertThat(new Tika().detect(pdfData)).isEqualTo(CREATED_PDF_FILE_TIKA_CONTENT_TYPE);
     }
 
