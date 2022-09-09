@@ -99,7 +99,7 @@ public class CaseDocumentService {
 
     public ResponseEntity<ByteArrayResource> downloadDocument(String authToken, UUID documentId) {
         HttpHeaders headers = new HttpHeaders();
-//        headers.add(HttpHeaders.AUTHORIZATION, authToken);
+        headers.add(HttpHeaders.AUTHORIZATION, authToken);
         headers.add(SERVICE_AUTHORIZATION, authTokenGenerator.generate());
         HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(headers);
 
