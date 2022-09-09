@@ -7,6 +7,7 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDNonTerminalField;
 import org.elasticsearch.core.Tuple;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -41,16 +42,26 @@ class PdfServiceTest {
         PdfMapperConstants.CASE_NUMBER, Optional.of("001"),
         PdfMapperConstants.DATE_RECEIVED, Optional.of("")
     );
-    @Mock
+
     private CaseData caseData;
+    private static final String EXPECTED_PDF_NAME = "ET1_Michael_Jackson";
+    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME = "pdfTemplateSource";
+    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE = "classpath:ET1_0722.pdf";
     @Mock
     private PdfMapperService pdfMapperService;
     @InjectMocks
     private PdfService pdfService;
 
+    @BeforeEach
+    void beforeEach() {
+        caseData = new EmployeeObjectMapper().getCaseData(TestModelCreator.createRequestCaseData());
+        ReflectionTestUtils.setField(pdfService,
+                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
+                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
+    }
+
     @Test
     void givenPdfValuesProducesAPdfDocument() throws PdfServiceException, IOException {
-        ReflectionTestUtils.setField(pdfService, "pdfTemplateSource", "classpath:ET1_0722.pdf");
         when(pdfMapperService.mapHeadersToPdf(caseData)).thenReturn(PDF_VALUES);
         byte[] pdfBytes = pdfService.convertCaseToPdf(caseData);
         try (PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
@@ -60,19 +71,20 @@ class PdfServiceTest {
     }
 
     @Test
-    void givenNoPdfTemplateProducesException() {
-        ReflectionTestUtils.setField(pdfService, "pdfTemplateSource", "classpath:none.pdf");
-
-        PdfServiceException exception = assertThrows(
+    void givenInvalidPdfTemplateProducesException() {
+        ReflectionTestUtils.setField(pdfService,
+                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
+                                     "dummy_source");
+        assertThrows(
             PdfServiceException.class,
             () -> pdfService.convertCaseToPdf(caseData));
-
-        assertThat(exception.getMessage()).isEqualTo("Failed to convert to PDF");
+        ReflectionTestUtils.setField(pdfService,
+                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
+                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
     }
 
     @Test
     void givenNullValuesProducesDocumentWithoutGivenValues() throws PdfServiceException, IOException {
-        ReflectionTestUtils.setField(pdfService, "pdfTemplateSource", "classpath:ET1_0722.pdf");
         when(pdfMapperService.mapHeadersToPdf(caseData)).thenReturn(PDF_VALUES_WITH_NULL);
         byte[] pdfBytes = pdfService.convertCaseToPdf(caseData);
         try (PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
@@ -105,11 +117,14 @@ class PdfServiceTest {
     }
 
     @Test
-    void shouldCreatePdfFile() throws PdfServiceException {
-        PdfService pdfService1 = new PdfService(new PdfMapperService());
-        pdfService1.pdfTemplateSource = "classpath:ET1_0722.pdf";
-        CaseData caseData = new EmployeeObjectMapper().getCaseData(TestModelCreator.createRequestCaseData());
-        byte[] pdfData = pdfService1.convertCaseToPdf(caseData);
+    void shouldCreatePdfFile() throws IOException {
+        byte[] pdfData = pdfService.createPdf(caseData);
         assertThat(pdfData).isNotEmpty();
+    }
+
+    @Test
+    void createPdfDocumentNameFromCaseData() {
+        String pdfName = pdfService.createPdfDocumentNameFromCaseData(caseData);
+        assertThat(pdfName).isEqualTo(EXPECTED_PDF_NAME);
     }
 }

@@ -43,7 +43,7 @@ public class PdfService {
         return pdfDocumentBytes;
     }
 
-    private byte[] createPdf(CaseData caseData) throws IOException {
+    protected byte[] createPdf(CaseData caseData) throws IOException {
         try (PDDocument pdfDocument = Loader.loadPDF(ResourceUtils.getFile(this.pdfTemplateSource))) {
             PDDocumentCatalog pdDocumentCatalog = pdfDocument.getDocumentCatalog();
             PDAcroForm pdfForm = pdDocumentCatalog.getAcroForm();
