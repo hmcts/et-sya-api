@@ -279,11 +279,11 @@ public class PdfMapperService {
             ofNullable(claimantOtherType.getClaimantPayBeforeTax()));
         printFields.put(PdfMapperConstants.Q6_NET_PAY, ofNullable(claimantOtherType.getClaimantPayAfterTax()));
         switch (claimantOtherType.getClaimantPayCycle()) {
-            case "Weekly":
+            case WEEKLY:
                 printFields.put(PdfMapperConstants.Q6_GROSS_PAY_WEEKLY, Optional.of(WEEKLY));
                 printFields.put(PdfMapperConstants.Q6_NET_PAY_WEEKLY, Optional.of(WEEKLY));
                 break;
-            case "Monthly":
+            case MONTHLY:
                 printFields.put(PdfMapperConstants.Q6_GROSS_PAY_MONTHLY, Optional.of(MONTHLY));
                 printFields.put(PdfMapperConstants.Q6_NET_PAY_MONTHLY, Optional.of(MONTHLY));
                 break;
@@ -354,7 +354,7 @@ public class PdfMapperService {
             printFields.put(PdfMapperConstants.Q11_REFERENCE,
                 ofNullable(representativeClaimantType.getRepresentativeReference()));
             String representativePreference = representativeClaimantType.getRepresentativePreference();
-            if ("Email".equals(representativePreference)) {
+            if (EMAIL.equals(representativePreference)) {
                 printFields.put(PdfMapperConstants.Q11_CONTACT_EMAIL, Optional.of(EMAIL));
             } else if ("Post".equals(representativePreference)) {
                 printFields.put(PdfMapperConstants.Q11_CONTACT_POST, Optional.of(POST));
