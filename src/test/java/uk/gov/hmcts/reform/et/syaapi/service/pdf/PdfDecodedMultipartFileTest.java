@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
+@SuppressWarnings({"PMD.TooManyMethods"})
 class PdfDecodedMultipartFileTest {
 
     PdfDecodedMultipartFile pdfDecodedMultipartFile;
@@ -54,13 +55,19 @@ class PdfDecodedMultipartFileTest {
     }
 
     @Test
-    void shouldGetSizeReturnZeroWhenFileContentNull() {
+    void shouldGetSizeReturnZeroWhenFileContentIsNull() {
         assertThat(new PdfDecodedMultipartFile(null, ORIGINAL_FILE_NAME, CONTENT_TYPE).getSize()).isZero();
     }
 
     @Test
     void shouldGetBytesReturnEmptyByteArray() {
         assertThat(pdfDecodedMultipartFile.getBytes()).isEqualTo(FILE_CONTENT);
+    }
+
+    @Test
+    void shouldGetBytesReturnEmptyByteArrayWhenFileContentIsNull() {
+        assertThat(new PdfDecodedMultipartFile(null, ORIGINAL_FILE_NAME, CONTENT_TYPE)
+                       .getBytes()).isEqualTo(FILE_CONTENT);
     }
 
     @Test

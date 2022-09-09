@@ -24,7 +24,7 @@ public class PdfDecodedMultipartFile implements MultipartFile {
     private final String contentType;
 
     public PdfDecodedMultipartFile(byte[] fileContent, String originalName, String contentType) {
-        this.fileContent = Arrays.copyOf(fileContent, fileContent.length);
+        this.fileContent = fileContent == null ? null : Arrays.copyOf(fileContent, fileContent.length);
         this.originalName = originalName;
         this.contentType = contentType;
     }
@@ -51,7 +51,7 @@ public class PdfDecodedMultipartFile implements MultipartFile {
 
     @Override
     public long getSize() {
-        return fileContent.length;
+        return fileContent == null ? 0 : fileContent.length;
     }
 
     @Override
