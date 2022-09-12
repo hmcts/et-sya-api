@@ -69,4 +69,10 @@ public class PdfService {
             + caseData.getClaimantIndType().getClaimantLastName()
             + ".pdf";
     }
+
+    public String createPdfDocumentDescriptionFromCaseData(CaseData caseData) {
+        return "Case Details - "
+            + caseData.getClaimantIndType().getClaimantFirstNames()
+            + " " + caseData.getClaimantIndType().getClaimantLastName();
+    }
 }

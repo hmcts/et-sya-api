@@ -127,8 +127,16 @@ class PdfServiceTest {
     }
 
     @Test
-    void createPdfDocumentNameFromCaseData() {
+    void shouldCreatePdfDocumentNameFromCaseData() {
         String pdfName = pdfService.createPdfDocumentNameFromCaseData(caseData);
         assertThat(pdfName).isEqualTo(EXPECTED_PDF_NAME);
+    }
+
+    @Test
+    void shouldCreatePdfDocumentDescriptionFromCaseData() {
+        String pdfDocumentDescription = pdfService.createPdfDocumentDescriptionFromCaseData(caseData);
+        assertThat(pdfDocumentDescription).isEqualTo("Case Details - "
+                                                         + caseData.getClaimantIndType().getClaimantFirstNames()
+                                                         + " " + caseData.getClaimantIndType().getClaimantLastName());
     }
 }

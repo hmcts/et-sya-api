@@ -191,8 +191,10 @@ public class CaseService {
                             ));
         CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.SUBMIT_CASE_DRAFT,
                                                caseRequest.getCaseTypeId(), caseRequest.getCaseData());
-        caseDetails.getData().put("documentCollection",
-                                  caseDocumentService.createDocumentTypeItemFromCaseDocument(caseDocument));
+        caseDetails.getData()
+            .put("documentCollection",
+            caseDocumentService.createDocumentTypeItemFromCaseDocument(caseDocument,
+                caseData.getEcmCaseType(), pdfService.createPdfDocumentDescriptionFromCaseData(caseData)));
         return caseDetails;
     }
 

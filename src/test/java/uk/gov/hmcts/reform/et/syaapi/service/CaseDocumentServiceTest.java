@@ -345,11 +345,16 @@ class CaseDocumentServiceTest {
         Map<String, Map<String, String>> links = new HashMap<>();
         Map<String, String> href = new HashMap<>();
         href.put("href", DOCUMENT_UPLOAD_API_URL);
+        links.put("self", href);
         links.put("binary", href);
         CaseDocument caseDocument = CaseDocument.builder().build();
         caseDocument.setLinks(links);
         caseDocument.setOriginalDocumentName("ET1_Michael_Jackson.pdf");
-        assertThat(caseDocumentService.createDocumentTypeItemFromCaseDocument(caseDocument)
+        assertThat(caseDocumentService
+                       .createDocumentTypeItemFromCaseDocument(
+                           caseDocument,
+                           "ET1",
+                           "Test Case Document")
                        .getValue().getUploadedDocument().getDocumentUrl()).isEqualTo(DOCUMENT_UPLOAD_API_URL);
     }
 }

@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -208,13 +209,19 @@ public class CaseDocumentService {
         }
     }
 
-    public DocumentTypeItem createDocumentTypeItemFromCaseDocument(CaseDocument caseDocument) {
+    public DocumentTypeItem createDocumentTypeItemFromCaseDocument(CaseDocument caseDocument,
+                                                                   String typeOfDocument,
+                                                                   String shortDescription) {
         DocumentType documentType = new DocumentType();
+        documentType.setTypeOfDocument(typeOfDocument);
+        documentType.setShortDescription(shortDescription);
         UploadedDocumentType uploadedDocumentType = new UploadedDocumentType();
         uploadedDocumentType.setDocumentFilename(caseDocument.getOriginalDocumentName());
-        uploadedDocumentType.setDocumentUrl(caseDocument.getLinks().get("binary").get("href"));
+        uploadedDocumentType.setDocumentUrl(caseDocument.getLinks().get("self").get("href"));
+        uploadedDocumentType.setDocumentBinaryUrl(caseDocument.getLinks().get("binary").get("href"));
         documentType.setUploadedDocument(uploadedDocumentType);
         DocumentTypeItem documentTypeItem = new DocumentTypeItem();
+        documentTypeItem.setId(UUID.randomUUID().toString());
         documentTypeItem.setValue(documentType);
         return documentTypeItem;
     }
