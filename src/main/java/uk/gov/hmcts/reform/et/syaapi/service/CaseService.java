@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
+import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
@@ -54,6 +55,8 @@ public class CaseService {
     private final PostcodeToOfficeService postcodeToOfficeService;
 
     private final PdfService pdfService;
+
+    private final AcasService acasService;
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
@@ -176,6 +179,31 @@ public class CaseService {
         caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE,
             getTribunalOfficeFromPostCode(caseRequest.getPostCode()).getOfficeName());
         pdfService.convertCaseToPdf(new EmployeeObjectMapper().getCaseData(caseRequest.getCaseData()));
+
+        Thread getAcasCertASync = new Thread(
+            () -> {
+                CaseData caseData = new EmployeeObjectMapper().getCaseData(caseRequest.getCaseData());
+                try {
+                    List<AcasCertificate> acasCertificateList = acasService.getCertificates(
+                        caseData.getEt1VettingRespondentAcasDetails1(),
+                        caseData.getEt1VettingRespondentAcasDetails2(),
+                        caseData.getEt1VettingRespondentAcasDetails3(),
+                        caseData.getEt1VettingRespondentAcasDetails4(),
+                        caseData.getEt1VettingRespondentAcasDetails5(),
+                        caseData.getEt1VettingRespondentAcasDetails6());
+                    log.info(String.valueOf(acasCertificateList));
+                } catch (InvalidAcasNumbersException e) {
+                    throw new RuntimeException(e);
+                } catch (AcasException e) {
+                    throw new RuntimeException(e);
+                }
+
+            }
+        );
+
+        getAcasCertASync.start();
+
+
         return triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.SUBMIT_CASE_DRAFT,
                             caseRequest.getCaseTypeId(), caseRequest.getCaseData());
     }
