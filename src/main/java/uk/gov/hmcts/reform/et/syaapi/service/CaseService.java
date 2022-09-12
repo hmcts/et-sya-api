@@ -5,14 +5,17 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.dwp.regex.InvalidPostcodeException;
+import uk.gov.hmcts.ecm.common.client.CcdClient;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
+import uk.gov.hmcts.et.common.model.ccd.SubmitEvent;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -27,6 +30,8 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,6 +47,8 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CAS
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.INITIATE_CASE_DRAFT;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.ENGLANDWALES_CASE_TYPE_ID;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.SCOTLAND_CASE_TYPE_ID;
 
 @Slf4j
 @Service
@@ -51,6 +58,8 @@ public class CaseService {
     private final AuthTokenGenerator authTokenGenerator;
 
     private final CoreCaseDataApi ccdApiClient;
+
+    private final CcdClient ccdClient;
 
     private final IdamClient idamClient;
 
@@ -239,6 +248,36 @@ public class CaseService {
             true,
             caseDataContent
         );
+    }
+
+
+    /** Given a datetime, this method will return a list of caseIds which have been modified since the datetime
+     * provided.
+     * @param authToken used for IDAM authentication for the query
+     * @param requestDateTime used as the query parameter
+     * @return a list of caseIds
+     */
+    public List<Long> getLastModifiedCases(String authToken, LocalDateTime requestDateTime) throws IOException {
+        BoolQueryBuilder boolQueryBuilder = boolQuery()
+            .filter(new RangeQueryBuilder("last_modified").gte(requestDateTime));
+        String query = new SearchSourceBuilder()
+            .query(boolQueryBuilder)
+            .toString();
+        return searchEngWalesScotlandCases(authToken, query);
+    }
+
+    private List<Long> searchEngWalesScotlandCases(String authToken, String query) throws IOException {
+        List<Long> caseDetailsList = new ArrayList<>();
+        caseDetailsList.addAll(searchCasesByDate(authToken, ENGLANDWALES_CASE_TYPE_ID, query));
+        caseDetailsList.addAll(searchCasesByDate(authToken, SCOTLAND_CASE_TYPE_ID, query));
+        return caseDetailsList;
+    }
+
+    private List<Long> searchCasesByDate(String authToken, String caseTypeId, String query) throws IOException {
+        return ccdClient.buildAndGetElasticSearchRequest(authToken, caseTypeId, query)
+            .stream()
+            .map(SubmitEvent::getCaseId)
+            .collect(toList());
     }
 
     /**
