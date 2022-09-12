@@ -21,6 +21,7 @@ import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -207,6 +208,14 @@ public class CaseDocumentService {
         public Boolean isEmpty() {
             return documents.isEmpty();
         }
+    }
+
+    public DocumentTypeItem uploadPdfFile(String authToken,
+                                          String caseTypeId,
+                                          PdfDecodedMultipartFile file,
+                                          String typeOfDocument) throws CaseDocumentException {
+        CaseDocument caseDocument = uploadDocument(authToken, caseTypeId, file);
+        return createDocumentTypeItemFromCaseDocument(caseDocument, typeOfDocument, file.getDocumentDescription());
     }
 
     public DocumentTypeItem createDocumentTypeItemFromCaseDocument(CaseDocument caseDocument,

@@ -10,6 +10,7 @@ import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -19,9 +20,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
-import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
@@ -47,7 +46,6 @@ import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.INITIATE_CASE_DRAFT;
 @RequiredArgsConstructor
 public class CaseService {
 
-    public static final String CREATED_PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private final AuthTokenGenerator authTokenGenerator;
 
     private final CoreCaseDataApi ccdApiClient;
@@ -162,6 +160,12 @@ public class CaseService {
         }
     }
 
+    private CaseData convertCaseRequestToCaseDataWithTribunalOffice(CaseRequest caseRequest) {
+        caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE,
+                                      getTribunalOfficeFromPostCode(caseRequest.getPostCode()).getOfficeName());
+        return EmployeeObjectMapper.mapCaseRequestToCaseData(caseRequest.getCaseData());
+    }
+
     public CaseDetails updateCase(String authorization,
                                   CaseRequest caseRequest) {
         return triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.UPDATE_CASE_DRAFT,
@@ -178,23 +182,15 @@ public class CaseService {
      */
     public CaseDetails submitCase(String authorization,
                                   CaseRequest caseRequest) throws PdfServiceException, CaseDocumentException {
-        caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE,
-            getTribunalOfficeFromPostCode(caseRequest.getPostCode()).getOfficeName());
-        CaseData caseData = new EmployeeObjectMapper().getCaseData(caseRequest.getCaseData());
-        byte[] pdfData = pdfService.convertCaseToPdf(caseData);
-        CaseDocument caseDocument = caseDocumentService
-            .uploadDocument(authorization,
-                            caseRequest.getCaseTypeId(),
-                            new PdfDecodedMultipartFile(pdfData,
-                                                        pdfService.createPdfDocumentNameFromCaseData(caseData),
-                                                        CREATED_PDF_FILE_TIKA_CONTENT_TYPE
-                            ));
+
+        CaseData caseData = convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
+        DocumentTypeItem documentTypeItem =
+            caseDocumentService.uploadPdfFile(authorization, caseRequest.getCaseTypeId(),
+                           pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData),
+                           caseData.getEcmCaseType());
         CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.SUBMIT_CASE_DRAFT,
                                                caseRequest.getCaseTypeId(), caseRequest.getCaseData());
-        caseDetails.getData()
-            .put("documentCollection",
-            caseDocumentService.createDocumentTypeItemFromCaseDocument(caseDocument,
-                caseData.getEcmCaseType(), pdfService.createPdfDocumentDescriptionFromCaseData(caseData)));
+        caseDetails.getData().put("documentCollection", documentTypeItem);
         return caseDetails;
     }
 

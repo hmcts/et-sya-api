@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
-import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
@@ -262,8 +261,7 @@ class CaseServiceTest {
         caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE, "Aberdeen");
         when(postcodeToOfficeService.getTribunalOfficeFromPostcode(anyString()))
             .thenReturn(Optional.of(TribunalOffice.ABERDEEN));
-        when(pdfService.convertCaseToPdf(new EmployeeObjectMapper().getCaseData(caseRequest.getCaseData())))
-            .thenReturn(new byte[] {});
+
 
         when(ccdApiClient.startEventForCitizen(
             TEST_SERVICE_AUTH_TOKEN,
@@ -390,8 +388,6 @@ class CaseServiceTest {
         caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE, DEFAULT_TRIBUNAL_OFFICE.getOfficeName());
         when(postcodeToOfficeService.getTribunalOfficeFromPostcode("YUMMY"))
             .thenThrow(new InvalidPostcodeException("YUMMY is invalid"));
-        when(pdfService.convertCaseToPdf(new EmployeeObjectMapper().getCaseData(caseRequest.getCaseData())))
-            .thenReturn(new byte[] {});
         when(ccdApiClient.startEventForCitizen(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
