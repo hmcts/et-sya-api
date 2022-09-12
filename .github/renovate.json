@@ -1,9 +1,16 @@
 {
-  "enabledManagers": ["helm-requirements","gradle-wrapper", "gradle"],
-  "labels": ["dependencies"],
-  "helm-requirements":
-  {
-    "fileMatch": ["\\Chart.yaml$"],
+  "enabledManagers": [
+    "helm-requirements",
+    "gradle-wrapper",
+    "gradle"
+  ],
+  "labels": [
+    "dependencies"
+  ],
+  "helm-requirements": {
+    "fileMatch": [
+      "\\Chart.yaml$"
+    ],
     "aliases": {
       "hmctspublic": "https://hmctspublic.azurecr.io/helm/v1/repo/"
     }
@@ -13,17 +20,36 @@
   "groupSlug": "all",
   "packageRules": [
     {
-      "matchPackagePatterns": ["*"],
+      "matchPackagePatterns": [
+        "*"
+      ],
       "groupName": "all dependencies",
       "groupSlug": "all"
     },
     {
-      "matchPackageNames": ["elasticsearch"],
+      "matchPackageNames": [
+        "org.elasticsearch:elasticsearch"
+      ],
       "allowedVersions": "<=7"
+    },
+    {
+      "matchPackagePrefixes": [
+        "com.github.hmcts.java-logging:"
+      ],
+      "allowedVersions": "<=5"
+    },
+    {
+      "matchPackageNames": [
+        "au.com.dius.pact.consumer:java8",
+        "au.com.dius.pact.consumer:junit5"
+      ],
+      "allowedVersions": "<=4.1"
     }
   ],
   "lockFileMaintenance": {
     "enabled": false
   },
-  "schedule": ["before 6am on Monday"]
+  "schedule": [
+    "before 6am on Monday"
+  ]
 }

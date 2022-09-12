@@ -6,7 +6,9 @@ import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDNonTerminalField;
+import org.apache.tika.Tika;
 import org.elasticsearch.core.Tuple;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,6 +18,8 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
+import uk.gov.hmcts.reform.et.syaapi.helper.TestModelCreator;
 
 import java.io.IOException;
 import java.util.Map;
@@ -25,6 +29,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.et.syaapi.service.CaseService.CREATED_PDF_FILE_TIKA_CONTENT_TYPE;
+
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -39,16 +45,26 @@ class PdfServiceTest {
         PdfMapperConstants.CASE_NUMBER, Optional.of("001"),
         PdfMapperConstants.DATE_RECEIVED, Optional.of("")
     );
-    @Mock
+
     private CaseData caseData;
+    private static final String EXPECTED_PDF_NAME = "ET1_Michael_Jackson.pdf";
+    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME = "pdfTemplateSource";
+    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE = "classpath:ET1_0722.pdf";
     @Mock
     private PdfMapperService pdfMapperService;
     @InjectMocks
     private PdfService pdfService;
 
+    @BeforeEach
+    void beforeEach() {
+        caseData = new EmployeeObjectMapper().getCaseData(TestModelCreator.createRequestCaseData());
+        ReflectionTestUtils.setField(pdfService,
+                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
+                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
+    }
+
     @Test
     void givenPdfValuesProducesAPdfDocument() throws PdfServiceException, IOException {
-        ReflectionTestUtils.setField(pdfService, "pdfTemplateSource", "classpath:ET1_0722.pdf");
         when(pdfMapperService.mapHeadersToPdf(caseData)).thenReturn(PDF_VALUES);
         byte[] pdfBytes = pdfService.convertCaseToPdf(caseData);
         try (PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
@@ -58,19 +74,20 @@ class PdfServiceTest {
     }
 
     @Test
-    void givenNoPdfTemplateProducesException() {
-        ReflectionTestUtils.setField(pdfService, "pdfTemplateSource", "classpath:none.pdf");
-
-        PdfServiceException exception = assertThrows(
+    void givenInvalidPdfTemplateProducesException() {
+        ReflectionTestUtils.setField(pdfService,
+                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
+                                     "dummy_source");
+        assertThrows(
             PdfServiceException.class,
             () -> pdfService.convertCaseToPdf(caseData));
-
-        assertThat(exception.getMessage()).isEqualTo("Failed to convert to PDF");
+        ReflectionTestUtils.setField(pdfService,
+                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
+                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
     }
 
     @Test
     void givenNullValuesProducesDocumentWithoutGivenValues() throws PdfServiceException, IOException {
-        ReflectionTestUtils.setField(pdfService, "pdfTemplateSource", "classpath:ET1_0722.pdf");
         when(pdfMapperService.mapHeadersToPdf(caseData)).thenReturn(PDF_VALUES_WITH_NULL);
         byte[] pdfBytes = pdfService.convertCaseToPdf(caseData);
         try (PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
@@ -100,5 +117,26 @@ class PdfServiceTest {
         }
 
         return new Tuple<>(field.getFullyQualifiedName(), field.getValueAsString());
+    }
+
+    @Test
+    void shouldCreatePdfFile() throws IOException {
+        byte[] pdfData = pdfService.createPdf(caseData);
+        assertThat(pdfData).isNotEmpty();
+        assertThat(new Tika().detect(pdfData)).isEqualTo(CREATED_PDF_FILE_TIKA_CONTENT_TYPE);
+    }
+
+    @Test
+    void shouldCreatePdfDocumentNameFromCaseData() {
+        String pdfName = pdfService.createPdfDocumentNameFromCaseData(caseData);
+        assertThat(pdfName).isEqualTo(EXPECTED_PDF_NAME);
+    }
+
+    @Test
+    void shouldCreatePdfDocumentDescriptionFromCaseData() {
+        String pdfDocumentDescription = pdfService.createPdfDocumentDescriptionFromCaseData(caseData);
+        assertThat(pdfDocumentDescription).isEqualTo("Case Details - "
+                                                         + caseData.getClaimantIndType().getClaimantFirstNames()
+                                                         + " " + caseData.getClaimantIndType().getClaimantLastName());
     }
 }

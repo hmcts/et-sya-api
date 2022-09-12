@@ -20,7 +20,9 @@ import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
@@ -46,6 +48,7 @@ import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.INITIATE_CASE_DRAFT;
 @RequiredArgsConstructor
 public class CaseService {
 
+    public static final String CREATED_PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private final AuthTokenGenerator authTokenGenerator;
 
     private final CoreCaseDataApi ccdApiClient;
@@ -57,6 +60,8 @@ public class CaseService {
     private final PdfService pdfService;
 
     private final AcasService acasService;
+
+    private final CaseDocumentService caseDocumentService;
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
@@ -175,7 +180,7 @@ public class CaseService {
      * @return the associated {@link CaseData} if the case is submitted
      */
     public CaseDetails submitCase(String authorization,
-                                  CaseRequest caseRequest) throws PdfServiceException {
+                                  CaseRequest caseRequest) throws PdfServiceException, CaseDocumentException {
         caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE,
             getTribunalOfficeFromPostCode(caseRequest.getPostCode()).getOfficeName());
         pdfService.convertCaseToPdf(new EmployeeObjectMapper().getCaseData(caseRequest.getCaseData()));
@@ -203,9 +208,22 @@ public class CaseService {
 
         getAcasCertASync.start();
 
-
-        return triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.SUBMIT_CASE_DRAFT,
-                            caseRequest.getCaseTypeId(), caseRequest.getCaseData());
+        CaseData caseData = new EmployeeObjectMapper().getCaseData(caseRequest.getCaseData());
+        byte[] pdfData = pdfService.convertCaseToPdf(caseData);
+        CaseDocument caseDocument = caseDocumentService
+            .uploadDocument(authorization,
+                            caseRequest.getCaseTypeId(),
+                            new PdfDecodedMultipartFile(pdfData,
+                                                        pdfService.createPdfDocumentNameFromCaseData(caseData),
+                                                        CREATED_PDF_FILE_TIKA_CONTENT_TYPE
+                            ));
+        CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.SUBMIT_CASE_DRAFT,
+                                               caseRequest.getCaseTypeId(), caseRequest.getCaseData());
+        caseDetails.getData()
+            .put("documentCollection",
+            caseDocumentService.createDocumentTypeItemFromCaseDocument(caseDocument,
+                caseData.getEcmCaseType(), pdfService.createPdfDocumentDescriptionFromCaseData(caseData)));
+        return caseDetails;
     }
 
     /**

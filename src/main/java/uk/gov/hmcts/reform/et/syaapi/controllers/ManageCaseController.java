@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentException;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 
@@ -91,7 +92,7 @@ public class ManageCaseController {
                  caseRequest.getCaseTypeId(), caseRequest.getCaseId());
         try {
             return ok(caseService.submitCase(authorization, caseRequest));
-        } catch (PdfServiceException e) {
+        } catch (PdfServiceException | CaseDocumentException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }

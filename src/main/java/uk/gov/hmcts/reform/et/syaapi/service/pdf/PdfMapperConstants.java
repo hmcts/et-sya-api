@@ -102,9 +102,13 @@ public final class PdfMapperConstants {
     // R5 - "13 R5"
     // rep - "11.3 Representative's address:"
     public static final String QX_NAME =                "%s name";
-    public static final String QX_HOUSE_NUMBER =        "%s number";
+    public static final String QX_HOUSE_NUMBER =        "%s number or name";
+    public static final String RP2_HOUSE_NUMBER =        "%s number";
     public static final String QX_STREET =              "%s street";
-    public static final String QX_POST_TOWN =           "%s town city";
+    public static final String RP_POST_TOWN =           "%s town city";
+    public static final String RP2_POST_TOWN =           "%s town";
+    public static final String QX_POST_TOWN =           "%s town or city";
+
     public static final String QX_COUNTY =              "%s county";
     public static final String QX_POSTCODE =            "%s postcode";
     public static final String QX_PHONE_NUMBER =        "%s phone number";

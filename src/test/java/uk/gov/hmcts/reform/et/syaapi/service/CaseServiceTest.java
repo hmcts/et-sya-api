@@ -103,6 +103,8 @@ class CaseServiceTest {
     private PostcodeToOfficeService postcodeToOfficeService;
     @Mock
     private PdfService pdfService;
+    @Mock
+    private CaseDocumentService caseDocumentService;
 
 
     CaseServiceTest() throws IOException {
@@ -235,7 +237,7 @@ class CaseServiceTest {
     }
 
     @Test
-    void shouldSubmitCaseInCcd() throws InvalidPostcodeException, PdfServiceException {
+    void shouldSubmitCaseInCcd() throws InvalidPostcodeException, PdfServiceException, CaseDocumentException {
         // Given
         caseData.setManagingOffice("Aberdeen");
         CaseDataContent caseDataContent = CaseDataContent.builder()
@@ -251,7 +253,6 @@ class CaseServiceTest {
             USER_SURNAME,
             null
         ));
-
         CaseRequest caseRequest = CaseRequest.builder()
             .postCode("AB10 1AH")
             .caseId(CASE_ID)
@@ -263,6 +264,7 @@ class CaseServiceTest {
             .thenReturn(Optional.of(TribunalOffice.ABERDEEN));
         when(pdfService.convertCaseToPdf(new EmployeeObjectMapper().getCaseData(caseRequest.getCaseData())))
             .thenReturn(new byte[] {});
+
         when(ccdApiClient.startEventForCitizen(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
@@ -284,18 +286,6 @@ class CaseServiceTest {
             true,
             caseDataContent
         )).thenReturn(expectedDetails);
-
-        when(ccdApiClient.submitEventForCitizen(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            USER_ID,
-            EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
-            CASE_ID,
-            true,
-            caseDataContent
-        )).thenReturn(expectedDetails);
-
 
         CaseDetails caseDetails = caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseRequest);
         assertEquals(caseDetails, expectedDetails);
@@ -375,7 +365,7 @@ class CaseServiceTest {
 
     @Test
     void shouldGetDefaultTribunalOfficeForEmptyPostCodeWhenSubmitCaseInCcd()
-        throws InvalidPostcodeException, PdfServiceException {
+        throws InvalidPostcodeException, PdfServiceException, CaseDocumentException {
         caseData.setManagingOffice(DEFAULT_TRIBUNAL_OFFICE.getOfficeName());
         CaseDataContent caseDataContent = CaseDataContent.builder()
             .event(Event.builder().id(TestConstants.DRAFT_EVENT_ID).build())
@@ -438,6 +428,5 @@ class CaseServiceTest {
 
         CaseDetails caseDetails = caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseRequest);
         assertEquals(caseDetails, expectedDetails);
-
     }
 }

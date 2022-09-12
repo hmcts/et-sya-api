@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
-import uk.gov.hmcts.reform.et.syaapi.service.PostcodeToOfficeService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
@@ -29,17 +28,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 @WebMvcTest(
@@ -73,9 +69,6 @@ class ManageCaseControllerTest {
 
     @MockBean
     private VerifyTokenService verifyTokenService;
-
-    @MockBean
-    private PostcodeToOfficeService postcodeToOfficeService;
 
     @SneakyThrows
     @Test
@@ -233,8 +226,6 @@ class ManageCaseControllerTest {
             .build();
 
         // given
-        when(postcodeToOfficeService.getTribunalOfficeFromPostcode(anyString()))
-            .thenReturn(Optional.of(DEFAULT_TRIBUNAL_OFFICE));
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
             "12",
@@ -266,7 +257,13 @@ class ManageCaseControllerTest {
 
     @SneakyThrows
     @Test
-    void shouldHaveResponseStatusExceptionWhenSubmitCaseWithPdfError() {
+    void shouldSubmitCaseThrowExceptionWhenPdfNotCreated() {
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseTypeId(CASE_TYPE)
+            .caseId("12")
+            .caseData(new HashMap<>())
+            .build();
+
         // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
@@ -276,11 +273,6 @@ class ManageCaseControllerTest {
             "Bloggs",
             null
         ));
-        CaseRequest caseRequest = CaseRequest.builder()
-            .caseTypeId(CASE_TYPE)
-            .caseId("12")
-            .caseData(new HashMap<>())
-            .build();
         when(caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseRequest))
             .thenThrow(new PdfServiceException("Failed to convert to PDF", new IOException()));
 
