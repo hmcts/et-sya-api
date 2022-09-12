@@ -51,6 +51,7 @@ import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.INITIATE_CASE_DRAFT;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings({"PMD.ExcessiveImports"})
 public class CaseService {
 
     private final AuthTokenGenerator authTokenGenerator;

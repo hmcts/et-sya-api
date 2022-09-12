@@ -1,9 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.EqualsAndHashCode;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.TermsQueryBuilder;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,9 +14,9 @@ import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
-import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
+import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
@@ -35,27 +32,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
+import static  org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CASE_FIELD_MANAGING_OFFICE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings({"PMD.TooManyFields"})
 class CaseServiceTest {
-
+    private static final String CASE_TYPE = "ET_Scotland";
     private static final String CASE_ID = "TEST_CASE_ID";
     private static final String USER_ID = "TEST_USER_ID";
     private static final String JURISDICTION_ID = "EMPLOYMENT";
     private static final String USER_EMAIL = "test@gmail.com";
     private static final String USER_FORENAME = "Joe";
     private static final String USER_SURNAME = "Bloggs";
+
+    @Mock
+    private PostcodeToOfficeService postcodeToOfficeService;
 
     private final CaseDetails expectedDetails = ResourceLoader.fromString(
         "responses/caseDetails.json",
@@ -100,15 +99,15 @@ class CaseServiceTest {
     private CoreCaseDataApi ccdApiClient;
     @Mock
     private IdamClient idamClient;
-
     @InjectMocks
     private CaseService caseService;
     @Mock
-    private PostcodeToOfficeService postcodeToOfficeService;
+    private CaseDetailsConverter caseDetailsConverter;
     @Mock
     private PdfService pdfService;
     @Mock
     private CaseDocumentService caseDocumentService;
+
 
     CaseServiceTest() throws IOException {
         // Default constructor
@@ -240,7 +239,7 @@ class CaseServiceTest {
     }
 
     @Test
-    void shouldSubmitCaseInCcd() throws InvalidPostcodeException, PdfServiceException, CaseDocumentException {
+    void shouldSubmitCaseInCcd() throws InvalidPostcodeException, CaseDocumentException, PdfServiceException {
         // Given
         caseData.setManagingOffice("Aberdeen");
         CaseDataContent caseDataContent = CaseDataContent.builder()
@@ -288,11 +287,8 @@ class CaseServiceTest {
             true,
             caseDataContent
         )).thenReturn(expectedDetails);
-
         CaseDetails caseDetails = caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseRequest);
         assertEquals(caseDetails, expectedDetails);
-
-
     }
 
     @Test
@@ -324,7 +320,7 @@ class CaseServiceTest {
             UPDATE_CASE_DRAFT
         );
 
-        assertEquals(EtSyaConstants.SCOTLAND_CASE_TYPE, eventResponse.getCaseDetails().getCaseTypeId());
+        assertEquals(eventResponse.getCaseDetails().getCaseTypeId(), CASE_TYPE);
     }
 
     @Test
@@ -363,132 +359,5 @@ class CaseServiceTest {
         );
 
         assertEquals(caseDetails, expectedDetails);
-    }
-
-    @Test
-    void shouldGetDefaultTribunalOfficeForEmptyPostCodeWhenSubmitCaseInCcd()
-        throws InvalidPostcodeException, PdfServiceException, CaseDocumentException {
-        caseData.setManagingOffice(DEFAULT_TRIBUNAL_OFFICE.getOfficeName());
-        CaseDataContent caseDataContent = CaseDataContent.builder()
-            .event(Event.builder().id(TestConstants.DRAFT_EVENT_ID).build())
-            .eventToken(startEventResponse.getToken())
-            .data(caseData)
-            .build();
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
-            USER_ID,
-            USER_EMAIL,
-            USER_FORENAME,
-            USER_SURNAME,
-            null
-        ));
-
-        CaseRequest caseRequest = CaseRequest.builder()
-            .postCode("YUMMY")
-            .caseId(CASE_ID)
-            .caseTypeId(EtSyaConstants.SCOTLAND_CASE_TYPE)
-            .caseData(new HashMap<>())
-            .build();
-        caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE, DEFAULT_TRIBUNAL_OFFICE.getOfficeName());
-        when(postcodeToOfficeService.getTribunalOfficeFromPostcode("YUMMY"))
-            .thenThrow(new InvalidPostcodeException("YUMMY is invalid"));
-        when(ccdApiClient.startEventForCitizen(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            USER_ID,
-            EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
-            CASE_ID,
-            TestConstants.SUBMIT_CASE_DRAFT
-        )).thenReturn(
-            startEventResponse);
-
-        when(ccdApiClient.submitEventForCitizen(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            USER_ID,
-            EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
-            CASE_ID,
-            true,
-            caseDataContent
-        )).thenReturn(expectedDetails);
-
-        when(ccdApiClient.submitEventForCitizen(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            USER_ID,
-            EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
-            CASE_ID,
-            true,
-            caseDataContent
-        )).thenReturn(expectedDetails);
-
-
-        CaseDetails caseDetails = caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseRequest);
-        assertEquals(caseDetails, expectedDetails);
-    void shouldReturnCaseData() throws IOException {
-        List<String> caseIds = List.of("1646225213651598", "1646225213651533", "1646225213651512");
-        SearchResult englandWalesSearchResult = SearchResult.builder()
-            .total(1)
-            .cases(requestCaseDataListEngland)
-            .build();
-        SearchResult scotlandSearchResult = SearchResult.builder()
-            .total(2)
-            .cases(requestCaseDataListScotland)
-            .build();
-
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(ccdApiClient.searchCases(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            EtSyaConstants.ENGLAND_CASE_TYPE, generateCaseDataEsQuery(caseIds)
-        )).thenReturn(englandWalesSearchResult);
-        when(ccdApiClient.searchCases(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            EtSyaConstants.SCOTLAND_CASE_TYPE, generateCaseDataEsQuery(caseIds)
-        )).thenReturn(scotlandSearchResult);
-
-        List<CaseDetails> caseDetailsList = caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, caseIds);
-        assertThat(caseDetailsList).hasSize(3);
-        assertThat(caseDetailsList).isEqualTo(expectedCaseDataListCombined);
-    }
-
-    @Test
-    void shouldReturnCaseDataNoCasesFound() throws IOException {
-        List<String> caseIds = List.of("1646225213651598", "1646225213651533");
-        SearchResult englandWalesSearchResult = SearchResult.builder()
-            .total(0)
-            .cases(null)
-            .build();
-        SearchResult scotlandSearchResult = SearchResult.builder()
-            .total(0)
-            .cases(null)
-            .build();
-
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(ccdApiClient.searchCases(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            EtSyaConstants.ENGLAND_CASE_TYPE, generateCaseDataEsQuery(caseIds)
-        )).thenReturn(englandWalesSearchResult);
-        when(ccdApiClient.searchCases(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            EtSyaConstants.SCOTLAND_CASE_TYPE, generateCaseDataEsQuery(caseIds)
-        )).thenReturn(scotlandSearchResult);
-
-        List<CaseDetails> caseDetailsList = caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, caseIds);
-        assertThat(caseDetailsList).isEmpty();
-    }
-
-    private String generateCaseDataEsQuery(List<String> caseIds) {
-        BoolQueryBuilder boolQueryBuilder = boolQuery()
-            .filter(new TermsQueryBuilder("reference.keyword", caseIds));
-        return new SearchSourceBuilder()
-            .query(boolQueryBuilder)
-            .toString();
     }
 }
