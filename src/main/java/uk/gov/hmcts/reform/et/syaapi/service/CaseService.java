@@ -4,8 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.TermsQueryBuilder;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -16,6 +20,7 @@ import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
+import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
@@ -26,6 +31,7 @@ import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -33,6 +39,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
+import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CASE_FIELD_MANAGING_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
@@ -279,5 +286,39 @@ public class CaseService {
             true,
             caseDataContent
         );
+    }
+
+    /**
+     * Given a list of caseIds, this method will return a list of case details.
+     *
+     * @param authorisation used for IDAM authentication for the query
+     * @param caseIds       used as the query parameter
+     * @return a list of case details
+     */
+    public List<CaseDetails> getCaseData(String authorisation, List<String> caseIds) {
+        BoolQueryBuilder boolQueryBuilder = boolQuery()
+            .filter(new TermsQueryBuilder("reference.keyword", caseIds));
+        String query = new SearchSourceBuilder()
+            .query(boolQueryBuilder)
+            .toString();
+
+        return searchEnglandScotlandCases(authorisation, query);
+    }
+
+    private List<CaseDetails> searchEnglandScotlandCases(String authorisation, String query) {
+        List<CaseDetails> caseDetailsList = new ArrayList<>();
+        caseDetailsList.addAll(searchCaseType(authorisation, ENGLAND_CASE_TYPE, query));
+        caseDetailsList.addAll(searchCaseType(authorisation, SCOTLAND_CASE_TYPE, query));
+        return caseDetailsList;
+    }
+
+    private List<CaseDetails> searchCaseType(String authorisation, String caseTypeId, String query) {
+        List<CaseDetails> caseDetailsList = new ArrayList<>();
+        SearchResult searchResult = ccdApiClient.searchCases(authorisation, authTokenGenerator.generate(),
+                                                             caseTypeId, query);
+        if (searchResult != null && !CollectionUtils.isEmpty(searchResult.getCases())) {
+            caseDetailsList.addAll(searchResult.getCases());
+        }
+        return caseDetailsList;
     }
 }

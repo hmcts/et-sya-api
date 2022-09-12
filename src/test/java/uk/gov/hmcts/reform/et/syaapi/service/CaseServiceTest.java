@@ -1,6 +1,9 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.EqualsAndHashCode;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.TermsQueryBuilder;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,6 +17,7 @@ import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
+import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
@@ -31,7 +35,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-import static  org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -104,7 +109,6 @@ class CaseServiceTest {
     private PdfService pdfService;
     @Mock
     private CaseDocumentService caseDocumentService;
-
 
     CaseServiceTest() throws IOException {
         // Default constructor
@@ -424,5 +428,67 @@ class CaseServiceTest {
 
         CaseDetails caseDetails = caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseRequest);
         assertEquals(caseDetails, expectedDetails);
+    void shouldReturnCaseData() throws IOException {
+        List<String> caseIds = List.of("1646225213651598", "1646225213651533", "1646225213651512");
+        SearchResult englandWalesSearchResult = SearchResult.builder()
+            .total(1)
+            .cases(requestCaseDataListEngland)
+            .build();
+        SearchResult scotlandSearchResult = SearchResult.builder()
+            .total(2)
+            .cases(requestCaseDataListScotland)
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.ENGLAND_CASE_TYPE, generateCaseDataEsQuery(caseIds)
+        )).thenReturn(englandWalesSearchResult);
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.SCOTLAND_CASE_TYPE, generateCaseDataEsQuery(caseIds)
+        )).thenReturn(scotlandSearchResult);
+
+        List<CaseDetails> caseDetailsList = caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, caseIds);
+        assertThat(caseDetailsList).hasSize(3);
+        assertThat(caseDetailsList).isEqualTo(expectedCaseDataListCombined);
+    }
+
+    @Test
+    void shouldReturnCaseDataNoCasesFound() throws IOException {
+        List<String> caseIds = List.of("1646225213651598", "1646225213651533");
+        SearchResult englandWalesSearchResult = SearchResult.builder()
+            .total(0)
+            .cases(null)
+            .build();
+        SearchResult scotlandSearchResult = SearchResult.builder()
+            .total(0)
+            .cases(null)
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.ENGLAND_CASE_TYPE, generateCaseDataEsQuery(caseIds)
+        )).thenReturn(englandWalesSearchResult);
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.SCOTLAND_CASE_TYPE, generateCaseDataEsQuery(caseIds)
+        )).thenReturn(scotlandSearchResult);
+
+        List<CaseDetails> caseDetailsList = caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, caseIds);
+        assertThat(caseDetailsList).isEmpty();
+    }
+
+    private String generateCaseDataEsQuery(List<String> caseIds) {
+        BoolQueryBuilder boolQueryBuilder = boolQuery()
+            .filter(new TermsQueryBuilder("reference.keyword", caseIds));
+        return new SearchSourceBuilder()
+            .query(boolQueryBuilder)
+            .toString();
     }
 }
