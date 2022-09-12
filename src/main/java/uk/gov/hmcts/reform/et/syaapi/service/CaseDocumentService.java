@@ -88,10 +88,6 @@ public class CaseDocumentService {
         DocumentUploadResponse response = attemptWithRetriesToUploadDocumentToCaseDocumentApi(
             0, authToken, caseTypeId, file);
 
-        if (response != null) {
-            log.info(response.toString());
-        }
-
         return validateResponse(
             Objects.requireNonNull(response), file.getOriginalFilename());
     }
