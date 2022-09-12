@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.config;
 
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
