@@ -24,14 +24,12 @@
     <cve>CVE-2020-5408</cve>
   </suppress>
   <suppress>
-    <notes>Suppresses tomcat embedded version tomcat-embed-core-9.0.56.jar vulnerabilities</notes>
-    <cve>CVE-2022-23181</cve>
+    <notes>Suppresses snakeyaml-1.30.jar vulnerabilities</notes>
+    <cve>CVE-2022-25857</cve>
   </suppress>
   <suppress>
-    <notes>Suppresses snakeyaml-1.30.jar </notes>
-    <cve>CVE-2022-38749</cve>
-    <cve>CVE-2022-38751</cve>
-    <cve>CVE-2022-38750</cve>
+    <notes>Suppresses tomcat embedded version tomcat-embed-core-9.0.56.jar vulnerabilities</notes>
+    <cve>CVE-2022-23181</cve>
   </suppress>
   <suppress>
     <notes><![CDATA[
@@ -79,28 +77,5 @@
   </suppress>
   <suppress until="2022-11-20">
     <cve>CVE-2022-31569</cve>
-  </suppress>
-  <suppress until="2022-11-20">
-    <cve>CVE-2022-25857</cve>
-  <suppress>
-    <notes><![CDATA[
-   file name: snakeyaml-1.30.jar
-   ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
-    <cve>CVE-2022-38749</cve>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
-   file name: snakeyaml-1.31.jar
-   ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
-    <vulnerabilityName>CVE-2022-38752</vulnerabilityName>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
-   file name: spring-web-5.3.22.jar
-   ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-web@.*$</packageUrl>
-    <cve>CVE-2016-1000027</cve>
   </suppress>
 </suppressions>
