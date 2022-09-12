@@ -183,7 +183,7 @@ public class CaseService {
                                   CaseRequest caseRequest) throws PdfServiceException, CaseDocumentException {
         caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE,
             getTribunalOfficeFromPostCode(caseRequest.getPostCode()).getOfficeName());
-        pdfService.convertCaseToPdf(new EmployeeObjectMapper().getCaseData(caseRequest.getCaseData()));
+//        pdfService.convertCaseToPdf(new EmployeeObjectMapper().getCaseData(caseRequest.getCaseData()));
 
         Thread getAcasCertASync = new Thread(
             () -> {
@@ -208,21 +208,21 @@ public class CaseService {
 
         getAcasCertASync.start();
 
-        CaseData caseData = new EmployeeObjectMapper().getCaseData(caseRequest.getCaseData());
-        byte[] pdfData = pdfService.convertCaseToPdf(caseData);
-        CaseDocument caseDocument = caseDocumentService
-            .uploadDocument(authorization,
-                            caseRequest.getCaseTypeId(),
-                            new PdfDecodedMultipartFile(pdfData,
-                                                        pdfService.createPdfDocumentNameFromCaseData(caseData),
-                                                        CREATED_PDF_FILE_TIKA_CONTENT_TYPE
-                            ));
+//        CaseData caseData = new EmployeeObjectMapper().getCaseData(caseRequest.getCaseData());
+//        byte[] pdfData = pdfService.convertCaseToPdf(caseData);
+//        CaseDocument caseDocument = caseDocumentService
+//            .uploadDocument(authorization,
+//                            caseRequest.getCaseTypeId(),
+//                            new PdfDecodedMultipartFile(pdfData,
+//                                                        pdfService.createPdfDocumentNameFromCaseData(caseData),
+//                                                        CREATED_PDF_FILE_TIKA_CONTENT_TYPE
+//                            ));
         CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.SUBMIT_CASE_DRAFT,
                                                caseRequest.getCaseTypeId(), caseRequest.getCaseData());
-        caseDetails.getData()
-            .put("documentCollection",
-            caseDocumentService.createDocumentTypeItemFromCaseDocument(caseDocument,
-                caseData.getEcmCaseType(), pdfService.createPdfDocumentDescriptionFromCaseData(caseData)));
+//        caseDetails.getData()
+//            .put("documentCollection",
+//            caseDocumentService.createDocumentTypeItemFromCaseDocument(caseDocument,
+//                caseData.getEcmCaseType(), pdfService.createPdfDocumentDescriptionFromCaseData(caseData)));
         return caseDetails;
     }
 
