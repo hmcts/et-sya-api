@@ -20,7 +20,6 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -42,7 +41,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTIO
 @Slf4j
 @Service
 public class CaseDocumentService {
-
     private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
     private static final String FILE_NAME_REGEX_PATTERN = "^[\\w\\- ]{1,256}+\\.[A-Za-z]{3,4}$";
     private static final Pattern FILE_NAME_PATTERN = Pattern.compile(FILE_NAME_REGEX_PATTERN);
@@ -66,7 +64,7 @@ public class CaseDocumentService {
      */
     public CaseDocumentService(RestTemplate restTemplate,
                                AuthTokenGenerator authTokenGenerator,
-                               @Value("${case_document_am.url}/cases/documents}")
+                               @Value("${case_document_am.url}/cases/documents")
                                    String caseDocApiUrl,
                                @Value("${case_document_am.max_retries}") Integer maxApiRetries) {
         this.restTemplate = restTemplate;
@@ -85,29 +83,19 @@ public class CaseDocumentService {
      * @return the URL of the document we have just uploaded
      * @throws CaseDocumentException if a problem occurs whilst uploading the document via API
      */
-    public URI uploadDocument(String authToken, String caseTypeId, MultipartFile file) throws CaseDocumentException {
+    public CaseDocument uploadDocument(String authToken, String caseTypeId, MultipartFile file)
+        throws CaseDocumentException {
         DocumentUploadResponse response = attemptWithRetriesToUploadDocumentToCaseDocumentApi(
             0, authToken, caseTypeId, file);
 
-        CaseDocument caseDocument = validateResponse(
+        return validateResponse(
             Objects.requireNonNull(response), file.getOriginalFilename());
-
-        return getUriFromFile(caseDocument, file.getOriginalFilename());
-    }
-
-    private URI getUriFromFile(CaseDocument caseDocument, String originalFilename) throws CaseDocumentException {
-        if (caseDocument.getLinks() == null
-            || caseDocument.getLinks().get("self") == null
-            || caseDocument.getLinks().get("self").get("href") == null) {
-            throw new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename);
-        }
-        return URI.create(caseDocument.getLinks().get("self").get("href"));
     }
 
     private DocumentUploadResponse attemptWithRetriesToUploadDocumentToCaseDocumentApi(int attempts,
-                                                                                      String authToken,
-                                                                                      String caseTypeId,
-                                                                                      MultipartFile file)
+                                                                               String authToken,
+                                                                               String caseTypeId,
+                                                                               MultipartFile file)
         throws CaseDocumentException {
         try {
             return uploadDocumentToCaseDocumentApi(authToken, caseTypeId, file).getBody();
@@ -121,8 +109,8 @@ public class CaseDocumentService {
     }
 
     private ResponseEntity<DocumentUploadResponse> uploadDocumentToCaseDocumentApi(String authToken,
-                                                                                   String caseTypeId,
-                                                                                   MultipartFile file)
+                                                           String caseTypeId,
+                                                           MultipartFile file)
         throws IOException, CaseDocumentException {
         validateFile(file);
 
@@ -149,6 +137,7 @@ public class CaseDocumentService {
     private void validateFile(MultipartFile file) throws CaseDocumentException, IOException {
         String filename = file.getOriginalFilename();
 
+        assert filename != null;
         Matcher matcher = FILE_NAME_PATTERN.matcher(filename);
         if (!matcher.matches()) {
             throw new CaseDocumentException(VALIDATE_FILE_EXCEPTION_MESSAGE);
@@ -164,7 +153,7 @@ public class CaseDocumentService {
 
     private CaseDocument validateResponse(DocumentUploadResponse response, String originalFilename)
         throws CaseDocumentException {
-        if (response.documents == null || response.isEmpty()) {
+        if (response.getDocuments() == null) {
             throw new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename);
         }
 
@@ -172,9 +161,11 @@ public class CaseDocumentService {
             .findFirst()
             .orElseThrow(() -> new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename));
 
-        String uri = getUriFromFile(document, originalFilename).toString();
+        if (document.verifyUri()) {
+            throw new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename);
+        }
 
-        Matcher matcher = HTTPS_URL_PATTERN.matcher(uri);
+        Matcher matcher = HTTPS_URL_PATTERN.matcher(document.getUri().toString());
         if (!matcher.matches()) {
             throw new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename);
         }
@@ -184,7 +175,12 @@ public class CaseDocumentService {
 
     private MultiValueMap<String, Object> generateUploadRequest(String caseTypeId,
                                                                 MultipartFile file) throws IOException {
-        ByteArrayResource fileAsResource = new ByteArrayResource(file.getBytes());
+        ByteArrayResource fileAsResource = new ByteArrayResource(file.getBytes()) {
+            @Override
+            public String getFilename() {
+                return file.getOriginalFilename();
+            }
+        };
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("files", fileAsResource);
