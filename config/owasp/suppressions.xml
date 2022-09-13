@@ -95,4 +95,7 @@
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-web@.*$</packageUrl>
     <cve>CVE-2016-1000027</cve>
   </suppress>
+  <suppress until="2022-11-20">
+    <cve>CVE-2022-25857</cve>
+  </suppress>
 </suppressions>

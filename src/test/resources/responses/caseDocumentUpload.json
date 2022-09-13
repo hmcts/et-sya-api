@@ -1,0 +1,28 @@
+{
+  "documents": [
+    {
+      "classification": "PUBLIC",
+      "size": 23935,
+      "mimeType": "image/png",
+      "originalDocumentName": "hello.txt",
+      "hashToken": "b796d5095334b580159ce5efb00e6613065ac40e2ce91e818efb7ac93619d386",
+      "createdOn": "2022-08-23T09:52:27.000+00:00",
+      "createdBy": "742b9798-e552-3495-bb86-23431260031c",
+      "lastModifiedBy": "742b9798-e552-3495-bb86-23431260031c",
+      "modifiedOn": "2022-08-23T09:52:27.000+00:00",
+      "ttl": "2022-08-24T09:52:25.000+00:00",
+      "metadata": {
+        "case_type_id": "ET-EnglandWales",
+        "jurisdiction": "EMPLOYMENT"
+      },
+      "_links": {
+        "self": {
+          "href": "http://test:8080/img"
+        },
+        "binary": {
+          "href": "http://dm-store:8080/documents/dafca739-ddd5-4dff-be74-a26c267feec0/binary"
+        }
+      }
+    }
+  ]
+}
