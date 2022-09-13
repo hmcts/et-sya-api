@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -47,7 +46,7 @@ public class AcasController {
     public ResponseEntity<Object> getLastModifiedCaseList(
         @RequestHeader(value = HttpHeaders.AUTHORIZATION) String userToken,
         @RequestParam(name = "datetime")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime requestDateTime) throws IOException {
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime requestDateTime) {
         List<Long> lastModifiedCases = caseService.getLastModifiedCases(userToken, requestDateTime);
         if (lastModifiedCases.isEmpty()) {
             return ok(NO_CASES_FOUND);

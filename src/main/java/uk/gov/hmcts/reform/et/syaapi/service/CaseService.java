@@ -15,7 +15,6 @@ import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.ecm.common.client.CcdClient;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
-import uk.gov.hmcts.et.common.model.ccd.SubmitEvent;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -30,7 +29,6 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,8 +56,6 @@ public class CaseService {
     private final AuthTokenGenerator authTokenGenerator;
 
     private final CoreCaseDataApi ccdApiClient;
-
-    private final CcdClient ccdClient;
 
     private final IdamClient idamClient;
 
@@ -250,33 +246,32 @@ public class CaseService {
         );
     }
 
-
     /** Given a datetime, this method will return a list of caseIds which have been modified since the datetime
      * provided.
-     * @param authToken used for IDAM authentication for the query
+     * @param authorisation used for IDAM authentication for the query
      * @param requestDateTime used as the query parameter
      * @return a list of caseIds
      */
-    public List<Long> getLastModifiedCases(String authToken, LocalDateTime requestDateTime) throws IOException {
+    public List<Long> getLastModifiedCases(String authorisation, LocalDateTime requestDateTime) {
         BoolQueryBuilder boolQueryBuilder = boolQuery()
             .filter(new RangeQueryBuilder("last_modified").gte(requestDateTime));
         String query = new SearchSourceBuilder()
             .query(boolQueryBuilder)
             .toString();
-        return searchEngWalesScotlandCases(authToken, query);
+        return searchEwScotCasesReturnIdList(authorisation, query);
     }
 
-    private List<Long> searchEngWalesScotlandCases(String authToken, String query) throws IOException {
+    private List<Long> searchEwScotCasesReturnIdList(String authorisation, String query) {
         List<Long> caseDetailsList = new ArrayList<>();
-        caseDetailsList.addAll(searchCasesByDate(authToken, ENGLANDWALES_CASE_TYPE_ID, query));
-        caseDetailsList.addAll(searchCasesByDate(authToken, SCOTLAND_CASE_TYPE_ID, query));
+        caseDetailsList.addAll(searchCaseTypeReturnIdList(authorisation, ENGLANDWALES_CASE_TYPE_ID, query));
+        caseDetailsList.addAll(searchCaseTypeReturnIdList(authorisation, SCOTLAND_CASE_TYPE_ID, query));
         return caseDetailsList;
     }
 
-    private List<Long> searchCasesByDate(String authToken, String caseTypeId, String query) throws IOException {
-        return ccdClient.buildAndGetElasticSearchRequest(authToken, caseTypeId, query)
+    private List<Long> searchCaseTypeReturnIdList(String authorisation, String caseTypeId, String query) {
+        return ccdApiClient.searchCases(authorisation, authTokenGenerator.generate(), caseTypeId, query).getCases()
             .stream()
-            .map(SubmitEvent::getCaseId)
+            .map(CaseDetails::getId)
             .collect(toList());
     }
 
