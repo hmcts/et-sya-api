@@ -29,8 +29,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.et.syaapi.service.CaseService.CREATED_PDF_FILE_TIKA_CONTENT_TYPE;
-
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -47,9 +45,9 @@ class PdfServiceTest {
     );
 
     private CaseData caseData;
-    private static final String EXPECTED_PDF_NAME = "ET1_Michael_Jackson.pdf";
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME = "pdfTemplateSource";
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE = "classpath:ET1_0722.pdf";
+    private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     @Mock
     private PdfMapperService pdfMapperService;
     @InjectMocks
@@ -57,7 +55,7 @@ class PdfServiceTest {
 
     @BeforeEach
     void beforeEach() {
-        caseData = new EmployeeObjectMapper().getCaseData(TestModelCreator.createRequestCaseData());
+        caseData = EmployeeObjectMapper.mapCaseRequestToCaseData(TestModelCreator.createRequestCaseData());
         ReflectionTestUtils.setField(pdfService,
                                      PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
                                      PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
@@ -123,20 +121,13 @@ class PdfServiceTest {
     void shouldCreatePdfFile() throws IOException {
         byte[] pdfData = pdfService.createPdf(caseData);
         assertThat(pdfData).isNotEmpty();
-        assertThat(new Tika().detect(pdfData)).isEqualTo(CREATED_PDF_FILE_TIKA_CONTENT_TYPE);
+        assertThat(new Tika().detect(pdfData)).isEqualTo(PDF_FILE_TIKA_CONTENT_TYPE);
     }
 
     @Test
-    void shouldCreatePdfDocumentNameFromCaseData() {
-        String pdfName = pdfService.createPdfDocumentNameFromCaseData(caseData);
-        assertThat(pdfName).isEqualTo(EXPECTED_PDF_NAME);
-    }
-
-    @Test
-    void shouldCreatePdfDocumentDescriptionFromCaseData() {
-        String pdfDocumentDescription = pdfService.createPdfDocumentDescriptionFromCaseData(caseData);
-        assertThat(pdfDocumentDescription).isEqualTo("Case Details - "
-                                                         + caseData.getClaimantIndType().getClaimantFirstNames()
-                                                         + " " + caseData.getClaimantIndType().getClaimantLastName());
+    void shouldCreatePdfDocumentDescriptionFromCaseData() throws PdfServiceException {
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData);
+        assertThat(pdfDecodedMultipartFile).isNotNull();
     }
 }

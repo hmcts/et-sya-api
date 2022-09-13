@@ -31,14 +31,17 @@ public class EmployeeObjectMapper {
         return data;
     }
 
-
     public Et1CaseData getEmploymentCaseData(Map<String, Object> caseData) {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.convertValue(caseData, Et1CaseData.class);
     }
 
-    public CaseData getCaseData(Map<String, Object> caseData) {
+    private static CaseData getCaseData(Map<String, Object> caseData) {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.convertValue(caseData, CaseData.class);
+    }
+
+    public static CaseData mapCaseRequestToCaseData(Map<String, Object> caseData) {
+        return getCaseData(caseData);
     }
 }

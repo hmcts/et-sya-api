@@ -27,6 +27,8 @@ public class PdfService {
     @Value("${pdf.source}")
     public String pdfTemplateSource;
 
+    private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
+
     /**
      * Converts a {@link CaseData} class object into a pdf document
      * using template (ver. ET1_0722)
@@ -62,7 +64,7 @@ public class PdfService {
         }
     }
 
-    public String createPdfDocumentNameFromCaseData(CaseData caseData) {
+    private static String createPdfDocumentNameFromCaseData(CaseData caseData) {
         return "ET1_"
             + caseData.getClaimantIndType().getClaimantFirstNames()
             + "_"
@@ -70,7 +72,16 @@ public class PdfService {
             + ".pdf";
     }
 
-    public String createPdfDocumentDescriptionFromCaseData(CaseData caseData) {
+    public PdfDecodedMultipartFile convertCaseDataToPdfDecodedMultipartFile(CaseData caseData)
+        throws PdfServiceException {
+        byte[] pdfData = convertCaseToPdf(caseData);
+        return new PdfDecodedMultipartFile(pdfData,
+                                           createPdfDocumentNameFromCaseData(caseData),
+                                           PDF_FILE_TIKA_CONTENT_TYPE,
+                                           createPdfDocumentDescriptionFromCaseData(caseData));
+    }
+
+    private static String createPdfDocumentDescriptionFromCaseData(CaseData caseData) {
         return "Case Details - "
             + caseData.getClaimantIndType().getClaimantFirstNames()
             + " " + caseData.getClaimantIndType().getClaimantLastName();

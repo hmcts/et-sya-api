@@ -23,10 +23,16 @@ public class PdfDecodedMultipartFile implements MultipartFile {
 
     private final String contentType;
 
-    public PdfDecodedMultipartFile(byte[] fileContent, String originalName, String contentType) {
+    private final String documentDescription;
+
+    public PdfDecodedMultipartFile(byte[] fileContent,
+                                   String originalName,
+                                   String contentType,
+                                   String documentDescription) {
         this.fileContent = fileContent == null ? null : Arrays.copyOf(fileContent, fileContent.length);
         this.originalName = originalName;
         this.contentType = contentType;
+        this.documentDescription = documentDescription;
     }
 
     @Override
@@ -42,6 +48,10 @@ public class PdfDecodedMultipartFile implements MultipartFile {
     @Override
     public String getContentType() {
         return this.contentType;
+    }
+
+    public String getDocumentDescription() {
+        return this.documentDescription;
     }
 
     @Override

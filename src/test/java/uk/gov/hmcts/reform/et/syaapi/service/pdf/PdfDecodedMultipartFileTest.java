@@ -21,7 +21,9 @@ class PdfDecodedMultipartFileTest {
     PdfDecodedMultipartFile pdfDecodedMultipartFile;
 
     private static final String ORIGINAL_FILE_NAME = "ET1_Michael_Jackson.pdf";
-    private static final String CONTENT_TYPE = "Application/Pdf";
+    private static final String CONTENT_TYPE = "application/pdf";
+
+    private static final String DOCUMENT_DESCRIPTION = "Case Details - Michael Jackson";
 
     public static final byte[] SAMPLE_BYTE_ARRAY = { 37, 80, 68, 70, 45, 49, 46, 49, 10, 37, -62, -91, -62, -79, -61,
         -85, 10, 10, 49, 32, 48, 32, 111, 98, 106, 10, 32, 32, 60, 60, 32, 47, 84, 121, 112, 101, 32, 47, 67, 97, 116,
@@ -56,7 +58,10 @@ class PdfDecodedMultipartFileTest {
 
     @BeforeEach
     void beforeEach() {
-        pdfDecodedMultipartFile = new PdfDecodedMultipartFile(new byte[] {}, ORIGINAL_FILE_NAME, CONTENT_TYPE);
+        pdfDecodedMultipartFile = new PdfDecodedMultipartFile(new byte[] {},
+                                                              ORIGINAL_FILE_NAME,
+                                                              CONTENT_TYPE,
+                                                              DOCUMENT_DESCRIPTION);
     }
 
     @Test
@@ -67,6 +72,11 @@ class PdfDecodedMultipartFileTest {
     @Test
     void shouldGetOriginalFileNameReturnOriginalFileName() {
         assertThat(pdfDecodedMultipartFile.getOriginalFilename()).isEqualTo(ORIGINAL_FILE_NAME);
+    }
+
+    @Test
+    void shouldGetDocumentDescriptionReturnDocumentDescription() {
+        assertThat(pdfDecodedMultipartFile.getDocumentDescription()).isEqualTo(DOCUMENT_DESCRIPTION);
     }
 
     @Test
@@ -81,13 +91,18 @@ class PdfDecodedMultipartFileTest {
 
     @Test
     void shouldIsEmptyReturnTrueWhenFileContentIsNull() {
-        assertThat(new PdfDecodedMultipartFile(null, ORIGINAL_FILE_NAME, CONTENT_TYPE).isEmpty()).isTrue();
+        assertThat(new PdfDecodedMultipartFile(null,
+                                               ORIGINAL_FILE_NAME,
+                                               CONTENT_TYPE,
+                                               DOCUMENT_DESCRIPTION).isEmpty()).isTrue();
     }
 
     @Test
     void shouldIsEmptyReturnFalseWhenFileContentIsNotEmpty() {
-        assertThat(new PdfDecodedMultipartFile(SAMPLE_BYTE_ARRAY, ORIGINAL_FILE_NAME, CONTENT_TYPE)
-                       .isEmpty()).isFalse();
+        assertThat(new PdfDecodedMultipartFile(SAMPLE_BYTE_ARRAY,
+                                               ORIGINAL_FILE_NAME,
+                                               CONTENT_TYPE,
+                                               DOCUMENT_DESCRIPTION).isEmpty()).isFalse();
     }
 
     @Test
@@ -97,7 +112,10 @@ class PdfDecodedMultipartFileTest {
 
     @Test
     void shouldGetSizeReturnZeroWhenFileContentIsNull() {
-        assertThat(new PdfDecodedMultipartFile(null, ORIGINAL_FILE_NAME, CONTENT_TYPE).getSize()).isZero();
+        assertThat(new PdfDecodedMultipartFile(null,
+                                               ORIGINAL_FILE_NAME,
+                                               CONTENT_TYPE,
+                                               DOCUMENT_DESCRIPTION).getSize()).isZero();
     }
 
     @Test
@@ -107,7 +125,7 @@ class PdfDecodedMultipartFileTest {
 
     @Test
     void shouldGetBytesReturnEmptyByteArrayWhenFileContentIsNull() {
-        assertThat(new PdfDecodedMultipartFile(null, ORIGINAL_FILE_NAME, CONTENT_TYPE)
+        assertThat(new PdfDecodedMultipartFile(null, ORIGINAL_FILE_NAME, CONTENT_TYPE, DOCUMENT_DESCRIPTION)
                        .getBytes()).isEqualTo(FILE_CONTENT);
     }
 
