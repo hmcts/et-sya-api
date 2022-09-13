@@ -17,7 +17,6 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
-
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
 
 import java.io.IOException;
@@ -128,7 +127,7 @@ class CaseDocumentServiceTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .body(MOCK_RESPONSE_WITH_DOCUMENT));
 
-        URI documentEndpoint = 
+        URI documentEndpoint =
             caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE).getUri();
         assertThat(documentEndpoint)
             .hasToString(MOCK_HREF);

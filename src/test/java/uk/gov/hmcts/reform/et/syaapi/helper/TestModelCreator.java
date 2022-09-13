@@ -83,8 +83,6 @@ public final class TestModelCreator {
     private static final String CLAIMANT_WORK_PHONE_NUMBER = "07444518999";
     private static final String CLAIMANT_COMPENSATION = YES_OR_NO_YES;
     private static final String CLAIMANT_TRIBUNAL = "I want tribunal";
-    private static final String CLAIMANT_OLD_JOB = "No";
-    private static final String CLAIMANT_ANOTHER_JOB = YES_OR_NO_YES;
     private static final String CLAIMANT_COMPENSATION_AMOUNT = "2000";
     private static final String CLAIMANT_TRIBUNAL_RECOMMENDATION = YES_OR_NO_YES;
 
@@ -341,11 +339,9 @@ public final class TestModelCreator {
 
     private static ClaimantRequestType getClaimantRequests() {
         ClaimantRequestType claimantRequestType = new ClaimantRequestType();
-        claimantRequestType.setClaimantCompensation(CLAIMANT_COMPENSATION);
-        claimantRequestType.setClaimantTribunal(CLAIMANT_TRIBUNAL);
-        claimantRequestType.setClaimantAnotherJob(CLAIMANT_ANOTHER_JOB);
+        claimantRequestType.setClaimantCompensationText(CLAIMANT_COMPENSATION);
+        claimantRequestType.setClaimantTribunalRecommendation(CLAIMANT_TRIBUNAL);
         claimantRequestType.setClaimantCompensationAmount(CLAIMANT_COMPENSATION_AMOUNT);
-        claimantRequestType.setClaimantOldJob(CLAIMANT_OLD_JOB);
         claimantRequestType.setClaimantTribunalRecommendation(CLAIMANT_TRIBUNAL_RECOMMENDATION);
         claimantRequestType.setClaimDescription(CLAIM_DESCRIPTION);
         claimantRequestType.setWhistleblowing(WHISTLE_BLOWING);
