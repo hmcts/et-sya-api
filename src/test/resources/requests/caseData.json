@@ -1,4 +1,12 @@
 {
-  "caseType": null,
+  "caseType": "ET_Scotland",
+  "managingOffice": "Aberdeen",
+  "claimantIndType": {
+    "claimant_first_names": "TestName",
+    "claimant_last_name": "TestSurname"
+  },
+  "claimantType": {
+    "claimant_email_address": "test@gmail.com"
+  },
   "caseSource": null
 }
