@@ -18,6 +18,8 @@ import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +35,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SuppressWarnings({"PMD.LinguisticNaming"})
 class AcasControllerTest {
     private final List<String> caseIds = new ArrayList<>();
+    private final String requestDateTimeString = "2022-09-01T12:34:00";
     private static final String AUTH_TOKEN = "some-token";
+    private static final String GET_LAST_MODIFIED_CASE_LIST_URL = "/getLastModifiedCaseList";
     private static final String GET_CASE_DATA_URL = "/getCaseData";
 
     @Autowired
@@ -51,6 +55,43 @@ class AcasControllerTest {
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         when(caseService.getCaseData(anyString(), any())).thenReturn(new ArrayList<>());
+    }
+
+    @Test
+    void getLastModifiedCaseListWhenSuccessNoCasesThenReturnMsg() throws Exception {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+        mockMvc.perform(get(GET_LAST_MODIFIED_CASE_LIST_URL)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                            .param("datetime", requestDateTimeString))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void getLastModifiedCaseListWhenSuccessCasesFoundReturnList() throws Exception {
+        when(caseService.getLastModifiedCasesId(AUTH_TOKEN, LocalDateTime.parse("2022-09-01T12:34:00", DateTimeFormatter.ISO_LOCAL_DATE_TIME)))
+            .thenReturn(List.of(1646225213651598L, 1646225213651533L, 1646225213651512L));
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+        mockMvc.perform(get(GET_LAST_MODIFIED_CASE_LIST_URL)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                            .param("datetime", requestDateTimeString))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void getLastModifiedCaseListWhenNoParameterReturnError() throws Exception {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+        mockMvc.perform(get(GET_LAST_MODIFIED_CASE_LIST_URL)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getLastModifiedCaseListWhenInvalidTokenReturnError() throws Exception {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(false);
+        mockMvc.perform(get(GET_LAST_MODIFIED_CASE_LIST_URL)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                            .param("datetime", requestDateTimeString))
+            .andExpect(status().isForbidden());
     }
 
     @Test

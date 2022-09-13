@@ -249,7 +249,7 @@ public class CaseService {
      * @param requestDateTime used as the query parameter
      * @return a list of caseIds
      */
-    public List<Long> getLastModifiedCases(String authorisation, LocalDateTime requestDateTime) {
+    public List<Long> getLastModifiedCasesId(String authorisation, LocalDateTime requestDateTime) {
         BoolQueryBuilder boolQueryBuilder = boolQuery()
             .filter(new RangeQueryBuilder("last_modified").gte(requestDateTime));
         String query = new SearchSourceBuilder()
