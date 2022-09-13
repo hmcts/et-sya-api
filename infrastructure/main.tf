@@ -12,7 +12,7 @@ locals {
   )
 
   api_mgmt_suffix = var.apim_suffix == "" ? var.env : var.apim_suffix
-  api_mgmt_name   = "cft-api-mgmt-${local.api_mgmt_suffix}"
+  api_mgmt_name   = join("-", ["cft-api-mgmt", var.apim_suffix == "aat" ? "stg" : var.apim_suffix])
   api_mgmt_rg     = join("-", ["cft", var.env, "network-rg"])
 
   et_sya_api_url = join("", ["http://et-sya-api-", var.env, ".service.core-compute-", var.env, ".internal"])
