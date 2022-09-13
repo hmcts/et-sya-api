@@ -12,7 +12,6 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.dwp.regex.InvalidPostcodeException;
-import uk.gov.hmcts.ecm.common.client.CcdClient;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -45,8 +44,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CAS
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.INITIATE_CASE_DRAFT;
-import static uk.gov.hmcts.ecm.common.model.helper.Constants.ENGLANDWALES_CASE_TYPE_ID;
-import static uk.gov.hmcts.ecm.common.model.helper.Constants.SCOTLAND_CASE_TYPE_ID;
 
 @Slf4j
 @Service
@@ -258,18 +255,7 @@ public class CaseService {
         String query = new SearchSourceBuilder()
             .query(boolQueryBuilder)
             .toString();
-        return searchEwScotCasesReturnIdList(authorisation, query);
-    }
-
-    private List<Long> searchEwScotCasesReturnIdList(String authorisation, String query) {
-        List<Long> caseDetailsList = new ArrayList<>();
-        caseDetailsList.addAll(searchCaseTypeReturnIdList(authorisation, ENGLANDWALES_CASE_TYPE_ID, query));
-        caseDetailsList.addAll(searchCaseTypeReturnIdList(authorisation, SCOTLAND_CASE_TYPE_ID, query));
-        return caseDetailsList;
-    }
-
-    private List<Long> searchCaseTypeReturnIdList(String authorisation, String caseTypeId, String query) {
-        return ccdApiClient.searchCases(authorisation, authTokenGenerator.generate(), caseTypeId, query).getCases()
+        return searchEnglandScotlandCases(authorisation, query)
             .stream()
             .map(CaseDetails::getId)
             .collect(toList());
