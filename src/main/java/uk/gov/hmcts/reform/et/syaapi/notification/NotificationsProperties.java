@@ -21,4 +21,8 @@ public class NotificationsProperties {
     @Value("${notifications.sampleEmailTemplateId}")
     @NotEmpty
     private String sampleEmailTemplateId;
+
+    @Value("${notifications.sampleSubmitCaseEmailTemplateId}")
+    @NotEmpty
+    private String sampleSubmitCaseEmailTemplateId;
 }

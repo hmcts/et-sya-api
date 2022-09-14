@@ -9,6 +9,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -17,6 +20,7 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
+import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
@@ -28,9 +32,10 @@ import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static  org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -93,6 +98,7 @@ class CaseServiceTest {
         CaseDetails.class
     );
 
+    private final Map<String, Object> caseDataHashMap;
     @Mock
     private AuthTokenGenerator authTokenGenerator;
     @Mock
@@ -107,10 +113,16 @@ class CaseServiceTest {
     private PdfService pdfService;
     @Mock
     private CaseDocumentService caseDocumentService;
+    @Mock
+    private NotificationService notificationService;
 
 
     CaseServiceTest() throws IOException {
-        // Default constructor
+        caseDataHashMap = new ConcurrentHashMap<>();
+        caseDataHashMap.put("caseType", caseData.getEcmCaseType());
+        caseDataHashMap.put("claimantIndType", caseData.getClaimantIndType());
+        caseDataHashMap.put("claimantType", caseData.getClaimantType());
+        caseDataHashMap.put("managingOffice", caseData.getManagingOffice());
     }
 
     @Test
@@ -227,7 +239,7 @@ class CaseServiceTest {
 
         CaseRequest caseRequest = CaseRequest.builder()
             .postCode("AB10 1AH")
-            .caseData(new HashMap<>())
+            .caseData(caseDataHashMap)
             .build();
 
         CaseDetails caseDetails = caseService.createCase(
@@ -241,7 +253,7 @@ class CaseServiceTest {
     @Test
     void shouldSubmitCaseInCcd() throws InvalidPostcodeException, CaseDocumentException, PdfServiceException {
         // Given
-        caseData.setManagingOffice("Aberdeen");
+
         CaseDataContent caseDataContent = CaseDataContent.builder()
             .event(Event.builder().id(TestConstants.DRAFT_EVENT_ID).build())
             .eventToken(startEventResponse.getToken())
@@ -259,7 +271,7 @@ class CaseServiceTest {
             .postCode("AB10 1AH")
             .caseId(CASE_ID)
             .caseTypeId(EtSyaConstants.SCOTLAND_CASE_TYPE)
-            .caseData(new HashMap<>())
+            .caseData(caseDataHashMap)
             .build();
         caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE, "Aberdeen");
         when(postcodeToOfficeService.getTribunalOfficeFromPostcode(anyString()))
@@ -287,6 +299,17 @@ class CaseServiceTest {
             true,
             caseDataContent
         )).thenReturn(expectedDetails);
+        DocumentTypeItem documentTypeItem = new DocumentTypeItem();
+        DocumentType documentType = new DocumentType();
+        UploadedDocumentType uploadedDocumentType = new UploadedDocumentType();
+        uploadedDocumentType.setDocumentUrl("https://test.com");
+        documentType.setUploadedDocument(uploadedDocumentType);
+        documentTypeItem.setValue(documentType);
+        when(caseDocumentService.uploadPdfFile(TEST_SERVICE_AUTH_TOKEN, caseRequest.getCaseTypeId(),
+                                                pdfService.convertCaseDataToPdfDecodedMultipartFile(
+                                                    EmployeeObjectMapper.mapCaseRequestToCaseData(caseDataHashMap)
+                                                ),
+                                                caseData.getEcmCaseType())).thenReturn(documentTypeItem);
         CaseDetails caseDetails = caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseRequest);
         assertEquals(caseDetails, expectedDetails);
     }

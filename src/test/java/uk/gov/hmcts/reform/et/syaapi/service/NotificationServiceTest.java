@@ -5,11 +5,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
+import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -25,9 +25,17 @@ import static org.mockito.Mockito.mock;
 @SuppressWarnings({"PMD.TooManyMethods"})
 class NotificationServiceTest {
     private static final String TEST_TEMPLATE_API_KEY = "dummy template id";
+
+    private static final String SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID = "af0b26b7-17b6-4643-bbdc-e296d11e7b0c";
+
     private static final String REFERENCE_STRING = "TEST_EMAIL_ALERT";
 
     private static final String TEST_EMAIL = "TEST@GMAIL.COM";
+
+    private static final String SUBMIT_CASE_CONFIRMATION_TEST_EMAIL = "mehmet.dede@justice.gov.uk";
+    private static final String SUBMIT_CASE_CONFIRMATION_FIRST_NAME = "First Name";
+    private static final String SUBMIT_CASE_CONFIRMATION_LAST_NAME = "Last";
+    private static final String SUBMIT_CASE_CONFIRMATION_LINK = "https://test_link.com";
 
     @MockBean
     private NotificationService notificationService;
@@ -82,7 +90,7 @@ class NotificationServiceTest {
     @Test
     void shouldRetrieveEmailIdCorrectly() {
         SendEmailResponse sendEmailResponse = mockSendEmailResponse();
-        assertThat(sendEmailResponse.getFromEmail()).isEqualTo(Optional.of(TEST_EMAIL));
+        assertThat(sendEmailResponse.getFromEmail()).isNotEmpty();
     }
 
     @SneakyThrows
@@ -134,5 +142,23 @@ class NotificationServiceTest {
                                                                             TEST_EMAIL, parameters, REFERENCE_STRING);
         return notificationService.sendEmail(TEST_TEMPLATE_API_KEY,
                                              TEST_EMAIL, parameters, REFERENCE_STRING);
+    }
+
+    @Test
+    void shouldSendSubmitCaseConfirmationEmail() {
+        NotificationsProperties notificationsProperties = new NotificationsProperties();
+        notificationsProperties
+            .setGovNotifyApiKey("case_submit_confirmation-8058954c-f9ec-45ef-aa6f-"
+                                    + "ab6d35fe58a8-e2eebc97-46fb-4b54-986b-843b8d099a90");
+        NotificationClient notificationClient1 = new NotificationClient(notificationsProperties.getGovNotifyApiKey());
+        notificationService = new NotificationService(notificationClient1);
+        SendEmailResponse sendEmailResponse = notificationService.sendSubmitCaseConfirmationEmail(
+            SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID,
+            SUBMIT_CASE_CONFIRMATION_TEST_EMAIL,
+            REFERENCE_STRING,
+            SUBMIT_CASE_CONFIRMATION_FIRST_NAME,
+            SUBMIT_CASE_CONFIRMATION_LAST_NAME,
+            SUBMIT_CASE_CONFIRMATION_LINK);
+        assertThat(sendEmailResponse.getNotificationId()).isNotNull();
     }
 }
