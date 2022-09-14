@@ -205,6 +205,7 @@ public class CaseService {
                            caseData.getEcmCaseType());
 
         List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(caseData);
+
         log.info(String.valueOf(acasCertificates));
 
         CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.SUBMIT_CASE_DRAFT,
