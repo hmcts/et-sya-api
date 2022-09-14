@@ -16,6 +16,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
 
 import java.io.IOException;
 import java.net.URI;
@@ -31,7 +32,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @Slf4j
 @ExtendWith(MockitoExtension.class)
 class CaseDocumentServiceTest {
-
+    private static final String SERVICE_AUTH = "Bearer MOCK";
     private static final String DOCUMENT_UPLOAD_API_URL = "http://localhost:4455/cases/documents";
     private static final String DOCUMENT_NAME = "hello.txt";
     private static final String CASE_TYPE = "ET_EnglandWales";
@@ -93,14 +94,22 @@ class CaseDocumentServiceTest {
         + "\"claim-submit.png\",\"_links\":{\"self\":{\"href\": \"" + MOCK_HREF_MALFORMED + "\"}}}]}";
     private static final String MOCK_RESPONSE_WITHOUT_SELF = RESPONSE_BODY
         + "\"claim-submit.png\",\"_links\":{}}]}";
+    private final String fullJsonResponse;
 
     private CaseDocumentService caseDocumentService;
     private MockRestServiceServer mockServer;
 
+    CaseDocumentServiceTest() throws IOException {
+        // constructor for case document series test
+        fullJsonResponse = ResourceUtil.resourceAsString(
+            "responses/caseDocumentUpload.json"
+        );
+    }
+
     @BeforeEach
     void setup() {
         RestTemplate restTemplate = new RestTemplate();
-        AuthTokenGenerator authTokenGenerator = () -> "Bearer Mock";
+        AuthTokenGenerator authTokenGenerator = () -> SERVICE_AUTH;
         caseDocumentService = new CaseDocumentService(restTemplate,
                                                       authTokenGenerator,
                                                       DOCUMENT_UPLOAD_API_URL, 3);
@@ -116,7 +125,23 @@ class CaseDocumentServiceTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .body(MOCK_RESPONSE_WITH_DOCUMENT));
 
-        URI documentEndpoint = caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE);
+        URI documentEndpoint =
+            caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE).getUri();
+
+        assertThat(documentEndpoint)
+            .hasToString(MOCK_HREF);
+    }
+
+    @Test
+    void fullJsonResponseIsSuccessful() throws CaseDocumentException {
+        mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_UPLOAD_API_URL))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(withStatus(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(fullJsonResponse));
+
+        URI documentEndpoint =
+            caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE).getUri();
 
         assertThat(documentEndpoint)
             .hasToString(MOCK_HREF);
@@ -296,7 +321,7 @@ class CaseDocumentServiceTest {
                 .body(MOCK_RESPONSE_WITH_DOCUMENT));
 
         URI documentEndpoint = caseDocumentService.uploadDocument(
-            MOCK_TOKEN, CASE_TYPE, MOCK_FILE_NAME_SPACING);
+            MOCK_TOKEN, CASE_TYPE, MOCK_FILE_NAME_SPACING).getUri();
 
         assertThat(documentEndpoint)
             .hasToString(MOCK_HREF);

@@ -223,7 +223,7 @@ dependencies {
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: reformLoggingVersion
   implementation group: 'com.github.hmcts.java-logging', name: 'logging-appinsights', version: reformLoggingVersion
 
-  implementation group: 'com.github.hmcts', name: 'et-data-model', version: '1.0.61'
+  implementation group: 'com.github.hmcts', name: 'et-data-model', version: '1.0.62'
   implementation group: 'com.github.hmcts', name: 'ccd-client', version: '4.9.1'
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '2.0.1'
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '4.0.3'
