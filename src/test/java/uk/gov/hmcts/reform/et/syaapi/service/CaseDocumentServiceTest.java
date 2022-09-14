@@ -90,8 +90,6 @@ class CaseDocumentServiceTest {
         + "\"claim-submit.png\",\"_links\":{\"self\":{}}]}";
     private static final String MOCK_RESPONSE_INCORRECT = "{\"doucments\":[{\"originalDocumentName\":"
         + "\"claim-submit.png\",\"_links\":{\"self\":{\"href\": \"" + MOCK_HREF + "\"}}}]}";
-    private static final String MOCK_RESPONSE_WITH_MALFORMED_URI = RESPONSE_BODY
-        + "\"claim-submit.png\",\"_links\":{\"self\":{\"href\": \"" + MOCK_HREF_MALFORMED + "\"}}}]}";
     private static final String MOCK_RESPONSE_WITHOUT_SELF = RESPONSE_BODY
         + "\"claim-submit.png\",\"_links\":{}}]}";
     private final String fullJsonResponse;
