@@ -1,14 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
-import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
-import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import org.apache.pdfbox.pdmodel.interactive.form.PDField;
-import org.apache.pdfbox.pdmodel.interactive.form.PDNonTerminalField;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.util.ResourceUtils;
 import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
@@ -20,8 +13,6 @@ import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -304,34 +295,6 @@ class PdfMapperServiceTest {
         RespondentSumTypeItem respondentSumTypeItem = new RespondentSumTypeItem();
         respondentSumTypeItem.setValue(respondentSumType);
         return respondentSumTypeItem;
-    }
-
-    @Test
-    void displayPdf() throws IOException {
-        discover();
-    }
-
-    public void discover() throws IOException {
-        try (PDDocument pdDocument = Loader.loadPDF(ResourceUtils.getFile("classpath:ET1_0722-mod.pdf"))) {
-            PDDocumentCatalog pdDocumentCatalog = pdDocument.getDocumentCatalog();
-            PDAcroForm pdfForm = pdDocumentCatalog.getAcroForm();
-            pdfForm.getFields().forEach(
-                field -> {
-                    processField(field);
-                }
-            );
-        }
-    }
-
-    public void processField(PDField field) {
-
-        if (field instanceof PDNonTerminalField) {
-            for (PDField child : ((PDNonTerminalField) field).getChildren()) {
-                processField(child);
-            }
-        }
-
-        System.out.println(field.getFullyQualifiedName() + " : " + field.getValueAsString());
     }
 }
 

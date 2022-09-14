@@ -258,7 +258,7 @@ public class PdfMapperService {
             printFields.putAll(printRenumeration(claimantOtherType));
             NewEmploymentType newEmploymentType = caseData.getNewEmploymentType();
             if (newEmploymentType == null) {
-                printFields.put(PdfMapperConstants.Q7_OTHER_JOB_NO, Optional.of(YES));
+                printFields.put(PdfMapperConstants.Q7_OTHER_JOB_NO, Optional.of(NO));
             } else {
                 printFields.put(PdfMapperConstants.Q7_OTHER_JOB_YES, Optional.of(YES));
                 printFields.put(PdfMapperConstants.Q7_START_WORK,
@@ -308,7 +308,7 @@ public class PdfMapperService {
                     ofNullable(claimantOtherType.getClaimantNoticePeriodDuration()));
             }
         } else {
-            printFields.put(PdfMapperConstants.Q6_PAID_NOTICE_NO, Optional.of(YES));
+            printFields.put(PdfMapperConstants.Q6_PAID_NOTICE_NO, Optional.of(NO));
         }
         String pensionContributionYesNo = claimantOtherType.getClaimantPensionContribution().isEmpty() ? NO :
             claimantOtherType.getClaimantPensionContribution();
