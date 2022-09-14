@@ -38,7 +38,6 @@ class CaseDocumentServiceTest {
     private static final String CASE_TYPE = "ET_EnglandWales";
     private static final String MOCK_TOKEN = "Bearer Token";
     private static final String MOCK_HREF = "http://test:8080/img";
-    private static final String MOCK_HREF_MALFORMED = "http:/test:80/";
     private static final String EMPTY_DOCUMENT_MESSAGE = "Document management failed uploading file: " + DOCUMENT_NAME;
     private static final String SERVER_ERROR_MESSAGE = "Failed to upload Case Document";
     private static final String FILE_DOES_NOT_PASS_VALIDATION = "File does not pass validation";
