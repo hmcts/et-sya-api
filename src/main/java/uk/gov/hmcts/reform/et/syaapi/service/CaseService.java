@@ -15,6 +15,7 @@ import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -196,35 +197,17 @@ public class CaseService {
      * @return the associated {@link CaseData} if the case is submitted
      */
     public CaseDetails submitCase(String authorization,
-                                  CaseRequest caseRequest) throws PdfServiceException, CaseDocumentException {
+                                  CaseRequest caseRequest)
+        throws PdfServiceException, CaseDocumentException, AcasException, InvalidAcasNumbersException {
 
         CaseData caseData = convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
         DocumentTypeItem documentTypeItem =
             caseDocumentService.uploadPdfFile(authorization, caseRequest.getCaseTypeId(),
                            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData),
                            caseData.getEcmCaseType());
-        Thread getAcasCertASync = new Thread(
-            () -> {
-                CaseData caseData = new EmployeeObjectMapper().getCaseData(caseRequest.getCaseData());
-                try {
-                    List<AcasCertificate> acasCertificateList = acasService.getCertificates(
-                        caseData.getEt1VettingRespondentAcasDetails1(),
-                        caseData.getEt1VettingRespondentAcasDetails2(),
-                        caseData.getEt1VettingRespondentAcasDetails3(),
-                        caseData.getEt1VettingRespondentAcasDetails4(),
-                        caseData.getEt1VettingRespondentAcasDetails5(),
-                        caseData.getEt1VettingRespondentAcasDetails6());
-                    log.info(String.valueOf(acasCertificateList));
-                } catch (InvalidAcasNumbersException e) {
-                    throw new RuntimeException(e);
-                } catch (AcasException e) {
-                    throw new RuntimeException(e);
-                }
 
-            }
-        );
-
-        getAcasCertASync.start();
+        List<AcasCertificate> acasCertificateList = getCertificatesFromCase(caseData);
+        log.info(String.valueOf(acasCertificateList));
 
         CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.SUBMIT_CASE_DRAFT,
                                                caseRequest.getCaseTypeId(), caseRequest.getCaseData());
@@ -358,5 +341,44 @@ public class CaseService {
             caseDetailsList.addAll(searchResult.getCases());
         }
         return caseDetailsList;
+    }
+
+    private List<AcasCertificate> getCertificatesFromCase(CaseData caseData)
+        throws AcasException, InvalidAcasNumbersException {
+        List<RespondentSumTypeItem> respondentSumTypeItems = caseData.getRespondentCollection();
+
+        switch (respondentSumTypeItems.size()) {
+            case 1: {
+                return acasService.getCertificates(respondentSumTypeItems.get(0).getValue().getRespondentAcas());
+            }
+            case 2: {
+                return acasService.getCertificates(
+                    respondentSumTypeItems.get(0).getValue().getRespondentAcas(),
+                    respondentSumTypeItems.get(1).getValue().getRespondentAcas());
+            }
+            case 3: {
+                return acasService.getCertificates(
+                    respondentSumTypeItems.get(0).getValue().getRespondentAcas(),
+                    respondentSumTypeItems.get(1).getValue().getRespondentAcas(),
+                    respondentSumTypeItems.get(2).getValue().getRespondentAcas());
+            }
+            case 4: {
+                return acasService.getCertificates(
+                    respondentSumTypeItems.get(0).getValue().getRespondentAcas(),
+                    respondentSumTypeItems.get(1).getValue().getRespondentAcas(),
+                    respondentSumTypeItems.get(2).getValue().getRespondentAcas(),
+                    respondentSumTypeItems.get(3).getValue().getRespondentAcas());
+            }
+            case 5: {
+                return acasService.getCertificates(
+                    respondentSumTypeItems.get(0).getValue().getRespondentAcas(),
+                    respondentSumTypeItems.get(1).getValue().getRespondentAcas(),
+                    respondentSumTypeItems.get(2).getValue().getRespondentAcas(),
+                    respondentSumTypeItems.get(3).getValue().getRespondentAcas(),
+                    respondentSumTypeItems.get(4).getValue().getRespondentAcas());
+            }
+            default:
+                return List.of();
+        }
     }
 }
