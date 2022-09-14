@@ -8,5 +8,15 @@
   "claimantType": {
     "claimant_email_address": "test@gmail.com"
   },
+  "respondentCollection": [
+    {"value": {
+      "respondent_ACAS": "R123/123457",
+      "respondent_ACAS_no": "R123/123457"
+    }},
+    {"value": {
+      "respondent_ACAS": "R123/123456",
+      "respondent_ACAS_no": "R123/123456"
+    }}
+  ],
   "caseSource": null
 }

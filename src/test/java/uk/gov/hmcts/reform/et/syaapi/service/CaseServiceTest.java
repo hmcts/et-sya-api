@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -115,6 +116,8 @@ class CaseServiceTest {
     private CaseDocumentService caseDocumentService;
     @Mock
     private NotificationService notificationService;
+    @Mock
+    private AcasService acasService;
 
 
     CaseServiceTest() throws IOException {
@@ -123,6 +126,7 @@ class CaseServiceTest {
         caseDataHashMap.put("claimantIndType", caseData.getClaimantIndType());
         caseDataHashMap.put("claimantType", caseData.getClaimantType());
         caseDataHashMap.put("managingOffice", caseData.getManagingOffice());
+        caseDataHashMap.put("respondentCollection", caseData.getRespondentCollection());
     }
 
     @Test
@@ -251,7 +255,11 @@ class CaseServiceTest {
     }
 
     @Test
-    void shouldSubmitCaseInCcd() throws InvalidPostcodeException, CaseDocumentException, PdfServiceException {
+    void shouldSubmitCaseInCcd() throws InvalidPostcodeException,
+        CaseDocumentException,
+        PdfServiceException,
+        AcasException,
+        InvalidAcasNumbersException {
         // Given
 
         CaseDataContent caseDataContent = CaseDataContent.builder()
@@ -310,6 +318,9 @@ class CaseServiceTest {
                                                     EmployeeObjectMapper.mapCaseRequestToCaseData(caseDataHashMap)
                                                 ),
                                                 caseData.getEcmCaseType())).thenReturn(documentTypeItem);
+        when(acasService.getCertificates(caseData.getRespondentCollection().get(0).getValue().getRespondentAcas(),
+                                         caseData.getRespondentCollection().get(1).getValue().getRespondentAcas()))
+            .thenReturn(new ArrayList<>());
         CaseDetails caseDetails = caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseRequest);
         assertEquals(caseDetails, expectedDetails);
     }

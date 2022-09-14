@@ -23,7 +23,6 @@ import uk.gov.hmcts.reform.et.syaapi.service.InvalidAcasNumbersException;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import javax.validation.constraints.NotNull;
 
 import static org.springframework.http.ResponseEntity.ok;
