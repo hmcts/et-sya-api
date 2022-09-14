@@ -31,7 +31,6 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -318,9 +317,7 @@ class CaseServiceTest {
                                                     EmployeeObjectMapper.mapCaseRequestToCaseData(caseDataHashMap)
                                                 ),
                                                 caseData.getEcmCaseType())).thenReturn(documentTypeItem);
-        when(acasService.getCertificates(caseData.getRespondentCollection().get(0).getValue().getRespondentAcas(),
-                                         caseData.getRespondentCollection().get(1).getValue().getRespondentAcas()))
-            .thenReturn(new ArrayList<>());
+
         CaseDetails caseDetails = caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseRequest);
         assertEquals(caseDetails, expectedDetails);
     }

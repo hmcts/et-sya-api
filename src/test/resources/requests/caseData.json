@@ -11,11 +11,11 @@
   "respondentCollection": [
     {"value": {
       "respondent_ACAS": "R123/123457",
-      "respondent_ACAS_no": "R123/123457"
+      "respondent_ACAS_no": "Yes"
     }},
     {"value": {
       "respondent_ACAS": "R123/123456",
-      "respondent_ACAS_no": "R123/123456"
+      "respondent_ACAS_no": "Yes"
     }}
   ],
   "caseSource": null

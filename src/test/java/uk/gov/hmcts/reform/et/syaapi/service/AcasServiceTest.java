@@ -13,9 +13,13 @@ import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.client.ResponseCreator;
 import org.springframework.web.client.RestTemplate;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
+import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -40,6 +44,10 @@ class AcasServiceTest {
     public static final String AB123456_12_12 = "AB123456/12/12";
     private AcasService acasService;
     private MockRestServiceServer mockServer;
+    private final CaseData caseData = ResourceLoader.fromString(
+        "requests/caseData.json",
+        CaseData.class
+    );
 
     @BeforeEach
     void setup() {
@@ -200,7 +208,8 @@ class AcasServiceTest {
                 .body(ONE_CERT_JSON));
         // Valid: A123456/12/12
         // Inalid: ZZ123456/12/12
-        assertThat(acasService.getCertificates(A123456_12_12, "ZZ123456/12/12"))
+        List<AcasCertificate> acasCertificates = acasService.getCertificates(A123456_12_12, "ZZ123456/12/12");
+        assertThat(acasCertificates)
             .hasSize(1);
     }
 
@@ -241,6 +250,17 @@ class AcasServiceTest {
                                                         .body(TWO_CERTS_JSON)));
         assertThat(acasService.getCertificates(A123456_12_12, AB123456_12_12))
             .hasSize(2);
+    }
+
+    @Test
+    void theGetAcasCertificatesByCaseData() {
+        mockServer.expect(ExpectedCount.times(2), requestTo(ACAS_DEV_API_URL))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(new DelegateResponseCreator(withStatus(HttpStatus.UNAUTHORIZED),
+                                                    withStatus(HttpStatus.OK)
+                                                        .contentType(MediaType.APPLICATION_JSON)
+                                                        .body(TWO_CERTS_JSON)));
+        assertThrows(InvalidAcasNumbersException.class, () ->  acasService.getAcasCertificatesByCaseData(caseData));
     }
 
     public static class DelegateResponseCreator implements ResponseCreator {

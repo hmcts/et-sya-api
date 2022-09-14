@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
+import org.apache.tika.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -9,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificateRequest;
 
@@ -27,6 +30,7 @@ public class AcasService {
 
     public static final String OCP_APIM_SUBSCRIPTION_KEY = "Ocp-Apim-Subscription-Key";
     public static final String VALID_ACAS_NUMBER_REGEX = "[a-zA-Z]{1,2}[\\d]{6}/[\\d]{2}/[\\d]{2}";
+    // (R(?!/)([\d/](?!.*/{2})){10,12}$)
     public static final int MAX_ACAS_RETRIES = 5;
     private final RestTemplate restTemplate;
     private final String acasApiUrl;
@@ -118,8 +122,24 @@ public class AcasService {
                 .append(" must not be null]");
             return;
         }
-        if (!Pattern.compile(VALID_ACAS_NUMBER_REGEX).matcher(acasNumber).matches()) {
+        char lastChar = acasNumber.charAt(acasNumber.length() - 1);
+        if (!Pattern.compile(VALID_ACAS_NUMBER_REGEX).matcher(acasNumber).matches() || lastChar == '/') {
             invalidAcasNumbers.add(acasNumber);
         }
     }
+
+    public List<AcasCertificate> getAcasCertificatesByCaseData(CaseData caseData)
+        throws AcasException, InvalidAcasNumbersException {
+        List<String> acasCertificateNumbers = new ArrayList<>();
+        if (caseData.getRespondentCollection() != null && caseData.getRespondentCollection().size() > 0) {
+            for (RespondentSumTypeItem respondentSumTypeItem : caseData.getRespondentCollection()) {
+                if (respondentSumTypeItem.getValue() != null
+                    && !StringUtils.isEmpty(respondentSumTypeItem.getValue().getRespondentAcas())) {
+                    acasCertificateNumbers.add(respondentSumTypeItem.getValue().getRespondentAcas());
+                }
+            }
+        }
+        return getCertificates(acasCertificateNumbers.toArray(new String[0]));
+    }
+
 }
