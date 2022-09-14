@@ -44,9 +44,6 @@ public class CaseDocumentService {
     private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
     private static final String FILE_NAME_REGEX_PATTERN = "^[\\w\\- ]{1,256}+\\.[A-Za-z]{3,4}$";
     private static final Pattern FILE_NAME_PATTERN = Pattern.compile(FILE_NAME_REGEX_PATTERN);
-    private static final String HTTPS_URL_REGEX_PATTERN =
-        "^(http://www\\.|https://www\\.|http://|https://)?[\\w\\-]+(\\.[a-z]{2,5})?(:\\d{1,5})?(/.*)?$";
-    private static final Pattern HTTPS_URL_PATTERN = Pattern.compile(HTTPS_URL_REGEX_PATTERN);
     private static final String UPLOAD_FILE_EXCEPTION_MESSAGE = "Document management failed uploading file: ";
     private static final String VALIDATE_FILE_EXCEPTION_MESSAGE = "File does not pass validation";
     private final Integer maxApiRetries;
@@ -161,12 +158,7 @@ public class CaseDocumentService {
             .findFirst()
             .orElseThrow(() -> new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename));
 
-        if (document.verifyUri()) {
-            throw new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename);
-        }
-
-        Matcher matcher = HTTPS_URL_PATTERN.matcher(document.getUri().toString());
-        if (!matcher.matches()) {
+        if (!document.verifyUri()) {
             throw new CaseDocumentException(UPLOAD_FILE_EXCEPTION_MESSAGE + originalFilename);
         }
 

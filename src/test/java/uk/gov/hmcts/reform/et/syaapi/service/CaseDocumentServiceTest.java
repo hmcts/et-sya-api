@@ -338,22 +338,6 @@ class CaseDocumentServiceTest {
     }
 
     @Test
-    void theUploadDocWhenResponseUriInvalidProducesException() {
-        mockServer.expect(ExpectedCount.max(MAX_API_CALL_ATTEMPTS), requestTo(DOCUMENT_UPLOAD_API_URL))
-            .andExpect(method(HttpMethod.POST))
-            .andRespond(withStatus(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(MOCK_RESPONSE_WITH_MALFORMED_URI));
-
-        CaseDocumentException documentException = assertThrows(
-            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
-                MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
-
-        assertThat(documentException.getMessage())
-            .isEqualTo(EMPTY_DOCUMENT_MESSAGE);
-    }
-
-    @Test
     void theUploadDocWhenContentTypeDoesNotMatchActualFileTypeProducesDocException() {
         CaseDocumentException documentException = assertThrows(
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
