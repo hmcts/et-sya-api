@@ -24,10 +24,11 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 /**
  * Maps Case Data attributes to fields within the PDF template.
  * Inputs that are accepted from the ET1 form can then be mapped to
- * the corresponding questions within the template PDF (ver. ET1_0722)
+ * the corresponding questions within the template PDF (ver. ET1_0922)
  * as described in {@link PdfMapperConstants}
  */
 @Service
+@SuppressWarnings({"PMD.GodClass"})
 public class PdfMapperService {
     private static final  Map<String, String> TITLES = Map.of(
         "Mr", PdfMapperConstants.Q1_TITLE_MR,
@@ -49,7 +50,6 @@ public class PdfMapperService {
         "13 R5"
     };
     private static final String REP_ADDRESS_PREFIX = "11.3 Representative's address:";
-    private static final String REP_ADDRESS_PHONE_NUMBER = "13 R4 phone number";
     private static final String CLAIMANT_ADDRESS_PREFIX = "1.5";
     private static final int MULTIPLE_RESPONDENTS = 2;
     private static final int MAX_RESPONDENTS = 5;
@@ -65,6 +65,7 @@ public class PdfMapperService {
     // for annually apy before tax was monthly
     private static final String MONTHLY = "Monthly";
     private static final String WEEKLY = "Weekly";
+    private static final String ANNUALLY = "annually";
     private static final String EMAIL = "Email";
     private static final String POST = "Post";
     private static final String FAX = "Fax";
@@ -109,7 +110,16 @@ public class PdfMapperService {
             ofNullable(StringUtils.leftPad(String.valueOf(dob.getMonthValue()),
                 2, "0")));
         printFields.put(PdfMapperConstants.Q1_DOB_YEAR, Optional.of(String.valueOf(dob.getYear())));
-        printFields.put(PdfMapperConstants.Q1_SEX, ofNullable(caseData.getClaimantIndType().getClaimantSex()));
+        if (caseData.getClaimantIndType() != null
+            && caseData.getClaimantIndType().getClaimantSex() != null) {
+            if ("Male".equals(caseData.getClaimantIndType().getClaimantSex())) {
+                printFields.put(PdfMapperConstants.Q1_SEX_MALE, Optional.of("Yes"));
+            } else if ("Female".equals(caseData.getClaimantIndType().getClaimantSex())) {
+                printFields.put(PdfMapperConstants.Q1_SEX_FEMALE, Optional.of("female"));
+            } else if ("Prefer not to say".equals(caseData.getClaimantIndType().getClaimantSex())) {
+                printFields.put(PdfMapperConstants.Q1_SEX_PREFER_NOT_TO_SAY, Optional.of("prefer not to say"));
+            }
+        }
         printFields.put(String.format(PdfMapperConstants.RP2_HOUSE_NUMBER, CLAIMANT_ADDRESS_PREFIX),
             ofNullable(caseData.getClaimantType().getClaimantAddressUK().getAddressLine1()));
         printFields.put(String.format(PdfMapperConstants.QX_STREET, CLAIMANT_ADDRESS_PREFIX),
@@ -289,8 +299,8 @@ public class PdfMapperService {
                 break;
             case "Annually":
             default:
-                printFields.put(PdfMapperConstants.Q6_GROSS_PAY_ANNUAL, Optional.of(MONTHLY));
-                printFields.put(PdfMapperConstants.Q6_NET_PAY_ANNUAL, Optional.of(MONTHLY));
+                printFields.put(PdfMapperConstants.Q6_GROSS_PAY_ANNUAL, Optional.of(ANNUALLY));
+                printFields.put(PdfMapperConstants.Q6_NET_PAY_ANNUAL, Optional.of(ANNUALLY));
                 break;
         }
         printFields.put(PdfMapperConstants.Q6_NET_PAY, ofNullable(claimantOtherType.getClaimantPayAfterTax()));
@@ -345,8 +355,6 @@ public class PdfMapperService {
                 ofNullable(repAddress.getCounty()));
             printFields.put(String.format(PdfMapperConstants.QX_POSTCODE, REP_ADDRESS_PREFIX),
                 ofNullable(repAddress.getPostCode()));
-            printFields.put(REP_ADDRESS_PHONE_NUMBER,
-                ofNullable(representativeClaimantType.getRepresentativePhoneNumber()));
             printFields.put(PdfMapperConstants.Q11_MOBILE_NUMBER,
                 ofNullable(representativeClaimantType.getRepresentativeMobileNumber()));
             printFields.put(PdfMapperConstants.Q11_EMAIL,

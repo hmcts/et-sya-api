@@ -62,4 +62,4 @@ notifications:
   sampleSubmitCaseEmailTemplateId: "af0b26b7-17b6-4643-bbdc-e296d11e7b0c"
 
 pdf:
-  source: "classpath:ET1_0722.pdf"
+  source: "classpath:ET1_0922.pdf"

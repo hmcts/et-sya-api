@@ -14,7 +14,9 @@ import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.client.ResponseCreator;
 import org.springframework.web.client.RestTemplate;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
+import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -31,7 +33,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 class AcasServiceTest {
 
     private static final String ACAS_DEV_API_URL = "https://api-dev-acas-01.azure-api.net/ECCLDev";
-    private static final String ACAS_API_KEY = "380e7fad52b2403abf42575ca8fba6e2";
+    private static final String ACAS_API_KEY = "ecd18c987120415b95f60b844e6730ef";
     private static final String NO_CERTS_JSON = "[]";
     private static final String ONE_CERT_JSON =
         "[{\"CertificateNumber\":\"A123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW1...\"}]";
@@ -43,6 +45,10 @@ class AcasServiceTest {
     public static final String R12345_11_12 = "R12345/11/12";
     public static final String R12345_13_14 = "R12345/13/14";
     private AcasService acasService;
+    private final CaseData caseData = ResourceLoader.fromString(
+        "requests/caseData.json",
+        CaseData.class
+    );
 
     private RestTemplate restTemplate;
 
@@ -254,16 +260,23 @@ class AcasServiceTest {
             .hasSize(2);
     }
 
+    @Test
+    void theGetAcasCertificatesByCaseData() throws AcasException, InvalidAcasNumbersException {
+        List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(caseData);
+
+        assertThat(acasCertificates.size()).isEqualTo(2);
+    }
+
     public static class DelegateResponseCreator implements ResponseCreator {
         private final ResponseCreator[] delegates;
         private int toExecute;
 
-        public DelegateResponseCreator(final ResponseCreator... delegates) {
+        public DelegateResponseCreator(ResponseCreator... delegates) {
             this.delegates = Arrays.copyOf(delegates, delegates.length);
         }
 
         @Override
-        public ClientHttpResponse createResponse(final ClientHttpRequest request)
+        public ClientHttpResponse createResponse(ClientHttpRequest request)
             throws IOException {
             return this.delegates[toExecute++ % delegates.length]
                 .createResponse(request);

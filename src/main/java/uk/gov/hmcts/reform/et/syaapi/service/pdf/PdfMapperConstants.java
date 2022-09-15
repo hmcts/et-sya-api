@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
 /**
- * Defines the input labels within the template 'Employment tribunal claim form' (ver. ET1_0722) document as constants.
+ * Defines the input labels within the template 'Employment tribunal claim form' (ver. ET1_0922) document as constants.
  */
 public final class PdfMapperConstants {
     public static final String TRIBUNAL_OFFICE =        "tribunal office";
@@ -16,11 +16,13 @@ public final class PdfMapperConstants {
     public static final String Q1_DOB_DAY =             "1.4 DOB day";
     public static final String Q1_DOB_MONTH =           "1.4 DOB month";
     public static final String Q1_DOB_YEAR =            "1.4 DOB year";
-    public static final String Q1_SEX =                 "1.5 sex";
+    public static final String Q1_SEX_MALE =             "1.5 sex";
+    public static final String Q1_SEX_FEMALE =          "1.5 sex female";
+    public static final String Q1_SEX_PREFER_NOT_TO_SAY = "1.5 sex prefer not to say";
     public static final String Q1_MOBILE_NUMBER =       "1.7 mobile number";
     public static final String Q1_CONTACT_POST =        "1.8 How should we contact you - Post";
     public static final String Q1_CONTACT_EMAIL =       "1.8 How should we contact you - Email";
-    public static final String Q1_EMAIL =               "1.11 email";
+    public static final String Q1_EMAIL =               "1.9 email";
     public static final String Q2_EMPLOYER_NAME =       "2.1 Give the name of your employer or the person or "
         + "organisation you are claiming against";
     public static final String Q2_DIFFADDRESS_NUMBER =  "2.4 Full, different working address - Number or name";
@@ -35,8 +37,8 @@ public final class PdfMapperConstants {
     public static final String Q3_MORE_CLAIMS_NO =      "3.1 Are you aware that your claim is one of a number of "
         + "claims against the same employer arising from the same, or similar, circumstances? No";
     public static final String Q3_MORE_CLAIMS =         "3.1 if yes, give the names of any other claimants";
-    public static final String Q4_EMPLOYED_BY_YES =     "Check Box11";
-    public static final String Q4_EMPLOYED_BY_NO =      "Check Box11a";
+    public static final String Q4_EMPLOYED_BY_YES =     "4.1 yes";
+    public static final String Q4_EMPLOYED_BY_NO =      "4.1 no";
     public static final String Q5_EMPLOYMENT_START =    "5.1 employment start";
     public static final String Q5_EMPLOYMENT_END =      "5.1 employment end";
     public static final String Q5_NOT_ENDED =           "5.1 not ended";
@@ -63,7 +65,7 @@ public final class PdfMapperConstants {
         + "you paid for?";
     public static final String Q6_PENSION_YES =         "6.4 Were you in your employer’s pension scheme? Yes";
     public static final String Q6_PENSION_NO =          "6.4 Were you in your employer’s pension scheme? No";
-    public static final String Q6_PENSION_WEEKLY =      "Text12";
+    public static final String Q6_PENSION_WEEKLY =      "6.4 employers weekly contributions";
     public static final String Q6_OTHER_BENEFITS =      "6.5 If you received any other benefits, e.g. company car, "
         + "medical insurance, etc, from your employer, please give details";
     public static final String Q7_OTHER_JOB_YES =       "7.1 Have you got another job? Yes";

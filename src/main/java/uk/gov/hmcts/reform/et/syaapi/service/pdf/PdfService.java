@@ -31,7 +31,7 @@ public class PdfService {
 
     /**
      * Converts a {@link CaseData} class object into a pdf document
-     * using template (ver. ET1_0722)
+     * using template (ver. ET1_0922)
      * @param caseData      The data that is to be converted into pdf
      * @return              a byte array that contains the pdf document.
      */

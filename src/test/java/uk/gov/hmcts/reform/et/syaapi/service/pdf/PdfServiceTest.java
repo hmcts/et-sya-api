@@ -46,7 +46,7 @@ class PdfServiceTest {
 
     private CaseData caseData;
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME = "pdfTemplateSource";
-    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE = "classpath:ET1_0722.pdf";
+    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE = "classpath:ET1_0922.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     @Mock
     private PdfMapperService pdfMapperService;
@@ -119,7 +119,9 @@ class PdfServiceTest {
 
     @Test
     void shouldCreatePdfFile() throws IOException {
-        byte[] pdfData = pdfService.createPdf(caseData);
+        PdfService pdfService1 = new PdfService(new PdfMapperService());
+        pdfService1.pdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE;
+        byte[] pdfData = pdfService1.createPdf(caseData);
         assertThat(pdfData).isNotEmpty();
         assertThat(new Tika().detect(pdfData)).isEqualTo(PDF_FILE_TIKA_CONTENT_TYPE);
     }
