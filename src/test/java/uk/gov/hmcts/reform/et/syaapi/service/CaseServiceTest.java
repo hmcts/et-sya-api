@@ -309,7 +309,8 @@ class CaseServiceTest {
 
     @Test
     void getLastModifiedCasesIdWhenCaseFoundThenReturnCaseId() {
-        LocalDateTime requestDateTime = LocalDateTime.parse("2022-09-01T12:34:00", DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        LocalDateTime requestDateTime =
+            LocalDateTime.parse("2022-09-01T12:34:00", DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
         SearchResult englandWalesSearchResult = SearchResult.builder()
             .total(1)
@@ -341,7 +342,8 @@ class CaseServiceTest {
 
     @Test
     void getLastModifiedCasesIdWhenNoCaseFoundThenReturnEmpty() {
-        LocalDateTime requestDateTime = LocalDateTime.parse("2022-09-01T12:34:00", DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        LocalDateTime requestDateTime =
+            LocalDateTime.parse("2022-09-01T12:34:00", DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
         SearchResult englandWalesSearchResult = SearchResult.builder()
             .total(0)

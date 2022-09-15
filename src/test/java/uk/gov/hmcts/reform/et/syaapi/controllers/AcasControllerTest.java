@@ -68,7 +68,8 @@ class AcasControllerTest {
 
     @Test
     void getLastModifiedCaseListWhenSuccessCasesFoundReturnList() throws Exception {
-        when(caseService.getLastModifiedCasesId(AUTH_TOKEN, LocalDateTime.parse("2022-09-01T12:34:00", DateTimeFormatter.ISO_LOCAL_DATE_TIME)))
+        when(caseService.getLastModifiedCasesId(
+            AUTH_TOKEN, LocalDateTime.parse("2022-09-01T12:34:00", DateTimeFormatter.ISO_LOCAL_DATE_TIME)))
             .thenReturn(List.of(1646225213651598L, 1646225213651533L, 1646225213651512L));
         when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
         mockMvc.perform(get(GET_LAST_MODIFIED_CASE_LIST_URL)
