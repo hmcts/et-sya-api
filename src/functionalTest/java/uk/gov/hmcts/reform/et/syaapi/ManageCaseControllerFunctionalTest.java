@@ -109,24 +109,5 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
             .assertThat().body("case_data.claimantType.claimant_email_address", equalTo(CLAIMANT_EMAIL));
     }
 
-    @Test
-    void stage5SubmitCaseShouldReturnSubmittedCaseDetails() {
-        CaseRequest caseRequest = CaseRequest.builder()
-            .caseId(caseId.toString())
-            .caseTypeId(CASE_TYPE)
-            .build();
-
-        RestAssured.given()
-            .contentType(ContentType.JSON)
-            .header(new Header(AUTHORIZATION, userToken))
-            .body(caseRequest)
-            .put("/cases/submit-case")
-            .then()
-            .statusCode(HttpStatus.SC_OK)
-            .log().all(true)
-            .assertThat().body("id", equalTo(caseId))
-            .assertThat().body("state", equalTo("Submitted"));
-    }
-
 
 }

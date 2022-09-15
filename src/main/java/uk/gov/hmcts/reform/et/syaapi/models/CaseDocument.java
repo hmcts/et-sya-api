@@ -53,8 +53,8 @@ public class CaseDocument {
      * @return a boolean that is true if the document link exists
      */
     public boolean verifyUri() {
-        return links == null
+        return !(links == null
             || links.get("self") == null
-            || links.get("self").get("href") == null;
+            || links.get("self").get("href") == null);
     }
 }
