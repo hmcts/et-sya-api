@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 public class AcasService {
 
     public static final String OCP_APIM_SUBSCRIPTION_KEY = "Ocp-Apim-Subscription-Key";
-    public static final String VALID_ACAS_NUMBER_REGEX = "(R(?!/)([\\d/](?!.*/{2})){10,12}$)";
+    public static final String VALID_ACAS_NUMBER_REGEX = "^(R|MU)\\d{5}/\\d{2}/\\d{2}";
     public static final int MAX_ACAS_RETRIES = 5;
     private final RestTemplate restTemplate;
     private final String acasApiUrl;
