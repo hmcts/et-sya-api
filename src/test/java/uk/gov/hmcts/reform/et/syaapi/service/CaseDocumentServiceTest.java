@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.ccd.client.model.Classification;
 import uk.gov.hmcts.reform.et.syaapi.config.interceptors.ResourceNotFoundException;
 import uk.gov.hmcts.reform.et.syaapi.models.DocumentDetailsResponse;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
+import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
 
 import java.io.IOException;
 import java.net.URI;
@@ -40,7 +41,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.RESOURCE_NO
 @Slf4j
 @ExtendWith(MockitoExtension.class)
 class CaseDocumentServiceTest {
-
+    private static final String SERVICE_AUTH = "Bearer MOCK";
     private static final String DOCUMENT_SERVICE_API_URL = "http://localhost:4455";
     private static final String DOCUMENT_API_URL = "http://localhost:4455/cases/documents";
     private static final String DOCUMENT_API_URL_WITH_SLASH = "http://localhost:4455/cases/documents/";
@@ -48,7 +49,6 @@ class CaseDocumentServiceTest {
     private static final String CASE_TYPE = "ET_EnglandWales";
     private static final String MOCK_TOKEN = "Bearer Token";
     private static final String MOCK_HREF = "http://test:8080/img";
-    private static final String MOCK_HREF_MALFORMED = "http:/test:80/";
     private static final String EMPTY_DOCUMENT_MESSAGE = "Document management failed uploading file: " + DOCUMENT_NAME;
     private static final String SERVER_ERROR_MESSAGE = "Failed to upload Case Document";
     private static final String FILE_DOES_NOT_PASS_VALIDATION = "File does not pass validation";
@@ -102,18 +102,24 @@ class CaseDocumentServiceTest {
         + "\"claim-submit.png\",\"_links\":{\"self\":{}}]}";
     private static final String MOCK_RESPONSE_INCORRECT = "{\"doucments\":[{\"originalDocumentName\":"
         + "\"claim-submit.png\",\"_links\":{\"self\":{\"href\": \"" + MOCK_HREF + "\"}}}]}";
-    private static final String MOCK_RESPONSE_WITH_MALFORMED_URI = RESPONSE_BODY
-        + "\"claim-submit.png\",\"_links\":{\"self\":{\"href\": \"" + MOCK_HREF_MALFORMED + "\"}}}]}";
     private static final String MOCK_RESPONSE_WITHOUT_SELF = RESPONSE_BODY
         + "\"claim-submit.png\",\"_links\":{}}]}";
+    private final String fullJsonResponse;
 
     private CaseDocumentService caseDocumentService;
     private MockRestServiceServer mockServer;
 
+    CaseDocumentServiceTest() throws IOException {
+        // constructor for case document series test
+        fullJsonResponse = ResourceUtil.resourceAsString(
+            "responses/caseDocumentUpload.json"
+        );
+    }
+
     @BeforeEach
     void setup() {
         RestTemplate restTemplate = new RestTemplate();
-        AuthTokenGenerator authTokenGenerator = () -> "Bearer Mock";
+        AuthTokenGenerator authTokenGenerator = () -> SERVICE_AUTH;
         caseDocumentService = new CaseDocumentService(restTemplate,
                                                       authTokenGenerator,
                                                       DOCUMENT_SERVICE_API_URL, 3);
@@ -129,7 +135,23 @@ class CaseDocumentServiceTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .body(MOCK_RESPONSE_WITH_DOCUMENT));
 
-        URI documentEndpoint = caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE);
+        URI documentEndpoint =
+            caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE).getUri();
+
+        assertThat(documentEndpoint)
+            .hasToString(MOCK_HREF);
+    }
+
+    @Test
+    void fullJsonResponseIsSuccessful() throws CaseDocumentException {
+        mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_API_URL))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(withStatus(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(fullJsonResponse));
+
+        URI documentEndpoint =
+            caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE).getUri();
 
         assertThat(documentEndpoint)
             .hasToString(MOCK_HREF);
@@ -309,7 +331,7 @@ class CaseDocumentServiceTest {
                 .body(MOCK_RESPONSE_WITH_DOCUMENT));
 
         URI documentEndpoint = caseDocumentService.uploadDocument(
-            MOCK_TOKEN, CASE_TYPE, MOCK_FILE_NAME_SPACING);
+            MOCK_TOKEN, CASE_TYPE, MOCK_FILE_NAME_SPACING).getUri();
 
         assertThat(documentEndpoint)
             .hasToString(MOCK_HREF);
@@ -323,22 +345,6 @@ class CaseDocumentServiceTest {
 
         assertThat(documentException.getMessage())
             .isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
-    }
-
-    @Test
-    void theUploadDocWhenResponseUriInvalidProducesException() {
-        mockServer.expect(ExpectedCount.max(MAX_API_CALL_ATTEMPTS), requestTo(DOCUMENT_API_URL))
-            .andExpect(method(HttpMethod.POST))
-            .andRespond(withStatus(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(MOCK_RESPONSE_WITH_MALFORMED_URI));
-
-        CaseDocumentException documentException = assertThrows(
-            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
-                MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
-
-        assertThat(documentException.getMessage())
-            .isEqualTo(EMPTY_DOCUMENT_MESSAGE);
     }
 
     @Test

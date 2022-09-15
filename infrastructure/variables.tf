@@ -37,3 +37,15 @@ variable "team_contact" {
   description = "Team contact"
   default     = "#et-devs"
 }
+
+variable "apim_suffix" {
+  default = ""
+}
+
+variable "et_acas_product_name" {
+  type    = string
+  default = "et-acas"
+}
+
+variable "aks_subscription_id" {
+}
