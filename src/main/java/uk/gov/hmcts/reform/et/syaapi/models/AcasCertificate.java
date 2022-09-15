@@ -6,6 +6,8 @@ import java.util.Objects;
 
 /**
  * Simply holds the certificate blob data as a string (in Base64 encoded format) along with the associated ACAS number.
+ * You can find detailed documentation in the
+ * <a href="https://tools.hmcts.net/confluence/display/RET/ACAS+Integration+Consume">confluence page</a>.
  */
 @Data
 public class AcasCertificate {
