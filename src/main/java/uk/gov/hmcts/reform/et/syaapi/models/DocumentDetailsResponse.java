@@ -1,14 +1,21 @@
 package uk.gov.hmcts.reform.et.syaapi.models;
 
-import java.util.Date;
-import java.util.Map;
+
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import uk.gov.hmcts.reform.ccd.client.model.Classification;
 
-@Data
-//@Builder
-//@Jacksonized
+import java.util.Date;
+import java.util.Map;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class DocumentDetailsResponse {
 
     Classification classification;
@@ -22,4 +29,5 @@ public class DocumentDetailsResponse {
     Date modifiedOn;
     Date ttl;
     Map<String, String> metadata;
+
 }

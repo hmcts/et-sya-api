@@ -13,10 +13,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.et.syaapi.config.interceptors.ResourceNotFoundException;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.models.DocumentDetailsResponse;
 
@@ -28,8 +30,10 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static uk.gov.hmcts.reform.ccd.client.model.Classification.PUBLIC;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.RESOURCE_NOT_FOUND;
 
 /**
  * CaseDocumentService provides access to the document upload service API, used to upload documents that are
@@ -103,12 +107,21 @@ public class CaseDocumentService {
         headers.add(SERVICE_AUTHORIZATION, authTokenGenerator.generate());
         HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(headers);
 
-        return restTemplate.exchange(
-            caseDocApiUrl + "/cases/documents/" + documentId + "/binary",
-            HttpMethod.GET,
-            request,
-            ByteArrayResource.class
-        );
+        try {
+            return restTemplate.exchange(
+                caseDocApiUrl + "/cases/documents/" + documentId + "/binary",
+                HttpMethod.GET,
+                request,
+                ByteArrayResource.class
+            );
+        } catch (HttpClientErrorException ex) {
+            if (NOT_FOUND.equals(ex.getStatusCode())) {
+                throw new ResourceNotFoundException(String.format(RESOURCE_NOT_FOUND,
+                                                                  documentId, ex.getMessage()), ex);
+            }
+            throw ex;
+        }
+
     }
 
     public ResponseEntity<DocumentDetailsResponse> getDocumentDetails(String authToken, UUID documentId) {
@@ -117,12 +130,20 @@ public class CaseDocumentService {
         headers.add(SERVICE_AUTHORIZATION, authTokenGenerator.generate());
         HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(headers);
 
-        return restTemplate.exchange(
-            caseDocApiUrl + "/cases/documents/" + documentId,
-            HttpMethod.GET,
-            request,
-            DocumentDetailsResponse.class
-        );
+        try {
+            return restTemplate.exchange(
+                caseDocApiUrl + "/cases/documents/" + documentId,
+                HttpMethod.GET,
+                request,
+                DocumentDetailsResponse.class
+            );
+        } catch (HttpClientErrorException ex) {
+            if (NOT_FOUND.equals(ex.getStatusCode())) {
+                throw new ResourceNotFoundException(String.format(RESOURCE_NOT_FOUND,
+                                                                  documentId, ex.getMessage()), ex);
+            }
+            throw ex;
+        }
     }
 
     private URI getUriFromFile(CaseDocument caseDocument, String originalFilename) throws CaseDocumentException {
