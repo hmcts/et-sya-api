@@ -88,6 +88,7 @@ public class AcasService {
         AcasCertificateRequest acasCertificateRequest = new AcasCertificateRequest();
         acasCertificateRequest.setCertificateNumbers(acasNumbers);
         HttpEntity<AcasCertificateRequest> request = new HttpEntity<>(acasCertificateRequest, headers);
+
         return restTemplate.exchange(
             acasApiUrl,
             HttpMethod.POST,
