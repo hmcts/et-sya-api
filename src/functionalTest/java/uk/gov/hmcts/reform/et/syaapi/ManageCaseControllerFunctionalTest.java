@@ -127,6 +127,4 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
             .assertThat().body("id", equalTo(caseId))
             .assertThat().body("state", equalTo("Submitted"));
     }
-
-
 }
