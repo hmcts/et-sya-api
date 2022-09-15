@@ -35,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SuppressWarnings({"PMD.LinguisticNaming"})
 class AcasControllerTest {
     private final List<String> caseIds = new ArrayList<>();
-    private final String requestDateTimeString = "2022-09-01T12:34:00";
+    private static final String REQUEST_DATE_TIME_STRING = "2022-09-01T12:34:00";
     private static final String AUTH_TOKEN = "some-token";
     private static final String GET_LAST_MODIFIED_CASE_LIST_URL = "/getLastModifiedCaseList";
     private static final String GET_CASE_DATA_URL = "/getCaseData";
@@ -62,7 +62,7 @@ class AcasControllerTest {
         when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
         mockMvc.perform(get(GET_LAST_MODIFIED_CASE_LIST_URL)
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
-                            .param("datetime", requestDateTimeString))
+                            .param("datetime", REQUEST_DATE_TIME_STRING))
             .andExpect(status().isOk());
     }
 
@@ -70,11 +70,11 @@ class AcasControllerTest {
     void getLastModifiedCaseListWhenSuccessCasesFoundReturnList() throws Exception {
         when(caseService.getLastModifiedCasesId(
             AUTH_TOKEN, LocalDateTime.parse("2022-09-01T12:34:00", DateTimeFormatter.ISO_LOCAL_DATE_TIME)))
-            .thenReturn(List.of(1646225213651598L, 1646225213651533L, 1646225213651512L));
+            .thenReturn(List.of(1_646_225_213_651_598L, 1_646_225_213_651_533L, 1_646_225_213_651_512L));
         when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
         mockMvc.perform(get(GET_LAST_MODIFIED_CASE_LIST_URL)
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
-                            .param("datetime", requestDateTimeString))
+                            .param("datetime", REQUEST_DATE_TIME_STRING))
             .andExpect(status().isOk());
     }
 
@@ -91,7 +91,7 @@ class AcasControllerTest {
         when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(false);
         mockMvc.perform(get(GET_LAST_MODIFIED_CASE_LIST_URL)
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
-                            .param("datetime", requestDateTimeString))
+                            .param("datetime", REQUEST_DATE_TIME_STRING))
             .andExpect(status().isForbidden());
     }
 

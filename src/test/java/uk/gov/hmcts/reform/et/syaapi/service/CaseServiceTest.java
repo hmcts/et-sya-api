@@ -308,7 +308,7 @@ class CaseServiceTest {
     }
 
     @Test
-    void getLastModifiedCasesIdWhenCaseFoundThenReturnCaseId() {
+    void shouldLastModifiedCasesIdWhenCaseFoundThenCaseId() {
         LocalDateTime requestDateTime =
             LocalDateTime.parse("2022-09-01T12:34:00", DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
@@ -337,11 +337,11 @@ class CaseServiceTest {
 
         assertThat(caseService.getLastModifiedCasesId(TEST_SERVICE_AUTH_TOKEN, requestDateTime))
             .hasSize(3)
-            .isEqualTo(List.of(1646225213651598L, 1646225213651533L, 1646225213651512L));
+            .isEqualTo(List.of(1_646_225_213_651_598L, 1_646_225_213_651_533L, 1_646_225_213_651_512L));
     }
 
     @Test
-    void getLastModifiedCasesIdWhenNoCaseFoundThenReturnEmpty() {
+    void shouldLastModifiedCasesIdWhenNoCaseFoundThenEmpty() {
         LocalDateTime requestDateTime =
             LocalDateTime.parse("2022-09-01T12:34:00", DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
