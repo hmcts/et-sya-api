@@ -101,6 +101,14 @@ public class CaseDocumentService {
         return getUriFromFile(caseDocument, file.getOriginalFilename());
     }
 
+    /**
+     * Returns content in binary stream of the given document id.
+     *
+     * @param authToken  the caller's bearer token used to verify the caller
+     * @param documentId the id of the document
+     * @return the response entity which contains the binary stream
+     * @throws ResourceNotFoundException if the target API returns 404 response code
+     */
     public ResponseEntity<ByteArrayResource> downloadDocument(String authToken, UUID documentId) {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.AUTHORIZATION, authToken);
@@ -124,6 +132,14 @@ public class CaseDocumentService {
 
     }
 
+    /**
+     * Returns document details of the given document id.
+     *
+     * @param authToken  the caller's bearer token used to verify the caller
+     * @param documentId the id of the document
+     * @return the response entity which contains the document details object
+     * @throws ResourceNotFoundException if the target API returns 404 response code
+     */
     public ResponseEntity<DocumentDetailsResponse> getDocumentDetails(String authToken, UUID documentId) {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.AUTHORIZATION, authToken);
