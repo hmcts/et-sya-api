@@ -20,7 +20,6 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
-import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
@@ -312,11 +311,6 @@ class CaseServiceTest {
         uploadedDocumentType.setDocumentUrl("https://test.com");
         documentType.setUploadedDocument(uploadedDocumentType);
         documentTypeItem.setValue(documentType);
-        when(caseDocumentService.uploadPdfFile(TEST_SERVICE_AUTH_TOKEN, caseRequest.getCaseTypeId(),
-                                                pdfService.convertCaseDataToPdfDecodedMultipartFile(
-                                                    EmployeeObjectMapper.mapCaseRequestToCaseData(caseDataHashMap)
-                                                ),
-                                                caseData.getEcmCaseType())).thenReturn(documentTypeItem);
 
         CaseDetails caseDetails = caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseRequest);
         assertEquals(caseDetails, expectedDetails);

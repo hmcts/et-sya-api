@@ -16,14 +16,20 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperService;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -54,6 +60,8 @@ public class CaseDocumentService {
     private static final Pattern HTTPS_URL_PATTERN = Pattern.compile(HTTPS_URL_REGEX_PATTERN);
     private static final String UPLOAD_FILE_EXCEPTION_MESSAGE = "Document management failed uploading file: ";
     private static final String VALIDATE_FILE_EXCEPTION_MESSAGE = "File does not pass validation";
+    private static final String TYPE_OF_DOCUMENT_ET1_CASE_PDF = "ET1-CasePDF";
+    private static final String TYPE_OF_DOCUMENT_ET1_ACAS_CERTIFICATE = "ET1-ACAS_Certficate";
     private final Integer maxApiRetries;
     private final RestTemplate restTemplate;
     private final AuthTokenGenerator authTokenGenerator;
@@ -210,12 +218,38 @@ public class CaseDocumentService {
         }
     }
 
-    public DocumentTypeItem uploadPdfFile(String authToken,
-                                          String caseTypeId,
-                                          PdfDecodedMultipartFile file,
-                                          String typeOfDocument) throws CaseDocumentException {
-        CaseDocument caseDocument = uploadDocument(authToken, caseTypeId, file);
-        return createDocumentTypeItemFromCaseDocument(caseDocument, typeOfDocument, file.getDocumentDescription());
+    public List<DocumentTypeItem> uploadAllDocuments(String authToken,
+                                                     CaseData caseData,
+                                                     List<AcasCertificate> acasCertificates)
+        throws CaseDocumentException, PdfServiceException {
+        List<DocumentTypeItem> documentTypeItems = new ArrayList<>();
+        documentTypeItems.add(createDocumentTypeItemFromCaseData(authToken, caseData));
+        for (AcasCertificate acasCertificate : acasCertificates) {
+            documentTypeItems.add(createDocumentTypeItemFromAcasCertificate(authToken, caseData, acasCertificate));
+        }
+        return documentTypeItems;
+    }
+
+    private DocumentTypeItem createDocumentTypeItemFromCaseData(String authToken, CaseData caseData)
+        throws PdfServiceException, CaseDocumentException {
+        PdfService pdfService = new PdfService(new PdfMapperService());
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData);
+        CaseDocument caseDocument = uploadDocument(authToken, caseData.getEcmCaseType(), pdfDecodedMultipartFile);
+        return createDocumentTypeItemFromCaseDocument(caseDocument, TYPE_OF_DOCUMENT_ET1_CASE_PDF,
+                                                      pdfDecodedMultipartFile.getDocumentDescription());
+    }
+
+    private DocumentTypeItem createDocumentTypeItemFromAcasCertificate(String authToken,
+                                                                       CaseData caseData,
+                                                                       AcasCertificate acasCertificate)
+        throws CaseDocumentException {
+        PdfService pdfService = new PdfService(new PdfMapperService());
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            pdfService.convertAcasCertificateToPdfDecodedMultipartFile(caseData, acasCertificate);
+        CaseDocument caseDocument = uploadDocument(authToken, caseData.getEcmCaseType(), pdfDecodedMultipartFile);
+        return createDocumentTypeItemFromCaseDocument(caseDocument, TYPE_OF_DOCUMENT_ET1_ACAS_CERTIFICATE,
+                                                      pdfDecodedMultipartFile.getDocumentDescription());
     }
 
     public DocumentTypeItem createDocumentTypeItemFromCaseDocument(CaseDocument caseDocument,

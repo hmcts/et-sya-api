@@ -10,9 +10,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
 
@@ -72,6 +74,34 @@ public class PdfService {
             + ".pdf";
     }
 
+    private static String createPdfDocumentNameFromCaseDataAndAcasCertificate(
+        CaseData caseData, AcasCertificate acasCertificate) {
+        return "ET1_"
+            + caseData.getClaimantIndType().getClaimantFirstNames()
+            + "_"
+            + caseData.getClaimantIndType().getClaimantLastName()
+            + "_"
+            + acasCertificate.getCertificateNumber()
+            + ".pdf";
+    }
+
+    private static String createPdfDocumentDescriptionFromCaseData(CaseData caseData) {
+        return "Case Details - "
+            + caseData.getClaimantIndType().getClaimantFirstNames()
+            + " " + caseData.getClaimantIndType().getClaimantLastName();
+    }
+
+    private static String createPdfDocumentDescriptionFromCaseDataAndAcasCertificate(
+        CaseData caseData,
+        AcasCertificate acasCertificate) {
+        return "Case Details - "
+            + caseData.getClaimantIndType().getClaimantFirstNames()
+            + " "
+            + caseData.getClaimantIndType().getClaimantLastName()
+            + " - "
+            + acasCertificate.getCertificateNumber();
+    }
+
     public PdfDecodedMultipartFile convertCaseDataToPdfDecodedMultipartFile(CaseData caseData)
         throws PdfServiceException {
         byte[] pdfData = convertCaseToPdf(caseData);
@@ -81,9 +111,14 @@ public class PdfService {
                                            createPdfDocumentDescriptionFromCaseData(caseData));
     }
 
-    private static String createPdfDocumentDescriptionFromCaseData(CaseData caseData) {
-        return "Case Details - "
-            + caseData.getClaimantIndType().getClaimantFirstNames()
-            + " " + caseData.getClaimantIndType().getClaimantLastName();
+    public PdfDecodedMultipartFile convertAcasCertificateToPdfDecodedMultipartFile(
+        CaseData caseData, AcasCertificate acasCertificate) {
+        byte[] pdfData = Base64.getDecoder().decode(acasCertificate.getCertificateDocument());
+        return new PdfDecodedMultipartFile(pdfData,
+                                           createPdfDocumentNameFromCaseDataAndAcasCertificate(caseData,
+                                                                                               acasCertificate),
+                                           PDF_FILE_TIKA_CONTENT_TYPE,
+                                           createPdfDocumentDescriptionFromCaseDataAndAcasCertificate(caseData,
+                                                                                                      acasCertificate));
     }
 }
