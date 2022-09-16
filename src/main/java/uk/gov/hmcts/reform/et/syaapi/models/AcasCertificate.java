@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.util.Objects;
@@ -12,7 +13,9 @@ import java.util.Objects;
 @Data
 public class AcasCertificate {
 
+    @JsonProperty("CertificateDocument")
     private String certificateDocument;
+    @JsonProperty("CertificateNumber")
     private String certificateNumber;
 
     @Override

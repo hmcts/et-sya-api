@@ -42,8 +42,8 @@ class AcasServiceTest {
             + "{\"CertificateNumber\":\"A123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW...\"}]";
     public static final String A123 = "A123";
     public static final String Z456 = "Z456";
-    public static final String R12345_11_12 = "R12345/11/12";
-    public static final String R12345_13_14 = "R12345/13/14";
+    public static final String R123456_11_12 = "R123456/11/12";
+    public static final String R123456_13_14 = "R123456/13/14";
     private AcasService acasService;
     private final CaseData caseData = ResourceLoader.fromString(
         "requests/caseData.json",
@@ -73,7 +73,7 @@ class AcasServiceTest {
     void theGetAcasCertWithOneNullProducesInvalidAcasNumbersException() {
 
         InvalidAcasNumbersException exception = assertThrows(
-            InvalidAcasNumbersException.class, () -> acasService.getCertificates(R12345_11_12, null));
+            InvalidAcasNumbersException.class, () -> acasService.getCertificates(R123456_11_12, null));
         assertThat(exception.getMessage())
             .isEqualTo("[ACAS number at position #1 must not be null]");
         assertThat(exception.getInvalidAcasNumbers())
@@ -137,7 +137,7 @@ class AcasServiceTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(ONE_CERT_JSON));
         // Valid: A123456/12/12
-        assertThat(acasService.getCertificates(R12345_11_12))
+        assertThat(acasService.getCertificates(R123456_11_12))
             .hasSize(1);
     }
 
@@ -150,7 +150,7 @@ class AcasServiceTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(ONE_CERT_JSON));
         // Valid: AB123456/12/12
-        assertThat(acasService.getCertificates(R12345_13_14))
+        assertThat(acasService.getCertificates(R123456_13_14))
             .hasSize(1);
     }
 
@@ -163,7 +163,7 @@ class AcasServiceTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(TWO_CERTS_JSON));
         // Valid: A123456/12/12, AB123456/12/12
-        assertThat(acasService.getCertificates(R12345_11_12, R12345_13_14))
+        assertThat(acasService.getCertificates(R123456_11_12, R123456_13_14))
             .hasSize(2);
     }
 
@@ -176,7 +176,7 @@ class AcasServiceTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(NO_CERTS_JSON));
         // Valid: A123456/12/12
-        assertThat(acasService.getCertificates(R12345_11_12))
+        assertThat(acasService.getCertificates(R123456_11_12))
             .isEmpty();
     }
 
@@ -189,7 +189,7 @@ class AcasServiceTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(NO_CERTS_JSON));
         // Valid: AB123456/12/12
-        assertThat(acasService.getCertificates(R12345_13_14))
+        assertThat(acasService.getCertificates(R123456_13_14))
             .isEmpty();
     }
 
@@ -202,7 +202,7 @@ class AcasServiceTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(NO_CERTS_JSON));
         // Valid: A123456/12/12, AB123456/12/12
-        assertThat(acasService.getCertificates(R12345_11_12, R12345_13_14))
+        assertThat(acasService.getCertificates(R123456_11_12, R123456_13_14))
             .isEmpty();
     }
 
@@ -216,7 +216,7 @@ class AcasServiceTest {
                 .body(ONE_CERT_JSON));
         // Valid: A123456/12/12
         // Inalid: ZZ123456/12/12
-        List<AcasCertificate> acasCertificates = acasService.getCertificates(R12345_11_12, R12345_13_14);
+        List<AcasCertificate> acasCertificates = acasService.getCertificates(R123456_11_12, R123456_13_14);
         assertThat(acasCertificates)
             .hasSize(1);
     }
@@ -225,7 +225,7 @@ class AcasServiceTest {
     void theGetAcasCertsWithOneValidAndTwoInvalidAcasNumbersProducesInvalidAcasNumbersException() {
         InvalidAcasNumbersException exception = assertThrows(
             InvalidAcasNumbersException.class,
-            () -> acasService.getCertificates("R123", R12345_13_14, "R456")
+            () -> acasService.getCertificates("R123", R123456_13_14, "R456")
         );
         assertThat(exception.getInvalidAcasNumbers())
             .containsExactly("R123", "R456");
@@ -236,7 +236,7 @@ class AcasServiceTest {
         getMockServer().expect(ExpectedCount.manyTimes(), requestTo(ACAS_DEV_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.NOT_FOUND));
-        assertThrows(AcasException.class, () -> acasService.getCertificates(R12345_11_12));
+        assertThrows(AcasException.class, () -> acasService.getCertificates(R123456_11_12));
     }
 
     @Test
@@ -244,7 +244,7 @@ class AcasServiceTest {
         getMockServer().expect(ExpectedCount.manyTimes(), requestTo(ACAS_DEV_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
-        assertThrows(AcasException.class, () -> acasService.getCertificates(R12345_11_12));
+        assertThrows(AcasException.class, () -> acasService.getCertificates(R123456_11_12));
     }
 
     @Test
@@ -256,14 +256,13 @@ class AcasServiceTest {
                                                     withStatus(HttpStatus.OK)
                                                         .contentType(MediaType.APPLICATION_JSON)
                                                         .body(TWO_CERTS_JSON)));
-        assertThat(acasService.getCertificates(R12345_11_12, R12345_13_14))
+        assertThat(acasService.getCertificates(R123456_11_12, R123456_13_14))
             .hasSize(2);
     }
 
     @Test
     void theGetAcasCertificatesByCaseData() throws AcasException, InvalidAcasNumbersException {
         List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(caseData);
-
         assertThat(acasCertificates.size()).isEqualTo(2);
     }
 
