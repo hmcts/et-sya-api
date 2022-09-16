@@ -63,6 +63,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             ErrorResponse.builder()
                 .message(exception.getLocalizedMessage())
                 .code(exception.getStatus().value())
+                .build()
+        );
+    }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     protected ResponseEntity<Object> handleResourceNotFoundException(final ResourceNotFoundException exception) {
