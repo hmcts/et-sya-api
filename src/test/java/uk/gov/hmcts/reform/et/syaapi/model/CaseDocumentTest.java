@@ -25,8 +25,8 @@ class CaseDocumentTest {
     }
 
     @Test
-    void shouldReturnTrueWhenVerifyUrlLinksHrefNull() {
-        assertThat(caseDocument.verifyUri()).isTrue();
+    void shouldReturnFalseWhenVerifyUrlLinksHrefNull() {
+        assertThat(caseDocument.verifyUri()).isFalse();
     }
 
 }

@@ -64,7 +64,7 @@ class ManageCaseControllerTest {
     @MockBean
     private VerifyTokenService verifyTokenService;
 
-    ManageCaseControllerTest() throws IOException {
+    ManageCaseControllerTest() {
         // Default constructor
         expectedDetails = ResourceLoader.fromString(
             "responses/caseDetails.json",
@@ -264,11 +264,10 @@ class ManageCaseControllerTest {
 
     @SneakyThrows
     @Test
-    void shouldSubmitCaseThrowExceptionWhenPdfNotCreated() {
+    void shouldSubmitCaseThrowExceptionWhenAnyError() {
         CaseRequest caseRequest = CaseRequest.builder()
             .caseTypeId(CASE_TYPE)
             .caseId("12")
-            .caseData(new HashMap<>())
             .build();
 
         // given
@@ -280,6 +279,7 @@ class ManageCaseControllerTest {
             "Bloggs",
             null
         ));
+
         when(caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseRequest))
             .thenThrow(new PdfServiceException("Failed to convert to PDF", new IOException()));
 

@@ -17,18 +17,17 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.ccd.client.model.Classification;
 import uk.gov.hmcts.reform.et.syaapi.config.interceptors.ResourceNotFoundException;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.models.DocumentDetailsResponse;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -362,7 +361,7 @@ class CaseDocumentServiceTest {
     void shouldCreateDocumentTypeItemFromCaseDocument() {
         Map<String, Map<String, String>> links = new HashMap<>();
         Map<String, String> href = new HashMap<>();
-        href.put("href", DOCUMENT_UPLOAD_API_URL);
+        href.put("href", DOCUMENT_API_URL);
         links.put("self", href);
         links.put("binary", href);
         CaseDocument caseDocument = CaseDocument.builder().build();
@@ -373,9 +372,10 @@ class CaseDocumentServiceTest {
                            caseDocument,
                            "ET1",
                            "Test Case Document")
-                       .getValue().getUploadedDocument().getDocumentUrl()).isEqualTo(DOCUMENT_UPLOAD_API_URL);
+                       .getValue().getUploadedDocument().getDocumentUrl()).isEqualTo(DOCUMENT_API_URL);
     }
 
+    @Test
     void downloadDocumentSuccess() {
         ByteArrayResource mockByteArrayResponse = new ByteArrayResource("test document content".getBytes());
         mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_API_URL_WITH_SLASH + DOCUMENT_ID + "/binary"))

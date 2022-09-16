@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
+import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
@@ -43,6 +44,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static  org.assertj.core.api.Assertions.assertThat;
+import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -53,7 +55,7 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUT
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"PMD.TooManyFields", "PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.TooManyFields", "PMD.TooManyMethods", "PMD.ExcessiveImports"})
 class CaseServiceTest {
     private static final String CASE_TYPE = "ET_Scotland";
     private static final String CASE_ID = "TEST_CASE_ID";
@@ -391,6 +393,7 @@ class CaseServiceTest {
 
         assertEquals(caseDetails, expectedDetails);
     }
+
     @Test
     void shouldLastModifiedCasesIdWhenCaseFoundThenCaseId() {
         LocalDateTime requestDateTime =
@@ -465,7 +468,7 @@ class CaseServiceTest {
     }
 
     @Test
-    void shouldReturnCaseData() throws IOException {
+    void shouldReturnCaseData() {
         List<String> caseIds = List.of("1646225213651598", "1646225213651533", "1646225213651512");
         SearchResult englandWalesSearchResult = SearchResult.builder()
             .total(1)
@@ -494,7 +497,7 @@ class CaseServiceTest {
     }
 
     @Test
-    void shouldReturnCaseDataNoCasesFound() throws IOException {
+    void shouldReturnCaseDataNoCasesFound() {
         List<String> caseIds = List.of("1646225213651598", "1646225213651533");
         SearchResult englandWalesSearchResult = SearchResult.builder()
             .total(0)
