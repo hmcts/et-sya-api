@@ -11,16 +11,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.ClientHttpRequest;
-import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
-import org.springframework.test.web.client.ResponseCreator;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -130,22 +125,6 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
         return MockRestServiceServer.createServer(new RestTemplate());
     }
 
-    private static class DelegateResponseCreator implements ResponseCreator {
-        private final ResponseCreator[] delegates;
-        private int toExecute;
-
-        public DelegateResponseCreator(ResponseCreator... delegates) {
-            this.delegates = Arrays.copyOf(delegates, delegates.length);
-        }
-
-        @Override
-        public ClientHttpResponse createResponse(ClientHttpRequest request)
-            throws IOException {
-            return this.delegates[toExecute++ % delegates.length]
-                .createResponse(request);
-        }
-    }
-
     @Test
     void stage5SubmitCaseShouldReturnSubmittedCaseDetails() {
         CaseRequest caseRequest = CaseRequest.builder()
@@ -154,12 +133,11 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
             .caseData(new ConcurrentHashMap<>())
             .build();
 
-        getMockServer().expect(ExpectedCount.times(2), requestTo(ACAS_DEV_API_URL))
+        getMockServer().expect(ExpectedCount.once(), requestTo(ACAS_DEV_API_URL))
             .andExpect(method(HttpMethod.POST))
-            .andRespond(new DelegateResponseCreator(withStatus(org.springframework.http.HttpStatus.UNAUTHORIZED),
-                                                    withStatus(org.springframework.http.HttpStatus.OK)
-                                                        .contentType(MediaType.APPLICATION_JSON)
-                                                        .body(TWO_CERTS_JSON)));
+            .andRespond(withStatus(org.springframework.http.HttpStatus.OK)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .body(TWO_CERTS_JSON));
         RestAssured.given()
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
