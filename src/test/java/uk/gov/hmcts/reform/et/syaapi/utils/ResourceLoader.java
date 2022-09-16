@@ -43,8 +43,7 @@ public final class ResourceLoader {
 
     public static String toJson(Object input) {
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.writeValueAsString(input);
+            return OBJECT_MAPPER.writeValueAsString(input);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(
                 String.format("Failed to serialize '%s' to JSON", input.getClass().getSimpleName()), e

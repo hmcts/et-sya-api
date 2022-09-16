@@ -13,20 +13,26 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.et.syaapi.config.interceptors.ResourceNotFoundException;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
+import uk.gov.hmcts.reform.et.syaapi.models.DocumentDetailsResponse;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static uk.gov.hmcts.reform.ccd.client.model.Classification.PUBLIC;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.RESOURCE_NOT_FOUND;
 
 /**
  * CaseDocumentService provides access to the document upload service API, used to upload documents that are
@@ -61,7 +67,7 @@ public class CaseDocumentService {
      */
     public CaseDocumentService(RestTemplate restTemplate,
                                AuthTokenGenerator authTokenGenerator,
-                               @Value("${case_document_am.url}/cases/documents")
+                               @Value("${case_document_am.url}")
                                    String caseDocApiUrl,
                                @Value("${case_document_am.max_retries}") Integer maxApiRetries) {
         this.restTemplate = restTemplate;
@@ -87,6 +93,67 @@ public class CaseDocumentService {
 
         return validateResponse(
             Objects.requireNonNull(response), file.getOriginalFilename());
+    }
+
+    /**
+     * Returns content in binary stream of the given document id.
+     *
+     * @param authToken  the caller's bearer token used to verify the caller
+     * @param documentId the id of the document
+     * @return the response entity which contains the binary stream
+     * @throws ResourceNotFoundException if the target API returns 404 response code
+     */
+    public ResponseEntity<ByteArrayResource> downloadDocument(String authToken, UUID documentId) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.AUTHORIZATION, authToken);
+        headers.add(SERVICE_AUTHORIZATION, authTokenGenerator.generate());
+        HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(headers);
+
+        try {
+            return restTemplate.exchange(
+                caseDocApiUrl + "/cases/documents/" + documentId + "/binary",
+                HttpMethod.GET,
+                request,
+                ByteArrayResource.class
+            );
+        } catch (HttpClientErrorException ex) {
+            if (NOT_FOUND.equals(ex.getStatusCode())) {
+                throw new ResourceNotFoundException(String.format(RESOURCE_NOT_FOUND,
+                                                                  documentId, ex.getMessage()), ex);
+            }
+            throw ex;
+        }
+
+    }
+
+    /**
+     * Returns document details of the given document id.
+     *
+     * @param authToken  the caller's bearer token used to verify the caller
+     * @param documentId the id of the document
+     * @return the response entity which contains the document details object
+     * @throws ResourceNotFoundException if the target API returns 404 response code
+     */
+    public ResponseEntity<DocumentDetailsResponse> getDocumentDetails(String authToken, UUID documentId) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.AUTHORIZATION, authToken);
+        headers.add(SERVICE_AUTHORIZATION, authTokenGenerator.generate());
+        HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(headers);
+
+        try {
+            return restTemplate.exchange(
+                caseDocApiUrl + "/cases/documents/" + documentId,
+                HttpMethod.GET,
+                request,
+                DocumentDetailsResponse.class
+            );
+        } catch (HttpClientErrorException ex) {
+            if (NOT_FOUND.equals(ex.getStatusCode())) {
+                throw new ResourceNotFoundException(String.format(RESOURCE_NOT_FOUND,
+                                                                  documentId, ex.getMessage()), ex);
+            }
+            throw ex;
+        }
     }
 
     private DocumentUploadResponse attemptWithRetriesToUploadDocumentToCaseDocumentApi(int attempts,
@@ -116,7 +183,7 @@ public class CaseDocumentService {
         HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, getHttpHeaders(authToken));
 
         return restTemplate.exchange(
-            caseDocApiUrl,
+            caseDocApiUrl + "/cases/documents",
             HttpMethod.POST,
             request,
             DocumentUploadResponse.class
