@@ -6,12 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 
@@ -30,8 +28,6 @@ import static org.springframework.http.ResponseEntity.ok;
 public class AcasController {
 
     private final CaseService caseService;
-
-    private static final String NO_CASES_FOUND = "No cases found";
 
     /**
      * Given a datetime, this method will return a list of caseIds which have been modified since the datetime
@@ -62,10 +58,6 @@ public class AcasController {
     public ResponseEntity<Object> getCaseData(
         @RequestHeader(value = HttpHeaders.AUTHORIZATION) String authorisation,
         @RequestParam(name = "caseIds") List<String> caseIds) {
-        List<CaseDetails> caseDetailsList = caseService.getCaseData(authorisation, caseIds);
-        if (CollectionUtils.isEmpty(caseDetailsList)) {
-            return ok(NO_CASES_FOUND);
-        }
-        return ok(caseDetailsList);
+        return ok(caseService.getCaseData(authorisation, caseIds));
     }
 }
