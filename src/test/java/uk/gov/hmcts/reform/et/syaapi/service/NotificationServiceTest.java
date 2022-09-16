@@ -15,12 +15,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class NotificationServiceTest {
@@ -160,5 +162,26 @@ class NotificationServiceTest {
             SUBMIT_CASE_CONFIRMATION_LAST_NAME,
             SUBMIT_CASE_CONFIRMATION_LINK);
         assertThat(sendEmailResponse.getNotificationId()).isNotNull();
+    }
+
+    @Test
+    void shouldThrowNotificationExceptionWhenNotAbleToSendEmailBySendSubmitCaseConfirmationEmail() {
+        when(notificationService.sendSubmitCaseConfirmationEmail(
+            SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID,
+            SUBMIT_CASE_CONFIRMATION_TEST_EMAIL,
+            REFERENCE_STRING,
+            SUBMIT_CASE_CONFIRMATION_FIRST_NAME,
+            SUBMIT_CASE_CONFIRMATION_LAST_NAME,
+            SUBMIT_CASE_CONFIRMATION_LINK
+        )).thenThrow(new NotificationException(new Exception("Error while trying to sending notification to client")));
+
+        assertThrows(NotificationException.class, () ->
+                     notificationService.sendSubmitCaseConfirmationEmail(
+            SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID,
+            SUBMIT_CASE_CONFIRMATION_TEST_EMAIL,
+            REFERENCE_STRING,
+            SUBMIT_CASE_CONFIRMATION_FIRST_NAME,
+            SUBMIT_CASE_CONFIRMATION_LAST_NAME,
+            SUBMIT_CASE_CONFIRMATION_LINK));
     }
 }

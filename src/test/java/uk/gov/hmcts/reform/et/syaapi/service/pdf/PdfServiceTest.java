@@ -20,8 +20,12 @@ import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.TestModelCreator;
+import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
+import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,6 +52,11 @@ class PdfServiceTest {
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME = "pdfTemplateSource";
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE = "classpath:ET1_0922.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
+
+    private final AcasCertificate acasCertificate = ResourceLoader.fromString(
+        "requests/acasCertificate.json",
+        AcasCertificate.class
+    );
 
     @Mock
     private PdfMapperService pdfMapperService;
@@ -128,9 +137,18 @@ class PdfServiceTest {
     }
 
     @Test
-    void shouldCreatePdfDocumentDescriptionFromCaseData() throws PdfServiceException {
+    void shouldCreatePdfDecodedMultipartFileFromCaseData() throws PdfServiceException {
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData);
         assertThat(pdfDecodedMultipartFile).isNotNull();
+    }
+
+    @Test
+    void shouldCreatePdfDecodedMultipartFileFromCaseDataAndAcasCertificate() {
+        List<AcasCertificate> acasCertificates = new ArrayList<>();
+        acasCertificates.add(acasCertificate);
+        List<PdfDecodedMultipartFile> pdfDecodedMultipartFiles =
+            pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(caseData, acasCertificates);
+        assertThat(pdfDecodedMultipartFiles).hasSize(1);
     }
 }
