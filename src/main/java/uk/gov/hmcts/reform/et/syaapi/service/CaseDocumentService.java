@@ -17,19 +17,14 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.et.syaapi.config.interceptors.ResourceNotFoundException;
-import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.models.DocumentDetailsResponse;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperService;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -278,40 +273,43 @@ public class CaseDocumentService {
     }
 
     public List<DocumentTypeItem> uploadAllDocuments(String authToken,
-                                                     CaseData caseData,
-                                                     List<AcasCertificate> acasCertificates)
-        throws CaseDocumentException, PdfServiceException {
+                                                     String caseType,
+                                                     PdfDecodedMultipartFile pdfDecodedMultipartFile,
+                                                     List<PdfDecodedMultipartFile> acasCertificates)
+        throws CaseDocumentException {
         List<DocumentTypeItem> documentTypeItems = new ArrayList<>();
-        documentTypeItems.add(createDocumentTypeItemFromCaseData(authToken, caseData));
-        for (AcasCertificate acasCertificate : acasCertificates) {
-            documentTypeItems.add(createDocumentTypeItemFromAcasCertificate(authToken, caseData, acasCertificate));
+        if (pdfDecodedMultipartFile != null) {
+            documentTypeItems.add(createDocumentTypeItem(
+                authToken,
+                caseType,
+                TYPE_OF_DOCUMENT_ET1_CASE_PDF,
+                pdfDecodedMultipartFile
+            ));
+        }
+        if (acasCertificates != null) {
+            for (PdfDecodedMultipartFile acasCertificate : acasCertificates) {
+                documentTypeItems.add(createDocumentTypeItem(
+                    authToken,
+                    caseType,
+                    TYPE_OF_DOCUMENT_ET1_ACAS_CERTIFICATE,
+                    acasCertificate
+                ));
+            }
         }
         return documentTypeItems;
     }
 
-    private DocumentTypeItem createDocumentTypeItemFromCaseData(String authToken, CaseData caseData)
-        throws PdfServiceException, CaseDocumentException {
-        PdfService pdfService = new PdfService(new PdfMapperService());
-        PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData);
-        CaseDocument caseDocument = uploadDocument(authToken, caseData.getEcmCaseType(), pdfDecodedMultipartFile);
-        return createDocumentTypeItemFromCaseDocument(caseDocument, TYPE_OF_DOCUMENT_ET1_CASE_PDF,
-                                                      pdfDecodedMultipartFile.getDocumentDescription());
-    }
-
-    private DocumentTypeItem createDocumentTypeItemFromAcasCertificate(String authToken,
-                                                                       CaseData caseData,
-                                                                       AcasCertificate acasCertificate)
+    private DocumentTypeItem createDocumentTypeItem(String authToken,
+                                                    String caseType,
+                                                    String documentType,
+                                                    PdfDecodedMultipartFile pdfDecodedMultipartFile)
         throws CaseDocumentException {
-        PdfService pdfService = new PdfService(new PdfMapperService());
-        PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            pdfService.convertAcasCertificateToPdfDecodedMultipartFile(caseData, acasCertificate);
-        CaseDocument caseDocument = uploadDocument(authToken, caseData.getEcmCaseType(), pdfDecodedMultipartFile);
-        return createDocumentTypeItemFromCaseDocument(caseDocument, TYPE_OF_DOCUMENT_ET1_ACAS_CERTIFICATE,
+        CaseDocument caseDocument = uploadDocument(authToken, caseType, pdfDecodedMultipartFile);
+        return createDocumentTypeItemFromCaseDocument(caseDocument, documentType,
                                                       pdfDecodedMultipartFile.getDocumentDescription());
     }
 
-    public DocumentTypeItem createDocumentTypeItemFromCaseDocument(CaseDocument caseDocument,
+    private DocumentTypeItem createDocumentTypeItemFromCaseDocument(CaseDocument caseDocument,
                                                                    String typeOfDocument,
                                                                    String shortDescription) {
         DocumentType documentType = new DocumentType();
@@ -320,7 +318,8 @@ public class CaseDocumentService {
         UploadedDocumentType uploadedDocumentType = new UploadedDocumentType();
         uploadedDocumentType.setDocumentFilename(caseDocument.getOriginalDocumentName());
         uploadedDocumentType.setDocumentUrl(caseDocument.getLinks().get("self").get("href"));
-        uploadedDocumentType.setDocumentBinaryUrl(caseDocument.getLinks().get("binary").get("href"));
+        uploadedDocumentType.setDocumentBinaryUrl(caseDocument.getLinks().get("binary") == null ? null :
+                                                      caseDocument.getLinks().get("binary").get("href"));
         documentType.setUploadedDocument(uploadedDocumentType);
         DocumentTypeItem documentTypeItem = new DocumentTypeItem();
         documentTypeItem.setId(UUID.randomUUID().toString());

@@ -25,9 +25,10 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
-import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
@@ -63,6 +64,7 @@ public class CaseService {
     private final AcasService acasService;
     private final CaseDocumentService caseDocumentService;
     private final NotificationService notificationService;
+    private final PdfService pdfService;
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
@@ -191,13 +193,17 @@ public class CaseService {
         throws PdfServiceException, CaseDocumentException, AcasException, InvalidAcasNumbersException {
 
         CaseData caseData = convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
-        List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(caseData);
+        List<PdfDecodedMultipartFile> acasCertificates = pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
+            caseData, acasService.getAcasCertificatesByCaseData(caseData));
+        PdfDecodedMultipartFile casePdfFile =
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData);
         CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.SUBMIT_CASE_DRAFT,
                                                caseRequest.getCaseTypeId(), caseRequest.getCaseData());
         caseDetails.getData().put("documentCollection",
                                   caseDocumentService
                                       .uploadAllDocuments(authorization,
-                                                          caseData,
+                                                          caseData.getEcmCaseType(),
+                                                          casePdfFile,
                                                           acasCertificates));
         notificationService
             .sendSubmitCaseConfirmationEmail(new NotificationsProperties().getSampleEmailTemplateId(),

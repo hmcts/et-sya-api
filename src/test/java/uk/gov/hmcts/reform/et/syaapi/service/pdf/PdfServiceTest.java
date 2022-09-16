@@ -48,6 +48,7 @@ class PdfServiceTest {
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME = "pdfTemplateSource";
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE = "classpath:ET1_0922.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
+
     @Mock
     private PdfMapperService pdfMapperService;
     @InjectMocks

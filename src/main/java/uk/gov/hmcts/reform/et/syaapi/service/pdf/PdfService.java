@@ -14,9 +14,13 @@ import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+
 
 /**
  * Uses {@link PdfMapperService} to convert a given case into a Pdf Document.
@@ -111,14 +115,18 @@ public class PdfService {
                                            createPdfDocumentDescriptionFromCaseData(caseData));
     }
 
-    public PdfDecodedMultipartFile convertAcasCertificateToPdfDecodedMultipartFile(
-        CaseData caseData, AcasCertificate acasCertificate) {
-        byte[] pdfData = Base64.getDecoder().decode(acasCertificate.getCertificateDocument());
-        return new PdfDecodedMultipartFile(pdfData,
-                                           createPdfDocumentNameFromCaseDataAndAcasCertificate(caseData,
-                                                                                               acasCertificate),
-                                           PDF_FILE_TIKA_CONTENT_TYPE,
-                                           createPdfDocumentDescriptionFromCaseDataAndAcasCertificate(caseData,
-                                                                                                      acasCertificate));
+    public List<PdfDecodedMultipartFile> convertAcasCertificatesToPdfDecodedMultipartFiles(
+        CaseData caseData, List<AcasCertificate> acasCertificates) {
+        List<PdfDecodedMultipartFile> pdfDecodedMultipartFiles = new ArrayList<>();
+        for (AcasCertificate acasCertificate : acasCertificates) {
+            byte[] pdfData = Base64.getDecoder().decode(acasCertificate.getCertificateDocument());
+            pdfDecodedMultipartFiles.add(new PdfDecodedMultipartFile(pdfData,
+                                        createPdfDocumentNameFromCaseDataAndAcasCertificate(caseData,
+                                                                                            acasCertificate),
+                                        PDF_FILE_TIKA_CONTENT_TYPE,
+                                        createPdfDocumentDescriptionFromCaseDataAndAcasCertificate(caseData,
+                                                                                                   acasCertificate)));
+        }
+        return pdfDecodedMultipartFiles;
     }
 }

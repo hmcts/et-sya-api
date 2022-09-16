@@ -130,7 +130,7 @@ public class AcasService {
     public List<AcasCertificate> getAcasCertificatesByCaseData(CaseData caseData)
         throws AcasException, InvalidAcasNumbersException {
         List<String> acasCertificateNumbers = new ArrayList<>();
-        if (caseData.getRespondentCollection() != null && caseData.getRespondentCollection().size() > 0) {
+        if (caseData.getRespondentCollection() != null && !caseData.getRespondentCollection().isEmpty()) {
             for (RespondentSumTypeItem respondentSumTypeItem : caseData.getRespondentCollection()) {
                 if (respondentSumTypeItem.getValue() != null
                     && !StringUtils.isEmpty(respondentSumTypeItem.getValue().getRespondentAcas())) {
