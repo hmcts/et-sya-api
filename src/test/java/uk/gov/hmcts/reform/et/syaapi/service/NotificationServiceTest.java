@@ -34,10 +34,10 @@ class NotificationServiceTest {
 
     private static final String TEST_EMAIL = "TEST@GMAIL.COM";
 
-    private static final String SUBMIT_CASE_CONFIRMATION_TEST_EMAIL = "mehmet.dede@justice.gov.uk";
-    private static final String SUBMIT_CASE_CONFIRMATION_FIRST_NAME = "First Name";
-    private static final String SUBMIT_CASE_CONFIRMATION_LAST_NAME = "Last";
-    private static final String SUBMIT_CASE_CONFIRMATION_LINK = "https://test_link.com";
+    private static final String SUBMIT_CASE_CONFIRMATION_TEST_EMAIL = "mehmet@tdmehmet.com";
+    private static final String SUBMIT_CASE_CONFIRMATION_TITLE = "Mr.";
+    private static final String SUBMIT_CASE_CONFIRMATION_LAST_NAME = "Smith";
+    private static final String SUBMIT_CASE_CONFIRMATION_CASE_NUMBER = "1234567/22";
 
     @MockBean
     private NotificationService notificationService;
@@ -150,38 +150,47 @@ class NotificationServiceTest {
     void shouldSendSubmitCaseConfirmationEmail() {
         NotificationsProperties notificationsProperties = new NotificationsProperties();
         notificationsProperties
-            .setGovNotifyApiKey("case_submit_confirmation-8058954c-f9ec-45ef-aa6f-"
-                                    + "ab6d35fe58a8-e2eebc97-46fb-4b54-986b-843b8d099a90");
+            .setGovNotifyApiKey("et1live-21beac2b-d979-4771-bbb5-e34b62cba543-6ce0eb4b-98ee-45a1-8b0c-5345f3754423");
+        // et1test-21beac2b-d979-4771-bbb5-e34b62cba543-caf93a67-ba77-4b35-8715-1ef73636ab41
+        notificationsProperties.setSubmitCaseEmailTemplateId("4f4b378e-238a-46ed-ae1c-26b8038192f0");
+        notificationsProperties.setCitizenPortalLink("https://www.gov.uk/log-in-register-hmrc-online-services");
         NotificationClient notificationClient1 = new NotificationClient(notificationsProperties.getGovNotifyApiKey());
         notificationService = new NotificationService(notificationClient1);
         SendEmailResponse sendEmailResponse = notificationService.sendSubmitCaseConfirmationEmail(
-            SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID,
+            notificationsProperties.getSubmitCaseEmailTemplateId(),
             SUBMIT_CASE_CONFIRMATION_TEST_EMAIL,
             REFERENCE_STRING,
-            SUBMIT_CASE_CONFIRMATION_FIRST_NAME,
+            SUBMIT_CASE_CONFIRMATION_TITLE,
             SUBMIT_CASE_CONFIRMATION_LAST_NAME,
-            SUBMIT_CASE_CONFIRMATION_LINK);
+            SUBMIT_CASE_CONFIRMATION_CASE_NUMBER,
+            notificationsProperties.getCitizenPortalLink());
         assertThat(sendEmailResponse.getNotificationId()).isNotNull();
     }
 
     @Test
-    void shouldThrowNotificationExceptionWhenNotAbleToSendEmailBySendSubmitCaseConfirmationEmail() {
-        when(notificationService.sendSubmitCaseConfirmationEmail(
+    void shouldThrowNotificationExceptionWhenNotAbleToSendEmailBySendSubmitCaseConfirmationEmail()
+        throws NotificationClientException {
+        ConcurrentHashMap<String, String> submitCaseParameters = new ConcurrentHashMap<>();
+        submitCaseParameters.put("title", SUBMIT_CASE_CONFIRMATION_TITLE);
+        submitCaseParameters.put("lastName", SUBMIT_CASE_CONFIRMATION_LAST_NAME);
+        submitCaseParameters.put("caseNumber", SUBMIT_CASE_CONFIRMATION_CASE_NUMBER);
+        submitCaseParameters.put("citizenPortalLink", "https://www.gov.uk/log-in-register-hmrc-online-services");
+        when(notificationClient.sendEmail(
             SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID,
             SUBMIT_CASE_CONFIRMATION_TEST_EMAIL,
-            REFERENCE_STRING,
-            SUBMIT_CASE_CONFIRMATION_FIRST_NAME,
-            SUBMIT_CASE_CONFIRMATION_LAST_NAME,
-            SUBMIT_CASE_CONFIRMATION_LINK
+            submitCaseParameters,
+            REFERENCE_STRING
         )).thenThrow(new NotificationException(new Exception("Error while trying to sending notification to client")));
-
-        assertThrows(NotificationException.class, () ->
+        NotificationException notificationException = assertThrows(NotificationException.class, () ->
                      notificationService.sendSubmitCaseConfirmationEmail(
-            SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID,
-            SUBMIT_CASE_CONFIRMATION_TEST_EMAIL,
-            REFERENCE_STRING,
-            SUBMIT_CASE_CONFIRMATION_FIRST_NAME,
-            SUBMIT_CASE_CONFIRMATION_LAST_NAME,
-            SUBMIT_CASE_CONFIRMATION_LINK));
+                         SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID,
+                         SUBMIT_CASE_CONFIRMATION_TEST_EMAIL,
+                         REFERENCE_STRING,
+                         submitCaseParameters.get("title"),
+                         submitCaseParameters.get("lastName"),
+                         submitCaseParameters.get("caseNumber"),
+                         submitCaseParameters.get("citizenPortalLink")));
+        assertThat(notificationException.getMessage())
+            .isEqualTo("java.lang.Exception: Error while trying to sending notification to client");
     }
 }

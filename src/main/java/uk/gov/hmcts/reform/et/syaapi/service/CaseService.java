@@ -25,7 +25,6 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
-// import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
@@ -206,13 +205,16 @@ public class CaseService {
                                                           caseData.getEcmCaseType(),
                                                           casePdfFile,
                                                           acasCertificates));
+        NotificationsProperties notificationsProperties = new NotificationsProperties();
         notificationService
-            .sendSubmitCaseConfirmationEmail(new NotificationsProperties().getSampleEmailTemplateId(),
-                                             caseData.getClaimantType().getClaimantEmailAddress(),
-                                             caseData.getEcmCaseType(),
-                                             caseData.getClaimantIndType().claimantFullName(),
-                                             caseData.getClaimantIndType().getClaimantLastName(),
-                                             "");
+            .sendSubmitCaseConfirmationEmail(
+                notificationsProperties.getSubmitCaseEmailTemplateId(),
+                caseData.getClaimantType().getClaimantEmailAddress(),
+                caseData.getEcmCaseType(),
+                caseData.getClaimantIndType().getClaimantTitle(),
+                caseData.getClaimantIndType().getClaimantLastName(),
+                caseData.getStartCaseRefNumber(),
+                notificationsProperties.getCitizenPortalLink());
         return caseDetails;
     }
 

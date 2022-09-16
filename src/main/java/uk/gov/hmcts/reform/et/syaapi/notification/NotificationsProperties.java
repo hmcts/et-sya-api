@@ -25,4 +25,12 @@ public class NotificationsProperties {
     @Value("${notifications.sampleSubmitCaseEmailTemplateId}")
     @NotEmpty
     private String sampleSubmitCaseEmailTemplateId;
+
+    @Value("4f4b378e-238a-46ed-ae1c-26b8038192f0")
+    @NotEmpty
+    private String submitCaseEmailTemplateId;
+
+    @Value("https://www.gov.uk/log-in-register-hmrc-online-services")
+    @NotEmpty
+    private String citizenPortalLink;
 }

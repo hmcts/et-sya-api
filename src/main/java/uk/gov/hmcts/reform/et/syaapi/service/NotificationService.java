@@ -46,18 +46,19 @@ public class NotificationService {
     public SendEmailResponse sendSubmitCaseConfirmationEmail(String templateId,
                                                              String targetEmail,
                                                              String reference,
-                                                             String firstName,
-                                                             String secondName,
-                                                             String link) {
+                                                             String title,
+                                                             String lastName,
+                                                             String caseNumber,
+                                                             String citizenPortalLink) {
         SendEmailResponse sendEmailResponse;
         try {
             Map<String, String> parameters = new ConcurrentHashMap<>();
-            parameters.put("firstName", firstName);
-            parameters.put("secondName", secondName);
-            parameters.put("link", link);
+            parameters.put("title", title);
+            parameters.put("lastName", lastName);
+            parameters.put("caseNumber", caseNumber);
+            parameters.put("citizenPortalLink", citizenPortalLink);
             sendEmailResponse = notificationClient.sendEmail(templateId, targetEmail, parameters, reference);
         } catch (NotificationClientException ne) {
-            log.error("Error while trying to sending notification to client", ne);
             throw new NotificationException(ne);
         }
         return sendEmailResponse;
