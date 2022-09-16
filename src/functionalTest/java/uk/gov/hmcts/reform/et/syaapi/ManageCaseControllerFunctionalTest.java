@@ -9,14 +9,21 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.mockito.Mockito;
+import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.AcasException;
+import uk.gov.hmcts.reform.et.syaapi.service.AcasService;
+import uk.gov.hmcts.reform.et.syaapi.service.InvalidAcasNumbersException;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
 
 @Slf4j
 @TestMethodOrder(MethodOrderer.MethodName.class)
@@ -109,13 +116,18 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
             .assertThat().body("case_data.claimantType.claimant_email_address", equalTo(CLAIMANT_EMAIL));
     }
 
-    /*@Test
-    void stage5SubmitCaseShouldReturnSubmittedCaseDetails() {
+    @Test
+    void stage5SubmitCaseShouldReturnSubmittedCaseDetails() throws AcasException, InvalidAcasNumbersException {
         CaseRequest caseRequest = CaseRequest.builder()
             .caseId(caseId.toString())
             .caseTypeId(CASE_TYPE)
             .build();
 
+        AcasService acasService = Mockito.mock(AcasService.class);
+        when(
+            acasService.getAcasCertificatesByCaseData(
+                EmployeeObjectMapper.mapCaseRequestToCaseData(new ConcurrentHashMap<>())))
+            .thenReturn(new ArrayList<>());
         RestAssured.given()
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
@@ -126,5 +138,5 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
             .log().all(true)
             .assertThat().body("id", equalTo(caseId))
             .assertThat().body("state", equalTo("Submitted"));
-    }*/
+    }
 }

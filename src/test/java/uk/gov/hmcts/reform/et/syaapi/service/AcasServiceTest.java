@@ -263,7 +263,7 @@ class AcasServiceTest {
     @Test
     void theGetAcasCertificatesByCaseData() throws AcasException, InvalidAcasNumbersException {
         List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(caseData);
-        assertThat(acasCertificates.size()).isEqualTo(2);
+        assertThat(acasCertificates).hasSize(2);
     }
 
     public static class DelegateResponseCreator implements ResponseCreator {
