@@ -5,6 +5,7 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.retry.annotation.Retryable;
@@ -31,6 +32,7 @@ import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -292,6 +294,24 @@ public class CaseService {
             true,
             caseDataContent
         );
+    }
+
+    /** Given a datetime, this method will return a list of caseIds which have been modified since the datetime
+     * provided.
+     * @param authorisation used for IDAM authentication for the query
+     * @param requestDateTime used as the query parameter
+     * @return a list of caseIds
+     */
+    public List<Long> getLastModifiedCasesId(String authorisation, LocalDateTime requestDateTime) {
+        BoolQueryBuilder boolQueryBuilder = boolQuery()
+            .filter(new RangeQueryBuilder("last_modified").gte(requestDateTime));
+        String query = new SearchSourceBuilder()
+            .query(boolQueryBuilder)
+            .toString();
+        return searchEnglandScotlandCases(authorisation, query)
+            .stream()
+            .map(CaseDetails::getId)
+            .collect(toList());
     }
 
     /**

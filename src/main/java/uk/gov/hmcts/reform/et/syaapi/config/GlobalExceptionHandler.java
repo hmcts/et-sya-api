@@ -8,10 +8,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import uk.gov.hmcts.reform.authorisation.exceptions.InvalidTokenException;
+import uk.gov.hmcts.reform.et.syaapi.config.interceptors.ResourceNotFoundException;
 import uk.gov.hmcts.reform.et.syaapi.config.interceptors.UnAuthorisedServiceException;
 import uk.gov.hmcts.reform.et.syaapi.models.ErrorResponse;
 
 import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @Slf4j
@@ -61,6 +63,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             ErrorResponse.builder()
                 .message(exception.getLocalizedMessage())
                 .code(exception.getStatus().value())
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    protected ResponseEntity<Object> handleResourceNotFoundException(final ResourceNotFoundException exception) {
+        return ResponseEntity.status(NOT_FOUND).body(
+            ErrorResponse.builder()
+                .message(exception.getMessage())
+                .code(NOT_FOUND.value())
                 .build()
         );
     }

@@ -1,6 +1,10 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.EqualsAndHashCode;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.RangeQueryBuilder;
+import org.elasticsearch.index.query.TermsQueryBuilder;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -30,6 +34,8 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +53,7 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUT
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"PMD.TooManyFields"})
+@SuppressWarnings({"PMD.TooManyFields", "PMD.TooManyMethods"})
 class CaseServiceTest {
     private static final String CASE_TYPE = "ET_Scotland";
     private static final String CASE_ID = "TEST_CASE_ID";
@@ -384,5 +390,142 @@ class CaseServiceTest {
         );
 
         assertEquals(caseDetails, expectedDetails);
+    }
+    @Test
+    void shouldLastModifiedCasesIdWhenCaseFoundThenCaseId() {
+        LocalDateTime requestDateTime =
+            LocalDateTime.parse("2022-09-01T12:34:00", DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+
+        SearchResult englandWalesSearchResult = SearchResult.builder()
+            .total(1)
+            .cases(requestCaseDataListEngland)
+            .build();
+        SearchResult scotlandSearchResult = SearchResult.builder()
+            .total(2)
+            .cases(requestCaseDataListScotland)
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.ENGLAND_CASE_TYPE,
+            generateCaseDataEsQueryWithDate(requestDateTime)
+        )).thenReturn(englandWalesSearchResult);
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            generateCaseDataEsQueryWithDate(requestDateTime)
+        )).thenReturn(scotlandSearchResult);
+
+        assertThat(caseService.getLastModifiedCasesId(TEST_SERVICE_AUTH_TOKEN, requestDateTime))
+            .hasSize(3)
+            .isEqualTo(List.of(1_646_225_213_651_598L, 1_646_225_213_651_533L, 1_646_225_213_651_512L));
+    }
+
+    @Test
+    void shouldLastModifiedCasesIdWhenNoCaseFoundThenEmpty() {
+        LocalDateTime requestDateTime =
+            LocalDateTime.parse("2022-09-01T12:34:00", DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+
+        SearchResult englandWalesSearchResult = SearchResult.builder()
+            .total(0)
+            .cases(null)
+            .build();
+        SearchResult scotlandSearchResult = SearchResult.builder()
+            .total(0)
+            .cases(null)
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.ENGLAND_CASE_TYPE,
+            generateCaseDataEsQueryWithDate(requestDateTime)
+        )).thenReturn(englandWalesSearchResult);
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            generateCaseDataEsQueryWithDate(requestDateTime)
+        )).thenReturn(scotlandSearchResult);
+
+        assertThat(caseService.getLastModifiedCasesId(TEST_SERVICE_AUTH_TOKEN, requestDateTime))
+            .isEmpty();
+    }
+
+    private String generateCaseDataEsQueryWithDate(LocalDateTime requestDateTime) {
+        BoolQueryBuilder boolQueryBuilder = boolQuery()
+            .filter(new RangeQueryBuilder("last_modified").gte(requestDateTime));
+        return new SearchSourceBuilder()
+            .query(boolQueryBuilder)
+            .toString();
+    }
+
+    @Test
+    void shouldReturnCaseData() throws IOException {
+        List<String> caseIds = List.of("1646225213651598", "1646225213651533", "1646225213651512");
+        SearchResult englandWalesSearchResult = SearchResult.builder()
+            .total(1)
+            .cases(requestCaseDataListEngland)
+            .build();
+        SearchResult scotlandSearchResult = SearchResult.builder()
+            .total(2)
+            .cases(requestCaseDataListScotland)
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.ENGLAND_CASE_TYPE, generateCaseDataEsQuery(caseIds)
+        )).thenReturn(englandWalesSearchResult);
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.SCOTLAND_CASE_TYPE, generateCaseDataEsQuery(caseIds)
+        )).thenReturn(scotlandSearchResult);
+
+        List<CaseDetails> caseDetailsList = caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, caseIds);
+        assertThat(caseDetailsList).hasSize(3);
+        assertThat(caseDetailsList).isEqualTo(expectedCaseDataListCombined);
+    }
+
+    @Test
+    void shouldReturnCaseDataNoCasesFound() throws IOException {
+        List<String> caseIds = List.of("1646225213651598", "1646225213651533");
+        SearchResult englandWalesSearchResult = SearchResult.builder()
+            .total(0)
+            .cases(null)
+            .build();
+        SearchResult scotlandSearchResult = SearchResult.builder()
+            .total(0)
+            .cases(null)
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.ENGLAND_CASE_TYPE, generateCaseDataEsQuery(caseIds)
+        )).thenReturn(englandWalesSearchResult);
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.SCOTLAND_CASE_TYPE, generateCaseDataEsQuery(caseIds)
+        )).thenReturn(scotlandSearchResult);
+
+        List<CaseDetails> caseDetailsList = caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, caseIds);
+        assertThat(caseDetailsList).isEmpty();
+    }
+
+    private String generateCaseDataEsQuery(List<String> caseIds) {
+        BoolQueryBuilder boolQueryBuilder = boolQuery()
+            .filter(new TermsQueryBuilder("reference.keyword", caseIds));
+        return new SearchSourceBuilder()
+            .query(boolQueryBuilder)
+            .toString();
     }
 }
