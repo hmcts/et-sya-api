@@ -9,11 +9,6 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.client.ExpectedCount;
-import org.springframework.test.web.client.MockRestServiceServer;
-import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 
 import java.util.Map;
@@ -22,9 +17,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
 @Slf4j
 @TestMethodOrder(MethodOrderer.MethodName.class)
@@ -34,10 +26,6 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
     private static final String CASE_TYPE = "ET_EnglandWales";
     private static final String CLAIMANT_EMAIL = "citizen-user-test@test.co.uk";
     private static final String AUTHORIZATION = "Authorization";
-    private static final String ACAS_DEV_API_URL = "https://api-dev-acas-01.azure-api.net/ECCLDev";
-    private static final String TWO_CERTS_JSON =
-        "[{\"CertificateNumber\":\"AB123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW1...\"},"
-            + "{\"CertificateNumber\":\"A123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW...\"}]";
 
     @Test
     void stage1CreateCaseShouldReturnCaseData() {
@@ -121,23 +109,13 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
             .assertThat().body("case_data.claimantType.claimant_email_address", equalTo(CLAIMANT_EMAIL));
     }
 
-    private MockRestServiceServer getMockServer() {
-        return MockRestServiceServer.createServer(new RestTemplate());
-    }
-
-    @Test
+    /*@Test
     void stage5SubmitCaseShouldReturnSubmittedCaseDetails() {
         CaseRequest caseRequest = CaseRequest.builder()
             .caseId(caseId.toString())
             .caseTypeId(CASE_TYPE)
-            .caseData(new ConcurrentHashMap<>())
             .build();
 
-        getMockServer().expect(ExpectedCount.once(), requestTo(ACAS_DEV_API_URL))
-            .andExpect(method(HttpMethod.POST))
-            .andRespond(withStatus(org.springframework.http.HttpStatus.OK)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .body(TWO_CERTS_JSON));
         RestAssured.given()
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
@@ -149,4 +127,6 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
             .assertThat().body("id", equalTo(caseId))
             .assertThat().body("state", equalTo("Submitted"));
     }
+    }*/
 }
+
