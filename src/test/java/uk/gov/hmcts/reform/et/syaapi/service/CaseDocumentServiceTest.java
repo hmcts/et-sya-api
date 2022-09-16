@@ -41,7 +41,6 @@ class CaseDocumentServiceTest {
     private static final String CASE_TYPE = "ET_EnglandWales";
     private static final String MOCK_TOKEN = "Bearer Token";
     private static final String MOCK_HREF = "http://test:8080/img";
-    private static final String MOCK_HREF_MALFORMED = "http:/test:80/";
     private static final String EMPTY_DOCUMENT_MESSAGE = "Document management failed uploading file: " + DOCUMENT_NAME;
     private static final String SERVER_ERROR_MESSAGE = "Failed to upload Case Document";
     private static final String FILE_DOES_NOT_PASS_VALIDATION = "File does not pass validation";
@@ -93,8 +92,6 @@ class CaseDocumentServiceTest {
         + "\"claim-submit.png\",\"_links\":{\"self\":{}}]}";
     private static final String MOCK_RESPONSE_INCORRECT = "{\"doucments\":[{\"originalDocumentName\":"
         + "\"claim-submit.png\",\"_links\":{\"self\":{\"href\": \"" + MOCK_HREF + "\"}}}]}";
-    private static final String MOCK_RESPONSE_WITH_MALFORMED_URI = RESPONSE_BODY
-        + "\"claim-submit.png\",\"_links\":{\"self\":{\"href\": \"" + MOCK_HREF_MALFORMED + "\"}}}]}";
     private static final String MOCK_RESPONSE_WITHOUT_SELF = RESPONSE_BODY
         + "\"claim-submit.png\",\"_links\":{}}]}";
     private final String fullJsonResponse;
@@ -336,22 +333,6 @@ class CaseDocumentServiceTest {
 
         assertThat(documentException.getMessage())
             .isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
-    }
-
-    @Test
-    void theUploadDocWhenResponseUriInvalidProducesException() {
-        mockServer.expect(ExpectedCount.max(MAX_API_CALL_ATTEMPTS), requestTo(DOCUMENT_UPLOAD_API_URL))
-            .andExpect(method(HttpMethod.POST))
-            .andRespond(withStatus(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(MOCK_RESPONSE_WITH_MALFORMED_URI));
-
-        CaseDocumentException documentException = assertThrows(
-            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
-                MOCK_TOKEN, CASE_TYPE, MOCK_FILE));
-
-        assertThat(documentException.getMessage())
-            .isEqualTo(EMPTY_DOCUMENT_MESSAGE);
     }
 
     @Test
