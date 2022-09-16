@@ -18,16 +18,16 @@ import java.util.Map;
 @Builder
 public class DocumentDetailsResponse {
 
-    Classification classification;
-    Long size;
-    String mimeType;
-    String originalDocumentName;
-    String hashToken;
-    Date createdOn;
-    String createdBy;
-    String lastModifiedBy;
-    Date modifiedOn;
-    Date ttl;
-    Map<String, String> metadata;
+    private Classification classification;
+    private Long size;
+    private String mimeType;
+    private String originalDocumentName;
+    private String hashToken;
+    private Date createdOn;
+    private String createdBy;
+    private String lastModifiedBy;
+    private Date modifiedOn;
+    private Date ttl;
+    private Map<String, String> metadata;
 
 }
