@@ -9,21 +9,27 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.mockito.Mockito;
-import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.ClientHttpRequest;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.test.web.client.ExpectedCount;
+import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.test.web.client.ResponseCreator;
+import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
-import uk.gov.hmcts.reform.et.syaapi.service.AcasException;
-import uk.gov.hmcts.reform.et.syaapi.service.AcasService;
-import uk.gov.hmcts.reform.et.syaapi.service.InvalidAcasNumbersException;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
 @Slf4j
 @TestMethodOrder(MethodOrderer.MethodName.class)
@@ -33,6 +39,10 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
     private static final String CASE_TYPE = "ET_EnglandWales";
     private static final String CLAIMANT_EMAIL = "citizen-user-test@test.co.uk";
     private static final String AUTHORIZATION = "Authorization";
+    private static final String ACAS_DEV_API_URL = "https://api-dev-acas-01.azure-api.net/ECCLDev";
+    private static final String TWO_CERTS_JSON =
+        "[{\"CertificateNumber\":\"AB123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW1...\"},"
+            + "{\"CertificateNumber\":\"A123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW...\"}]";
 
     @Test
     void stage1CreateCaseShouldReturnCaseData() {
@@ -116,18 +126,40 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
             .assertThat().body("case_data.claimantType.claimant_email_address", equalTo(CLAIMANT_EMAIL));
     }
 
+    private MockRestServiceServer getMockServer() {
+        return MockRestServiceServer.createServer(new RestTemplate());
+    }
+
+    private static class DelegateResponseCreator implements ResponseCreator {
+        private final ResponseCreator[] delegates;
+        private int toExecute;
+
+        public DelegateResponseCreator(ResponseCreator... delegates) {
+            this.delegates = Arrays.copyOf(delegates, delegates.length);
+        }
+
+        @Override
+        public ClientHttpResponse createResponse(ClientHttpRequest request)
+            throws IOException {
+            return this.delegates[toExecute++ % delegates.length]
+                .createResponse(request);
+        }
+    }
+
     @Test
-    void stage5SubmitCaseShouldReturnSubmittedCaseDetails() throws AcasException, InvalidAcasNumbersException {
+    void stage5SubmitCaseShouldReturnSubmittedCaseDetails() {
         CaseRequest caseRequest = CaseRequest.builder()
             .caseId(caseId.toString())
             .caseTypeId(CASE_TYPE)
+            .caseData(new ConcurrentHashMap<>())
             .build();
 
-        AcasService acasService = Mockito.mock(AcasService.class);
-        when(
-            acasService.getAcasCertificatesByCaseData(
-                EmployeeObjectMapper.mapCaseRequestToCaseData(new ConcurrentHashMap<>())))
-            .thenReturn(new ArrayList<>());
+        getMockServer().expect(ExpectedCount.times(2), requestTo(ACAS_DEV_API_URL))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(new DelegateResponseCreator(withStatus(org.springframework.http.HttpStatus.UNAUTHORIZED),
+                                                    withStatus(org.springframework.http.HttpStatus.OK)
+                                                        .contentType(MediaType.APPLICATION_JSON)
+                                                        .body(TWO_CERTS_JSON)));
         RestAssured.given()
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
