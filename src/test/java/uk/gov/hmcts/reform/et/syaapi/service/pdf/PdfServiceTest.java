@@ -17,9 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.test.util.ReflectionTestUtils;
-import uk.gov.hmcts.et.common.model.ccd.CaseData;
-import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
-import uk.gov.hmcts.reform.et.syaapi.helper.TestModelCreator;
+import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 
@@ -48,7 +46,7 @@ class PdfServiceTest {
         PdfMapperConstants.DATE_RECEIVED, Optional.of("")
     );
 
-    private CaseData caseData;
+    private TestData testData;
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME = "pdfTemplateSource";
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE = "classpath:ET1_0922.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
@@ -65,7 +63,7 @@ class PdfServiceTest {
 
     @BeforeEach
     void beforeEach() {
-        caseData = EmployeeObjectMapper.mapCaseRequestToCaseData(TestModelCreator.createRequestCaseData());
+        testData = new TestData();
         ReflectionTestUtils.setField(pdfService,
                                      PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
                                      PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
@@ -73,8 +71,8 @@ class PdfServiceTest {
 
     @Test
     void givenPdfValuesProducesAPdfDocument() throws PdfServiceException, IOException {
-        when(pdfMapperService.mapHeadersToPdf(caseData)).thenReturn(PDF_VALUES);
-        byte[] pdfBytes = pdfService.convertCaseToPdf(caseData);
+        when(pdfMapperService.mapHeadersToPdf(testData.getTestCaseData())).thenReturn(PDF_VALUES);
+        byte[] pdfBytes = pdfService.convertCaseToPdf(testData.getTestCaseData());
         try (PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
             Map<String, Optional<String>> actualPdfValues = processPdf(actualPdf);
             PDF_VALUES.forEach((k, v) -> assertThat(actualPdfValues).containsEntry(k, v));
@@ -88,7 +86,7 @@ class PdfServiceTest {
                                      "dummy_source");
         assertThrows(
             PdfServiceException.class,
-            () -> pdfService.convertCaseToPdf(caseData));
+            () -> pdfService.convertCaseToPdf(testData.getTestCaseData()));
         ReflectionTestUtils.setField(pdfService,
                                      PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
                                      PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
@@ -96,8 +94,8 @@ class PdfServiceTest {
 
     @Test
     void givenNullValuesProducesDocumentWithoutGivenValues() throws PdfServiceException, IOException {
-        when(pdfMapperService.mapHeadersToPdf(caseData)).thenReturn(PDF_VALUES_WITH_NULL);
-        byte[] pdfBytes = pdfService.convertCaseToPdf(caseData);
+        when(pdfMapperService.mapHeadersToPdf(testData.getTestCaseData())).thenReturn(PDF_VALUES_WITH_NULL);
+        byte[] pdfBytes = pdfService.convertCaseToPdf(testData.getTestCaseData());
         try (PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
             Map<String, Optional<String>> actualPdfValues = processPdf(actualPdf);
             PDF_VALUES_WITH_NULL.forEach((k, v) -> assertThat(actualPdfValues).containsEntry(k, v));
@@ -131,7 +129,7 @@ class PdfServiceTest {
     void shouldCreatePdfFile() throws IOException {
         PdfService pdfService1 = new PdfService(new PdfMapperService());
         pdfService1.pdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE;
-        byte[] pdfData = pdfService1.createPdf(caseData);
+        byte[] pdfData = pdfService1.createPdf(testData.getTestCaseData());
         assertThat(pdfData).isNotEmpty();
         assertThat(new Tika().detect(pdfData)).isEqualTo(PDF_FILE_TIKA_CONTENT_TYPE);
     }
@@ -139,7 +137,7 @@ class PdfServiceTest {
     @Test
     void shouldCreatePdfDecodedMultipartFileFromCaseData() throws PdfServiceException {
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData);
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getTestCaseData());
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
 
@@ -148,7 +146,7 @@ class PdfServiceTest {
         List<AcasCertificate> acasCertificates = new ArrayList<>();
         acasCertificates.add(acasCertificate);
         List<PdfDecodedMultipartFile> pdfDecodedMultipartFiles =
-            pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(caseData, acasCertificates);
+            pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(testData.getTestCaseData(), acasCertificates);
         assertThat(pdfDecodedMultipartFiles).hasSize(1);
     }
 }

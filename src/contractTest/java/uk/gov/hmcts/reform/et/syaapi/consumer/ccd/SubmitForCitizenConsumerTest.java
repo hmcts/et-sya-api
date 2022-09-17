@@ -42,7 +42,7 @@ class SubmitForCitizenConsumerTest extends SpringBootContractBaseTest {
     @SneakyThrows
     @PactTestFor(pactMethod = "submitForCitizen")
     void verifySubmitForCitizen() {
-        Et1CaseData caseData = ResourceLoader.fromString("requests/caseData.json", Et1CaseData.class);
+        Et1CaseData caseData = ResourceLoader.fromString("requests/caseData_old.json", Et1CaseData.class);
 
         CaseDataContent caseDataContent = CaseDataContent.builder()
             .event(Event.builder().id(INITIATE_CASE_DRAFT).build())

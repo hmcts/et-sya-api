@@ -65,6 +65,7 @@ public class CaseService {
     private final CaseDocumentService caseDocumentService;
     private final NotificationService notificationService;
     private final PdfService pdfService;
+    private final NotificationsProperties notificationsProperties;
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
@@ -205,12 +206,11 @@ public class CaseService {
                                                           caseData.getEcmCaseType(),
                                                           casePdfFile,
                                                           acasCertificates));
-        NotificationsProperties notificationsProperties = new NotificationsProperties();
         notificationService
             .sendSubmitCaseConfirmationEmail(
                 notificationsProperties.getSubmitCaseEmailTemplateId(),
                 caseData.getClaimantType().getClaimantEmailAddress(),
-                caseData.getEcmCaseType(),
+                caseRequest.getCaseId(),
                 caseData.getClaimantIndType().getClaimantTitle(),
                 caseData.getClaimantIndType().getClaimantLastName(),
                 caseData.getStartCaseRefNumber(),

@@ -46,7 +46,7 @@ class AcasServiceTest {
     public static final String R123456_13_14 = "R123456/13/14";
     private AcasService acasService;
     private final CaseData caseData = ResourceLoader.fromString(
-        "requests/caseData.json",
+        "requests/caseData_old.json",
         CaseData.class
     );
 

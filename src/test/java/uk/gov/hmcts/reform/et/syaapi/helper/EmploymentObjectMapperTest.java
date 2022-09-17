@@ -6,24 +6,27 @@ import org.mockito.Mock;
 import org.springframework.context.annotation.Import;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
+import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.et.syaapi.helper.TestModelCreator.TYPE_OF_CLAIM_BREACH_OF_CONTRACT;
-import static uk.gov.hmcts.reform.et.syaapi.helper.TestModelCreator.TYPE_OF_CLAIM_DISCRIMINATION;
-import static uk.gov.hmcts.reform.et.syaapi.helper.TestModelCreator.TYPE_OF_CLAIM_PAY_RELATED_CLAIM;
-import static uk.gov.hmcts.reform.et.syaapi.helper.TestModelCreator.TYPE_OF_CLAIM_UNFAIR_DISMISSAL;
-import static uk.gov.hmcts.reform.et.syaapi.helper.TestModelCreator.TYPE_OF_CLAIM_WHISTLE_BLOWING;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TYPE_OF_CLAIM_BREACH_OF_CONTRACT;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TYPE_OF_CLAIM_DISCRIMINATION;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TYPE_OF_CLAIM_PAY_RELATED_CLAIM;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TYPE_OF_CLAIM_UNFAIR_DISMISSAL;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TYPE_OF_CLAIM_WHISTLE_BLOWING;
 
 @Import(EmployeeObjectMapper.class)
 class EmploymentObjectMapperTest {
     @Mock
     private EmployeeObjectMapper employmentObjectMapper;
+    private TestData testData;
 
     @BeforeEach
-    void setUp() {
+    void beforeEach() {
         employmentObjectMapper = new EmployeeObjectMapper();
+        testData = new TestData();
     }
 
     @Test
@@ -39,10 +42,9 @@ class EmploymentObjectMapperTest {
     }
 
     @Test
-    void shouldGetCaseData() {
-        Map<String, Object> requestCaseData = TestModelCreator.createRequestCaseData();
+    void shouldMapCaseRequestToCaseData() {
+        Map<String, Object> requestCaseData = testData.getTestCaseRequestCaseDataMap();
         CaseData caseData = EmployeeObjectMapper.mapCaseRequestToCaseData(requestCaseData);
-
         assertThat(caseData.getTypeOfClaim().get(0)).isEqualTo(TYPE_OF_CLAIM_DISCRIMINATION);
         assertThat(caseData.getTypeOfClaim().get(1)).isEqualTo(TYPE_OF_CLAIM_BREACH_OF_CONTRACT);
         assertThat(caseData.getTypeOfClaim().get(2)).isEqualTo(TYPE_OF_CLAIM_PAY_RELATED_CLAIM);
