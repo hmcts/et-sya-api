@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Import;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.INITIATE_CASE_DRAFT;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.SUBMIT_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.UPDATE_CASE_DRAFT;
 
 @Import(CaseEvent.class)
@@ -16,8 +17,13 @@ class CaseEventTest {
     }
 
     @Test
-    void shouldGetSubmitEventName() {
+    void shouldGetDraftEventName() {
         assertThat(INITIATE_CASE_DRAFT.equalsIgnoreCase(String.valueOf(CaseEvent.INITIATE_CASE_DRAFT))).isTrue();
+    }
+
+    @Test
+    void shouldGetSubmitEventName() {
+        assertThat(SUBMIT_CASE_DRAFT.equalsIgnoreCase(String.valueOf(CaseEvent.SUBMIT_CASE_DRAFT))).isTrue();
     }
 
 }

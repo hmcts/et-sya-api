@@ -208,13 +208,13 @@ public class CaseService {
                                                           acasCertificates));
         notificationService
             .sendSubmitCaseConfirmationEmail(
-                notificationsProperties.getSubmitCaseEmailTemplateId(),
-                caseData.getClaimantType().getClaimantEmailAddress(),
-                caseRequest.getCaseId(),
-                caseData.getClaimantIndType().getClaimantTitle(),
-                caseData.getClaimantIndType().getClaimantLastName(),
-                caseData.getStartCaseRefNumber(),
-                notificationsProperties.getCitizenPortalLink());
+               notificationsProperties.getSubmitCaseEmailTemplateId(),
+               caseData.getClaimantType().getClaimantEmailAddress(),
+               caseRequest.getCaseId(),
+               caseData.getClaimantIndType().getClaimantTitle(),
+               caseData.getClaimantIndType().getClaimantLastName(),
+               caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString(),
+               notificationsProperties.getCitizenPortalLink());
         return caseDetails;
     }
 
@@ -292,7 +292,6 @@ public class CaseService {
                                     CaseDataContent caseDataContent, String caseType) {
         UserDetails userDetails = idamClient.getUserDetails(authorization);
         String s2sToken = authTokenGenerator.generate();
-
         return ccdApiClient.submitEventForCitizen(
             authorization,
             s2sToken,

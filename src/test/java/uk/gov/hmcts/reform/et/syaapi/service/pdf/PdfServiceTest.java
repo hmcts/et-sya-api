@@ -71,8 +71,8 @@ class PdfServiceTest {
 
     @Test
     void givenPdfValuesProducesAPdfDocument() throws PdfServiceException, IOException {
-        when(pdfMapperService.mapHeadersToPdf(testData.getTestCaseData())).thenReturn(PDF_VALUES);
-        byte[] pdfBytes = pdfService.convertCaseToPdf(testData.getTestCaseData());
+        when(pdfMapperService.mapHeadersToPdf(testData.getCaseData())).thenReturn(PDF_VALUES);
+        byte[] pdfBytes = pdfService.convertCaseToPdf(testData.getCaseData());
         try (PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
             Map<String, Optional<String>> actualPdfValues = processPdf(actualPdf);
             PDF_VALUES.forEach((k, v) -> assertThat(actualPdfValues).containsEntry(k, v));
@@ -86,7 +86,7 @@ class PdfServiceTest {
                                      "dummy_source");
         assertThrows(
             PdfServiceException.class,
-            () -> pdfService.convertCaseToPdf(testData.getTestCaseData()));
+            () -> pdfService.convertCaseToPdf(testData.getCaseData()));
         ReflectionTestUtils.setField(pdfService,
                                      PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
                                      PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
@@ -94,8 +94,8 @@ class PdfServiceTest {
 
     @Test
     void givenNullValuesProducesDocumentWithoutGivenValues() throws PdfServiceException, IOException {
-        when(pdfMapperService.mapHeadersToPdf(testData.getTestCaseData())).thenReturn(PDF_VALUES_WITH_NULL);
-        byte[] pdfBytes = pdfService.convertCaseToPdf(testData.getTestCaseData());
+        when(pdfMapperService.mapHeadersToPdf(testData.getCaseData())).thenReturn(PDF_VALUES_WITH_NULL);
+        byte[] pdfBytes = pdfService.convertCaseToPdf(testData.getCaseData());
         try (PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
             Map<String, Optional<String>> actualPdfValues = processPdf(actualPdf);
             PDF_VALUES_WITH_NULL.forEach((k, v) -> assertThat(actualPdfValues).containsEntry(k, v));
@@ -129,7 +129,7 @@ class PdfServiceTest {
     void shouldCreatePdfFile() throws IOException {
         PdfService pdfService1 = new PdfService(new PdfMapperService());
         pdfService1.pdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE;
-        byte[] pdfData = pdfService1.createPdf(testData.getTestCaseData());
+        byte[] pdfData = pdfService1.createPdf(testData.getCaseData());
         assertThat(pdfData).isNotEmpty();
         assertThat(new Tika().detect(pdfData)).isEqualTo(PDF_FILE_TIKA_CONTENT_TYPE);
     }
@@ -137,7 +137,7 @@ class PdfServiceTest {
     @Test
     void shouldCreatePdfDecodedMultipartFileFromCaseData() throws PdfServiceException {
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getTestCaseData());
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData());
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
 
@@ -146,7 +146,7 @@ class PdfServiceTest {
         List<AcasCertificate> acasCertificates = new ArrayList<>();
         acasCertificates.add(acasCertificate);
         List<PdfDecodedMultipartFile> pdfDecodedMultipartFiles =
-            pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(testData.getTestCaseData(), acasCertificates);
+            pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(testData.getCaseData(), acasCertificates);
         assertThat(pdfDecodedMultipartFiles).hasSize(1);
     }
 }

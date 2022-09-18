@@ -3,25 +3,34 @@ package uk.gov.hmcts.reform.et.syaapi.model;
 import lombok.Data;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
+import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
+import uk.gov.service.notify.SendEmailResponse;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.CASE_ID;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.INITIATE_CASE_DRAFT;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.UPDATE_CASE_DRAFT;
+
 
 @Data
 public final class TestData {
 
-    private final Et1CaseData testEt1CaseData = ResourceLoader.fromString(
+    private final Et1CaseData et1CaseData = ResourceLoader.fromString(
         "requests/caseData.json",
         Et1CaseData.class
     );
-    private final CaseData testCaseData = ResourceLoader.fromString(
+    private final CaseData caseData = ResourceLoader.fromString(
         "requests/caseData.json",
         CaseData.class
     );
@@ -49,35 +58,67 @@ public final class TestData {
         "responses/caseDetailsList.json",
         CaseDetails.class
     );
+    private final CaseDataContent submitCaseDataContent = ResourceLoader.fromString(
+        "requests/submitCaseDataContent.json",
+        CaseDataContent.class
+    );
+    private final List<DocumentTypeItem> uploadDocumentResponse = ResourceLoader.fromStringToList(
+        "responses/documentTypeItemList.json",
+        DocumentTypeItem.class
+    );
 
-    public Map<String, Object> getTestCaseRequestCaseDataMap() {
+
+    public Map<String, Object> getCaseRequestCaseDataMap() {
         Map<String, Object> requestCaseData = new ConcurrentHashMap<>();
-        requestCaseData.put("typeOfClaim", testEt1CaseData.getTypeOfClaim());
-        requestCaseData.put("caseType", testEt1CaseData.getEcmCaseType());
-        requestCaseData.put("caseSource", testEt1CaseData.getCaseSource());
-        requestCaseData.put("claimantRepresentedQuestion", testEt1CaseData.getClaimantRepresentedQuestion());
-        requestCaseData.put("jurCodesCollection", testEt1CaseData.getJurCodesCollection());
-        requestCaseData.put("claimantIndType", testEt1CaseData.getClaimantIndType());
-        requestCaseData.put("claimantType", testEt1CaseData.getClaimantType());
-        requestCaseData.put("representativeClaimantType", testEt1CaseData.getRepresentativeClaimantType());
-        requestCaseData.put("claimantOtherType", testEt1CaseData.getClaimantOtherType());
-        requestCaseData.put("respondentCollection", testEt1CaseData.getRespondentCollection());
-        requestCaseData.put("claimantWorkAddress", testEt1CaseData.getClaimantWorkAddress());
-        requestCaseData.put("caseNotes", testEt1CaseData.getCaseNotes());
-        requestCaseData.put("managingOffice", testEt1CaseData.getManagingOffice());
-        requestCaseData.put("newEmploymentType", testEt1CaseData.getNewEmploymentType());
-        requestCaseData.put("claimantRequests", testEt1CaseData.getClaimantRequests());
-        requestCaseData.put("claimantHearingPreference", testEt1CaseData.getClaimantHearingPreference());
-        requestCaseData.put("claimantTaskListChecks", testEt1CaseData.getClaimantTaskListChecks());
+        requestCaseData.put("typeOfClaim", et1CaseData.getTypeOfClaim());
+        requestCaseData.put("caseType", et1CaseData.getEcmCaseType());
+        requestCaseData.put("caseSource", et1CaseData.getCaseSource());
+        requestCaseData.put("claimantRepresentedQuestion", et1CaseData.getClaimantRepresentedQuestion());
+        requestCaseData.put("jurCodesCollection", et1CaseData.getJurCodesCollection());
+        requestCaseData.put("claimantIndType", et1CaseData.getClaimantIndType());
+        requestCaseData.put("claimantType", et1CaseData.getClaimantType());
+        requestCaseData.put("representativeClaimantType", et1CaseData.getRepresentativeClaimantType());
+        requestCaseData.put("claimantOtherType", et1CaseData.getClaimantOtherType());
+        requestCaseData.put("respondentCollection", et1CaseData.getRespondentCollection());
+        requestCaseData.put("claimantWorkAddress", et1CaseData.getClaimantWorkAddress());
+        requestCaseData.put("caseNotes", et1CaseData.getCaseNotes());
+        requestCaseData.put("managingOffice", et1CaseData.getManagingOffice());
+        requestCaseData.put("newEmploymentType", et1CaseData.getNewEmploymentType());
+        requestCaseData.put("claimantRequests", et1CaseData.getClaimantRequests());
+        requestCaseData.put("claimantHearingPreference", et1CaseData.getClaimantHearingPreference());
+        requestCaseData.put("claimantTaskListChecks", et1CaseData.getClaimantTaskListChecks());
         return requestCaseData;
     }
 
-    public CaseRequest getTestCaseRequest() {
+    public CaseRequest getCaseRequest() {
         return CaseRequest.builder()
-            .postCode(testCaseData.getClaimantType().getClaimantAddressUK().getPostCode())
+            .postCode(caseData.getClaimantType().getClaimantAddressUK().getPostCode())
             .caseId(CASE_ID)
-            .caseTypeId(testCaseData.getEcmCaseType())
-            .caseData(getTestCaseRequestCaseDataMap())
+            .caseTypeId(caseData.getEcmCaseType())
+            .caseData(getCaseRequestCaseDataMap())
             .build();
+    }
+
+    public CaseDataContent getUpdateCaseDataContent() {
+        return CaseDataContent.builder()
+            .event(Event.builder().id(UPDATE_CASE_DRAFT).build())
+            .eventToken(getStartEventResponse().getToken())
+            .data(getCaseRequestCaseDataMap())
+            .build();
+    }
+
+    public CaseDataContent getTestDraftCaseDataContent() {
+        return CaseDataContent.builder()
+            .event(Event.builder().id(INITIATE_CASE_DRAFT).build())
+            .eventToken(getStartEventResponse().getToken())
+            .data(getEt1CaseData())
+            .build();
+    }
+
+    public SendEmailResponse getSendEmailResponse() throws IOException {
+        String sendEmailResponseStringVal = ResourceUtil.resourceAsString(
+            "responses/caseDocumentUpload.json"
+        );
+        return new SendEmailResponse(sendEmailResponseStringVal);
     }
 }

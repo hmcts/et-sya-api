@@ -43,7 +43,7 @@ class EmploymentObjectMapperTest {
 
     @Test
     void shouldMapCaseRequestToCaseData() {
-        Map<String, Object> requestCaseData = testData.getTestCaseRequestCaseDataMap();
+        Map<String, Object> requestCaseData = testData.getCaseRequestCaseDataMap();
         CaseData caseData = EmployeeObjectMapper.mapCaseRequestToCaseData(requestCaseData);
         assertThat(caseData.getTypeOfClaim().get(0)).isEqualTo(TYPE_OF_CLAIM_DISCRIMINATION);
         assertThat(caseData.getTypeOfClaim().get(1)).isEqualTo(TYPE_OF_CLAIM_BREACH_OF_CONTRACT);

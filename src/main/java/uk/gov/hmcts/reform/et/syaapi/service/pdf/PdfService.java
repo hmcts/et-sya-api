@@ -72,20 +72,20 @@ public class PdfService {
 
     private static String createPdfDocumentNameFromCaseData(CaseData caseData) {
         return "ET1_"
-            + caseData.getClaimantIndType().getClaimantFirstNames()
+            + caseData.getClaimantIndType().getClaimantFirstNames().replace(" ", "_")
             + "_"
-            + caseData.getClaimantIndType().getClaimantLastName()
+            + caseData.getClaimantIndType().getClaimantLastName().replace(" ", "_")
             + ".pdf";
     }
 
     private static String createPdfDocumentNameFromCaseDataAndAcasCertificate(
         CaseData caseData, AcasCertificate acasCertificate) {
         return "ET1_"
-            + caseData.getClaimantIndType().getClaimantFirstNames()
+            + caseData.getClaimantIndType().getClaimantFirstNames().replace(" ", "_")
             + "_"
-            + caseData.getClaimantIndType().getClaimantLastName()
+            + caseData.getClaimantIndType().getClaimantLastName().replace(" ", "_")
             + "_"
-            + acasCertificate.getCertificateNumber()
+            + acasCertificate.getCertificateNumber().replace("/", "_")
             + ".pdf";
     }
 
@@ -98,7 +98,7 @@ public class PdfService {
     private static String createPdfDocumentDescriptionFromCaseDataAndAcasCertificate(
         CaseData caseData,
         AcasCertificate acasCertificate) {
-        return "Case Details - "
+        return "ACAS Certificate - "
             + caseData.getClaimantIndType().getClaimantFirstNames()
             + " "
             + caseData.getClaimantIndType().getClaimantLastName()

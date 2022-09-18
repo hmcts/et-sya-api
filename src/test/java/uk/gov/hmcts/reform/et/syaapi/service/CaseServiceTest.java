@@ -14,17 +14,12 @@ import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
-import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
-import uk.gov.hmcts.reform.et.syaapi.utils.TestConstants;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
@@ -45,7 +40,7 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.USER_ID;
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"PMD.TooManyFields", "PMD.TooManyMethods", "PMD.ExcessiveImports"})
+@SuppressWarnings("PMD.TooManyMethods")
 class CaseServiceTest {
 
     @Mock
@@ -58,16 +53,6 @@ class CaseServiceTest {
     private IdamClient idamClient;
     @InjectMocks
     private CaseService caseService;
-    @Mock
-    private CaseDetailsConverter caseDetailsConverter;
-    @Mock
-    private PdfService pdfService;
-    @Mock
-    private CaseDocumentService caseDocumentService;
-    @Mock
-    private NotificationService notificationService;
-    @Mock
-    private AcasService acasService;
     private final TestData testData;
 
 
@@ -81,11 +66,11 @@ class CaseServiceTest {
         when(ccdApiClient.getCase(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
-            testData.getTestCaseRequest().getCaseId()
+            testData.getCaseRequest().getCaseId()
         )).thenReturn(testData.getExpectedDetails());
 
         CaseRequest caseRequest = CaseRequest.builder()
-            .caseId(testData.getTestCaseRequest().getCaseId()).build();
+            .caseId(testData.getCaseRequest().getCaseId()).build();
 
         CaseDetails caseDetails = caseService.getUserCase(TEST_SERVICE_AUTH_TOKEN, caseRequest);
 
@@ -97,9 +82,9 @@ class CaseServiceTest {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
             USER_ID,
-            testData.getTestCaseData().getClaimantType().getClaimantEmailAddress(),
-            testData.getTestCaseData().getClaimantIndType().getClaimantFirstNames(),
-            testData.getTestCaseData().getClaimantIndType().getClaimantLastName(),
+            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
+            testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
+            testData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
         ));
         when(ccdApiClient.searchForCitizen(
@@ -121,9 +106,9 @@ class CaseServiceTest {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
             USER_ID,
-            testData.getTestCaseData().getClaimantType().getClaimantEmailAddress(),
-            testData.getTestCaseData().getClaimantIndType().getClaimantFirstNames(),
-            testData.getTestCaseData().getClaimantIndType().getClaimantLastName(),
+            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
+            testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
+            testData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
         ));
         when(ccdApiClient.searchForCitizen(
@@ -152,17 +137,13 @@ class CaseServiceTest {
 
     @Test
     void shouldCreateNewDraftCaseInCcd() throws InvalidPostcodeException {
-        CaseDataContent caseDataContent = CaseDataContent.builder()
-            .event(Event.builder().id(EtSyaConstants.DRAFT_EVENT_TYPE).build())
-            .eventToken(testData.getStartEventResponse().getToken())
-            .data(testData.getTestEt1CaseData())
-            .build();
+
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
             USER_ID,
-            testData.getTestCaseData().getClaimantType().getClaimantEmailAddress(),
-            testData.getTestCaseData().getClaimantIndType().getClaimantFirstNames(),
-            testData.getTestCaseData().getClaimantIndType().getClaimantLastName(),
+            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
+            testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
+            testData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
         ));
         when(ccdApiClient.startForCitizen(
@@ -182,7 +163,7 @@ class CaseServiceTest {
             EtSyaConstants.JURISDICTION_ID,
             EtSyaConstants.SCOTLAND_CASE_TYPE,
             true,
-            caseDataContent
+            testData.getTestDraftCaseDataContent()
         )).thenReturn(testData.getExpectedDetails());
 
         when(postcodeToOfficeService.getTribunalOfficeFromPostcode(any()))
@@ -190,7 +171,7 @@ class CaseServiceTest {
 
         CaseRequest caseRequest = CaseRequest.builder()
             .postCode("AB10 1AH")
-            .caseData(testData.getTestCaseRequestCaseDataMap())
+            .caseData(testData.getCaseRequestCaseDataMap())
             .build();
 
         CaseDetails caseDetails = caseService.createCase(
@@ -201,79 +182,14 @@ class CaseServiceTest {
         assertEquals(testData.getExpectedDetails(), caseDetails);
     }
 
-    /*
-    @Test
-    void shouldSubmitCaseInCcd() throws InvalidPostcodeException,
-        CaseDocumentException,
-        PdfServiceException,
-        AcasException,
-        InvalidAcasNumbersException {
-        // Given
-
-        CaseDataContent caseDataContent = CaseDataContent.builder()
-            .event(Event.builder().id(TestConstants.DRAFT_EVENT_ID).build())
-            .eventToken(testData.getStartEventResponse().getToken())
-            .data(caseData)
-            .build();
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
-            USER_ID,
-            USER_EMAIL,
-            USER_FORENAME,
-            USER_SURNAME,
-            null
-        ));
-        CaseRequest caseRequest = CaseRequest.builder()
-            .postCode("AB10 1AH")
-            .caseId(CASE_ID)
-            .caseTypeId(EtSyaConstants.SCOTLAND_CASE_TYPE)
-            .caseData(caseDataHashMap)
-            .build();
-        caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE, "Aberdeen");
-        when(postcodeToOfficeService.getTribunalOfficeFromPostcode(anyString()))
-            .thenReturn(Optional.of(TribunalOffice.ABERDEEN));
-
-
-        when(ccdApiClient.startEventForCitizen(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            USER_ID,
-            EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
-            CASE_ID,
-            TestConstants.SUBMIT_CASE_DRAFT
-        )).thenReturn(
-            startEventResponse);
-
-        when(ccdApiClient.submitEventForCitizen(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            USER_ID,
-            EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
-            CASE_ID,
-            true,
-            caseDataContent
-        )).thenReturn(expectedDetails);
-        DocumentTypeItem documentTypeItem = new DocumentTypeItem();
-        DocumentType documentType = new DocumentType();
-        UploadedDocumentType uploadedDocumentType = new UploadedDocumentType();
-        uploadedDocumentType.setDocumentUrl("https://test.com");
-        documentType.setUploadedDocument(uploadedDocumentType);
-        documentTypeItem.setValue(documentType);
-
-        CaseDetails caseDetails = caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseRequest);
-        assertEquals(caseDetails, expectedDetails);
-    }*/
-
     @Test
     void shouldStartUpdateCaseInCcd() {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
             USER_ID,
-            testData.getTestCaseData().getClaimantType().getClaimantEmailAddress(),
-            testData.getTestCaseData().getClaimantIndType().getClaimantFirstNames(),
-            testData.getTestCaseData().getClaimantIndType().getClaimantLastName(),
+            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
+            testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
+            testData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
         ));
 
@@ -283,14 +199,14 @@ class CaseServiceTest {
             USER_ID,
             EtSyaConstants.JURISDICTION_ID,
             EtSyaConstants.SCOTLAND_CASE_TYPE,
-            testData.getTestCaseRequest().getCaseId(),
-            TestConstants.UPDATE_CASE_DRAFT
+            testData.getCaseRequest().getCaseId(),
+            String.valueOf(UPDATE_CASE_DRAFT)
         )).thenReturn(
             testData.getStartEventResponse());
 
         StartEventResponse eventResponse = caseService.startUpdate(
             TEST_SERVICE_AUTH_TOKEN,
-            testData.getTestCaseRequest().getCaseId(),
+            testData.getCaseRequest().getCaseId(),
             EtSyaConstants.SCOTLAND_CASE_TYPE,
             UPDATE_CASE_DRAFT
         );
@@ -300,36 +216,29 @@ class CaseServiceTest {
 
     @Test
     void shouldSubmitUpdateCaseInCcd() {
-        CaseDataContent caseDataContent = CaseDataContent.builder()
-            .event(Event.builder().id(String.valueOf(UPDATE_CASE_DRAFT)).build())
-            .eventToken(testData.getStartEventResponse().getToken())
-            .data(testData.getTestCaseRequestCaseDataMap())
-            .build();
-
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
             USER_ID,
-            testData.getTestCaseData().getClaimantType().getClaimantEmailAddress(),
-            testData.getTestCaseData().getClaimantIndType().getClaimantFirstNames(),
-            testData.getTestCaseData().getClaimantIndType().getClaimantLastName(),
+            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
+            testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
+            testData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
         ));
-
         when(ccdApiClient.submitEventForCitizen(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
             USER_ID,
             EtSyaConstants.JURISDICTION_ID,
             EtSyaConstants.SCOTLAND_CASE_TYPE,
-            testData.getTestCaseRequest().getCaseId(),
+            testData.getCaseRequest().getCaseId(),
             true,
-            caseDataContent
+            testData.getUpdateCaseDataContent()
         )).thenReturn(testData.getExpectedDetails());
 
         CaseDetails caseDetails = caseService.submitUpdate(
             TEST_SERVICE_AUTH_TOKEN,
-            testData.getTestCaseRequest().getCaseId(),
-            caseDataContent,
+            testData.getCaseRequest().getCaseId(),
+            testData.getUpdateCaseDataContent(),
             EtSyaConstants.SCOTLAND_CASE_TYPE
         );
 

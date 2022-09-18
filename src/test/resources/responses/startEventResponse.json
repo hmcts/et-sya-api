@@ -1,5 +1,5 @@
 {
-  "event_id": "initiateCaseDraft",
+  "event_id": "INITIATE_CASE_DRAFT",
   "token": "123",
   "case_details": {
     "id": null,

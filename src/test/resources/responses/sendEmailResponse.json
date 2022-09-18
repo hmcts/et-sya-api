@@ -1,0 +1,10 @@
+{
+  "id": "f30b2148-b1a6-4c0d-8a10-50109c96dc2c",
+  "reference": "123456/2022",
+  "templateId": "4f4b378e-238a-46ed-ae1c-26b8038192f0",
+  "templateVersion": "5",
+  "templateUri": "https://api.notifications.service.gov.uk/services/21beac2b-d979-4771-bbb5-e34b62cba543/templates/4f4b378e-238a-46ed-ae1c-26b8038192f0",
+  "body": "Dear Mr Jackson,\n\nYou have a new message from HMCTS about a claim made to an employment tribunal.\n\nTo view the message, go to https://www.gov.uk/log-in-register-hmrc-online-services\n\nFrom,\nHM Courts & Tribunals Service\n--- ---\nPlease do not reply to this email. To contact us, go to https://www.justice.gov.uk/contacts/hmcts/tribunals/employment",
+  "subject": "Mr Jackson, 1646225213651590",
+  "fromEmail": "hmcts.employment.tribunals@notifications.service.gov.uk"
+}
