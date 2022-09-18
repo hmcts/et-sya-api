@@ -23,6 +23,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.CITIZEN_PORTAL_LINK;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class NotificationServiceTest {
@@ -174,7 +175,7 @@ class NotificationServiceTest {
         submitCaseParameters.put("title", SUBMIT_CASE_CONFIRMATION_TITLE);
         submitCaseParameters.put("lastName", SUBMIT_CASE_CONFIRMATION_LAST_NAME);
         submitCaseParameters.put("caseNumber", SUBMIT_CASE_CONFIRMATION_CASE_NUMBER);
-        submitCaseParameters.put("citizenPortalLink", "https://www.gov.uk/log-in-register-hmrc-online-services");
+        submitCaseParameters.put("citizenPortalLink", CITIZEN_PORTAL_LINK);
         when(notificationClient.sendEmail(
             SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID,
             SUBMIT_CASE_CONFIRMATION_TEST_EMAIL,
@@ -186,10 +187,10 @@ class NotificationServiceTest {
                          SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID,
                          SUBMIT_CASE_CONFIRMATION_TEST_EMAIL,
                          REFERENCE_STRING,
-                         submitCaseParameters.get("title"),
-                         submitCaseParameters.get("lastName"),
-                         submitCaseParameters.get("caseNumber"),
-                         submitCaseParameters.get("citizenPortalLink")));
+                         SUBMIT_CASE_CONFIRMATION_TITLE,
+                         SUBMIT_CASE_CONFIRMATION_LAST_NAME,
+                         SUBMIT_CASE_CONFIRMATION_CASE_NUMBER,
+                         CITIZEN_PORTAL_LINK));
         assertThat(notificationException.getMessage())
             .isEqualTo("java.lang.Exception: Error while trying to sending notification to client");
     }

@@ -211,7 +211,7 @@ class CaseServiceTest {
             UPDATE_CASE_DRAFT
         );
 
-        assertEquals(eventResponse.getCaseDetails().getCaseTypeId(), EtSyaConstants.SCOTLAND_CASE_TYPE);
+        assertEquals(EtSyaConstants.SCOTLAND_CASE_TYPE, eventResponse.getCaseDetails().getCaseTypeId());
     }
 
     @Test

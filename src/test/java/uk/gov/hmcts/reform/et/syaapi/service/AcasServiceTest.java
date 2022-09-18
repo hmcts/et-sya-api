@@ -269,7 +269,7 @@ class AcasServiceTest {
         AcasException, InvalidAcasNumbersException {
         testData.getCaseData().setRespondentCollection(null);
         List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(testData.getCaseData());
-        assertThat(acasCertificates).hasSize(0);
+        assertThat(acasCertificates).isEmpty();
     }
 
     @Test
@@ -277,7 +277,7 @@ class AcasServiceTest {
         AcasException, InvalidAcasNumbersException {
         testData.getCaseData().setRespondentCollection(new ArrayList<>());
         List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(testData.getCaseData());
-        assertThat(acasCertificates).hasSize(0);
+        assertThat(acasCertificates).isEmpty();
     }
 
     @Test
