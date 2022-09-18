@@ -55,7 +55,7 @@ class CaseServiceBootTest {
     }
 
     @Test
-    void testSubmitCase()
+    void theSubmitCaseProducesCaseDetails()
         throws CaseDocumentException, AcasException, PdfServiceException, InvalidAcasNumbersException {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(idamApi.retrieveUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(

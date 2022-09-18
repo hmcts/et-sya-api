@@ -14,11 +14,11 @@ import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.client.ResponseCreator;
 import org.springframework.web.client.RestTemplate;
-import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
-import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -45,15 +45,12 @@ class AcasServiceTest {
     public static final String R123456_11_12 = "R123456/11/12";
     public static final String R123456_13_14 = "R123456/13/14";
     private AcasService acasService;
-    private final CaseData caseData = ResourceLoader.fromString(
-        "requests/caseData.json",
-        CaseData.class
-    );
-
     private RestTemplate restTemplate;
+    private TestData testData;
 
     @BeforeEach
     void setup() {
+        testData = new TestData();
         restTemplate = new RestTemplate();
         acasService = new AcasService(restTemplate, ACAS_DEV_API_URL, ACAS_API_KEY);
     }
@@ -225,10 +222,10 @@ class AcasServiceTest {
     void theGetAcasCertsWithOneValidAndTwoInvalidAcasNumbersProducesInvalidAcasNumbersException() {
         InvalidAcasNumbersException exception = assertThrows(
             InvalidAcasNumbersException.class,
-            () -> acasService.getCertificates("R123", R123456_13_14, "R456")
+            () -> acasService.getCertificates("R123", R123456_13_14, "R456", "R123456/13/1/")
         );
         assertThat(exception.getInvalidAcasNumbers())
-            .containsExactly("R123", "R456");
+            .containsExactly("R123", "R456", "R123456/13/1/");
     }
 
     @Test
@@ -261,9 +258,42 @@ class AcasServiceTest {
     }
 
     @Test
-    void theGetAcasCertificatesByCaseData() throws AcasException, InvalidAcasNumbersException {
-        List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(caseData);
+    void theGetAcasCertificatesByCaseDataProducesTwoAcasCertificates() throws
+        AcasException, InvalidAcasNumbersException {
+        List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(testData.getCaseData());
         assertThat(acasCertificates).hasSize(2);
+    }
+
+    @Test
+    void theGetAcasCertificatesByCaseDataDoesNotProduceAcasCertificatesWhenNullRespondentCollection() throws
+        AcasException, InvalidAcasNumbersException {
+        testData.getCaseData().setRespondentCollection(null);
+        List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(testData.getCaseData());
+        assertThat(acasCertificates).hasSize(0);
+    }
+
+    @Test
+    void theGetAcasCertificatesByCaseDataDoesNotProduceAcasCertificatesWhenEmptyRespondentCollection() throws
+        AcasException, InvalidAcasNumbersException {
+        testData.getCaseData().setRespondentCollection(new ArrayList<>());
+        List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(testData.getCaseData());
+        assertThat(acasCertificates).hasSize(0);
+    }
+
+    @Test
+    void theGetAcasCertificatesByCaseDataDoesNotProduceAcasCertificatesWhenNullRespondentSumTypeItem() throws
+        AcasException, InvalidAcasNumbersException {
+        testData.getCaseData().getRespondentCollection().get(0).setValue(null);
+        List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(testData.getCaseData());
+        assertThat(acasCertificates).hasSize(1);
+    }
+
+    @Test
+    void theGetAcasCertificatesByCaseDataDoesNotProduceAcasCertificatesWhenEmptyRespondentSumTypeItem() throws
+        AcasException, InvalidAcasNumbersException {
+        testData.getCaseData().getRespondentCollection().get(0).getValue().setRespondentAcas("");
+        List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(testData.getCaseData());
+        assertThat(acasCertificates).hasSize(1);
     }
 
     public static class DelegateResponseCreator implements ResponseCreator {
