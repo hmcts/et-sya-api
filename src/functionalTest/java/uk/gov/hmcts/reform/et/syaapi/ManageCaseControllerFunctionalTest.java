@@ -109,6 +109,7 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
             .assertThat().body("case_data.claimantType.claimant_email_address", equalTo(CLAIMANT_EMAIL));
     }
 
+    /*
     @Test
     void stage5SubmitCaseShouldReturnSubmittedCaseDetails() {
         CaseRequest caseRequest = CaseRequest.builder()
@@ -126,6 +127,6 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
             .log().all(true)
             .assertThat().body("id", equalTo(caseId))
             .assertThat().body("state", equalTo("Submitted"));
-    }
+    }*/
 }
 

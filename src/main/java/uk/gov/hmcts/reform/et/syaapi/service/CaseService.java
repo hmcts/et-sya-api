@@ -61,6 +61,7 @@ public class CaseService {
     private final CoreCaseDataApi ccdApiClient;
     private final IdamClient idamClient;
     private final PostcodeToOfficeService postcodeToOfficeService;
+    private final AcasService acasService;
     private final CaseDocumentService caseDocumentService;
     private final NotificationService notificationService;
     private final PdfService pdfService;
@@ -194,7 +195,7 @@ public class CaseService {
 
         CaseData caseData = convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
         List<PdfDecodedMultipartFile> acasCertificates = pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
-            caseData, new ArrayList<>());
+            caseData, acasService.getAcasCertificatesByCaseData(caseData));
         PdfDecodedMultipartFile casePdfFile =
             pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData);
         CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.SUBMIT_CASE_DRAFT,
@@ -207,13 +208,13 @@ public class CaseService {
                                                           acasCertificates));
         notificationService
             .sendSubmitCaseConfirmationEmail(
-               notificationsProperties.getSubmitCaseEmailTemplateId(),
-               caseData.getClaimantType().getClaimantEmailAddress(),
-               caseRequest.getCaseId(),
-               caseData.getClaimantIndType().getClaimantTitle(),
-               caseData.getClaimantIndType().getClaimantLastName(),
-               caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString(),
-               notificationsProperties.getCitizenPortalLink());
+                notificationsProperties.getSubmitCaseEmailTemplateId(),
+                caseData.getClaimantType().getClaimantEmailAddress(),
+                caseRequest.getCaseId(),
+                caseData.getClaimantIndType().getClaimantTitle(),
+                caseData.getClaimantIndType().getClaimantLastName(),
+                caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString(),
+                notificationsProperties.getCitizenPortalLink());
         return caseDetails;
     }
 
@@ -228,7 +229,7 @@ public class CaseService {
      * @return the associated {@link CaseData} if the case is updated
      */
     public CaseDetails triggerEvent(String authorization, String caseId, String caseType,
-                                 CaseEvent eventName, Map<String, Object> caseData) {
+                                    CaseEvent eventName, Map<String, Object> caseData) {
         return triggerEvent(authorization, caseId, eventName, caseType, caseData);
     }
 
@@ -243,14 +244,14 @@ public class CaseService {
      * @return the associated {@link CaseData} if the case is updated
      */
     public CaseDetails triggerEvent(String authorization, String caseId, CaseEvent eventName,
-                                 String caseType, Map<String, Object> caseData) {
+                                    String caseType, Map<String, Object> caseData) {
         ObjectMapper objectMapper = new ObjectMapper();
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         EmployeeObjectMapper employeeObjectMapper = new EmployeeObjectMapper();
         StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
         return submitUpdate(authorization, caseId,
                             caseDetailsConverter.caseDataContent(startEventResponse,
-                            employeeObjectMapper.getEmploymentCaseData(caseData)),
+                                                                 employeeObjectMapper.getEmploymentCaseData(caseData)),
                             caseType);
     }
 
@@ -355,3 +356,4 @@ public class CaseService {
         return caseDetailsList;
     }
 }
+
