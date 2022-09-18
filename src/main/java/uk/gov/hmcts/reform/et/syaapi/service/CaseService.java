@@ -61,7 +61,6 @@ public class CaseService {
     private final CoreCaseDataApi ccdApiClient;
     private final IdamClient idamClient;
     private final PostcodeToOfficeService postcodeToOfficeService;
-    private final AcasService acasService;
     private final CaseDocumentService caseDocumentService;
     private final NotificationService notificationService;
     private final PdfService pdfService;
@@ -195,7 +194,7 @@ public class CaseService {
 
         CaseData caseData = convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
         List<PdfDecodedMultipartFile> acasCertificates = pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
-            caseData, acasService.getAcasCertificatesByCaseData(caseData));
+            caseData, new ArrayList<>());
         PdfDecodedMultipartFile casePdfFile =
             pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData);
         CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.SUBMIT_CASE_DRAFT,
