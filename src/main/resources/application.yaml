@@ -49,7 +49,7 @@ case_document_am:
 acas:
   api:
     url: ${ACAS_BASE_URL:https://api-dev-acas-01.azure-api.net/ECCLDev}
-    key: ${ACAS_KEY:380e7fad52b2403abf42575ca8fba6e2} # This environment variable can be set in your local environment. Do not change this value.
+    key: ${ACAS_KEY:0000} # This environment variable can be set in your local environment. Do not change this value.
 
 tornado:
   api:

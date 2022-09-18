@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import org.apache.tika.utils.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -39,15 +38,11 @@ public class AcasService {
      * Constructs an {@link AcasService} instance with the RestTemplate to use for talking with the ACAS service.
      *
      * @param restTemplate the RestTemplate to use for talking with the ACAS service
-     * @param acasApiUrl   the URL to access the ACAS API
-     * @param acasApiKey   the OCP APIM Subscription Key used in the header to authenticate when contacting ACAS
      */
-    public AcasService(RestTemplate restTemplate,
-                       @Value("${acas.api.url}") String acasApiUrl,
-                       @Value("${acas.api.key}") String acasApiKey) {
+    public AcasService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
-        this.acasApiUrl = acasApiUrl;
-        this.acasApiKey = acasApiKey;
+        this.acasApiUrl = "https://api-dev-acas-01.azure-api.net/ECCLDev";
+        this.acasApiKey = "380e7fad52b2403abf42575ca8fba6e2";
     }
 
     /**
