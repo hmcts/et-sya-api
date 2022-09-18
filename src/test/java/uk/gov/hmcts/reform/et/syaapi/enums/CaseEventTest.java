@@ -13,17 +13,17 @@ class CaseEventTest {
 
     @Test
     void shouldGetUpdateEventName() {
-        assertThat(UPDATE_CASE_DRAFT).isEqualToIgnoringCase(String.valueOf(CaseEvent.UPDATE_CASE_DRAFT));
+        assertThat(String.valueOf(CaseEvent.UPDATE_CASE_DRAFT)).isEqualToIgnoringCase(UPDATE_CASE_DRAFT);
     }
 
     @Test
     void shouldGetDraftEventName() {
-        assertThat(INITIATE_CASE_DRAFT).isEqualToIgnoringCase(String.valueOf(CaseEvent.INITIATE_CASE_DRAFT));
+        assertThat(String.valueOf(CaseEvent.INITIATE_CASE_DRAFT)).isEqualToIgnoringCase(INITIATE_CASE_DRAFT);
     }
 
     @Test
     void shouldGetSubmitEventName() {
-        assertThat(SUBMIT_CASE_DRAFT).isEqualToIgnoringCase(String.valueOf(CaseEvent.SUBMIT_CASE_DRAFT));
+        assertThat(String.valueOf(CaseEvent.SUBMIT_CASE_DRAFT)).isEqualToIgnoringCase(SUBMIT_CASE_DRAFT);
     }
 
 }
