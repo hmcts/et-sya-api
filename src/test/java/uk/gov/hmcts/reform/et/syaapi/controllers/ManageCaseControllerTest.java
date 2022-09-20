@@ -212,7 +212,7 @@ class ManageCaseControllerTest {
 
         // when
         mockMvc.perform(
-            put("/cases/update-update-case", CASE_ID)
+            put("/cases/update-case", CASE_ID)
                 .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(ResourceLoader.toJson(caseRequest))
