@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.utils;
 
+import java.util.UUID;
+
 public final class TestConstants {
 
     public static final String TEST_SERVICE_AUTH_TOKEN = "Bearer TestServiceAuth";
@@ -19,6 +21,7 @@ public final class TestConstants {
     public static final String USER_ID = "TEST_USER_ID";
     public static final String SUBMIT_CASE_EMAIL_TEMPLATE_ID = "4f4b378e-238a-46ed-ae1c-26b8038192f0";
     public static final String CITIZEN_PORTAL_LINK = "https://www.gov.uk/log-in-register-hmrc-online-services";
+    public static final UUID NOTIFICATION_CONFIRMATION_ID = UUID.fromString("f30b2148-b1a6-4c0d-8a10-50109c96dc2c");
 
     private TestConstants() {
 

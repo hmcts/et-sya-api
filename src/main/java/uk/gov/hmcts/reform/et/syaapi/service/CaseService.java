@@ -34,6 +34,7 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -196,10 +197,14 @@ public class CaseService {
         CaseData caseData = convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
         List<PdfDecodedMultipartFile> acasCertificates = pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
             caseData, acasService.getAcasCertificatesByCaseData(caseData));
-        PdfDecodedMultipartFile casePdfFile =
-            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData);
+
         CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.SUBMIT_CASE_DRAFT,
                                                caseRequest.getCaseTypeId(), caseRequest.getCaseData());
+        caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :
+            caseDetails.getData().get("ethosCaseReference").toString());
+        caseData.setListedDate(caseDetails.getCreatedDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+        PdfDecodedMultipartFile casePdfFile =
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData);
         caseDetails.getData().put("documentCollection",
                                   caseDocumentService
                                       .uploadAllDocuments(authorization,

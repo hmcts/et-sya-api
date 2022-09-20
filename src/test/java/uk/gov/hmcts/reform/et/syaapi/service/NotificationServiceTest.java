@@ -5,11 +5,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
+import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 
+import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -24,6 +26,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.CITIZEN_PORTAL_LINK;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.NOTIFICATION_CONFIRMATION_ID;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class NotificationServiceTest {
@@ -49,6 +52,8 @@ class NotificationServiceTest {
 
     private SendEmailResponse inputSendEmailResponse;
 
+    private TestData testData;
+
     @BeforeEach
     void before() throws NotificationClientException {
         parameters.put("firstname", "test");
@@ -71,6 +76,7 @@ class NotificationServiceTest {
         notificationService = new NotificationService(notificationClient);
         given(notificationClient.sendEmail(anyString(), anyString(), any(), anyString()))
             .willReturn(inputSendEmailResponse);
+        testData = new TestData();
     }
 
     @SneakyThrows
@@ -148,24 +154,29 @@ class NotificationServiceTest {
     }
 
     @Test
-    void shouldSendSubmitCaseConfirmationEmail() {
+    void shouldSendSubmitCaseConfirmationEmail() throws IOException {
         NotificationsProperties notificationsProperties = new NotificationsProperties();
         notificationsProperties
-            .setGovNotifyApiKey("et1live-21beac2b-d979-4771-bbb5-e34b62cba543-6ce0eb4b-98ee-45a1-8b0c-5345f3754423");
-        // et1test-21beac2b-d979-4771-bbb5-e34b62cba543-caf93a67-ba77-4b35-8715-1ef73636ab41
+            .setGovNotifyApiKey("testApiKey");
         notificationsProperties.setSubmitCaseEmailTemplateId("4f4b378e-238a-46ed-ae1c-26b8038192f0");
         notificationsProperties.setCitizenPortalLink("https://www.gov.uk/log-in-register-hmrc-online-services");
-        NotificationClient notificationClient1 = new NotificationClient(notificationsProperties.getGovNotifyApiKey());
-        notificationService = new NotificationService(notificationClient1);
-        SendEmailResponse sendEmailResponse = notificationService.sendSubmitCaseConfirmationEmail(
-            notificationsProperties.getSubmitCaseEmailTemplateId(),
+        when(notificationService.sendSubmitCaseConfirmationEmail(
+            SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID,
             SUBMIT_CASE_CONFIRMATION_TEST_EMAIL,
             REFERENCE_STRING,
             SUBMIT_CASE_CONFIRMATION_TITLE,
             SUBMIT_CASE_CONFIRMATION_LAST_NAME,
             SUBMIT_CASE_CONFIRMATION_CASE_NUMBER,
-            notificationsProperties.getCitizenPortalLink());
-        assertThat(sendEmailResponse.getNotificationId()).isNotNull();
+            CITIZEN_PORTAL_LINK)).thenReturn(testData.getSendEmailResponse());
+        assertThat(notificationService.sendSubmitCaseConfirmationEmail(
+            SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID,
+            SUBMIT_CASE_CONFIRMATION_TEST_EMAIL,
+            REFERENCE_STRING,
+            SUBMIT_CASE_CONFIRMATION_TITLE,
+            SUBMIT_CASE_CONFIRMATION_LAST_NAME,
+            SUBMIT_CASE_CONFIRMATION_CASE_NUMBER,
+            CITIZEN_PORTAL_LINK
+        ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
     }
 
     @Test

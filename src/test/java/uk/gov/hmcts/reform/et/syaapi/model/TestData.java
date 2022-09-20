@@ -117,7 +117,7 @@ public final class TestData {
 
     public SendEmailResponse getSendEmailResponse() throws IOException {
         String sendEmailResponseStringVal = ResourceUtil.resourceAsString(
-            "responses/caseDocumentUpload.json"
+            "responses/sendEmailResponse.json"
         );
         return new SendEmailResponse(sendEmailResponseStringVal);
     }
