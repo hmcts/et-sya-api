@@ -188,7 +188,7 @@ class ManageCaseControllerTest {
     @Test
     void shouldStartUpdateCase() {
         CaseRequest caseRequest = CaseRequest.builder()
-            .caseTypeId("ET_Scotland")
+            .caseTypeId(CASE_TYPE)
             .caseId("12")
             .build();
 
@@ -211,22 +211,19 @@ class ManageCaseControllerTest {
         )).thenReturn(expectedDetails);
 
         // when
-        mockMvc.perform(put(
-                "/cases/update-case",
-                CASE_ID
-                        )
-                            .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(ResourceLoader.toJson(caseRequest))
-            )
-            .andExpect(status().isOk());
+        mockMvc.perform(
+            put("/cases/update-update-case", CASE_ID)
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ResourceLoader.toJson(caseRequest))
+        ).andExpect(status().isOk());
     }
 
     @SneakyThrows
     @Test
     void shouldStartSubmitCase() {
         CaseRequest caseRequest = CaseRequest.builder()
-            .caseTypeId("ET_Scotland")
+            .caseTypeId(CASE_TYPE)
             .caseId("12")
             .caseData(new HashMap<>())
             .build();
@@ -250,14 +247,46 @@ class ManageCaseControllerTest {
         )).thenReturn(expectedDetails);
 
         // when
-        mockMvc.perform(put(
-                            "/cases/submit-case",
-                            CASE_ID
-                        )
-                            .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(ResourceLoader.toJson(caseRequest))
-            )
-            .andExpect(status().isOk());
+        mockMvc.perform(
+            put("/cases/submit-case", CASE_ID)
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ResourceLoader.toJson(caseRequest))
+        ).andExpect(status().isOk());
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldStartUpdateSubmittedCase() {
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseTypeId(CASE_TYPE)
+            .caseId("12")
+            .build();
+
+        // given
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+            "12",
+            "test@gmail.com",
+            "Joe",
+            "Bloggs",
+            null
+        ));
+
+        when(caseService.triggerEvent(
+            TEST_SERVICE_AUTH_TOKEN,
+            CASE_ID,
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            CaseEvent.valueOf("UPDATE_CASE_SUBMITTED"),
+            null
+        )).thenReturn(expectedDetails);
+
+        // when
+        mockMvc.perform(
+            put("/cases/update-case-submitted", CASE_ID)
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ResourceLoader.toJson(caseRequest))
+        ).andExpect(status().isOk());
     }
 }

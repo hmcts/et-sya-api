@@ -187,7 +187,7 @@ public class CaseService {
      * @param caseData is used to provide the {@link Et1CaseData} in json format
      * @return the associated {@link CaseData} if the case is updated
      */
-    public CaseDetails triggerEvent(String authorization, String caseId, CaseEvent eventName,
+    private CaseDetails triggerEvent(String authorization, String caseId, CaseEvent eventName,
                                  String caseType, Map<String, Object> caseData) {
         ObjectMapper objectMapper = new ObjectMapper();
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
