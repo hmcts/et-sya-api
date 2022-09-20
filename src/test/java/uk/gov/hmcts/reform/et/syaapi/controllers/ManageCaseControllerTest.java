@@ -205,8 +205,8 @@ class ManageCaseControllerTest {
         when(caseService.triggerEvent(
             TEST_SERVICE_AUTH_TOKEN,
             CASE_ID,
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
             CaseEvent.valueOf("UPDATE_CASE_DRAFT"),
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
             null
         )).thenReturn(expectedDetails);
 
@@ -241,8 +241,8 @@ class ManageCaseControllerTest {
         when(caseService.triggerEvent(
             TEST_SERVICE_AUTH_TOKEN,
             CASE_ID,
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
             CaseEvent.valueOf("SUBMIT_CASE_DRAFT"),
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
             null
         )).thenReturn(expectedDetails);
 
@@ -276,8 +276,8 @@ class ManageCaseControllerTest {
         when(caseService.triggerEvent(
             TEST_SERVICE_AUTH_TOKEN,
             CASE_ID,
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
             CaseEvent.valueOf("UPDATE_CASE_SUBMITTED"),
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
             null
         )).thenReturn(expectedDetails);
 
