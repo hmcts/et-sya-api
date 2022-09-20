@@ -144,7 +144,7 @@ public class CaseService {
         }
     }
 
-    public CaseDetails updateCase(String authorization,
+    public CaseDetails updateDraftCase(String authorization,
                                   CaseRequest caseRequest) {
         return triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.UPDATE_CASE_DRAFT,
                             caseRequest.getCaseTypeId(), caseRequest.getCaseData());
@@ -153,6 +153,12 @@ public class CaseService {
     public CaseDetails submitCase(String authorization,
                                   CaseRequest caseRequest) {
         return triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.SUBMIT_CASE_DRAFT,
+                            caseRequest.getCaseTypeId(), caseRequest.getCaseData());
+    }
+
+    public CaseDetails updateSubmittedCase(String authorization,
+                                           CaseRequest caseRequest) {
+        return triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.UPDATE_CASE_SUBMITTED,
                             caseRequest.getCaseTypeId(), caseRequest.getCaseData());
     }
 

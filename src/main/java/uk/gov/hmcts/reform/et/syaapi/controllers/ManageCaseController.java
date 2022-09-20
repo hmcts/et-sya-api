@@ -66,14 +66,14 @@ public class ManageCaseController {
     @PutMapping("/update-case")
     @Operation(summary = "Update draft case API method")
     @ApiResponseGroup
-    public ResponseEntity<CaseDetails> updateCase(
+    public ResponseEntity<CaseDetails> updateDraftCase(
         @RequestHeader(AUTHORIZATION) String authorization,
         @NotNull @RequestBody CaseRequest caseRequest
     ) {
         log.info("Received update-case request - caseTypeId: {} caseId: {}",
                  caseRequest.getCaseTypeId(), caseRequest.getCaseId());
 
-        var caseDetails = caseService.updateCase(authorization, caseRequest);
+        var caseDetails = caseService.updateDraftCase(authorization, caseRequest);
         return ok(caseDetails);
     }
 
@@ -88,6 +88,20 @@ public class ManageCaseController {
                  caseRequest.getCaseTypeId(), caseRequest.getCaseId());
 
         var caseDetails = caseService.submitCase(authorization, caseRequest);
+        return ok(caseDetails);
+    }
+
+    @PutMapping("/update-case-submitted")
+    @Operation(summary = "Update submitted case API method")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> updateCase(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody CaseRequest caseRequest
+    ) {
+        log.info("Received update-case-submitted request - caseTypeId: {} caseId: {}",
+                 caseRequest.getCaseTypeId(), caseRequest.getCaseId());
+
+        var caseDetails = caseService.updateSubmittedCase(authorization, caseRequest);
         return ok(caseDetails);
     }
 }

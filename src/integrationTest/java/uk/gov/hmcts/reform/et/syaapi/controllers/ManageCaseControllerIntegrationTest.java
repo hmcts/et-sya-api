@@ -131,7 +131,7 @@ class ManageCaseControllerIntegrationTest {
 
     @DisplayName("Should update case and return case data")
     @Test
-    void updateCaseEndpoint() throws Exception {
+    void updateDraftCaseEndpoint() throws Exception {
         CaseRequest caseRequest = CaseRequest.builder()
             .caseTypeId(SCOTLAND_CASE_TYPE)
             .caseId("12")
