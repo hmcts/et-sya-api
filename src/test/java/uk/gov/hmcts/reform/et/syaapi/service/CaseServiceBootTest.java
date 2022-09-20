@@ -19,6 +19,8 @@ import uk.gov.hmcts.reform.idam.client.IdamApi;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
+import java.util.ArrayList;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -46,7 +48,9 @@ class CaseServiceBootTest {
     @MockBean
     private CaseDocumentService caseDocumentService;
     @MockBean
-    NotificationService notificationService;
+    private NotificationService notificationService;
+    @MockBean
+    private AcasService acasService;
     private TestData testData;
 
     @BeforeEach
@@ -107,6 +111,9 @@ class CaseServiceBootTest {
             any(String.class),
             eq(CITIZEN_PORTAL_LINK)
         )).thenReturn(null);
+        when(acasService.getAcasCertificatesByCaseData(testData.getCaseData())).thenReturn(
+            new ArrayList<>()
+        );
         CaseDetails caseDetails = caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, testData.getCaseRequest());
         assertEquals(caseDetails.getId(), testData.getExpectedDetails().getId());
         assertEquals(caseDetails.getJurisdiction(), testData.getExpectedDetails().getJurisdiction());
