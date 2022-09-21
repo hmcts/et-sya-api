@@ -510,12 +510,10 @@ class CaseServiceTest {
         caseService.triggerEvent(
             TEST_SERVICE_AUTH_TOKEN,
             CASE_ID,
-            EtSyaConstants.ENGLAND_CASE_TYPE,
             CaseEvent.valueOf("SUBMIT_CASE_DRAFT"),
+            EtSyaConstants.ENGLAND_CASE_TYPE,
             caseDataWithClaimTypes.getCaseData()
         );
-
-//        verify(JurisdictionCodesMapper.class);
 
         verify(ccdApiClient).submitEventForCitizen(TEST_SERVICE_AUTH_TOKEN,
                                                    TEST_SERVICE_AUTH_TOKEN,
