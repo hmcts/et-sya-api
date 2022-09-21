@@ -148,33 +148,6 @@ public class CaseService {
         }
     }
 
-    public CaseDetails updateCase(String authorization,
-                                  CaseRequest caseRequest) {
-        return triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.UPDATE_CASE_DRAFT,
-                            caseRequest.getCaseTypeId(), caseRequest.getCaseData());
-    }
-
-    public CaseDetails submitCase(String authorization,
-                                  CaseRequest caseRequest) {
-        return triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.SUBMIT_CASE_DRAFT,
-                            caseRequest.getCaseTypeId(), caseRequest.getCaseData());
-    }
-
-    /**
-     * Given a caseId, triggers update events for the case.
-     *
-     * @param authorization is used to seek the {@link UserDetails} for request
-     * @param caseId used to retrieve get case details
-     * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
-     * @param eventName is used to determine INITIATE_CASE_DRAFT or UPDATE_CASE_DRAFT
-     * @param caseData is used to provide the {@link Et1CaseData} in json format
-     * @return the associated {@link CaseData} if the case is updated
-     */
-    public CaseDetails triggerEvent(String authorization, String caseId, String caseType,
-                                 CaseEvent eventName, Map<String, Object> caseData) {
-        return triggerEvent(authorization, caseId, eventName, caseType, caseData);
-    }
-
     /**
      * Given a caseId, initialization of trigger event to start and submit update for case.
      *

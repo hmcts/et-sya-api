@@ -6,7 +6,7 @@ import uk.gov.hmcts.contino.AppPipelineDsl
 def type = "java"
 def product = "et"
 def component = "sya-api"
-def branchesToSync = ['perftest', 'demo']
+def branchesToSync = ['perftest', 'demo', 'ithc']
 
 withPipeline(type, product, component) {
   disableLegacyDeployment()
