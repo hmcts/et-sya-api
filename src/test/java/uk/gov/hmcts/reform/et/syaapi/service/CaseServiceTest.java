@@ -13,6 +13,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.JurCodesType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -21,7 +23,11 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
+import uk.gov.hmcts.reform.et.syaapi.constants.JurisdictionCodesConstants;
+import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
+import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
+import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
@@ -41,6 +47,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
@@ -59,6 +66,9 @@ class CaseServiceTest {
 
     @Mock
     private PostcodeToOfficeService postcodeToOfficeService;
+
+    @Mock
+    private JurisdictionCodesMapper jurisdictionCodesMapper;
 
     private final CaseDetails expectedDetails = ResourceLoader.fromString(
         "responses/caseDetails.json",
@@ -95,6 +105,11 @@ class CaseServiceTest {
     private final List<CaseDetails> requestCaseDataList = ResourceLoader.fromStringToList(
         "responses/caseDetailsList.json",
         CaseDetails.class
+    );
+
+    private final CaseRequest caseDataWithClaimTypes = ResourceLoader.fromString(
+        "requests/caseDataWithClaimTypes.json",
+        CaseRequest.class
     );
 
     @Mock
@@ -445,4 +460,79 @@ class CaseServiceTest {
             .query(boolQueryBuilder)
             .toString();
     }
+
+    @Test
+    void shouldInvokeCaseEnrichmentWithJurCodesInSubmitEvent() {
+        List<JurCodesTypeItem> expectedItems = mockJurCodesTypeItems();
+        EmployeeObjectMapper employeeObjectMapper = new EmployeeObjectMapper();
+        Et1CaseData et1CaseData = employeeObjectMapper.getEmploymentCaseData(caseDataWithClaimTypes.getCaseData());
+        et1CaseData.setJurCodesCollection(expectedItems);
+
+        CaseDataContent expectedEnrichedData = CaseDataContent.builder()
+            .event(Event.builder().id("initiateCaseDraft").build())
+            .eventToken(startEventResponse.getToken())
+            .data(et1CaseData)
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+            USER_ID,
+            USER_EMAIL,
+            USER_FORENAME,
+            USER_SURNAME,
+            null
+        ));
+
+        when(ccdApiClient.startEventForCitizen(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            USER_ID,
+            EtSyaConstants.JURISDICTION_ID,
+            EtSyaConstants.ENGLAND_CASE_TYPE,
+            CASE_ID,
+            TestConstants.SUBMIT_CASE_DRAFT
+        )).thenReturn(
+            startEventResponse);
+
+        when(ccdApiClient.submitEventForCitizen(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            USER_ID,
+            EtSyaConstants.JURISDICTION_ID,
+            EtSyaConstants.ENGLAND_CASE_TYPE,
+            CASE_ID,
+            true,
+            expectedEnrichedData
+        )).thenReturn(expectedDetails);
+
+        when(jurisdictionCodesMapper.mapToJurCodes(any())).thenReturn(expectedItems);
+
+        caseService.triggerEvent(
+            TEST_SERVICE_AUTH_TOKEN,
+            CASE_ID,
+            EtSyaConstants.ENGLAND_CASE_TYPE,
+            CaseEvent.valueOf("SUBMIT_CASE_DRAFT"),
+            caseDataWithClaimTypes.getCaseData()
+        );
+
+//        verify(JurisdictionCodesMapper.class);
+
+        verify(ccdApiClient).submitEventForCitizen(TEST_SERVICE_AUTH_TOKEN,
+                                                   TEST_SERVICE_AUTH_TOKEN,
+                                                   USER_ID,
+                                                   EtSyaConstants.JURISDICTION_ID,
+                                                   EtSyaConstants.ENGLAND_CASE_TYPE,
+                                                   CASE_ID,
+                                                   true,
+                                                   expectedEnrichedData);
+    }
+
+    public List<JurCodesTypeItem> mockJurCodesTypeItems() {
+        JurCodesTypeItem item = new JurCodesTypeItem();
+        JurCodesType type = new JurCodesType();
+        type.setJuridictionCodesList(JurisdictionCodesConstants.BOC);
+        item.setValue(type);
+        return List.of(item);
+    }
+
 }

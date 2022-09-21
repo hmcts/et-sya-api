@@ -14,6 +14,7 @@ import org.springframework.util.CollectionUtils;
 import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -24,6 +25,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
+import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
@@ -57,6 +59,8 @@ public class CaseService {
     private final IdamClient idamClient;
 
     private final PostcodeToOfficeService postcodeToOfficeService;
+
+    private final JurisdictionCodesMapper jurisdictionCodesMapper;
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
@@ -187,9 +191,13 @@ public class CaseService {
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         EmployeeObjectMapper employeeObjectMapper = new EmployeeObjectMapper();
         StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
-        return submitUpdate(authorization, caseId,
-                            caseDetailsConverter.caseDataContent(startEventResponse,
-                            employeeObjectMapper.getEmploymentCaseData(caseData)),
+        Et1CaseData et1CaseData = employeeObjectMapper.getEmploymentCaseData(caseData);
+
+        enrichCaseDataWithJurisdictionCodes(et1CaseData);
+
+        return submitUpdate(authorization,
+                            caseId,
+                            caseDetailsConverter.caseDataContent(startEventResponse, et1CaseData),
                             caseType);
     }
 
@@ -293,5 +301,10 @@ public class CaseService {
             caseDetailsList.addAll(searchResult.getCases());
         }
         return caseDetailsList;
+    }
+
+    private void enrichCaseDataWithJurisdictionCodes(Et1CaseData et1CaseData) {
+        List<JurCodesTypeItem> jurCodesTypeItems = jurisdictionCodesMapper.mapToJurCodes(et1CaseData);
+        et1CaseData.setJurCodesCollection(jurCodesTypeItems);
     }
 }
