@@ -17,4 +17,8 @@ public final class JurisdictionCodesConstants {
     public static final String WA = "WA";
     public static final String WTR_AL = "WTR/AL";
     public static final String RPT = "RPT";
+
+    private JurisdictionCodesConstants() {
+        // restrict instantiation
+    }
 }

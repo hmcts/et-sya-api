@@ -44,18 +44,16 @@ class JurisdictionCodesMapperTest {
 
     @Test
     void shouldNotMapTypesWithoutJurCodes() {
-        data.getClaimantRequests().setPayClaims(List.of(ClaimTypesConstants.OTHER_TYPES, ClaimTypesConstants.OTHER_PAYMENTS));
+        data.getClaimantRequests().setPayClaims(List.of(ClaimTypesConstants.OTHER_TYPES,
+                                                        ClaimTypesConstants.OTHER_PAYMENTS));
         data.setTypeOfClaim(List.of(ClaimTypesConstants.PAY_RELATED_CLAIM));
-        System.out.println(data);
         List<JurCodesTypeItem> items = jurisdictionCodesMapper.mapToJurCodes(data);
-
         Assertions.assertTrue(items.isEmpty());
     }
 
     @Test
     void shouldNotMapIfTypesNotPresented() {
         List<JurCodesTypeItem> items = jurisdictionCodesMapper.mapToJurCodes(data);
-
         Assertions.assertTrue(items.isEmpty());
     }
 

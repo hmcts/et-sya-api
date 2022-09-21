@@ -54,7 +54,7 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUT
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.TooManyFields", "PMD.ExcessiveImports"})
 class CaseServiceTest {
     private static final String CASE_TYPE = "ET_Scotland";
     private static final String CASE_ID = "TEST_CASE_ID";

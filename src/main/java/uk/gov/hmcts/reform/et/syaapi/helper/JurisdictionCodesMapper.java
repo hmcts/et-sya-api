@@ -17,11 +17,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Maps types of claims values {@link ClaimTypesConstants} to jurisdiction codes {@link JurisdictionCodesConstants}
+ * Maps types of claims values {@link ClaimTypesConstants} to jurisdiction codes {@link JurisdictionCodesConstants}.
  */
 @Service
 public class JurisdictionCodesMapper {
-    private static final Map<String, String> jurisdictionCodes = Map.ofEntries(
+    private static final Map<String, String> JURISDICTION_CODES = Map.ofEntries(
         Map.entry(ClaimTypesConstants.BREACH_OF_CONTRACT, JurisdictionCodesConstants.BOC),
         Map.entry(ClaimTypesConstants.UNFAIR_DISMISSAL, JurisdictionCodesConstants.UDL),
         Map.entry(ClaimTypesConstants.WHISTLE_BLOWING, JurisdictionCodesConstants.PID),
@@ -54,11 +54,12 @@ public class JurisdictionCodesMapper {
     }
 
     private List<String> retrieveDiscriminationCodes(Et1CaseData data) {
-        if (data.getClaimantRequests() == null || CollectionUtils.isEmpty(data.getClaimantRequests().getDiscriminationClaims())) {
+        if (data.getClaimantRequests() == null
+            || CollectionUtils.isEmpty(data.getClaimantRequests().getDiscriminationClaims())) {
             return Collections.emptyList();
         }
         return data.getClaimantRequests().getDiscriminationClaims().stream()
-            .map(jurisdictionCodes::get)
+            .map(JURISDICTION_CODES::get)
             .collect(Collectors.toList());
     }
 
@@ -67,7 +68,7 @@ public class JurisdictionCodesMapper {
             return Collections.emptyList();
         }
         return data.getClaimantRequests().getPayClaims().stream()
-            .map(jurisdictionCodes::get)
+            .map(JURISDICTION_CODES::get)
             .collect(Collectors.toList());
     }
 
@@ -76,7 +77,7 @@ public class JurisdictionCodesMapper {
             return Collections.emptyList();
         }
         return data.getTypeOfClaim().stream()
-            .map(jurisdictionCodes::get)
+            .map(JURISDICTION_CODES::get)
             .collect(Collectors.toList());
     }
 
