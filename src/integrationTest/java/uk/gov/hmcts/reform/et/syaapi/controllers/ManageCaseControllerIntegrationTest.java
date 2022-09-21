@@ -129,9 +129,9 @@ class ManageCaseControllerIntegrationTest {
             .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
     }
 
-    @DisplayName("Should update case and return case data")
+    @DisplayName("Should update draft case and return case data")
     @Test
-    void updateCaseEndpoint() throws Exception {
+    void updateDraftCaseEndpoint() throws Exception {
         CaseRequest caseRequest = CaseRequest.builder()
             .caseTypeId(SCOTLAND_CASE_TYPE)
             .caseId("12")
@@ -166,6 +166,28 @@ class ManageCaseControllerIntegrationTest {
 
         mockMvc.perform(
                 put("/cases/submit-case")
+                    .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(resourceLoader.toJson(caseRequest)))
+            .andExpect(status().isOk())
+            .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
+    }
+
+    @DisplayName("Should update submitted case and return case data")
+    @Test
+    void updateSubmittedCaseEndpoint() throws Exception {
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseTypeId(SCOTLAND_CASE_TYPE)
+            .caseId("12")
+            .build();
+
+        when(ccdApiClient.startEventForCitizen(any(),any(),any(),any(),any(),any(),any()))
+            .thenReturn(startEventResponse);
+        when(ccdApiClient.submitEventForCitizen(any(),any(),any(),any(),any(),any(),anyBoolean(),any()))
+            .thenReturn(caseDetailsResponse);
+
+        mockMvc.perform(
+                put("/cases/update-case-submitted")
                     .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(resourceLoader.toJson(caseRequest)))
