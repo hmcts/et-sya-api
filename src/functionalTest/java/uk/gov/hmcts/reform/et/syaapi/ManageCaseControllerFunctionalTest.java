@@ -87,7 +87,7 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
     }
 
     @Test
-    void stage4UpdateCaseShouldReturnUpdatedCaseDetails() {
+    void stage4UpdateCaseShouldReturnUpdatedDraftCaseDetails() {
         Map<String, Object> caseData = new ConcurrentHashMap<>();
         caseData.put("claimantType", Map.of("claimant_email_address", CLAIMANT_EMAIL));
 
