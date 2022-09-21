@@ -30,12 +30,21 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 @Service
 @SuppressWarnings({"PMD.GodClass", "PMD.CyclomaticComplexity", "PMD.TooManyMethods", "PMD.CognitiveComplexity"})
 public class PdfMapperService {
+    private static final String PREFIX_13_R5 = "13 R5";
+    private static final String PREFIX_2_7_R3 = "2.7 R3";
+    private static final String PREFIX_13_R4 = "13 R4";
+    private static final String PREFIX_2_2 = "2.2";
+    private static final String PREFIX_2_5_R2 = "2.5 R2";
+    private static final String PREFIX_2_3 = "2.3";
+    private static final String PREFIX_2_6 = "2.6";
+    private static final String PREFIX_2_8 = "2.8";
+    private static final String OTHER = "Other";
     private static final  Map<String, String> TITLES = Map.of(
         "Mr", PdfMapperConstants.Q1_TITLE_MR,
         "Mrs", PdfMapperConstants.Q1_TITLE_MRS,
         "Miss", PdfMapperConstants.Q1_TITLE_MISS,
         "Ms", PdfMapperConstants.Q1_TITLE_MS,
-        "Other", PdfMapperConstants.Q1_TITLE_OTHER,
+        OTHER, PdfMapperConstants.Q1_TITLE_OTHER,
         "Other_Specify", PdfMapperConstants.Q1_TITLE_OTHER_SPECIFY
 
     );
@@ -44,25 +53,25 @@ public class PdfMapperService {
         "Mrs", "Missus",
         "Miss", "Miss",
         "Ms", "Miz",
-        "Other", "Miz"
+        OTHER, "Miz"
     );
     private static final String[] ADDRESS_PREFIX = {
-        "2.2",
-        "2.5 R2",
-        "2.7 R3",
-        "13 R4",
-        "13 R5"
+        PREFIX_2_2,
+        PREFIX_2_5_R2,
+        PREFIX_2_7_R3,
+        PREFIX_13_R4,
+        PREFIX_13_R5
     };
     private static final String REP_ADDRESS_PREFIX = "11.3 Representative's address:";
     private static final String CLAIMANT_ADDRESS_PREFIX = "1.5";
     private static final int MULTIPLE_RESPONDENTS = 2;
     private static final int MAX_RESPONDENTS = 5;
     private static final String[] ACAS_PREFIX = {
-        "2.3",
-        "2.6",
-        "2.8",
-        "13 R4",
-        "13 R5"
+        PREFIX_2_3,
+        PREFIX_2_6,
+        PREFIX_2_8,
+        PREFIX_13_R4,
+        PREFIX_13_R5
     };
     // This constant is defined because of the error in the pdf template file
     // The field for pay before tax options checked value in the pdf template
@@ -76,6 +85,7 @@ public class PdfMapperService {
     private static final String OFF = "Off";
     private static final String YES_LOWERCASE = "yes";
     private static final String NO_LOWERCASE = "no";
+
 
     /**
      * Maps the parameters within case data to the inputs of the PDF Template.
@@ -100,6 +110,9 @@ public class PdfMapperService {
         printFields.putAll(printCompensation(caseData));
         printFields.putAll(printWhistleBlowing(caseData));
         printFields.putAll(printRepresentative(caseData.getRepresentativeClaimantType()));
+        printFields.putAll(printDisabilities(caseData));
+        printFields.put(PdfMapperConstants.Q15_ADDITIONAL_INFORMATION,
+                        ofNullable(caseData.getEt1VettingAdditionalInformationTextArea()));
         return printFields;
     }
 
@@ -110,7 +123,7 @@ public class PdfMapperService {
                 TITLES.get(caseData.getClaimantIndType().getClaimantTitle()),
                 ofNullable(TITLE_MAP.get(caseData.getClaimantIndType().getClaimantTitle()))
             );
-            if ("Other".equals(caseData.getClaimantIndType().getClaimantTitle())) {
+            if (OTHER.equals(caseData.getClaimantIndType().getClaimantTitle())) {
                 printFields.put(TITLES.get("Other_Specify"),
                                 ofNullable(String.valueOf(caseData.getClaimantIndType().getClaimantTitleOther())));
             }
@@ -223,14 +236,14 @@ public class PdfMapperService {
     private Map<String, Optional<String>> printRespondant(RespondentSumType respondent, String questionPrefix) {
         String respondentTownOrCityPrefix = PdfMapperConstants.RP_POST_TOWN;
         String respondentHouseNumberPrefix = PdfMapperConstants.QX_HOUSE_NUMBER;
-        if ("2.7 R3".equals(questionPrefix)) {
+        if (PREFIX_2_7_R3.equals(questionPrefix)
+            || PREFIX_13_R5.equals(questionPrefix)
+            || PREFIX_13_R4.equals(questionPrefix)
+            || PREFIX_2_2.equals(questionPrefix)) {
             respondentHouseNumberPrefix = PdfMapperConstants.RP2_HOUSE_NUMBER;
         }
-        if ("2.5 R2".equals(questionPrefix)) {
+        if (PREFIX_2_5_R2.equals(questionPrefix)) {
             respondentTownOrCityPrefix = PdfMapperConstants.RP2_POST_TOWN;
-            respondentHouseNumberPrefix = PdfMapperConstants.RP2_HOUSE_NUMBER;
-        }
-        if ("2.2".equals(questionPrefix)) {
             respondentHouseNumberPrefix = PdfMapperConstants.RP2_HOUSE_NUMBER;
         }
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
@@ -255,7 +268,7 @@ public class PdfMapperService {
         String acasYesNo = respondent.getRespondentAcasQuestion().isEmpty() ? NO :
             respondent.getRespondentAcasQuestion();
         if (YES.equals(acasYesNo)) {
-            if ("2.8".equals(questionPrefix)) {
+            if (PREFIX_2_8.equals(questionPrefix)) {
                 printFields.put("2.8 yes", Optional.of(acasYesNo)
                 );
             } else {
@@ -266,10 +279,10 @@ public class PdfMapperService {
             printFields.put(String.format(PdfMapperConstants.QX_ACAS_NUMBER, questionPrefix),
                 ofNullable(respondent.getRespondentAcas()));
         } else {
-            if ("2.6".equals(questionPrefix)) {
+            if (PREFIX_2_6.equals(questionPrefix) || PREFIX_13_R5.equals(questionPrefix)) {
                 printFields.put(String.format(
                     PdfMapperConstants.QX_HAVE_ACAS_NO, questionPrefix), Optional.of(NO));
-            } else if ("2.8".equals(questionPrefix)) {
+            } else if (PREFIX_2_8.equals(questionPrefix)) {
                 printFields.put("2.8 no", Optional.of("Yes"));
             } else {
                 printFields.put(String.format(
@@ -352,12 +365,12 @@ public class PdfMapperService {
                     ofNullable(newEmploymentType.getNewlyEmployedFrom()));
                 printFields.put(PdfMapperConstants.Q7_EARNING,
                     ofNullable(newEmploymentType.getNewPayBeforeTax()));
-                if ("Weekly".equals(newEmploymentType.getNewJobPayInterval())) {
-                    printFields.put(PdfMapperConstants.Q7_EARNING_WEEKLY, Optional.of("Weekly"));
-                } else if ("Monthly".equals(newEmploymentType.getNewJobPayInterval())) {
-                    printFields.put(PdfMapperConstants.Q7_EARNING_MONTHLY, Optional.of("Monthly"));
+                if (WEEKLY.equals(newEmploymentType.getNewJobPayInterval())) {
+                    printFields.put(PdfMapperConstants.Q7_EARNING_WEEKLY, Optional.of(WEEKLY));
+                } else if (MONTHLY.equals(newEmploymentType.getNewJobPayInterval())) {
+                    printFields.put(PdfMapperConstants.Q7_EARNING_MONTHLY, Optional.of(MONTHLY));
                 } else {
-                    printFields.put(PdfMapperConstants.Q7_EARNING_ANNUAL, Optional.of("annually"));
+                    printFields.put(PdfMapperConstants.Q7_EARNING_ANNUAL, Optional.of(ANNUALLY));
                 }
 
             }
@@ -580,7 +593,7 @@ public class PdfMapperService {
             return printFields;
         }
         if (YES.equals(caseData.getClaimantRequests().getWhistleblowing())) {
-            printFields.put(PdfMapperConstants.Q10_WHISTLE_BLOWING, Optional.of(YES));
+            printFields.put(PdfMapperConstants.Q10_WHISTLE_BLOWING, Optional.of(YES_LOWERCASE));
             printFields.put(PdfMapperConstants.Q10_WHISTLE_BLOWING_REGULATOR,
                             ofNullable(caseData.getClaimantRequests().getWhistleblowingAuthority()));
         }
@@ -606,6 +619,8 @@ public class PdfMapperService {
                 ofNullable(repAddress.getCounty()));
             printFields.put(String.format(PdfMapperConstants.QX_POSTCODE, REP_ADDRESS_PREFIX),
                 ofNullable(repAddress.getPostCode()));
+            printFields.put(PdfMapperConstants.Q11_PHONE_NUMBER,
+                            ofNullable(representativeClaimantType.getRepresentativePhoneNumber()));
             printFields.put(PdfMapperConstants.Q11_MOBILE_NUMBER,
                 ofNullable(representativeClaimantType.getRepresentativeMobileNumber()));
             printFields.put(PdfMapperConstants.Q11_EMAIL,
@@ -625,5 +640,17 @@ public class PdfMapperService {
         return new HashMap<>();
     }
 
-
+    private Map<String, Optional<String>> printDisabilities(CaseData caseData) {
+        Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
+        if (caseData.getClaimantOtherType() != null) {
+            if (YES.equals(caseData.getClaimantOtherType().getClaimantDisabled())) {
+                printFields.put(PdfMapperConstants.Q12_DISABILITY_YES, Optional.of(YES));
+            } else {
+                printFields.put(PdfMapperConstants.Q12_DISABILITY_NO, Optional.of(NO_LOWERCASE));
+            }
+            printFields.put(PdfMapperConstants.Q12_DISABILITY_DETAILS,
+                            ofNullable(caseData.getClaimantOtherType().getClaimantDisabledDetails()));
+        }
+        return printFields;
+    }
 }

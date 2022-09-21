@@ -126,10 +126,15 @@ public final class PdfMapperConstants {
     public static final String Q11_REP_ORG =            "11.2 Name of organisation";
     public static final String Q11_REP_NUMBER =         "11.4 Representative's DX number (if known)";
     public static final String Q11_MOBILE_NUMBER =      "11.6 mobile number (if different)";
+    public static final String Q11_PHONE_NUMBER =      "11.5 Phone number";
     public static final String Q11_REFERENCE =          "11.7 Their reference for correspondence";
     public static final String Q11_EMAIL =              "11.8 Email address";
     public static final String Q11_CONTACT_POST =       "11.9 How would you prefer us to communicate with them? Post";
     public static final String Q11_CONTACT_EMAIL =      "11.9 How would you prefer us to communicate with them? Email";
+    public static final String Q12_DISABILITY_YES =     "12.1 Do you have a disability? Yes";
+    public static final String Q12_DISABILITY_NO =      "12.1 Do you have a disability? No";
+    public static final String Q12_DISABILITY_DETAILS = "12.1 If you have a disability, give details";
+    public static final String Q15_ADDITIONAL_INFORMATION = "15 Additional information";
     public static final String QX_NAME =                "%s name";
     public static final String QX_HOUSE_NUMBER =        "%s number or name";
     public static final String RP2_HOUSE_NUMBER =        "%s number";

@@ -261,7 +261,7 @@ class AcasServiceTest {
     void theGetAcasCertificatesByCaseDataProducesTwoAcasCertificates() throws
         AcasException, InvalidAcasNumbersException {
         List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(testData.getCaseData());
-        assertThat(acasCertificates).hasSize(3);
+        assertThat(acasCertificates).hasSize(5);
     }
 
     @Test
@@ -286,7 +286,7 @@ class AcasServiceTest {
         testData.getCaseData().getRespondentCollection().get(0).setValue(null);
         testData.getCaseData().getRespondentCollection().get(1).setValue(null);
         List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(testData.getCaseData());
-        assertThat(acasCertificates).hasSize(1);
+        assertThat(acasCertificates).hasSize(3);
     }
 
     @Test
@@ -294,7 +294,7 @@ class AcasServiceTest {
         AcasException, InvalidAcasNumbersException {
         testData.getCaseData().getRespondentCollection().get(0).getValue().setRespondentAcas("");
         List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(testData.getCaseData());
-        assertThat(acasCertificates).hasSize(2);
+        assertThat(acasCertificates).hasSize(4);
     }
 
     public static class DelegateResponseCreator implements ResponseCreator {
