@@ -74,6 +74,8 @@ public class PdfMapperService {
     private static final String POST = "Post";
     private static final String FAX = "Fax";
     private static final String OFF = "Off";
+    private static final String YES_LOWERCASE = "yes";
+    private static final String NO_LOWERCASE = "no";
 
     /**
      * Maps the parameters within case data to the inputs of the PDF Template.
@@ -95,6 +97,8 @@ public class PdfMapperService {
         printFields.putAll(printTypeAndDetailsOfClaim(caseData));
         printFields.put(PdfMapperConstants.Q8_CLAIM_DESCRIPTION,
                         ofNullable(caseData.getClaimantRequests().getClaimDescription()));
+        printFields.putAll(printCompensation(caseData));
+        printFields.putAll(printWhistleBlowing(caseData));
         printFields.putAll(printRepresentative(caseData.getRepresentativeClaimantType()));
         return printFields;
     }
@@ -264,12 +268,12 @@ public class PdfMapperService {
         } else {
             if ("2.6".equals(questionPrefix)) {
                 printFields.put(String.format(
-                    PdfMapperConstants.QX_HAVE_ACAS_NO, questionPrefix), Optional.of("No"));
+                    PdfMapperConstants.QX_HAVE_ACAS_NO, questionPrefix), Optional.of(NO));
             } else if ("2.8".equals(questionPrefix)) {
                 printFields.put("2.8 no", Optional.of("Yes"));
             } else {
                 printFields.put(String.format(
-                    PdfMapperConstants.QX_HAVE_ACAS_NO, questionPrefix), Optional.of("no"));
+                    PdfMapperConstants.QX_HAVE_ACAS_NO, questionPrefix), Optional.of(NO_LOWERCASE));
             }
             switch (respondent.getRespondentAcasNo()) {
                 case "Unfair Dismissal":
@@ -332,7 +336,7 @@ public class PdfMapperService {
                 printFields.put(PdfMapperConstants.Q5_NOT_ENDED,
                     ofNullable(claimantOtherType.getClaimantEmployedTo()));
             } else {
-                printFields.put(PdfMapperConstants.Q5_CONTINUING_NO, Optional.of("no"));
+                printFields.put(PdfMapperConstants.Q5_CONTINUING_NO, Optional.of(NO_LOWERCASE));
                 printFields.put(PdfMapperConstants.Q5_EMPLOYMENT_END,
                     ofNullable(claimantOtherType.getClaimantEmployedTo()));
             }
@@ -460,7 +464,7 @@ public class PdfMapperService {
                 printFields.put(PdfMapperConstants.Q8_TYPE_OF_CLAIM_WHISTLE_BLOWING, Optional.of(YES));
                 break;
             case "otherTypesOfClaims":
-                printFields.put(PdfMapperConstants.Q8_TYPE_OF_CLAIM_OTHER_TYPES_OF_CLAIMS, Optional.of(""));
+                printFields.put(PdfMapperConstants.Q8_TYPE_OF_CLAIM_OTHER_TYPES_OF_CLAIMS, Optional.of(YES));
                 break;
             default:
                 break;
@@ -530,6 +534,55 @@ public class PdfMapperService {
                 default:
                     break;
             }
+        }
+        return printFields;
+    }
+
+    private Map<String, Optional<String>> printCompensation(CaseData caseData) {
+        Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
+        if (caseData.getClaimantRequests() != null
+            && caseData.getClaimantRequests().getClaimOutcome() != null
+            && !caseData.getClaimantRequests().getClaimOutcome().isEmpty()) {
+            for (String claimOutcome : caseData.getClaimantRequests().getClaimOutcome()) {
+                switch (claimOutcome) {
+                    case "compensation":
+                        printFields.put(PdfMapperConstants.Q9_CLAIM_SUCCESSFUL_REQUEST_COMPENSATION,
+                                        Optional.of(YES_LOWERCASE));
+                        break;
+                    case "tribunal":
+                        printFields.put(PdfMapperConstants.Q9_CLAIM_SUCCESSFUL_REQUEST_DISCRIMINATION_RECOMMENDATION,
+                                        Optional.of(YES_LOWERCASE));
+                        break;
+                    case "oldJob":
+                        printFields.put(PdfMapperConstants.Q9_CLAIM_SUCCESSFUL_REQUEST_OLD_JOB_BACK_AND_COMPENSATION,
+                                        Optional.of(YES_LOWERCASE));
+                        break;
+                    case "anotherJob":
+                        printFields.put(PdfMapperConstants.Q9_CLAIM_SUCCESSFUL_REQUEST_ANOTHER_JOB,
+                                        Optional.of(YES_LOWERCASE));
+                        break;
+                    default:
+                        break;
+                }
+            }
+            printFields.put(PdfMapperConstants.Q9_WHAT_COMPENSATION_REMEDY_ARE_YOU_SEEKING,
+                            Optional.of(caseData.getClaimantRequests().getClaimantCompensationText()
+                                            + " "
+                                            + caseData.getClaimantRequests().getClaimantCompensationAmount()));
+        }
+
+        return printFields;
+    }
+
+    private Map<String, Optional<String>> printWhistleBlowing(CaseData caseData) {
+        Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
+        if (caseData.getClaimantRequests() == null) {
+            return printFields;
+        }
+        if (YES.equals(caseData.getClaimantRequests().getWhistleblowing())) {
+            printFields.put(PdfMapperConstants.Q10_WHISTLE_BLOWING, Optional.of(YES));
+            printFields.put(PdfMapperConstants.Q10_WHISTLE_BLOWING_REGULATOR,
+                            ofNullable(caseData.getClaimantRequests().getWhistleblowingAuthority()));
         }
         return printFields;
     }

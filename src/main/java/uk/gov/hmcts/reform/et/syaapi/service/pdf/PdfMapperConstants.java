@@ -104,6 +104,24 @@ public final class PdfMapperConstants {
     public static final String Q8_TYPE_OF_DISCRIMINATION_SEX = "8.1 sex (including equal pay)";
     public static final String Q8_CLAIM_DESCRIPTION
         = "8.2 Please set out the background and details of your claim in the space below";
+    public static final String Q9_CLAIM_SUCCESSFUL_REQUEST_OLD_JOB_BACK_AND_COMPENSATION =
+        "9.1 If claiming unfair dismissal, to get your old job back and compensation (reinstatement)";
+    public static final String Q9_CLAIM_SUCCESSFUL_REQUEST_ANOTHER_JOB =
+        "9.1 If claiming unfair dismissal, to get another job with the same employer or "
+            + "associated employer and compensation (re-engagement)";
+    public static final String Q9_CLAIM_SUCCESSFUL_REQUEST_COMPENSATION = "9.1 Compensation only";
+    public static final String Q9_CLAIM_SUCCESSFUL_REQUEST_DISCRIMINATION_RECOMMENDATION =
+        "9.1 If claiming discrimination, a recommendation (see Guidance)";
+    public static final String Q9_WHAT_COMPENSATION_REMEDY_ARE_YOU_SEEKING =
+        "9.2 What compensation or remedy are you seeking?";
+    public static final String Q10_WHISTLE_BLOWING =
+        "10.1 If your claim consists of, or includes, a claim that you are making a "
+            + "protected disclosure under the Employment Rights Act 1996 "
+            + "(otherwise known as a ‘whistleblowing’ claim), "
+            + "please tick the box if you want a copy of this form, or information from it, to be forwarded on your "
+            + "behalf to a relevant regulator (known as a ‘prescribed person’ under the relevant legislation) by "
+            + "tribunal staff. (See Guidance)";
+    public static final String Q10_WHISTLE_BLOWING_REGULATOR = "10.1 name of relevant regulator";
     public static final String Q11_REP_NAME =           "11.1 Name of representative";
     public static final String Q11_REP_ORG =            "11.2 Name of organisation";
     public static final String Q11_REP_NUMBER =         "11.4 Representative's DX number (if known)";

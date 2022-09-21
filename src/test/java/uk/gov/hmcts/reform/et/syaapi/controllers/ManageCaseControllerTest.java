@@ -36,7 +36,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.EMAIL_TEST_GMAIL_COM;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_FIRST_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SURNAME;
 
 @WebMvcTest(
     controllers = {ManageCaseController.class}
@@ -197,9 +200,9 @@ class ManageCaseControllerTest {
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
             "12",
-            "test@gmail.com",
-            "Joe",
-            "Bloggs",
+            EMAIL_TEST_GMAIL_COM,
+            TEST_FIRST_NAME,
+            TEST_SURNAME,
             null
         ));
 
@@ -233,9 +236,9 @@ class ManageCaseControllerTest {
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
             "12",
-            "test@gmail.com",
-            "Joe",
-            "Bloggs",
+            EMAIL_TEST_GMAIL_COM,
+            TEST_FIRST_NAME,
+            TEST_SURNAME,
             null
         ));
 
@@ -268,9 +271,9 @@ class ManageCaseControllerTest {
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
             "12",
-            "test@gmail.com",
-            "Joe",
-            "Bloggs",
+            EMAIL_TEST_GMAIL_COM,
+            TEST_FIRST_NAME,
+            TEST_SURNAME,
             null
         ));
 
@@ -303,9 +306,9 @@ class ManageCaseControllerTest {
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
             "12",
-            "test@gmail.com",
-            "Joe",
-            "Bloggs",
+            EMAIL_TEST_GMAIL_COM,
+            TEST_FIRST_NAME,
+            TEST_SURNAME,
             null
         ));
 

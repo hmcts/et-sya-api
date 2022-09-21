@@ -265,7 +265,7 @@
     "new_job_pay_interval" : "Weekly"
   },
   "claimantRequests" : {
-    "claim_outcome" : null,
+    "claim_outcome" : ["compensation", "tribunal", "oldJob", "anotherJob"],
     "claimant_compensation_text" : "Yes",
     "claimant_compensation_amount" : "2000",
     "claimant_tribunal_recommendation" : "Yes",

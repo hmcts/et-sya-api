@@ -104,14 +104,6 @@ public class ManageCaseController {
         } catch (PdfServiceException | CaseDocumentException | AcasException | InvalidAcasNumbersException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
-        var caseDetails = caseService.triggerEvent(
-            authorization,
-            caseRequest.getCaseId(),
-            CaseEvent.SUBMIT_CASE_DRAFT,
-            caseRequest.getCaseTypeId(),
-            caseRequest.getCaseData()
-        );
-        return ok(caseDetails);
     }
 
     @PutMapping("/update-case-submitted")
