@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
@@ -25,6 +26,7 @@ import java.util.Optional;
 /**
  * Uses {@link PdfMapperService} to convert a given case into a Pdf Document.
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor()
 public class PdfService {
@@ -60,8 +62,12 @@ public class PdfService {
                 String entryKey = entry.getKey();
                 Optional<String> entryValue = entry.getValue();
                 if (entryValue.isPresent()) {
-                    PDField pdfField = pdfForm.getField(entryKey);
-                    pdfField.setValue(entryValue.get());
+                    try {
+                        PDField pdfField = pdfForm.getField(entryKey);
+                        pdfField.setValue(entryValue.get());
+                    } catch (Exception e) {
+                        log.error(e.getMessage(), e);
+                    }
                 }
             }
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -71,7 +77,7 @@ public class PdfService {
     }
 
     private static String createPdfDocumentNameFromCaseData(CaseData caseData) {
-        return "ET1_"
+        return "ET1_CASE_DOCUMENT"
             + caseData.getClaimantIndType().getClaimantFirstNames().replace(" ", "_")
             + "_"
             + caseData.getClaimantIndType().getClaimantLastName().replace(" ", "_")
@@ -80,7 +86,7 @@ public class PdfService {
 
     private static String createPdfDocumentNameFromCaseDataAndAcasCertificate(
         CaseData caseData, AcasCertificate acasCertificate) {
-        return "ET1_"
+        return "ET1_ACAS_CERTIFICATE"
             + caseData.getClaimantIndType().getClaimantFirstNames().replace(" ", "_")
             + "_"
             + caseData.getClaimantIndType().getClaimantLastName().replace(" ", "_")

@@ -202,7 +202,7 @@ public class CaseService {
                                                caseRequest.getCaseTypeId(), caseRequest.getCaseData());
         caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :
             caseDetails.getData().get("ethosCaseReference").toString());
-        caseData.setListedDate(caseDetails.getCreatedDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+        caseData.setReceiptDate(caseDetails.getCreatedDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
         PdfDecodedMultipartFile casePdfFile =
             pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData);
         caseDetails.getData().put("documentCollection",

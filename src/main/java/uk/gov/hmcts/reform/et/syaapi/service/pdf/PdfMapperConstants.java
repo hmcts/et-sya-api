@@ -11,6 +11,8 @@ public final class PdfMapperConstants {
     public static final String Q1_TITLE_MRS =           "1.1 Title Mrs";
     public static final String Q1_TITLE_MISS =          "1.1 Title Miss";
     public static final String Q1_TITLE_MS =            "1.1 Title Ms";
+    public static final String Q1_TITLE_OTHER =         "1.1 Title other";
+    public static final String Q1_TITLE_OTHER_SPECIFY = "1.1 other specify";
     public static final String Q1_FIRST_NAME =          "1.2 first names";
     public static final String Q1_SURNAME =             "1.3 surname";
     public static final String Q1_DOB_DAY =             "1.4 DOB day";
@@ -23,6 +25,11 @@ public final class PdfMapperConstants {
     public static final String Q1_CONTACT_POST =        "1.8 How should we contact you - Post";
     public static final String Q1_CONTACT_EMAIL =       "1.8 How should we contact you - Email";
     public static final String Q1_EMAIL =               "1.9 email";
+    public static final String I_CAN_TAKE_PART_IN_VIDEO_HEARINGS = "1.11 video";
+    public static final String I_CAN_TAKE_PART_IN_PHONE_HEARINGS = "1.11 phone";
+    public static final String I_CAN_TAKE_PART_IN_NO_HEARINGS = "1.11 no";
+    public static final String I_CAN_TAKE_PART_IN_NO_HEARINGS_EXPLAIN = "1.11 explain";
+
     public static final String Q2_EMPLOYER_NAME =       "2.1 Give the name of your employer or the person or "
         + "organisation you are claiming against";
     public static final String Q2_DIFFADDRESS_NUMBER =  "2.4 Full, different working address - Number or name";
@@ -36,7 +43,6 @@ public final class PdfMapperConstants {
         + "claims against the same employer arising from the same, or similar, circumstances? Yes";
     public static final String Q3_MORE_CLAIMS_NO =      "3.1 Are you aware that your claim is one of a number of "
         + "claims against the same employer arising from the same, or similar, circumstances? No";
-    public static final String Q3_MORE_CLAIMS =         "3.1 if yes, give the names of any other claimants";
     public static final String Q4_EMPLOYED_BY_YES =     "4.1 yes";
     public static final String Q4_EMPLOYED_BY_NO =      "4.1 no";
     public static final String Q5_EMPLOYMENT_START =    "5.1 employment start";
@@ -75,16 +81,29 @@ public final class PdfMapperConstants {
     public static final String Q7_EARNING_WEEKLY =      "7.3 weekly";
     public static final String Q7_EARNING_MONTHLY =     "7.3 monthly";
     public static final String Q7_EARNING_ANNUAL =      "7.3 annually";
-    public static final String Q10_WHISTLEBLOW_TICK =   "10.1 If your claim consists of, or includes, a claim that "
-        + "you are making a protected disclosure under the Employment Rights Act 1996 (otherwise known as a "
-        + "‘whistleblowing’ claim), please tick the box if you want a copy of this form, or information from it, to be "
-        + "forwarded on your behalf to a relevant regulator (known as a ‘prescribed person’ under the relevant "
-        + "legislation) by tribunal staff.";
-    public static final String Q10_WHITLEBLOW_NAME =    "10.1 If your claim consists of, or includes, a claim that "
-        + "you are making a protected disclosure under the Employment Rights Act 1996 (otherwise known as a "
-        + "‘whistleblowing’ claim), please tick the box if you want a copy of this form, or information from it, to "
-        + "be forwarded on your behalf to a relevant regulator (known as a ‘prescribed person’ under the relevant "
-        + "legislation) by tribunal staff";
+    public static final String Q8_TYPE_OF_CLAIM_DISCRIMINATION = "8.1 I was discriminated against on the grounds of";
+    public static final String Q8_TYPE_OF_CLAIM_UNFAIRLY_DISMISSED =
+        "8.1 I was unfairly dismissed (including constructive dismissal)";
+    public static final String Q8_TYPE_OF_CLAIM_WHISTLE_BLOWING = "8.1 whistleblowing";
+    public static final String Q8_TYPE_OF_CLAIM_REDUNDANCY_PAYMENT = "8.1 I am claiming a redundancy payment";
+    public static final String Q8_TYPE_OF_CLAIM_BREACH_OF_CONTRACT = "8.1 owed";
+    public static final String Q8_TYPE_OF_CLAIM_OTHER_TYPES_OF_CLAIMS = "8.1 other type of claim";
+    public static final String Q8_TYPE_OF_DISCRIMINATION_AGE = "8.1 age";
+    public static final String Q8_TYPE_OF_DISCRIMINATION_GENDER_REASSIGNMENT = "8.1 gender reassignment";
+    public static final String Q8_TYPE_OF_DISCRIMINATION_PREGNANCY_OR_MATERNITY = "8.1 pregnancy or maternity";
+    public static final String Q8_TYPE_OF_DISCRIMINATION_SEXUAL_ORIENTATION = "8.1 sexual orientation";
+    public static final String Q8_TYPE_OF_DISCRIMINATION_RELIGION_OR_BELIEF = "8.1 religion or belief";
+    public static final String Q8_TYPE_OF_DISCRIMINATION_RACE = "8.1 race";
+    public static final String Q8_TYPE_OF_DISCRIMINATION_DISABILITY = "8.1 disability";
+    public static final String Q8_TYPE_OF_DISCRIMINATION_MARRIAGE_OR_CIVIL_PARTNERSHIP =
+        "8.1 marriage or civil partnership";
+    public static final String Q8_TYPE_OF_PAY_CLAIMS_NOTICE_PAY = "8.1 notice pay";
+    public static final String Q8_TYPE_OF_PAY_CLAIMS_HOLIDAY_PAY = "8.1 holiday pay";
+    public static final String Q8_TYPE_OF_PAY_CLAIMS_ARREARS = "8.1 arrears of pay";
+    public static final String Q8_TYPE_OF_PAY_CLAIMS_OTHER_PAYMENTS = "8.1 other payments";
+    public static final String Q8_TYPE_OF_DISCRIMINATION_SEX = "8.1 sex (including equal pay)";
+    public static final String Q8_CLAIM_DESCRIPTION
+        = "8.2 Please set out the background and details of your claim in the space below";
     public static final String Q11_REP_NAME =           "11.1 Name of representative";
     public static final String Q11_REP_ORG =            "11.2 Name of organisation";
     public static final String Q11_REP_NUMBER =         "11.4 Representative's DX number (if known)";
@@ -93,16 +112,6 @@ public final class PdfMapperConstants {
     public static final String Q11_EMAIL =              "11.8 Email address";
     public static final String Q11_CONTACT_POST =       "11.9 How would you prefer us to communicate with them? Post";
     public static final String Q11_CONTACT_EMAIL =      "11.9 How would you prefer us to communicate with them? Email";
-    public static final String Q11_CONTACT_FAX =        "11.9 How would you prefer us to communicate with them? Fax";
-    public static final String Q14_SATISFIED =          "14 satisfied tick box";
-    // multiple places in pdf
-    // claimant - "1.5"
-    // R1 - "2.2"
-    // R2 - "2.5 R2"
-    // R3 - "2.7 R3"
-    // R4 - "13 R4"
-    // R5 - "13 R5"
-    // rep - "11.3 Representative's address:"
     public static final String QX_NAME =                "%s name";
     public static final String QX_HOUSE_NUMBER =        "%s number or name";
     public static final String RP2_HOUSE_NUMBER =        "%s number";

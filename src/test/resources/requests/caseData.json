@@ -1,9 +1,10 @@
 {
-  "typeOfClaim" : [ "discrimination", "breachOfContract", "payRelated", "unfairDismissal", "whistleBlowing" ],
+  "typeOfClaim" : [ "discrimination", "breachOfContract", "payRelated", "unfairDismissal", "whistleBlowing",
+    "otherTypesOfClaims" ],
   "caseType" : "Single",
   "caseSource" : "Internet",
   "claimantRepresentedQuestion" : "Yes",
-  "claimantWorkAddressQuestion" : null,
+  "claimantWorkAddressQuestion" : "No",
   "ClaimantPcqId" : null,
   "jurCodesCollection" : [ {
     "id" : "1",
@@ -16,28 +17,28 @@
     }
   } ],
   "claimantIndType" : {
-    "claimant_preferred_title" : "Mr",
+    "claimant_preferred_title" : "Other",
     "claimant_title1" : "Mr",
-    "claimant_title_other" : null,
+    "claimant_title_other" : "Dr.",
     "claimant_first_names" : "Michael",
     "claimant_last_name" : "Jackson",
     "claimant_date_of_birth" : "1979-08-05",
     "claimant_gender" : null,
-    "claimant_sex" : "Male",
+    "claimant_sex" : "Prefer not to say",
     "claimant_gender_identity_same" : null,
     "claimant_gender_identity" : "Heterosexual"
   },
   "claimantType" : {
     "claimant_addressUK" : {
       "AddressLine1" : "40 Furrow way",
-      "AddressLine2" : null,
+      "AddressLine2" : "40 Furrow yolu",
       "AddressLine3" : null,
       "PostTown" : "Maidenhead",
       "County" : "Berkshire",
       "PostCode" : "SL6 3NY",
       "Country" : "United Kingdom"
     },
-    "claimant_phone_number" : "07444518903",
+    "claimant_phone_number" : "07444518904",
     "claimant_mobile_number" : "07444518903",
     "claimant_email_address" : "test@gmail.com",
     "claimant_contact_preference" : "Email",
@@ -66,7 +67,7 @@
   "claimantOtherType" : {
     "claimant_occupation" : "Software Engineer",
     "claimant_employed_from" : "2020-01-01T07:22:05.000Z",
-    "claimant_employed_currently" : "No",
+    "claimant_employed_currently" : "Yes",
     "claimant_employed_to" : "2022-01-01T07:22:05.000Z",
     "claimant_employed_notice_period" : "Yes",
     "claimant_disabled" : "No",
@@ -82,7 +83,7 @@
     "claimant_pension_weekly_contribution" : "100",
     "claimant_benefits" : "Yes",
     "claimant_benefits_detail" : "Car",
-    "pastEmployer" : "Test Soft",
+    "pastEmployer" : "Yes",
     "stillWorking" : "No"
   },
   "respondentCollection" : [ {
@@ -98,13 +99,13 @@
       "responseNotes" : null,
       "response_referred_to_judge" : null,
       "response_returned_from_judge" : null,
-      "respondent_name" : "Marc Judge",
+      "respondent_name" : "Test Respondent Organisation -1-",
       "respondent_ACAS_question" : "Yes",
       "respondent_ACAS" : "R600227/21/75",
-      "respondent_ACAS_no" : "Yes",
+      "respondent_ACAS_no" : "Employer already in touch",
       "respondent_address" : {
         "AddressLine1" : "23 Furrow way",
-        "AddressLine2" : null,
+        "AddressLine2" : "23 Furrow yolu",
         "AddressLine3" : null,
         "PostTown" : "Liverpool Center",
         "County" : "Liverpool",
@@ -152,8 +153,8 @@
       "response_returned_from_judge" : null,
       "respondent_name" : "Mehmet Tahir Dede",
       "respondent_ACAS_question" : "Yes",
-      "respondent_ACAS" : "R600227/21/75",
-      "respondent_ACAS_no" : "Yes",
+      "respondent_ACAS" : "R600227/21/76",
+      "respondent_ACAS_no" : "Unfair Dismissal",
       "respondent_address" : {
         "AddressLine1" : "33 Furrow way",
         "AddressLine2" : null,
@@ -189,11 +190,63 @@
       "et3Vetting" : null,
       "et3VettingCompleted" : null
     }
+  }, {
+    "id" : "3",
+    "value" : {
+      "response_status" : null,
+      "responseToClaim" : null,
+      "rejection_reason" : null,
+      "rejection_reason_other" : null,
+      "responseOutOfTime" : null,
+      "responseNotOnPrescribedForm" : null,
+      "responseRequiredInfoAbsent" : null,
+      "responseNotes" : null,
+      "response_referred_to_judge" : null,
+      "response_returned_from_judge" : null,
+      "respondent_name" : "Abuzer Kadayif",
+      "respondent_ACAS_question" : "Yes",
+      "respondent_ACAS" : "R600227/21/77",
+      "respondent_ACAS_no" : "Another person",
+      "respondent_address" : {
+        "AddressLine1" : "33 Furrow way",
+        "AddressLine2" : "33 Furrow yolu",
+        "AddressLine3" : null,
+        "PostTown" : "Blackpool Next to Ocean",
+        "County" : "Blackpool",
+        "PostCode" : "BL1 1AA",
+        "Country" : "United Kingdom"
+      },
+      "respondent_phone1" : "07444123654",
+      "respondent_phone2" : "07444124987",
+      "respondent_email" : "test.surname@gmail.com",
+      "respondent_contact_preference" : "Email",
+      "responseStruckOut" : null,
+      "responseStruckOutDate" : null,
+      "responseStruckOutChairman" : null,
+      "responseStruckOutReason" : null,
+      "responseRespondentAddress" : null,
+      "responseRespondentPhone1" : null,
+      "responseRespondentPhone2" : null,
+      "responseRespondentEmail" : null,
+      "responseRespondentContactPreference" : null,
+      "responseReceived" : null,
+      "responseReceivedDate" : null,
+      "responseRespondentNameQuestion" : null,
+      "responseRespondentName" : null,
+      "responseContinue" : null,
+      "responseCounterClaim" : null,
+      "responseReference" : null,
+      "extensionRequested" : null,
+      "extensionGranted" : null,
+      "extensionDate" : null,
+      "et3Vetting" : null,
+      "et3VettingCompleted" : null
+    }
   } ],
   "claimantWorkAddress" : {
     "claimant_work_address" : {
       "AddressLine1" : "9 Furrow way",
-      "AddressLine2" : null,
+      "AddressLine2" : "9 Furrow yolu",
       "AddressLine3" : null,
       "PostTown" : "Belfast Center",
       "County" : "Belfast",
@@ -204,12 +257,12 @@
   },
   "caseNotes" : "Dummy Case Notes",
   "additionalCaseInfo" : null,
-  "managingOffice" : "ET_Scotland",
+  "managingOffice" : "Aberdeen",
   "newEmploymentType" : {
     "new_job" : "Software Specialist",
     "newly_employed_from" : "2022-03-01T07:22:05.000Z",
     "new_pay_before_tax" : "30000",
-    "new_job_pay_interval" : "Annual"
+    "new_job_pay_interval" : "Weekly"
   },
   "claimantRequests" : {
     "claim_outcome" : null,
@@ -224,11 +277,12 @@
       "document_filename" : "filename",
       "document_url" : "https://document.url"
     },
-    "discrimination_claims" : null,
-    "pay_claims" : null
+    "discrimination_claims" : ["age", "disability", "ethnicity", "genderReassignment", "marriageOrCivilPartnership",
+    "pregnancyOrMaternity", "race", "religionOrBelief", "Sex (Including equal pay)", "sexualOrientation"],
+    "pay_claims" : ["arrears", "holidayPay", "noticePay", "redundancyPay", "otherPayments"]
   },
   "claimantHearingPreference" : {
-    "hearing_preferences" : [ "Video", "Phone" ],
+    "hearing_preferences" : [ ],
     "hearing_assistance" : "Yes I want",
     "reasonable_adjustments" : "Yes",
     "reasonable_adjustments_detail" : "I need a wheelchair"
@@ -244,7 +298,7 @@
   "tribunalCorrespondenceFax" : null,
   "tribunalCorrespondenceDX" : null,
   "tribunalCorrespondenceEmail" : null,
-  "ethosCaseReference" : null,
+  "ethosCaseReference" : "1646225213651598",
   "multipleReference" : null,
   "multipleReferenceLinkMarkUp" : null,
   "parentMultipleCaseId" : null,
@@ -254,7 +308,7 @@
   "claimant_TypeOfClaimant" : null,
   "claimant_Company" : null,
   "preAcceptCase" : null,
-  "receiptDate" : null,
+  "receiptDate" : "2022-09-20 12:00",
   "claimServedDate" : null,
   "feeGroupReference" : null,
   "claimantWorkAddressQRespondent" : null,

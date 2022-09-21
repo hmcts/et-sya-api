@@ -14,6 +14,7 @@ import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
@@ -33,6 +34,7 @@ import static  org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
@@ -157,13 +159,13 @@ class CaseServiceTest {
             testData.getStartEventResponse());
 
         when(ccdApiClient.submitForCitizen(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            USER_ID,
-            EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
-            true,
-            testData.getTestDraftCaseDataContent()
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(TEST_SERVICE_AUTH_TOKEN),
+             eq(USER_ID),
+            eq(EtSyaConstants.JURISDICTION_ID),
+            eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
+            eq(true),
+            any(CaseDataContent.class)
         )).thenReturn(testData.getExpectedDetails());
 
         when(postcodeToOfficeService.getTribunalOfficeFromPostcode(any()))
