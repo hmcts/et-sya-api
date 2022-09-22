@@ -13,23 +13,23 @@ public final class ClaimTypesConstants {
     public static final String OTHER_TYPES = "otherTypesOfClaims";
 
     //Discrimination types:
-    public static final String AGE = "age";
-    public static final String DISABILITY = "disability";
-    public static final String ETHNICITY = "ethnicity";
-    public static final String GENDER_REASSIGNMENT = "genderReassignment";
-    public static final String MARRIAGE_OR_CIVIL_PARTNERSHIP = "marriageOrCivilPartnership";
-    public static final String PREGNANCY_OR_MATERNITY = "pregnancyOrMaternity";
-    public static final String RACE = "race";
-    public static final String RELIGION_OR_BELIEF = "religionOrBelief";
-    public static final String SEX = "Sex (Including equal pay)";
-    public static final String SEXUAL_ORIENTATION = "sexualOrientation";
+    public static final String AGE = "Age";
+    public static final String DISABILITY = "Disability";
+    public static final String ETHNICITY = "Ethnicity";
+    public static final String GENDER_REASSIGNMENT = "Gender reassignment";
+    public static final String MARRIAGE_OR_CIVIL_PARTNERSHIP = "Marriage or civil partnership";
+    public static final String PREGNANCY_OR_MATERNITY = "Pregnancy or maternity";
+    public static final String RACE = "Race";
+    public static final String RELIGION_OR_BELIEF = "Religion or belief";
+    public static final String SEX = "Sex";
+    public static final String SEXUAL_ORIENTATION = "Sexual orientation";
 
     //Payment types:
-    public static final String ARREARS = "arrears";
-    public static final String HOLIDAY_PAY = "holidayPay";
-    public static final String NOTICE_PAY = "noticePay";
-    public static final String REDUNDANCY_PAY = "redundancyPay";
-    public static final String OTHER_PAYMENTS = "otherPayments";
+    public static final String ARREARS = "Arrears";
+    public static final String HOLIDAY_PAY = "Holiday pay";
+    public static final String NOTICE_PAY = "Notice pay";
+    public static final String REDUNDANCY_PAY = "Redundancy pay";
+    public static final String OTHER_PAYMENTS = "Other payments";
 
     private ClaimTypesConstants() {
         // restrict instantiation
