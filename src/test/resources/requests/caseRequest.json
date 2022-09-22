@@ -1,11 +1,6 @@
 {
   "case_type_id": "ET_Scotland",
-  "event" : {
-    "id" : "INITIATE_CASE_DRAFT",
-    "summary" : null,
-    "description" : null
-  },
-  "data" : {
+  "case_data" : {
     "typeOfClaim" : [ "discrimination", "breachOfContract", "payRelated", "unfairDismissal", "whistleBlowing",
       "otherTypesOfClaims" ],
     "caseType" : "Single",
@@ -802,10 +797,5 @@
     "closeReferralHearingDetails" : null,
     "confirmCloseReferral" : null,
     "closeReferralGeneralNotes" : null
-  },
-  "supplementary_data_request" : null,
-  "security_classification" : null,
-  "event_token" : "123",
-  "ignore_warning" : false,
-  "case_reference" : null
+  }
 }

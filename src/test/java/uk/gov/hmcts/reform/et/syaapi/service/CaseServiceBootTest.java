@@ -81,7 +81,7 @@ class CaseServiceBootTest {
             TEST_SERVICE_AUTH_TOKEN,
             USER_ID,
             EtSyaConstants.JURISDICTION_ID,
-            testData.getCaseData().getEcmCaseType(),
+            testData.getCaseRequest().getCaseTypeId(),
             testData.getCaseRequest().getCaseId(),
             SUBMIT_CASE_DRAFT
         )).thenReturn(
@@ -91,14 +91,14 @@ class CaseServiceBootTest {
             eq(TEST_SERVICE_AUTH_TOKEN),
             eq(USER_ID),
             eq(EtSyaConstants.JURISDICTION_ID),
-            eq(testData.getCaseData().getEcmCaseType()),
+            eq(testData.getCaseRequest().getCaseTypeId()),
             eq(testData.getCaseRequest().getCaseId()),
             eq(true),
             any(CaseDataContent.class)
         )).thenReturn(testData.getExpectedDetails());
         when(caseDocumentService.uploadAllDocuments(
             eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(testData.getCaseData().getEcmCaseType()),
+            eq(testData.getCaseRequest().getCaseTypeId()),
             any(PdfDecodedMultipartFile.class),
             anyList()
             )).thenReturn(testData.getUploadDocumentResponse());

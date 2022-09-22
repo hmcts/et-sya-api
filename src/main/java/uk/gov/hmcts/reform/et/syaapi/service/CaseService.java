@@ -11,7 +11,6 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
@@ -44,7 +43,6 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
-import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CASE_FIELD_MANAGING_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
@@ -113,19 +111,18 @@ public class CaseService {
                                   CaseRequest caseRequest) {
         String s2sToken = authTokenGenerator.generate();
         String userId = idamClient.getUserDetails(authorization).getId();
-        String caseType = getCaseType(getTribunalOfficeFromPostCode(caseRequest.getPostCode()));
         String eventTypeName = INITIATE_CASE_DRAFT.name();
-
+        Et1CaseData data = new EmployeeObjectMapper().getEmploymentCaseData(caseRequest.getCaseData());
         StartEventResponse ccdCase = ccdApiClient.startForCitizen(
             authorization,
             s2sToken,
             userId,
             JURISDICTION_ID,
-            caseType,
+            caseRequest.getCaseTypeId(),
             eventTypeName
         );
 
-        Et1CaseData data = new EmployeeObjectMapper().getEmploymentCaseData(caseRequest.getCaseData());
+
         CaseDataContent caseDataContent = CaseDataContent.builder()
             .event(Event.builder().id(eventTypeName).build())
             .eventToken(ccdCase.getToken())
@@ -137,49 +134,20 @@ public class CaseService {
             s2sToken,
             userId,
             JURISDICTION_ID,
-            caseType,
+            caseRequest.getCaseTypeId(),
             true,
             caseDataContent
         );
     }
 
-    /**
-     * Given a tribunal office, this will retrieve the correct case type id.
-     *
-     * @param office is used to get office name to find case type id
-     * @return the associated case type id if the case type id is found by given office name
-     */
-    private String getCaseType(TribunalOffice office) {
-        return getCaseTypeId(office.getOfficeName());
-    }
-
-    /**
-     * Given a post code, this will retrieve the matching Tribunal Office. If no Tribunal Office found
-     * returns the Default one which is LONDON_SOUTH
-     *
-     * @param postCode is used to find the closest Tribunal Office
-     * @return the associated Tribunal Office if any found by the given postcode. If not returns default one
-     */
-    private TribunalOffice getTribunalOfficeFromPostCode(String postCode) {
-        try {
-            return postcodeToOfficeService.getTribunalOfficeFromPostcode(postCode)
-                .orElse(DEFAULT_TRIBUNAL_OFFICE);
-        } catch (InvalidPostcodeException e) {
-            log.info("Failed to find tribunal office : {} ", e.getMessage());
-            return DEFAULT_TRIBUNAL_OFFICE;
-        }
+    private TribunalOffice getTribunalOfficeByCaseTypeId(String caseTypeId) {
+        return postcodeToOfficeService.getTribunalOfficeByCaseTypeId(caseTypeId).orElse(DEFAULT_TRIBUNAL_OFFICE);
     }
 
     private CaseData convertCaseRequestToCaseDataWithTribunalOffice(CaseRequest caseRequest) {
         caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE,
-                                      getTribunalOfficeFromPostCode(caseRequest.getPostCode()).getOfficeName());
+                                      getTribunalOfficeByCaseTypeId(caseRequest.getCaseTypeId()));
         return EmployeeObjectMapper.mapCaseRequestToCaseData(caseRequest.getCaseData());
-    }
-
-    public CaseDetails updateCase(String authorization,
-                                  CaseRequest caseRequest) {
-        return triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.UPDATE_CASE_DRAFT,
-                            caseRequest.getCaseTypeId(), caseRequest.getCaseData());
     }
 
     /**
@@ -208,7 +176,7 @@ public class CaseService {
         caseDetails.getData().put("documentCollection",
                                   caseDocumentService
                                       .uploadAllDocuments(authorization,
-                                                          caseData.getEcmCaseType(),
+                                                          caseRequest.getCaseTypeId(),
                                                           casePdfFile,
                                                           acasCertificates));
         notificationService
@@ -221,21 +189,6 @@ public class CaseService {
                 caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString(),
                 notificationsProperties.getCitizenPortalLink());
         return caseDetails;
-    }
-
-    /**
-     * Given a caseId, triggers update events for the case.
-     *
-     * @param authorization is used to seek the {@link UserDetails} for request
-     * @param caseId used to retrieve get case details
-     * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
-     * @param eventName is used to determine INITIATE_CASE_DRAFT or UPDATE_CASE_DRAFT
-     * @param caseData is used to provide the {@link Et1CaseData} in json format
-     * @return the associated {@link CaseData} if the case is updated
-     */
-    public CaseDetails triggerEvent(String authorization, String caseId, String caseType,
-                                    CaseEvent eventName, Map<String, Object> caseData) {
-        return triggerEvent(authorization, caseId, eventName, caseType, caseData);
     }
 
     /**

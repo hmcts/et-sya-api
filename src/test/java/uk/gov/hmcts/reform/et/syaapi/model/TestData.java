@@ -18,8 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.CASE_ID;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.INITIATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.UPDATE_CASE_DRAFT;
 
 
@@ -66,6 +64,10 @@ public final class TestData {
         "responses/documentTypeItemList.json",
         DocumentTypeItem.class
     );
+    private final CaseRequest caseRequest = ResourceLoader.fromString(
+        "requests/caseRequest.json",
+        CaseRequest.class
+    );
 
 
     public Map<String, Object> getCaseRequestCaseDataMap() {
@@ -90,28 +92,11 @@ public final class TestData {
         return requestCaseData;
     }
 
-    public CaseRequest getCaseRequest() {
-        return CaseRequest.builder()
-            .postCode(caseData.getClaimantType().getClaimantAddressUK().getPostCode())
-            .caseId(CASE_ID)
-            .caseTypeId(caseData.getEcmCaseType())
-            .caseData(getCaseRequestCaseDataMap())
-            .build();
-    }
-
     public CaseDataContent getUpdateCaseDataContent() {
         return CaseDataContent.builder()
             .event(Event.builder().id(UPDATE_CASE_DRAFT).build())
             .eventToken(getStartEventResponse().getToken())
             .data(getCaseRequestCaseDataMap())
-            .build();
-    }
-
-    public CaseDataContent getTestDraftCaseDataContent() {
-        return CaseDataContent.builder()
-            .event(Event.builder().id(INITIATE_CASE_DRAFT).build())
-            .eventToken(getStartEventResponse().getToken())
-            .data(getEt1CaseData())
             .build();
     }
 

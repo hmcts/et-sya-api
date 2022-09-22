@@ -10,8 +10,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.dwp.regex.InvalidPostcodeException;
-import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -28,7 +26,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static  org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
@@ -138,7 +135,7 @@ class CaseServiceTest {
     }
 
     @Test
-    void shouldCreateNewDraftCaseInCcd() throws InvalidPostcodeException {
+    void shouldCreateNewDraftCaseInCcd() {
 
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
@@ -168,13 +165,7 @@ class CaseServiceTest {
             any(CaseDataContent.class)
         )).thenReturn(testData.getExpectedDetails());
 
-        when(postcodeToOfficeService.getTribunalOfficeFromPostcode(any()))
-            .thenReturn(Optional.of(TribunalOffice.ABERDEEN));
-
-        CaseRequest caseRequest = CaseRequest.builder()
-            .postCode("AB10 1AH")
-            .caseData(testData.getCaseRequestCaseDataMap())
-            .build();
+        CaseRequest caseRequest = testData.getCaseRequest();
 
         CaseDetails caseDetails = caseService.createCase(
             TEST_SERVICE_AUTH_TOKEN,
