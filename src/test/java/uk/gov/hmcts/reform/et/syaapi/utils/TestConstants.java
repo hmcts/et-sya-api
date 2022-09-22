@@ -17,7 +17,6 @@ public final class TestConstants {
     public static final String TYPE_OF_CLAIM_PAY_RELATED_CLAIM = "payRelated";
     public static final String TYPE_OF_CLAIM_UNFAIR_DISMISSAL = "unfairDismissal";
     public static final String TYPE_OF_CLAIM_WHISTLE_BLOWING = "whistleBlowing";
-    public static final String CASE_ID = "123456/2022";
     public static final String USER_ID = "TEST_USER_ID";
     public static final String SUBMIT_CASE_EMAIL_TEMPLATE_ID = "4f4b378e-238a-46ed-ae1c-26b8038192f0";
     public static final String CITIZEN_PORTAL_LINK = "https://www.gov.uk/log-in-register-hmrc-online-services";
@@ -25,6 +24,7 @@ public final class TestConstants {
     public static final String EMAIL_TEST_GMAIL_COM = "test@gmail.com";
     public static final String TEST_FIRST_NAME = "Joe";
     public static final String TEST_SURNAME = "Bloggs";
+    public static final String DUMMY_CASE_TYPE = "Dummy_Case_Type";
 
     private TestConstants() {
 
