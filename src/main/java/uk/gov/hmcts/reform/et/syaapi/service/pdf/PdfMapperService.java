@@ -365,18 +365,22 @@ public class PdfMapperService {
                     ofNullable(newEmploymentType.getNewlyEmployedFrom()));
                 printFields.put(PdfMapperConstants.Q7_EARNING,
                     ofNullable(newEmploymentType.getNewPayBeforeTax()));
-                if (WEEKLY.equals(newEmploymentType.getNewJobPayInterval())) {
-                    printFields.put(PdfMapperConstants.Q7_EARNING_WEEKLY, Optional.of(WEEKLY));
-                } else if (MONTHLY.equals(newEmploymentType.getNewJobPayInterval())) {
-                    printFields.put(PdfMapperConstants.Q7_EARNING_MONTHLY, Optional.of(MONTHLY));
-                } else {
-                    printFields.put(PdfMapperConstants.Q7_EARNING_ANNUAL, Optional.of(ANNUALLY));
-                }
+                printJobPayInterval(printFields, newEmploymentType);
 
             }
         }
         printFields.put(PdfMapperConstants.Q4_EMPLOYED_BY_NO, Optional.of(employerYesNo.equals(YES) ? OFF : NO));
         return printFields;
+    }
+
+    private void printJobPayInterval(Map<String, Optional<String>> printFields, NewEmploymentType newEmploymentType) {
+        if (WEEKLY.equals(newEmploymentType.getNewJobPayInterval())) {
+            printFields.put(PdfMapperConstants.Q7_EARNING_WEEKLY, Optional.of(WEEKLY));
+        } else if (MONTHLY.equals(newEmploymentType.getNewJobPayInterval())) {
+            printFields.put(PdfMapperConstants.Q7_EARNING_MONTHLY, Optional.of(MONTHLY));
+        } else {
+            printFields.put(PdfMapperConstants.Q7_EARNING_ANNUAL, Optional.of(ANNUALLY));
+        }
     }
 
     private Map<String, Optional<String>> printRenumeration(ClaimantOtherType claimantOtherType) {
