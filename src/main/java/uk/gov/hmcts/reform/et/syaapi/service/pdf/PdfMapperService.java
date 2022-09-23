@@ -28,7 +28,9 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
  * as described in {@link PdfMapperConstants}
  */
 @Service
-@SuppressWarnings({"PMD.GodClass", "PMD.CyclomaticComplexity", "PMD.TooManyMethods", "PMD.CognitiveComplexity"})
+@SuppressWarnings({"PMD.GodClass",
+    "PMD.CyclomaticComplexity", "PMD.TooManyMethods", "PMD.CognitiveComplexity", "PMD.CollapsibleIfStatements",
+    "PMD.AvoidDeeplyNestedIfStmts", "PMD.NPathComplexity"})
 public class PdfMapperService {
     private static final String PREFIX_13_R5 = "13 R5";
     private static final String PREFIX_2_7_R3 = "2.7 R3";
@@ -105,11 +107,18 @@ public class PdfMapperService {
         printFields.putAll(printMultipleClaimsDetails(caseData));
         printFields.putAll(printEmploymentDetails(caseData));
         printFields.putAll(printTypeAndDetailsOfClaim(caseData));
-        printFields.put(PdfMapperConstants.Q8_CLAIM_DESCRIPTION,
-                        ofNullable(caseData.getClaimantRequests().getClaimDescription()));
+        if (caseData.getClaimantRequests() != null
+            && caseData.getClaimantRequests().getClaimDescription() != null) {
+            printFields.put(
+                PdfMapperConstants.Q8_CLAIM_DESCRIPTION,
+                ofNullable(caseData.getClaimantRequests().getClaimDescription())
+            );
+        }
         printFields.putAll(printCompensation(caseData));
         printFields.putAll(printWhistleBlowing(caseData));
-        printFields.putAll(printRepresentative(caseData.getRepresentativeClaimantType()));
+        if (caseData.getRepresentativeClaimantType() != null) {
+            printFields.putAll(printRepresentative(caseData.getRepresentativeClaimantType()));
+        }
         printFields.putAll(printDisabilities(caseData));
         printFields.put(PdfMapperConstants.Q15_ADDITIONAL_INFORMATION,
                         ofNullable(caseData.getEt1VettingAdditionalInformationTextArea()));
@@ -118,14 +127,19 @@ public class PdfMapperService {
 
     private Map<String, Optional<String>> printPersonalDetails(CaseData caseData) {
         ConcurrentHashMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
-        if (TITLES.containsKey(caseData.getClaimantIndType().getClaimantTitle())) {
-            printFields.put(
-                TITLES.get(caseData.getClaimantIndType().getClaimantTitle()),
-                ofNullable(TITLE_MAP.get(caseData.getClaimantIndType().getClaimantTitle()))
-            );
-            if (OTHER.equals(caseData.getClaimantIndType().getClaimantTitle())) {
-                printFields.put(TITLES.get("Other_Specify"),
-                                ofNullable(String.valueOf(caseData.getClaimantIndType().getClaimantTitleOther())));
+        if (caseData.getClaimantIndType() != null
+            && caseData.getClaimantIndType().getClaimantTitle() != null) {
+            if (TITLES.containsKey(caseData.getClaimantIndType().getClaimantTitle())) {
+                printFields.put(
+                    TITLES.get(caseData.getClaimantIndType().getClaimantTitle()),
+                    ofNullable(TITLE_MAP.get(caseData.getClaimantIndType().getClaimantTitle()))
+                );
+                if (OTHER.equals(caseData.getClaimantIndType().getClaimantTitle())) {
+                    printFields.put(
+                        TITLES.get("Other_Specify"),
+                        ofNullable(String.valueOf(caseData.getClaimantIndType().getClaimantTitleOther()))
+                    );
+                }
             }
         }
 
@@ -151,27 +165,48 @@ public class PdfMapperService {
                 printFields.put(PdfMapperConstants.Q1_SEX_PREFER_NOT_TO_SAY, Optional.of("prefer not to say"));
             }
         }
-        printFields.put(String.format(PdfMapperConstants.RP2_HOUSE_NUMBER, CLAIMANT_ADDRESS_PREFIX),
-            ofNullable(caseData.getClaimantType().getClaimantAddressUK().getAddressLine1()));
-        printFields.put(String.format(PdfMapperConstants.QX_STREET, CLAIMANT_ADDRESS_PREFIX),
-            ofNullable(caseData.getClaimantType().getClaimantAddressUK().getAddressLine2()));
-        printFields.put(String.format(PdfMapperConstants.RP_POST_TOWN, CLAIMANT_ADDRESS_PREFIX),
-            ofNullable(caseData.getClaimantType().getClaimantAddressUK().getPostTown()));
-        printFields.put(String.format(PdfMapperConstants.QX_COUNTY, CLAIMANT_ADDRESS_PREFIX),
-            ofNullable(caseData.getClaimantType().getClaimantAddressUK().getCounty()));
-        printFields.put(String.format(PdfMapperConstants.QX_POSTCODE, CLAIMANT_ADDRESS_PREFIX),
-            ofNullable(caseData.getClaimantType().getClaimantAddressUK().getPostCode()));
-        printFields.put(String.format(PdfMapperConstants.QX_PHONE_NUMBER, "1.6"),
-            ofNullable(caseData.getClaimantType().getClaimantPhoneNumber()));
-        printFields.put(PdfMapperConstants.Q1_MOBILE_NUMBER,
-            ofNullable(caseData.getClaimantType().getClaimantMobileNumber()));
-        printFields.put(PdfMapperConstants.Q1_EMAIL,
-            ofNullable(caseData.getClaimantType().getClaimantEmailAddress()));
-        String contactPreference = caseData.getClaimantType().getClaimantContactPreference();
-        if (EMAIL.equals(contactPreference)) {
-            printFields.put(PdfMapperConstants.Q1_CONTACT_EMAIL, Optional.of(contactPreference));
-        } else if ("Post".equals(contactPreference)) {
-            printFields.put(PdfMapperConstants.Q1_CONTACT_POST, Optional.of(contactPreference));
+        if (caseData.getClaimantType() != null) {
+            if (caseData.getClaimantType().getClaimantAddressUK() != null) {
+                printFields.put(
+                    String.format(PdfMapperConstants.RP2_HOUSE_NUMBER, CLAIMANT_ADDRESS_PREFIX),
+                    ofNullable(caseData.getClaimantType().getClaimantAddressUK().getAddressLine1())
+                );
+                printFields.put(
+                    String.format(PdfMapperConstants.QX_STREET, CLAIMANT_ADDRESS_PREFIX),
+                    ofNullable(caseData.getClaimantType().getClaimantAddressUK().getAddressLine2())
+                );
+                printFields.put(
+                    String.format(PdfMapperConstants.RP_POST_TOWN, CLAIMANT_ADDRESS_PREFIX),
+                    ofNullable(caseData.getClaimantType().getClaimantAddressUK().getPostTown())
+                );
+                printFields.put(
+                    String.format(PdfMapperConstants.QX_COUNTY, CLAIMANT_ADDRESS_PREFIX),
+                    ofNullable(caseData.getClaimantType().getClaimantAddressUK().getCounty())
+                );
+                printFields.put(
+                    String.format(PdfMapperConstants.QX_POSTCODE, CLAIMANT_ADDRESS_PREFIX),
+                    ofNullable(caseData.getClaimantType().getClaimantAddressUK().getPostCode())
+                );
+            }
+            printFields.put(
+                String.format(PdfMapperConstants.QX_PHONE_NUMBER, "1.6"),
+                ofNullable(caseData.getClaimantType().getClaimantPhoneNumber())
+            );
+            printFields.put(
+                PdfMapperConstants.Q1_MOBILE_NUMBER,
+                ofNullable(caseData.getClaimantType().getClaimantMobileNumber())
+            );
+            printFields.put(
+                PdfMapperConstants.Q1_EMAIL,
+                ofNullable(caseData.getClaimantType().getClaimantEmailAddress())
+            );
+            String contactPreference = caseData.getClaimantType().getClaimantContactPreference();
+
+            if (EMAIL.equals(contactPreference)) {
+                printFields.put(PdfMapperConstants.Q1_CONTACT_EMAIL, Optional.of(contactPreference));
+            } else if ("Post".equals(contactPreference)) {
+                printFields.put(PdfMapperConstants.Q1_CONTACT_POST, Optional.of(contactPreference));
+            }
         }
         return printFields;
     }
@@ -210,20 +245,26 @@ public class PdfMapperService {
     private Map<String, Optional<String>> printRespondantDetails(CaseData caseData) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         List<RespondentSumTypeItem> respondentSumTypeList = caseData.getRespondentCollection();
-        if (respondentSumTypeList.size() >= MULTIPLE_RESPONDENTS) {
-            printFields.put(PdfMapperConstants.Q2_OTHER_RESPONDENTS, Optional.of(YES));
-        }
-        for (int i = 0; i < respondentSumTypeList.size() && i < MAX_RESPONDENTS; i++) {
-            RespondentSumType respondent = respondentSumTypeList.get(i).getValue();
-            if (i == 0) {
-                printFields.put(PdfMapperConstants.Q2_EMPLOYER_NAME,
-                    ofNullable(respondent.getRespondentName()));
-            } else {
-                printFields.put(String.format(PdfMapperConstants.QX_NAME, ADDRESS_PREFIX[i]),
-                    ofNullable(respondent.getRespondentName()));
+        if (respondentSumTypeList != null) {
+            if (respondentSumTypeList.size() >= MULTIPLE_RESPONDENTS) {
+                printFields.put(PdfMapperConstants.Q2_OTHER_RESPONDENTS, Optional.of(YES));
             }
-            printFields.putAll(printRespondant(respondent, ADDRESS_PREFIX[i]));
-            printFields.putAll(printRespondantAcas(respondent, ACAS_PREFIX[i]));
+            for (int i = 0; i < respondentSumTypeList.size() && i < MAX_RESPONDENTS; i++) {
+                RespondentSumType respondent = respondentSumTypeList.get(i).getValue();
+                if (i == 0) {
+                    printFields.put(
+                        PdfMapperConstants.Q2_EMPLOYER_NAME,
+                        ofNullable(respondent.getRespondentName())
+                    );
+                } else {
+                    printFields.put(
+                        String.format(PdfMapperConstants.QX_NAME, ADDRESS_PREFIX[i]),
+                        ofNullable(respondent.getRespondentName())
+                    );
+                }
+                printFields.putAll(printRespondant(respondent, ADDRESS_PREFIX[i]));
+                printFields.putAll(printRespondantAcas(respondent, ACAS_PREFIX[i]));
+            }
         }
         if (caseData.getClaimantWorkAddress() != null
             && caseData.getClaimantWorkAddress().getClaimantWorkAddress() != null) {
@@ -336,40 +377,57 @@ public class PdfMapperService {
     private Map<String, Optional<String>> printEmploymentDetails(CaseData caseData) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
-        String employerYesNo = claimantOtherType.getClaimantEmployedFrom() == null
-            ? NO : YES;
-        if (YES.equals(employerYesNo)) {
-            printFields.put(PdfMapperConstants.Q4_EMPLOYED_BY_YES, Optional.of(employerYesNo));
-            printFields.put(PdfMapperConstants.Q5_EMPLOYMENT_START,
-                ofNullable(claimantOtherType.getClaimantEmployedFrom()));
-            String currentlyEmployedYesNo = claimantOtherType.getClaimantEmployedCurrently().isEmpty() ? NO :
-                claimantOtherType.getClaimantEmployedCurrently();
-            if (YES.equals(currentlyEmployedYesNo)) {
-                printFields.put(PdfMapperConstants.Q5_CONTINUING_YES, Optional.of(currentlyEmployedYesNo));
-                printFields.put(PdfMapperConstants.Q5_NOT_ENDED,
-                    ofNullable(claimantOtherType.getClaimantEmployedTo()));
-            } else {
-                printFields.put(PdfMapperConstants.Q5_CONTINUING_NO, Optional.of(NO_LOWERCASE));
-                printFields.put(PdfMapperConstants.Q5_EMPLOYMENT_END,
-                    ofNullable(claimantOtherType.getClaimantEmployedTo()));
-            }
-            printFields.put(PdfMapperConstants.Q5_DESCRIPTION,
-                ofNullable(claimantOtherType.getClaimantOccupation()));
-            printFields.putAll(printRenumeration(claimantOtherType));
-            NewEmploymentType newEmploymentType = caseData.getNewEmploymentType();
-            if (newEmploymentType == null) {
-                printFields.put(PdfMapperConstants.Q7_OTHER_JOB_NO, Optional.of(NO));
-            } else {
-                printFields.put(PdfMapperConstants.Q7_OTHER_JOB_YES, Optional.of(YES));
-                printFields.put(PdfMapperConstants.Q7_START_WORK,
-                    ofNullable(newEmploymentType.getNewlyEmployedFrom()));
-                printFields.put(PdfMapperConstants.Q7_EARNING,
-                    ofNullable(newEmploymentType.getNewPayBeforeTax()));
-                printJobPayInterval(printFields, newEmploymentType);
+        if (claimantOtherType != null) {
+            String employerYesNo = claimantOtherType.getClaimantEmployedFrom() == null
+                ? NO : YES;
+            if (YES.equals(employerYesNo)) {
+                printFields.put(PdfMapperConstants.Q4_EMPLOYED_BY_YES, Optional.of(employerYesNo));
+                printFields.put(
+                    PdfMapperConstants.Q5_EMPLOYMENT_START,
+                    ofNullable(claimantOtherType.getClaimantEmployedFrom())
+                );
+                String currentlyEmployedYesNo = claimantOtherType.getClaimantEmployedCurrently().isEmpty() ? NO :
+                    claimantOtherType.getClaimantEmployedCurrently();
+                if (YES.equals(currentlyEmployedYesNo)) {
+                    printFields.put(PdfMapperConstants.Q5_CONTINUING_YES, Optional.of(currentlyEmployedYesNo));
+                    printFields.put(
+                        PdfMapperConstants.Q5_NOT_ENDED,
+                        ofNullable(claimantOtherType.getClaimantEmployedTo())
+                    );
+                } else {
+                    printFields.put(PdfMapperConstants.Q5_CONTINUING_NO, Optional.of(NO_LOWERCASE));
+                    printFields.put(
+                        PdfMapperConstants.Q5_EMPLOYMENT_END,
+                        ofNullable(claimantOtherType.getClaimantEmployedTo())
+                    );
+                }
+                printFields.put(
+                    PdfMapperConstants.Q5_DESCRIPTION,
+                    ofNullable(claimantOtherType.getClaimantOccupation())
+                );
+                printFields.putAll(printRenumeration(claimantOtherType));
+
+                NewEmploymentType newEmploymentType = caseData.getNewEmploymentType();
+                if (newEmploymentType == null) {
+                    printFields.put(PdfMapperConstants.Q7_OTHER_JOB_NO, Optional.of(NO));
+                } else {
+                    printFields.put(PdfMapperConstants.Q7_OTHER_JOB_YES, Optional.of(YES));
+                    printFields.put(
+                        PdfMapperConstants.Q7_START_WORK,
+                        ofNullable(newEmploymentType.getNewlyEmployedFrom())
+                    );
+                    printFields.put(
+                        PdfMapperConstants.Q7_EARNING,
+                        ofNullable(newEmploymentType.getNewPayBeforeTax())
+                    );
+                    printJobPayInterval(printFields, newEmploymentType);
+
+                }
 
             }
+            printFields.put(PdfMapperConstants.Q4_EMPLOYED_BY_NO, Optional.of(employerYesNo.equals(YES) ? OFF : NO));
         }
-        printFields.put(PdfMapperConstants.Q4_EMPLOYED_BY_NO, Optional.of(employerYesNo.equals(YES) ? OFF : NO));
+        printFields.put(PdfMapperConstants.Q4_EMPLOYED_BY_NO, Optional.of(NO));
         return printFields;
     }
 

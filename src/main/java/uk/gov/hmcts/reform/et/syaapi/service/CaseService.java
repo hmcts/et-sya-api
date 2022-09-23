@@ -162,7 +162,7 @@ public class CaseService {
     private CaseData convertCaseRequestToCaseDataWithTribunalOffice(CaseRequest caseRequest) {
         caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE,
                                       getTribunalOfficeByCaseTypeId(
-                                          getCaseTypeByCaseTypeId(caseRequest.getCaseTypeId())));
+                                          getCaseTypeByCaseTypeId(caseRequest.getCaseTypeId())).getOfficeName());
         return EmployeeObjectMapper.mapCaseRequestToCaseData(caseRequest.getCaseData());
     }
 
@@ -179,6 +179,7 @@ public class CaseService {
         throws PdfServiceException, CaseDocumentException, AcasException, InvalidAcasNumbersException {
 
         CaseData caseData = convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
+        caseData.setReceiptDate(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         List<PdfDecodedMultipartFile> acasCertificates = pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
             caseData, acasService.getAcasCertificatesByCaseData(caseData));
 
@@ -201,7 +202,8 @@ public class CaseService {
                 notificationsProperties.getSubmitCaseEmailTemplateId(),
                 caseData.getClaimantType().getClaimantEmailAddress(),
                 caseRequest.getCaseId(),
-                caseData.getClaimantIndType().getClaimantTitle(),
+                caseData.getClaimantIndType().getClaimantTitle() == null ? "" :
+                    caseData.getClaimantIndType().getClaimantTitle(),
                 caseData.getClaimantIndType().getClaimantLastName(),
                 caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString(),
                 notificationsProperties.getCitizenPortalLink());
