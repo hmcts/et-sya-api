@@ -181,7 +181,6 @@ public class CaseService {
         caseRequest.getCaseData().put("receiptDate", LocalDateTime.now().format(DateTimeFormatter
                                                                                     .ofPattern("yyyy-MM-dd")));
         CaseData caseData = convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
-        caseData.setReceiptDate(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         List<PdfDecodedMultipartFile> acasCertificates = pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
             caseData, acasService.getAcasCertificatesByCaseData(caseData));
 
@@ -190,7 +189,6 @@ public class CaseService {
                                                    caseRequest.getCaseTypeId()), caseRequest.getCaseData());
         caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :
             caseDetails.getData().get("ethosCaseReference").toString());
-        caseData.setReceiptDate(caseDetails.getCreatedDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
         PdfDecodedMultipartFile casePdfFile =
             pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData);
         caseDetails.getData().put("documentCollection",
