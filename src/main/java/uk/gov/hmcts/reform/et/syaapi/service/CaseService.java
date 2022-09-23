@@ -11,6 +11,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
@@ -118,7 +119,7 @@ public class CaseService {
             s2sToken,
             userId,
             JURISDICTION_ID,
-            caseRequest.getCaseTypeId(),
+            getCaseTypeByCaseTypeId(caseRequest.getCaseTypeId()),
             eventTypeName
         );
 
@@ -134,10 +135,18 @@ public class CaseService {
             s2sToken,
             userId,
             JURISDICTION_ID,
-            caseRequest.getCaseTypeId(),
+            getCaseTypeByCaseTypeId(caseRequest.getCaseTypeId()),
             true,
             caseDataContent
         );
+    }
+
+    private String getCaseTypeByCaseTypeId(String caseTypeId) {
+        if (StringUtils.hasText(caseTypeId)) {
+            return caseTypeId;
+        } else {
+            return ENGLAND_CASE_TYPE;
+        }
     }
 
     private TribunalOffice getTribunalOfficeByCaseTypeId(String caseTypeId) {
@@ -146,7 +155,8 @@ public class CaseService {
 
     private CaseData convertCaseRequestToCaseDataWithTribunalOffice(CaseRequest caseRequest) {
         caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE,
-                                      getTribunalOfficeByCaseTypeId(caseRequest.getCaseTypeId()));
+                                      getTribunalOfficeByCaseTypeId(
+                                          getCaseTypeByCaseTypeId(caseRequest.getCaseTypeId())));
         return EmployeeObjectMapper.mapCaseRequestToCaseData(caseRequest.getCaseData());
     }
 
@@ -167,7 +177,8 @@ public class CaseService {
             caseData, acasService.getAcasCertificatesByCaseData(caseData));
 
         CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.SUBMIT_CASE_DRAFT,
-                                               caseRequest.getCaseTypeId(), caseRequest.getCaseData());
+                                               getCaseTypeByCaseTypeId(
+                                                   caseRequest.getCaseTypeId()), caseRequest.getCaseData());
         caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :
             caseDetails.getData().get("ethosCaseReference").toString());
         caseData.setReceiptDate(caseDetails.getCreatedDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
@@ -176,7 +187,7 @@ public class CaseService {
         caseDetails.getData().put("documentCollection",
                                   caseDocumentService
                                       .uploadAllDocuments(authorization,
-                                                          caseRequest.getCaseTypeId(),
+                                                          getCaseTypeByCaseTypeId(caseRequest.getCaseTypeId()),
                                                           casePdfFile,
                                                           acasCertificates));
         notificationService

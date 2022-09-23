@@ -1,10 +1,11 @@
 {
+  "case_id": "1652699636396317",
   "case_type_id": "ET_Scotland",
   "case_data" : {
     "typeOfClaim" : [ "discrimination", "breachOfContract", "payRelated", "unfairDismissal", "whistleBlowing",
       "otherTypesOfClaims" ],
     "caseType" : "Single",
-    "caseSource" : "Internet",
+    "caseSource" : "Manually Created",
     "claimantRepresentedQuestion" : "Yes",
     "claimantWorkAddressQuestion" : "No",
     "ClaimantPcqId" : null,
