@@ -178,7 +178,8 @@ public class CaseService {
                                   CaseRequest caseRequest)
         throws PdfServiceException, CaseDocumentException, AcasException, InvalidAcasNumbersException {
 
-        caseRequest.getCaseData().put("receiptDate", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        caseRequest.getCaseData().put("receiptDate", LocalDateTime.now().format(DateTimeFormatter
+                                                                                    .ofPattern("yyyy-MM-dd")));
         CaseData caseData = convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
         caseData.setReceiptDate(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         List<PdfDecodedMultipartFile> acasCertificates = pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
