@@ -9,7 +9,6 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ResourceUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 
@@ -19,8 +18,8 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
-
 
 
 /**
@@ -54,7 +53,10 @@ public class PdfService {
     }
 
     protected byte[] createPdf(CaseData caseData) throws IOException {
-        try (PDDocument pdfDocument = Loader.loadPDF(ResourceUtils.getFile(this.pdfTemplateSource))) {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+
+        try (PDDocument pdfDocument = Loader.loadPDF(
+            Objects.requireNonNull(cl.getResourceAsStream(this.pdfTemplateSource)))) {
             PDDocumentCatalog pdDocumentCatalog = pdfDocument.getDocumentCatalog();
             PDAcroForm pdfForm = pdDocumentCatalog.getAcroForm();
             for (Map.Entry<String, Optional<String>> entry : this.pdfMapperService.mapHeadersToPdf(caseData)

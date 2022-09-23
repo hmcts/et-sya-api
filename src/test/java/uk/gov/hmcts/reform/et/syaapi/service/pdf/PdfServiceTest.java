@@ -48,7 +48,7 @@ class PdfServiceTest {
 
     private TestData testData;
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME = "pdfTemplateSource";
-    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE = "classpath:ET1_0922.pdf";
+    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE = "ET1_0922.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
 
     private final AcasCertificate acasCertificate = ResourceLoader.fromString(
@@ -85,7 +85,7 @@ class PdfServiceTest {
                                      PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
                                      "dummy_source");
         assertThrows(
-            PdfServiceException.class,
+            NullPointerException.class,
             () -> pdfService.convertCaseToPdf(testData.getCaseData()));
         ReflectionTestUtils.setField(pdfService,
                                      PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
