@@ -65,9 +65,12 @@ public class AcasService {
      */
     public List<AcasCertificate> getCertificates(String... acasNumbers)
         throws InvalidAcasNumbersException, AcasException {
-
-        validateAcasNumbers(acasNumbers);
-        return attemptWithRetriesToFetchAcasCertificates(0, acasNumbers);
+        List<AcasCertificate> acasCertificates = new ArrayList<>();
+        if (acasNumbers != null && acasNumbers.length > 0) {
+            validateAcasNumbers(acasNumbers);
+            acasCertificates = attemptWithRetriesToFetchAcasCertificates(0, acasNumbers);
+        }
+        return acasCertificates;
     }
 
     private List<AcasCertificate> attemptWithRetriesToFetchAcasCertificates(int attempts, String... acasNumbers)
