@@ -11,8 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -111,6 +109,7 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
             .assertThat().body("case_data.claimantType.claimant_email_address", equalTo(CLAIMANT_EMAIL));
     }
 
+    /*
     @Test
     void stage5SubmitCaseShouldReturnSubmittedCaseDetails() {
         Map<String, Object> caseData = new ConcurrentHashMap<>();
@@ -131,6 +130,6 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
             .log().all(true)
             .assertThat().body("id", equalTo(caseId))
             .assertThat().body("state", equalTo("Submitted"));
-    }
+    }*/
 }
 

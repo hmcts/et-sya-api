@@ -424,9 +424,9 @@ public class PdfMapperService {
                 }
 
             }
-            printFields.put(PdfMapperConstants.Q4_EMPLOYED_BY_NO, Optional.of(employerYesNo.equals(YES) ? OFF : NO));
+            printFields.put(PdfMapperConstants.Q4_EMPLOYED_BY_NO, Optional.of(employerYesNo.equals(YES) ? OFF : YES));
         }
-        printFields.put(PdfMapperConstants.Q4_EMPLOYED_BY_NO, Optional.of(NO));
+        printFields.put(PdfMapperConstants.Q4_EMPLOYED_BY_NO, Optional.of(YES));
         return printFields;
     }
 
