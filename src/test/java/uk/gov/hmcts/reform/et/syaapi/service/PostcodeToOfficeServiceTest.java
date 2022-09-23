@@ -97,7 +97,7 @@ class PostcodeToOfficeServiceTest {
     @Test
     void shouldGetTribunalOfficeByCaseTypeIdWithNullCaseType() {
         Optional<TribunalOffice> result = postcodeToOfficeService.getTribunalOfficeByCaseTypeId(null);
-        assertThat(result).contains(TribunalOffice.LONDON_SOUTH);
+        assertThat(result).contains(TribunalOffice.LEEDS);
     }
 
     @Test
@@ -115,6 +115,6 @@ class PostcodeToOfficeServiceTest {
     @Test
     void shouldGetTribunalOfficeByCaseTypeIdWithDummyCaseType() {
         Optional<TribunalOffice> result = postcodeToOfficeService.getTribunalOfficeByCaseTypeId(DUMMY_CASE_TYPE);
-        assertThat(result).contains(TribunalOffice.LONDON_SOUTH);
+        assertThat(result).contains(TribunalOffice.LEEDS);
     }
 }

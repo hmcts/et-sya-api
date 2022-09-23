@@ -153,6 +153,12 @@ public class CaseService {
         return postcodeToOfficeService.getTribunalOfficeByCaseTypeId(caseTypeId).orElse(DEFAULT_TRIBUNAL_OFFICE);
     }
 
+    public CaseDetails updateCase(String authorization,
+                                  CaseRequest caseRequest) {
+        return triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.UPDATE_CASE_DRAFT,
+                            getCaseTypeByCaseTypeId(caseRequest.getCaseTypeId()), caseRequest.getCaseData());
+    }
+
     private CaseData convertCaseRequestToCaseDataWithTribunalOffice(CaseRequest caseRequest) {
         caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE,
                                       getTribunalOfficeByCaseTypeId(

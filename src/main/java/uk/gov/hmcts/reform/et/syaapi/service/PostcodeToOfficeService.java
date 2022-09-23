@@ -73,6 +73,6 @@ public class PostcodeToOfficeService {
                 return Optional.of(TribunalOffice.GLASGOW);
             }
         }
-        return Optional.of(TribunalOffice.LONDON_SOUTH);
+        return Optional.of(TribunalOffice.LEEDS);
     }
 }

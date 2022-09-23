@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
-import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.AcasException;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentException;
@@ -73,20 +72,14 @@ public class ManageCaseController {
     @PutMapping("/update-case")
     @Operation(summary = "Update draft case API method")
     @ApiResponseGroup
-    public ResponseEntity<CaseDetails> updateDraftCase(
+    public ResponseEntity<CaseDetails> updateCase(
         @RequestHeader(AUTHORIZATION) String authorization,
         @NotNull @RequestBody CaseRequest caseRequest
     ) {
         log.info("Received update-case request - caseTypeId: {} caseId: {}",
                  caseRequest.getCaseTypeId(), caseRequest.getCaseId());
 
-        var caseDetails = caseService.triggerEvent(
-            authorization,
-            caseRequest.getCaseId(),
-            CaseEvent.UPDATE_CASE_DRAFT,
-            caseRequest.getCaseTypeId(),
-            caseRequest.getCaseData()
-        );
+        var caseDetails = caseService.updateCase(authorization, caseRequest);
         return ok(caseDetails);
     }
 
@@ -104,25 +97,5 @@ public class ManageCaseController {
         } catch (PdfServiceException | CaseDocumentException | AcasException | InvalidAcasNumbersException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
-    }
-
-    @PutMapping("/update-case-submitted")
-    @Operation(summary = "Update submitted case API method")
-    @ApiResponseGroup
-    public ResponseEntity<CaseDetails> updateCase(
-        @RequestHeader(AUTHORIZATION) String authorization,
-        @NotNull @RequestBody CaseRequest caseRequest
-    ) {
-        log.info("Received update-case-submitted request - caseTypeId: {} caseId: {}",
-                 caseRequest.getCaseTypeId(), caseRequest.getCaseId());
-
-        var caseDetails = caseService.triggerEvent(
-            authorization,
-            caseRequest.getCaseId(),
-            CaseEvent.UPDATE_CASE_SUBMITTED,
-            caseRequest.getCaseTypeId(),
-            caseRequest.getCaseData()
-        );
-        return ok(caseDetails);
     }
 }

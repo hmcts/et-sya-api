@@ -261,41 +261,6 @@ class ManageCaseControllerTest {
 
     @SneakyThrows
     @Test
-    void shouldStartUpdateSubmittedCase() {
-        CaseRequest caseRequest = CaseRequest.builder()
-            .caseTypeId(CASE_TYPE)
-            .caseId("12")
-            .build();
-
-        // given
-        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
-            "12",
-            EMAIL_TEST_GMAIL_COM,
-            TEST_FIRST_NAME,
-            TEST_SURNAME,
-            null
-        ));
-
-        when(caseService.triggerEvent(
-            TEST_SERVICE_AUTH_TOKEN,
-            CASE_ID,
-            CaseEvent.valueOf("UPDATE_CASE_SUBMITTED"),
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
-            null
-        )).thenReturn(expectedDetails);
-
-        // when
-        mockMvc.perform(
-            put("/cases/update-case-submitted", CASE_ID)
-                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(ResourceLoader.toJson(caseRequest))
-        ).andExpect(status().isOk());
-    }
-
-    @SneakyThrows
-    @Test
     void shouldSubmitCaseThrowExceptionWhenAnyError() {
         CaseRequest caseRequest = CaseRequest.builder()
             .caseTypeId(CASE_TYPE)
