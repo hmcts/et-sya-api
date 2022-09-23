@@ -79,7 +79,7 @@ public class PdfService {
     }
 
     private static String createPdfDocumentNameFromCaseData(CaseData caseData) {
-        return "ET1_CASE_DOCUMENT"
+        return "ET1_CASE_DOCUMENT_"
             + caseData.getClaimantIndType().getClaimantFirstNames().replace(" ", "_")
             + "_"
             + caseData.getClaimantIndType().getClaimantLastName().replace(" ", "_")
@@ -88,7 +88,7 @@ public class PdfService {
 
     private static String createPdfDocumentNameFromCaseDataAndAcasCertificate(
         CaseData caseData, AcasCertificate acasCertificate) {
-        return "ET1_ACAS_CERTIFICATE"
+        return "ET1_ACAS_CERTIFICATE_"
             + caseData.getClaimantIndType().getClaimantFirstNames().replace(" ", "_")
             + "_"
             + caseData.getClaimantIndType().getClaimantLastName().replace(" ", "_")
