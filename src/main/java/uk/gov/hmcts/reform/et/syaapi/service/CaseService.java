@@ -165,7 +165,7 @@ public class CaseService {
         caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE,
                                       getTribunalOfficeByCaseTypeId(
                                           getCaseTypeByCaseTypeId(caseRequest.getCaseTypeId())).getOfficeName());
-        return EmployeeObjectMapper.mapCaseRequestToCaseData(caseRequest.getCaseData());
+        return EmployeeObjectMapper.mapCaseRequestDataToCaseData(caseRequest.getCaseData());
     }
 
     /**
@@ -185,7 +185,6 @@ public class CaseService {
         CaseData caseData = convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
         List<PdfDecodedMultipartFile> acasCertificates = pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
             caseData, acasService.getAcasCertificatesByCaseData(caseData));
-
         CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), SUBMIT_CASE_DRAFT,
                                                getCaseTypeByCaseTypeId(
                                                    caseRequest.getCaseTypeId()), caseRequest.getCaseData());
@@ -233,7 +232,8 @@ public class CaseService {
         StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
         return submitUpdate(authorization, caseId,
                             caseDetailsConverter.caseDataContent(startEventResponse,
-                                                                 EmployeeObjectMapper.getCaseData(caseData)),
+                                                                 EmployeeObjectMapper
+                                                                     .mapCaseRequestDataToCaseData(caseData)),
                             caseType);
     }
 

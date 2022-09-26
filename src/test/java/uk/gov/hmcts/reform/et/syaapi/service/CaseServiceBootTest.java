@@ -27,7 +27,6 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.CITIZEN_PORTAL_LINK;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.SUBMIT_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.SUBMIT_CASE_EMAIL_TEMPLATE_ID;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.USER_ID;
@@ -77,13 +76,13 @@ class CaseServiceBootTest {
             null
         ));
         when(ccdApiClient.startEventForCitizen(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            USER_ID,
-            EtSyaConstants.JURISDICTION_ID,
-            testData.getCaseRequest().getCaseTypeId(),
-            testData.getCaseRequest().getCaseId(),
-            SUBMIT_CASE_DRAFT
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(USER_ID),
+            eq(EtSyaConstants.JURISDICTION_ID),
+            eq(testData.getCaseRequest().getCaseTypeId()),
+            eq(testData.getCaseRequest().getCaseId()),
+            any()
         )).thenReturn(
             testData.getStartEventResponse());
         when(ccdApiClient.submitEventForCitizen(
