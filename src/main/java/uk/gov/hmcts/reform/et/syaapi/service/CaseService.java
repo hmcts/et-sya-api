@@ -313,6 +313,7 @@ public class CaseService {
         BoolQueryBuilder boolQueryBuilder = boolQuery()
             .filter(new TermsQueryBuilder("reference.keyword", caseIds));
         String query = new SearchSourceBuilder()
+            .size(MAX_ES_SIZE)
             .query(boolQueryBuilder)
             .toString();
 
