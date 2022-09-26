@@ -191,6 +191,7 @@ public class CaseService {
             caseDetails.getData().get("ethosCaseReference").toString());
         PdfDecodedMultipartFile casePdfFile =
             pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData);
+        caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
         caseDetails.getData().put("documentCollection",
                                   caseDocumentService
                                       .uploadAllDocuments(authorization,
