@@ -233,7 +233,9 @@ public class CaseService {
         StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
         Et1CaseData et1CaseData = employeeObjectMapper.getEmploymentCaseData(caseData);
 
-        enrichCaseDataWithJurisdictionCodes(et1CaseData);
+        if (CaseEvent.SUBMIT_CASE_DRAFT == eventName) {
+            enrichCaseDataWithJurisdictionCodes(et1CaseData);
+        }
 
         return submitUpdate(authorization,
                             caseId,
