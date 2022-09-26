@@ -232,7 +232,7 @@ public class CaseService {
         StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
         return submitUpdate(authorization, caseId,
                             caseDetailsConverter.caseDataContent(startEventResponse,
-                                                                 employeeObjectMapper.mapCaseRequestToCaseData(caseData)),
+                                                                 EmployeeObjectMapper.getCaseData(caseData)),
                             caseType);
     }
 
