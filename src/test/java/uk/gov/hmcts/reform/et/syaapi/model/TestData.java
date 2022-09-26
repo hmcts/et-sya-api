@@ -68,7 +68,10 @@ public final class TestData {
         "requests/caseRequest.json",
         CaseRequest.class
     );
-
+    private final CaseRequest caseDataWithClaimTypes = ResourceLoader.fromString(
+        "requests/caseDataWithClaimTypes.json",
+        CaseRequest.class
+    );
 
     public Map<String, Object> getCaseRequestCaseDataMap() {
         Map<String, Object> requestCaseData = new ConcurrentHashMap<>();
