@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import uk.gov.hmcts.reform.authorisation.exceptions.InvalidTokenException;
 import uk.gov.hmcts.reform.et.syaapi.config.interceptors.ResourceNotFoundException;
@@ -51,6 +52,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             ErrorResponse.builder()
                 .message(String.format("%s - %s", exception.getMessage(), exception.contentUTF8()))
                 .code(exception.status())
+                .build()
+        );
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> handleResponseStatusException(ResponseStatusException exception) {
+        log.error(exception.getMessage(), exception);
+        return ResponseEntity.status(exception.getStatus()).body(
+            ErrorResponse.builder()
+                .message(exception.getLocalizedMessage())
+                .code(exception.getStatus().value())
                 .build()
         );
     }

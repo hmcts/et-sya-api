@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 
 import java.util.Map;
@@ -33,5 +34,14 @@ public class EmployeeObjectMapper {
     public Et1CaseData getEmploymentCaseData(Map<String, Object> caseData) {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.convertValue(caseData, Et1CaseData.class);
+    }
+
+    private static CaseData getCaseData(Map<String, Object> caseData) {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.convertValue(caseData, CaseData.class);
+    }
+
+    public static CaseData mapCaseRequestToCaseData(Map<String, Object> caseData) {
+        return getCaseData(caseData);
     }
 }

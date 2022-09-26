@@ -20,12 +20,15 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.model.Classification;
 import uk.gov.hmcts.reform.et.syaapi.config.interceptors.ResourceNotFoundException;
 import uk.gov.hmcts.reform.et.syaapi.models.DocumentDetailsResponse;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -37,7 +40,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.RESOURCE_NOT_FOUND;
 
-@SuppressWarnings({"PMD.TooManyMethods"})
+@SuppressWarnings({"PMD"})
 @Slf4j
 @ExtendWith(MockitoExtension.class)
 class CaseDocumentServiceTest {
@@ -61,13 +64,19 @@ class CaseDocumentServiceTest {
         DOCUMENT_NAME,
         MediaType.TEXT_PLAIN_VALUE,
         MOCK_FILE_BODY.getBytes()
-      );
+    );
     private static final MockMultipartFile MOCK_FILE_WITHOUT_NAME = new MockMultipartFile(
         "mock_file_without_name",
         null,
         MediaType.TEXT_PLAIN_VALUE,
         MOCK_FILE_BODY.getBytes()
     );
+    private static final PdfDecodedMultipartFile MOCK_PDF_DECODED_MULTIPART_FILE = new PdfDecodedMultipartFile(
+        MOCK_FILE_BODY.getBytes(), "Test OriginalFileName.pdf",    "text/plain",
+        "Test Document Description"
+    );
+
+
     private static final MockMultipartFile MOCK_FILE_INVALID_NAME = new MockMultipartFile(
         "mock_file_with_invalid_name",
         "invalid",
@@ -104,8 +113,9 @@ class CaseDocumentServiceTest {
         + "\"claim-submit.png\",\"_links\":{\"self\":{\"href\": \"" + MOCK_HREF + "\"}}}]}";
     private static final String MOCK_RESPONSE_WITHOUT_SELF = RESPONSE_BODY
         + "\"claim-submit.png\",\"_links\":{}}]}";
-    private final String fullJsonResponse;
 
+
+    private final String fullJsonResponse;
     private CaseDocumentService caseDocumentService;
     private MockRestServiceServer mockServer;
 
@@ -124,7 +134,6 @@ class CaseDocumentServiceTest {
                                                       authTokenGenerator,
                                                       DOCUMENT_SERVICE_API_URL, 3);
         mockServer = MockRestServiceServer.createServer(restTemplate);
-
     }
 
     @Test
@@ -137,7 +146,6 @@ class CaseDocumentServiceTest {
 
         URI documentEndpoint =
             caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE).getUri();
-
         assertThat(documentEndpoint)
             .hasToString(MOCK_HREF);
     }
@@ -147,8 +155,8 @@ class CaseDocumentServiceTest {
         mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(fullJsonResponse));
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .body(fullJsonResponse));
 
         URI documentEndpoint =
             caseDocumentService.uploadDocument(MOCK_TOKEN, CASE_TYPE, MOCK_FILE).getUri();
@@ -192,9 +200,9 @@ class CaseDocumentServiceTest {
         IOException ioException = new IOException("Test throw");
 
         MockMultipartFile mockMultipartFileSpy = Mockito.spy(new MockMultipartFile("mock_file_spy",
-            DOCUMENT_NAME,
-            MediaType.TEXT_PLAIN_VALUE,
-            "Hello, World!".getBytes()));
+                                                                                   DOCUMENT_NAME,
+                                                                                   MediaType.TEXT_PLAIN_VALUE,
+                                                                                   "Hello, World!".getBytes()));
 
         doThrow(ioException).when(mockMultipartFileSpy).getBytes();
 
@@ -261,8 +269,8 @@ class CaseDocumentServiceTest {
         mockServer.expect(ExpectedCount.max(MAX_API_CALL_ATTEMPTS), requestTo(DOCUMENT_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(MOCK_RESPONSE_WITHOUT_SELF));
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .body(MOCK_RESPONSE_WITHOUT_SELF));
 
         CaseDocumentException documentException = assertThrows(
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
@@ -277,8 +285,8 @@ class CaseDocumentServiceTest {
         mockServer.expect(ExpectedCount.max(MAX_API_CALL_ATTEMPTS), requestTo(DOCUMENT_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(MOCK_RESPONSE_INCORRECT));
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .body(MOCK_RESPONSE_INCORRECT));
 
         CaseDocumentException documentException = assertThrows(
             CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
@@ -327,8 +335,8 @@ class CaseDocumentServiceTest {
         mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(MOCK_RESPONSE_WITH_DOCUMENT));
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .body(MOCK_RESPONSE_WITH_DOCUMENT));
 
         URI documentEndpoint = caseDocumentService.uploadDocument(
             MOCK_TOKEN, CASE_TYPE, MOCK_FILE_NAME_SPACING).getUri();
@@ -422,4 +430,30 @@ class CaseDocumentServiceTest {
             .isEqualTo(String.format(RESOURCE_NOT_FOUND, DOCUMENT_ID, "404 Not Found: [no body]"));
     }
 
+    @Test
+    void shouldUploadAllDocuments() throws CaseDocumentException {
+        mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_API_URL))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(withStatus(HttpStatus.OK)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .body(MOCK_RESPONSE_WITH_DOCUMENT));
+
+        List<PdfDecodedMultipartFile> acasCertificates = new ArrayList<>();
+        caseDocumentService.uploadAllDocuments(MOCK_TOKEN, CASE_TYPE, MOCK_PDF_DECODED_MULTIPART_FILE,
+                                               acasCertificates);
+    }
+
+    @Test
+    void shouldUploadAllDocumentsWhenAcasCertificatesExists() throws CaseDocumentException {
+        mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_API_URL))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(withStatus(HttpStatus.OK)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .body(MOCK_RESPONSE_WITH_DOCUMENT));
+
+        List<PdfDecodedMultipartFile> acasCertificates = new ArrayList<>();
+        acasCertificates.add(MOCK_PDF_DECODED_MULTIPART_FILE);
+        caseDocumentService.uploadAllDocuments(MOCK_TOKEN, CASE_TYPE, null,
+                                               acasCertificates);
+    }
 }

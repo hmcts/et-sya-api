@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
@@ -35,7 +36,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.EMAIL_TEST_GMAIL_COM;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_FIRST_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SURNAME;
 
 @WebMvcTest(
     controllers = {ManageCaseController.class}
@@ -63,7 +67,7 @@ class ManageCaseControllerTest {
     @MockBean
     private VerifyTokenService verifyTokenService;
 
-    ManageCaseControllerTest() throws IOException {
+    ManageCaseControllerTest() {
         // Default constructor
         expectedDetails = ResourceLoader.fromString(
             "responses/caseDetails.json",
@@ -196,9 +200,9 @@ class ManageCaseControllerTest {
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
             "12",
-            "test@gmail.com",
-            "Joe",
-            "Bloggs",
+            EMAIL_TEST_GMAIL_COM,
+            TEST_FIRST_NAME,
+            TEST_SURNAME,
             null
         ));
 
@@ -232,9 +236,9 @@ class ManageCaseControllerTest {
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
             "12",
-            "test@gmail.com",
-            "Joe",
-            "Bloggs",
+            EMAIL_TEST_GMAIL_COM,
+            TEST_FIRST_NAME,
+            TEST_SURNAME,
             null
         ));
 
@@ -257,7 +261,7 @@ class ManageCaseControllerTest {
 
     @SneakyThrows
     @Test
-    void shouldStartUpdateSubmittedCase() {
+    void shouldSubmitCaseThrowExceptionWhenAnyError() {
         CaseRequest caseRequest = CaseRequest.builder()
             .caseTypeId(CASE_TYPE)
             .caseId("12")
@@ -267,26 +271,24 @@ class ManageCaseControllerTest {
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
             "12",
-            "test@gmail.com",
-            "Joe",
-            "Bloggs",
+            EMAIL_TEST_GMAIL_COM,
+            TEST_FIRST_NAME,
+            TEST_SURNAME,
             null
         ));
 
-        when(caseService.triggerEvent(
-            TEST_SERVICE_AUTH_TOKEN,
-            CASE_ID,
-            CaseEvent.valueOf("UPDATE_CASE_SUBMITTED"),
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
-            null
-        )).thenReturn(expectedDetails);
+        when(caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseRequest))
+            .thenThrow(new PdfServiceException("Failed to convert to PDF", new IOException()));
 
         // when
-        mockMvc.perform(
-            put("/cases/update-case-submitted", CASE_ID)
-                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(ResourceLoader.toJson(caseRequest))
-        ).andExpect(status().isOk());
+        mockMvc.perform(put(
+                            "/cases/submit-case",
+                            CASE_ID
+                        )
+                            .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(ResourceLoader.toJson(caseRequest))
+            )
+            .andExpect(status().isInternalServerError());
     }
 }

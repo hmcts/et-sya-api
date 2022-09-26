@@ -16,6 +16,9 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.DUMMY_CASE_TYPE;
 
 @ExtendWith(MockitoExtension.class)
 class PostcodeToOfficeServiceTest {
@@ -89,5 +92,29 @@ class PostcodeToOfficeServiceTest {
         given(mockPostcodeToOfficeMappings.getPostcodes()).willReturn(mockData);
         Optional<TribunalOffice> result = postcodeToOfficeService.getTribunalOfficeFromPostcode(PETERBOROUGH_POSTCODE);
         assertThat(result).contains(TribunalOffice.WATFORD);
+    }
+
+    @Test
+    void shouldGetTribunalOfficeByCaseTypeIdWithNullCaseType() {
+        Optional<TribunalOffice> result = postcodeToOfficeService.getTribunalOfficeByCaseTypeId(null);
+        assertThat(result).contains(TribunalOffice.LEEDS);
+    }
+
+    @Test
+    void shouldGetTribunalOfficeByCaseTypeIdWithScotlandCaseType() {
+        Optional<TribunalOffice> result = postcodeToOfficeService.getTribunalOfficeByCaseTypeId(SCOTLAND_CASE_TYPE);
+        assertThat(result).contains(TribunalOffice.GLASGOW);
+    }
+
+    @Test
+    void shouldGetTribunalOfficeByCaseTypeIdWithEnglandCaseType() {
+        Optional<TribunalOffice> result = postcodeToOfficeService.getTribunalOfficeByCaseTypeId(ENGLAND_CASE_TYPE);
+        assertThat(result).contains(TribunalOffice.LEEDS);
+    }
+
+    @Test
+    void shouldGetTribunalOfficeByCaseTypeIdWithDummyCaseType() {
+        Optional<TribunalOffice> result = postcodeToOfficeService.getTribunalOfficeByCaseTypeId(DUMMY_CASE_TYPE);
+        assertThat(result).contains(TribunalOffice.LEEDS);
     }
 }

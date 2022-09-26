@@ -26,7 +26,7 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class PdfMapperServiceTest {
-    private static final Integer TOTAL_VALUES = 55;
+    private static final Integer TOTAL_VALUES = 61;
     private PdfMapperService pdfMapperService;
     private CaseData caseData;
     private static final String ACAS_PREFIX = "2.3";
