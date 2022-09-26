@@ -41,6 +41,14 @@ public class JurisdictionCodesMapper {
         Map.entry(ClaimTypesConstants.REDUNDANCY_PAY, JurisdictionCodesConstants.RPT)
     );
 
+    /**
+     * Extracts type of claims data from @{@link Et1CaseData}
+     * object and maps to Jurisdiction codes.
+     *
+     *
+     * @param data which would be in json format
+     * @return list of JurCodesTypeItem
+     */
     public List<JurCodesTypeItem> mapToJurCodes(Et1CaseData data) {
         Set<String> uniqueJurCodes = new HashSet<>();
         uniqueJurCodes.addAll(retrieveTypeOfClaimsCodes(data));

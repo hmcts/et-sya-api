@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.helper;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
@@ -11,6 +10,8 @@ import uk.gov.hmcts.reform.et.syaapi.constants.JurisdictionCodesConstants;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class JurisdictionCodesMapperTest {
 
@@ -38,8 +39,8 @@ class JurisdictionCodesMapperTest {
             .map(it -> it.getValue().getJuridictionCodesList())
             .collect(Collectors.toList());
 
-        Assertions.assertFalse(items.isEmpty());
-        Assertions.assertTrue(plainCodes.containsAll(expectedCodes));
+        assertThat(!items.isEmpty());
+        assertThat(plainCodes.containsAll(expectedCodes));
     }
 
     @Test
@@ -48,13 +49,13 @@ class JurisdictionCodesMapperTest {
                                                         ClaimTypesConstants.OTHER_PAYMENTS));
         data.setTypeOfClaim(List.of(ClaimTypesConstants.PAY_RELATED_CLAIM));
         List<JurCodesTypeItem> items = jurisdictionCodesMapper.mapToJurCodes(data);
-        Assertions.assertTrue(items.isEmpty());
+        assertThat(items.isEmpty());
     }
 
     @Test
     void shouldNotMapIfTypesNotPresented() {
         List<JurCodesTypeItem> items = jurisdictionCodesMapper.mapToJurCodes(data);
-        Assertions.assertTrue(items.isEmpty());
+        assertThat(items.isEmpty());
     }
 
     private Et1CaseData mockCaseDataWithTypesOfClaims() {
