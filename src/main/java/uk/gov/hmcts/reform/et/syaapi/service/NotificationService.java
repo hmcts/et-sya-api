@@ -9,6 +9,7 @@ import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Holds details for sending email to user(s) provided template been created before-hand.
@@ -37,6 +38,27 @@ public class NotificationService {
             sendEmailResponse = notificationClient.sendEmail(templateId, targetEmail, parameters, reference);
         } catch (NotificationClientException ne) {
             log.error("Error while trying to sending notification to client", ne);
+            throw new NotificationException(ne);
+        }
+        return sendEmailResponse;
+    }
+
+    public SendEmailResponse sendSubmitCaseConfirmationEmail(String templateId,
+                                                             String targetEmail,
+                                                             String reference,
+                                                             String title,
+                                                             String lastName,
+                                                             String caseNumber,
+                                                             String citizenPortalLink) {
+        SendEmailResponse sendEmailResponse;
+        try {
+            Map<String, String> parameters = new ConcurrentHashMap<>();
+            parameters.put("title", title);
+            parameters.put("lastName", lastName);
+            parameters.put("caseNumber", caseNumber);
+            parameters.put("citizenPortalLink", citizenPortalLink);
+            sendEmailResponse = notificationClient.sendEmail(templateId, targetEmail, parameters, reference);
+        } catch (NotificationClientException ne) {
             throw new NotificationException(ne);
         }
         return sendEmailResponse;

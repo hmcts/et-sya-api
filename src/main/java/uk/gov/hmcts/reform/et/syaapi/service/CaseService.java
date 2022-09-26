@@ -11,7 +11,8 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import uk.gov.dwp.regex.InvalidPostcodeException;
+import org.springframework.util.StringUtils;
+import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
@@ -27,10 +28,15 @@ import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,7 +46,7 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
-import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CASE_FIELD_MANAGING_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
@@ -50,15 +56,18 @@ import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.INITIATE_CASE_DRAFT;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings({"PMD.ExcessiveImports"})
 public class CaseService {
 
     private final AuthTokenGenerator authTokenGenerator;
-
     private final CoreCaseDataApi ccdApiClient;
-
     private final IdamClient idamClient;
-
     private final PostcodeToOfficeService postcodeToOfficeService;
+    private final AcasService acasService;
+    private final CaseDocumentService caseDocumentService;
+    private final NotificationService notificationService;
+    private final PdfService pdfService;
+    private final NotificationsProperties notificationsProperties;
 
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
 
@@ -107,19 +116,18 @@ public class CaseService {
                                   CaseRequest caseRequest) {
         String s2sToken = authTokenGenerator.generate();
         String userId = idamClient.getUserDetails(authorization).getId();
-        String caseType = getCaseType(caseRequest);
         String eventTypeName = INITIATE_CASE_DRAFT.name();
-
+        Et1CaseData data = new EmployeeObjectMapper().getEmploymentCaseData(caseRequest.getCaseData());
         StartEventResponse ccdCase = ccdApiClient.startForCitizen(
             authorization,
             s2sToken,
             userId,
             JURISDICTION_ID,
-            caseType,
+            getCaseTypeByCaseTypeId(caseRequest.getCaseTypeId()),
             eventTypeName
         );
 
-        Et1CaseData data = new EmployeeObjectMapper().getEmploymentCaseData(caseRequest.getCaseData());
+
         CaseDataContent caseDataContent = CaseDataContent.builder()
             .event(Event.builder().id(eventTypeName).build())
             .eventToken(ccdCase.getToken())
@@ -131,21 +139,80 @@ public class CaseService {
             s2sToken,
             userId,
             JURISDICTION_ID,
-            caseType,
+            getCaseTypeByCaseTypeId(caseRequest.getCaseTypeId()),
             true,
             caseDataContent
         );
     }
 
-    private String getCaseType(CaseRequest caseRequest) {
-        try {
-            return getCaseTypeId(
-                postcodeToOfficeService.getTribunalOfficeFromPostcode(caseRequest.getPostCode())
-                    .orElse(DEFAULT_TRIBUNAL_OFFICE).getOfficeName());
-        } catch (InvalidPostcodeException e) {
-            log.info("Failed to find tribunal office : {} ", e.getMessage());
-            return getCaseTypeId(DEFAULT_TRIBUNAL_OFFICE.getOfficeName());
+    private String getCaseTypeByCaseTypeId(String caseTypeId) {
+        if (StringUtils.hasText(caseTypeId)) {
+            return caseTypeId;
+        } else {
+            return ENGLAND_CASE_TYPE;
         }
+    }
+
+    private TribunalOffice getTribunalOfficeByCaseTypeId(String caseTypeId) {
+        return postcodeToOfficeService.getTribunalOfficeByCaseTypeId(caseTypeId).orElse(DEFAULT_TRIBUNAL_OFFICE);
+    }
+
+    public CaseDetails updateCase(String authorization,
+                                  CaseRequest caseRequest) {
+        return triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.UPDATE_CASE_DRAFT,
+                            getCaseTypeByCaseTypeId(caseRequest.getCaseTypeId()), caseRequest.getCaseData());
+    }
+
+    private CaseData convertCaseRequestToCaseDataWithTribunalOffice(CaseRequest caseRequest) {
+        caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE,
+                                      getTribunalOfficeByCaseTypeId(
+                                          getCaseTypeByCaseTypeId(caseRequest.getCaseTypeId())).getOfficeName());
+        return EmployeeObjectMapper.mapCaseRequestToCaseData(caseRequest.getCaseData());
+    }
+
+    /**
+     * Given Case Request, triggers submit case events for the case. Before submitting case events
+     * sets managing office (tribunal office), created PDF file for the case and saves PDF file.
+     *
+     * @param authorization is used to seek the {UserDetails} for request
+     * @param caseRequest is used to provide the caseId, caseTypeId and {@link CaseData} in JSON Format
+     * @return the associated {@link CaseData} if the case is submitted
+     */
+    public CaseDetails submitCase(String authorization,
+                                  CaseRequest caseRequest)
+        throws PdfServiceException, CaseDocumentException, AcasException, InvalidAcasNumbersException {
+
+        caseRequest.getCaseData().put("receiptDate", LocalDateTime.now().format(DateTimeFormatter
+                                                                                    .ofPattern("yyyy-MM-dd")));
+        CaseData caseData = convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
+        List<PdfDecodedMultipartFile> acasCertificates = pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
+            caseData, acasService.getAcasCertificatesByCaseData(caseData));
+
+        CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.SUBMIT_CASE_DRAFT,
+                                               getCaseTypeByCaseTypeId(
+                                                   caseRequest.getCaseTypeId()), caseRequest.getCaseData());
+        caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :
+            caseDetails.getData().get("ethosCaseReference").toString());
+        PdfDecodedMultipartFile casePdfFile =
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData);
+        caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
+        caseDetails.getData().put("documentCollection",
+                                  caseDocumentService
+                                      .uploadAllDocuments(authorization,
+                                                          getCaseTypeByCaseTypeId(caseRequest.getCaseTypeId()),
+                                                          casePdfFile,
+                                                          acasCertificates));
+        notificationService
+            .sendSubmitCaseConfirmationEmail(
+                notificationsProperties.getSubmitCaseEmailTemplateId(),
+                caseData.getClaimantType().getClaimantEmailAddress(),
+                caseRequest.getCaseId(),
+                caseData.getClaimantIndType().getClaimantTitle() == null ? "" :
+                    caseData.getClaimantIndType().getClaimantTitle(),
+                caseData.getClaimantIndType().getClaimantLastName(),
+                caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString(),
+                notificationsProperties.getCitizenPortalLink());
+        return caseDetails;
     }
 
     /**
@@ -159,7 +226,7 @@ public class CaseService {
      * @return the associated {@link CaseData} if the case is updated
      */
     public CaseDetails triggerEvent(String authorization, String caseId, CaseEvent eventName,
-                                 String caseType, Map<String, Object> caseData) {
+                                    String caseType, Map<String, Object> caseData) {
         ObjectMapper objectMapper = new ObjectMapper();
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         EmployeeObjectMapper employeeObjectMapper = new EmployeeObjectMapper();
@@ -211,7 +278,6 @@ public class CaseService {
                                     CaseDataContent caseDataContent, String caseType) {
         UserDetails userDetails = idamClient.getUserDetails(authorization);
         String s2sToken = authTokenGenerator.generate();
-
         return ccdApiClient.submitEventForCitizen(
             authorization,
             s2sToken,
@@ -281,3 +347,4 @@ public class CaseService {
         et1CaseData.setJurCodesCollection(jurCodesTypeItems);
     }
 }
+

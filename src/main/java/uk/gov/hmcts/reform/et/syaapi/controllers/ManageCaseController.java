@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.et.syaapi.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,11 +12,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
-import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.AcasException;
+import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentException;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
+import uk.gov.hmcts.reform.et.syaapi.service.InvalidAcasNumbersException;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 
 import java.util.List;
 import javax.validation.constraints.NotNull;
@@ -67,20 +72,14 @@ public class ManageCaseController {
     @PutMapping("/update-case")
     @Operation(summary = "Update draft case API method")
     @ApiResponseGroup
-    public ResponseEntity<CaseDetails> updateDraftCase(
+    public ResponseEntity<CaseDetails> updateCase(
         @RequestHeader(AUTHORIZATION) String authorization,
         @NotNull @RequestBody CaseRequest caseRequest
     ) {
         log.info("Received update-case request - caseTypeId: {} caseId: {}",
                  caseRequest.getCaseTypeId(), caseRequest.getCaseId());
 
-        var caseDetails = caseService.triggerEvent(
-            authorization,
-            caseRequest.getCaseId(),
-            CaseEvent.UPDATE_CASE_DRAFT,
-            caseRequest.getCaseTypeId(),
-            caseRequest.getCaseData()
-        );
+        var caseDetails = caseService.updateCase(authorization, caseRequest);
         return ok(caseDetails);
     }
 
@@ -93,34 +92,10 @@ public class ManageCaseController {
     ) {
         log.info("Received submit-case request - caseTypeId: {} caseId: {}",
                  caseRequest.getCaseTypeId(), caseRequest.getCaseId());
-
-        var caseDetails = caseService.triggerEvent(
-            authorization,
-            caseRequest.getCaseId(),
-            CaseEvent.SUBMIT_CASE_DRAFT,
-            caseRequest.getCaseTypeId(),
-            caseRequest.getCaseData()
-        );
-        return ok(caseDetails);
-    }
-
-    @PutMapping("/update-case-submitted")
-    @Operation(summary = "Update submitted case API method")
-    @ApiResponseGroup
-    public ResponseEntity<CaseDetails> updateCase(
-        @RequestHeader(AUTHORIZATION) String authorization,
-        @NotNull @RequestBody CaseRequest caseRequest
-    ) {
-        log.info("Received update-case-submitted request - caseTypeId: {} caseId: {}",
-                 caseRequest.getCaseTypeId(), caseRequest.getCaseId());
-
-        var caseDetails = caseService.triggerEvent(
-            authorization,
-            caseRequest.getCaseId(),
-            CaseEvent.UPDATE_CASE_SUBMITTED,
-            caseRequest.getCaseTypeId(),
-            caseRequest.getCaseData()
-        );
-        return ok(caseDetails);
+        try {
+            return ok(caseService.submitCase(authorization, caseRequest));
+        } catch (PdfServiceException | CaseDocumentException | AcasException | InvalidAcasNumbersException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        }
     }
 }
