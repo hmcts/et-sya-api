@@ -49,7 +49,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRI
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.INITIATE_CASE_DRAFT;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.*;
 
 @Slf4j
 @Service
@@ -184,7 +184,7 @@ public class CaseService {
         List<PdfDecodedMultipartFile> acasCertificates = pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
             caseData, acasService.getAcasCertificatesByCaseData(caseData));
 
-        CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.SUBMIT_CASE_DRAFT,
+        CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), SUBMIT_CASE_DRAFT,
                                                getCaseTypeByCaseTypeId(
                                                    caseRequest.getCaseTypeId()), caseRequest.getCaseData());
         caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :
@@ -198,6 +198,9 @@ public class CaseService {
                                                           getCaseTypeByCaseTypeId(caseRequest.getCaseTypeId()),
                                                           casePdfFile,
                                                           acasCertificates));
+
+        triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
+                     caseDetails.getData());
         notificationService
             .sendSubmitCaseConfirmationEmail(
                 notificationsProperties.getSubmitCaseEmailTemplateId(),
@@ -229,7 +232,7 @@ public class CaseService {
         StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
         return submitUpdate(authorization, caseId,
                             caseDetailsConverter.caseDataContent(startEventResponse,
-                                                                 employeeObjectMapper.getEmploymentCaseData(caseData)),
+                                                                 employeeObjectMapper.mapCaseRequestToCaseData(caseData)),
                             caseType);
     }
 
