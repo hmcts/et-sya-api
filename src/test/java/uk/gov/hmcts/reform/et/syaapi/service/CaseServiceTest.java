@@ -43,13 +43,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.USER_ID;
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({"PMD.TooManyMethods","PMD.ExcessiveImports"})
 class CaseServiceTest {
 
     @Mock
@@ -319,6 +320,7 @@ class CaseServiceTest {
         BoolQueryBuilder boolQueryBuilder = boolQuery()
             .filter(new RangeQueryBuilder("last_modified").gte(requestDateTime));
         return new SearchSourceBuilder()
+            .size(MAX_ES_SIZE)
             .query(boolQueryBuilder)
             .toString();
     }
@@ -384,6 +386,7 @@ class CaseServiceTest {
         BoolQueryBuilder boolQueryBuilder = boolQuery()
             .filter(new TermsQueryBuilder("reference.keyword", caseIds));
         return new SearchSourceBuilder()
+            .size(MAX_ES_SIZE)
             .query(boolQueryBuilder)
             .toString();
     }
