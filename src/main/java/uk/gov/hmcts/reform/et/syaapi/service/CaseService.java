@@ -46,6 +46,7 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CASE_FIELD_MANAGING_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
@@ -302,6 +303,7 @@ public class CaseService {
         BoolQueryBuilder boolQueryBuilder = boolQuery()
             .filter(new RangeQueryBuilder("last_modified").gte(requestDateTime));
         String query = new SearchSourceBuilder()
+            .size(MAX_ES_SIZE)
             .query(boolQueryBuilder)
             .toString();
         return searchEnglandScotlandCases(authorisation, query)
@@ -321,6 +323,7 @@ public class CaseService {
         BoolQueryBuilder boolQueryBuilder = boolQuery()
             .filter(new TermsQueryBuilder("reference.keyword", caseIds));
         String query = new SearchSourceBuilder()
+            .size(MAX_ES_SIZE)
             .query(boolQueryBuilder)
             .toString();
 
