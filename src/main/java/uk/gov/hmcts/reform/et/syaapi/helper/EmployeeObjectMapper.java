@@ -41,7 +41,7 @@ public class EmployeeObjectMapper {
         return mapper.convertValue(caseData, CaseData.class);
     }
 
-    public static CaseData mapCaseRequestToCaseData(Map<String, Object> caseData) {
+    public static CaseData mapRequestCaseDataToCaseData(Map<String, Object> caseData) {
         return getCaseData(caseData);
     }
 }
