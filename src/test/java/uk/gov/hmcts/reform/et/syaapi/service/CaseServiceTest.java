@@ -10,7 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.JurCodesType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -391,15 +391,14 @@ class CaseServiceTest {
     @Test
     void shouldInvokeCaseEnrichmentWithJurCodesInSubmitEvent() {
         List<JurCodesTypeItem> expectedItems = mockJurCodesTypeItems();
-        EmployeeObjectMapper employeeObjectMapper = new EmployeeObjectMapper();
-        Et1CaseData et1CaseData = employeeObjectMapper.getEmploymentCaseData(testData.getCaseDataWithClaimTypes()
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(testData.getCaseDataWithClaimTypes()
                                                                                  .getCaseData());
-        et1CaseData.setJurCodesCollection(expectedItems);
+        caseData.setJurCodesCollection(expectedItems);
 
         CaseDataContent expectedEnrichedData = CaseDataContent.builder()
             .event(Event.builder().id(TestConstants.INITIATE_CASE_DRAFT).build())
             .eventToken(testData.getStartEventResponse().getToken())
-            .data(et1CaseData)
+            .data(caseData)
             .build();
 
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);

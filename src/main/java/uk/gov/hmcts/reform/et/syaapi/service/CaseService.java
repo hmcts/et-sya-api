@@ -70,7 +70,6 @@ public class CaseService {
     private final NotificationService notificationService;
     private final PdfService pdfService;
     private final NotificationsProperties notificationsProperties;
-
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
 
     /**
@@ -169,7 +168,7 @@ public class CaseService {
         caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE,
                                       getTribunalOfficeByCaseTypeId(
                                           getCaseTypeByCaseTypeId(caseRequest.getCaseTypeId())).getOfficeName());
-        return EmployeeObjectMapper.mapCaseRequestDataToCaseData(caseRequest.getCaseData());
+        return EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseRequest.getCaseData());
     }
 
     /**
@@ -234,18 +233,15 @@ public class CaseService {
         ObjectMapper objectMapper = new ObjectMapper();
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
-        return submitUpdate(authorization, caseId,
-                            caseDetailsConverter.caseDataContent(startEventResponse,
-                                                                 EmployeeObjectMapper
-                                                                     .mapCaseRequestDataToCaseData(caseData)),
-        Et1CaseData et1CaseData = employeeObjectMapper.getEmploymentCaseData(caseData);
-        if (CaseEvent.SUBMIT_CASE_DRAFT == eventName) {
-            enrichCaseDataWithJurisdictionCodes(et1CaseData);
+        CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseData);
+
+        if (SUBMIT_CASE_DRAFT == eventName) {
+            enrichCaseDataWithJurisdictionCodes(caseData1);
         }
 
         return submitUpdate(authorization,
                             caseId,
-                            caseDetailsConverter.caseDataContent(startEventResponse, et1CaseData),
+                            caseDetailsConverter.caseDataContent(startEventResponse, caseData1),
                             caseType);
     }
 
@@ -350,9 +346,9 @@ public class CaseService {
         return caseDetailsList;
     }
 
-    private void enrichCaseDataWithJurisdictionCodes(Et1CaseData et1CaseData) {
-        List<JurCodesTypeItem> jurCodesTypeItems = jurisdictionCodesMapper.mapToJurCodes(et1CaseData);
-        et1CaseData.setJurCodesCollection(jurCodesTypeItems);
+    private void enrichCaseDataWithJurisdictionCodes(CaseData caseData) {
+        List<JurCodesTypeItem> jurCodesTypeItems = jurisdictionCodesMapper.mapToJurCodes(caseData);
+        caseData.setJurCodesCollection(jurCodesTypeItems);
     }
 }
 

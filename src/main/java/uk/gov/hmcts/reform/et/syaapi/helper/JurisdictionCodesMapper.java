@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.helper;
 
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.JurCodesType;
@@ -49,7 +50,7 @@ public class JurisdictionCodesMapper {
      * @param data which would be in json format
      * @return list of JurCodesTypeItem
      */
-    public List<JurCodesTypeItem> mapToJurCodes(Et1CaseData data) {
+    public List<JurCodesTypeItem> mapToJurCodes(CaseData data) {
         Set<String> uniqueJurCodes = new HashSet<>();
         uniqueJurCodes.addAll(retrieveTypeOfClaimsCodes(data));
         uniqueJurCodes.addAll(retrieveDiscriminationCodes(data));
