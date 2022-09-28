@@ -127,13 +127,21 @@ public class PdfService {
         CaseData caseData, List<AcasCertificate> acasCertificates) {
         List<PdfDecodedMultipartFile> pdfDecodedMultipartFiles = new ArrayList<>();
         for (AcasCertificate acasCertificate : acasCertificates) {
-            byte[] pdfData = Base64.getDecoder().decode(acasCertificate.getCertificateDocument());
-            pdfDecodedMultipartFiles.add(new PdfDecodedMultipartFile(pdfData,
-                                        createPdfDocumentNameFromCaseDataAndAcasCertificate(caseData,
-                                                                                            acasCertificate),
-                                        PDF_FILE_TIKA_CONTENT_TYPE,
-                                        createPdfDocumentDescriptionFromCaseDataAndAcasCertificate(caseData,
-                                                                                                   acasCertificate)));
+            if (!"not found".equals(acasCertificate.getCertificateDocument())) {
+                byte[] pdfData = Base64.getDecoder().decode(acasCertificate.getCertificateDocument());
+                pdfDecodedMultipartFiles.add(new PdfDecodedMultipartFile(
+                    pdfData,
+                    createPdfDocumentNameFromCaseDataAndAcasCertificate(
+                        caseData,
+                        acasCertificate
+                    ),
+                    PDF_FILE_TIKA_CONTENT_TYPE,
+                    createPdfDocumentDescriptionFromCaseDataAndAcasCertificate(
+                        caseData,
+                        acasCertificate
+                    )
+                ));
+            }
         }
         return pdfDecodedMultipartFiles;
     }
