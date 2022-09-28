@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.Address;
@@ -27,6 +28,7 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
  * the corresponding questions within the template PDF (ver. ET1_0922)
  * as described in {@link PdfMapperConstants}
  */
+@Slf4j
 @Service
 @SuppressWarnings({"PMD.GodClass",
     "PMD.CyclomaticComplexity", "PMD.TooManyMethods", "PMD.CognitiveComplexity", "PMD.CollapsibleIfStatements",
@@ -98,30 +100,96 @@ public class PdfMapperService {
      */
     public Map<String, Optional<String>> mapHeadersToPdf(CaseData caseData) {
         ConcurrentHashMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
-        printFields.put(PdfMapperConstants.TRIBUNAL_OFFICE, ofNullable(caseData.getManagingOffice()));
-        printFields.put(PdfMapperConstants.CASE_NUMBER, ofNullable(caseData.getEthosCaseReference()));
-        printFields.put(PdfMapperConstants.DATE_RECEIVED, ofNullable(caseData.getReceiptDate()));
-        printFields.putAll(printPersonalDetails(caseData));
-        printFields.putAll(printHearingPreferences(caseData));
-        printFields.putAll(printRespondantDetails(caseData));
-        printFields.putAll(printMultipleClaimsDetails(caseData));
-        printFields.putAll(printEmploymentDetails(caseData));
-        printFields.putAll(printTypeAndDetailsOfClaim(caseData));
-        if (caseData.getClaimantRequests() != null
-            && caseData.getClaimantRequests().getClaimDescription() != null) {
-            printFields.put(
-                PdfMapperConstants.Q8_CLAIM_DESCRIPTION,
-                ofNullable(caseData.getClaimantRequests().getClaimDescription())
-            );
+        try {
+            printFields.put(PdfMapperConstants.TRIBUNAL_OFFICE, ofNullable(caseData.getManagingOffice()));
+        } catch (Exception e) {
+            log.error("Exception occured in PDF MAPPER while setting tribunal office \n" + e.getMessage(), e);
         }
-        printFields.putAll(printCompensation(caseData));
-        printFields.putAll(printWhistleBlowing(caseData));
-        if (caseData.getRepresentativeClaimantType() != null) {
-            printFields.putAll(printRepresentative(caseData.getRepresentativeClaimantType()));
+        try {
+            printFields.put(PdfMapperConstants.CASE_NUMBER, ofNullable(caseData.getEthosCaseReference()));
+        } catch (Exception e) {
+            log.error("Exception occured in PDF MAPPER while setting ethos case number \n" + e.getMessage(), e);
         }
-        printFields.putAll(printDisabilities(caseData));
-        printFields.put(PdfMapperConstants.Q15_ADDITIONAL_INFORMATION,
-                        ofNullable(caseData.getEt1VettingAdditionalInformationTextArea()));
+        try {
+            printFields.put(PdfMapperConstants.DATE_RECEIVED, ofNullable(caseData.getReceiptDate()));
+        } catch (Exception e) {
+            log.error("Exception occured in PDF MAPPER while setting received date \n" + e.getMessage(), e);
+        }
+        try {
+            printFields.putAll(printPersonalDetails(caseData));
+        } catch (Exception e) {
+            log.error("Exception occured in PDF MAPPER while setting personal details \n" + e.getMessage(), e);
+        }
+        try {
+            printFields.putAll(printHearingPreferences(caseData));
+        } catch (Exception e) {
+            log.error("Exception occured in PDF MAPPER while setting hearing preferences \n" + e.getMessage(), e);
+        }
+        try {
+            printFields.putAll(printRespondantDetails(caseData));
+        } catch (Exception e) {
+            log.error("Exception occured in PDF MAPPER while setting respondent details \n" + e.getMessage(), e);
+        }
+        try {
+            printFields.putAll(printMultipleClaimsDetails(caseData));
+        } catch (Exception e) {
+            log.error("Exception occured in PDF MAPPER while setting claims details \n" + e.getMessage(), e);
+        }
+        try {
+            printFields.putAll(printEmploymentDetails(caseData));
+        } catch (Exception e) {
+            log.error("Exception occured in PDF MAPPER while setting employment details \n" + e.getMessage(), e);
+        }
+        try {
+            printFields.putAll(printTypeAndDetailsOfClaim(caseData));
+        } catch (Exception e) {
+            log.error("Exception occured in PDF MAPPER while setting claim details \n" + e.getMessage(), e);
+        }
+        try {
+            if (caseData.getClaimantRequests() != null
+                && caseData.getClaimantRequests().getClaimDescription() != null) {
+                printFields.put(
+                    PdfMapperConstants.Q8_CLAIM_DESCRIPTION,
+                    ofNullable(caseData.getClaimantRequests().getClaimDescription())
+                );
+            }
+        } catch (Exception e) {
+            log.error("Exception occured in PDF MAPPER while setting claim description \n" + e.getMessage(), e);
+        }
+        try {
+            printFields.putAll(printCompensation(caseData));
+        } catch (Exception e) {
+            log.error("Exception occured in PDF MAPPER while setting claim compensation details \n"
+                          + e.getMessage(), e);
+        }
+        try {
+            printFields.putAll(printWhistleBlowing(caseData));
+        } catch (Exception e) {
+            log.error("Exception occured in PDF MAPPER while setting claim whistle blowing details \n"
+                          + e.getMessage(), e);
+        }
+        try {
+            if (caseData.getRepresentativeClaimantType() != null) {
+                printFields.putAll(printRepresentative(caseData.getRepresentativeClaimantType()));
+            }
+        } catch (Exception e) {
+            log.error("Exception occured in PDF MAPPER while setting claimant type details \n"
+                          + e.getMessage(), e);
+        }
+        try {
+            printFields.putAll(printDisabilities(caseData));
+        } catch (Exception e) {
+            log.error("Exception occured in PDF MAPPER while setting disability details \n"
+                          + e.getMessage(), e);
+        }
+        try {
+            printFields.put(PdfMapperConstants.Q15_ADDITIONAL_INFORMATION,
+                            ofNullable(caseData.getEt1VettingAdditionalInformationTextArea()));
+        } catch (Exception e) {
+            log.error("Exception occured in PDF MAPPER while setting additional information \n"
+                          + e.getMessage(), e);
+        }
+
         return printFields;
     }
 

@@ -30,7 +30,7 @@ public class NotificationsProperties {
     @NotEmpty
     private String submitCaseEmailTemplateId;
 
-    @Value("https://www.gov.uk/log-in-register-hmrc-online-services")
+    @Value("https://employmenttribunals.service.gov.uk/en/apply/users/sign_in")
     @NotEmpty
     private String citizenPortalLink;
 }
