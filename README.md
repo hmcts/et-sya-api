@@ -57,6 +57,16 @@ You should get a response similar to this:
   {"status":"UP","diskSpace":{"status":"UP","total":249644974080,"free":137188298752,"threshold":10485760}}
 ```
 
+### Running the application in the cftlib environment
+
+To run the application in the cflib local development environment that is provided by
+https://github.com/hmcts/et-ccd-callbacks
+it is necessary to use the `cftlib` profile.
+
+```bash
+  ./gradlew bootRun --args='--spring.profiles.active=cftlib'
+```
+
 ### Viewing the API specification and consuming
 
 In order to view API endpoints and consume the API directly, you can use the OpenAPI specification by navigating to the site with the following route appended (swagger-ui/index.html). Swagger UI (https://swagger.io/tools/swagger-ui/) allows anyone — be it your development team or your end consumers — to visualize and interact with the API’s resources without having any of the implementation logic in place. It’s automatically generated from your OpenAPI (formerly known as Swagger) Specification, with the visual documentation making it easy for back end implementation and client side consumption.
