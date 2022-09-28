@@ -30,7 +30,7 @@ public class NotificationsProperties {
     @NotEmpty
     private String submitCaseEmailTemplateId;
 
-    @Value("https://et-sya.perftest.platform.hmcts.net/citizen-hub/")
+    @Value("${notifications.citizenPortalLink}")
     @NotEmpty
     private String citizenPortalLink;
 }
