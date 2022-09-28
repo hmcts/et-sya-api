@@ -228,6 +228,16 @@ public class PdfMapperService {
 
     public Map<String, Optional<String>> printHearingPreferences(CaseData caseData) {
         ConcurrentHashMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
+        if (caseData.getClaimantHearingPreference() != null) {
+            if (caseData.getClaimantHearingPreference().getReasonableAdjustments() != null
+                && YES.equals(caseData.getClaimantHearingPreference().getReasonableAdjustments())) {
+                printFields.put(PdfMapperConstants.Q12_DISABILITY_YES, Optional.of(YES));
+            } else {
+                printFields.put(PdfMapperConstants.Q12_DISABILITY_NO, Optional.of(NO_LOWERCASE));
+            }
+            printFields.put(PdfMapperConstants.Q12_DISABILITY_DETAILS,
+                            ofNullable(caseData.getClaimantHearingPreference().getReasonableAdjustmentsDetail()));
+        }
         if (caseData.getClaimantHearingPreference() == null
             || caseData.getClaimantHearingPreference().getHearingPreferences() == null
             || caseData.getClaimantHearingPreference().getHearingPreferences().isEmpty()) {
@@ -253,16 +263,7 @@ public class PdfMapperService {
             printFields.put(PdfMapperConstants.I_CAN_TAKE_PART_IN_PHONE_HEARINGS,
                             Optional.of(YES));
         }
-        if (caseData.getClaimantHearingPreference() != null) {
-            if (caseData.getClaimantHearingPreference().getReasonableAdjustments() != null
-                && YES.equals(caseData.getClaimantHearingPreference().getReasonableAdjustments())) {
-                printFields.put(PdfMapperConstants.Q12_DISABILITY_YES, Optional.of(YES));
-            } else {
-                printFields.put(PdfMapperConstants.Q12_DISABILITY_NO, Optional.of(NO_LOWERCASE));
-            }
-            printFields.put(PdfMapperConstants.Q12_DISABILITY_DETAILS,
-                            ofNullable(caseData.getClaimantHearingPreference().getReasonableAdjustmentsDetail()));
-        }
+
         return printFields;
     }
 
@@ -414,22 +415,21 @@ public class PdfMapperService {
                     PdfMapperConstants.Q5_EMPLOYMENT_START,
                     ofNullable(claimantOtherType.getClaimantEmployedFrom())
                 );
-                if (claimantOtherType.getClaimantEmployedCurrently() != null) {
-                    String currentlyEmployedYesNo = claimantOtherType.getClaimantEmployedCurrently().isEmpty() ? NO :
-                        claimantOtherType.getClaimantEmployedCurrently();
-                    if (YES.equals(currentlyEmployedYesNo)) {
-                        printFields.put(PdfMapperConstants.Q5_CONTINUING_YES, Optional.of(currentlyEmployedYesNo));
-                        printFields.put(
-                            PdfMapperConstants.Q5_NOT_ENDED,
-                            ofNullable(claimantOtherType.getClaimantEmployedTo())
-                        );
-                    } else {
-                        printFields.put(PdfMapperConstants.Q5_CONTINUING_NO, Optional.of(NO_LOWERCASE));
-                        printFields.put(
-                            PdfMapperConstants.Q5_EMPLOYMENT_END,
-                            ofNullable(claimantOtherType.getClaimantEmployedTo())
-                        );
-                    }
+
+                String stillWorking = "No longer working".equals(claimantOtherType.getStillWorking()) ? NO :
+                    YES;
+                if (YES.equals(stillWorking)) {
+                    printFields.put(PdfMapperConstants.Q5_CONTINUING_YES, Optional.of(stillWorking));
+                    printFields.put(
+                        PdfMapperConstants.Q5_NOT_ENDED,
+                        ofNullable(claimantOtherType.getClaimantEmployedTo())
+                    );
+                } else {
+                    printFields.put(PdfMapperConstants.Q5_CONTINUING_NO, Optional.of(NO_LOWERCASE));
+                    printFields.put(
+                        PdfMapperConstants.Q5_EMPLOYMENT_END,
+                        ofNullable(claimantOtherType.getClaimantEmployedTo())
+                    );
                 }
 
                 printFields.put(
