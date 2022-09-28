@@ -206,6 +206,7 @@ public class CaseService {
 
         triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
                      caseDetails.getData());
+        String caseId = caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString();
         notificationService
             .sendSubmitCaseConfirmationEmail(
                 notificationsProperties.getSubmitCaseEmailTemplateId(),
@@ -214,8 +215,8 @@ public class CaseService {
                 caseData.getClaimantIndType().getClaimantTitle() == null ? "" :
                     caseData.getClaimantIndType().getClaimantTitle(),
                 caseData.getClaimantIndType().getClaimantLastName(),
-                caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString(),
-                notificationsProperties.getCitizenPortalLink());
+                caseId,
+                notificationsProperties.getCitizenPortalLink() + caseId);
         return caseDetails;
     }
 

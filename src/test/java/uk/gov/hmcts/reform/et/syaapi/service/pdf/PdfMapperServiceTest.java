@@ -12,6 +12,7 @@ import uk.gov.hmcts.et.common.model.ccd.types.ClaimantWorkAddressType;
 import uk.gov.hmcts.et.common.model.ccd.types.NewEmploymentType;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
+import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 
 import java.util.ArrayList;
@@ -286,10 +287,17 @@ class PdfMapperServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenPrintPersonalDetails() {
-        PdfMapperService pdfMapperService1 = Mockito.mock(PdfMapperService.class);
-        when(pdfMapperService1.printPersonalDetails(caseData)).thenThrow(new NullPointerException("Test Exception"));
-        assertDoesNotThrow(() -> pdfMapperService1.mapHeadersToPdf(caseData));
+    void shouldNotThrowExceptionWhenClaimantIndTypeIsNull() {
+        CaseData exceptionCaseData = new TestData().getCaseData();
+        exceptionCaseData.setClaimantIndType(null);
+        assertDoesNotThrow(() -> pdfMapperService.mapHeadersToPdf(exceptionCaseData));
+    }
+
+    @Test
+    void shouldNotThrowExceptionWhenRepresentativeAddressIsNull() {
+        CaseData exceptionCaseData = new TestData().getCaseData();
+        exceptionCaseData.getRepresentativeClaimantType().setRepresentativeAddress(null);
+        assertDoesNotThrow(() -> pdfMapperService.mapHeadersToPdf(exceptionCaseData));
     }
 
     private List<RespondentSumTypeItem> createRespondentList(int count) {

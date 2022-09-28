@@ -100,38 +100,10 @@ public class PdfMapperService {
      */
     public Map<String, Optional<String>> mapHeadersToPdf(CaseData caseData) {
         ConcurrentHashMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
-        printFields.put(PdfMapperConstants.TRIBUNAL_OFFICE, ofNullable(caseData.getManagingOffice()));
-        printFields.put(PdfMapperConstants.CASE_NUMBER, ofNullable(caseData.getEthosCaseReference()));
-        printFields.put(PdfMapperConstants.DATE_RECEIVED, ofNullable(caseData.getReceiptDate()));
         try {
             printFields.putAll(printPersonalDetails(caseData));
         } catch (Exception e) {
             log.error("Exception occurred in PDF MAPPER while setting personal details \n" + e.getMessage(), e);
-        }
-        try {
-            printFields.putAll(printHearingPreferences(caseData));
-        } catch (Exception e) {
-            log.error("Exception occurred in PDF MAPPER while setting hearing preferences \n" + e.getMessage(), e);
-        }
-        try {
-            printFields.putAll(printRespondantDetails(caseData));
-        } catch (Exception e) {
-            log.error("Exception occurred in PDF MAPPER while setting respondent details \n" + e.getMessage(), e);
-        }
-        try {
-            printFields.putAll(printMultipleClaimsDetails(caseData));
-        } catch (Exception e) {
-            log.error("Exception occurred in PDF MAPPER while setting claims details \n" + e.getMessage(), e);
-        }
-        try {
-            printFields.putAll(printEmploymentDetails(caseData));
-        } catch (Exception e) {
-            log.error("Exception occurred in PDF MAPPER while setting employment details \n" + e.getMessage(), e);
-        }
-        try {
-            printFields.putAll(printTypeAndDetailsOfClaim(caseData));
-        } catch (Exception e) {
-            log.error("Exception occurred in PDF MAPPER while setting claim details \n" + e.getMessage(), e);
         }
         if (caseData.getClaimantRequests() != null
             && caseData.getClaimantRequests().getClaimDescription() != null) {
@@ -140,35 +112,25 @@ public class PdfMapperService {
                 ofNullable(caseData.getClaimantRequests().getClaimDescription())
             );
         }
-        try {
-            printFields.putAll(printCompensation(caseData));
-        } catch (Exception e) {
-            log.error("Exception occurred in PDF MAPPER while setting claim compensation details \n"
-                          + e.getMessage(), e);
-        }
-        try {
-            printFields.putAll(printWhistleBlowing(caseData));
-        } catch (Exception e) {
-            log.error("Exception occurred in PDF MAPPER while setting claim whistle blowing details \n"
-                          + e.getMessage(), e);
-        }
-        try {
-            if (caseData.getRepresentativeClaimantType() != null) {
-                printFields.putAll(printRepresentative(caseData.getRepresentativeClaimantType()));
-            }
-        } catch (Exception e) {
-            log.error("Exception occurred in PDF MAPPER while setting claimant type details \n"
-                          + e.getMessage(), e);
-        }
-        try {
-            printFields.putAll(printDisabilities(caseData));
-        } catch (Exception e) {
-            log.error("Exception occurred in PDF MAPPER while setting disability details \n"
-                          + e.getMessage(), e);
+        if (caseData.getRepresentativeClaimantType() != null) {
+            printFields.putAll(printRepresentative(caseData.getRepresentativeClaimantType()));
         }
         printFields.put(PdfMapperConstants.Q15_ADDITIONAL_INFORMATION,
-                            ofNullable(caseData.getEt1VettingAdditionalInformationTextArea()));
-
+                        ofNullable(caseData.getEt1VettingAdditionalInformationTextArea()));
+        try {
+            printFields.put(PdfMapperConstants.TRIBUNAL_OFFICE, ofNullable(caseData.getManagingOffice()));
+            printFields.put(PdfMapperConstants.CASE_NUMBER, ofNullable(caseData.getEthosCaseReference()));
+            printFields.put(PdfMapperConstants.DATE_RECEIVED, ofNullable(caseData.getReceiptDate()));
+            printFields.putAll(printHearingPreferences(caseData));
+            printFields.putAll(printRespondantDetails(caseData));
+            printFields.putAll(printMultipleClaimsDetails(caseData));
+            printFields.putAll(printEmploymentDetails(caseData));
+            printFields.putAll(printTypeAndDetailsOfClaim(caseData));
+            printFields.putAll(printCompensation(caseData));
+            printFields.putAll(printWhistleBlowing(caseData));
+        } catch (Exception e) {
+            log.error("Exception occurred in PDF MAPPER \n" + e.getMessage(), e);
+        }
         return printFields;
     }
 
@@ -284,7 +246,16 @@ public class PdfMapperService {
             printFields.put(PdfMapperConstants.I_CAN_TAKE_PART_IN_PHONE_HEARINGS,
                             Optional.of(YES));
         }
-
+        if (caseData.getClaimantHearingPreference() != null) {
+            if (caseData.getClaimantHearingPreference().getReasonableAdjustments() != null
+                && YES.equals(caseData.getClaimantHearingPreference().getReasonableAdjustments())) {
+                printFields.put(PdfMapperConstants.Q12_DISABILITY_YES, Optional.of(YES));
+            } else {
+                printFields.put(PdfMapperConstants.Q12_DISABILITY_NO, Optional.of(NO_LOWERCASE));
+            }
+            printFields.put(PdfMapperConstants.Q12_DISABILITY_DETAILS,
+                            ofNullable(caseData.getClaimantHearingPreference().getReasonableAdjustmentsDetail()));
+        }
         return printFields;
     }
 
@@ -701,10 +672,14 @@ public class PdfMapperService {
                         break;
                 }
             }
+            String claimantCompensationText =
+                caseData.getClaimantRequests().getClaimantCompensationText() == null ? "" :
+                    caseData.getClaimantRequests().getClaimantCompensationText();
+            String claimantCompensationAmount =
+                caseData.getClaimantRequests().getClaimantCompensationAmount() == null ? "" :
+                    caseData.getClaimantRequests().getClaimantCompensationAmount();
             printFields.put(PdfMapperConstants.Q9_WHAT_COMPENSATION_REMEDY_ARE_YOU_SEEKING,
-                            Optional.of(caseData.getClaimantRequests().getClaimantCompensationText()
-                                            + " "
-                                            + caseData.getClaimantRequests().getClaimantCompensationAmount()));
+                            Optional.of(claimantCompensationText + " " + claimantCompensationAmount));
         }
 
         return printFields;
@@ -767,21 +742,5 @@ public class PdfMapperService {
             return printFields;
         }
         return new HashMap<>();
-    }
-
-    public Map<String, Optional<String>> printDisabilities(CaseData caseData) {
-        Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
-        if (caseData.getClaimantOtherType() != null) {
-            if (caseData.getClaimantOtherType().getClaimantDisabled() != null) {
-                if (YES.equals(caseData.getClaimantOtherType().getClaimantDisabled())) {
-                    printFields.put(PdfMapperConstants.Q12_DISABILITY_YES, Optional.of(YES));
-                } else {
-                    printFields.put(PdfMapperConstants.Q12_DISABILITY_NO, Optional.of(NO_LOWERCASE));
-                }
-            }
-            printFields.put(PdfMapperConstants.Q12_DISABILITY_DETAILS,
-                            ofNullable(caseData.getClaimantOtherType().getClaimantDisabledDetails()));
-        }
-        return printFields;
     }
 }
