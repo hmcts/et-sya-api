@@ -35,6 +35,7 @@ public class PdfService {
     public String pdfTemplateSource;
 
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
+    private static final String NOT_FOUND = "not found";
 
     /**
      * Converts a {@link CaseData} class object into a pdf document
@@ -127,13 +128,21 @@ public class PdfService {
         CaseData caseData, List<AcasCertificate> acasCertificates) {
         List<PdfDecodedMultipartFile> pdfDecodedMultipartFiles = new ArrayList<>();
         for (AcasCertificate acasCertificate : acasCertificates) {
-            byte[] pdfData = Base64.getDecoder().decode(acasCertificate.getCertificateDocument());
-            pdfDecodedMultipartFiles.add(new PdfDecodedMultipartFile(pdfData,
-                                        createPdfDocumentNameFromCaseDataAndAcasCertificate(caseData,
-                                                                                            acasCertificate),
-                                        PDF_FILE_TIKA_CONTENT_TYPE,
-                                        createPdfDocumentDescriptionFromCaseDataAndAcasCertificate(caseData,
-                                                                                                   acasCertificate)));
+            if (!NOT_FOUND.equals(acasCertificate.getCertificateDocument())) {
+                byte[] pdfData = Base64.getDecoder().decode(acasCertificate.getCertificateDocument());
+                pdfDecodedMultipartFiles.add(new PdfDecodedMultipartFile(
+                    pdfData,
+                    createPdfDocumentNameFromCaseDataAndAcasCertificate(
+                        caseData,
+                        acasCertificate
+                    ),
+                    PDF_FILE_TIKA_CONTENT_TYPE,
+                    createPdfDocumentDescriptionFromCaseDataAndAcasCertificate(
+                        caseData,
+                        acasCertificate
+                    )
+                ));
+            }
         }
         return pdfDecodedMultipartFiles;
     }
