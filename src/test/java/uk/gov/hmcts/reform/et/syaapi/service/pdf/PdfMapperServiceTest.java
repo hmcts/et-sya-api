@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
@@ -24,13 +23,12 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class PdfMapperServiceTest {
-    private static final Integer TOTAL_VALUES = 61;
+    private static final Integer TOTAL_VALUES = 59;
     private PdfMapperService pdfMapperService;
     private CaseData caseData;
     private static final String ACAS_PREFIX = "2.3";

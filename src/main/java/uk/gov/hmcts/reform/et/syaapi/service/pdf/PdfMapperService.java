@@ -112,8 +112,12 @@ public class PdfMapperService {
                 ofNullable(caseData.getClaimantRequests().getClaimDescription())
             );
         }
-        if (caseData.getRepresentativeClaimantType() != null) {
-            printFields.putAll(printRepresentative(caseData.getRepresentativeClaimantType()));
+        try {
+            if (caseData.getRepresentativeClaimantType() != null) {
+                printFields.putAll(printRepresentative(caseData.getRepresentativeClaimantType()));
+            }
+        } catch (Exception e) {
+            log.error("Exception occurred in PDF MAPPER while setting representative details \n" + e.getMessage(), e);
         }
         printFields.put(PdfMapperConstants.Q15_ADDITIONAL_INFORMATION,
                         ofNullable(caseData.getEt1VettingAdditionalInformationTextArea()));

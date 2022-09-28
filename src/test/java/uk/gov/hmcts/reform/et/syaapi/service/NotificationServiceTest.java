@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doReturn;
@@ -182,16 +183,11 @@ class NotificationServiceTest {
     @Test
     void shouldThrowNotificationExceptionWhenNotAbleToSendEmailBySendSubmitCaseConfirmationEmail()
         throws NotificationClientException {
-        ConcurrentHashMap<String, String> submitCaseParameters = new ConcurrentHashMap<>();
-        submitCaseParameters.put("title", SUBMIT_CASE_CONFIRMATION_TITLE);
-        submitCaseParameters.put("lastName", SUBMIT_CASE_CONFIRMATION_LAST_NAME);
-        submitCaseParameters.put("caseNumber", SUBMIT_CASE_CONFIRMATION_CASE_NUMBER);
-        submitCaseParameters.put("citizenPortalLink", CITIZEN_PORTAL_LINK);
         when(notificationClient.sendEmail(
-            SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID,
-            SUBMIT_CASE_CONFIRMATION_TEST_EMAIL,
-            submitCaseParameters,
-            REFERENCE_STRING
+            eq(SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID),
+            eq(SUBMIT_CASE_CONFIRMATION_TEST_EMAIL),
+            any(),
+            eq(REFERENCE_STRING)
         )).thenThrow(new NotificationException(new Exception("Error while trying to sending notification to client")));
         NotificationException notificationException = assertThrows(NotificationException.class, () ->
                      notificationService.sendSubmitCaseConfirmationEmail(
