@@ -103,47 +103,47 @@ public class PdfMapperService {
         try {
             printFields.put(PdfMapperConstants.TRIBUNAL_OFFICE, ofNullable(caseData.getManagingOffice()));
         } catch (Exception e) {
-            log.error("Exception occured in PDF MAPPER while setting tribunal office \n" + e.getMessage(), e);
+            log.error("Exception occurred in PDF MAPPER while setting tribunal office \n" + e.getMessage(), e);
         }
         try {
             printFields.put(PdfMapperConstants.CASE_NUMBER, ofNullable(caseData.getEthosCaseReference()));
         } catch (Exception e) {
-            log.error("Exception occured in PDF MAPPER while setting ethos case number \n" + e.getMessage(), e);
+            log.error("Exception occurred in PDF MAPPER while setting ethos case number \n" + e.getMessage(), e);
         }
         try {
             printFields.put(PdfMapperConstants.DATE_RECEIVED, ofNullable(caseData.getReceiptDate()));
         } catch (Exception e) {
-            log.error("Exception occured in PDF MAPPER while setting received date \n" + e.getMessage(), e);
+            log.error("Exception occurred in PDF MAPPER while setting received date \n" + e.getMessage(), e);
         }
         try {
             printFields.putAll(printPersonalDetails(caseData));
         } catch (Exception e) {
-            log.error("Exception occured in PDF MAPPER while setting personal details \n" + e.getMessage(), e);
+            log.error("Exception occurred in PDF MAPPER while setting personal details \n" + e.getMessage(), e);
         }
         try {
             printFields.putAll(printHearingPreferences(caseData));
         } catch (Exception e) {
-            log.error("Exception occured in PDF MAPPER while setting hearing preferences \n" + e.getMessage(), e);
+            log.error("Exception occurred in PDF MAPPER while setting hearing preferences \n" + e.getMessage(), e);
         }
         try {
             printFields.putAll(printRespondantDetails(caseData));
         } catch (Exception e) {
-            log.error("Exception occured in PDF MAPPER while setting respondent details \n" + e.getMessage(), e);
+            log.error("Exception occurred in PDF MAPPER while setting respondent details \n" + e.getMessage(), e);
         }
         try {
             printFields.putAll(printMultipleClaimsDetails(caseData));
         } catch (Exception e) {
-            log.error("Exception occured in PDF MAPPER while setting claims details \n" + e.getMessage(), e);
+            log.error("Exception occurred in PDF MAPPER while setting claims details \n" + e.getMessage(), e);
         }
         try {
             printFields.putAll(printEmploymentDetails(caseData));
         } catch (Exception e) {
-            log.error("Exception occured in PDF MAPPER while setting employment details \n" + e.getMessage(), e);
+            log.error("Exception occurred in PDF MAPPER while setting employment details \n" + e.getMessage(), e);
         }
         try {
             printFields.putAll(printTypeAndDetailsOfClaim(caseData));
         } catch (Exception e) {
-            log.error("Exception occured in PDF MAPPER while setting claim details \n" + e.getMessage(), e);
+            log.error("Exception occurred in PDF MAPPER while setting claim details \n" + e.getMessage(), e);
         }
         try {
             if (caseData.getClaimantRequests() != null
@@ -154,18 +154,18 @@ public class PdfMapperService {
                 );
             }
         } catch (Exception e) {
-            log.error("Exception occured in PDF MAPPER while setting claim description \n" + e.getMessage(), e);
+            log.error("Exception occurred in PDF MAPPER while setting claim description \n" + e.getMessage(), e);
         }
         try {
             printFields.putAll(printCompensation(caseData));
         } catch (Exception e) {
-            log.error("Exception occured in PDF MAPPER while setting claim compensation details \n"
+            log.error("Exception occurred in PDF MAPPER while setting claim compensation details \n"
                           + e.getMessage(), e);
         }
         try {
             printFields.putAll(printWhistleBlowing(caseData));
         } catch (Exception e) {
-            log.error("Exception occured in PDF MAPPER while setting claim whistle blowing details \n"
+            log.error("Exception occurred in PDF MAPPER while setting claim whistle blowing details \n"
                           + e.getMessage(), e);
         }
         try {
@@ -173,20 +173,20 @@ public class PdfMapperService {
                 printFields.putAll(printRepresentative(caseData.getRepresentativeClaimantType()));
             }
         } catch (Exception e) {
-            log.error("Exception occured in PDF MAPPER while setting claimant type details \n"
+            log.error("Exception occurred in PDF MAPPER while setting claimant type details \n"
                           + e.getMessage(), e);
         }
         try {
             printFields.putAll(printDisabilities(caseData));
         } catch (Exception e) {
-            log.error("Exception occured in PDF MAPPER while setting disability details \n"
+            log.error("Exception occurred in PDF MAPPER while setting disability details \n"
                           + e.getMessage(), e);
         }
         try {
             printFields.put(PdfMapperConstants.Q15_ADDITIONAL_INFORMATION,
                             ofNullable(caseData.getEt1VettingAdditionalInformationTextArea()));
         } catch (Exception e) {
-            log.error("Exception occured in PDF MAPPER while setting additional information \n"
+            log.error("Exception occurred in PDF MAPPER while setting additional information \n"
                           + e.getMessage(), e);
         }
 
