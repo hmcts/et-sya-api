@@ -100,21 +100,9 @@ public class PdfMapperService {
      */
     public Map<String, Optional<String>> mapHeadersToPdf(CaseData caseData) {
         ConcurrentHashMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
-        try {
-            printFields.put(PdfMapperConstants.TRIBUNAL_OFFICE, ofNullable(caseData.getManagingOffice()));
-        } catch (Exception e) {
-            log.error("Exception occurred in PDF MAPPER while setting tribunal office \n" + e.getMessage(), e);
-        }
-        try {
-            printFields.put(PdfMapperConstants.CASE_NUMBER, ofNullable(caseData.getEthosCaseReference()));
-        } catch (Exception e) {
-            log.error("Exception occurred in PDF MAPPER while setting ethos case number \n" + e.getMessage(), e);
-        }
-        try {
-            printFields.put(PdfMapperConstants.DATE_RECEIVED, ofNullable(caseData.getReceiptDate()));
-        } catch (Exception e) {
-            log.error("Exception occurred in PDF MAPPER while setting received date \n" + e.getMessage(), e);
-        }
+        printFields.put(PdfMapperConstants.TRIBUNAL_OFFICE, ofNullable(caseData.getManagingOffice()));
+        printFields.put(PdfMapperConstants.CASE_NUMBER, ofNullable(caseData.getEthosCaseReference()));
+        printFields.put(PdfMapperConstants.DATE_RECEIVED, ofNullable(caseData.getReceiptDate()));
         try {
             printFields.putAll(printPersonalDetails(caseData));
         } catch (Exception e) {
@@ -145,16 +133,12 @@ public class PdfMapperService {
         } catch (Exception e) {
             log.error("Exception occurred in PDF MAPPER while setting claim details \n" + e.getMessage(), e);
         }
-        try {
-            if (caseData.getClaimantRequests() != null
-                && caseData.getClaimantRequests().getClaimDescription() != null) {
-                printFields.put(
-                    PdfMapperConstants.Q8_CLAIM_DESCRIPTION,
-                    ofNullable(caseData.getClaimantRequests().getClaimDescription())
-                );
-            }
-        } catch (Exception e) {
-            log.error("Exception occurred in PDF MAPPER while setting claim description \n" + e.getMessage(), e);
+        if (caseData.getClaimantRequests() != null
+            && caseData.getClaimantRequests().getClaimDescription() != null) {
+            printFields.put(
+                PdfMapperConstants.Q8_CLAIM_DESCRIPTION,
+                ofNullable(caseData.getClaimantRequests().getClaimDescription())
+            );
         }
         try {
             printFields.putAll(printCompensation(caseData));
@@ -182,18 +166,13 @@ public class PdfMapperService {
             log.error("Exception occurred in PDF MAPPER while setting disability details \n"
                           + e.getMessage(), e);
         }
-        try {
-            printFields.put(PdfMapperConstants.Q15_ADDITIONAL_INFORMATION,
+        printFields.put(PdfMapperConstants.Q15_ADDITIONAL_INFORMATION,
                             ofNullable(caseData.getEt1VettingAdditionalInformationTextArea()));
-        } catch (Exception e) {
-            log.error("Exception occurred in PDF MAPPER while setting additional information \n"
-                          + e.getMessage(), e);
-        }
 
         return printFields;
     }
 
-    private Map<String, Optional<String>> printPersonalDetails(CaseData caseData) {
+    public Map<String, Optional<String>> printPersonalDetails(CaseData caseData) {
         ConcurrentHashMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         if (caseData.getClaimantIndType() != null
             && caseData.getClaimantIndType().getClaimantTitle() != null
@@ -278,7 +257,7 @@ public class PdfMapperService {
         return printFields;
     }
 
-    private Map<String, Optional<String>> printHearingPreferences(CaseData caseData) {
+    public Map<String, Optional<String>> printHearingPreferences(CaseData caseData) {
         ConcurrentHashMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         if (caseData.getClaimantHearingPreference() == null
             || caseData.getClaimantHearingPreference().getHearingPreferences() == null
@@ -309,7 +288,7 @@ public class PdfMapperService {
         return printFields;
     }
 
-    private Map<String, Optional<String>> printRespondantDetails(CaseData caseData) {
+    public Map<String, Optional<String>> printRespondantDetails(CaseData caseData) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         List<RespondentSumTypeItem> respondentSumTypeList = caseData.getRespondentCollection();
         if (respondentSumTypeList != null) {
@@ -420,7 +399,7 @@ public class PdfMapperService {
         return printFields;
     }
 
-    private Map<String, Optional<String>> printMultipleClaimsDetails(CaseData caseData) {
+    public Map<String, Optional<String>> printMultipleClaimsDetails(CaseData caseData) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         if ("Multiple".equals(caseData.getEcmCaseType())) {
             printFields.put(PdfMapperConstants.Q3_MORE_CLAIMS_YES, Optional.of(YES));
@@ -445,7 +424,7 @@ public class PdfMapperService {
         return printFields;
     }
 
-    private Map<String, Optional<String>> printEmploymentDetails(CaseData caseData) {
+    public Map<String, Optional<String>> printEmploymentDetails(CaseData caseData) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
         if (claimantOtherType != null) {
@@ -578,7 +557,7 @@ public class PdfMapperService {
         return printFields;
     }
 
-    private Map<String, Optional<String>> printTypeAndDetailsOfClaim(CaseData caseData) {
+    public Map<String, Optional<String>> printTypeAndDetailsOfClaim(CaseData caseData) {
         return new ConcurrentHashMap<>(retrieveTypeOfClaimsPrintFields(caseData));
     }
 
@@ -695,7 +674,7 @@ public class PdfMapperService {
         return printFields;
     }
 
-    private Map<String, Optional<String>> printCompensation(CaseData caseData) {
+    public Map<String, Optional<String>> printCompensation(CaseData caseData) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         if (caseData.getClaimantRequests() != null
             && caseData.getClaimantRequests().getClaimOutcome() != null
@@ -731,7 +710,7 @@ public class PdfMapperService {
         return printFields;
     }
 
-    private Map<String, Optional<String>> printWhistleBlowing(CaseData caseData) {
+    public Map<String, Optional<String>> printWhistleBlowing(CaseData caseData) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         if (caseData.getClaimantRequests() == null) {
             return printFields;
@@ -747,7 +726,7 @@ public class PdfMapperService {
         return printFields;
     }
 
-    private Map<String, Optional<String>> printRepresentative(RepresentedTypeC representativeClaimantType) {
+    public Map<String, Optional<String>> printRepresentative(RepresentedTypeC representativeClaimantType) {
         if (representativeClaimantType != null) {
             Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
             printFields.put(PdfMapperConstants.Q11_REP_NAME,
@@ -790,7 +769,7 @@ public class PdfMapperService {
         return new HashMap<>();
     }
 
-    private Map<String, Optional<String>> printDisabilities(CaseData caseData) {
+    public Map<String, Optional<String>> printDisabilities(CaseData caseData) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         if (caseData.getClaimantOtherType() != null) {
             if (caseData.getClaimantOtherType().getClaimantDisabled() != null) {

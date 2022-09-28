@@ -2,6 +2,9 @@ package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
@@ -11,6 +14,7 @@ import uk.gov.hmcts.et.common.model.ccd.types.ClaimantWorkAddressType;
 import uk.gov.hmcts.et.common.model.ccd.types.NewEmploymentType;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
+import uk.gov.hmcts.reform.et.syaapi.service.InvalidAcasNumbersException;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 
 import java.util.ArrayList;
@@ -18,11 +22,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
+import static org.mockito.Mockito.when;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class PdfMapperServiceTest {
@@ -281,7 +285,12 @@ class PdfMapperServiceTest {
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
         assertNotNull(pdfMap.get(PdfMapperConstants.Q11_CONTACT_POST));
     }
-
+    @Test
+    void shouldThrowExceptionWhenPrintPersonalDetails() {
+        PdfMapperService pdfMapperService1 = Mockito.mock(PdfMapperService.class);
+        when(pdfMapperService1.printPersonalDetails(caseData)).thenThrow(new NullPointerException("Test Exception"));
+        assertDoesNotThrow(() -> pdfMapperService1.mapHeadersToPdf(caseData));
+    }
     private List<RespondentSumTypeItem> createRespondentList(int count) {
         List<RespondentSumTypeItem> returnList = new ArrayList<>();
         for (int i = 0; i < count; i++) {

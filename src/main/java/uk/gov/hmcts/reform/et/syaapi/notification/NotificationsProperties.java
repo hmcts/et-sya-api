@@ -30,7 +30,7 @@ public class NotificationsProperties {
     @NotEmpty
     private String submitCaseEmailTemplateId;
 
-    @Value("https://employmenttribunals.service.gov.uk/en/apply/users/sign_in")
+    @Value("https://et-sya.perftest.platform.hmcts.net/claimant-applications")
     @NotEmpty
     private String citizenPortalLink;
 }
