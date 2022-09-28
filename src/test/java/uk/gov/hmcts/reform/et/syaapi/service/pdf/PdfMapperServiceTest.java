@@ -298,6 +298,11 @@ class PdfMapperServiceTest {
         assertDoesNotThrow(() -> pdfMapperService.mapHeadersToPdf(exceptionCaseData));
     }
 
+    @Test
+    void shouldReturnEmptyMapWhenCaseDataIsNull() {
+        assert(pdfMapperService.mapHeadersToPdf(null)).isEmpty();
+    }
+
     private List<RespondentSumTypeItem> createRespondentList(int count) {
         List<RespondentSumTypeItem> returnList = new ArrayList<>();
         for (int i = 0; i < count; i++) {

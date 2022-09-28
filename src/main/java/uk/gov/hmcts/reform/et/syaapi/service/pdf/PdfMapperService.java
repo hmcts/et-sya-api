@@ -100,6 +100,9 @@ public class PdfMapperService {
      */
     public Map<String, Optional<String>> mapHeadersToPdf(CaseData caseData) {
         ConcurrentHashMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
+        if (caseData == null) {
+            return printFields;
+        }
         try {
             printFields.putAll(printPersonalDetails(caseData));
         } catch (Exception e) {
