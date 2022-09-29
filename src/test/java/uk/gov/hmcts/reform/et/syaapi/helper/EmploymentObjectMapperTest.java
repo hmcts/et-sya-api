@@ -45,11 +45,11 @@ class EmploymentObjectMapperTest {
     void shouldMapCaseRequestToCaseData() {
         Map<String, Object> requestCaseData = testData.getCaseRequestCaseDataMap();
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(requestCaseData);
-        assertThat(caseData.getTypeOfClaim().get(0)).isEqualTo(TYPE_OF_CLAIM_DISCRIMINATION);
-        assertThat(caseData.getTypeOfClaim().get(1)).isEqualTo(TYPE_OF_CLAIM_BREACH_OF_CONTRACT);
-        assertThat(caseData.getTypeOfClaim().get(2)).isEqualTo(TYPE_OF_CLAIM_PAY_RELATED_CLAIM);
-        assertThat(caseData.getTypeOfClaim().get(3)).isEqualTo(TYPE_OF_CLAIM_UNFAIR_DISMISSAL);
-        assertThat(caseData.getTypeOfClaim().get(4)).isEqualTo(TYPE_OF_CLAIM_WHISTLE_BLOWING);
+        assertThat(caseData.getTypesOfClaim().get(0)).isEqualTo(TYPE_OF_CLAIM_DISCRIMINATION);
+        assertThat(caseData.getTypesOfClaim().get(1)).isEqualTo(TYPE_OF_CLAIM_BREACH_OF_CONTRACT);
+        assertThat(caseData.getTypesOfClaim().get(2)).isEqualTo(TYPE_OF_CLAIM_PAY_RELATED_CLAIM);
+        assertThat(caseData.getTypesOfClaim().get(3)).isEqualTo(TYPE_OF_CLAIM_UNFAIR_DISMISSAL);
+        assertThat(caseData.getTypesOfClaim().get(4)).isEqualTo(TYPE_OF_CLAIM_WHISTLE_BLOWING);
         assertThat(caseData.getEcmCaseType()).isEqualTo(requestCaseData.get("caseType"));
         assertThat(caseData.getCaseSource()).isEqualTo(requestCaseData.get("caseSource"));
         assertThat(caseData.getClaimantRepresentedQuestion()).isEqualTo(

@@ -13,7 +13,7 @@
     "claimantType": {
       "claimant_email_address": "citizen-user@test.co.uk"
     },
-    "typeOfClaim": [
+    "typesOfClaim": [
       "breachOfContract",
       "payRelated",
       "otherTypesOfClaims"
