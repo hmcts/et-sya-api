@@ -1,7 +1,7 @@
 {
   "case_type_id": "ET_Scotland",
   "case_data" : {
-    "typeOfClaim" : [ "discrimination", "breachOfContract", "payRelated", "unfairDismissal", "whistleBlowing",
+    "typesOfClaim" : [ "discrimination", "breachOfContract", "payRelated", "unfairDismissal", "whistleBlowing",
       "otherTypesOfClaims" ],
     "caseType" : "Single",
     "caseSource" : "Manually Created",
