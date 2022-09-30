@@ -2,7 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.helper;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantRequestType;
 import uk.gov.hmcts.reform.et.syaapi.constants.ClaimTypesConstants;
@@ -17,11 +17,11 @@ class JurisdictionCodesMapperTest {
 
     private JurisdictionCodesMapper jurisdictionCodesMapper;
 
-    private Et1CaseData data;
+    private CaseData data;
 
     @BeforeEach
     void setUp() {
-        data = new Et1CaseData();
+        data = new CaseData();
         jurisdictionCodesMapper = new JurisdictionCodesMapper();
         ClaimantRequestType requestType = new ClaimantRequestType();
         data.setClaimantRequests(requestType);
@@ -39,27 +39,27 @@ class JurisdictionCodesMapperTest {
             .map(it -> it.getValue().getJuridictionCodesList())
             .collect(Collectors.toList());
 
-        assertThat(!items.isEmpty());
-        assertThat(plainCodes.containsAll(expectedCodes));
+        assertThat(items).hasAtLeastOneElementOfType(JurCodesTypeItem.class);
+        assertThat(plainCodes).containsAll(expectedCodes);
     }
 
     @Test
     void shouldNotMapTypesWithoutJurCodes() {
         data.getClaimantRequests().setPayClaims(List.of(ClaimTypesConstants.OTHER_TYPES,
                                                         ClaimTypesConstants.OTHER_PAYMENTS));
-        data.setTypeOfClaim(List.of(ClaimTypesConstants.PAY_RELATED_CLAIM));
+        data.setTypesOfClaim(List.of(ClaimTypesConstants.PAY_RELATED_CLAIM));
         List<JurCodesTypeItem> items = jurisdictionCodesMapper.mapToJurCodes(data);
-        assertThat(items.isEmpty());
+        assertThat(items).isEmpty();
     }
 
     @Test
     void shouldNotMapIfTypesNotPresented() {
         List<JurCodesTypeItem> items = jurisdictionCodesMapper.mapToJurCodes(data);
-        assertThat(items.isEmpty());
+        assertThat(items).isEmpty();
     }
 
-    private Et1CaseData mockCaseDataWithTypesOfClaims() {
-        data.setTypeOfClaim(List.of(ClaimTypesConstants.BREACH_OF_CONTRACT, ClaimTypesConstants.DISCRIMINATION));
+    private CaseData mockCaseDataWithTypesOfClaims() {
+        data.setTypesOfClaim(List.of(ClaimTypesConstants.BREACH_OF_CONTRACT, ClaimTypesConstants.DISCRIMINATION));
         data.getClaimantRequests().setDiscriminationClaims(List.of(
             ClaimTypesConstants.AGE,
             ClaimTypesConstants.DISABILITY

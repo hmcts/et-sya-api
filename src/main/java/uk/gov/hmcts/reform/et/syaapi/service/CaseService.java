@@ -53,6 +53,8 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CAS
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.INITIATE_CASE_DRAFT;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_CASE_DRAFT;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 
 @Slf4j
 @Service
@@ -69,7 +71,6 @@ public class CaseService {
     private final NotificationService notificationService;
     private final PdfService pdfService;
     private final NotificationsProperties notificationsProperties;
-
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
 
     /**
@@ -168,7 +169,7 @@ public class CaseService {
         caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE,
                                       getTribunalOfficeByCaseTypeId(
                                           getCaseTypeByCaseTypeId(caseRequest.getCaseTypeId())).getOfficeName());
-        return EmployeeObjectMapper.mapCaseRequestToCaseData(caseRequest.getCaseData());
+        return EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseRequest.getCaseData());
     }
 
     /**
@@ -188,8 +189,7 @@ public class CaseService {
         CaseData caseData = convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
         List<PdfDecodedMultipartFile> acasCertificates = pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
             caseData, acasService.getAcasCertificatesByCaseData(caseData));
-
-        CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.SUBMIT_CASE_DRAFT,
+        CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), SUBMIT_CASE_DRAFT,
                                                getCaseTypeByCaseTypeId(
                                                    caseRequest.getCaseTypeId()), caseRequest.getCaseData());
         caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :
@@ -203,6 +203,9 @@ public class CaseService {
                                                           getCaseTypeByCaseTypeId(caseRequest.getCaseTypeId()),
                                                           casePdfFile,
                                                           acasCertificates));
+
+        triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
+                     caseDetails.getData());
         notificationService
             .sendSubmitCaseConfirmationEmail(
                 notificationsProperties.getSubmitCaseEmailTemplateId(),
@@ -230,17 +233,16 @@ public class CaseService {
                                     String caseType, Map<String, Object> caseData) {
         ObjectMapper objectMapper = new ObjectMapper();
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
-        EmployeeObjectMapper employeeObjectMapper = new EmployeeObjectMapper();
         StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
-        Et1CaseData et1CaseData = employeeObjectMapper.getEmploymentCaseData(caseData);
+        CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseData);
 
-        if (CaseEvent.SUBMIT_CASE_DRAFT == eventName) {
-            enrichCaseDataWithJurisdictionCodes(et1CaseData);
+        if (SUBMIT_CASE_DRAFT == eventName) {
+            enrichCaseDataWithJurisdictionCodes(caseData1);
         }
 
         return submitUpdate(authorization,
                             caseId,
-                            caseDetailsConverter.caseDataContent(startEventResponse, et1CaseData),
+                            caseDetailsConverter.caseDataContent(startEventResponse, caseData1),
                             caseType);
     }
 
@@ -347,9 +349,9 @@ public class CaseService {
         return caseDetailsList;
     }
 
-    private void enrichCaseDataWithJurisdictionCodes(Et1CaseData et1CaseData) {
-        List<JurCodesTypeItem> jurCodesTypeItems = jurisdictionCodesMapper.mapToJurCodes(et1CaseData);
-        et1CaseData.setJurCodesCollection(jurCodesTypeItems);
+    private void enrichCaseDataWithJurisdictionCodes(CaseData caseData) {
+        List<JurCodesTypeItem> jurCodesTypeItems = jurisdictionCodesMapper.mapToJurCodes(caseData);
+        caseData.setJurCodesCollection(jurCodesTypeItems);
     }
 }
 
