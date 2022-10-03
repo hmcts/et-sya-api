@@ -82,10 +82,10 @@ public class JurisdictionCodesMapper {
     }
 
     private List<String> retrieveTypeOfClaimsCodes(Et1CaseData data) {
-        if (CollectionUtils.isEmpty(data.getTypesOfClaim())) {
+        if (CollectionUtils.isEmpty(data.getTypeOfClaim())) {
             return Collections.emptyList();
         }
-        return data.getTypesOfClaim().stream()
+        return data.getTypeOfClaim().stream()
             .map(JURISDICTION_CODES::get)
             .collect(Collectors.toList());
     }
