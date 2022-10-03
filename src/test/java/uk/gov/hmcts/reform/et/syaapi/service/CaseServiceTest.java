@@ -163,7 +163,7 @@ class CaseServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             USER_ID,
             EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            EtSyaConstants.ENGLAND_CASE_TYPE,
             EtSyaConstants.DRAFT_EVENT_TYPE
         )).thenReturn(
             testData.getStartEventResponse());
@@ -173,7 +173,7 @@ class CaseServiceTest {
             eq(TEST_SERVICE_AUTH_TOKEN),
              eq(USER_ID),
             eq(EtSyaConstants.JURISDICTION_ID),
-            eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
+            eq(EtSyaConstants.ENGLAND_CASE_TYPE),
             eq(true),
             any(CaseDataContent.class)
         )).thenReturn(testData.getExpectedDetails());
