@@ -541,10 +541,10 @@ public class PdfMapperService {
 
     private static Map<String, Optional<String>> retrieveTypeOfClaimsPrintFields(CaseData caseData) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
-        if (caseData.getTypeOfClaim() == null || caseData.getTypeOfClaim().isEmpty()) {
+        if (caseData.getTypesOfClaim() == null || caseData.getTypesOfClaim().isEmpty()) {
             return printFields;
         }
-        for (String typeOfClaim : caseData.getTypeOfClaim()) {
+        for (String typeOfClaim : caseData.getTypesOfClaim()) {
             mapPrintFields(printFields, typeOfClaim, caseData);
         }
         return printFields;

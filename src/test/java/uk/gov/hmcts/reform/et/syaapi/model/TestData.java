@@ -75,7 +75,7 @@ public final class TestData {
 
     public Map<String, Object> getCaseRequestCaseDataMap() {
         Map<String, Object> requestCaseData = new ConcurrentHashMap<>();
-        requestCaseData.put("typesOfClaim", et1CaseData.getTypeOfClaim());
+        requestCaseData.put("typesOfClaim", et1CaseData.getTypesOfClaim());
         requestCaseData.put("caseType", et1CaseData.getEcmCaseType());
         requestCaseData.put("caseSource", et1CaseData.getCaseSource());
         requestCaseData.put("claimantRepresentedQuestion", et1CaseData.getClaimantRepresentedQuestion());
