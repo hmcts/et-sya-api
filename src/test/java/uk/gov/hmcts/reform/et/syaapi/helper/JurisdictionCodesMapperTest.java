@@ -47,7 +47,7 @@ class JurisdictionCodesMapperTest {
     void shouldNotMapTypesWithoutJurCodes() {
         data.getClaimantRequests().setPayClaims(List.of(ClaimTypesConstants.OTHER_TYPES,
                                                         ClaimTypesConstants.OTHER_PAYMENTS));
-        data.setTypesOfClaim(List.of(ClaimTypesConstants.PAY_RELATED_CLAIM));
+        data.setTypeOfClaim(List.of(ClaimTypesConstants.PAY_RELATED_CLAIM));
         List<JurCodesTypeItem> items = jurisdictionCodesMapper.mapToJurCodes(data);
         assertThat(items).isEmpty();
     }
@@ -59,7 +59,7 @@ class JurisdictionCodesMapperTest {
     }
 
     private CaseData mockCaseDataWithTypesOfClaims() {
-        data.setTypesOfClaim(List.of(ClaimTypesConstants.BREACH_OF_CONTRACT, ClaimTypesConstants.DISCRIMINATION));
+        data.setTypeOfClaim(List.of(ClaimTypesConstants.BREACH_OF_CONTRACT, ClaimTypesConstants.DISCRIMINATION));
         data.getClaimantRequests().setDiscriminationClaims(List.of(
             ClaimTypesConstants.AGE,
             ClaimTypesConstants.DISABILITY
