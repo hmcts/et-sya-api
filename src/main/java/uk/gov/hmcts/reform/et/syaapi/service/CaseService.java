@@ -12,7 +12,6 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.dwp.regex.InvalidPostcodeException;
-import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
@@ -160,8 +159,9 @@ public class CaseService {
         }
     }
 
-    private TribunalOffice getTribunalOfficeByCaseTypeId(String caseTypeId) {
-        return postcodeToOfficeService.getTribunalOfficeByCaseTypeId(caseTypeId).orElse(DEFAULT_TRIBUNAL_OFFICE);
+    private String getTribunalOfficeByCaseTypeId(String caseTypeId) {
+        return postcodeToOfficeService.getTribunalOfficeByCaseTypeId(caseTypeId)
+            .orElse(DEFAULT_TRIBUNAL_OFFICE).getOfficeName();
     }
 
     public CaseDetails updateCase(String authorization,
@@ -190,13 +190,14 @@ public class CaseService {
 
         caseRequest.getCaseData().put("receiptDate", LocalDateTime.now().format(DateTimeFormatter
                                                                                     .ofPattern("yyyy-MM-dd")));
+        caseRequest.getCaseData().put("feeGroupReference", caseRequest.getCaseId());
         CaseData caseData = convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
-        List<PdfDecodedMultipartFile> acasCertificates = pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
-            caseData, acasService.getAcasCertificatesByCaseData(caseData));
         CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), SUBMIT_CASE_DRAFT,
                                                caseRequest.getCaseTypeId(), caseRequest.getCaseData());
         caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :
             caseDetails.getData().get("ethosCaseReference").toString());
+        List<PdfDecodedMultipartFile> acasCertificates = pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
+            caseData, acasService.getAcasCertificatesByCaseData(caseData));
         PdfDecodedMultipartFile casePdfFile =
             pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData);
         caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
