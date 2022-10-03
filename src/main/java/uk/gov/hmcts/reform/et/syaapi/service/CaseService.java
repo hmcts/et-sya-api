@@ -11,7 +11,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
+import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
@@ -47,6 +47,7 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
+import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CASE_FIELD_MANAGING_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
@@ -119,13 +120,14 @@ public class CaseService {
         String s2sToken = authTokenGenerator.generate();
         String userId = idamClient.getUserDetails(authorization).getId();
         String eventTypeName = INITIATE_CASE_DRAFT.name();
+        String caseType = getCaseType(caseRequest);
         Et1CaseData data = new EmployeeObjectMapper().getEmploymentCaseData(caseRequest.getCaseData());
         StartEventResponse ccdCase = ccdApiClient.startForCitizen(
             authorization,
             s2sToken,
             userId,
             JURISDICTION_ID,
-            getCaseTypeByCaseTypeId(caseRequest.getCaseTypeId()),
+            caseType,
             eventTypeName
         );
 
@@ -141,17 +143,20 @@ public class CaseService {
             s2sToken,
             userId,
             JURISDICTION_ID,
-            getCaseTypeByCaseTypeId(caseRequest.getCaseTypeId()),
+            caseType,
             true,
             caseDataContent
         );
     }
 
-    private String getCaseTypeByCaseTypeId(String caseTypeId) {
-        if (StringUtils.hasText(caseTypeId)) {
-            return caseTypeId;
-        } else {
-            return ENGLAND_CASE_TYPE;
+    private String getCaseType(CaseRequest caseRequest) {
+        try {
+            return getCaseTypeId(
+                postcodeToOfficeService.getTribunalOfficeFromPostcode(caseRequest.getPostCode())
+                    .orElse(DEFAULT_TRIBUNAL_OFFICE).getOfficeName());
+        } catch (InvalidPostcodeException e) {
+            log.info("Failed to find tribunal office : {} ", e.getMessage());
+            return getCaseTypeId(DEFAULT_TRIBUNAL_OFFICE.getOfficeName());
         }
     }
 
@@ -162,13 +167,12 @@ public class CaseService {
     public CaseDetails updateCase(String authorization,
                                   CaseRequest caseRequest) {
         return triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.UPDATE_CASE_DRAFT,
-                            getCaseTypeByCaseTypeId(caseRequest.getCaseTypeId()), caseRequest.getCaseData());
+                            caseRequest.getCaseTypeId(), caseRequest.getCaseData());
     }
 
     private CaseData convertCaseRequestToCaseDataWithTribunalOffice(CaseRequest caseRequest) {
         caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE,
-                                      getTribunalOfficeByCaseTypeId(
-                                          getCaseTypeByCaseTypeId(caseRequest.getCaseTypeId())).getOfficeName());
+                                      getTribunalOfficeByCaseTypeId(caseRequest.getCaseTypeId()));
         return EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseRequest.getCaseData());
     }
 
@@ -190,8 +194,7 @@ public class CaseService {
         List<PdfDecodedMultipartFile> acasCertificates = pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
             caseData, acasService.getAcasCertificatesByCaseData(caseData));
         CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), SUBMIT_CASE_DRAFT,
-                                               getCaseTypeByCaseTypeId(
-                                                   caseRequest.getCaseTypeId()), caseRequest.getCaseData());
+                                               caseRequest.getCaseTypeId(), caseRequest.getCaseData());
         caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :
             caseDetails.getData().get("ethosCaseReference").toString());
         PdfDecodedMultipartFile casePdfFile =
@@ -200,7 +203,7 @@ public class CaseService {
         caseDetails.getData().put("documentCollection",
                                   caseDocumentService
                                       .uploadAllDocuments(authorization,
-                                                          getCaseTypeByCaseTypeId(caseRequest.getCaseTypeId()),
+                                                          caseRequest.getCaseTypeId(),
                                                           casePdfFile,
                                                           acasCertificates));
 
