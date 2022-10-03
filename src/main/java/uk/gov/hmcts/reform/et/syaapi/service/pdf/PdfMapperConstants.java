@@ -88,6 +88,7 @@ public final class PdfMapperConstants {
     public static final String Q8_TYPE_OF_CLAIM_REDUNDANCY_PAYMENT = "8.1 I am claiming a redundancy payment";
     public static final String Q8_TYPE_OF_CLAIM_BREACH_OF_CONTRACT = "8.1 owed";
     public static final String Q8_TYPE_OF_CLAIM_OTHER_TYPES_OF_CLAIMS = "8.1 another type of claim";
+    public static final String Q8_ANOTHER_TYPE_OF_CLAIM_TEXT_AREA = "8.1 other type of claim";
     public static final String Q8_TYPE_OF_DISCRIMINATION_AGE = "8.1 age";
     public static final String Q8_TYPE_OF_DISCRIMINATION_GENDER_REASSIGNMENT = "8.1 gender reassignment";
     public static final String Q8_TYPE_OF_DISCRIMINATION_PREGNANCY_OR_MATERNITY = "8.1 pregnancy or maternity";

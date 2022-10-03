@@ -579,6 +579,8 @@ public class PdfMapperService {
                 break;
             case "otherTypesOfClaims":
                 printFields.put(PdfMapperConstants.Q8_TYPE_OF_CLAIM_OTHER_TYPES_OF_CLAIMS, Optional.of(YES));
+                printFields.put(PdfMapperConstants.Q8_ANOTHER_TYPE_OF_CLAIM_TEXT_AREA,
+                                ofNullable(caseData.getClaimantRequests().getOtherClaim()));
                 break;
             default:
                 break;

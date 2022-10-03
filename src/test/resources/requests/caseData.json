@@ -376,6 +376,7 @@
     "whistleblowing" : "Yes",
     "whistleblowing_authority" : "Whistle Blowing Authority",
     "claim_description" : "This is a test claim",
+    "other_claim" : "Other claim test",
     "claim_description_document" : {
       "document_binary_url" : "https://document.binary.url",
       "document_filename" : "filename",
