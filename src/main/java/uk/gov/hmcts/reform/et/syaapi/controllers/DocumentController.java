@@ -72,6 +72,13 @@ public class DocumentController {
         @PathVariable("documentId") final UUID documentId,
         @RequestHeader(AUTHORIZATION) String authToken) {
         log.info("Called DocumentController getDocumentDetails");
-        return caseDocumentService.getDocumentDetails(authToken, documentId);
+        try {
+            return caseDocumentService.getDocumentDetails(authToken, documentId);
+        } catch (Exception ex) {
+            log.error("DocumentController exception message: " + ex.getMessage());
+            log.error("DocumentController exception cause: " + ex.getCause());
+            throw ex;
+        }
+
     }
 }
