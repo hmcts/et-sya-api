@@ -143,11 +143,12 @@ public class CaseDocumentService {
      * @throws ResourceNotFoundException if the target API returns 404 response code
      */
     public ResponseEntity<DocumentDetailsResponse> getDocumentDetails(String authToken, UUID documentId) {
+        log.info("Called getDocumentDetails in CaseDocumentService, doc id: " + documentId.toString());
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.AUTHORIZATION, authToken);
         headers.add(SERVICE_AUTHORIZATION, authTokenGenerator.generate());
         HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(headers);
-
+        log.info("getDocumentDetails - Added authorization");
         try {
             return restTemplate.exchange(
                 caseDocApiUrl + "/cases/documents/" + documentId,
@@ -156,6 +157,9 @@ public class CaseDocumentService {
                 DocumentDetailsResponse.class
             );
         } catch (HttpClientErrorException ex) {
+            log.error("getDocumentDetails exception code: " + ex.getStatusCode());
+            log.error("getDocumentDetails exception message: " + ex.getMessage());
+            log.error("getDocumentDetails exception response string: " + ex.getResponseBodyAsString());
             if (NOT_FOUND.equals(ex.getStatusCode())) {
                 throw new ResourceNotFoundException(String.format(RESOURCE_NOT_FOUND,
                                                                   documentId, ex.getMessage()), ex);
