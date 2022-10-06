@@ -71,7 +71,7 @@ public class DocumentController {
     public ResponseEntity<DocumentDetailsResponse> getDocumentDetails(
         @PathVariable("documentId") final UUID documentId,
         @RequestHeader(AUTHORIZATION) String authToken) {
-
+        log.info("Called DocumentController getDocumentDetails");
         return caseDocumentService.getDocumentDetails(authToken, documentId);
     }
 }
