@@ -54,7 +54,8 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.RESOURCE_NO
 @SuppressWarnings("PMD.TooManyMethods")
 public class CaseDocumentService {
     private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
-    private static final String FILE_NAME_REGEX_PATTERN = "^[\\w\\- ]{1,256}+\\.[A-Za-z]{3,4}$";
+    private static final String FILE_NAME_REGEX_PATTERN =
+        "^(?!\\.)[^\\|*\\?\\:<>\\/$\"]{1,150}$";
     private static final Pattern FILE_NAME_PATTERN = Pattern.compile(FILE_NAME_REGEX_PATTERN);
     private static final String UPLOAD_FILE_EXCEPTION_MESSAGE = "Document management failed uploading file: ";
     private static final String VALIDATE_FILE_EXCEPTION_MESSAGE = "File does not pass validation";
