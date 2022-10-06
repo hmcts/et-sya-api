@@ -151,12 +151,14 @@ public class CaseDocumentService {
         HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(headers);
         log.info("getDocumentDetails - Added authorization");
         try {
-            return restTemplate.exchange(
+            ResponseEntity<DocumentDetailsResponse> response = restTemplate.exchange(
                 caseDocApiUrl + "/cases/documents/" + documentId,
                 HttpMethod.GET,
                 request,
                 DocumentDetailsResponse.class
             );
+            log.info("getDocumentDetails - got the response: " + response.toString());
+            return response;
         } catch (HttpClientErrorException ex) {
             log.error("getDocumentDetails exception code: " + ex.getStatusCode());
             log.error("getDocumentDetails exception message: " + ex.getMessage());
