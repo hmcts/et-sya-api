@@ -165,6 +165,10 @@ public class CaseDocumentService {
                                                                   documentId, ex.getMessage()), ex);
             }
             throw ex;
+        } catch (Exception ex) {
+            log.error("getDocumentDetails general exception message: " + ex.getMessage());
+            log.error("getDocumentDetails general exception cause: " + ex.getCause());
+            throw ex;
         }
     }
 
