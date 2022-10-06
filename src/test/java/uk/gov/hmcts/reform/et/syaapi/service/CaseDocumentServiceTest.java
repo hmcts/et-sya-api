@@ -79,7 +79,7 @@ class CaseDocumentServiceTest {
 
     private static final MockMultipartFile MOCK_FILE_INVALID_NAME = new MockMultipartFile(
         "mock_file_with_invalid_name",
-        "con",
+        ".a.",
         MediaType.TEXT_PLAIN_VALUE,
         MOCK_FILE_BODY.getBytes()
     );
