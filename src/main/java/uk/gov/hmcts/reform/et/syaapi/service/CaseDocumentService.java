@@ -59,7 +59,7 @@ public class CaseDocumentService {
     private static final Pattern FILE_NAME_PATTERN = Pattern.compile(FILE_NAME_REGEX_PATTERN);
     private static final String UPLOAD_FILE_EXCEPTION_MESSAGE = "Document management failed uploading file: ";
     private static final String VALIDATE_FILE_EXCEPTION_MESSAGE = "File does not pass validation";
-    private static final String TYPE_OF_DOCUMENT_ET1_CASE_PDF = "Notice of a claim";
+    private static final String TYPE_OF_DOCUMENT_ET1_CASE_PDF = "ET1";
     private static final String TYPE_OF_DOCUMENT_ET1_ACAS_CERTIFICATE = "ACAS Certificate";
     private final Integer maxApiRetries;
     private final RestTemplate restTemplate;
