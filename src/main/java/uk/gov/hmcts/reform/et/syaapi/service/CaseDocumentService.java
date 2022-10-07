@@ -162,7 +162,6 @@ public class CaseDocumentService {
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.add("Connection", "keep-alive");
             responseHeaders.add("Content-Type", "application/json");
-            responseHeaders.add("Keep-Alive", "timeout=60");
             responseHeaders.add("X-Frame-Options", "DENY");
             responseHeaders.add("X-XSS-Protection", "1; mode=block");
             responseHeaders.add("X-Content-Type-Options", "nosniff");
