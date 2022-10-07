@@ -23,7 +23,6 @@ import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.et.syaapi.config.interceptors.ResourceNotFoundException;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
-import uk.gov.hmcts.reform.et.syaapi.models.DocumentDetailsResponse;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 
 import java.io.IOException;
@@ -113,6 +112,7 @@ public class CaseDocumentService {
      * @throws ResourceNotFoundException if the target API returns 404 response code
      */
     public ResponseEntity<ByteArrayResource> downloadDocument(String authToken, UUID documentId) {
+        log.info("Called downloadDocument");
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.AUTHORIZATION, authToken);
         headers.add(SERVICE_AUTHORIZATION, authTokenGenerator.generate());
@@ -143,7 +143,7 @@ public class CaseDocumentService {
      * @return the response entity which contains the document details object
      * @throws ResourceNotFoundException if the target API returns 404 response code
      */
-    public ResponseEntity<DocumentDetailsResponse> getDocumentDetails(String authToken, UUID documentId) {
+    public ResponseEntity<CaseDocument> getDocumentDetails(String authToken, UUID documentId) {
         log.info("Called getDocumentDetails in CaseDocumentService, doc id: " + documentId.toString());
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.AUTHORIZATION, authToken);
@@ -151,11 +151,11 @@ public class CaseDocumentService {
         HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(headers);
         log.info("getDocumentDetails - Added authorization");
         try {
-            ResponseEntity<DocumentDetailsResponse> response = restTemplate.exchange(
+            ResponseEntity<CaseDocument> response = restTemplate.exchange(
                 caseDocApiUrl + "/cases/documents/" + documentId,
                 HttpMethod.GET,
                 request,
-                DocumentDetailsResponse.class
+                CaseDocument.class
             );
             log.info("getDocumentDetails - got the response: " + response.toString());
             return response;

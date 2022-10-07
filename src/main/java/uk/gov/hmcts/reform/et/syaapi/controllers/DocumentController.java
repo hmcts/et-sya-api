@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.reform.et.syaapi.models.DocumentDetailsResponse;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 
 import java.util.UUID;
@@ -68,7 +68,7 @@ public class DocumentController {
             responseCode = "404",
             description = "Case document not found")
     })
-    public ResponseEntity<DocumentDetailsResponse> getDocumentDetails(
+    public ResponseEntity<CaseDocument> getDocumentDetails(
         @PathVariable("documentId") final UUID documentId,
         @RequestHeader(AUTHORIZATION) String authToken) {
         log.info("Called DocumentController getDocumentDetails");
