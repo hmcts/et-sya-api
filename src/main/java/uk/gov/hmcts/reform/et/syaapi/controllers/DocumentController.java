@@ -75,9 +75,6 @@ public class DocumentController {
         try {
             ResponseEntity<CaseDocument> response =
                 caseDocumentService.getDocumentDetails(authToken, documentId);
-            if (response.getBody() != null) {
-                log.info("DocumentController response received " + response.getBody().toString());
-            }
             return response;
         } catch (Exception ex) {
             log.error("DocumentController exception message: " + ex.getMessage());
