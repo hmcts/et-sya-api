@@ -73,9 +73,7 @@ public class DocumentController {
         @RequestHeader(AUTHORIZATION) String authToken) {
         log.info("Called DocumentController getDocumentDetails");
         try {
-            ResponseEntity<CaseDocument> response =
-                caseDocumentService.getDocumentDetails(authToken, documentId);
-            return response;
+            return caseDocumentService.getDocumentDetails(authToken, documentId);
         } catch (Exception ex) {
             log.error("DocumentController exception message: " + ex.getMessage());
             log.error("DocumentController exception cause: " + ex.getCause());
