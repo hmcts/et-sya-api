@@ -112,6 +112,7 @@ public class CaseDocumentService {
      * @throws ResourceNotFoundException if the target API returns 404 response code
      */
     public ResponseEntity<ByteArrayResource> downloadDocument(String authToken, UUID documentId) {
+        log.info("Called downloadDocument");
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.AUTHORIZATION, authToken);
         headers.add(SERVICE_AUTHORIZATION, authTokenGenerator.generate());
