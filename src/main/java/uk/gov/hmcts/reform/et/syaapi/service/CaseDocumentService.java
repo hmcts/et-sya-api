@@ -8,6 +8,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -158,7 +159,13 @@ public class CaseDocumentService {
                 CaseDocument.class
             );
             log.info("getDocumentDetails - got the response: " + response.toString());
-            return response;
+            HttpHeaders responseHeaders = new HttpHeaders();
+            responseHeaders.add("Connection", "keep-alive");
+            responseHeaders.add("Content-Type", "application/json");
+            responseHeaders.add("X-Frame-Options", "DENY");
+            responseHeaders.add("X-XSS-Protection", "1; mode=block");
+            responseHeaders.add("X-Content-Type-Options", "nosniff");
+            return new ResponseEntity<>(response.getBody(), responseHeaders, HttpStatus.OK);
         } catch (HttpClientErrorException ex) {
             log.error("getDocumentDetails exception code: " + ex.getStatusCode());
             log.error("getDocumentDetails exception message: " + ex.getMessage());
