@@ -17,9 +17,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.ccd.client.model.Classification;
 import uk.gov.hmcts.reform.et.syaapi.config.interceptors.ResourceNotFoundException;
-import uk.gov.hmcts.reform.et.syaapi.models.DocumentDetailsResponse;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
@@ -393,19 +392,13 @@ class CaseDocumentServiceTest {
 
     @Test
     void documentDetailsSuccess() {
-        DocumentDetailsResponse mockDocumentDetailsResponse = new DocumentDetailsResponse(
-            Classification.PUBLIC,
-            100L,
-            "mimeType",
-            "docName",
-            "token",
-            TEST_DATE,
-            "createdBy",
-            "lastModifiedBy",
-            TEST_DATE,
-            TEST_DATE,
-            Map.of("test1", "test2")
-        );
+        CaseDocument mockDocumentDetailsResponse = CaseDocument.builder()
+            .size("size").mimeType("mimeType").hashToken("token").createdOn("createdOn").createdBy("createdBy")
+            .lastModifiedBy("lastModifiedBy").modifiedOn("modifiedOn").ttl("ttl")
+            .metadata(Map.of("test", "test"))
+            .originalDocumentName("docName.txt").classification("PUBLIC")
+            .links(Map.of("self", Map.of("href", "TestURL.com"))).build();
+
         mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_API_URL_WITH_SLASH + DOCUMENT_ID))
             .andExpect(method(HttpMethod.GET))
             .andRespond(withStatus(HttpStatus.OK)
