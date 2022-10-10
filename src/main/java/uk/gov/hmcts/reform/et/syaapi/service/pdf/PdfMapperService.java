@@ -130,7 +130,7 @@ public class PdfMapperService {
             printFields.put(PdfMapperConstants.CASE_NUMBER, ofNullable(caseData.getEthosCaseReference()));
             printFields.put(PdfMapperConstants.DATE_RECEIVED, ofNullable(caseData.getReceiptDate()));
             printFields.putAll(printHearingPreferences(caseData));
-            printFields.putAll(printRespondentDetails(caseData));
+            printFields.putAll(printRespondantDetails(caseData));
             printFields.putAll(printMultipleClaimsDetails(caseData));
             printFields.putAll(printEmploymentDetails(caseData));
             printFields.putAll(printTypeAndDetailsOfClaim(caseData));
@@ -268,7 +268,7 @@ public class PdfMapperService {
         return printFields;
     }
 
-    public Map<String, Optional<String>> printRespondentDetails(CaseData caseData) {
+    public Map<String, Optional<String>> printRespondantDetails(CaseData caseData) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         List<RespondentSumTypeItem> respondentSumTypeList = caseData.getRespondentCollection();
         if (respondentSumTypeList != null) {
@@ -288,8 +288,8 @@ public class PdfMapperService {
                         ofNullable(respondent.getRespondentName())
                     );
                 }
-                printFields.putAll(printRespondent(respondent, ADDRESS_PREFIX[i]));
-                printFields.putAll(printRespondentAcas(respondent, ACAS_PREFIX[i]));
+                printFields.putAll(printRespondant(respondent, ADDRESS_PREFIX[i]));
+                printFields.putAll(printRespondantAcas(respondent, ACAS_PREFIX[i]));
             }
         }
         if (caseData.getClaimantWorkAddress() != null
@@ -300,7 +300,7 @@ public class PdfMapperService {
         return printFields;
     }
 
-    private Map<String, Optional<String>> printRespondent(RespondentSumType respondent, String questionPrefix) {
+    private Map<String, Optional<String>> printRespondant(RespondentSumType respondent, String questionPrefix) {
         String respondentTownOrCityPrefix = PdfMapperConstants.RP_POST_TOWN;
         String respondentHouseNumberPrefix = PdfMapperConstants.QX_HOUSE_NUMBER;
         if (PREFIX_2_7_R3.equals(questionPrefix)
@@ -333,7 +333,7 @@ public class PdfMapperService {
         return printFields;
     }
 
-    private Map<String, Optional<String>> printRespondentAcas(RespondentSumType respondent,
+    private Map<String, Optional<String>> printRespondantAcas(RespondentSumType respondent,
                                                               String questionPrefix) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         String acasYesNo = respondent.getRespondentAcasQuestion().isEmpty() ? NO :
@@ -437,7 +437,7 @@ public class PdfMapperService {
                     PdfMapperConstants.Q5_DESCRIPTION,
                     ofNullable(claimantOtherType.getClaimantOccupation())
                 );
-                printFields.putAll(printRemuneration(claimantOtherType));
+                printFields.putAll(printRenumeration(claimantOtherType));
 
                 if (caseData.getNewEmploymentType() == null) {
                     printFields.put(PdfMapperConstants.Q7_OTHER_JOB_NO, Optional.of(NO));
@@ -472,7 +472,7 @@ public class PdfMapperService {
         }
     }
 
-    private Map<String, Optional<String>> printRemuneration(ClaimantOtherType claimantOtherType) {
+    private Map<String, Optional<String>> printRenumeration(ClaimantOtherType claimantOtherType) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         printFields.put(PdfMapperConstants.Q6_HOURS,
             ofNullable(claimantOtherType.getClaimantAverageWeeklyHours()));
