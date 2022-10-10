@@ -143,7 +143,7 @@
       "typesOfClaim": ["discrimination", "whistleBlowing", "payRelated"],
       "claimantRequests": {
         "discrimination_claims": ["Age", "Ethnicity"],
-        "pay_claims": ["Arrears"],
+        "pay_claims": ["Arrears", "Redundancy"],
         "claim_description": "Let go due to age and ethnicity",
         "claim_outcome": ["compensation"],
         "claimant_compensation_text": "Sample text",
