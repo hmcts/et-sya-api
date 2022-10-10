@@ -567,7 +567,6 @@ public class PdfMapperService {
                 printFields.put(PdfMapperConstants.Q8_TYPE_OF_CLAIM_BREACH_OF_CONTRACT, Optional.of(YES));
                 break;
             case "payRelated":
-                printFields.put(PdfMapperConstants.Q8_TYPE_OF_CLAIM_REDUNDANCY_PAYMENT, Optional.of(YES));
                 if (caseData.getClaimantRequests() != null && caseData.getClaimantRequests().getPayClaims() != null) {
                     printFields.putAll(retrievePayClaimsPrintFields(caseData.getClaimantRequests().getPayClaims()));
                 }
@@ -648,8 +647,10 @@ public class PdfMapperService {
                     printFields.put(PdfMapperConstants.Q8_TYPE_OF_PAY_CLAIMS_NOTICE_PAY, Optional.of(YES));
                     break;
                 case ClaimTypesConstants.OTHER_PAYMENTS:
-                case ClaimTypesConstants.REDUNDANCY_PAY:
                     printFields.put(PdfMapperConstants.Q8_TYPE_OF_PAY_CLAIMS_OTHER_PAYMENTS, Optional.of(YES));
+                    break;
+                case ClaimTypesConstants.REDUNDANCY_PAY:
+                    printFields.put(PdfMapperConstants.Q8_TYPE_OF_CLAIM_REDUNDANCY_PAYMENT, Optional.of(YES));
                     break;
                 default:
                     break;
