@@ -40,7 +40,7 @@ class NotificationServiceTest {
     private static final String TEST_EMAIL = "TEST@GMAIL.COM";
 
     private static final String SUBMIT_CASE_CONFIRMATION_TEST_EMAIL = "mehmet@tdmehmet.com";
-    private static final String SUBMIT_CASE_CONFIRMATION_TITLE = "Mr.";
+    private static final String SUBMIT_CASE_CONFIRMATION_FIRST_NAME = "John";
     private static final String SUBMIT_CASE_CONFIRMATION_LAST_NAME = "Smith";
     private static final String SUBMIT_CASE_CONFIRMATION_CASE_NUMBER = "1234567/22";
 
@@ -165,7 +165,7 @@ class NotificationServiceTest {
             SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID,
             SUBMIT_CASE_CONFIRMATION_TEST_EMAIL,
             REFERENCE_STRING,
-            SUBMIT_CASE_CONFIRMATION_TITLE,
+            SUBMIT_CASE_CONFIRMATION_FIRST_NAME,
             SUBMIT_CASE_CONFIRMATION_LAST_NAME,
             SUBMIT_CASE_CONFIRMATION_CASE_NUMBER,
             CITIZEN_PORTAL_LINK)).thenReturn(testData.getSendEmailResponse());
@@ -173,7 +173,7 @@ class NotificationServiceTest {
             SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID,
             SUBMIT_CASE_CONFIRMATION_TEST_EMAIL,
             REFERENCE_STRING,
-            SUBMIT_CASE_CONFIRMATION_TITLE,
+            SUBMIT_CASE_CONFIRMATION_FIRST_NAME,
             SUBMIT_CASE_CONFIRMATION_LAST_NAME,
             SUBMIT_CASE_CONFIRMATION_CASE_NUMBER,
             CITIZEN_PORTAL_LINK
@@ -194,7 +194,7 @@ class NotificationServiceTest {
                          SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID,
                          SUBMIT_CASE_CONFIRMATION_TEST_EMAIL,
                          REFERENCE_STRING,
-                         SUBMIT_CASE_CONFIRMATION_TITLE,
+                         SUBMIT_CASE_CONFIRMATION_FIRST_NAME,
                          SUBMIT_CASE_CONFIRMATION_LAST_NAME,
                          SUBMIT_CASE_CONFIRMATION_CASE_NUMBER,
                          CITIZEN_PORTAL_LINK));
