@@ -105,7 +105,7 @@ class CaseServiceBootTest {
             eq(SUBMIT_CASE_EMAIL_TEMPLATE_ID),
             eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
             eq(testData.getCaseRequest().getCaseId()),
-            eq(testData.getCaseData().getClaimantIndType().getClaimantTitle()),
+            eq(testData.getCaseData().getClaimantIndType().getClaimantFirstNames()),
             eq(testData.getCaseData().getClaimantIndType().getClaimantLastName()),
             any(String.class),
             eq(CITIZEN_PORTAL_LINK)

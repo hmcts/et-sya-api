@@ -215,8 +215,7 @@ public class CaseService {
                 notificationsProperties.getSubmitCaseEmailTemplateId(),
                 caseData.getClaimantType().getClaimantEmailAddress(),
                 caseRequest.getCaseId(),
-                caseData.getClaimantIndType().getClaimantTitle() == null ? "" :
-                    caseData.getClaimantIndType().getClaimantTitle(),
+                caseData.getClaimantIndType().getClaimantFirstNames(),
                 caseData.getClaimantIndType().getClaimantLastName(),
                 caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString(),
                 notificationsProperties.getCitizenPortalLink());

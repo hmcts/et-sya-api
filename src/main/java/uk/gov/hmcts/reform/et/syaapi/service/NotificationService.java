@@ -46,14 +46,14 @@ public class NotificationService {
     public SendEmailResponse sendSubmitCaseConfirmationEmail(String templateId,
                                                              String targetEmail,
                                                              String reference,
-                                                             String title,
+                                                             String firstName,
                                                              String lastName,
                                                              String caseNumber,
                                                              String citizenPortalLink) {
         SendEmailResponse sendEmailResponse;
         try {
             Map<String, String> parameters = new ConcurrentHashMap<>();
-            parameters.put("title", title);
+            parameters.put("firstName", firstName);
             parameters.put("lastName", lastName);
             parameters.put("caseNumber", caseNumber);
             parameters.put("citizenPortalLink", citizenPortalLink + caseNumber);
