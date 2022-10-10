@@ -31,6 +31,12 @@ public final class ClaimTypesConstants {
     public static final String REDUNDANCY_PAY = "Redundancy pay";
     public static final String OTHER_PAYMENTS = "Other payments";
 
+    //Outcome types
+    public static final String COMPENSATION_ONLY = "compensation";
+    public static final String TRIBUNAL = "tribunal";
+    public static final String OLD_JOB = "oldJob";
+    public static final String ANOTHER_JOB = "anotherJob";
+
     private ClaimTypesConstants() {
         // restrict instantiation
     }

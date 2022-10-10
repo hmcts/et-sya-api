@@ -10,6 +10,7 @@ import uk.gov.hmcts.et.common.model.ccd.types.ClaimantOtherType;
 import uk.gov.hmcts.et.common.model.ccd.types.NewEmploymentType;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
+import uk.gov.hmcts.reform.et.syaapi.constants.ClaimTypesConstants;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -129,7 +130,7 @@ public class PdfMapperService {
             printFields.put(PdfMapperConstants.CASE_NUMBER, ofNullable(caseData.getEthosCaseReference()));
             printFields.put(PdfMapperConstants.DATE_RECEIVED, ofNullable(caseData.getReceiptDate()));
             printFields.putAll(printHearingPreferences(caseData));
-            printFields.putAll(printRespondantDetails(caseData));
+            printFields.putAll(printRespondentDetails(caseData));
             printFields.putAll(printMultipleClaimsDetails(caseData));
             printFields.putAll(printEmploymentDetails(caseData));
             printFields.putAll(printTypeAndDetailsOfClaim(caseData));
@@ -267,7 +268,7 @@ public class PdfMapperService {
         return printFields;
     }
 
-    public Map<String, Optional<String>> printRespondantDetails(CaseData caseData) {
+    public Map<String, Optional<String>> printRespondentDetails(CaseData caseData) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         List<RespondentSumTypeItem> respondentSumTypeList = caseData.getRespondentCollection();
         if (respondentSumTypeList != null) {
@@ -287,8 +288,8 @@ public class PdfMapperService {
                         ofNullable(respondent.getRespondentName())
                     );
                 }
-                printFields.putAll(printRespondant(respondent, ADDRESS_PREFIX[i]));
-                printFields.putAll(printRespondantAcas(respondent, ACAS_PREFIX[i]));
+                printFields.putAll(printRespondent(respondent, ADDRESS_PREFIX[i]));
+                printFields.putAll(printRespondentAcas(respondent, ACAS_PREFIX[i]));
             }
         }
         if (caseData.getClaimantWorkAddress() != null
@@ -299,7 +300,7 @@ public class PdfMapperService {
         return printFields;
     }
 
-    private Map<String, Optional<String>> printRespondant(RespondentSumType respondent, String questionPrefix) {
+    private Map<String, Optional<String>> printRespondent(RespondentSumType respondent, String questionPrefix) {
         String respondentTownOrCityPrefix = PdfMapperConstants.RP_POST_TOWN;
         String respondentHouseNumberPrefix = PdfMapperConstants.QX_HOUSE_NUMBER;
         if (PREFIX_2_7_R3.equals(questionPrefix)
@@ -332,8 +333,8 @@ public class PdfMapperService {
         return printFields;
     }
 
-    private Map<String, Optional<String>> printRespondantAcas(RespondentSumType respondent,
-                                                    String questionPrefix) {
+    private Map<String, Optional<String>> printRespondentAcas(RespondentSumType respondent,
+                                                              String questionPrefix) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         String acasYesNo = respondent.getRespondentAcasQuestion().isEmpty() ? NO :
             respondent.getRespondentAcasQuestion();
@@ -436,7 +437,7 @@ public class PdfMapperService {
                     PdfMapperConstants.Q5_DESCRIPTION,
                     ofNullable(claimantOtherType.getClaimantOccupation())
                 );
-                printFields.putAll(printRenumeration(claimantOtherType));
+                printFields.putAll(printRemuneration(claimantOtherType));
 
                 if (caseData.getNewEmploymentType() == null) {
                     printFields.put(PdfMapperConstants.Q7_OTHER_JOB_NO, Optional.of(NO));
@@ -471,7 +472,7 @@ public class PdfMapperService {
         }
     }
 
-    private Map<String, Optional<String>> printRenumeration(ClaimantOtherType claimantOtherType) {
+    private Map<String, Optional<String>> printRemuneration(ClaimantOtherType claimantOtherType) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         printFields.put(PdfMapperConstants.Q6_HOURS,
             ofNullable(claimantOtherType.getClaimantAverageWeeklyHours()));
@@ -554,7 +555,7 @@ public class PdfMapperService {
                                        String typeOfClaim,
                                        CaseData caseData) {
         switch (typeOfClaim) {
-            case "discrimination":
+            case ClaimTypesConstants.DISCRIMINATION:
                 printFields.put(PdfMapperConstants.Q8_TYPE_OF_CLAIM_DISCRIMINATION, Optional.of(YES));
                 if (caseData.getClaimantRequests() != null
                     && caseData.getClaimantRequests().getDiscriminationClaims() != null) {
@@ -562,22 +563,21 @@ public class PdfMapperService {
                         caseData.getClaimantRequests().getDiscriminationClaims()));
                 }
                 break;
-            case "breachOfContract":
+            case ClaimTypesConstants.BREACH_OF_CONTRACT:
                 printFields.put(PdfMapperConstants.Q8_TYPE_OF_CLAIM_BREACH_OF_CONTRACT, Optional.of(YES));
                 break;
-            case "payRelated":
-                printFields.put(PdfMapperConstants.Q8_TYPE_OF_CLAIM_REDUNDANCY_PAYMENT, Optional.of(YES));
+            case ClaimTypesConstants.PAY_RELATED_CLAIM:
                 if (caseData.getClaimantRequests() != null && caseData.getClaimantRequests().getPayClaims() != null) {
                     printFields.putAll(retrievePayClaimsPrintFields(caseData.getClaimantRequests().getPayClaims()));
                 }
                 break;
-            case "unfairDismissal":
+            case ClaimTypesConstants.UNFAIR_DISMISSAL:
                 printFields.put(PdfMapperConstants.Q8_TYPE_OF_CLAIM_UNFAIRLY_DISMISSED, Optional.of(YES));
                 break;
-            case "whistleBlowing":
+            case ClaimTypesConstants.WHISTLE_BLOWING:
                 printFields.put(PdfMapperConstants.Q8_TYPE_OF_CLAIM_WHISTLE_BLOWING, Optional.of(YES));
                 break;
-            case "otherTypesOfClaims":
+            case ClaimTypesConstants.OTHER_TYPES:
                 printFields.put(PdfMapperConstants.Q8_TYPE_OF_CLAIM_OTHER_TYPES_OF_CLAIMS, Optional.of(YES));
                 if (caseData.getClaimantRequests() != null) {
                     printFields.put(PdfMapperConstants.Q8_ANOTHER_TYPE_OF_CLAIM_TEXT_AREA,
@@ -595,34 +595,34 @@ public class PdfMapperService {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         for (String discriminationType : discriminationClaims) {
             switch (discriminationType) {
-                case "age":
+                case ClaimTypesConstants.AGE:
                     printFields.put(PdfMapperConstants.Q8_TYPE_OF_DISCRIMINATION_AGE, Optional.of(YES));
                     break;
-                case "disability":
+                case ClaimTypesConstants.DISABILITY:
                     printFields.put(PdfMapperConstants.Q8_TYPE_OF_DISCRIMINATION_DISABILITY, Optional.of(YES));
                     break;
-                case "ethnicity":
-                case "race":
+                case ClaimTypesConstants.ETHNICITY:
+                case ClaimTypesConstants.RACE:
                     printFields.put(PdfMapperConstants.Q8_TYPE_OF_DISCRIMINATION_RACE, Optional.of(YES));
                     break;
-                case "genderReassignment":
+                case ClaimTypesConstants.GENDER_REASSIGNMENT:
                     printFields.put(PdfMapperConstants.Q8_TYPE_OF_DISCRIMINATION_GENDER_REASSIGNMENT, Optional.of(YES));
                     break;
-                case "marriageOrCivilPartnership":
+                case ClaimTypesConstants.MARRIAGE_OR_CIVIL_PARTNERSHIP:
                     printFields.put(PdfMapperConstants.Q8_TYPE_OF_DISCRIMINATION_MARRIAGE_OR_CIVIL_PARTNERSHIP,
                                     Optional.of(YES));
                     break;
-                case "pregnancyOrMaternity":
+                case ClaimTypesConstants.PREGNANCY_OR_MATERNITY:
                     printFields.put(PdfMapperConstants.Q8_TYPE_OF_DISCRIMINATION_PREGNANCY_OR_MATERNITY,
                                     Optional.of(YES));
                     break;
-                case "religionOrBelief":
+                case ClaimTypesConstants.RELIGION_OR_BELIEF:
                     printFields.put(PdfMapperConstants.Q8_TYPE_OF_DISCRIMINATION_RELIGION_OR_BELIEF, Optional.of(YES));
                     break;
-                case "Sex (Including equal pay)":
+                case ClaimTypesConstants.SEX:
                     printFields.put(PdfMapperConstants.Q8_TYPE_OF_DISCRIMINATION_SEX, Optional.of(YES));
                     break;
-                case "sexualOrientation":
+                case ClaimTypesConstants.SEXUAL_ORIENTATION:
                     printFields.put(PdfMapperConstants.Q8_TYPE_OF_DISCRIMINATION_SEXUAL_ORIENTATION, Optional.of(YES));
                     break;
                 default:
@@ -637,17 +637,19 @@ public class PdfMapperService {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         for (String payClaimType : payClaims) {
             switch (payClaimType) {
-                case "arrears":
+                case ClaimTypesConstants.REDUNDANCY_PAY:
+                    printFields.put(PdfMapperConstants.Q8_TYPE_OF_CLAIM_REDUNDANCY_PAYMENT, Optional.of(YES));
+                    break;
+                case ClaimTypesConstants.ARREARS:
                     printFields.put(PdfMapperConstants.Q8_TYPE_OF_PAY_CLAIMS_ARREARS, Optional.of(YES));
                     break;
-                case "holidayPay":
+                case ClaimTypesConstants.HOLIDAY_PAY:
                     printFields.put(PdfMapperConstants.Q8_TYPE_OF_PAY_CLAIMS_HOLIDAY_PAY, Optional.of(YES));
                     break;
-                case "noticePay":
+                case ClaimTypesConstants.NOTICE_PAY:
                     printFields.put(PdfMapperConstants.Q8_TYPE_OF_PAY_CLAIMS_NOTICE_PAY, Optional.of(YES));
                     break;
-                case "otherPayments":
-                case "redundancyPay":
+                case ClaimTypesConstants.OTHER_PAYMENTS:
                     printFields.put(PdfMapperConstants.Q8_TYPE_OF_PAY_CLAIMS_OTHER_PAYMENTS, Optional.of(YES));
                     break;
                 default:
@@ -664,19 +666,19 @@ public class PdfMapperService {
             && !caseData.getClaimantRequests().getClaimOutcome().isEmpty()) {
             for (String claimOutcome : caseData.getClaimantRequests().getClaimOutcome()) {
                 switch (claimOutcome) {
-                    case "compensation":
+                    case ClaimTypesConstants.COMPENSATION_ONLY:
                         printFields.put(PdfMapperConstants.Q9_CLAIM_SUCCESSFUL_REQUEST_COMPENSATION,
                                         Optional.of(YES_LOWERCASE));
                         break;
-                    case "tribunal":
+                    case ClaimTypesConstants.TRIBUNAL:
                         printFields.put(PdfMapperConstants.Q9_CLAIM_SUCCESSFUL_REQUEST_DISCRIMINATION_RECOMMENDATION,
                                         Optional.of(YES_LOWERCASE));
                         break;
-                    case "oldJob":
+                    case ClaimTypesConstants.OLD_JOB:
                         printFields.put(PdfMapperConstants.Q9_CLAIM_SUCCESSFUL_REQUEST_OLD_JOB_BACK_AND_COMPENSATION,
                                         Optional.of(YES_LOWERCASE));
                         break;
-                    case "anotherJob":
+                    case ClaimTypesConstants.ANOTHER_JOB:
                         printFields.put(PdfMapperConstants.Q9_CLAIM_SUCCESSFUL_REQUEST_ANOTHER_JOB,
                                         Optional.of(YES_LOWERCASE));
                         break;
