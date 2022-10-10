@@ -635,8 +635,8 @@ public class PdfMapperService {
     private static Map<String, Optional<String>> retrievePayClaimsPrintFields(
         List<String> payClaims) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
-        for (String discriminationType : payClaims) {
-            switch (discriminationType) {
+        for (String payClaimType : payClaims) {
+            switch (payClaimType) {
                 case "arrears":
                     printFields.put(PdfMapperConstants.Q8_TYPE_OF_PAY_CLAIMS_ARREARS, Optional.of(YES));
                     break;

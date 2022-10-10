@@ -13,14 +13,12 @@
       "claimant_TypeOfClaimant": "Individual",
       "claimant_Company": null,
       "claimantIndType": {
-        "claimant_title1": "Mr",
+        "claimant_preferred_title": "Mr",
         "claimant_title_other": null,
         "claimant_first_names": "Henry",
         "claimant_last_name": "Robertson",
         "claimant_date_of_birth": "1976-07-12",
-        "claimant_sex": "Male",
-        "claimant_gender_identity": "Male",
-        "claimant_gender": "Male"
+        "claimant_sex": "Male"
       },
       "claimantType": {
         "claimant_phone_number": "07555555555",
@@ -94,6 +92,17 @@
         }
       ],
       "claimantWorkAddressQuestion": "Yes",
+      "claimantWorkAddress": {
+        "claimant_work_address": {
+          "AddressLine1": "25 Beverley Close",
+          "AddressLine2": "",
+          "AddressLine3": "",
+          "PostTown": "Exeter",
+          "County": "",
+          "Country": "United Kingdom",
+          "PostCode": "EX2 5NN"
+        }
+      },
       "claimantWorkAddressQRespondent": {
         "value": {
           "code": "Granite Construction Ltd",
@@ -107,13 +116,10 @@
         ]
       },
       "claimantOtherType": {
+        "pastEmployer": "Yes",
+        "stillWorking": "Working",
         "claimant_occupation": "Builder",
         "claimant_employed_from": "2009-05-14",
-        "claimant_employed_currently": "Yes",
-        "claimant_employed_to": "2021-04-20",
-        "claimant_employed_notice_period": null,
-        "claimant_disabled": "No",
-        "claimant_disabled_details": null,
         "claimant_notice_period": "No",
         "claimant_notice_period_unit": "Months",
         "claimant_notice_period_duration": "1",
@@ -124,16 +130,29 @@
         "claimant_pension_contribution": "Yes",
         "claimant_pension_weekly_contribution": null,
         "claimant_benefits": "No",
-        "claimant_benefits_detail": null
+        "claimant_benefits_detail": null,
+        "claimant_employed_to": "2021-04-20",
+        "claimant_employed_notice_period": null
       },
-      "newEmploymentType": null,
+      "newEmploymentType": {
+        "new_job": "Yes",
+        "newly_employed_from": "2021-04-20",
+        "new_pay_before_tax": "62000",
+        "new_job_pay_interval": "Annual"
+      },
+      "typesOfClaim": ["discrimination", "whistleBlowing", "payRelated"],
       "claimantRequests": {
-        "claimant_compensation": "Yes",
-        "claimant_tribunal": "Yes",
-        "claimant_old_job": "No",
-        "claimant_another_job": "No",
+        "discrimination_claims": ["Age", "Ethnicity"],
+        "pay_claims": ["Arrears"],
+        "claim_description": "Let go due to age and ethnicity",
+        "claim_outcome": ["compensation"],
+        "claimant_compensation_text": "Sample text",
         "claimant_compensation_amount": "75000",
-        "claimant_tribunal_recommendation": null
+        "claimant_tribunal_recommendation": null,
+        "whistleblowing": "Yes",
+        "whistleblowing_authority": "Random",
+        "claim_description_document": null,
+        "other_claim": null
       },
    "representativeClaimantType": {
      "name_of_organisation": "test",
