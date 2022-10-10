@@ -156,13 +156,8 @@ public class CaseDocumentService {
                 request,
                 CaseDocument.class
             );
-            HttpHeaders responseHeaders = new HttpHeaders();
-            responseHeaders.add("Connection", "keep-alive");
-            responseHeaders.add("Content-Type", "application/json");
-            responseHeaders.add("X-Frame-Options", "DENY");
-            responseHeaders.add("X-XSS-Protection", "1; mode=block");
-            responseHeaders.add("X-Content-Type-Options", "nosniff");
-            return new ResponseEntity<>(response.getBody(), responseHeaders, HttpStatus.OK);
+
+            return new ResponseEntity<>(response.getBody(), getResponseHeaders(), HttpStatus.OK);
         } catch (HttpClientErrorException ex) {
             if (NOT_FOUND.equals(ex.getStatusCode())) {
                 throw new ResourceNotFoundException(String.format(RESOURCE_NOT_FOUND,
@@ -170,6 +165,17 @@ public class CaseDocumentService {
             }
             throw ex;
         }
+    }
+
+    private HttpHeaders getResponseHeaders() {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add("Connection", "keep-alive");
+        responseHeaders.add("Content-Type", "application/json");
+        responseHeaders.add("X-Frame-Options", "DENY");
+        responseHeaders.add("X-XSS-Protection", "1; mode=block");
+        responseHeaders.add("X-Content-Type-Options", "nosniff");
+
+        return responseHeaders;
     }
 
     private DocumentUploadResponse attemptWithRetriesToUploadDocumentToCaseDocumentApi(int attempts,
