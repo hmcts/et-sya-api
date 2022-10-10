@@ -666,19 +666,19 @@ public class PdfMapperService {
             && !caseData.getClaimantRequests().getClaimOutcome().isEmpty()) {
             for (String claimOutcome : caseData.getClaimantRequests().getClaimOutcome()) {
                 switch (claimOutcome) {
-                    case ClaimTypesConstants.COMPENSATION_ONLY:
+                    case "compensation":
                         printFields.put(PdfMapperConstants.Q9_CLAIM_SUCCESSFUL_REQUEST_COMPENSATION,
                                         Optional.of(YES_LOWERCASE));
                         break;
-                    case ClaimTypesConstants.TRIBUNAL:
+                    case "tribunal":
                         printFields.put(PdfMapperConstants.Q9_CLAIM_SUCCESSFUL_REQUEST_DISCRIMINATION_RECOMMENDATION,
                                         Optional.of(YES_LOWERCASE));
                         break;
-                    case ClaimTypesConstants.OLD_JOB:
+                    case "oldJob":
                         printFields.put(PdfMapperConstants.Q9_CLAIM_SUCCESSFUL_REQUEST_OLD_JOB_BACK_AND_COMPENSATION,
                                         Optional.of(YES_LOWERCASE));
                         break;
-                    case ClaimTypesConstants.ANOTHER_JOB:
+                    case "anotherJob":
                         printFields.put(PdfMapperConstants.Q9_CLAIM_SUCCESSFUL_REQUEST_ANOTHER_JOB,
                                         Optional.of(YES_LOWERCASE));
                         break;
