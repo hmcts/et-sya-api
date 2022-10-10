@@ -74,7 +74,5 @@ public class DocumentController {
         log.info("Called DocumentController getDocumentDetails");
 
         return caseDocumentService.getDocumentDetails(authToken, documentId);
-
-
     }
 }
