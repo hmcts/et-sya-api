@@ -144,13 +144,13 @@ public class PdfMapperService {
     public Map<String, Optional<String>> printPersonalDetails(CaseData caseData) {
         ConcurrentHashMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         if (caseData.getClaimantIndType() != null
-            && caseData.getClaimantIndType().getClaimantTitle() != null
-            && TITLES.containsKey(caseData.getClaimantIndType().getClaimantTitle())) {
+            && caseData.getClaimantIndType().getClaimantPreferredTitle() != null
+            && TITLES.containsKey(caseData.getClaimantIndType().getClaimantPreferredTitle())) {
             printFields.put(
-                TITLES.get(caseData.getClaimantIndType().getClaimantTitle()),
-                ofNullable(TITLE_MAP.get(caseData.getClaimantIndType().getClaimantTitle()))
+                TITLES.get(caseData.getClaimantIndType().getClaimantPreferredTitle()),
+                ofNullable(TITLE_MAP.get(caseData.getClaimantIndType().getClaimantPreferredTitle()))
             );
-            if (OTHER.equals(caseData.getClaimantIndType().getClaimantTitle())) {
+            if (OTHER.equals(caseData.getClaimantIndType().getClaimantPreferredTitle())) {
                 printFields.put(
                     TITLES.get("Other_Specify"),
                     ofNullable(String.valueOf(caseData.getClaimantIndType().getClaimantTitleOther()))
