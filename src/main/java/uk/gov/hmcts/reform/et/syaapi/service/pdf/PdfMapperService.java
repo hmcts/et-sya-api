@@ -698,15 +698,19 @@ public class PdfMapperService {
             switch (payClaimType) {
                 case ClaimTypesConstants.ARREARS:
                     printFields.put(PdfMapperConstants.Q8_TYPE_OF_PAY_CLAIMS_ARREARS, Optional.of(YES));
+                    checkIAmOwedBox(printFields);
                     break;
                 case ClaimTypesConstants.HOLIDAY_PAY:
                     printFields.put(PdfMapperConstants.Q8_TYPE_OF_PAY_CLAIMS_HOLIDAY_PAY, Optional.of(YES));
+                    checkIAmOwedBox(printFields);
                     break;
                 case ClaimTypesConstants.NOTICE_PAY:
                     printFields.put(PdfMapperConstants.Q8_TYPE_OF_PAY_CLAIMS_NOTICE_PAY, Optional.of(YES));
+                    checkIAmOwedBox(printFields);
                     break;
                 case ClaimTypesConstants.OTHER_PAYMENTS:
                     printFields.put(PdfMapperConstants.Q8_TYPE_OF_PAY_CLAIMS_OTHER_PAYMENTS, Optional.of(YES));
+                    checkIAmOwedBox(printFields);
                     break;
                 case ClaimTypesConstants.REDUNDANCY_PAY:
                     printFields.put(PdfMapperConstants.Q8_TYPE_OF_CLAIM_REDUNDANCY_PAYMENT, Optional.of(YES));
@@ -717,6 +721,13 @@ public class PdfMapperService {
         }
         return printFields;
     }
+
+    private static void checkIAmOwedBox(Map<String, Optional<String>> printFields) {
+        if (!printFields.containsKey(PdfMapperConstants.Q8_TYPE_OF_CLAIM_I_AM_OWED)) {
+            printFields.put(PdfMapperConstants.Q8_TYPE_OF_CLAIM_I_AM_OWED, Optional.of(YES));
+        }
+    }
+
 
     public Map<String, Optional<String>> printCompensation(CaseData caseData) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();

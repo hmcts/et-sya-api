@@ -29,7 +29,7 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class PdfMapperServiceTest {
-    private static final Integer TOTAL_VALUES = 77;
+    private static final Integer TOTAL_VALUES = 81;
     private PdfMapperService pdfMapperService;
     private CaseData caseData;
     private static final String ACAS_PREFIX = "2.3";
@@ -83,7 +83,7 @@ class PdfMapperServiceTest {
     }
 
     @Test
-    void withoutAcasEarlyCertficateWithReasonUnfairDismissalReflectsInMap() {
+    void withoutAcasEarlyCertificateWithReasonUnfairDismissalReflectsInMap() {
         RespondentSumType respondentSumType = caseData.getRespondentCollection().get(0).getValue();
         respondentSumType.setRespondentAcasQuestion(NO);
         respondentSumType.setRespondentAcas(null);
@@ -96,7 +96,7 @@ class PdfMapperServiceTest {
     }
 
     @Test
-    void withoutAcasEarlyCertficateWithReasonAnotherPersonReflectsInMap() {
+    void withoutAcasEarlyCertificateWithReasonAnotherPersonReflectsInMap() {
         RespondentSumType respondentSumType = caseData.getRespondentCollection().get(0).getValue();
         respondentSumType.setRespondentAcasQuestion(NO);
         respondentSumType.setRespondentAcas(null);
@@ -109,7 +109,7 @@ class PdfMapperServiceTest {
     }
 
     @Test
-    void withoutAcasEarlyCertficateWithReasonNoPowerReflectsInMap() {
+    void withoutAcasEarlyCertificateWithReasonNoPowerReflectsInMap() {
         RespondentSumType respondentSumType = caseData.getRespondentCollection().get(0).getValue();
         respondentSumType.setRespondentAcasQuestion(NO);
         respondentSumType.setRespondentAcas(null);
@@ -122,7 +122,7 @@ class PdfMapperServiceTest {
     }
 
     @Test
-    void withoutAcasEarlyCertficateWithReasonEmployerInTouchReflectsInMap() {
+    void withoutAcasEarlyCertificateWithReasonEmployerInTouchReflectsInMap() {
         RespondentSumType respondentSumType = caseData.getRespondentCollection().get(0).getValue();
         respondentSumType.setRespondentAcasQuestion(NO);
         respondentSumType.setRespondentAcas(null);
@@ -280,7 +280,7 @@ class PdfMapperServiceTest {
     }
 
     @Test
-    void givenRepresentativePostPreferenceRelectsInMap() {
+    void givenRepresentativePostPreferenceReflectsInMap() {
         RepresentedTypeC representedTypeC = caseData.getRepresentativeClaimantType();
         representedTypeC.setRepresentativePreference(POST);
         caseData.setRepresentativeClaimantType(representedTypeC);
@@ -417,12 +417,12 @@ class PdfMapperServiceTest {
         List<RespondentSumTypeItem> returnList = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             RespondentSumType respondentSumType = caseData.getRespondentCollection().get(0).getValue();
-            returnList.add(createResponent(respondentSumType));
+            returnList.add(createRespondent(respondentSumType));
         }
         return returnList;
     }
 
-    private RespondentSumTypeItem createResponent(RespondentSumType respondentSumType) {
+    private RespondentSumTypeItem createRespondent(RespondentSumType respondentSumType) {
         RespondentSumTypeItem respondentSumTypeItem = new RespondentSumTypeItem();
         respondentSumTypeItem.setValue(respondentSumType);
         return respondentSumTypeItem;
