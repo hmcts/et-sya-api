@@ -29,7 +29,7 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class PdfMapperServiceTest {
-    private static final Integer TOTAL_VALUES = 78;
+    private static final Integer TOTAL_VALUES = 77;
     private PdfMapperService pdfMapperService;
     private CaseData caseData;
     private static final String ACAS_PREFIX = "2.3";
@@ -164,9 +164,9 @@ class PdfMapperServiceTest {
     }
 
     @Test
-    void givenClaimentDidntWorkForRespondentSkipsSection() {
+    void givenClaimantDidntWorkForRespondentSkipsSection() {
         ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
-        claimantOtherType.setClaimantEmployedFrom(null);
+        claimantOtherType.setPastEmployer(NO);
         caseData.setClaimantOtherType(claimantOtherType);
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
         assertNull(pdfMap.get(PdfMapperConstants.Q5_EMPLOYMENT_START));
