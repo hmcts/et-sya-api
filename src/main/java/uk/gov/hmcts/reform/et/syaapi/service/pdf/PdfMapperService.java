@@ -479,20 +479,8 @@ public class PdfMapperService {
                 );
                 printFields.putAll(printRemuneration(claimantOtherType));
 
-                if (caseData.getNewEmploymentType() == null) {
-                    printFields.put(PdfMapperConstants.Q7_OTHER_JOB_NO, Optional.of(NO));
-                } else {
-                    NewEmploymentType newEmploymentType = caseData.getNewEmploymentType();
-                    printFields.put(PdfMapperConstants.Q7_OTHER_JOB_YES, Optional.of(YES));
-                    printFields.put(
-                        PdfMapperConstants.Q7_START_WORK,
-                        ofNullable(newEmploymentType.getNewlyEmployedFrom())
-                    );
-                    printFields.put(
-                        PdfMapperConstants.Q7_EARNING,
-                        ofNullable(newEmploymentType.getNewPayBeforeTax())
-                    );
-                    printJobPayInterval(printFields, newEmploymentType);
+                if (caseData.getNewEmploymentType() != null) {
+                    printNewEmploymentFields(caseData, printFields);
                 }
 
             } else if (NO.equals(claimantOtherType.getPastEmployer())) {
@@ -501,6 +489,26 @@ public class PdfMapperService {
             }
         }
         return printFields;
+    }
+
+    private void printNewEmploymentFields(CaseData caseData, Map<String, Optional<String>> printFields) {
+        NewEmploymentType newEmploymentType = caseData.getNewEmploymentType();
+        if (newEmploymentType.getNewJob() != null) {
+            if (YES.equals(newEmploymentType.getNewJob())) {
+                printFields.put(PdfMapperConstants.Q7_OTHER_JOB_YES, Optional.of(YES));
+                printFields.put(
+                    PdfMapperConstants.Q7_START_WORK,
+                    ofNullable(newEmploymentType.getNewlyEmployedFrom())
+                );
+                printFields.put(
+                    PdfMapperConstants.Q7_EARNING,
+                    ofNullable(newEmploymentType.getNewPayBeforeTax())
+                );
+                printJobPayInterval(printFields, newEmploymentType);
+            } else if (NO.equals(newEmploymentType.getNewJob())) {
+                printFields.put(PdfMapperConstants.Q7_OTHER_JOB_NO, Optional.of(NO));
+            }
+        }
     }
 
     private void printJobPayInterval(Map<String, Optional<String>> printFields, NewEmploymentType newEmploymentType) {

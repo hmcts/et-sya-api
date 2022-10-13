@@ -258,6 +258,7 @@ class PdfMapperServiceTest {
     @Test
     void givenNewEmploymentReflectsInMap() {
         NewEmploymentType newEmploymentType = new NewEmploymentType();
+        newEmploymentType.setNewJob("Yes");
         newEmploymentType.setNewlyEmployedFrom("26/09/2022");
         newEmploymentType.setNewPayBeforeTax("50000");
         caseData.setNewEmploymentType(newEmploymentType);
@@ -266,10 +267,20 @@ class PdfMapperServiceTest {
     }
 
     @Test
+    void givenNewEmploymentWithNoNewJobReflectsInMap() {
+        NewEmploymentType newEmploymentType = new NewEmploymentType();
+        newEmploymentType.setNewJob("No");
+        caseData.setNewEmploymentType(newEmploymentType);
+        Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
+        assertNotNull(pdfMap.get(PdfMapperConstants.Q7_OTHER_JOB_NO));
+    }
+
+    @Test
     void givenNoNewEmploymentReflectsInMap() {
         caseData.setNewEmploymentType(null);
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNotNull(pdfMap.get(PdfMapperConstants.Q7_OTHER_JOB_NO));
+        assertNull(pdfMap.get(PdfMapperConstants.Q7_OTHER_JOB_NO));
+        assertNull(pdfMap.get(PdfMapperConstants.Q7_OTHER_JOB_YES));
     }
 
     @Test
