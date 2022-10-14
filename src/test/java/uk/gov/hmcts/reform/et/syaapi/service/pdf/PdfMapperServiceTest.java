@@ -29,7 +29,7 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class PdfMapperServiceTest {
-    private static final Integer TOTAL_VALUES = 81;
+    private static final Integer TOTAL_VALUES = 82;
     private PdfMapperService pdfMapperService;
     private CaseData caseData;
     private static final String ACAS_PREFIX = "2.3";
@@ -175,6 +175,7 @@ class PdfMapperServiceTest {
     @Test
     void givenContinuedEmploymentReflectsInMap() {
         ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
+        claimantOtherType.setStillWorking("Working");
         caseData.setClaimantOtherType(claimantOtherType);
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
         assertNotNull(pdfMap.get(PdfMapperConstants.Q5_CONTINUING_YES));
@@ -184,9 +185,6 @@ class PdfMapperServiceTest {
     @Test
     void givenDiscontinuedEmploymentReflectsInMap() {
         ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
-        claimantOtherType.setStillWorking("No longer working");
-        claimantOtherType.setClaimantEmployedFrom("01/01/2020");
-        claimantOtherType.setClaimantEmployedTo("01/01/2022");
         caseData.setClaimantOtherType(claimantOtherType);
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
         assertNotNull(pdfMap.get(PdfMapperConstants.Q5_EMPLOYMENT_END));
@@ -196,19 +194,30 @@ class PdfMapperServiceTest {
     @Test
     void givenWeeklyPaymentCycleReflectsInMap() {
         ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
-        claimantOtherType.setClaimantPayCycle("Weekly");
+        claimantOtherType.setClaimantPayCycle("Weeks");
         caseData.setClaimantOtherType(claimantOtherType);
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
         assertNotNull(pdfMap.get(PdfMapperConstants.Q6_GROSS_PAY_WEEKLY));
+        assertNull(pdfMap.get(PdfMapperConstants.Q6_GROSS_PAY_ANNUAL));
     }
 
     @Test
     void givenMonthlyPaymentCycleReflectsInMap() {
         ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
-        claimantOtherType.setClaimantPayCycle("Monthly");
+        claimantOtherType.setClaimantPayCycle("Months");
         caseData.setClaimantOtherType(claimantOtherType);
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
         assertNotNull(pdfMap.get(PdfMapperConstants.Q6_GROSS_PAY_MONTHLY));
+        assertNull(pdfMap.get(PdfMapperConstants.Q6_GROSS_PAY_ANNUAL));
+    }
+
+    @Test
+    void givenAnnualPaymentCycleReflectsInMap() {
+        ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
+        claimantOtherType.setClaimantPayCycle("Annual");
+        caseData.setClaimantOtherType(claimantOtherType);
+        Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
+        assertNotNull(pdfMap.get(PdfMapperConstants.Q6_GROSS_PAY_ANNUAL));
     }
 
     @Test
@@ -253,6 +262,16 @@ class PdfMapperServiceTest {
         caseData.setClaimantOtherType(claimantOtherType);
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
         assertNotNull(pdfMap.get(PdfMapperConstants.Q6_NOTICE_MONTHS));
+    }
+
+    @Test
+    void givenNoticePeriodEndDateAppearsInMap() {
+        ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
+        claimantOtherType.setStillWorking("Notice");
+        claimantOtherType.setClaimantEmployedNoticePeriod("2018-02-05");
+        caseData.setClaimantOtherType(claimantOtherType);
+        Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
+        assertNotNull(pdfMap.get(PdfMapperConstants.Q5_NOT_ENDED));
     }
 
     @Test

@@ -81,14 +81,19 @@ public class PdfMapperService {
     // This constant is defined because of the error in the pdf template file
     // The field for pay before tax options checked value in the pdf template
     // for annually apy before tax was monthly
-    private static final String MONTHLY = "Monthly";
-    private static final String WEEKLY = "Weekly";
     private static final String ANNUALLY = "annually";
+    public static final String WEEKLY = "Weekly";
+    public static final String MONTHLY = "Monthly";
+    private static final String MONTHS = "Months";
+    private static final String WEEKS = "Weeks";
+    private static final String ANNUAL = "Annual";
     private static final String EMAIL = "Email";
     private static final String POST = "Post";
     private static final String FAX = "Fax";
     private static final String YES_LOWERCASE = "yes";
     private static final String NO_LOWERCASE = "no";
+    public static final String NO_LONGER_WORKING = "No longer working";
+    public static final String NOTICE = "Notice";
 
 
     /**
@@ -457,14 +462,17 @@ public class PdfMapperService {
                     ofNullable(claimantOtherType.getClaimantEmployedFrom())
                 );
 
-                String stillWorking = "No longer working".equals(claimantOtherType.getStillWorking()) ? NO :
+                String stillWorking = NO_LONGER_WORKING.equals(claimantOtherType.getStillWorking()) ? NO :
                     YES;
                 if (YES.equals(stillWorking)) {
                     printFields.put(PdfMapperConstants.Q5_CONTINUING_YES, Optional.of(stillWorking));
-                    printFields.put(
-                        PdfMapperConstants.Q5_NOT_ENDED,
-                        ofNullable(claimantOtherType.getClaimantEmployedTo())
-                    );
+                    if (NOTICE.equals(claimantOtherType.getStillWorking())) {
+                        printFields.put(
+                            PdfMapperConstants.Q5_NOT_ENDED,
+                            ofNullable(claimantOtherType.getClaimantEmployedNoticePeriod())
+                        );
+                    }
+
                 } else {
                     printFields.put(PdfMapperConstants.Q5_CONTINUING_NO, Optional.of(NO_LOWERCASE));
                     printFields.put(
@@ -512,11 +520,11 @@ public class PdfMapperService {
     }
 
     private void printJobPayInterval(Map<String, Optional<String>> printFields, NewEmploymentType newEmploymentType) {
-        if (WEEKLY.equals(newEmploymentType.getNewJobPayInterval())) {
+        if (WEEKS.equals(newEmploymentType.getNewJobPayInterval())) {
             printFields.put(PdfMapperConstants.Q7_EARNING_WEEKLY, Optional.of(WEEKLY));
-        } else if (MONTHLY.equals(newEmploymentType.getNewJobPayInterval())) {
+        } else if (MONTHS.equals(newEmploymentType.getNewJobPayInterval())) {
             printFields.put(PdfMapperConstants.Q7_EARNING_MONTHLY, Optional.of(MONTHLY));
-        } else {
+        } else if (ANNUAL.equals(newEmploymentType.getNewJobPayInterval())) {
             printFields.put(PdfMapperConstants.Q7_EARNING_ANNUAL, Optional.of(ANNUALLY));
         }
     }
@@ -534,24 +542,26 @@ public class PdfMapperService {
         printFields.put(PdfMapperConstants.Q6_NET_PAY, ofNullable(claimantOtherType.getClaimantPayAfterTax()));
         if (claimantOtherType.getClaimantPayCycle() != null) {
             switch (claimantOtherType.getClaimantPayCycle()) {
-                case WEEKLY:
+                case WEEKS:
                     printFields.put(PdfMapperConstants.Q6_GROSS_PAY_WEEKLY, Optional.of(WEEKLY));
                     printFields.put(PdfMapperConstants.Q6_NET_PAY_WEEKLY, Optional.of(WEEKLY));
                     break;
-                case MONTHLY:
+                case MONTHS:
                     printFields.put(PdfMapperConstants.Q6_GROSS_PAY_MONTHLY, Optional.of(MONTHLY));
                     printFields.put(PdfMapperConstants.Q6_NET_PAY_MONTHLY, Optional.of(MONTHLY));
                     break;
-                case "Annually":
-                default:
+                case ANNUAL:
                     printFields.put(PdfMapperConstants.Q6_GROSS_PAY_ANNUAL, Optional.of(ANNUALLY));
                     printFields.put(PdfMapperConstants.Q6_NET_PAY_ANNUAL, Optional.of(ANNUALLY));
                     break;
+                default:
+                    break;
             }
         }
+        // Section 6.3
 
-        printFields.put(PdfMapperConstants.Q6_NET_PAY, ofNullable(claimantOtherType.getClaimantPayAfterTax()));
-        if (claimantOtherType.getClaimantNoticePeriod() != null) {
+        if (claimantOtherType.getClaimantNoticePeriod() != null
+            && NO_LONGER_WORKING.equals(claimantOtherType.getStillWorking())) {
             String noticePeriodYesNo = claimantOtherType.getClaimantNoticePeriod().isEmpty() ? NO :
                 claimantOtherType.getClaimantNoticePeriod();
             if (YES.equals(noticePeriodYesNo)) {
@@ -560,22 +570,24 @@ public class PdfMapperService {
                     ofNullable(claimantOtherType.getClaimantEmployedNoticePeriod())
                 );
                 String noticeUnit = claimantOtherType.getClaimantNoticePeriodUnit();
-                if ("Weeks".equals(noticeUnit)) {
+                if (WEEKS.equals(noticeUnit)) {
                     printFields.put(
                         PdfMapperConstants.Q6_NOTICE_WEEKS,
                         ofNullable(claimantOtherType.getClaimantNoticePeriodDuration())
                     );
-                } else {
+                } else if (MONTHS.equals(noticeUnit)) {
                     printFields.put(
                         PdfMapperConstants.Q6_NOTICE_MONTHS,
                         ofNullable(claimantOtherType.getClaimantNoticePeriodDuration())
                     );
                 }
-            } else {
+            } else if (NO.equals(noticePeriodYesNo)) {
                 printFields.put(PdfMapperConstants.Q6_PAID_NOTICE_NO, Optional.of(NO));
             }
         }
 
+
+        // Section 6.4
         if (claimantOtherType.getClaimantPensionContribution() != null) {
             String pensionContributionYesNo = claimantOtherType.getClaimantPensionContribution().isEmpty() ? NO :
                 claimantOtherType.getClaimantPensionContribution();

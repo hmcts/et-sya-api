@@ -117,16 +117,16 @@
       },
       "claimantOtherType": {
         "pastEmployer": "Yes",
-        "stillWorking": "Working",
+        "stillWorking": "No longer working",
         "claimant_occupation": "Builder",
         "claimant_employed_from": "2009-05-14",
-        "claimant_notice_period": "No",
+        "claimant_notice_period": "Yes",
         "claimant_notice_period_unit": "Months",
         "claimant_notice_period_duration": "1",
         "claimant_average_weekly_hours": "37",
         "claimant_pay_before_tax": "62000",
         "claimant_pay_after_tax": "34000",
-        "claimant_pay_cycle": "Annual",
+        "claimant_pay_cycle": "Months",
         "claimant_pension_contribution": "Yes",
         "claimant_pension_weekly_contribution": null,
         "claimant_benefits": "No",
@@ -138,7 +138,7 @@
         "new_job": "Yes",
         "newly_employed_from": "2021-04-20",
         "new_pay_before_tax": "62000",
-        "new_job_pay_interval": "Annual"
+        "new_job_pay_interval": "Weeks"
       },
       "typesOfClaim": ["discrimination", "whistleBlowing", "payRelated"],
       "claimantRequests": {
