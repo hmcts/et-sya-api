@@ -558,16 +558,13 @@ public class PdfMapperService {
                     break;
             }
         }
-        // Section 6.3
 
+        // Section 6.3
         if (claimantOtherType.getClaimantNoticePeriod() != null
             && NO_LONGER_WORKING.equals(claimantOtherType.getStillWorking())) {
-            String noticePeriodYesNo = claimantOtherType.getClaimantNoticePeriod().isEmpty() ? NO :
-                claimantOtherType.getClaimantNoticePeriod();
-            if (YES.equals(noticePeriodYesNo)) {
+            if (YES.equals(claimantOtherType.getClaimantNoticePeriod())) {
                 printFields.put(
-                    PdfMapperConstants.Q6_PAID_NOTICE_YES,
-                    ofNullable(claimantOtherType.getClaimantEmployedNoticePeriod())
+                    PdfMapperConstants.Q6_PAID_NOTICE_YES, Optional.of(YES)
                 );
                 String noticeUnit = claimantOtherType.getClaimantNoticePeriodUnit();
                 if (WEEKS.equals(noticeUnit)) {
@@ -581,7 +578,7 @@ public class PdfMapperService {
                         ofNullable(claimantOtherType.getClaimantNoticePeriodDuration())
                     );
                 }
-            } else if (NO.equals(noticePeriodYesNo)) {
+            } else if (NO.equals(claimantOtherType.getClaimantNoticePeriod())) {
                 printFields.put(PdfMapperConstants.Q6_PAID_NOTICE_NO, Optional.of(NO));
             }
         }
