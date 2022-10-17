@@ -22,6 +22,10 @@ spring:
     name: ET SYA API
   main:
     allow-bean-definition-overriding: true
+  servlet:
+    multipart:
+      max-file-size: 300MB
+      max-request-size: 300MB
 
 azure:
   application-insights:
