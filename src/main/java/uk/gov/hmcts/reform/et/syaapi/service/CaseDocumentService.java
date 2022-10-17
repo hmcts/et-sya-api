@@ -228,13 +228,6 @@ public class CaseDocumentService {
         if (!matcher.matches()) {
             throw new CaseDocumentException(VALIDATE_FILE_EXCEPTION_MESSAGE);
         }
-
-        Tika tika = new Tika();
-        String detectedType = tika.detect(file.getBytes());
-
-        if (!detectedType.equals(file.getContentType())) {
-            throw new CaseDocumentException(VALIDATE_FILE_EXCEPTION_MESSAGE);
-        }
     }
 
     private CaseDocument validateResponse(DocumentUploadResponse response, String originalFilename)
