@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -56,8 +57,9 @@ public class PdfService {
     protected byte[] createPdf(CaseData caseData) throws IOException {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
 
-        try (PDDocument pdfDocument = Loader.loadPDF(
-            Objects.requireNonNull(cl.getResourceAsStream(this.pdfTemplateSource)))) {
+        try (InputStream is = cl.getResourceAsStream(this.pdfTemplateSource);
+             PDDocument pdfDocument = Loader.loadPDF(
+                 Objects.requireNonNull(is))) {
             PDDocumentCatalog pdDocumentCatalog = pdfDocument.getDocumentCatalog();
             PDAcroForm pdfForm = pdDocumentCatalog.getAcroForm();
             for (Map.Entry<String, Optional<String>> entry : this.pdfMapperService.mapHeadersToPdf(caseData)
