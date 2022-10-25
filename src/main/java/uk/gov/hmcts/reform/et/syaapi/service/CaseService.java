@@ -130,7 +130,6 @@ public class CaseService {
             eventTypeName
         );
 
-
         CaseDataContent caseDataContent = CaseDataContent.builder()
             .event(Event.builder().id(eventTypeName).build())
             .eventToken(ccdCase.getToken())
@@ -192,12 +191,16 @@ public class CaseService {
                                                                                     .ofPattern("yyyy-MM-dd")));
         caseRequest.getCaseData().put("feeGroupReference", caseRequest.getCaseId());
         CaseData caseData = convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
+
         CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), SUBMIT_CASE_DRAFT,
                                                caseRequest.getCaseTypeId(), caseRequest.getCaseData());
+        log.info(String.format("caseId %s has been submitted", caseRequest.getCaseId()));
         caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :
             caseDetails.getData().get("ethosCaseReference").toString());
+        log.info(String.format("Generating PDF documents for caseId %s", caseRequest.getCaseId()));
         List<PdfDecodedMultipartFile> acasCertificates = pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
             caseData, acasService.getAcasCertificatesByCaseData(caseData));
+
         PdfDecodedMultipartFile casePdfFile =
             pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData);
         caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
@@ -207,9 +210,10 @@ public class CaseService {
                                                           caseRequest.getCaseTypeId(),
                                                           casePdfFile,
                                                           acasCertificates));
-
+        log.info(String.format("Adding documents to caseId %s", caseRequest.getCaseId()));
         triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
                      caseDetails.getData());
+        log.info(String.format("Sending notification for caseId %s", caseRequest.getCaseId()));
         notificationService
             .sendSubmitCaseConfirmationEmail(
                 notificationsProperties.getSubmitCaseEmailTemplateId(),
