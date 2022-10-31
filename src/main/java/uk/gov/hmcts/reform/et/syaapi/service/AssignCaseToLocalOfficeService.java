@@ -10,7 +10,6 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
-import uk.gov.hmcts.reform.et.syaapi.service.PostcodeToOfficeService;
 
 import java.util.List;
 
