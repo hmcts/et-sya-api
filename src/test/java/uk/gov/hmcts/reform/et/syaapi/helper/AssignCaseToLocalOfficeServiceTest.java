@@ -30,21 +30,24 @@ class AssignCaseToLocalOfficeServiceTest {
     @Test
     void shouldAssignManagingAddressFromClaimantWorkAddress() {
         CaseRequest request = testData.getCaseRequest();
-        assertThat(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
+        assertThat(
+            assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
             .isEqualTo("London South");
     }
 
     @Test
     void shouldAssignNullToManagingAddressIfNoManagingAddressAndNoRespondentsAddressesArePresent() {
         CaseRequest request = testData.getEmptyCaseRequest();
-        assertThat(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
+        assertThat(
+            assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
             .isNull();
     }
 
     @Test
     void shouldAssignManagingAddressFromOneOfRespondentAddress() {
         CaseRequest request = testData.getCaseRequestWithoutManagingAddress();
-        assertThat(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
+        assertThat(
+            assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
             .isEqualTo("London South");
     }
 }
