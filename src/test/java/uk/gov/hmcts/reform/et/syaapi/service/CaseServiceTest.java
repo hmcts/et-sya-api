@@ -454,12 +454,11 @@ class CaseServiceTest {
                                                    expectedEnrichedData);
     }
 
-    public List<JurCodesTypeItem> mockJurCodesTypeItems() {
+    private List<JurCodesTypeItem> mockJurCodesTypeItems() {
         JurCodesTypeItem item = new JurCodesTypeItem();
         JurCodesType type = new JurCodesType();
         type.setJuridictionCodesList(JurisdictionCodesConstants.BOC);
         item.setValue(type);
         return List.of(item);
     }
-
 }

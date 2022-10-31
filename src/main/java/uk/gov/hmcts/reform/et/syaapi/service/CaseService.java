@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
+import uk.gov.hmcts.reform.et.syaapi.helper.CaseServiceHelper;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
@@ -47,7 +48,6 @@ import static java.util.stream.Collectors.toList;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CASE_FIELD_MANAGING_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
@@ -72,6 +72,7 @@ public class CaseService {
     private final PdfService pdfService;
     private final NotificationsProperties notificationsProperties;
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
+    private final CaseServiceHelper caseServiceHelper;
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
@@ -159,21 +160,10 @@ public class CaseService {
         }
     }
 
-    private String getTribunalOfficeByCaseTypeId(String caseTypeId) {
-        return postcodeToOfficeService.getTribunalOfficeByCaseTypeId(caseTypeId)
-            .orElse(DEFAULT_TRIBUNAL_OFFICE).getOfficeName();
-    }
-
     public CaseDetails updateCase(String authorization,
                                   CaseRequest caseRequest) {
         return triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.UPDATE_CASE_DRAFT,
                             caseRequest.getCaseTypeId(), caseRequest.getCaseData());
-    }
-
-    private CaseData convertCaseRequestToCaseDataWithTribunalOffice(CaseRequest caseRequest) {
-        caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE,
-                                      getTribunalOfficeByCaseTypeId(caseRequest.getCaseTypeId()));
-        return EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseRequest.getCaseData());
     }
 
     /**
@@ -191,7 +181,7 @@ public class CaseService {
         caseRequest.getCaseData().put("receiptDate", LocalDateTime.now().format(DateTimeFormatter
                                                                                     .ofPattern("yyyy-MM-dd")));
         caseRequest.getCaseData().put("feeGroupReference", caseRequest.getCaseId());
-        CaseData caseData = convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
+        CaseData caseData = caseServiceHelper.convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
         CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), SUBMIT_CASE_DRAFT,
                                                caseRequest.getCaseTypeId(), caseRequest.getCaseData());
         caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :
@@ -357,4 +347,3 @@ public class CaseService {
         caseData.setJurCodesCollection(jurCodesTypeItems);
     }
 }
-
