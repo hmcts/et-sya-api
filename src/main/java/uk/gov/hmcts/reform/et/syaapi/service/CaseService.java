@@ -24,7 +24,6 @@ import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
-import uk.gov.hmcts.reform.et.syaapi.helper.CaseServiceHelper;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
@@ -72,7 +71,7 @@ public class CaseService {
     private final PdfService pdfService;
     private final NotificationsProperties notificationsProperties;
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
-    private final CaseServiceHelper caseServiceHelper;
+    private final AssignCaseToLocalOfficeService assignCaseToLocalOfficeService;
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
@@ -181,7 +180,7 @@ public class CaseService {
         caseRequest.getCaseData().put("receiptDate", LocalDateTime.now().format(DateTimeFormatter
                                                                                     .ofPattern("yyyy-MM-dd")));
         caseRequest.getCaseData().put("feeGroupReference", caseRequest.getCaseId());
-        CaseData caseData = caseServiceHelper.convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
+        CaseData caseData = assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
         CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), SUBMIT_CASE_DRAFT,
                                                caseRequest.getCaseTypeId(), caseRequest.getCaseData());
         caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :

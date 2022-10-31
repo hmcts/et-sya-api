@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.et.syaapi.helper;
+package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +8,7 @@ import org.springframework.util.CollectionUtils;
 import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.PostcodeToOfficeService;
 
@@ -19,12 +20,11 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRI
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class CaseServiceHelper {
+public class AssignCaseToLocalOfficeService {
     private final PostcodeToOfficeService postcodeToOfficeService;
 
     /**
      * Assigns case to local office. Returns @{@link CaseData} object.
-     *
      *
      * @param caseRequest which would be in json format
      * @return @link CaseData

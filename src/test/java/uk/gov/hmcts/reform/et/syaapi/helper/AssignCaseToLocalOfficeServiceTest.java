@@ -8,15 +8,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.AssignCaseToLocalOfficeService;
 import uk.gov.hmcts.reform.et.syaapi.service.PostcodeToOfficeService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"PMD.UnusedPrivateField"})
-class CaseServiceHelperTest {
+class AssignCaseToLocalOfficeServiceTest {
     @InjectMocks
-    private CaseServiceHelper caseServiceHelper;
+    private AssignCaseToLocalOfficeService assignCaseToLocalOfficeService;
     @Mock
     private PostcodeToOfficeService postcodeToOfficeService;
     private TestData testData;
@@ -29,21 +30,21 @@ class CaseServiceHelperTest {
     @Test
     void shouldAssignManagingAddressFromClaimantWorkAddress() {
         CaseRequest request = testData.getCaseRequest();
-        assertThat(caseServiceHelper.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
+        assertThat(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
             .isEqualTo("London South");
     }
 
     @Test
     void shouldAssignNullToManagingAddressIfNoManagingAddressAndNoRespondentsAddressesArePresent() {
         CaseRequest request = testData.getEmptyCaseRequest();
-        assertThat(caseServiceHelper.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
+        assertThat(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
             .isNull();
     }
 
     @Test
     void shouldAssignManagingAddressFromOneOfRespondentAddress() {
         CaseRequest request = testData.getCaseRequestWithoutManagingAddress();
-        assertThat(caseServiceHelper.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
+        assertThat(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
             .isEqualTo("London South");
     }
 }
