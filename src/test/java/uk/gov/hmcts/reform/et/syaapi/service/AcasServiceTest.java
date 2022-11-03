@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -33,7 +34,8 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 class AcasServiceTest {
 
     private static final String ACAS_DEV_API_URL = "https://api-dev-acas-01.azure-api.net/ECCLDev";
-    private static final String ACAS_API_KEY = "ecd18c987120415b95f60b844e6730ef";
+    @Value("${acas.api.key}")
+    private String ACAS_API_KEY;//= "27703f6efe064209ac619eb51dbabefd";
     private static final String NO_CERTS_JSON = "[]";
     private static final String ONE_CERT_JSON =
         "[{\"CertificateNumber\":\"A123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW1...\"}]";
