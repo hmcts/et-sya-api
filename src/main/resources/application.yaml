@@ -52,7 +52,7 @@ case_document_am:
 
 acas:
   api:
-    url: ${ACAS_BASE_URL:https://api-dev-acas-01.azure-api.net/ECCLDev}
+    url: ${ACAS_URL:https://api-dev-acas-01.azure-api.net/ECCLDev}
     key: ${ACAS_KEY:AAAAAAAAAAAAAAAAAAAA}
     # This environment variable can be set in your local environment. Do not change this value.
 
