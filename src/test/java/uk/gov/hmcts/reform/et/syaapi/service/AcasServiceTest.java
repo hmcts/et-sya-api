@@ -33,7 +33,8 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class AcasServiceTest {
 
-    private static final String ACAS_DEV_API_URL = "https://api-dev-acas-01.azure-api.net/ECCLDev";
+    @Value("${acas.api.url}")
+    private String acasDevApiUrl;
     @Value("${acas.api.key}")
     private String acasApiKey;
     private static final String NO_CERTS_JSON = "[]";
@@ -54,7 +55,7 @@ class AcasServiceTest {
     void setup() {
         testData = new TestData();
         restTemplate = new RestTemplate();
-        acasService = new AcasService(restTemplate, ACAS_DEV_API_URL, acasApiKey);
+        acasService = new AcasService(restTemplate, acasDevApiUrl, acasApiKey);
     }
 
     @Test
@@ -130,7 +131,7 @@ class AcasServiceTest {
     @Test
     void theGetAcasCertWithValid13CharAcasNumberProducesCertFound()
         throws AcasException, InvalidAcasNumbersException {
-        getMockServer().expect(ExpectedCount.once(), requestTo(ACAS_DEV_API_URL))
+        getMockServer().expect(ExpectedCount.once(), requestTo(acasDevApiUrl))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -143,7 +144,7 @@ class AcasServiceTest {
     @Test
     void theGetAcasCertWithValid14CharAcasNumberProducesCertFound()
         throws AcasException, InvalidAcasNumbersException {
-        getMockServer().expect(ExpectedCount.once(), requestTo(ACAS_DEV_API_URL))
+        getMockServer().expect(ExpectedCount.once(), requestTo(acasDevApiUrl))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -156,7 +157,7 @@ class AcasServiceTest {
     @Test
     void theGetAcasCertsWithMultipleValidAcasNumbersProducesCertsFound()
         throws AcasException, InvalidAcasNumbersException {
-        getMockServer().expect(ExpectedCount.once(), requestTo(ACAS_DEV_API_URL))
+        getMockServer().expect(ExpectedCount.once(), requestTo(acasDevApiUrl))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -169,7 +170,7 @@ class AcasServiceTest {
     @Test
     void theGetAcasCertWithValid13CharAcasNumberProducesCertNotFound()
         throws AcasException, InvalidAcasNumbersException {
-        getMockServer().expect(ExpectedCount.once(), requestTo(ACAS_DEV_API_URL))
+        getMockServer().expect(ExpectedCount.once(), requestTo(acasDevApiUrl))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -182,7 +183,7 @@ class AcasServiceTest {
     @Test
     void theGetAcasCertWithValid14CharAcasNumberProducesCertNotFound()
         throws AcasException, InvalidAcasNumbersException {
-        getMockServer().expect(ExpectedCount.once(), requestTo(ACAS_DEV_API_URL))
+        getMockServer().expect(ExpectedCount.once(), requestTo(acasDevApiUrl))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -195,7 +196,7 @@ class AcasServiceTest {
     @Test
     void theGetAcasCertsWithMultipleValidAcasNumbersProducesCertsNotFound()
         throws AcasException, InvalidAcasNumbersException {
-        getMockServer().expect(ExpectedCount.once(), requestTo(ACAS_DEV_API_URL))
+        getMockServer().expect(ExpectedCount.once(), requestTo(acasDevApiUrl))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -208,7 +209,7 @@ class AcasServiceTest {
     @Test
     void theGetAcasCertsWithMultipleValidAcasNumbersWithOneEmptyProducesOneCertFound()
         throws AcasException, InvalidAcasNumbersException {
-        getMockServer().expect(ExpectedCount.once(), requestTo(ACAS_DEV_API_URL))
+        getMockServer().expect(ExpectedCount.once(), requestTo(acasDevApiUrl))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -232,7 +233,7 @@ class AcasServiceTest {
 
     @Test
     void theGetAcasCertWithWrongUrlProducesAcasException() {
-        getMockServer().expect(ExpectedCount.manyTimes(), requestTo(ACAS_DEV_API_URL))
+        getMockServer().expect(ExpectedCount.manyTimes(), requestTo(acasDevApiUrl))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.NOT_FOUND));
         assertThrows(AcasException.class, () -> acasService.getCertificates(R123456_11_12));
@@ -240,7 +241,7 @@ class AcasServiceTest {
 
     @Test
     void theGetAcasCertWithBadApiKeyProducesAcasException() {
-        getMockServer().expect(ExpectedCount.manyTimes(), requestTo(ACAS_DEV_API_URL))
+        getMockServer().expect(ExpectedCount.manyTimes(), requestTo(acasDevApiUrl))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
         assertThrows(AcasException.class, () -> acasService.getCertificates(R123456_11_12));
@@ -249,7 +250,7 @@ class AcasServiceTest {
     @Test
     void theGetAcasCertWithBadApiKeyFirstTimeProducesCertificates()
         throws AcasException, InvalidAcasNumbersException {
-        getMockServer().expect(ExpectedCount.times(2), requestTo(ACAS_DEV_API_URL))
+        getMockServer().expect(ExpectedCount.times(2), requestTo(acasDevApiUrl))
             .andExpect(method(HttpMethod.POST))
             .andRespond(new DelegateResponseCreator(withStatus(HttpStatus.UNAUTHORIZED),
                                                     withStatus(HttpStatus.OK)
