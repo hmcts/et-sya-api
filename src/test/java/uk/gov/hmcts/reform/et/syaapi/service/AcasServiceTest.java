@@ -35,7 +35,7 @@ class AcasServiceTest {
 
     private static final String ACAS_DEV_API_URL = "https://api-dev-acas-01.azure-api.net/ECCLDev";
     @Value("${acas.api.key}")
-    private String ACAS_API_KEY;
+    private String acasApiKey;
     private static final String NO_CERTS_JSON = "[]";
     private static final String ONE_CERT_JSON =
         "[{\"CertificateNumber\":\"A123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW1...\"}]";
@@ -54,7 +54,7 @@ class AcasServiceTest {
     void setup() {
         testData = new TestData();
         restTemplate = new RestTemplate();
-        acasService = new AcasService(restTemplate, ACAS_DEV_API_URL, ACAS_API_KEY);
+        acasService = new AcasService(restTemplate, ACAS_DEV_API_URL, acasApiKey);
     }
 
     @Test
