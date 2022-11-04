@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.dwp.regex.InvalidPostcodeException;
+import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
@@ -15,6 +16,7 @@ import java.util.List;
 
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 
 @Slf4j
 @Service
@@ -31,7 +33,7 @@ public class AssignCaseToLocalOfficeService {
     public CaseData convertCaseRequestToCaseDataWithTribunalOffice(CaseRequest caseRequest) {
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseRequest.getCaseData());
         List<RespondentSumTypeItem> respondentSumTypeList = caseData.getRespondentCollection();
-        String managingOffice = null;
+        String managingOffice = UNASSIGNED_OFFICE;
         if (caseData.getClaimantWorkAddress() != null
             && caseData.getClaimantWorkAddress().getClaimantWorkAddress() != null
             && StringUtils.isNotBlank(caseData.getClaimantWorkAddress().getClaimantWorkAddress().getPostCode())) {
@@ -55,7 +57,8 @@ public class AssignCaseToLocalOfficeService {
     private String getManagingOffice(String postcode) {
         try {
             return postcodeToOfficeService.getTribunalOfficeFromPostcode(postcode)
-                .orElse(DEFAULT_TRIBUNAL_OFFICE).getOfficeName();
+                .map(TribunalOffice::getOfficeName)
+                .orElse(UNASSIGNED_OFFICE);
         } catch (InvalidPostcodeException e) {
             log.info("Failed to find tribunal office : {} ", e.getMessage());
             return getCaseTypeId(DEFAULT_TRIBUNAL_OFFICE.getOfficeName());

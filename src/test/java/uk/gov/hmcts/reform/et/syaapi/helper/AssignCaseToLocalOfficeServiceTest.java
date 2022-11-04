@@ -6,12 +6,19 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.dwp.regex.InvalidPostcodeException;
+import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.AssignCaseToLocalOfficeService;
 import uk.gov.hmcts.reform.et.syaapi.service.PostcodeToOfficeService;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"PMD.UnusedPrivateField"})
@@ -28,26 +35,32 @@ class AssignCaseToLocalOfficeServiceTest {
     }
 
     @Test
-    void shouldAssignManagingAddressFromClaimantWorkAddress() {
+    void shouldAssignManagingAddressFromClaimantWorkAddress() throws InvalidPostcodeException {
         CaseRequest request = testData.getCaseRequest();
+        when(postcodeToOfficeService.getTribunalOfficeFromPostcode(any())).thenReturn(Optional.of(
+            TribunalOffice.GLASGOW
+        ));
         assertThat(
             assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
-            .isEqualTo("London South");
+            .isEqualTo("Glasgow");
     }
 
     @Test
-    void shouldAssignNullToManagingAddressIfNoManagingAddressAndNoRespondentsAddressesArePresent() {
+    void shouldAssignUnassignedToManagingAddressIfNoManagingAddressAndNoRespondentsAddressesArePresent() {
         CaseRequest request = testData.getEmptyCaseRequest();
         assertThat(
             assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
-            .isNull();
+            .isEqualTo(UNASSIGNED_OFFICE);
     }
 
     @Test
-    void shouldAssignManagingAddressFromOneOfRespondentAddress() {
+    void shouldAssignManagingAddressFromOneOfRespondentAddress() throws InvalidPostcodeException {
         CaseRequest request = testData.getCaseRequestWithoutManagingAddress();
+        when(postcodeToOfficeService.getTribunalOfficeFromPostcode(any())).thenReturn(Optional.of(
+            TribunalOffice.GLASGOW
+        ));
         assertThat(
             assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
-            .isEqualTo("London South");
+            .isEqualTo("Glasgow");
     }
 }

@@ -47,7 +47,6 @@ public class PostcodeToOfficeService {
      * @throws InvalidPostcodeException if the postcode provided doesn't validate
      */
     public Optional<TribunalOffice> getTribunalOfficeFromPostcode(String postcode) throws InvalidPostcodeException {
-
         // validates postcode
         PostCodeValidator postCodeValidator = new PostCodeValidator(postcode);
         String outCode = postCodeValidator.returnOutwardCode();
