@@ -36,7 +36,7 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 @Service
 @SuppressWarnings({"PMD.GodClass",
     "PMD.CyclomaticComplexity", "PMD.TooManyMethods", "PMD.CognitiveComplexity", "PMD.CollapsibleIfStatements",
-    "PMD.AvoidDeeplyNestedIfStmts", "PMD.NPathComplexity", "PMD.UselessParentheses"})
+    "PMD.AvoidDeeplyNestedIfStmts", "PMD.NPathComplexity"})
 public class PdfMapperService {
     private static final String PREFIX_13_R5 = "13 R5";
     private static final String PREFIX_2_7_R3 = "2.7 R3";
