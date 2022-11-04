@@ -173,20 +173,9 @@ public class PdfMapperService {
             PdfMapperConstants.Q1_SURNAME,
             ofNullable(caseData.getClaimantIndType().getClaimantLastName())
         );
-        LocalDate dob = LocalDate.parse(caseData.getClaimantIndType().getClaimantDateOfBirth());
-        printFields.put(
-            PdfMapperConstants.Q1_DOB_DAY,
-            ofNullable(StringUtils.leftPad(String.valueOf(dob.getDayOfMonth()),
-                                           2, "0"
-            ))
-        );
-        printFields.put(
-            PdfMapperConstants.Q1_DOB_MONTH,
-            ofNullable(StringUtils.leftPad(String.valueOf(dob.getMonthValue()),
-                                           2, "0"
-            ))
-        );
-        printFields.put(PdfMapperConstants.Q1_DOB_YEAR, Optional.of(String.valueOf(dob.getYear())));
+
+        printFields.putAll(getDobPrintFields(caseData.getClaimantIndType().getClaimantDateOfBirth()));
+
         if (caseData.getClaimantIndType() != null
             && caseData.getClaimantIndType().getClaimantSex() != null) {
             if ("Male".equals(caseData.getClaimantIndType().getClaimantSex())) {
@@ -241,6 +230,33 @@ public class PdfMapperService {
             }
         }
         return printFields;
+    }
+
+    private Map<String, Optional<String>> getDobPrintFields(String claimantDateOfBirth) {
+        ConcurrentHashMap<String, Optional<String>> dobFields = new ConcurrentHashMap<>();
+
+        if (claimantDateOfBirth == null) {
+            return dobFields;
+        }
+
+        LocalDate dob = LocalDate.parse(claimantDateOfBirth);
+
+        dobFields.put(
+            PdfMapperConstants.Q1_DOB_DAY,
+            ofNullable(StringUtils.leftPad(String.valueOf(dob.getDayOfMonth()),
+                                           2, "0"
+            ))
+        );
+
+        dobFields.put(
+            PdfMapperConstants.Q1_DOB_MONTH,
+            ofNullable(StringUtils.leftPad(String.valueOf(dob.getMonthValue()),
+                                           2, "0"
+            ))
+        );
+        dobFields.put(PdfMapperConstants.Q1_DOB_YEAR, Optional.of(String.valueOf(dob.getYear())));
+
+        return dobFields;
     }
 
     public Map<String, Optional<String>> printHearingPreferences(CaseData caseData) {
@@ -801,14 +817,12 @@ public class PdfMapperService {
         if (caseData.getClaimantRequests() == null) {
             return printFields;
         }
-        if (caseData.getClaimantRequests().getWhistleblowing() != null) {
-            if (YES.equals(caseData.getClaimantRequests().getWhistleblowing())) {
-                printFields.put(PdfMapperConstants.Q10_WHISTLE_BLOWING, Optional.of(YES_LOWERCASE));
-                printFields.put(
-                    PdfMapperConstants.Q10_WHISTLE_BLOWING_REGULATOR,
-                    ofNullable(caseData.getClaimantRequests().getWhistleblowingAuthority())
-                );
-            }
+        if (caseData.getClaimantRequests().getWhistleblowing() != null && YES.equals(caseData.getClaimantRequests().getWhistleblowing())) {
+            printFields.put(PdfMapperConstants.Q10_WHISTLE_BLOWING, Optional.of(YES_LOWERCASE));
+            printFields.put(
+                PdfMapperConstants.Q10_WHISTLE_BLOWING_REGULATOR,
+                ofNullable(caseData.getClaimantRequests().getWhistleblowingAuthority())
+            );
         }
 
         return printFields;

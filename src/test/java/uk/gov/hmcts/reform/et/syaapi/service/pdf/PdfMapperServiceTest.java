@@ -26,6 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q1_DOB_DAY;
+import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q1_DOB_MONTH;
+import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q1_DOB_YEAR;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class PdfMapperServiceTest {
@@ -318,6 +321,7 @@ class PdfMapperServiceTest {
         assertNotNull(pdfMap.get(PdfMapperConstants.Q11_CONTACT_POST));
     }
 
+    // Todo the test is throwing but passing still. Quite a few of these tests might be doing the same.
     @Test
     void shouldNotThrowExceptionWhenClaimantIndTypeIsNull() {
         CaseData exceptionCaseData = new TestData().getCaseData();
@@ -396,6 +400,16 @@ class PdfMapperServiceTest {
         CaseData exceptionCaseData = new TestData().getCaseData();
         exceptionCaseData.getClaimantHearingPreference().setHearingPreferences(new ArrayList<>());
         assertDoesNotThrow(() -> pdfMapperService.mapHeadersToPdf(exceptionCaseData));
+    }
+
+    @Test
+    void shouldNotThrowWhenDobIsNull() {
+        caseData.getClaimantIndType().setClaimantDateOfBirth(null);
+        Map<String, Optional<String>> pdfFields = pdfMapperService.mapHeadersToPdf(caseData);
+
+        assertNull(pdfFields.get(Q1_DOB_DAY));
+        assertNull(pdfFields.get(Q1_DOB_MONTH));
+        assertNull(pdfFields.get(Q1_DOB_YEAR));
     }
 
     @Test
