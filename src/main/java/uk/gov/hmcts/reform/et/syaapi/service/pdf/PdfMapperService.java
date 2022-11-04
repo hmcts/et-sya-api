@@ -169,11 +169,11 @@ public class PdfMapperService {
 
         printFields.put(
             PdfMapperConstants.Q1_FIRST_NAME,
-            ofNullable("Boris")
+            ofNullable(caseData.getClaimantIndType().getClaimantFirstNames())
         );
         printFields.put(
             PdfMapperConstants.Q1_SURNAME,
-            ofNullable("Johnson")
+            ofNullable(caseData.getClaimantIndType().getClaimantLastName())
         );
         LocalDate dob = LocalDate.parse(caseData.getClaimantIndType().getClaimantDateOfBirth());
         printFields.put(
