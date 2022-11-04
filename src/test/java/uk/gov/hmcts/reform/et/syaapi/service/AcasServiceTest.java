@@ -259,7 +259,7 @@ class AcasServiceTest {
     }
 
     @Test
-    @Disabled
+    @Disabled("Awaiting to be refactored")
     void theGetAcasCertificatesByCaseDataProducesTwoAcasCertificates() throws
         AcasException, InvalidAcasNumbersException {
         List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(testData.getCaseData());
@@ -282,7 +282,7 @@ class AcasServiceTest {
         assertThat(acasCertificates).isEmpty();
     }
 
-    @Disabled
+    @Disabled("Awaiting to be refactored")
     @Test
     void theGetAcasCertificatesByCaseDataDoesNotProduceAcasCertificatesWhenNullRespondentSumTypeItem() throws
         AcasException, InvalidAcasNumbersException {
@@ -292,7 +292,7 @@ class AcasServiceTest {
         assertThat(acasCertificates).hasSize(3);
     }
 
-    @Disabled
+    @Disabled("Awaiting to be refactored")
     @Test
     void theGetAcasCertificatesByCaseDataDoesNotProduceAcasCertificatesWhenEmptyRespondentSumTypeItem() throws
         AcasException, InvalidAcasNumbersException {
