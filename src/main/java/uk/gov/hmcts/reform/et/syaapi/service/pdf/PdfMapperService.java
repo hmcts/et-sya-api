@@ -242,15 +242,19 @@ public class PdfMapperService {
 
         dobFields.put(
             PdfMapperConstants.Q1_DOB_DAY,
-            ofNullable(StringUtils.leftPad(String.valueOf(dob.getDayOfMonth()),
-                                           2, "0"
+            Optional.of(StringUtils.leftPad(
+                String.valueOf(dob.getDayOfMonth()),
+                2,
+                "0"
             ))
         );
 
         dobFields.put(
             PdfMapperConstants.Q1_DOB_MONTH,
-            ofNullable(StringUtils.leftPad(String.valueOf(dob.getMonthValue()),
-                                           2, "0"
+            Optional.of(StringUtils.leftPad(
+                String.valueOf(dob.getMonthValue()),
+                2,
+                "0"
             ))
         );
         dobFields.put(PdfMapperConstants.Q1_DOB_YEAR, Optional.of(String.valueOf(dob.getYear())));
