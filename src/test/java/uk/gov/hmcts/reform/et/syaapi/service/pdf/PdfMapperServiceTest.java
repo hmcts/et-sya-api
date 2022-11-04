@@ -2,6 +2,9 @@ package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
@@ -19,7 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -29,6 +34,7 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q1_DOB_DAY;
 import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q1_DOB_MONTH;
 import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q1_DOB_YEAR;
+import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q2_DIFFADDRESS_POSTCODE;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class PdfMapperServiceTest {
@@ -52,6 +58,28 @@ class PdfMapperServiceTest {
     void givenCaseProducesPdfHeaderMap() {
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
         assertEquals(TOTAL_VALUES, pdfMap.size());
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    void testFormattingPostcode(String srcPostcode, String expectedPostcode) {
+        caseData.getClaimantWorkAddress().getClaimantWorkAddress().setPostCode(srcPostcode);
+        Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
+
+        assertEquals(expectedPostcode, pdfMap.get(Q2_DIFFADDRESS_POSTCODE).get());
+    }
+
+    private static Stream<Arguments> testFormattingPostcode() {
+        return Stream.of(
+            Arguments.of("A9 9AA", "A9  9AA"),
+            Arguments.of("A9  9AA", "A9  9AA"),
+            Arguments.of("A9   9AA", "A9  9AA"),
+            Arguments.of("A99AA", "A9  9AA"),
+            Arguments.of("NG4 4JF", "NG4 4JF"),
+            Arguments.of("NG44JF", "NG4 4JF"),
+            Arguments.of("HU10 6NA", "HU106NA"),
+            Arguments.of("HU106NA", "HU106NA")
+        );
     }
 
     @Test
@@ -146,7 +174,7 @@ class PdfMapperServiceTest {
         claimantWorkAddressType.setClaimantWorkAddress(claimantAddress);
         caseData.setClaimantWorkAddress(claimantWorkAddressType);
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNotNull(pdfMap.get(PdfMapperConstants.Q2_DIFFADDRESS_POSTCODE));
+        assertNotNull(pdfMap.get(Q2_DIFFADDRESS_POSTCODE));
     }
 
     @Test
