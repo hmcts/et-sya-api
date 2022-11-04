@@ -889,7 +889,8 @@ public class PdfMapperService {
             log.error("Exception occurred when formatting postcode " + postcode, e);
         }
 
-        if (postCodeValidator.returnOutwardCode() == null || postCodeValidator.returnInwardCode() == null) {
+        if (postCodeValidator == null || postCodeValidator.returnOutwardCode() == null
+            || postCodeValidator.returnInwardCode() == null) {
             return postcode;
         }
 
