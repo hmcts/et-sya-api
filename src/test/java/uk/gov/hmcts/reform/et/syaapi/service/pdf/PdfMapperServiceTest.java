@@ -60,7 +60,7 @@ class PdfMapperServiceTest {
     }
 
     @ParameterizedTest
-    @MethodSource
+    @MethodSource("postcodeArguments")
     void testFormattingPostcode(String srcPostcode, String expectedPostcode) {
         caseData.getClaimantWorkAddress().getClaimantWorkAddress().setPostCode(srcPostcode);
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
@@ -68,10 +68,10 @@ class PdfMapperServiceTest {
         assertEquals(expectedPostcode, pdfMap.get(Q2_DIFFADDRESS_POSTCODE).get());
     }
 
-    private static Stream<Arguments> testFormattingPostcode() {
+    private static Stream<Arguments> postcodeArguments() {
         return Stream.of(
-            Arguments.of("A9 9AA", "A9  9AA"),
-            Arguments.of("A9  9AA", "A9  9AA"),
+            Arguments.of("A7 7AA", "A7  7AA"),
+            Arguments.of("A8  8AA", "A8  8AA"),
             Arguments.of("A9   9AA", "A9  9AA"),
             Arguments.of("A99AA", "A9  9AA"),
             Arguments.of("NG4 4JF", "NG4 4JF"),
