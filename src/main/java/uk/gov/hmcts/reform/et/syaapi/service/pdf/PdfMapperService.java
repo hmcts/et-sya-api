@@ -82,8 +82,8 @@ public class PdfMapperService {
     // The field for pay before tax options checked value in the pdf template
     // for annually apy before tax was monthly
     private static final String ANNUALLY = "annually";
-    public static final String WEEKLY = "Weekly";
-    public static final String MONTHLY = "Monthly";
+    private static final String WEEKLY = "Weekly";
+    private static final String MONTHLY = "Monthly";
     private static final String MONTHS = "Months";
     private static final String WEEKS = "Weeks";
     private static final String ANNUAL = "Annual";
@@ -92,9 +92,8 @@ public class PdfMapperService {
     private static final String FAX = "Fax";
     private static final String YES_LOWERCASE = "yes";
     private static final String NO_LOWERCASE = "no";
-    public static final String NO_LONGER_WORKING = "No longer working";
-    public static final String NOTICE = "Notice";
-
+    private static final String NO_LONGER_WORKING = "No longer working";
+    private static final String NOTICE = "Notice";
 
     /**
      * Maps the parameters within case data to the inputs of the PDF Template.
@@ -148,7 +147,7 @@ public class PdfMapperService {
         return printFields;
     }
 
-    public Map<String, Optional<String>> printPersonalDetails(CaseData caseData) {
+    private Map<String, Optional<String>> printPersonalDetails(CaseData caseData) {
         ConcurrentHashMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         if (caseData.getClaimantIndType() != null
             && caseData.getClaimantIndType().getClaimantPreferredTitle() != null
@@ -259,7 +258,7 @@ public class PdfMapperService {
         return dobFields;
     }
 
-    public Map<String, Optional<String>> printHearingPreferences(CaseData caseData) {
+    private Map<String, Optional<String>> printHearingPreferences(CaseData caseData) {
         ConcurrentHashMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         if (caseData.getClaimantHearingPreference() != null) {
             if (caseData.getClaimantHearingPreference().getReasonableAdjustments() != null
@@ -310,7 +309,7 @@ public class PdfMapperService {
         return printFields;
     }
 
-    public Map<String, Optional<String>> printRespondentDetails(CaseData caseData) {
+    private Map<String, Optional<String>> printRespondentDetails(CaseData caseData) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         List<RespondentSumTypeItem> respondentSumTypeList = caseData.getRespondentCollection();
         if (respondentSumTypeList != null) {
@@ -431,7 +430,7 @@ public class PdfMapperService {
         return printFields;
     }
 
-    public Map<String, Optional<String>> printMultipleClaimsDetails(CaseData caseData) {
+    private Map<String, Optional<String>> printMultipleClaimsDetails(CaseData caseData) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         if ("Multiple".equals(caseData.getEcmCaseType())) {
             printFields.put(PdfMapperConstants.Q3_MORE_CLAIMS_YES, Optional.of(YES));
@@ -466,7 +465,7 @@ public class PdfMapperService {
         return printFields;
     }
 
-    public Map<String, Optional<String>> printEmploymentDetails(CaseData caseData) {
+    private Map<String, Optional<String>> printEmploymentDetails(CaseData caseData) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
         if (claimantOtherType != null) {
@@ -599,7 +598,6 @@ public class PdfMapperService {
             }
         }
 
-
         // Section 6.4
         if (claimantOtherType.getClaimantPensionContribution() != null) {
             String pensionContributionYesNo = claimantOtherType.getClaimantPensionContribution().isEmpty() ? NO :
@@ -626,7 +624,7 @@ public class PdfMapperService {
         return printFields;
     }
 
-    public Map<String, Optional<String>> printTypeAndDetailsOfClaim(CaseData caseData) {
+    private Map<String, Optional<String>> printTypeAndDetailsOfClaim(CaseData caseData) {
         return new ConcurrentHashMap<>(retrieveTypeOfClaimsPrintFields(caseData));
     }
 
@@ -756,13 +754,10 @@ public class PdfMapperService {
     }
 
     private static void checkIAmOwedBox(Map<String, Optional<String>> printFields) {
-        if (!printFields.containsKey(PdfMapperConstants.Q8_TYPE_OF_CLAIM_I_AM_OWED)) {
-            printFields.put(PdfMapperConstants.Q8_TYPE_OF_CLAIM_I_AM_OWED, Optional.of(YES));
-        }
+        printFields.computeIfAbsent(PdfMapperConstants.Q8_TYPE_OF_CLAIM_I_AM_OWED, key -> Optional.of(YES));
     }
 
-
-    public Map<String, Optional<String>> printCompensation(CaseData caseData) {
+    private Map<String, Optional<String>> printCompensation(CaseData caseData) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         if (caseData.getClaimantRequests() != null
             && caseData.getClaimantRequests().getClaimOutcome() != null
@@ -812,12 +807,16 @@ public class PdfMapperService {
         return printFields;
     }
 
-    public Map<String, Optional<String>> printWhistleBlowing(CaseData caseData) {
+    private Map<String, Optional<String>> printWhistleBlowing(CaseData caseData) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
+
         if (caseData.getClaimantRequests() == null) {
             return printFields;
         }
-        if (caseData.getClaimantRequests().getWhistleblowing() != null && YES.equals(caseData.getClaimantRequests().getWhistleblowing())) {
+
+        if (caseData.getClaimantRequests().getWhistleblowing() != null
+            && YES.equals(caseData.getClaimantRequests().getWhistleblowing())) {
+
             printFields.put(PdfMapperConstants.Q10_WHISTLE_BLOWING, Optional.of(YES_LOWERCASE));
             printFields.put(
                 PdfMapperConstants.Q10_WHISTLE_BLOWING_REGULATOR,
@@ -828,7 +827,7 @@ public class PdfMapperService {
         return printFields;
     }
 
-    public Map<String, Optional<String>> printRepresentative(RepresentedTypeC representativeClaimantType) {
+    private Map<String, Optional<String>> printRepresentative(RepresentedTypeC representativeClaimantType) {
         if (representativeClaimantType != null) {
             Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
             printFields.put(
