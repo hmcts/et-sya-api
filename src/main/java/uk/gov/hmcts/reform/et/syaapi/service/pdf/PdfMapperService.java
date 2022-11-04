@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Optional.ofNullable;
+import static org.apache.commons.lang3.StringUtils.rightPad;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 
@@ -882,19 +883,16 @@ public class PdfMapperService {
     }
 
     private String formatPostcode(String postcode) {
-        PostCodeValidator postCodeValidator = null;
         try {
-            postCodeValidator = new PostCodeValidator(postcode);
+            PostCodeValidator postCodeValidator = new PostCodeValidator(postcode);
+
+            String outward = rightPad(postCodeValidator.returnOutwardCode(), 4, ' ');
+            String inward = postCodeValidator.returnInwardCode();
+
+            return outward + inward;
         } catch (InvalidPostcodeException e) {
             log.error("Exception occurred when formatting postcode " + postcode, e);
-        }
-
-        if (postCodeValidator == null || postCodeValidator.returnOutwardCode() == null
-            || postCodeValidator.returnInwardCode() == null) {
             return postcode;
         }
-
-        return (postCodeValidator.returnOutwardCode() + "  ").substring(0, postcode.length() - 3)
-            + postCodeValidator.returnInwardCode();
     }
 }
