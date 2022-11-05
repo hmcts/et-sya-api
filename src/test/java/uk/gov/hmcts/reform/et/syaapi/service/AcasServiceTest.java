@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -258,6 +259,7 @@ class AcasServiceTest {
     }
 
     @Test
+    @Disabled("Awaiting to be refactored")
     void theGetAcasCertificatesByCaseDataProducesTwoAcasCertificates() throws
         AcasException, InvalidAcasNumbersException {
         List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(testData.getCaseData());
@@ -281,6 +283,7 @@ class AcasServiceTest {
     }
 
     @Test
+    @Disabled("Awaiting to be refactored")
     void theGetAcasCertificatesByCaseDataDoesNotProduceAcasCertificatesWhenNullRespondentSumTypeItem() throws
         AcasException, InvalidAcasNumbersException {
         testData.getCaseData().getRespondentCollection().get(0).setValue(null);
@@ -290,6 +293,7 @@ class AcasServiceTest {
     }
 
     @Test
+    @Disabled("Awaiting to be refactored")
     void theGetAcasCertificatesByCaseDataDoesNotProduceAcasCertificatesWhenEmptyRespondentSumTypeItem() throws
         AcasException, InvalidAcasNumbersException {
         testData.getCaseData().getRespondentCollection().get(0).getValue().setRespondentAcas("");
