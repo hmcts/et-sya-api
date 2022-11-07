@@ -715,27 +715,31 @@ public class PdfMapperService {
                 ofNullable(representativeClaimantType.getNameOfOrganisation())
             );
             printFields.put(PdfMapperConstants.Q11_REP_NUMBER, Optional.of(""));
+
             Address repAddress = representativeClaimantType.getRepresentativeAddress();
-            printFields.put(
-                String.format(PdfMapperConstants.QX_HOUSE_NUMBER, REP_ADDRESS_PREFIX),
-                ofNullable(repAddress.getAddressLine1())
-            );
-            printFields.put(
-                String.format(PdfMapperConstants.QX_STREET, REP_ADDRESS_PREFIX),
-                ofNullable(repAddress.getAddressLine2())
-            );
-            printFields.put(
-                String.format(PdfMapperConstants.QX_POST_TOWN, REP_ADDRESS_PREFIX),
-                ofNullable(repAddress.getPostTown())
-            );
-            printFields.put(
-                String.format(PdfMapperConstants.QX_COUNTY, REP_ADDRESS_PREFIX),
-                ofNullable(repAddress.getCounty())
-            );
-            printFields.put(
-                String.format(PdfMapperConstants.QX_POSTCODE, REP_ADDRESS_PREFIX),
-                ofNullable(formatPostcode(repAddress.getPostCode()))
-            );
+            if (repAddress != null) {
+                printFields.put(
+                    String.format(PdfMapperConstants.QX_HOUSE_NUMBER, REP_ADDRESS_PREFIX),
+                    ofNullable(repAddress.getAddressLine1())
+                );
+                printFields.put(
+                    String.format(PdfMapperConstants.QX_STREET, REP_ADDRESS_PREFIX),
+                    ofNullable(repAddress.getAddressLine2())
+                );
+                printFields.put(
+                    String.format(PdfMapperConstants.QX_POST_TOWN, REP_ADDRESS_PREFIX),
+                    ofNullable(repAddress.getPostTown())
+                );
+                printFields.put(
+                    String.format(PdfMapperConstants.QX_COUNTY, REP_ADDRESS_PREFIX),
+                    ofNullable(repAddress.getCounty())
+                );
+                printFields.put(
+                    String.format(PdfMapperConstants.QX_POSTCODE, REP_ADDRESS_PREFIX),
+                    ofNullable(formatPostcode(repAddress.getPostCode()))
+                );
+            }
+
             printFields.put(
                 PdfMapperConstants.Q11_PHONE_NUMBER,
                 ofNullable(representativeClaimantType.getRepresentativePhoneNumber())
