@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.dwp.regex.PostCodeValidator;
@@ -9,13 +8,11 @@ import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantOtherType;
-import uk.gov.hmcts.et.common.model.ccd.types.ClaimantType;
 import uk.gov.hmcts.et.common.model.ccd.types.NewEmploymentType;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.et.syaapi.constants.ClaimTypesConstants;
 
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,23 +44,6 @@ public class PdfMapperService {
     private static final String PREFIX_2_3 = "2.3";
     private static final String PREFIX_2_6 = "2.6";
     private static final String PREFIX_2_8 = "2.8";
-    private static final String OTHER = "Other";
-    private static final Map<String, String> TITLES = Map.of(
-        "Mr", PdfMapperConstants.Q1_TITLE_MR,
-        "Mrs", PdfMapperConstants.Q1_TITLE_MRS,
-        "Miss", PdfMapperConstants.Q1_TITLE_MISS,
-        "Ms", PdfMapperConstants.Q1_TITLE_MS,
-        OTHER, PdfMapperConstants.Q1_TITLE_OTHER,
-        "Other_Specify", PdfMapperConstants.Q1_TITLE_OTHER_SPECIFY
-
-    );
-    private static final Map<String, String> TITLE_MAP = Map.of(
-        "Mr", "Mister",
-        "Mrs", "Missus",
-        "Miss", "Miss",
-        "Ms", "Miz",
-        OTHER, "Miz"
-    );
     private static final String[] ADDRESS_PREFIX = {
         PREFIX_2_2,
         PREFIX_2_5_R2,
@@ -71,8 +51,8 @@ public class PdfMapperService {
         PREFIX_13_R4,
         PREFIX_13_R5
     };
+
     private static final String REP_ADDRESS_PREFIX = "11.3 Representative's address:";
-    private static final String CLAIMANT_ADDRESS_PREFIX = "1.5";
     private static final int MULTIPLE_RESPONDENTS = 2;
     private static final int MAX_RESPONDENTS = 5;
     private static final String[] ACAS_PREFIX = {
@@ -82,16 +62,17 @@ public class PdfMapperService {
         PREFIX_13_R4,
         PREFIX_13_R5
     };
+
     // This constant is defined because of the error in the pdf template file
     // The field for pay before tax options checked value in the pdf template
     // for annually apy before tax was monthly
+    public static final String EMAIL = "Email";
     private static final String ANNUALLY = "annually";
     private static final String WEEKLY = "Weekly";
     private static final String MONTHLY = "Monthly";
     private static final String MONTHS = "Months";
     private static final String WEEKS = "Weeks";
     private static final String ANNUAL = "Annual";
-    private static final String EMAIL = "Email";
     private static final String POST = "Post";
     private static final String FAX = "Fax";
     private static final String YES_LOWERCASE = "yes";
@@ -111,11 +92,13 @@ public class PdfMapperService {
         if (caseData == null) {
             return printFields;
         }
+
         try {
-            printFields.putAll(printPersonalDetails(caseData));
+            printFields.putAll(new PersonalDetailsMapper().printPersonalDetails(caseData));
         } catch (Exception e) {
             log.error("Exception occurred in PDF MAPPER while setting personal details \n" + e.getMessage(), e);
         }
+
         if (caseData.getClaimantRequests() != null
             && caseData.getClaimantRequests().getClaimDescription() != null) {
             printFields.put(
@@ -149,129 +132,6 @@ public class PdfMapperService {
             log.error("Exception occurred in PDF MAPPER \n" + e.getMessage(), e);
         }
         return printFields;
-    }
-
-    private Map<String, Optional<String>> printPersonalDetails(CaseData caseData) {
-        ConcurrentHashMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
-        if (caseData.getClaimantIndType() != null
-            && caseData.getClaimantIndType().getClaimantPreferredTitle() != null
-            && TITLES.containsKey(caseData.getClaimantIndType().getClaimantPreferredTitle())) {
-            printFields.put(
-                TITLES.get(caseData.getClaimantIndType().getClaimantPreferredTitle()),
-                ofNullable(TITLE_MAP.get(caseData.getClaimantIndType().getClaimantPreferredTitle()))
-            );
-            if (OTHER.equals(caseData.getClaimantIndType().getClaimantPreferredTitle())) {
-                printFields.put(
-                    TITLES.get("Other_Specify"),
-                    ofNullable(String.valueOf(caseData.getClaimantIndType().getClaimantTitleOther()))
-                );
-            }
-        }
-
-        printFields.put(
-            PdfMapperConstants.Q1_FIRST_NAME,
-            ofNullable(caseData.getClaimantIndType().getClaimantFirstNames())
-        );
-
-        printFields.put(
-            PdfMapperConstants.Q1_SURNAME,
-            ofNullable(caseData.getClaimantIndType().getClaimantLastName())
-        );
-
-        printFields.putAll(getDobPrintFields(caseData.getClaimantIndType().getClaimantDateOfBirth()));
-
-        if (caseData.getClaimantIndType() != null
-            && caseData.getClaimantIndType().getClaimantSex() != null) {
-            if ("Male".equals(caseData.getClaimantIndType().getClaimantSex())) {
-                printFields.put(PdfMapperConstants.Q1_SEX_MALE, Optional.of("Yes"));
-            } else if ("Female".equals(caseData.getClaimantIndType().getClaimantSex())) {
-                printFields.put(PdfMapperConstants.Q1_SEX_FEMALE, Optional.of("female"));
-            } else if ("Prefer not to say".equals(caseData.getClaimantIndType().getClaimantSex())) {
-                printFields.put(PdfMapperConstants.Q1_SEX_PREFER_NOT_TO_SAY, Optional.of("prefer not to say"));
-            }
-        }
-
-        ClaimantType claimantType = caseData.getClaimantType();
-        if (claimantType != null) {
-            Address claimantAddressUK = claimantType.getClaimantAddressUK();
-            if (claimantAddressUK != null) {
-                printFields.put(
-                    String.format(PdfMapperConstants.RP2_HOUSE_NUMBER, CLAIMANT_ADDRESS_PREFIX),
-                    ofNullable(claimantAddressUK.getAddressLine1())
-                );
-                printFields.put(
-                    String.format(PdfMapperConstants.QX_STREET, CLAIMANT_ADDRESS_PREFIX),
-                    ofNullable(claimantAddressUK.getAddressLine2())
-                );
-                printFields.put(
-                    String.format(PdfMapperConstants.RP_POST_TOWN, CLAIMANT_ADDRESS_PREFIX),
-                    ofNullable(claimantAddressUK.getPostTown())
-                );
-                printFields.put(
-                    String.format(PdfMapperConstants.QX_COUNTY, CLAIMANT_ADDRESS_PREFIX),
-                    ofNullable(claimantAddressUK.getCounty())
-                );
-                printFields.put(
-                    String.format(PdfMapperConstants.QX_POSTCODE, CLAIMANT_ADDRESS_PREFIX),
-                    ofNullable(formatPostcode(claimantAddressUK.getPostCode()))
-                );
-            }
-
-            printFields.put(
-                String.format(PdfMapperConstants.QX_PHONE_NUMBER, "1.6"),
-                ofNullable(claimantType.getClaimantPhoneNumber())
-            );
-
-            printFields.put(
-                PdfMapperConstants.Q1_MOBILE_NUMBER,
-                ofNullable(claimantType.getClaimantMobileNumber())
-            );
-
-            printFields.put(
-                PdfMapperConstants.Q1_EMAIL,
-                ofNullable(claimantType.getClaimantEmailAddress())
-            );
-
-            String contactPreference = claimantType.getClaimantContactPreference();
-
-            if (EMAIL.equals(contactPreference)) {
-                printFields.put(PdfMapperConstants.Q1_CONTACT_EMAIL, Optional.of(contactPreference));
-            } else if ("Post".equals(contactPreference)) {
-                printFields.put(PdfMapperConstants.Q1_CONTACT_POST, Optional.of(contactPreference));
-            }
-        }
-        return printFields;
-    }
-
-    private Map<String, Optional<String>> getDobPrintFields(String claimantDateOfBirth) {
-        ConcurrentHashMap<String, Optional<String>> dobFields = new ConcurrentHashMap<>();
-
-        if (claimantDateOfBirth == null) {
-            return dobFields;
-        }
-
-        LocalDate dob = LocalDate.parse(claimantDateOfBirth);
-
-        dobFields.put(
-            PdfMapperConstants.Q1_DOB_DAY,
-            Optional.of(StringUtils.leftPad(
-                String.valueOf(dob.getDayOfMonth()),
-                2,
-                "0"
-            ))
-        );
-
-        dobFields.put(
-            PdfMapperConstants.Q1_DOB_MONTH,
-            Optional.of(StringUtils.leftPad(
-                String.valueOf(dob.getMonthValue()),
-                2,
-                "0"
-            ))
-        );
-        dobFields.put(PdfMapperConstants.Q1_DOB_YEAR, Optional.of(String.valueOf(dob.getYear())));
-
-        return dobFields;
     }
 
     private Map<String, Optional<String>> printHearingPreferences(CaseData caseData) {
@@ -908,7 +768,7 @@ public class PdfMapperService {
         return new HashMap<>();
     }
 
-    private String formatPostcode(String postcode) {
+    public static String formatPostcode(String postcode) {
         if (postcode == null) {
             return null;
         }

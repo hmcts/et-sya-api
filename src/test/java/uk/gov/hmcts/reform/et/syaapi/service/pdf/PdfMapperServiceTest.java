@@ -34,6 +34,7 @@ import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q1_DO
 import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q1_DOB_MONTH;
 import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q1_DOB_YEAR;
 import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q2_DIFFADDRESS_POSTCODE;
+import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperService.formatPostcode;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class PdfMapperServiceTest {
@@ -57,28 +58,6 @@ class PdfMapperServiceTest {
     void givenCaseProducesPdfHeaderMap() {
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
         assertEquals(TOTAL_VALUES, pdfMap.size());
-    }
-
-    @ParameterizedTest
-    @MethodSource("postcodeArguments")
-    void testFormattingPostcode(String srcPostcode, String expectedPostcode) {
-        caseData.getClaimantWorkAddress().getClaimantWorkAddress().setPostCode(srcPostcode);
-        Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-
-        assertEquals(expectedPostcode, pdfMap.get(Q2_DIFFADDRESS_POSTCODE).get());
-    }
-
-    private static Stream<Arguments> postcodeArguments() {
-        return Stream.of(
-            Arguments.of("A7 7AA", "A7  7AA"),
-            Arguments.of("A8  8AA", "A8  8AA"),
-            Arguments.of("A9   9AA", "A9  9AA"),
-            Arguments.of("A99AA", "A9  9AA"),
-            Arguments.of("NG4 4JF", "NG4 4JF"),
-            Arguments.of("NG44JF", "NG4 4JF"),
-            Arguments.of("HU10 6NA", "HU106NA"),
-            Arguments.of("HU106NA", "HU106NA")
-        );
     }
 
     @Test
@@ -483,6 +462,26 @@ class PdfMapperServiceTest {
     @Test
     void shouldReturnEmptyMapWhenCaseDataIsNull() {
         assertEquals(pdfMapperService.mapHeadersToPdf(null), new ConcurrentHashMap<>());
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("postcodeArguments")
+    void testFormattingPostcode(String srcPostcode, String expectedPostcode) {
+        assertEquals(expectedPostcode, formatPostcode(srcPostcode));
+    }
+
+    private static Stream<Arguments> postcodeArguments() {
+        return Stream.of(
+            Arguments.of("A7 7AA", "A7  7AA"),
+            Arguments.of("A8  8AA", "A8  8AA"),
+            Arguments.of("A9   9AA", "A9  9AA"),
+            Arguments.of("A99AA", "A9  9AA"),
+            Arguments.of("NG4 4JF", "NG4 4JF"),
+            Arguments.of("NG44JF", "NG4 4JF"),
+            Arguments.of("HU10 6NA", "HU106NA"),
+            Arguments.of("HU106NA", "HU106NA")
+        );
     }
 
     private List<RespondentSumTypeItem> createRespondentList(int count) {
