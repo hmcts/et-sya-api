@@ -130,7 +130,6 @@ public class CaseService {
             eventTypeName
         );
 
-
         CaseDataContent caseDataContent = CaseDataContent.builder()
             .event(Event.builder().id(eventTypeName).build())
             .eventToken(ccdCase.getToken())
@@ -184,9 +183,8 @@ public class CaseService {
      * @param caseRequest is used to provide the caseId, caseTypeId and {@link CaseData} in JSON Format
      * @return the associated {@link CaseData} if the case is submitted
      */
-    public CaseDetails submitCase(String authorization,
-                                  CaseRequest caseRequest)
-        throws PdfServiceException, CaseDocumentException, AcasException, InvalidAcasNumbersException {
+    public CaseDetails submitCase(String authorization, CaseRequest caseRequest)
+        throws PdfServiceException, CaseDocumentException {
 
         caseRequest.getCaseData().put("receiptDate", LocalDateTime.now().format(DateTimeFormatter
                                                                                     .ofPattern("yyyy-MM-dd")));
@@ -196,8 +194,17 @@ public class CaseService {
                                                caseRequest.getCaseTypeId(), caseRequest.getCaseData());
         caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :
             caseDetails.getData().get("ethosCaseReference").toString());
-        List<PdfDecodedMultipartFile> acasCertificates = pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
-            caseData, acasService.getAcasCertificatesByCaseData(caseData));
+
+        List<PdfDecodedMultipartFile> acasCertificates = null;
+        try {
+            acasCertificates = pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
+                caseData, acasService.getAcasCertificatesByCaseData(caseData));
+        } catch (AcasException e) {
+            log.error("Failed to connect to ACAS service", e);
+        } catch (InvalidAcasNumbersException e) {
+            log.error("Invalid ACAS numbers", e);
+        }
+
         PdfDecodedMultipartFile casePdfFile =
             pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData);
         caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
