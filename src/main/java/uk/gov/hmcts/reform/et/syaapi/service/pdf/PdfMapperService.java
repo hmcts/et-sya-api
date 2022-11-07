@@ -9,6 +9,7 @@ import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantOtherType;
+import uk.gov.hmcts.et.common.model.ccd.types.ClaimantType;
 import uk.gov.hmcts.et.common.model.ccd.types.NewEmploymentType;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
@@ -171,6 +172,7 @@ public class PdfMapperService {
             PdfMapperConstants.Q1_FIRST_NAME,
             ofNullable(caseData.getClaimantIndType().getClaimantFirstNames())
         );
+
         printFields.put(
             PdfMapperConstants.Q1_SURNAME,
             ofNullable(caseData.getClaimantIndType().getClaimantLastName())
@@ -188,42 +190,49 @@ public class PdfMapperService {
                 printFields.put(PdfMapperConstants.Q1_SEX_PREFER_NOT_TO_SAY, Optional.of("prefer not to say"));
             }
         }
-        if (caseData.getClaimantType() != null) {
-            if (caseData.getClaimantType().getClaimantAddressUK() != null) {
+
+        ClaimantType claimantType = caseData.getClaimantType();
+        if (claimantType != null) {
+            Address claimantAddressUK = claimantType.getClaimantAddressUK();
+            if (claimantAddressUK != null) {
                 printFields.put(
                     String.format(PdfMapperConstants.RP2_HOUSE_NUMBER, CLAIMANT_ADDRESS_PREFIX),
-                    ofNullable(caseData.getClaimantType().getClaimantAddressUK().getAddressLine1())
+                    ofNullable(claimantAddressUK.getAddressLine1())
                 );
                 printFields.put(
                     String.format(PdfMapperConstants.QX_STREET, CLAIMANT_ADDRESS_PREFIX),
-                    ofNullable(caseData.getClaimantType().getClaimantAddressUK().getAddressLine2())
+                    ofNullable(claimantAddressUK.getAddressLine2())
                 );
                 printFields.put(
                     String.format(PdfMapperConstants.RP_POST_TOWN, CLAIMANT_ADDRESS_PREFIX),
-                    ofNullable(caseData.getClaimantType().getClaimantAddressUK().getPostTown())
+                    ofNullable(claimantAddressUK.getPostTown())
                 );
                 printFields.put(
                     String.format(PdfMapperConstants.QX_COUNTY, CLAIMANT_ADDRESS_PREFIX),
-                    ofNullable(caseData.getClaimantType().getClaimantAddressUK().getCounty())
+                    ofNullable(claimantAddressUK.getCounty())
                 );
                 printFields.put(
                     String.format(PdfMapperConstants.QX_POSTCODE, CLAIMANT_ADDRESS_PREFIX),
-                    ofNullable(formatPostcode(caseData.getClaimantType().getClaimantAddressUK().getPostCode()))
+                    ofNullable(formatPostcode(claimantAddressUK.getPostCode()))
                 );
             }
+
             printFields.put(
                 String.format(PdfMapperConstants.QX_PHONE_NUMBER, "1.6"),
-                ofNullable(caseData.getClaimantType().getClaimantPhoneNumber())
+                ofNullable(claimantType.getClaimantPhoneNumber())
             );
+
             printFields.put(
                 PdfMapperConstants.Q1_MOBILE_NUMBER,
-                ofNullable(caseData.getClaimantType().getClaimantMobileNumber())
+                ofNullable(claimantType.getClaimantMobileNumber())
             );
+
             printFields.put(
                 PdfMapperConstants.Q1_EMAIL,
-                ofNullable(caseData.getClaimantType().getClaimantEmailAddress())
+                ofNullable(claimantType.getClaimantEmailAddress())
             );
-            String contactPreference = caseData.getClaimantType().getClaimantContactPreference();
+
+            String contactPreference = claimantType.getClaimantContactPreference();
 
             if (EMAIL.equals(contactPreference)) {
                 printFields.put(PdfMapperConstants.Q1_CONTACT_EMAIL, Optional.of(contactPreference));
@@ -900,6 +909,10 @@ public class PdfMapperService {
     }
 
     private String formatPostcode(String postcode) {
+        if (postcode == null) {
+            return null;
+        }
+
         try {
             PostCodeValidator postCodeValidator = new PostCodeValidator(postcode);
 
