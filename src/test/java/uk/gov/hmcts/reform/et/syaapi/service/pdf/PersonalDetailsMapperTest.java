@@ -11,16 +11,15 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SuppressWarnings({"PMD.UseConcurrentHashMap"})
 class PersonalDetailsMapperTest {
     @Test
-    void givenCaseDataNull_whenMappingPersonalDetails_thenEmptyMapReturned() {
-        Map<String, Optional<String>> detailsMap = new PersonalDetailsMapper().mapPersonalDetails(new CaseData());
-
-        assertThat(detailsMap).isEmpty();
+    void mapNullCaseData() {
+        assertThat(new PersonalDetailsMapper().mapPersonalDetails(new CaseData())).isEmpty();
     }
 
     @Test
-    void givenClaimantIndType_whenMappingPersonalDetails_thenCorrectMappingReturned() {
+    void mapClaimantIndType() {
         ClaimantIndType claimantIndType = new ClaimantIndType();
         claimantIndType.setClaimantPreferredTitle("Other_Specify");
         claimantIndType.setClaimantTitleOther("ABC");
@@ -53,7 +52,7 @@ class PersonalDetailsMapperTest {
     }
 
     @Test
-    void givenMaleSex_whenMappingPersonalDetails_thenCorrectMappingReturned() {
+    void mapClaimantIndTypeWithMaleSex() {
         ClaimantIndType claimantIndType = new ClaimantIndType();
         claimantIndType.setClaimantSex("Male");
 
@@ -69,7 +68,7 @@ class PersonalDetailsMapperTest {
     }
 
     @Test
-    void givenPreferNotToSaySex_whenMappingPersonalDetails_thenCorrectMappingReturned() {
+    void mapClaimantIndTypeWithPreferNotToSaySex() {
         ClaimantIndType claimantIndType = new ClaimantIndType();
         claimantIndType.setClaimantSex("Prefer not to say");
 
@@ -85,7 +84,7 @@ class PersonalDetailsMapperTest {
     }
 
     @Test
-    void givenClaimantType_whenMappingPersonalDetails_thenCorrectMappingReturned() {
+    void mapClaimantType() {
         Address claimantAddressUK = new Address();
         claimantAddressUK.setAddressLine1("AddressLine1");
         claimantAddressUK.setAddressLine2("AddressLine2");
@@ -128,7 +127,7 @@ class PersonalDetailsMapperTest {
     }
 
     @Test
-    void givenClaimantTypeWithPostPreference_whenMappingPersonalDetails_thenCorrectMappingReturned() {
+    void mapClaimantTypeWithPostPreference() {
         ClaimantType claimantType = new ClaimantType();
         claimantType.setClaimantContactPreference("Post");
 
