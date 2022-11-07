@@ -13,8 +13,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperService.EMAIL;
+import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperService.POST;
 import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperService.formatPostcode;
 
+/**
+ * Mapper for personal details on the case data to the ET1 Pdf form.
+ */
 public class PersonalDetailsMapper {
     private static final String OTHER = "Other";
 
@@ -38,8 +42,7 @@ public class PersonalDetailsMapper {
     private static final String CLAIMANT_ADDRESS_PREFIX = "1.5";
     private static final String PHONE_NUMBER_PREFIX = "1.6";
 
-    // todo add tests.
-    public Map<String, Optional<String>> printPersonalDetails(CaseData caseData) {
+    public Map<String, Optional<String>> mapPersonalDetails(CaseData caseData) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
 
         printFields.putAll(mapClaimantIndType(caseData.getClaimantIndType()));
@@ -54,13 +57,10 @@ public class PersonalDetailsMapper {
             return printFields;
         }
 
-        if (claimantIndType.getClaimantPreferredTitle() != null
-            && TITLES.containsKey(claimantIndType.getClaimantPreferredTitle())) {
-            printFields.put(
-                TITLES.get(claimantIndType.getClaimantPreferredTitle()),
-                ofNullable(TITLE_MAP.get(claimantIndType.getClaimantPreferredTitle()))
-            );
-            if (OTHER.equals(claimantIndType.getClaimantPreferredTitle())) {
+        String claimantPreferredTitle = claimantIndType.getClaimantPreferredTitle();
+        if (claimantPreferredTitle != null && TITLES.containsKey(claimantPreferredTitle)) {
+            printFields.put(TITLES.get(claimantPreferredTitle), ofNullable(TITLE_MAP.get(claimantPreferredTitle)));
+            if (OTHER.equals(claimantPreferredTitle)) {
                 printFields.put(
                     TITLES.get("Other_Specify"),
                     ofNullable(String.valueOf(claimantIndType.getClaimantTitleOther()))
@@ -68,29 +68,61 @@ public class PersonalDetailsMapper {
             }
         }
 
-        printFields.put(
-            PdfMapperConstants.Q1_FIRST_NAME,
-            ofNullable(claimantIndType.getClaimantFirstNames())
-        );
+        printFields.put(PdfMapperConstants.Q1_FIRST_NAME, ofNullable(claimantIndType.getClaimantFirstNames()));
 
-        printFields.put(
-            PdfMapperConstants.Q1_SURNAME,
-            ofNullable(claimantIndType.getClaimantLastName())
-        );
+        printFields.put(PdfMapperConstants.Q1_SURNAME, ofNullable(claimantIndType.getClaimantLastName()));
 
-        printFields.putAll(getDobPrintFields(claimantIndType.getClaimantDateOfBirth()));
+        printFields.putAll(mapDobFields(claimantIndType.getClaimantDateOfBirth()));
 
-        if (claimantIndType.getClaimantSex() != null) {
-            if ("Male".equals(claimantIndType.getClaimantSex())) {
-                printFields.put(PdfMapperConstants.Q1_SEX_MALE, Optional.of("Yes"));
-            } else if ("Female".equals(claimantIndType.getClaimantSex())) {
-                printFields.put(PdfMapperConstants.Q1_SEX_FEMALE, Optional.of("female"));
-            } else if ("Prefer not to say".equals(claimantIndType.getClaimantSex())) {
-                printFields.put(PdfMapperConstants.Q1_SEX_PREFER_NOT_TO_SAY, Optional.of("prefer not to say"));
+        String claimantSex = claimantIndType.getClaimantSex();
+        if (claimantSex != null) {
+            switch (claimantSex) {
+                case "Male":
+                    printFields.put(PdfMapperConstants.Q1_SEX_MALE, Optional.of("Yes"));
+                    break;
+                case "Female":
+                    printFields.put(PdfMapperConstants.Q1_SEX_FEMALE, Optional.of("female"));
+                    break;
+                case "Prefer not to say":
+                    printFields.put(PdfMapperConstants.Q1_SEX_PREFER_NOT_TO_SAY, Optional.of("prefer not to say"));
+                    break;
+                default:
+                    throw new IllegalStateException("Can't have this as the claimant's sex: " + claimantSex);
             }
         }
 
         return printFields;
+    }
+
+    private Map<String, Optional<String>> mapDobFields(String claimantDateOfBirth) {
+        ConcurrentHashMap<String, Optional<String>> dobFields = new ConcurrentHashMap<>();
+
+        if (claimantDateOfBirth == null) {
+            return dobFields;
+        }
+
+        LocalDate dob = LocalDate.parse(claimantDateOfBirth);
+
+        dobFields.put(
+            PdfMapperConstants.Q1_DOB_DAY,
+            Optional.of(StringUtils.leftPad(
+                String.valueOf(dob.getDayOfMonth()),
+                2,
+                "0"
+            ))
+        );
+
+        dobFields.put(
+            PdfMapperConstants.Q1_DOB_MONTH,
+            Optional.of(StringUtils.leftPad(
+                String.valueOf(dob.getMonthValue()),
+                2,
+                "0"
+            ))
+        );
+        dobFields.put(PdfMapperConstants.Q1_DOB_YEAR, Optional.of(String.valueOf(dob.getYear())));
+
+        return dobFields;
     }
 
     private Map<String, Optional<String>> mapClaimantType(ClaimantType claimantType) {
@@ -142,41 +174,10 @@ public class PersonalDetailsMapper {
 
         if (EMAIL.equals(contactPreference)) {
             printFields.put(PdfMapperConstants.Q1_CONTACT_EMAIL, Optional.of(contactPreference));
-        } else if ("Post".equals(contactPreference)) {
+        } else if (POST.equals(contactPreference)) {
             printFields.put(PdfMapperConstants.Q1_CONTACT_POST, Optional.of(contactPreference));
         }
 
         return printFields;
-    }
-
-    private Map<String, Optional<String>> getDobPrintFields(String claimantDateOfBirth) {
-        ConcurrentHashMap<String, Optional<String>> dobFields = new ConcurrentHashMap<>();
-
-        if (claimantDateOfBirth == null) {
-            return dobFields;
-        }
-
-        LocalDate dob = LocalDate.parse(claimantDateOfBirth);
-
-        dobFields.put(
-            PdfMapperConstants.Q1_DOB_DAY,
-            Optional.of(StringUtils.leftPad(
-                String.valueOf(dob.getDayOfMonth()),
-                2,
-                "0"
-            ))
-        );
-
-        dobFields.put(
-            PdfMapperConstants.Q1_DOB_MONTH,
-            Optional.of(StringUtils.leftPad(
-                String.valueOf(dob.getMonthValue()),
-                2,
-                "0"
-            ))
-        );
-        dobFields.put(PdfMapperConstants.Q1_DOB_YEAR, Optional.of(String.valueOf(dob.getYear())));
-
-        return dobFields;
     }
 }

@@ -327,7 +327,6 @@ class PdfMapperServiceTest {
         assertNotNull(pdfMap.get(PdfMapperConstants.Q11_CONTACT_POST));
     }
 
-    // Todo the test is throwing but passing still. Quite a few of these tests might be doing the same.
     @Test
     void shouldNotThrowExceptionWhenClaimantIndTypeIsNull() {
         CaseData exceptionCaseData = new TestData().getCaseData();
@@ -463,7 +462,6 @@ class PdfMapperServiceTest {
     void shouldReturnEmptyMapWhenCaseDataIsNull() {
         assertEquals(pdfMapperService.mapHeadersToPdf(null), new ConcurrentHashMap<>());
     }
-
 
     @ParameterizedTest
     @MethodSource("postcodeArguments")

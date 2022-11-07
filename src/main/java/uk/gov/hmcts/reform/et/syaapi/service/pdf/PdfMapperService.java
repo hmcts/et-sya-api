@@ -67,13 +67,13 @@ public class PdfMapperService {
     // The field for pay before tax options checked value in the pdf template
     // for annually apy before tax was monthly
     public static final String EMAIL = "Email";
+    public static final String POST = "Post";
     private static final String ANNUALLY = "annually";
     private static final String WEEKLY = "Weekly";
     private static final String MONTHLY = "Monthly";
     private static final String MONTHS = "Months";
     private static final String WEEKS = "Weeks";
     private static final String ANNUAL = "Annual";
-    private static final String POST = "Post";
     private static final String FAX = "Fax";
     private static final String YES_LOWERCASE = "yes";
     private static final String NO_LOWERCASE = "no";
@@ -94,7 +94,7 @@ public class PdfMapperService {
         }
 
         try {
-            printFields.putAll(new PersonalDetailsMapper().printPersonalDetails(caseData));
+            printFields.putAll(new PersonalDetailsMapper().mapPersonalDetails(caseData));
         } catch (Exception e) {
             log.error("Exception occurred in PDF MAPPER while setting personal details \n" + e.getMessage(), e);
         }
