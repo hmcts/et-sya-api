@@ -110,7 +110,7 @@ public class PersonalDetailsMapper {
         return dobFields;
     }
 
-    private static Map<String, Optional<String>> mapSexFields(String claimantSex) {
+    private Map<String, Optional<String>> mapSexFields(String claimantSex) {
         Map<String, Optional<String>> sexFields = new ConcurrentHashMap<>();
 
         if (claimantSex != null) {
