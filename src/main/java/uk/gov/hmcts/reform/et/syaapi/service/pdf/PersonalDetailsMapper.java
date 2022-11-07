@@ -74,28 +74,13 @@ public class PersonalDetailsMapper {
 
         printFields.putAll(mapDobFields(claimantIndType.getClaimantDateOfBirth()));
 
-        String claimantSex = claimantIndType.getClaimantSex();
-        if (claimantSex != null) {
-            switch (claimantSex) {
-                case "Male":
-                    printFields.put(PdfMapperConstants.Q1_SEX_MALE, Optional.of("Yes"));
-                    break;
-                case "Female":
-                    printFields.put(PdfMapperConstants.Q1_SEX_FEMALE, Optional.of("female"));
-                    break;
-                case "Prefer not to say":
-                    printFields.put(PdfMapperConstants.Q1_SEX_PREFER_NOT_TO_SAY, Optional.of("prefer not to say"));
-                    break;
-                default:
-                    throw new IllegalStateException("Can't have this as the claimant's sex: " + claimantSex);
-            }
-        }
+        printFields.putAll(mapSexFields(claimantIndType.getClaimantSex()));
 
         return printFields;
     }
 
     private Map<String, Optional<String>> mapDobFields(String claimantDateOfBirth) {
-        ConcurrentHashMap<String, Optional<String>> dobFields = new ConcurrentHashMap<>();
+        Map<String, Optional<String>> dobFields = new ConcurrentHashMap<>();
 
         if (claimantDateOfBirth == null) {
             return dobFields;
@@ -123,6 +108,27 @@ public class PersonalDetailsMapper {
         dobFields.put(PdfMapperConstants.Q1_DOB_YEAR, Optional.of(String.valueOf(dob.getYear())));
 
         return dobFields;
+    }
+
+    private static Map<String, Optional<String>> mapSexFields(String claimantSex) {
+        Map<String, Optional<String>> sexFields = new ConcurrentHashMap<>();
+
+        if (claimantSex != null) {
+            switch (claimantSex) {
+                case "Male":
+                    sexFields.put(PdfMapperConstants.Q1_SEX_MALE, Optional.of("Yes"));
+                    break;
+                case "Female":
+                    sexFields.put(PdfMapperConstants.Q1_SEX_FEMALE, Optional.of("female"));
+                    break;
+                case "Prefer not to say":
+                    sexFields.put(PdfMapperConstants.Q1_SEX_PREFER_NOT_TO_SAY, Optional.of("prefer not to say"));
+                    break;
+                default:
+                    throw new IllegalStateException("Can't have this as the claimant's sex: " + claimantSex);
+            }
+        }
+        return sexFields;
     }
 
     private Map<String, Optional<String>> mapClaimantType(ClaimantType claimantType) {
