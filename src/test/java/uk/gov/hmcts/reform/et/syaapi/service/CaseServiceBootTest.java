@@ -17,7 +17,7 @@ import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.idam.client.IdamApi;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.util.ArrayList;
 
@@ -61,16 +61,18 @@ class CaseServiceBootTest {
     void theSubmitCaseProducesCaseDetails()
         throws CaseDocumentException, AcasException, PdfServiceException, InvalidAcasNumbersException {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamApi.retrieveUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+        when(idamApi.retrieveUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
             USER_ID,
-            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
+            "name",
             testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
             testData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
         ));
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
             USER_ID,
-            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
+            "name",
             testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
             testData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
