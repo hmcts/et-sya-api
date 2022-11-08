@@ -241,6 +241,10 @@ dependencies {
   implementation 'org.json:json:20220924'
   implementation group: 'org.yaml', name: 'snakeyaml', version: '1.33'
 
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.68'
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '9.0.68'
+  implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.7.5'
+
   compileOnly 'org.projectlombok:lombok'
   annotationProcessor group: 'org.projectlombok', name: 'lombok'
   testAnnotationProcessor group: 'org.projectlombok', name: 'lombok'
