@@ -13,7 +13,7 @@ public final class EtSyaConstants {
     public static final TribunalOffice DEFAULT_TRIBUNAL_OFFICE = TribunalOffice.LONDON_SOUTH;
     public static final String RESOURCE_NOT_FOUND = "Resource not found for case id %s, reason: %s";
     public static final String UNASSIGNED_OFFICE = "Unassigned";
-
+    public static final String CASE_FIELD_MANAGING_OFFICE = "managingOffice";
 
     private EtSyaConstants() {
         // restrict instantiation
