@@ -63,7 +63,7 @@ public class AssignCaseToLocalOfficeService {
                 .orElse(UNASSIGNED_OFFICE);
         } catch (InvalidPostcodeException e) {
             log.info("Failed to find tribunal office : {} ", e.getMessage());
-            return getCaseTypeId(DEFAULT_TRIBUNAL_OFFICE.getOfficeName());
+            return UNASSIGNED_OFFICE;
         }
     }
 }
