@@ -29,7 +29,7 @@ import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.utils.TestConstants;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -45,6 +45,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.USER_ID;
 
@@ -92,9 +93,10 @@ class CaseServiceTest {
     @Test
     void shouldGetAllUserCases() {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
             USER_ID,
-            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
+            TEST_NAME,
             testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
             testData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
@@ -116,9 +118,10 @@ class CaseServiceTest {
     @Test
     void shouldGetAllUserCasesDifferentCaseType() {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
             USER_ID,
-            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
+            TEST_NAME,
             testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
             testData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
@@ -151,9 +154,10 @@ class CaseServiceTest {
     void shouldCreateNewDraftCaseInCcd() {
 
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
             USER_ID,
-            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
+            TEST_NAME,
             testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
             testData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
@@ -191,9 +195,10 @@ class CaseServiceTest {
     @Test
     void shouldStartUpdateCaseInCcd() {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
             USER_ID,
-            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
+            TEST_NAME,
             testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
             testData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
@@ -223,9 +228,10 @@ class CaseServiceTest {
     @Test
     void shouldSubmitUpdateCaseInCcd() {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
             USER_ID,
-            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
+            TEST_NAME,
             testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
             testData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
@@ -405,9 +411,10 @@ class CaseServiceTest {
             .build();
 
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
             USER_ID,
-            TestConstants.EMAIL_TEST_GMAIL_COM,
+            TEST_NAME,
             TestConstants.TEST_FIRST_NAME,
             TestConstants.TEST_SURNAME,
             null

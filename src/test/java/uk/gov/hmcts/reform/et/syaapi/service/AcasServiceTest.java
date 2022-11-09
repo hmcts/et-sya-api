@@ -282,6 +282,7 @@ class AcasServiceTest {
         assertThat(acasCertificates).isEmpty();
     }
 
+    @Disabled("Awaiting to be refactored")
     @Test
     @Disabled("Awaiting to be refactored")
     void theGetAcasCertificatesByCaseDataDoesNotProduceAcasCertificatesWhenNullRespondentSumTypeItem() throws
@@ -292,6 +293,7 @@ class AcasServiceTest {
         assertThat(acasCertificates).hasSize(3);
     }
 
+    @Disabled("Awaiting to be refactored")
     @Test
     @Disabled("Awaiting to be refactored")
     void theGetAcasCertificatesByCaseDataDoesNotProduceAcasCertificatesWhenEmptyRespondentSumTypeItem() throws

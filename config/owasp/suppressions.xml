@@ -30,7 +30,7 @@
     <cve>CVE-2016-1000027</cve>
   </suppress>
   <suppress>
-    <notes>Suppresses spring-security-crypto-5.7.1.jar vulnerabilities</notes>
+    <notes>Suppresses spring-security-crypto-5.7.5.jar vulnerabilities</notes>
     <cve>CVE-2020-5408</cve>
   </suppress>
   <suppress>
