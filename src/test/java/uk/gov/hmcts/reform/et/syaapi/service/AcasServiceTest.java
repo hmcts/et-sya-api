@@ -259,7 +259,6 @@ class AcasServiceTest {
     }
 
     @Test
-    @Disabled("Awaiting to be refactored")
     void theGetAcasCertificatesByCaseDataProducesTwoAcasCertificates() throws
         AcasException, InvalidAcasNumbersException {
         List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(testData.getCaseData());
@@ -284,7 +283,6 @@ class AcasServiceTest {
 
     @Disabled("Awaiting to be refactored")
     @Test
-    @Disabled("Awaiting to be refactored")
     void theGetAcasCertificatesByCaseDataDoesNotProduceAcasCertificatesWhenNullRespondentSumTypeItem() throws
         AcasException, InvalidAcasNumbersException {
         testData.getCaseData().getRespondentCollection().get(0).setValue(null);
@@ -295,7 +293,6 @@ class AcasServiceTest {
 
     @Disabled("Awaiting to be refactored")
     @Test
-    @Disabled("Awaiting to be refactored")
     void theGetAcasCertificatesByCaseDataDoesNotProduceAcasCertificatesWhenEmptyRespondentSumTypeItem() throws
         AcasException, InvalidAcasNumbersException {
         testData.getCaseData().getRespondentCollection().get(0).getValue().setRespondentAcas("");
