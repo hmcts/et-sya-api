@@ -2,6 +2,9 @@ package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
@@ -19,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -26,10 +30,15 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q1_DOB_DAY;
+import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q1_DOB_MONTH;
+import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q1_DOB_YEAR;
+import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q2_DIFFADDRESS_POSTCODE;
+import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperService.formatPostcode;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class PdfMapperServiceTest {
-    private static final Integer TOTAL_VALUES = 81;
+    private static final Integer TOTAL_VALUES = 82;
     private PdfMapperService pdfMapperService;
     private CaseData caseData;
     private static final String ACAS_PREFIX = "2.3";
@@ -143,7 +152,7 @@ class PdfMapperServiceTest {
         claimantWorkAddressType.setClaimantWorkAddress(claimantAddress);
         caseData.setClaimantWorkAddress(claimantWorkAddressType);
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNotNull(pdfMap.get(PdfMapperConstants.Q2_DIFFADDRESS_POSTCODE));
+        assertNotNull(pdfMap.get(Q2_DIFFADDRESS_POSTCODE));
     }
 
     @Test
@@ -175,6 +184,7 @@ class PdfMapperServiceTest {
     @Test
     void givenContinuedEmploymentReflectsInMap() {
         ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
+        claimantOtherType.setStillWorking("Working");
         caseData.setClaimantOtherType(claimantOtherType);
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
         assertNotNull(pdfMap.get(PdfMapperConstants.Q5_CONTINUING_YES));
@@ -184,9 +194,6 @@ class PdfMapperServiceTest {
     @Test
     void givenDiscontinuedEmploymentReflectsInMap() {
         ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
-        claimantOtherType.setStillWorking("No longer working");
-        claimantOtherType.setClaimantEmployedFrom("01/01/2020");
-        claimantOtherType.setClaimantEmployedTo("01/01/2022");
         caseData.setClaimantOtherType(claimantOtherType);
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
         assertNotNull(pdfMap.get(PdfMapperConstants.Q5_EMPLOYMENT_END));
@@ -196,19 +203,30 @@ class PdfMapperServiceTest {
     @Test
     void givenWeeklyPaymentCycleReflectsInMap() {
         ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
-        claimantOtherType.setClaimantPayCycle("Weekly");
+        claimantOtherType.setClaimantPayCycle("Weeks");
         caseData.setClaimantOtherType(claimantOtherType);
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
         assertNotNull(pdfMap.get(PdfMapperConstants.Q6_GROSS_PAY_WEEKLY));
+        assertNull(pdfMap.get(PdfMapperConstants.Q6_GROSS_PAY_ANNUAL));
     }
 
     @Test
     void givenMonthlyPaymentCycleReflectsInMap() {
         ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
-        claimantOtherType.setClaimantPayCycle("Monthly");
+        claimantOtherType.setClaimantPayCycle("Months");
         caseData.setClaimantOtherType(claimantOtherType);
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
         assertNotNull(pdfMap.get(PdfMapperConstants.Q6_GROSS_PAY_MONTHLY));
+        assertNull(pdfMap.get(PdfMapperConstants.Q6_GROSS_PAY_ANNUAL));
+    }
+
+    @Test
+    void givenAnnualPaymentCycleReflectsInMap() {
+        ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
+        claimantOtherType.setClaimantPayCycle("Annual");
+        caseData.setClaimantOtherType(claimantOtherType);
+        Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
+        assertNotNull(pdfMap.get(PdfMapperConstants.Q6_GROSS_PAY_ANNUAL));
     }
 
     @Test
@@ -256,8 +274,19 @@ class PdfMapperServiceTest {
     }
 
     @Test
+    void givenNoticePeriodEndDateAppearsInMap() {
+        ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
+        claimantOtherType.setStillWorking("Notice");
+        claimantOtherType.setClaimantEmployedNoticePeriod("2018-02-05");
+        caseData.setClaimantOtherType(claimantOtherType);
+        Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
+        assertNotNull(pdfMap.get(PdfMapperConstants.Q5_NOT_ENDED));
+    }
+
+    @Test
     void givenNewEmploymentReflectsInMap() {
         NewEmploymentType newEmploymentType = new NewEmploymentType();
+        newEmploymentType.setNewJob("Yes");
         newEmploymentType.setNewlyEmployedFrom("26/09/2022");
         newEmploymentType.setNewPayBeforeTax("50000");
         caseData.setNewEmploymentType(newEmploymentType);
@@ -266,10 +295,20 @@ class PdfMapperServiceTest {
     }
 
     @Test
+    void givenNewEmploymentWithNoNewJobReflectsInMap() {
+        NewEmploymentType newEmploymentType = new NewEmploymentType();
+        newEmploymentType.setNewJob("No");
+        caseData.setNewEmploymentType(newEmploymentType);
+        Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
+        assertNotNull(pdfMap.get(PdfMapperConstants.Q7_OTHER_JOB_NO));
+    }
+
+    @Test
     void givenNoNewEmploymentReflectsInMap() {
         caseData.setNewEmploymentType(null);
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNotNull(pdfMap.get(PdfMapperConstants.Q7_OTHER_JOB_NO));
+        assertNull(pdfMap.get(PdfMapperConstants.Q7_OTHER_JOB_NO));
+        assertNull(pdfMap.get(PdfMapperConstants.Q7_OTHER_JOB_YES));
     }
 
     @Test
@@ -369,6 +408,16 @@ class PdfMapperServiceTest {
     }
 
     @Test
+    void shouldNotThrowWhenDobIsNull() {
+        caseData.getClaimantIndType().setClaimantDateOfBirth(null);
+        Map<String, Optional<String>> pdfFields = pdfMapperService.mapHeadersToPdf(caseData);
+
+        assertNull(pdfFields.get(Q1_DOB_DAY));
+        assertNull(pdfFields.get(Q1_DOB_MONTH));
+        assertNull(pdfFields.get(Q1_DOB_YEAR));
+    }
+
+    @Test
     void shouldSetICanTakePartInNoHearingsWhenVideoAndPhoneNotSelected() {
         CaseData exceptionCaseData = new TestData().getCaseData();
         exceptionCaseData.getClaimantHearingPreference().setHearingPreferences(new ArrayList<>());
@@ -411,6 +460,25 @@ class PdfMapperServiceTest {
     @Test
     void shouldReturnEmptyMapWhenCaseDataIsNull() {
         assertEquals(pdfMapperService.mapHeadersToPdf(null), new ConcurrentHashMap<>());
+    }
+
+    @ParameterizedTest
+    @MethodSource("postcodeArguments")
+    void testFormattingPostcode(String srcPostcode, String expectedPostcode) {
+        assertEquals(expectedPostcode, formatPostcode(srcPostcode));
+    }
+
+    private static Stream<Arguments> postcodeArguments() {
+        return Stream.of(
+            Arguments.of("A7 7AA", "A7  7AA"),
+            Arguments.of("A8  8AA", "A8  8AA"),
+            Arguments.of("A9   9AA", "A9  9AA"),
+            Arguments.of("A99AA", "A9  9AA"),
+            Arguments.of("NG4 4JF", "NG4 4JF"),
+            Arguments.of("NG44JF", "NG4 4JF"),
+            Arguments.of("HU10 6NA", "HU106NA"),
+            Arguments.of("HU106NA", "HU106NA")
+        );
     }
 
     private List<RespondentSumTypeItem> createRespondentList(int count) {

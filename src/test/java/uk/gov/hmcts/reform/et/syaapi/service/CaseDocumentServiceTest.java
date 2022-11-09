@@ -355,16 +355,6 @@ class CaseDocumentServiceTest {
     }
 
     @Test
-    void theUploadDocWhenContentTypeDoesNotMatchActualFileTypeProducesDocException() {
-        CaseDocumentException documentException = assertThrows(
-            CaseDocumentException.class, () -> caseDocumentService.uploadDocument(
-                MOCK_TOKEN, CASE_TYPE, MOCK_FILE_CORRUPT));
-
-        assertThat(documentException.getMessage())
-            .isEqualTo(FILE_DOES_NOT_PASS_VALIDATION);
-    }
-
-    @Test
     void downloadDocumentSuccess() {
         ByteArrayResource mockByteArrayResponse = new ByteArrayResource("test document content".getBytes());
         mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_API_URL_WITH_SLASH + DOCUMENT_ID + "/binary"))
