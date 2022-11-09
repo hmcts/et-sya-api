@@ -63,8 +63,7 @@ public class ManageCaseController {
         @RequestHeader(AUTHORIZATION) String authorization,
         @NotNull @RequestBody CaseRequest caseRequest
     ) {
-        log.info("Received initiate-case request - caseTypeId: {}",
-                 caseRequest.getCaseTypeId());
+        log.info("Received initiate-case request");
 
         var caseDetails = caseService.createCase(authorization, caseRequest);
         return ok(caseDetails);
