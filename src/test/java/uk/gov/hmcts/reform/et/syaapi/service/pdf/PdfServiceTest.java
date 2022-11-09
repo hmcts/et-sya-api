@@ -128,7 +128,7 @@ class PdfServiceTest {
     @Test
     void shouldCreatePdfFile() throws IOException {
         PdfService pdfService1 = new PdfService(new PdfMapperService());
-        pdfService1.pdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE;
+        pdfService1.englishPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE;
         byte[] pdfData = pdfService1.createPdf(testData.getCaseData());
         assertThat(pdfData).isNotEmpty();
         assertThat(new Tika().detect(pdfData)).isEqualTo(PDF_FILE_TIKA_CONTENT_TYPE);

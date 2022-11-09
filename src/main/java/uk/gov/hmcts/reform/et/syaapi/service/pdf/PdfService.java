@@ -32,8 +32,10 @@ import java.util.Optional;
 public class PdfService {
 
     private final PdfMapperService pdfMapperService;
-    @Value("${pdf.source}")
-    public String pdfTemplateSource;
+    @Value("${pdf.english}")
+    public String englishPdfTemplateSource;
+    @Value("${pdf.welsh}")
+    public String welshPdfTemplateSource;
 
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private static final String NOT_FOUND = "not found";
@@ -44,21 +46,21 @@ public class PdfService {
      * @param caseData      The data that is to be converted into pdf
      * @return              a byte array that contains the pdf document.
      */
-    public byte[] convertCaseToPdf(CaseData caseData) throws PdfServiceException {
+    public byte[] convertCaseToPdf(CaseData caseData, String pdfSource) throws PdfServiceException {
         byte[] pdfDocumentBytes;
         try {
-            pdfDocumentBytes = createPdf(caseData);
+            pdfDocumentBytes = createPdf(caseData, pdfSource);
         } catch (IOException ex) {
             throw new PdfServiceException("Failed to convert to PDF", ex);
         }
         return pdfDocumentBytes;
     }
 
-    protected byte[] createPdf(CaseData caseData) throws IOException {
+    protected byte[] createPdf(CaseData caseData, String pdfSource) throws IOException {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        try (InputStream is = cl.getResourceAsStream(this.pdfTemplateSource);
-             PDDocument pdfDocument = Loader.loadPDF(
-                 Objects.requireNonNull(is))) {
+
+        try (PDDocument pdfDocument = Loader.loadPDF(
+            Objects.requireNonNull(cl.getResourceAsStream(pdfSource)))) {
             PDDocumentCatalog pdDocumentCatalog = pdfDocument.getDocumentCatalog();
             PDAcroForm pdfForm = pdDocumentCatalog.getAcroForm();
             for (Map.Entry<String, Optional<String>> entry : this.pdfMapperService.mapHeadersToPdf(caseData)
@@ -80,11 +82,13 @@ public class PdfService {
         }
     }
 
-    private static String createPdfDocumentNameFromCaseData(CaseData caseData) {
+    private static String createPdfDocumentNameFromCaseData(CaseData caseData, String documentLanguage) {
         return "ET1_CASE_DOCUMENT_"
             + caseData.getClaimantIndType().getClaimantFirstNames().replace(" ", "_")
             + "_"
             + caseData.getClaimantIndType().getClaimantLastName().replace(" ", "_")
+            + "_"
+            + documentLanguage
             + ".pdf";
     }
 
@@ -116,13 +120,22 @@ public class PdfService {
             + acasCertificate.getCertificateNumber();
     }
 
-    public PdfDecodedMultipartFile convertCaseDataToPdfDecodedMultipartFile(CaseData caseData)
+    public List<PdfDecodedMultipartFile> convertCaseDataToPdfDecodedMultipartFile(CaseData caseData)
         throws PdfServiceException {
-        byte[] pdfData = convertCaseToPdf(caseData);
-        return new PdfDecodedMultipartFile(pdfData,
-                                           createPdfDocumentNameFromCaseData(caseData),
-                                           PDF_FILE_TIKA_CONTENT_TYPE,
-                                           createPdfDocumentDescriptionFromCaseData(caseData));
+        List<PdfDecodedMultipartFile> files = new ArrayList<>();
+        files.add(new PdfDecodedMultipartFile(convertCaseToPdf(caseData, this.englishPdfTemplateSource),
+                                              createPdfDocumentNameFromCaseData(caseData, "English"),
+                                              PDF_FILE_TIKA_CONTENT_TYPE,
+                                              createPdfDocumentDescriptionFromCaseData(caseData)));
+
+        if(caseData.getClaimantType().getClaimantContactLanguage().equals("Welsh")) {
+            files.add(new PdfDecodedMultipartFile(convertCaseToPdf(caseData, this.welshPdfTemplateSource),
+                                                  createPdfDocumentNameFromCaseData(caseData, "Welsh"),
+                                                  PDF_FILE_TIKA_CONTENT_TYPE,
+                                                  createPdfDocumentDescriptionFromCaseData(caseData)));
+        }
+
+        return files;
     }
 
     public List<PdfDecodedMultipartFile> convertAcasCertificatesToPdfDecodedMultipartFiles(
