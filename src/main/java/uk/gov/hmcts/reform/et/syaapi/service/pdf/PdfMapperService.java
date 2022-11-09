@@ -8,6 +8,7 @@ import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantOtherType;
+import uk.gov.hmcts.et.common.model.ccd.types.ClaimantRequestType;
 import uk.gov.hmcts.et.common.model.ccd.types.NewEmploymentType;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
@@ -635,52 +636,60 @@ public class PdfMapperService {
 
     private Map<String, Optional<String>> printCompensation(CaseData caseData) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
-        if (caseData.getClaimantRequests() != null
-            && caseData.getClaimantRequests().getClaimOutcome() != null
-            && !caseData.getClaimantRequests().getClaimOutcome().isEmpty()) {
-            for (String claimOutcome : caseData.getClaimantRequests().getClaimOutcome()) {
-                switch (claimOutcome) {
-                    case "compensation":
-                        printFields.put(
-                            PdfMapperConstants.Q9_CLAIM_SUCCESSFUL_REQUEST_COMPENSATION,
-                            Optional.of(YES_LOWERCASE)
-                        );
-                        break;
-                    case "tribunal":
-                        printFields.put(
-                            PdfMapperConstants.Q9_CLAIM_SUCCESSFUL_REQUEST_DISCRIMINATION_RECOMMENDATION,
-                            Optional.of(YES_LOWERCASE)
-                        );
-                        break;
-                    case "oldJob":
-                        printFields.put(
-                            PdfMapperConstants.Q9_CLAIM_SUCCESSFUL_REQUEST_OLD_JOB_BACK_AND_COMPENSATION,
-                            Optional.of(YES_LOWERCASE)
-                        );
-                        break;
-                    case "anotherJob":
-                        printFields.put(
-                            PdfMapperConstants.Q9_CLAIM_SUCCESSFUL_REQUEST_ANOTHER_JOB,
-                            Optional.of(YES_LOWERCASE)
-                        );
-                        break;
-                    default:
-                        break;
+
+        ClaimantRequestType claimantRequests = caseData.getClaimantRequests();
+        if (claimantRequests != null) {
+            List<String> claimOutcomes = claimantRequests.getClaimOutcome();
+            if (claimOutcomes != null) {
+                for (String outcome : claimOutcomes) {
+                    switch (outcome) {
+                        case "compensation":
+                            printFields.put(
+                                PdfMapperConstants.Q9_CLAIM_SUCCESSFUL_REQUEST_COMPENSATION,
+                                Optional.of(YES_LOWERCASE)
+                            );
+                            break;
+                        case "tribunal":
+                            printFields.put(
+                                PdfMapperConstants.Q9_CLAIM_SUCCESSFUL_REQUEST_DISCRIMINATION_RECOMMENDATION,
+                                Optional.of(YES_LOWERCASE)
+                            );
+                            break;
+                        case "oldJob":
+                            printFields.put(
+                                PdfMapperConstants.Q9_CLAIM_SUCCESSFUL_REQUEST_OLD_JOB_BACK_AND_COMPENSATION,
+                                Optional.of(YES_LOWERCASE)
+                            );
+                            break;
+                        case "anotherJob":
+                            printFields.put(
+                                PdfMapperConstants.Q9_CLAIM_SUCCESSFUL_REQUEST_ANOTHER_JOB,
+                                Optional.of(YES_LOWERCASE)
+                            );
+                            break;
+                        default:
+                            break;
+                    }
                 }
+
+                printFields.putAll(getCompensationFields(claimantRequests));
             }
-            String claimantCompensationText =
-                caseData.getClaimantRequests().getClaimantCompensationText() == null ? "" :
-                    caseData.getClaimantRequests().getClaimantCompensationText();
-            String claimantCompensationAmount =
-                caseData.getClaimantRequests().getClaimantCompensationAmount() == null ? "" :
-                    caseData.getClaimantRequests().getClaimantCompensationAmount();
-            printFields.put(
-                PdfMapperConstants.Q9_WHAT_COMPENSATION_REMEDY_ARE_YOU_SEEKING,
-                Optional.of(claimantCompensationText + " " + claimantCompensationAmount)
-            );
         }
 
         return printFields;
+    }
+
+    private Map<String, Optional<String>> getCompensationFields(ClaimantRequestType claimantRequests) {
+        String claimantCompensationText = claimantRequests.getClaimantCompensationText();
+        claimantCompensationText = claimantCompensationText == null ? "" : claimantCompensationText;
+
+        String claimantCompensationAmount = claimantRequests.getClaimantCompensationAmount();
+        claimantCompensationAmount = claimantCompensationAmount == null ? "" : claimantCompensationAmount;
+
+        return Map.of(
+            PdfMapperConstants.Q9_WHAT_COMPENSATION_REMEDY_ARE_YOU_SEEKING,
+            Optional.of(claimantCompensationText + "\n£" + claimantCompensationAmount)
+        );
     }
 
     private Map<String, Optional<String>> printWhistleBlowing(CaseData caseData) {
