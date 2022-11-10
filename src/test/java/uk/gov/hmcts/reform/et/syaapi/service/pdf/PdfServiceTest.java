@@ -51,7 +51,7 @@ class PdfServiceTest {
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE = "ET1_0922.pdf";
 
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME_WELSH = "welshPdfTemplateSource";
-    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH = "ET1_0922-welsh.pdf";
+    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH = "ET1_0922.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
 
     private final AcasCertificate acasCertificate = ResourceLoader.fromString(
@@ -92,7 +92,7 @@ class PdfServiceTest {
                                      "dummy_source");
         assertThrows(
             NullPointerException.class,
-            () -> pdfService.convertCaseToPdf(testData.getCaseData(), "English"), "English");
+            () -> pdfService.convertCaseToPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME), "English");
         ReflectionTestUtils.setField(pdfService,
                                      PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
                                      PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
@@ -141,10 +141,26 @@ class PdfServiceTest {
     }
 
     @Test
+    void shouldCreatePdfFileWelsh() throws IOException {
+        PdfService pdfService1 = new PdfService(new PdfMapperService());
+        pdfService1.welshPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH;
+        byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
+        assertThat(pdfData).isNotEmpty();
+        assertThat(new Tika().detect(pdfData)).isEqualTo(PDF_FILE_TIKA_CONTENT_TYPE);
+    }
+
+    @Test
     void shouldCreatePdfDecodedMultipartFileFromCaseData() throws PdfServiceException {
         List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
             pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData());
-        assertThat(pdfDecodedMultipartFileList).isNotNull();
+        assertThat(pdfDecodedMultipartFileList).hasSize(1);
+    }
+    @Test
+    void shouldCreatePdfDecodedMultipartFileFromCaseDataWelsh() throws PdfServiceException {
+        testData.getCaseData().getClaimantType().setClaimantContactLanguage("Welsh");
+        List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData());
+        assertThat(pdfDecodedMultipartFileList).hasSize(2);
     }
 
     @Test
