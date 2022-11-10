@@ -670,13 +670,14 @@ public class PdfMapperService {
             }
             String claimantCompensationText =
                 caseData.getClaimantRequests().getClaimantCompensationText() == null ? "" :
-                    caseData.getClaimantRequests().getClaimantCompensationText();
+                    caseData.getClaimantRequests().getClaimantCompensationText()
+                        + System.lineSeparator() + System.lineSeparator();
             String claimantCompensationAmount =
                 caseData.getClaimantRequests().getClaimantCompensationAmount() == null ? "" :
-                    caseData.getClaimantRequests().getClaimantCompensationAmount();
+                    "£" + caseData.getClaimantRequests().getClaimantCompensationAmount();
             printFields.put(
                 PdfMapperConstants.Q9_WHAT_COMPENSATION_REMEDY_ARE_YOU_SEEKING,
-                Optional.of(claimantCompensationText + " " + claimantCompensationAmount)
+                Optional.of(claimantCompensationText + claimantCompensationAmount)
             );
         }
 
