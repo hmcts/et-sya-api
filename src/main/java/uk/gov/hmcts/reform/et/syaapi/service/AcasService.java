@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -25,6 +26,7 @@ import java.util.regex.Pattern;
  * This provides services to access the ACAS external service for retrieving ACAS Certificate's held in {@link
  * AcasCertificate} objects.
  */
+@Slf4j
 @Service
 public class AcasService {
 
@@ -76,11 +78,21 @@ public class AcasService {
     private List<AcasCertificate> attemptWithRetriesToFetchAcasCertificates(int attempts, String... acasNumbers)
         throws AcasException {
         try {
-            return fetchAcasCertificates(acasNumbers).getBody();
+            List<AcasCertificate> acasCertificates = fetchAcasCertificates(acasNumbers).getBody();
+            log.info("Retrieved AcasCertificates: {} using AcasNumbers: {}",
+                     acasCertificates,
+                     acasNumbers
+            );
+            return acasCertificates;
         } catch (RestClientResponseException e) {
             if (attempts < MAX_ACAS_RETRIES) {
                 return attemptWithRetriesToFetchAcasCertificates(attempts + 1, acasNumbers);
             }
+            log.info("AcasCertificates retrieval for AcasNumbers: {} has failed after {} attempts with " +
+                         "the exception: {}",
+                     acasNumbers,
+                     attempts,
+                     e);
             throw new AcasException("Failed to obtain certificates for acas numbers" + Arrays.toString(acasNumbers), e);
         }
     }
