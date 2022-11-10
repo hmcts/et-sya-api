@@ -33,9 +33,7 @@ public class AssignCaseToLocalOfficeService {
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseRequest.getCaseData());
         List<RespondentSumTypeItem> respondentSumTypeList = caseData.getRespondentCollection();
         String managingOffice = UNASSIGNED_OFFICE;
-        if (caseData.getClaimantWorkAddress() != null
-            && caseData.getClaimantWorkAddress().getClaimantWorkAddress() != null
-            && StringUtils.isNotBlank(caseData.getClaimantWorkAddress().getClaimantWorkAddress().getPostCode())) {
+        if (claimantHasWorkingAddressPostCode(caseData)) {
             managingOffice = getManagingOffice(
                 caseData.getClaimantWorkAddress().getClaimantWorkAddress().getPostCode());
         } else if (!CollectionUtils.isEmpty(respondentSumTypeList)) {
@@ -63,5 +61,11 @@ public class AssignCaseToLocalOfficeService {
             log.info("Failed to find tribunal office : {} ", e.getMessage());
             return UNASSIGNED_OFFICE;
         }
+    }
+
+    private boolean claimantHasWorkingAddressPostCode(CaseData caseData) {
+        return caseData.getClaimantWorkAddress() != null
+            && caseData.getClaimantWorkAddress().getClaimantWorkAddress() != null
+            && StringUtils.isNotBlank(caseData.getClaimantWorkAddress().getClaimantWorkAddress().getPostCode());
     }
 }
