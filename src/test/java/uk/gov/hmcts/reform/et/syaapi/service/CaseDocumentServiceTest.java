@@ -74,7 +74,9 @@ class CaseDocumentServiceTest {
         MOCK_FILE_BODY.getBytes(), "Test OriginalFileName.pdf",    "text/plain",
         "Test Document Description"
     );
-
+    private static final List<PdfDecodedMultipartFile> MOCK_PDF_DECODED_MULTIPART_FILE_LIST = new ArrayList<PdfDecodedMultipartFile>() {{
+        add(MOCK_PDF_DECODED_MULTIPART_FILE);
+    }};
 
     private static final MockMultipartFile MOCK_FILE_INVALID_NAME = new MockMultipartFile(
         "mock_file_with_invalid_name",
@@ -422,7 +424,7 @@ class CaseDocumentServiceTest {
                             .body(MOCK_RESPONSE_WITH_DOCUMENT));
 
         List<PdfDecodedMultipartFile> acasCertificates = new ArrayList<>();
-        caseDocumentService.uploadAllDocuments(MOCK_TOKEN, CASE_TYPE, MOCK_PDF_DECODED_MULTIPART_FILE,
+        caseDocumentService.uploadAllDocuments(MOCK_TOKEN, CASE_TYPE, MOCK_PDF_DECODED_MULTIPART_FILE_LIST,
                                                acasCertificates);
     }
 

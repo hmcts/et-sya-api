@@ -95,7 +95,7 @@ class CaseServiceBootTest {
         when(caseDocumentService.uploadAllDocuments(
             eq(TEST_SERVICE_AUTH_TOKEN),
             eq(testData.getCaseRequest().getCaseTypeId()),
-            any(PdfDecodedMultipartFile.class),
+            anyList(),
             anyList()
         )).thenReturn(testData.getUploadDocumentResponse());
         when(notificationService.sendSubmitCaseConfirmationEmail(

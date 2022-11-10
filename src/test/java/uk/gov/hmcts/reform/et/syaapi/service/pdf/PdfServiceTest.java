@@ -47,8 +47,11 @@ class PdfServiceTest {
     );
 
     private TestData testData;
-    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME = "pdfTemplateSource";
+    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME = "englishPdfTemplateSource";
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE = "ET1_0922.pdf";
+
+    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME_WELSH = "welshPdfTemplateSource";
+    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH = "ET1_0922-welsh.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
 
     private final AcasCertificate acasCertificate = ResourceLoader.fromString(
@@ -67,12 +70,15 @@ class PdfServiceTest {
         ReflectionTestUtils.setField(pdfService,
                                      PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
                                      PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
+        ReflectionTestUtils.setField(pdfService,
+                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME_WELSH,
+                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH);
     }
 
     @Test
     void givenPdfValuesProducesAPdfDocument() throws PdfServiceException, IOException {
         when(pdfMapperService.mapHeadersToPdf(testData.getCaseData())).thenReturn(PDF_VALUES);
-        byte[] pdfBytes = pdfService.convertCaseToPdf(testData.getCaseData());
+        byte[] pdfBytes = pdfService.convertCaseToPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
         try (PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
             Map<String, Optional<String>> actualPdfValues = processPdf(actualPdf);
             PDF_VALUES.forEach((k, v) -> assertThat(actualPdfValues).containsEntry(k, v));
@@ -86,7 +92,7 @@ class PdfServiceTest {
                                      "dummy_source");
         assertThrows(
             NullPointerException.class,
-            () -> pdfService.convertCaseToPdf(testData.getCaseData()));
+            () -> pdfService.convertCaseToPdf(testData.getCaseData(), "English"), "English");
         ReflectionTestUtils.setField(pdfService,
                                      PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
                                      PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
@@ -95,7 +101,7 @@ class PdfServiceTest {
     @Test
     void givenNullValuesProducesDocumentWithoutGivenValues() throws PdfServiceException, IOException {
         when(pdfMapperService.mapHeadersToPdf(testData.getCaseData())).thenReturn(PDF_VALUES_WITH_NULL);
-        byte[] pdfBytes = pdfService.convertCaseToPdf(testData.getCaseData());
+        byte[] pdfBytes = pdfService.convertCaseToPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
         try (PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
             Map<String, Optional<String>> actualPdfValues = processPdf(actualPdf);
             PDF_VALUES_WITH_NULL.forEach((k, v) -> assertThat(actualPdfValues).containsEntry(k, v));
@@ -129,16 +135,16 @@ class PdfServiceTest {
     void shouldCreatePdfFile() throws IOException {
         PdfService pdfService1 = new PdfService(new PdfMapperService());
         pdfService1.englishPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE;
-        byte[] pdfData = pdfService1.createPdf(testData.getCaseData());
+        byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
         assertThat(pdfData).isNotEmpty();
         assertThat(new Tika().detect(pdfData)).isEqualTo(PDF_FILE_TIKA_CONTENT_TYPE);
     }
 
     @Test
     void shouldCreatePdfDecodedMultipartFileFromCaseData() throws PdfServiceException {
-        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+        List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
             pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData());
-        assertThat(pdfDecodedMultipartFile).isNotNull();
+        assertThat(pdfDecodedMultipartFileList).isNotNull();
     }
 
     @Test
