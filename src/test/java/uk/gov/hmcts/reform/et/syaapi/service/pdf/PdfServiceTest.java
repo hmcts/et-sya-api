@@ -51,7 +51,7 @@ class PdfServiceTest {
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE = "ET1_0922.pdf";
 
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME_WELSH = "welshPdfTemplateSource";
-    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH = "ET1_0922.pdf";
+    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH = "CY_ET1_0922.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
 
     private final AcasCertificate acasCertificate = ResourceLoader.fromString(
@@ -140,8 +140,11 @@ class PdfServiceTest {
         assertThat(new Tika().detect(pdfData)).isEqualTo(PDF_FILE_TIKA_CONTENT_TYPE);
     }
 
+
+
     @Test
     void shouldCreatePdfFileWelsh() throws IOException {
+        testData.getCaseData().getClaimantType().setClaimantContactLanguage("Welsh");
         PdfService pdfService1 = new PdfService(new PdfMapperService());
         pdfService1.welshPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH;
         byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
