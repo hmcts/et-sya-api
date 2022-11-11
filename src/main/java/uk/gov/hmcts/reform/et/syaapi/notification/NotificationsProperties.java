@@ -1,10 +1,10 @@
 package uk.gov.hmcts.reform.et.syaapi.notification;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
-
-import javax.validation.constraints.NotEmpty;
 
 /**
  * Holds gov-notify api key and templateId details.
@@ -31,7 +31,7 @@ public class NotificationsProperties {
     private String submitCaseEmailTemplateId;
 
     @Value("${notifications.cySubmitCaseEmailTemplateId}")
-    @NotEmpty
+    @NotBlank
     private String cySubmitCaseEmailTemplateId;
 
     @Value("${notifications.citizenPortalLink}")
