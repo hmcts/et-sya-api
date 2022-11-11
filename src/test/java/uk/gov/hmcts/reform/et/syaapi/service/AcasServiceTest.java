@@ -39,32 +39,26 @@ class AcasServiceTest {
     private static final String ACAS_DEV_API_URL = "https://api-dev-acas-01.azure-api.net/ECCLDev";
     private static final String ACAS_API_KEY = "dummyApiKey";
     private static final String NO_CERTS_JSON = "[]";
-    private static final String ONE_CERT_JSON =
-        "[{\"CertificateNumber\":\"A123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW1...\"}]";
-    private static final String TWO_CERTS_JSON =
-        "[{\"CertificateNumber\":\"AB123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW1...\"}, " +
-            "{\"CertificateNumber\":\"A123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW...\"}]";
-    private static final String THREE_CERTS_JSON =
-        "[{\"CertificateNumber\":\"AB123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW1...\"}, " +
-            "{\"CertificateNumber\":\"A123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW...\"}, " +
-            "{\"CertificateNumber\":\"A123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW...\"}]";
 
-    private static final String FOUR_CERTS_JSON =
-        "[{\"CertificateNumber\":\"AB123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW1...\"}, " +
-            "{\"CertificateNumber\":\"A123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW...\"}, " +
-            "{\"CertificateNumber\":\"A123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW...\"}, " +
-            "{\"CertificateNumber\":\"A123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW...\"}]";
-
-    private static final String FIVE_CERTS_JSON =
-        "[{\"CertificateNumber\":\"AB123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW1...\"}, " +
-            "{\"CertificateNumber\":\"A123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW...\"}, " +
-            "{\"CertificateNumber\":\"A123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW...\"}, " +
-            "{\"CertificateNumber\":\"A123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW...\"}, " +
-            "{\"CertificateNumber\":\"A123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW...\"}]";
+    private static final String CERT_JSON_OBJECT = "{\"CertificateNumber\":\"A123456/12/12\","
+        + "\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW1...\"}";
+    private static final String ONE_CERT_JSON = "[" + CERT_JSON_OBJECT + "]";
+    private static final String TWO_CERTS_JSON = "["
+        + String.join(", ", CERT_JSON_OBJECT, CERT_JSON_OBJECT) + "]";
+    private static final String THREE_CERTS_JSON = "["
+        + String.join(", ", CERT_JSON_OBJECT, CERT_JSON_OBJECT, CERT_JSON_OBJECT) + "]";
+    private static final String FOUR_CERTS_JSON = "["
+        + String.join(", ", CERT_JSON_OBJECT, CERT_JSON_OBJECT, CERT_JSON_OBJECT, CERT_JSON_OBJECT) + "]";
+    private static final String FIVE_CERTS_JSON = "["
+        + String.join(", ", CERT_JSON_OBJECT, CERT_JSON_OBJECT, CERT_JSON_OBJECT, CERT_JSON_OBJECT,
+                      CERT_JSON_OBJECT) + "]";
     public static final String A123 = "A123";
     public static final String Z456 = "Z456";
     public static final String R123456_11_12 = "R123456/11/12";
     public static final String R123456_13_14 = "R123456/13/14";
+    public static final String R600227_21_75 = "R600227/21/75";
+    public static final String R600227_21_76 = "R600227/21/76";
+    public static final String R600227_21_77 = "R600227/21/77";
     private AcasService acasService;
     private RestTemplate restTemplate;
     private TestData testData;
@@ -269,7 +263,7 @@ class AcasServiceTest {
     void theGetAcasCertWithBadApiKeyFirstTimeProducesCertificates()
         throws AcasException, InvalidAcasNumbersException {
         JSONObject expectedBody = new JSONObject();
-        expectedBody.put("certificateNumbers", List.of("R123456/11/12","R123456/13/14"));
+        expectedBody.put("certificateNumbers", List.of(R123456_11_12, R123456_13_14));
         getMockServer().expect(ExpectedCount.times(2), requestTo(ACAS_DEV_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andExpect(r -> {
@@ -289,8 +283,8 @@ class AcasServiceTest {
     void theGetAcasCertificatesByCaseDataProducesTwoAcasCertificates() throws
         AcasException, InvalidAcasNumbersException {
         JSONObject expectedBody = new JSONObject();
-        expectedBody.put("certificateNumbers", List.of("R600227/21/75","R600227/21/76",
-                                                       "R600227/21/77", "R600227/21/77","R600227/21/77"));
+        expectedBody.put("certificateNumbers", List.of(R600227_21_75, R600227_21_76,
+                                                       R600227_21_77, R600227_21_77, R600227_21_77));
 
         getMockServer().expect(ExpectedCount.times(2), requestTo(ACAS_DEV_API_URL))
             .andExpect(method(HttpMethod.POST))
@@ -329,7 +323,7 @@ class AcasServiceTest {
         testData.getCaseData().getRespondentCollection().get(0).setValue(null);
         testData.getCaseData().getRespondentCollection().get(1).setValue(null);
         JSONObject expectedBody = new JSONObject();
-        expectedBody.put("certificateNumbers", List.of("R600227/21/77","R600227/21/77","R600227/21/77"));
+        expectedBody.put("certificateNumbers", List.of(R600227_21_77, R600227_21_77, R600227_21_77));
 
         getMockServer().expect(ExpectedCount.times(2), requestTo(ACAS_DEV_API_URL))
             .andExpect(method(HttpMethod.POST))

@@ -88,8 +88,8 @@ public class AcasService {
             if (attempts < MAX_ACAS_RETRIES) {
                 return attemptWithRetriesToFetchAcasCertificates(attempts + 1, acasNumbers);
             }
-            log.info("AcasCertificates retrieval for AcasNumbers: {} has failed after {} attempts with " +
-                         "the exception: {}",
+            log.info("AcasCertificates retrieval for AcasNumbers: {} has failed after {} attempts with "
+                         + "the exception: {}",
                      acasNumbers,
                      attempts,
                      e);
