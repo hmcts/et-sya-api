@@ -25,6 +25,7 @@ public final class TestConstants {
     public static final String EMAIL_TEST_GMAIL_COM = "test@gmail.com";
     public static final String TEST_FIRST_NAME = "Joe";
     public static final String TEST_SURNAME = "Bloggs";
+    public static final String TEST_NAME = "Name";
     public static final String DUMMY_CASE_TYPE = "Dummy_Case_Type";
     public static final String CASE_ID = "TEST_CASE_ID";
 
