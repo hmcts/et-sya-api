@@ -1,9 +1,10 @@
 package uk.gov.hmcts.reform.et.syaapi.notification;
 
-import javax.validation.constraints.NotBlank;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
+
+import javax.validation.constraints.NotBlank;
 
 /**
  * Holds gov-notify api key and templateId details.
