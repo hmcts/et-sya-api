@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.notification;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
