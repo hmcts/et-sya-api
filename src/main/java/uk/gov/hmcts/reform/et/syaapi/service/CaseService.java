@@ -215,19 +215,19 @@ public class CaseService {
                                                           caseRequest.getCaseTypeId(),
                                                           casePdfFile,
                                                           acasCertificates));
-        String emailTemplateId = WELSH_LANGUAGE.equals(caseData.getClaimantType().getClaimantContactLanguage()) ?
-        notificationsProperties.getCySubmitCaseEmailTemplateId() : notificationsProperties.getSubmitCaseEmailTemplateId() ;
+        String emailTemplateId = WELSH_LANGUAGE.equals(caseData.getClaimantType().getClaimantContactLanguage())
+            ? notificationsProperties.getCySubmitCaseEmailTemplateId()
+            : notificationsProperties.getSubmitCaseEmailTemplateId();
         triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
                      caseDetails.getData());
-            notificationService
-            .sendSubmitCaseConfirmationEmail(
-                emailTemplateId,
-                caseData.getClaimantType().getClaimantEmailAddress(),
-                caseRequest.getCaseId(),
-                caseData.getClaimantIndType().getClaimantFirstNames(),
-                caseData.getClaimantIndType().getClaimantLastName(),
-                caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString(),
-                notificationsProperties.getCitizenPortalLink());
+        notificationService.sendSubmitCaseConfirmationEmail(
+            emailTemplateId,
+            caseData.getClaimantType().getClaimantEmailAddress(),
+            caseRequest.getCaseId(),
+            caseData.getClaimantIndType().getClaimantFirstNames(),
+            caseData.getClaimantIndType().getClaimantLastName(),
+            caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString(),
+            notificationsProperties.getCitizenPortalLink());
         return caseDetails;
     }
 
