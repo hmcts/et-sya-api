@@ -44,7 +44,7 @@ public class PdfService {
      * Converts a {@link CaseData} class object into a pdf document
      * using template (ver. ET1_0922)
      * @param caseData      The data that is to be converted into pdf
-     * @param pdfSource
+     * @param pdfSource     The source location of the PDF file to be used as the template
      * @return              a byte array that contains the pdf document.
      */
     public byte[] convertCaseToPdf(CaseData caseData, String pdfSource) throws PdfServiceException {
@@ -129,7 +129,7 @@ public class PdfService {
                                               PDF_FILE_TIKA_CONTENT_TYPE,
                                               createPdfDocumentDescriptionFromCaseData(caseData)));
 
-        if(caseData.getClaimantType().getClaimantContactLanguage().equals("Welsh")) {
+        if (caseData.getClaimantType().getClaimantContactLanguage().equals("Welsh")) {
             files.add(new PdfDecodedMultipartFile(convertCaseToPdf(caseData, this.welshPdfTemplateSource),
                                                   createPdfDocumentNameFromCaseData(caseData, "Welsh"),
                                                   PDF_FILE_TIKA_CONTENT_TYPE,
