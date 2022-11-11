@@ -30,6 +30,10 @@ public class NotificationsProperties {
     @NotEmpty
     private String submitCaseEmailTemplateId;
 
+    @Value("${notifications.cySubmitCaseEmailTemplateId}")
+    @NotEmpty
+    private String cySubmitCaseEmailTemplateId;
+
     @Value("${notifications.citizenPortalLink}")
     @NotEmpty
     private String citizenPortalLink;
