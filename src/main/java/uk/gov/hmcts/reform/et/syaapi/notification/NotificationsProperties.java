@@ -15,19 +15,19 @@ import org.springframework.validation.annotation.Validated;
 public class NotificationsProperties {
 
     @Value("${notifications.govNotifyApiKey}")
-    @NotEmpty
+    @NotBlank
     private String govNotifyApiKey;
 
     @Value("${notifications.sampleEmailTemplateId}")
-    @NotEmpty
+    @NotBlank
     private String sampleEmailTemplateId;
 
     @Value("${notifications.sampleSubmitCaseEmailTemplateId}")
-    @NotEmpty
+    @NotBlank
     private String sampleSubmitCaseEmailTemplateId;
 
     @Value("${notifications.submitCaseEmailTemplateId}")
-    @NotEmpty
+    @NotBlank
     private String submitCaseEmailTemplateId;
 
     @Value("${notifications.cySubmitCaseEmailTemplateId}")
@@ -35,6 +35,6 @@ public class NotificationsProperties {
     private String cySubmitCaseEmailTemplateId;
 
     @Value("${notifications.citizenPortalLink}")
-    @NotEmpty
+    @NotBlank
     private String citizenPortalLink;
 }
