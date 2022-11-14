@@ -72,6 +72,7 @@ public class CaseService {
     private final PdfService pdfService;
     private final NotificationsProperties notificationsProperties;
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
+    private static final  String WELSH_LANGUAGE = "Welsh";
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
@@ -214,18 +215,19 @@ public class CaseService {
                                                           caseRequest.getCaseTypeId(),
                                                           casePdfFile,
                                                           acasCertificates));
-
+        String emailTemplateId = WELSH_LANGUAGE.equals(caseData.getClaimantType().getClaimantContactLanguage())
+            ? notificationsProperties.getCySubmitCaseEmailTemplateId()
+            : notificationsProperties.getSubmitCaseEmailTemplateId();
         triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
                      caseDetails.getData());
-        notificationService
-            .sendSubmitCaseConfirmationEmail(
-                notificationsProperties.getSubmitCaseEmailTemplateId(),
-                caseData.getClaimantType().getClaimantEmailAddress(),
-                caseRequest.getCaseId(),
-                caseData.getClaimantIndType().getClaimantFirstNames(),
-                caseData.getClaimantIndType().getClaimantLastName(),
-                caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString(),
-                notificationsProperties.getCitizenPortalLink());
+        notificationService.sendSubmitCaseConfirmationEmail(
+            emailTemplateId,
+            caseData.getClaimantType().getClaimantEmailAddress(),
+            caseRequest.getCaseId(),
+            caseData.getClaimantIndType().getClaimantFirstNames(),
+            caseData.getClaimantIndType().getClaimantLastName(),
+            caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString(),
+            notificationsProperties.getCitizenPortalLink());
         return caseDetails;
     }
 
