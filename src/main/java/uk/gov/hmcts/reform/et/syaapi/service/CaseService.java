@@ -206,14 +206,14 @@ public class CaseService {
             log.error("Invalid ACAS numbers", e);
         }
 
-        PdfDecodedMultipartFile casePdfFile =
+        List<PdfDecodedMultipartFile> casePdfFiles =
             pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData);
         caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
         caseDetails.getData().put("documentCollection",
                                   caseDocumentService
                                       .uploadAllDocuments(authorization,
                                                           caseRequest.getCaseTypeId(),
-                                                          casePdfFile,
+                                                          casePdfFiles,
                                                           acasCertificates));
         String emailTemplateId = WELSH_LANGUAGE.equals(caseData.getClaimantType().getClaimantContactLanguage())
             ? notificationsProperties.getCySubmitCaseEmailTemplateId()
