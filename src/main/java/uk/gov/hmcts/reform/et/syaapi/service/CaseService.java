@@ -14,7 +14,10 @@ import org.springframework.util.CollectionUtils;
 import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -41,6 +44,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -51,6 +55,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CASE_FIELD_
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.OTHER_TYPE_OF_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.INITIATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_CASE_DRAFT;
@@ -185,7 +190,6 @@ public class CaseService {
      */
     public CaseDetails submitCase(String authorization, CaseRequest caseRequest)
         throws PdfServiceException, CaseDocumentException {
-
         caseRequest.getCaseData().put("receiptDate", LocalDateTime.now().format(DateTimeFormatter
                                                                                     .ofPattern("yyyy-MM-dd")));
         caseRequest.getCaseData().put("feeGroupReference", caseRequest.getCaseId());
@@ -205,15 +209,17 @@ public class CaseService {
             log.error("Invalid ACAS numbers", e);
         }
 
-        PdfDecodedMultipartFile casePdfFile =
-            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData);
+        PdfDecodedMultipartFile casePdfFile = pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData);
+        List<DocumentTypeItem> documentList = caseDocumentService
+            .uploadAllDocuments(authorization, caseRequest.getCaseTypeId(), casePdfFile, acasCertificates);
+
+        if (caseData.getClaimantRequests().getClaimDescriptionDocument() != null) {
+            documentList.add(createDocumentTypeItem(OTHER_TYPE_OF_DOCUMENT,
+                                                    caseData.getClaimantRequests().getClaimDescriptionDocument()));
+        }
+
         caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
-        caseDetails.getData().put("documentCollection",
-                                  caseDocumentService
-                                      .uploadAllDocuments(authorization,
-                                                          caseRequest.getCaseTypeId(),
-                                                          casePdfFile,
-                                                          acasCertificates));
+        caseDetails.getData().put("documentCollection", documentList);
 
         triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
                      caseDetails.getData());
@@ -363,5 +369,19 @@ public class CaseService {
         List<JurCodesTypeItem> jurCodesTypeItems = jurisdictionCodesMapper.mapToJurCodes(caseData);
         caseData.setJurCodesCollection(jurCodesTypeItems);
     }
+
+    private DocumentTypeItem createDocumentTypeItem(String typeOfDocument, UploadedDocumentType uploadedDoc) {
+        DocumentTypeItem documentTypeItem = new DocumentTypeItem();
+        documentTypeItem.setId(UUID.randomUUID().toString());
+
+        DocumentType documentType = new DocumentType();
+        documentType.setTypeOfDocument(typeOfDocument);
+        documentType.setUploadedDocument(uploadedDoc);
+
+        documentTypeItem.setValue(documentType);
+
+        return documentTypeItem;
+    }
+
 }
 
