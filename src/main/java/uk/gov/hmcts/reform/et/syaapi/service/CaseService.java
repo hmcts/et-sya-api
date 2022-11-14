@@ -72,7 +72,7 @@ public class CaseService {
     private final PdfService pdfService;
     private final NotificationsProperties notificationsProperties;
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
-    private static final  String WELSH_LANGUAGE = "Welsh";
+    private static final String WELSH_LANGUAGE = "Welsh";
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
