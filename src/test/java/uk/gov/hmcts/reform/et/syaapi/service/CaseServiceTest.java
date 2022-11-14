@@ -48,7 +48,6 @@ import java.util.List;
 import static  org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -347,13 +346,13 @@ class CaseServiceTest {
             testData.getCaseRequest()
         );
 
-        assertTrue(((LinkedList)caseDetails.getData().get("documentCollection")).size() == 1);
+        assertEquals(1, ((LinkedList)caseDetails.getData().get("documentCollection")).size());
 
         LinkedList docCollection = (LinkedList) caseDetails.getData().get("documentCollection");
-        assertEquals(((DocumentTypeItem) docCollection.get(0)).getValue().toString(), "DocumentType(typeOfDocument="
+        assertEquals("DocumentType(typeOfDocument="
             + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=https://document.binary.url, documentFilen"
             + "ame=filename, documentUrl=https://document.url), ownerDocument=null, creationDate=null, shortDescription=nu"
-            + "ll)");
+            + "ll)", ((DocumentTypeItem) docCollection.get(0)).getValue().toString());
 
     }
 
