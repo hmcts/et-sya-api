@@ -14,7 +14,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.JurCodesType;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -44,6 +46,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import static  org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
@@ -341,6 +344,8 @@ class CaseServiceTest {
         when(notificationService.sendSubmitCaseConfirmationEmail(any(), any(), any(), any(), any(), any(), any()))
             .thenReturn(sendEmailResponse);
 
+        when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(createDocumentTypeItem());
+
         CaseDetails caseDetails = caseService.submitCase(
             TEST_SERVICE_AUTH_TOKEN,
             testData.getCaseRequest()
@@ -354,6 +359,22 @@ class CaseServiceTest {
             + "ame=filename, documentUrl=https://document.url), ownerDocument=null, creationDate=null, shortDescription=nu"
             + "ll)", ((DocumentTypeItem) docCollection.get(0)).getValue().toString());
 
+    }
+
+    private DocumentTypeItem createDocumentTypeItem() {
+        UploadedDocumentType uploadedDocumentType = new UploadedDocumentType();
+        uploadedDocumentType.setDocumentFilename("filename");
+        uploadedDocumentType.setDocumentUrl("https://document.url");
+        uploadedDocumentType.setDocumentBinaryUrl("https://document.binary.url");
+        DocumentTypeItem documentTypeItem = new DocumentTypeItem();
+        documentTypeItem.setId(UUID.randomUUID().toString());
+
+        DocumentType documentType = new DocumentType();
+        documentType.setTypeOfDocument("Other");
+        documentType.setUploadedDocument(uploadedDocumentType);
+
+        documentTypeItem.setValue(documentType);
+        return documentTypeItem;
     }
 
     @Test

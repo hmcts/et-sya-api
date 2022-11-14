@@ -16,8 +16,6 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
-import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -44,7 +42,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -64,7 +61,7 @@ import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTE
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@SuppressWarnings({"PMD.ExcessiveImports","PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.ExcessiveImports"})
 public class CaseService {
 
     private final AuthTokenGenerator authTokenGenerator;
@@ -214,7 +211,7 @@ public class CaseService {
             .uploadAllDocuments(authorization, caseRequest.getCaseTypeId(), casePdfFile, acasCertificates);
 
         if (caseData.getClaimantRequests().getClaimDescriptionDocument() != null) {
-            documentList.add(createDocumentTypeItem(OTHER_TYPE_OF_DOCUMENT,
+            documentList.add(caseDocumentService.createDocumentTypeItem(OTHER_TYPE_OF_DOCUMENT,
                                                     caseData.getClaimantRequests().getClaimDescriptionDocument()));
         }
 
@@ -368,19 +365,6 @@ public class CaseService {
     private void enrichCaseDataWithJurisdictionCodes(CaseData caseData) {
         List<JurCodesTypeItem> jurCodesTypeItems = jurisdictionCodesMapper.mapToJurCodes(caseData);
         caseData.setJurCodesCollection(jurCodesTypeItems);
-    }
-
-    private DocumentTypeItem createDocumentTypeItem(String typeOfDocument, UploadedDocumentType uploadedDoc) {
-        DocumentTypeItem documentTypeItem = new DocumentTypeItem();
-        documentTypeItem.setId(UUID.randomUUID().toString());
-
-        DocumentType documentType = new DocumentType();
-        documentType.setTypeOfDocument(typeOfDocument);
-        documentType.setUploadedDocument(uploadedDoc);
-
-        documentTypeItem.setValue(documentType);
-
-        return documentTypeItem;
     }
 
 }
