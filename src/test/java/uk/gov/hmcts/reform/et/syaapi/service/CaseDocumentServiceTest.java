@@ -16,6 +16,8 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.et.syaapi.config.interceptors.ResourceNotFoundException;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
@@ -33,6 +35,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
@@ -438,5 +441,20 @@ class CaseDocumentServiceTest {
         acasCertificates.add(MOCK_PDF_DECODED_MULTIPART_FILE);
         caseDocumentService.uploadAllDocuments(MOCK_TOKEN, CASE_TYPE, null,
                                                acasCertificates);
+    }
+
+    @Test
+    void shouldCreateDocumentTypeItem() {
+        UploadedDocumentType uploadedDocumentType = new UploadedDocumentType();
+        uploadedDocumentType.setDocumentFilename("filename");
+        uploadedDocumentType.setDocumentUrl("https://document.url");
+        uploadedDocumentType.setDocumentBinaryUrl("https://document.binary.url");
+
+        String typeOfDocument = "Other";
+        DocumentTypeItem createdDoc = caseDocumentService
+            .createDocumentTypeItem(typeOfDocument, uploadedDocumentType);
+
+        assertEquals(typeOfDocument, createdDoc.getValue().getTypeOfDocument());
+        assertEquals(uploadedDocumentType, createdDoc.getValue().getUploadedDocument());
     }
 }
