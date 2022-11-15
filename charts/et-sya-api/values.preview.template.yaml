@@ -36,3 +36,8 @@ et-sya:
       REDIS_HOST: et-sya-session-storage-aat.redis.cache.windows.net
       ET_SYA_API_HOST: http://{{ .Release.Name }}-et-sya-api
       PCQ_ENABLED: true
+
+idam-pr:
+  redirect_uris:
+    ET Citizen Submit Your Appeal:
+      - https://et-sya-${SERVICE_FQDN}/oauth2/callback

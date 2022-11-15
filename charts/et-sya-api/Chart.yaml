@@ -13,3 +13,6 @@ dependencies:
   - name: et-sya
     version: 0.0.24
     repository: https://hmctspublic.azurecr.io/helm/v1/repo/
+  - name: idam-pr
+    version: 2.2.7
+    repository: https://hmctspublic.azurecr.io/helm/v1/repo/
