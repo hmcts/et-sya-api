@@ -3,10 +3,13 @@ appVersion: "1.0"
 description: A Helm chart for et-sya-api Java API
 name: et-sya-api
 home: https://github.com/hmcts/et-sya-api
-version: 0.0.20
+version: 0.0.21
 maintainers:
   - name: HMCTS et team
 dependencies:
   - name: java
     version: 4.0.1
+    repository: https://hmctspublic.azurecr.io/helm/v1/repo/
+  - name: et-sya
+    version: 0.0.24
     repository: https://hmctspublic.azurecr.io/helm/v1/repo/
