@@ -34,6 +34,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
+@SuppressWarnings({"PMD.TooManyMethods"})
 class PdfServiceTest {
     private static final Map<String, Optional<String>> PDF_VALUES = Map.of(
         PdfMapperConstants.TRIBUNAL_OFFICE, Optional.of("Manchester"),
@@ -67,12 +68,16 @@ class PdfServiceTest {
     @BeforeEach
     void beforeEach() {
         testData = new TestData();
-        ReflectionTestUtils.setField(pdfService,
-                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
-                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
-        ReflectionTestUtils.setField(pdfService,
-                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME_WELSH,
-                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH);
+        ReflectionTestUtils.setField(
+            pdfService,
+            PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
+            PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE
+        );
+        ReflectionTestUtils.setField(
+            pdfService,
+            PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME_WELSH,
+            PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH
+        );
     }
 
     @Test
@@ -87,15 +92,20 @@ class PdfServiceTest {
 
     @Test
     void givenInvalidPdfTemplateProducesException() {
-        ReflectionTestUtils.setField(pdfService,
-                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
-                                     "dummy_source");
+        ReflectionTestUtils.setField(
+            pdfService,
+            PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
+            "dummy_source"
+        );
         assertThrows(
             NullPointerException.class,
-            () -> pdfService.convertCaseToPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME), "English");
-        ReflectionTestUtils.setField(pdfService,
-                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
-                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
+            () -> pdfService.convertCaseToPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME), "English"
+        );
+        ReflectionTestUtils.setField(
+            pdfService,
+            PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
+            PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE
+        );
     }
 
     @Test
@@ -141,7 +151,6 @@ class PdfServiceTest {
     }
 
 
-
     @Test
     void shouldCreatePdfFileWelsh() throws IOException {
         testData.getCaseData().getClaimantType().setClaimantContactLanguage("Welsh");
@@ -158,6 +167,7 @@ class PdfServiceTest {
             pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData());
         assertThat(pdfDecodedMultipartFileList).hasSize(1);
     }
+
     @Test
     void shouldCreatePdfDecodedMultipartFileFromCaseDataWelsh() throws PdfServiceException {
         testData.getCaseData().getClaimantType().setClaimantContactLanguage("Welsh");

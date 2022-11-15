@@ -90,7 +90,7 @@ public class PdfService {
             + caseData.getClaimantIndType().getClaimantFirstNames().replace(" ", "_")
             + "_"
             + caseData.getClaimantIndType().getClaimantLastName().replace(" ", "_")
-            +  (documentLanguage.equals(ENGLISH) ? "" : "_" + documentLanguage)
+            +  (ENGLISH.equals(documentLanguage) ? "" : "_" + documentLanguage)
             + ".pdf";
     }
 
@@ -130,7 +130,7 @@ public class PdfService {
                                               PDF_FILE_TIKA_CONTENT_TYPE,
                                               createPdfDocumentDescriptionFromCaseData(caseData)));
 
-        if (caseData.getClaimantType().getClaimantContactLanguage().equals(WELSH)) {
+        if (WELSH.equals(caseData.getClaimantType().getClaimantContactLanguage())) {
             files.add(new PdfDecodedMultipartFile(convertCaseToPdf(caseData, this.welshPdfTemplateSource),
                                                   createPdfDocumentNameFromCaseData(caseData, WELSH),
                                                   PDF_FILE_TIKA_CONTENT_TYPE,
