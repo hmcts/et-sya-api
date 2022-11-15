@@ -71,10 +71,14 @@ class CaseDocumentServiceTest {
         MOCK_FILE_BODY.getBytes()
     );
     private static final PdfDecodedMultipartFile MOCK_PDF_DECODED_MULTIPART_FILE = new PdfDecodedMultipartFile(
-        MOCK_FILE_BODY.getBytes(), "Test OriginalFileName.pdf",    "text/plain",
+        MOCK_FILE_BODY.getBytes(), "Test OriginalFileName.pdf", "text/plain",
         "Test Document Description"
     );
-
+    private static final List<PdfDecodedMultipartFile> MOCK_PDF_DECODED_MULTIPART_FILE_LIST =
+        new ArrayList<PdfDecodedMultipartFile>() {{
+                add(MOCK_PDF_DECODED_MULTIPART_FILE);
+            }
+        };
 
     private static final MockMultipartFile MOCK_FILE_INVALID_NAME = new MockMultipartFile(
         "mock_file_with_invalid_name",
@@ -131,7 +135,8 @@ class CaseDocumentServiceTest {
         AuthTokenGenerator authTokenGenerator = () -> SERVICE_AUTH;
         caseDocumentService = new CaseDocumentService(restTemplate,
                                                       authTokenGenerator,
-                                                      DOCUMENT_SERVICE_API_URL, 3);
+                                                      DOCUMENT_SERVICE_API_URL, 3
+        );
         mockServer = MockRestServiceServer.createServer(restTemplate);
     }
 
@@ -198,10 +203,12 @@ class CaseDocumentServiceTest {
     void theUploadDocWhenIoExceptionProducesDocException() throws IOException {
         IOException ioException = new IOException("Test throw");
 
-        MockMultipartFile mockMultipartFileSpy = Mockito.spy(new MockMultipartFile("mock_file_spy",
-                                                                                   DOCUMENT_NAME,
-                                                                                   MediaType.TEXT_PLAIN_VALUE,
-                                                                                   "Hello, World!".getBytes()));
+        MockMultipartFile mockMultipartFileSpy = Mockito.spy(new MockMultipartFile(
+            "mock_file_spy",
+            DOCUMENT_NAME,
+            MediaType.TEXT_PLAIN_VALUE,
+            "Hello, World!".getBytes()
+        ));
 
         doThrow(ioException).when(mockMultipartFileSpy).getBytes();
 
@@ -422,8 +429,9 @@ class CaseDocumentServiceTest {
                             .body(MOCK_RESPONSE_WITH_DOCUMENT));
 
         List<PdfDecodedMultipartFile> acasCertificates = new ArrayList<>();
-        caseDocumentService.uploadAllDocuments(MOCK_TOKEN, CASE_TYPE, MOCK_PDF_DECODED_MULTIPART_FILE,
-                                               acasCertificates);
+        caseDocumentService.uploadAllDocuments(MOCK_TOKEN, CASE_TYPE, MOCK_PDF_DECODED_MULTIPART_FILE_LIST,
+                                               acasCertificates
+        );
     }
 
     @Test
@@ -437,6 +445,7 @@ class CaseDocumentServiceTest {
         List<PdfDecodedMultipartFile> acasCertificates = new ArrayList<>();
         acasCertificates.add(MOCK_PDF_DECODED_MULTIPART_FILE);
         caseDocumentService.uploadAllDocuments(MOCK_TOKEN, CASE_TYPE, null,
-                                               acasCertificates);
+                                               acasCertificates
+        );
     }
 }
