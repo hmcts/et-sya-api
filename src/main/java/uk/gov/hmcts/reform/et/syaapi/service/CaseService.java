@@ -219,7 +219,7 @@ public class CaseService {
         String citizenPortalLink = notificationsProperties.getCitizenPortalLink() + "{0}";
         if (WELSH_LANGUAGE.equals(caseData.getClaimantType().getClaimantContactLanguage())) {
             emailTemplateId = notificationsProperties.getCySubmitCaseEmailTemplateId();
-            citizenPortalLink = notificationsProperties.getCitizenPortalLink() + "{0} + /?lng=cy";
+            citizenPortalLink = citizenPortalLink + "/?lng=cy";
         }
         triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
                      caseDetails.getData());
