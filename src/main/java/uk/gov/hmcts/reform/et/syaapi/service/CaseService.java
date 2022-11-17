@@ -215,9 +215,12 @@ public class CaseService {
                                                           caseRequest.getCaseTypeId(),
                                                           casePdfFile,
                                                           acasCertificates));
-        String emailTemplateId = WELSH_LANGUAGE.equals(caseData.getClaimantType().getClaimantContactLanguage())
-            ? notificationsProperties.getCySubmitCaseEmailTemplateId()
-            : notificationsProperties.getSubmitCaseEmailTemplateId();
+        String emailTemplateId = notificationsProperties.getSubmitCaseEmailTemplateId();
+        String citizenPortalLink = notificationsProperties.getCitizenPortalLink();
+        if (WELSH_LANGUAGE.equals(caseData.getClaimantType().getClaimantContactLanguage())) {
+            emailTemplateId = notificationsProperties.getCySubmitCaseEmailTemplateId();
+            citizenPortalLink = notificationsProperties.getCitizenPortalLink() + "?lng=cy/";
+        }
         triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
                      caseDetails.getData());
         notificationService.sendSubmitCaseConfirmationEmail(
@@ -227,7 +230,7 @@ public class CaseService {
             caseData.getClaimantIndType().getClaimantFirstNames(),
             caseData.getClaimantIndType().getClaimantLastName(),
             caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString(),
-            notificationsProperties.getCitizenPortalLink());
+            citizenPortalLink);
         return caseDetails;
     }
 
