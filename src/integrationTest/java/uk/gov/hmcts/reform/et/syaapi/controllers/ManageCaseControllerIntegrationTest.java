@@ -85,7 +85,7 @@ class ManageCaseControllerIntegrationTest {
     @DisplayName("Should get single case details")
     @Test
     void caseDetailsEndpoint() throws Exception {
-        when(ccdApiClient.getCase(any(),any(),any())).thenReturn(caseDetailsResponse);
+        when(ccdApiClient.getCase(any(), any(), any())).thenReturn(caseDetailsResponse);
         CaseRequest caseRequest = CaseRequest.builder()
             .caseId("1646").build();
 
@@ -100,7 +100,7 @@ class ManageCaseControllerIntegrationTest {
     @DisplayName("Should get all case details list by user")
     @Test
     void returnCasesByUserEndpoint() throws Exception {
-        when(ccdApiClient.searchForCitizen(any(),any(),any(),any(),any(),any()))
+        when(ccdApiClient.searchForCitizen(any(), any(), any(), any(), any(), any()))
             .thenReturn(Collections.singletonList(caseDetailsResponse));
 
         mockMvc.perform(get("/cases/user-cases").header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN))
@@ -114,17 +114,17 @@ class ManageCaseControllerIntegrationTest {
         CaseRequest caseRequest = CaseRequest.builder()
             .build();
 
-        when(ccdApiClient.startForCitizen(any(),any(),any(),any(),any(),any()))
+        when(ccdApiClient.startForCitizen(any(), any(), any(), any(), any(), any()))
             .thenReturn(startEventResponse);
 
-        when(ccdApiClient.submitForCitizen(any(),any(),any(),any(),any(),anyBoolean(),any()))
+        when(ccdApiClient.submitForCitizen(any(), any(), any(), any(), any(), anyBoolean(), any()))
             .thenReturn(caseDetailsResponse);
 
         mockMvc.perform(
-            post("/cases/initiate-case")
-                .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(resourceLoader.toJson(caseRequest)))
+                post("/cases/initiate-case")
+                    .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(resourceLoader.toJson(caseRequest)))
             .andExpect(status().isOk())
             .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
     }
@@ -137,9 +137,9 @@ class ManageCaseControllerIntegrationTest {
             .caseId("12")
             .build();
 
-        when(ccdApiClient.startEventForCitizen(any(),any(),any(),any(),any(),any(),any()))
+        when(ccdApiClient.startEventForCitizen(any(), any(), any(), any(), any(), any(), any()))
             .thenReturn(startEventResponse);
-        when(ccdApiClient.submitEventForCitizen(any(),any(),any(),any(),any(),any(),anyBoolean(),any()))
+        when(ccdApiClient.submitEventForCitizen(any(), any(), any(), any(), any(), any(), anyBoolean(), any()))
             .thenReturn(caseDetailsResponse);
 
         mockMvc.perform(
@@ -159,9 +159,9 @@ class ManageCaseControllerIntegrationTest {
             .caseId("12")
             .build();
 
-        when(ccdApiClient.startEventForCitizen(any(),any(),any(),any(),any(),any(),any()))
+        when(ccdApiClient.startEventForCitizen(any(), any(), any(), any(), any(), any(), any()))
             .thenReturn(startEventResponse);
-        when(ccdApiClient.submitEventForCitizen(any(),any(),any(),any(),any(),any(),anyBoolean(),any()))
+        when(ccdApiClient.submitEventForCitizen(any(), any(), any(), any(), any(), any(), anyBoolean(), any()))
             .thenReturn(caseDetailsResponse);
 
         mockMvc.perform(
@@ -181,9 +181,9 @@ class ManageCaseControllerIntegrationTest {
             .caseId("12")
             .build();
 
-        when(ccdApiClient.startEventForCitizen(any(),any(),any(),any(),any(),any(),any()))
+        when(ccdApiClient.startEventForCitizen(any(), any(), any(), any(), any(), any(), any()))
             .thenReturn(startEventResponse);
-        when(ccdApiClient.submitEventForCitizen(any(),any(),any(),any(),any(),any(),anyBoolean(),any()))
+        when(ccdApiClient.submitEventForCitizen(any(), any(), any(), any(), any(), any(), anyBoolean(), any()))
             .thenReturn(caseDetailsResponse);
 
         mockMvc.perform(

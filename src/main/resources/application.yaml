@@ -71,4 +71,5 @@ notifications:
 
 
 pdf:
-  source: "ET1_0922.pdf"
+  english: "ET1_0922.pdf"
+  welsh: "CY_ET1_0922.pdf"
