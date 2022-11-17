@@ -56,7 +56,7 @@ public class NotificationService {
             parameters.put("firstName", firstName);
             parameters.put("lastName", lastName);
             parameters.put("caseNumber", caseNumber);
-            parameters.put("citizenPortalLink", citizenPortalLink + caseNumber);
+            parameters.put("citizenPortalLink", String.format(citizenPortalLink, caseNumber));
             sendEmailResponse = notificationClient.sendEmail(templateId, targetEmail, parameters, reference);
         } catch (NotificationClientException ne) {
             throw new NotificationException(ne);

@@ -216,10 +216,10 @@ public class CaseService {
                                                           casePdfFiles,
                                                           acasCertificates));
         String emailTemplateId = notificationsProperties.getSubmitCaseEmailTemplateId();
-        String citizenPortalLink = notificationsProperties.getCitizenPortalLink();
+        String citizenPortalLink = notificationsProperties.getCitizenPortalLink() + "%s";
         if (WELSH_LANGUAGE.equals(caseData.getClaimantType().getClaimantContactLanguage())) {
             emailTemplateId = notificationsProperties.getCySubmitCaseEmailTemplateId();
-            citizenPortalLink = notificationsProperties.getCitizenPortalLink() + "?lng=cy/";
+            citizenPortalLink = citizenPortalLink + "/?lng=cy";
         }
         triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
                      caseDetails.getData());
