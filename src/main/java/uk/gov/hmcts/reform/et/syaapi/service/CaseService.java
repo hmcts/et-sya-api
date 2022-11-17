@@ -216,7 +216,7 @@ public class CaseService {
                                                           casePdfFiles,
                                                           acasCertificates));
         String emailTemplateId = notificationsProperties.getSubmitCaseEmailTemplateId();
-        String citizenPortalLink = notificationsProperties.getCitizenPortalLink() + "{0}";
+        String citizenPortalLink = notificationsProperties.getCitizenPortalLink() + "%s";
         if (WELSH_LANGUAGE.equals(caseData.getClaimantType().getClaimantContactLanguage())) {
             emailTemplateId = notificationsProperties.getCySubmitCaseEmailTemplateId();
             citizenPortalLink = citizenPortalLink + "/?lng=cy";
