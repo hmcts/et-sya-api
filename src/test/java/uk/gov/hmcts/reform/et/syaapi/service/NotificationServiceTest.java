@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
-import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
@@ -220,13 +219,14 @@ class NotificationServiceTest {
             any(),
             eq(REFERENCE_STRING)
         )).thenReturn(inputSendEmailResponse);
-        SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID,
-                                                            SUBMIT_CASE_CONFIRMATION_TEST_EMAIL,
-                                                            REFERENCE_STRING,
-                                                            SUBMIT_CASE_CONFIRMATION_FIRST_NAME,
-                                                            SUBMIT_CASE_CONFIRMATION_LAST_NAME,
-                                                            SUBMIT_CASE_CONFIRMATION_CASE_NUMBER,
-                                                            CITIZEN_PORTAL_LINK + "/%s/?lng=cy");
+        SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
+            SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID,
+            SUBMIT_CASE_CONFIRMATION_TEST_EMAIL,
+            REFERENCE_STRING,
+            SUBMIT_CASE_CONFIRMATION_FIRST_NAME,
+            SUBMIT_CASE_CONFIRMATION_LAST_NAME,
+            SUBMIT_CASE_CONFIRMATION_CASE_NUMBER,
+            CITIZEN_PORTAL_LINK + "/%s/?lng=cy");
         assertThat(response.getBody()).isEqualTo("Please click here. https://www.gov.uk/log-in-register-hmrc-online-services/123456722/?lng=cy.");
 
     }
