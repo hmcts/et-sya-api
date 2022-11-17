@@ -280,17 +280,19 @@ public class CaseDocumentService {
 
     public List<DocumentTypeItem> uploadAllDocuments(String authToken,
                                                      String caseType,
-                                                     PdfDecodedMultipartFile pdfDecodedMultipartFile,
+                                                     List<PdfDecodedMultipartFile> pdfDecodedMultipartFiles,
                                                      List<PdfDecodedMultipartFile> acasCertificates)
         throws CaseDocumentException {
         List<DocumentTypeItem> documentTypeItems = new ArrayList<>();
-        if (pdfDecodedMultipartFile != null) {
-            documentTypeItems.add(createDocumentTypeItem(
-                authToken,
-                caseType,
-                TYPE_OF_DOCUMENT_ET1_CASE_PDF,
-                pdfDecodedMultipartFile
-            ));
+        if (pdfDecodedMultipartFiles != null) {
+            for (PdfDecodedMultipartFile casePdf : pdfDecodedMultipartFiles) {
+                documentTypeItems.add(createDocumentTypeItem(
+                    authToken,
+                    caseType,
+                    TYPE_OF_DOCUMENT_ET1_CASE_PDF,
+                    casePdf
+                ));
+            }
         }
         if (acasCertificates != null) {
             for (PdfDecodedMultipartFile acasCertificate : acasCertificates) {
