@@ -51,8 +51,6 @@ public class PdfMapperService {
         PREFIX_13_R4,
         PREFIX_13_R5
     };
-
-    private static final String REP_ADDRESS_PREFIX = "11.3 Representative's address:";
     private static final int MULTIPLE_RESPONDENTS = 2;
     private static final int MAX_RESPONDENTS = 5;
     private static final String[] ACAS_PREFIX = {
@@ -218,39 +216,14 @@ public class PdfMapperService {
     }
 
     private Map<String, Optional<String>> printRespondent(RespondentSumType respondent, String questionPrefix) {
-        String respondentTownOrCityPrefix = PdfMapperConstants.RP_POST_TOWN;
-        String respondentHouseNumberPrefix = PdfMapperConstants.QX_HOUSE_NUMBER;
-        if (PREFIX_2_7_R3.equals(questionPrefix)
-            || PREFIX_13_R5.equals(questionPrefix)
-            || PREFIX_13_R4.equals(questionPrefix)
-            || PREFIX_2_2.equals(questionPrefix)) {
-            respondentHouseNumberPrefix = PdfMapperConstants.RP2_HOUSE_NUMBER;
-        }
-        if (PREFIX_2_5_R2.equals(questionPrefix)) {
-            respondentTownOrCityPrefix = PdfMapperConstants.RP2_POST_TOWN;
-            respondentHouseNumberPrefix = PdfMapperConstants.RP2_HOUSE_NUMBER;
-        }
-
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         if (respondent.getRespondentAddress() != null) {
             printFields.put(
-                String.format(respondentHouseNumberPrefix, questionPrefix),
-                ofNullable(respondent.getRespondentAddress().getAddressLine1())
+                String.format(PdfMapperConstants.RESPONDENT_ADDRESS_TEMPLATE, questionPrefix),
+                ofNullable(PdfMapperUtil.convertAddressToString(respondent.getRespondentAddress()))
             );
             printFields.put(
-                String.format(PdfMapperConstants.QX_STREET, questionPrefix),
-                ofNullable(respondent.getRespondentAddress().getAddressLine2())
-            );
-            printFields.put(
-                String.format(respondentTownOrCityPrefix, questionPrefix),
-                ofNullable(respondent.getRespondentAddress().getPostTown())
-            );
-            printFields.put(
-                String.format(PdfMapperConstants.QX_COUNTY, questionPrefix),
-                ofNullable(respondent.getRespondentAddress().getCounty())
-            );
-            printFields.put(
-                String.format(PdfMapperConstants.QX_POSTCODE, questionPrefix),
+                String.format(PdfMapperConstants.RESPONDENT_POSTCODE_TEMPLATE, questionPrefix),
                 ofNullable(formatPostcode(respondent.getRespondentAddress().getPostCode()))
             );
         }
@@ -319,23 +292,11 @@ public class PdfMapperService {
     private Map<String, Optional<String>> printWorkAddress(Address claimantWorkAddress) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         printFields.put(
-            PdfMapperConstants.Q2_DIFFADDRESS_NUMBER,
-            ofNullable(claimantWorkAddress.getAddressLine1())
+            PdfMapperConstants.Q2_4_DIFFERENT_WORK_ADDRESS,
+            ofNullable(PdfMapperUtil.convertAddressToString(claimantWorkAddress))
         );
         printFields.put(
-            PdfMapperConstants.Q2_DIFFADDRESS_STREET,
-            ofNullable(claimantWorkAddress.getAddressLine2())
-        );
-        printFields.put(
-            PdfMapperConstants.Q2_DIFFADDRESS_TOWN,
-            ofNullable(claimantWorkAddress.getPostTown())
-        );
-        printFields.put(
-            PdfMapperConstants.Q2_DIFFADDRESS_COUNTY,
-            ofNullable(claimantWorkAddress.getCounty())
-        );
-        printFields.put(
-            PdfMapperConstants.Q2_DIFFADDRESS_POSTCODE,
+            PdfMapperConstants.Q2_4_DIFFERENT_WORK_POSTCODE,
             ofNullable(formatPostcode(claimantWorkAddress.getPostCode()))
         );
         return printFields;
@@ -720,23 +681,11 @@ public class PdfMapperService {
             Address repAddress = representativeClaimantType.getRepresentativeAddress();
             if (repAddress != null) {
                 printFields.put(
-                    String.format(PdfMapperConstants.QX_HOUSE_NUMBER, REP_ADDRESS_PREFIX),
-                    ofNullable(repAddress.getAddressLine1())
+                    PdfMapperConstants.Q11_3_REPRESENTATIVE_ADDRESS,
+                    ofNullable(PdfMapperUtil.convertAddressToString(repAddress))
                 );
                 printFields.put(
-                    String.format(PdfMapperConstants.QX_STREET, REP_ADDRESS_PREFIX),
-                    ofNullable(repAddress.getAddressLine2())
-                );
-                printFields.put(
-                    String.format(PdfMapperConstants.QX_POST_TOWN, REP_ADDRESS_PREFIX),
-                    ofNullable(repAddress.getPostTown())
-                );
-                printFields.put(
-                    String.format(PdfMapperConstants.QX_COUNTY, REP_ADDRESS_PREFIX),
-                    ofNullable(repAddress.getCounty())
-                );
-                printFields.put(
-                    String.format(PdfMapperConstants.QX_POSTCODE, REP_ADDRESS_PREFIX),
+                    PdfMapperConstants.Q11_3_REPRESENTATIVE_POSTCODE,
                     ofNullable(formatPostcode(repAddress.getPostCode()))
                 );
             }

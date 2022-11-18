@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q1_6_CLAIMANT_ADDRESS;
+import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q1_6_CLAIMANT_POSTCODE;
 
 @SuppressWarnings({"PMD.UseConcurrentHashMap"})
 class PersonalDetailsMapperTest {
@@ -88,8 +90,10 @@ class PersonalDetailsMapperTest {
         Address claimantAddressUK = new Address();
         claimantAddressUK.setAddressLine1("AddressLine1");
         claimantAddressUK.setAddressLine2("AddressLine2");
+        claimantAddressUK.setAddressLine3("AddressLine3");
         claimantAddressUK.setPostTown("PostTown");
         claimantAddressUK.setCounty("County");
+        claimantAddressUK.setCountry("Country");
         claimantAddressUK.setPostCode("SW1A 1AA");
 
         ClaimantType claimantType = new ClaimantType();
@@ -104,16 +108,10 @@ class PersonalDetailsMapperTest {
 
         assertThat(new PersonalDetailsMapper().mapPersonalDetails(caseData)).containsExactlyInAnyOrderEntriesOf(
             Map.of(
-                "1.5 number",
-                   Optional.of("AddressLine1"),
-                "1.5 town city",
-                   Optional.of("PostTown"),
-                "1.5 county",
-                   Optional.of("County"),
-                "1.5 postcode",
-                   Optional.of("SW1A1AA"),
-                "1.5 street",
-                   Optional.of("AddressLine2"),
+                Q1_6_CLAIMANT_ADDRESS,
+                    Optional.of("Addressline1\nAddressline2\nAddressline3\nPosttown\nCounty\nCountry"),
+                Q1_6_CLAIMANT_POSTCODE,
+                   Optional.of("SW1A 1AA"),
                 "1.6 phone number",
                    Optional.of("ClaimantPhoneNumber"),
                 "1.7 mobile number",
