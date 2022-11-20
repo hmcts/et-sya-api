@@ -15,6 +15,8 @@ public final class EtSyaConstants {
 
     public static final String CASE_FIELD_MANAGING_OFFICE = "managingOffice";
 
+    public static final String OTHER_TYPE_OF_DOCUMENT = "Other";
+
     private EtSyaConstants() {
         // restrict instantiation
     }
