@@ -6,20 +6,22 @@ import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.dwp.regex.PostCodeValidator;
 import uk.gov.hmcts.et.common.model.ccd.Address;
 
-import java.util.*;
+import java.util.Locale;
+import java.util.Set;
 
 @Slf4j
 public final class PdfMapperUtil {
 
-    private final static Set<String> UK_COUNTRIES = Set.of("ENGLAND", "SCOTLAND", "NORTHERN IRELAND", "WALES");
+    private static final Set<String> UK_COUNTRIES = Set.of("ENGLAND", "SCOTLAND", "NORTHERN IRELAND", "WALES");
 
     private PdfMapperUtil() {
 
     }
 
-    private static boolean isUKCountry(String countryName) {
+    private static boolean isUkCountry(String countryName) {
         return StringUtils.isEmpty(countryName) || UK_COUNTRIES.contains(countryName);
     }
+
     private static String formatAddressLines(String addressLine) {
         return toCapitalCase(addressLine).trim();
     }
@@ -39,23 +41,23 @@ public final class PdfMapperUtil {
         StringBuilder addressStringValue = new StringBuilder();
 
         if (StringUtils.isNotEmpty(address.getAddressLine1())) {
-            addressStringValue.append(formatAddressLines(address.getAddressLine1())).append(",");
+            addressStringValue.append(formatAddressLines(address.getAddressLine1())).append(',');
         } else {
             return null;
         }
         if (StringUtils.isNotEmpty(address.getAddressLine2())) {
-            addressStringValue.append('\n').append(formatAddressLines(address.getAddressLine2())).append(",");
+            addressStringValue.append('\n').append(formatAddressLines(address.getAddressLine2())).append(',');
         }
         if (StringUtils.isNotEmpty(address.getAddressLine3())) {
-            addressStringValue.append('\n').append(formatAddressLines(address.getAddressLine3())).append(",");
+            addressStringValue.append('\n').append(formatAddressLines(address.getAddressLine3())).append(',');
         }
         if (StringUtils.isNotEmpty(address.getPostTown())) {
-            addressStringValue.append('\n').append(formatAddressLines(address.getPostTown())).append(",");
+            addressStringValue.append('\n').append(formatAddressLines(address.getPostTown())).append(',');
         } else {
             return null;
         }
         if (StringUtils.isNotEmpty(address.getCounty())) {
-            addressStringValue.append('\n').append(formatAddressLines(address.getCounty())).append(",");
+            addressStringValue.append('\n').append(formatAddressLines(address.getCounty())).append(',');
         }
         if (StringUtils.isNotEmpty(address.getCountry())) {
             addressStringValue.append('\n').append(formatAddressLines(address.getCountry()));
@@ -65,9 +67,9 @@ public final class PdfMapperUtil {
         return StringUtils.isNotEmpty(addressStringValue.toString()) ? addressStringValue.toString() : null;
     }
 
-    public static String formatUKPostcode(Address address) {
+    public static String formatUkPostcode(Address address) {
 
-        if (isUKCountry(address.getCountry())) {
+        if (isUkCountry(address.getCountry())) {
             try {
                 PostCodeValidator postCodeValidator = new PostCodeValidator(address.getPostCode());
 

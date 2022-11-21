@@ -221,7 +221,7 @@ public class PdfMapperService {
             );
             printFields.put(
                 String.format(PdfMapperConstants.RESPONDENT_POSTCODE_TEMPLATE, questionPrefix),
-                ofNullable(PdfMapperUtil.formatUKPostcode(respondent.getRespondentAddress()))
+                ofNullable(PdfMapperUtil.formatUkPostcode(respondent.getRespondentAddress()))
             );
         }
 
@@ -294,7 +294,7 @@ public class PdfMapperService {
         );
         printFields.put(
             PdfMapperConstants.Q2_4_DIFFERENT_WORK_POSTCODE,
-            ofNullable(PdfMapperUtil.formatUKPostcode(claimantWorkAddress))
+            ofNullable(PdfMapperUtil.formatUkPostcode(claimantWorkAddress))
         );
         return printFields;
     }
@@ -683,7 +683,7 @@ public class PdfMapperService {
                 );
                 printFields.put(
                     PdfMapperConstants.Q11_3_REPRESENTATIVE_POSTCODE,
-                    ofNullable(PdfMapperUtil.formatUKPostcode(repAddress))
+                    ofNullable(PdfMapperUtil.formatUkPostcode(repAddress))
                 );
             }
 
