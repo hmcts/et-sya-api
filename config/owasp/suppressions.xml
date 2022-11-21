@@ -26,10 +26,6 @@
     <cve>CVE-2022-38750</cve>
   </suppress>
   <suppress>
-    <notes>Suppresses maven/com.fasterxml.jackson.core/jackson-databind@2.13.4 vulnerabilities</notes>
-    <cve>CVE-2022-42003</cve>
-  </suppress>
-  <suppress>
     <notes>Suppresses spring-web-5.3.22.jar</notes>
     <cve>CVE-2016-1000027</cve>
   </suppress>
