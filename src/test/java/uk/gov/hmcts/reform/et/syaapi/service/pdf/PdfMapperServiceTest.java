@@ -33,12 +33,12 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q1_DOB_DAY;
 import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q1_DOB_MONTH;
 import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q1_DOB_YEAR;
-import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q2_DIFFADDRESS_POSTCODE;
+import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q2_4_DIFFERENT_WORK_ADDRESS;
 import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperService.formatPostcode;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class PdfMapperServiceTest {
-    private static final Integer TOTAL_VALUES = 82;
+    private static final Integer TOTAL_VALUES = 70;
     private PdfMapperService pdfMapperService;
     private CaseData caseData;
     private static final String ACAS_PREFIX = "2.3";
@@ -152,7 +152,7 @@ class PdfMapperServiceTest {
         claimantWorkAddressType.setClaimantWorkAddress(claimantAddress);
         caseData.setClaimantWorkAddress(claimantWorkAddressType);
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNotNull(pdfMap.get(Q2_DIFFADDRESS_POSTCODE));
+        assertNotNull(pdfMap.get(Q2_4_DIFFERENT_WORK_ADDRESS));
     }
 
     @Test

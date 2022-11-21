@@ -30,13 +30,13 @@
   },
   "claimantType" : {
     "claimant_addressUK" : {
-      "AddressLine1" : "40 Furrow way",
-      "AddressLine2" : "40 Furrow yolu",
+      "AddressLine1" : "CO-OPERATIVE RETAIL SERVICES LTD, 11, MERRION WAY",
+      "AddressLine2" : null,
       "AddressLine3" : null,
-      "PostTown" : "Maidenhead",
-      "County" : "Berkshire",
-      "PostCode" : "SL6 3NY",
-      "Country" : "United Kingdom"
+      "PostTown" : "LEEDS",
+      "County" : "",
+      "PostCode" : "LS2 8BT",
+      "Country" : "ENGLAND"
     },
     "claimant_phone_number" : "07444518904",
     "claimant_mobile_number" : "07444518903",

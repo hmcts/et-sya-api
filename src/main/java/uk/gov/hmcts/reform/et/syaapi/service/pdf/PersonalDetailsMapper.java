@@ -14,7 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperService.EMAIL;
 import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperService.POST;
-import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperService.formatPostcode;
 
 /**
  * Mapper for personal details on the case data to the ET1 Pdf form.
@@ -39,7 +38,6 @@ public class PersonalDetailsMapper {
         OTHER, "Miz"
     );
 
-    private static final String CLAIMANT_ADDRESS_PREFIX = "1.5";
     private static final String PHONE_NUMBER_PREFIX = "1.6";
 
     public Map<String, Optional<String>> mapPersonalDetails(CaseData caseData) {
@@ -139,26 +137,9 @@ public class PersonalDetailsMapper {
 
         Address claimantAddressUK = claimantType.getClaimantAddressUK();
         if (claimantAddressUK != null) {
-            printFields.put(
-                String.format(PdfMapperConstants.RP2_HOUSE_NUMBER, CLAIMANT_ADDRESS_PREFIX),
-                ofNullable(claimantAddressUK.getAddressLine1())
-            );
-            printFields.put(
-                String.format(PdfMapperConstants.QX_STREET, CLAIMANT_ADDRESS_PREFIX),
-                ofNullable(claimantAddressUK.getAddressLine2())
-            );
-            printFields.put(
-                String.format(PdfMapperConstants.RP_POST_TOWN, CLAIMANT_ADDRESS_PREFIX),
-                ofNullable(claimantAddressUK.getPostTown())
-            );
-            printFields.put(
-                String.format(PdfMapperConstants.QX_COUNTY, CLAIMANT_ADDRESS_PREFIX),
-                ofNullable(claimantAddressUK.getCounty())
-            );
-            printFields.put(
-                String.format(PdfMapperConstants.QX_POSTCODE, CLAIMANT_ADDRESS_PREFIX),
-                ofNullable(formatPostcode(claimantAddressUK.getPostCode()))
-            );
+            printFields.put(PdfMapperConstants.Q1_6_CLAIMANT_ADDRESS,
+                            ofNullable(PdfMapperUtil.convertAddressToString(claimantAddressUK)));
+            printFields.put(PdfMapperConstants.Q1_6_CLAIMANT_POSTCODE, ofNullable(claimantAddressUK.getPostCode()));
         }
 
         printFields.put(

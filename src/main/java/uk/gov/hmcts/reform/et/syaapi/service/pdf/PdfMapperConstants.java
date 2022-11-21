@@ -32,11 +32,8 @@ public final class PdfMapperConstants {
 
     public static final String Q2_EMPLOYER_NAME =       "2.1 Give the name of your employer or the person or "
         + "organisation you are claiming against";
-    public static final String Q2_DIFFADDRESS_NUMBER =  "2.4 Full, different working address - Number or name";
-    public static final String Q2_DIFFADDRESS_STREET =  "2.4 Full, different working address - Street";
-    public static final String Q2_DIFFADDRESS_TOWN =    "2.4 Full, different working address - Town or city";
-    public static final String Q2_DIFFADDRESS_POSTCODE = "2.4 Full, different working address - postcode";
-    public static final String Q2_DIFFADDRESS_COUNTY =  "2.4 Full, different working address - County";
+    public static final String Q2_4_DIFFERENT_WORK_ADDRESS =  "2.4 Full, different working address - Number or name";
+    public static final String Q2_4_DIFFERENT_WORK_POSTCODE = "2.4 Full, different working address - postcode";
     public static final String Q2_OTHER_RESPONDENTS =   "2.5 If there are other respondents please tick this box and "
         + "put their names and addresses here";
     public static final String Q3_MORE_CLAIMS_YES =     "3.1 Are you aware that your claim is one of a number of "
@@ -95,7 +92,7 @@ public final class PdfMapperConstants {
     public static final String Q8_TYPE_OF_DISCRIMINATION_SEXUAL_ORIENTATION = "8.1 sexual orientation";
     public static final String Q8_TYPE_OF_DISCRIMINATION_RELIGION_OR_BELIEF = "8.1 religion or belief";
     public static final String Q8_TYPE_OF_DISCRIMINATION_RACE = "8.1 race";
-    public static final String Q8_TYPE_OF_DISCRIMINATION_DISABILITY = "8.1 disability";
+    public static final String Q8_TYPE_OF_DISCRIMINATION_DISABILITY = "8_1_disability";
     public static final String Q8_TYPE_OF_DISCRIMINATION_MARRIAGE_OR_CIVIL_PARTNERSHIP =
         "8.1 marriage or civil partnership";
     public static final String Q8_TYPE_OF_PAY_CLAIMS_NOTICE_PAY = "8.1 notice pay";
@@ -137,16 +134,13 @@ public final class PdfMapperConstants {
     public static final String Q12_DISABILITY_DETAILS = "12.1 If you have a disability, give details";
     public static final String Q15_ADDITIONAL_INFORMATION = "15 Additional information";
     public static final String QX_NAME =                "%s name";
-    public static final String QX_HOUSE_NUMBER =        "%s number or name";
-    public static final String RP2_HOUSE_NUMBER =        "%s number";
-    public static final String QX_STREET =              "%s street";
-    public static final String RP_POST_TOWN =           "%s town city";
-    public static final String RP2_POST_TOWN =           "%s town";
-    public static final String QX_POST_TOWN =           "%s town or city";
-
-    public static final String QX_COUNTY =              "%s county";
-    public static final String QX_POSTCODE =            "%s postcode";
-    public static final String QX_PHONE_NUMBER =        "%s phone number";
+    public static final String Q11_3_REPRESENTATIVE_ADDRESS     = "11.3 Representative's address: number or name";
+    public static final String Q11_3_REPRESENTATIVE_POSTCODE    = "11.3 Representative's address: postcode";
+    public static final String Q1_6_CLAIMANT_ADDRESS            = "1.5 number";
+    public static final String Q1_6_CLAIMANT_POSTCODE           = "1.5 postcode";
+    public static final String RESPONDENT_ADDRESS_TEMPLATE      = "%s number";
+    public static final String RESPONDENT_POSTCODE_TEMPLATE     = "%s postcode";
+    public static final String QX_PHONE_NUMBER                  = "%s phone number";
     // R1 - "2.3"
     // R2 - "2.6"
     // R3 - "2.8"
