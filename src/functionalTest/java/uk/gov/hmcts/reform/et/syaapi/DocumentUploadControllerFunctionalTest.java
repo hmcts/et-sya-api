@@ -10,7 +10,6 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 
-
 import static org.hamcrest.Matchers.equalTo;
 
 @Slf4j
@@ -40,6 +39,7 @@ class DocumentUploadControllerFunctionalTest extends BaseFunctionalTest {
             .assertThat().body("mimeType", equalTo("text/plain"))
             .assertThat().body("metadata.case_type_id", equalTo(CASE_TYPE));
     }
+
     @Test
     void uploadDocumentShouldReturnBadRequestIfCaseTypeIdDoesntMatch() {
         RestAssured.given()
