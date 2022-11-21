@@ -14,7 +14,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 @Slf4j
 @TestMethodOrder(MethodOrderer.MethodName.class)
-public class DocumentUploadControllerFunctionalTest extends BaseFunctionalTest {
+class DocumentUploadControllerFunctionalTest extends BaseFunctionalTest {
     private static final String CASE_TYPE = "ET_EnglandWales";
     private static final String AUTHORIZATION = "Authorization";
     private static final String DOCUMENT_NAME = "hello.txt";
