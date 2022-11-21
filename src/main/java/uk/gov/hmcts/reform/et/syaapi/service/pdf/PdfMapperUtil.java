@@ -39,19 +39,7 @@ public final class PdfMapperUtil {
     }
 
     /**
-     * Returns a String value which is the formatted value of addressLine
-     * It converts each address line wordings first letter to capital letter
-     * and trims the converted value.
-     * Such as for given a value as 40 FURROW WAY it formats as 40 Furrow Way
-     * @param addressLine Input value of address first line.
-     * @return the formatted adressLine value
-     */
-    private static String formatAddressLines(String addressLine) {
-        return convertFirstCharactersToCapitalCase(addressLine).trim();
-    }
-
-    /**
-     * Returns a String value which is the formatted value of given addressLine
+     * Returns formatted value of given addressLine
      * It converts each address line wordings to capital letters.
      * Such as for given a value as 40 FURROW WAY it formats as 40 Furrow Way
      * @param addressLine Input value of address first line.
@@ -65,7 +53,7 @@ public final class PdfMapperUtil {
             addressLineModified.append(word.substring(0, 1).toUpperCase(Locale.UK))
                 .append(word.substring(1)).append(' ');
         }
-        return addressLineModified.toString();
+        return addressLineModified.toString().trim();
     }
 
     /**
@@ -82,26 +70,35 @@ public final class PdfMapperUtil {
         StringBuilder addressStringValue = new StringBuilder();
 
         if (StringUtils.isNotEmpty(address.getAddressLine1())) {
-            addressStringValue.append(formatAddressLines(address.getAddressLine1())).append(',');
+            addressStringValue.append(convertFirstCharactersToCapitalCase(address.getAddressLine1())).append(',');
         } else {
             return null;
         }
         if (StringUtils.isNotEmpty(address.getAddressLine2())) {
-            addressStringValue.append('\n').append(formatAddressLines(address.getAddressLine2())).append(',');
+            addressStringValue.append('\n')
+                .append(convertFirstCharactersToCapitalCase(address.getAddressLine2()))
+                .append(',');
         }
         if (StringUtils.isNotEmpty(address.getAddressLine3())) {
-            addressStringValue.append('\n').append(formatAddressLines(address.getAddressLine3())).append(',');
+            addressStringValue.append('\n')
+                .append(convertFirstCharactersToCapitalCase(address.getAddressLine3()))
+                .append(',');
         }
         if (StringUtils.isNotEmpty(address.getPostTown())) {
-            addressStringValue.append('\n').append(formatAddressLines(address.getPostTown())).append(',');
+            addressStringValue.append('\n')
+                .append(convertFirstCharactersToCapitalCase(address.getPostTown()))
+                .append(',');
         } else {
             return null;
         }
         if (StringUtils.isNotEmpty(address.getCounty())) {
-            addressStringValue.append('\n').append(formatAddressLines(address.getCounty())).append(',');
+            addressStringValue.append('\n')
+                .append(convertFirstCharactersToCapitalCase(address.getCounty()))
+                .append(',');
         }
         if (StringUtils.isNotEmpty(address.getCountry())) {
-            addressStringValue.append('\n').append(formatAddressLines(address.getCountry()));
+            addressStringValue.append('\n')
+                .append(convertFirstCharactersToCapitalCase(address.getCountry()));
         } else {
             return null;
         }
