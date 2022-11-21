@@ -17,8 +17,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperUtil.formatUkPostcode;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class PdfMapperUtilTest {
@@ -167,18 +165,6 @@ class PdfMapperUtilTest {
 
     private static Stream<Arguments> postcodeArguments() {
         return TestData.postcodeAddressArguments();
-
-    @Test
-    void convertAddressToString() {
-        // Given
-        Address address = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
-        String expectedAddressString = "Co-operative Retail Services Ltd, 11, Merrion Way\n"
-            + "Leeds\n"
-            + "England";
-        // When
-        String actualAddressString = PdfMapperUtil.convertAddressToString(address);
-        // Then
-        assertEquals(actualAddressString, expectedAddressString);
     }
 
 }

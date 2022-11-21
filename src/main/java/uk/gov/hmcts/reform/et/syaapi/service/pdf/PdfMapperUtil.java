@@ -22,13 +22,6 @@ import java.util.Set;
 public final class PdfMapperUtil {
 
     private static final Set<String> UK_COUNTRIES = Set.of("ENGLAND", "SCOTLAND", "NORTHERN IRELAND", "WALES");
-import org.apache.commons.lang3.StringUtils;
-import uk.gov.hmcts.et.common.model.ccd.Address;
-
-import java.util.Locale;
-
-public final class PdfMapperUtil {
-
 
     private PdfMapperUtil() {
 
@@ -53,11 +46,6 @@ public final class PdfMapperUtil {
      * @return the formatted adressLine value
      */
     private static String convertFirstCharactersToCapitalCase(String addressLine) {
-    private static String formatAddressLines(String addressLine) {
-        return toCapitalCase(addressLine).trim();
-    }
-
-    private static String toCapitalCase(String addressLine) {
         String[] addressLineWords = addressLine.toLowerCase(Locale.UK).split(" ");
 
         StringBuilder addressLineModified = new StringBuilder();
@@ -82,34 +70,41 @@ public final class PdfMapperUtil {
         StringBuilder addressStringValue = new StringBuilder();
 
         if (StringUtils.isNotEmpty(address.getAddressLine1())) {
-            addressStringValue.append(convertFirstCharactersToCapitalCase(address.getAddressLine1())).append(',');
+            addressStringValue
+                .append(convertFirstCharactersToCapitalCase(address.getAddressLine1()))
+                .append(',');
         } else {
             return null;
         }
         if (StringUtils.isNotEmpty(address.getAddressLine2())) {
-            addressStringValue.append('\n')
+            addressStringValue
+                .append('\n')
                 .append(convertFirstCharactersToCapitalCase(address.getAddressLine2()))
                 .append(',');
         }
         if (StringUtils.isNotEmpty(address.getAddressLine3())) {
-            addressStringValue.append('\n')
+            addressStringValue
+                .append('\n')
                 .append(convertFirstCharactersToCapitalCase(address.getAddressLine3()))
                 .append(',');
         }
         if (StringUtils.isNotEmpty(address.getPostTown())) {
-            addressStringValue.append('\n')
+            addressStringValue
+                .append('\n')
                 .append(convertFirstCharactersToCapitalCase(address.getPostTown()))
                 .append(',');
         } else {
             return null;
         }
         if (StringUtils.isNotEmpty(address.getCounty())) {
-            addressStringValue.append('\n')
+            addressStringValue
+                .append('\n')
                 .append(convertFirstCharactersToCapitalCase(address.getCounty()))
                 .append(',');
         }
         if (StringUtils.isNotEmpty(address.getCountry())) {
-            addressStringValue.append('\n')
+            addressStringValue
+                .append('\n')
                 .append(convertFirstCharactersToCapitalCase(address.getCountry()));
         } else {
             return null;
@@ -141,30 +136,5 @@ public final class PdfMapperUtil {
         } else {
             return address.getPostCode();
         }
-    }
-        return addressLineModified.toString();
-    }
-
-    public static String convertAddressToString(Address address) {
-        StringBuilder addressStringValue = new StringBuilder();
-        if (StringUtils.isNotEmpty(address.getAddressLine1())) {
-            addressStringValue.append(formatAddressLines(address.getAddressLine1()));
-        }
-        if (StringUtils.isNotEmpty(address.getAddressLine2())) {
-            addressStringValue.append('\n').append(formatAddressLines(address.getAddressLine2()));
-        }
-        if (StringUtils.isNotEmpty(address.getAddressLine3())) {
-            addressStringValue.append('\n').append(formatAddressLines(address.getAddressLine3()));
-        }
-        if (StringUtils.isNotEmpty(address.getPostTown())) {
-            addressStringValue.append('\n').append(formatAddressLines(address.getPostTown()));
-        }
-        if (StringUtils.isNotEmpty(address.getCounty())) {
-            addressStringValue.append('\n').append(formatAddressLines(address.getCounty()));
-        }
-        if (StringUtils.isNotEmpty(address.getCountry())) {
-            addressStringValue.append('\n').append(formatAddressLines(address.getCountry()));
-        }
-        return StringUtils.isNotEmpty(addressStringValue.toString()) ? addressStringValue.toString() : null;
     }
 }
