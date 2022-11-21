@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi;
 
 import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
 import io.restassured.http.Header;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
