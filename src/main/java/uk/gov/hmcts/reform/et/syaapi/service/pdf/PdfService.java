@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -21,8 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 
 /**
@@ -88,7 +87,9 @@ public class PdfService {
         }
     }
 
-    private static String createPdfDocumentNameFromCaseData(CaseData caseData, String documentLanguage, UserInfo userInfo) {
+    private static String createPdfDocumentNameFromCaseData(CaseData caseData,
+                                                            String documentLanguage,
+                                                            UserInfo userInfo) {
 
         String claimantFirstName = caseData.getClaimantIndType().getClaimantFirstNames();
         String claimantLastName = caseData.getClaimantIndType().getClaimantLastName();

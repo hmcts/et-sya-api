@@ -34,6 +34,7 @@ import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -56,7 +57,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CA
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.INITIATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 @Slf4j
 @Service
@@ -229,11 +229,11 @@ public class CaseService {
             emailTemplateId,
             caseData.getClaimantType().getClaimantEmailAddress(),
             caseRequest.getCaseId(),
-            Strings.isNullOrEmpty(caseData.getClaimantIndType().getClaimantFirstNames()) ?
-                userInfo.getGivenName()
+            Strings.isNullOrEmpty(caseData.getClaimantIndType().getClaimantFirstNames())
+                ? userInfo.getGivenName()
                 : caseData.getClaimantIndType().getClaimantFirstNames(),
-            Strings.isNullOrEmpty(caseData.getClaimantIndType().getClaimantLastName()) ?
-                userInfo.getFamilyName()
+            Strings.isNullOrEmpty(caseData.getClaimantIndType().getClaimantLastName())
+                ? userInfo.getFamilyName()
                 : caseData.getClaimantIndType().getClaimantLastName(),
             caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString(),
             citizenPortalLink);

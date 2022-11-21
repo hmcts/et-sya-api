@@ -164,7 +164,7 @@ class PdfServiceTest {
     @Test
     void shouldCreatePdfDecodedMultipartFileFromCaseData() throws PdfServiceException {
         List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
-            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData());
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), null);
         assertThat(pdfDecodedMultipartFileList).hasSize(1);
     }
 
@@ -172,7 +172,7 @@ class PdfServiceTest {
     void shouldCreatePdfDecodedMultipartFileFromCaseDataWelsh() throws PdfServiceException {
         testData.getCaseData().getClaimantType().setClaimantContactLanguage("Welsh");
         List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
-            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData());
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), null);
         assertThat(pdfDecodedMultipartFileList).hasSize(2);
     }
 
