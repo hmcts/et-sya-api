@@ -2,8 +2,6 @@ package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.gov.dwp.regex.InvalidPostcodeException;
-import uk.gov.dwp.regex.PostCodeValidator;
 import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
@@ -20,7 +18,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Optional.ofNullable;
-import static org.apache.commons.lang3.StringUtils.rightPad;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 
@@ -220,11 +217,11 @@ public class PdfMapperService {
         if (respondent.getRespondentAddress() != null) {
             printFields.put(
                 String.format(PdfMapperConstants.RESPONDENT_ADDRESS_TEMPLATE, questionPrefix),
-                ofNullable(PdfMapperUtil.convertAddressToString(respondent.getRespondentAddress()))
+                ofNullable(PdfMapperUtil.formatAddressForTextField(respondent.getRespondentAddress()))
             );
             printFields.put(
                 String.format(PdfMapperConstants.RESPONDENT_POSTCODE_TEMPLATE, questionPrefix),
-                ofNullable(formatPostcode(respondent.getRespondentAddress().getPostCode()))
+                ofNullable(PdfMapperUtil.formatUKPostcode(respondent.getRespondentAddress()))
             );
         }
 
@@ -293,11 +290,11 @@ public class PdfMapperService {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         printFields.put(
             PdfMapperConstants.Q2_4_DIFFERENT_WORK_ADDRESS,
-            ofNullable(PdfMapperUtil.convertAddressToString(claimantWorkAddress))
+            ofNullable(PdfMapperUtil.formatAddressForTextField(claimantWorkAddress))
         );
         printFields.put(
             PdfMapperConstants.Q2_4_DIFFERENT_WORK_POSTCODE,
-            ofNullable(formatPostcode(claimantWorkAddress.getPostCode()))
+            ofNullable(PdfMapperUtil.formatUKPostcode(claimantWorkAddress))
         );
         return printFields;
     }
@@ -682,11 +679,11 @@ public class PdfMapperService {
             if (repAddress != null) {
                 printFields.put(
                     PdfMapperConstants.Q11_3_REPRESENTATIVE_ADDRESS,
-                    ofNullable(PdfMapperUtil.convertAddressToString(repAddress))
+                    ofNullable(PdfMapperUtil.formatAddressForTextField(repAddress))
                 );
                 printFields.put(
                     PdfMapperConstants.Q11_3_REPRESENTATIVE_POSTCODE,
-                    ofNullable(formatPostcode(repAddress.getPostCode()))
+                    ofNullable(PdfMapperUtil.formatUKPostcode(repAddress))
                 );
             }
 
@@ -722,21 +719,5 @@ public class PdfMapperService {
         return new HashMap<>();
     }
 
-    public static String formatPostcode(String postcode) {
-        if (postcode == null) {
-            return null;
-        }
 
-        try {
-            PostCodeValidator postCodeValidator = new PostCodeValidator(postcode);
-
-            String outward = rightPad(postCodeValidator.returnOutwardCode(), 4, ' ');
-            String inward = postCodeValidator.returnInwardCode();
-
-            return outward + inward;
-        } catch (InvalidPostcodeException e) {
-            log.error("Exception occurred when formatting postcode " + postcode, e);
-            return postcode;
-        }
-    }
 }
