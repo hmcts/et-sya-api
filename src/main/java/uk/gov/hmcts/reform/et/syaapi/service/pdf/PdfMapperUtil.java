@@ -45,7 +45,7 @@ public final class PdfMapperUtil {
      * @param addressLine Input value of address first line.
      * @return the formatted adressLine value
      */
-    private static String convertFirstCharactersToCapitalCase(String addressLine) {
+    private static String convertFirstCharactersOfWordsToCapitalCase(String addressLine) {
         String[] addressLineWords = addressLine.toLowerCase(Locale.UK).split(" ");
 
         StringBuilder addressLineModified = new StringBuilder();
@@ -71,7 +71,7 @@ public final class PdfMapperUtil {
 
         if (StringUtils.isNotEmpty(address.getAddressLine1())) {
             addressStringValue
-                .append(convertFirstCharactersToCapitalCase(address.getAddressLine1()))
+                .append(convertFirstCharactersOfWordsToCapitalCase(address.getAddressLine1()))
                 .append(',');
         } else {
             return null;
@@ -79,19 +79,19 @@ public final class PdfMapperUtil {
         if (StringUtils.isNotEmpty(address.getAddressLine2())) {
             addressStringValue
                 .append('\n')
-                .append(convertFirstCharactersToCapitalCase(address.getAddressLine2()))
+                .append(convertFirstCharactersOfWordsToCapitalCase(address.getAddressLine2()))
                 .append(',');
         }
         if (StringUtils.isNotEmpty(address.getAddressLine3())) {
             addressStringValue
                 .append('\n')
-                .append(convertFirstCharactersToCapitalCase(address.getAddressLine3()))
+                .append(convertFirstCharactersOfWordsToCapitalCase(address.getAddressLine3()))
                 .append(',');
         }
         if (StringUtils.isNotEmpty(address.getPostTown())) {
             addressStringValue
                 .append('\n')
-                .append(convertFirstCharactersToCapitalCase(address.getPostTown()))
+                .append(convertFirstCharactersOfWordsToCapitalCase(address.getPostTown()))
                 .append(',');
         } else {
             return null;
@@ -99,13 +99,13 @@ public final class PdfMapperUtil {
         if (StringUtils.isNotEmpty(address.getCounty())) {
             addressStringValue
                 .append('\n')
-                .append(convertFirstCharactersToCapitalCase(address.getCounty()))
+                .append(convertFirstCharactersOfWordsToCapitalCase(address.getCounty()))
                 .append(',');
         }
         if (StringUtils.isNotEmpty(address.getCountry())) {
             addressStringValue
                 .append('\n')
-                .append(convertFirstCharactersToCapitalCase(address.getCountry()));
+                .append(convertFirstCharactersOfWordsToCapitalCase(address.getCountry()));
         } else {
             return null;
         }
