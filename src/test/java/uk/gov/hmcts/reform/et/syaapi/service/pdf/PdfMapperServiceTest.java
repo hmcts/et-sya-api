@@ -30,6 +30,7 @@ import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q1_DO
 import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q1_DOB_MONTH;
 import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q1_DOB_YEAR;
 import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q2_4_DIFFERENT_WORK_ADDRESS;
+import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperService.formatPostcode;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class PdfMapperServiceTest {

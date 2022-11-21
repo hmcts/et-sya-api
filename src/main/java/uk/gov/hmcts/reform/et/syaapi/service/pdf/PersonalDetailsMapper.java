@@ -139,6 +139,7 @@ public class PersonalDetailsMapper {
         if (claimantAddressUK != null) {
             printFields.put(PdfMapperConstants.Q1_6_CLAIMANT_ADDRESS,
                             ofNullable(PdfMapperUtil.formatAddressForTextField(claimantAddressUK)));
+                            ofNullable(PdfMapperUtil.convertAddressToString(claimantAddressUK)));
             printFields.put(PdfMapperConstants.Q1_6_CLAIMANT_POSTCODE, ofNullable(claimantAddressUK.getPostCode()));
         }
 
