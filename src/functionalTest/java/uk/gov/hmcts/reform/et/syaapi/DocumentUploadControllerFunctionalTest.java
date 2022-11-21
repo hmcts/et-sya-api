@@ -10,6 +10,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 
+
 import static org.hamcrest.Matchers.equalTo;
 
 @Slf4j
@@ -29,9 +30,9 @@ class DocumentUploadControllerFunctionalTest extends BaseFunctionalTest {
     @Test
     void uploadDocumentShouldReturnCaseDocument() {
         RestAssured.given()
-            .contentType("multipart/form-data")
+            .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
             .header(new Header(AUTHORIZATION, userToken))
-            .multiPart("document_upload", MOCK_FILE)
+            .multiPart("document_upload", MOCK_FILE, MediaType.TEXT_PLAIN_VALUE)
             .post("/documents/upload/" + CASE_TYPE)
             .then()
             .statusCode(HttpStatus.SC_OK)
@@ -39,13 +40,12 @@ class DocumentUploadControllerFunctionalTest extends BaseFunctionalTest {
             .assertThat().body("mimeType", equalTo("text/plain"))
             .assertThat().body("metadata.case_type_id", equalTo(CASE_TYPE));
     }
-
     @Test
     void uploadDocumentShouldReturnBadRequestIfCaseTypeIdDoesntMatch() {
         RestAssured.given()
-            .contentType("multipart/form-data")
+            .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
             .header(new Header(AUTHORIZATION, userToken))
-            .multiPart("document_upload", MOCK_FILE)
+            .multiPart("document_upload", MOCK_FILE, MediaType.TEXT_PLAIN_VALUE)
             .post("/documents/upload/WrongCaseTypeId")
             .then()
             .statusCode(HttpStatus.SC_BAD_REQUEST)
