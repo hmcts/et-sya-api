@@ -21,7 +21,18 @@ import java.util.Set;
 @Slf4j
 public final class PdfMapperUtil {
 
-    private static final Set<String> UK_COUNTRIES = Set.of("ENGLAND", "SCOTLAND", "NORTHERN IRELAND", "WALES");
+    private static final Set<String> UK_COUNTRY_NAMES = Set.of("ENGLAND",
+                                                               "SCOTLAND",
+                                                               "NORTHERN IRELAND",
+                                                               "NORTHERNIRELAND",
+                                                               "WALES",
+                                                               "UNITED KINGDOM",
+                                                               "UK",
+                                                               "UNITEDKINGDOM",
+                                                               "GB",
+                                                               "GREAT BRITAIN",
+                                                               "GREATBRITAIN",
+                                                               "BRITAIN");
 
     private PdfMapperUtil() {
 
@@ -35,7 +46,10 @@ public final class PdfMapperUtil {
      * @return boolean true when UK, false when not UK country
      */
     private static boolean isUkCountry(String countryName) {
-        return StringUtils.isEmpty(countryName) || UK_COUNTRIES.contains(countryName);
+        return StringUtils.isEmpty(countryName) || UK_COUNTRY_NAMES.contains(countryName
+                                                                                 .replace(" ", "")
+                                                                                 .toUpperCase(Locale.UK)
+                                                                                 .trim());
     }
 
     /**
