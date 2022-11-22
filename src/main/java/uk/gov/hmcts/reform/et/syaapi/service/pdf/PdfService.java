@@ -7,10 +7,12 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
+import org.elasticsearch.common.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -85,11 +87,22 @@ public class PdfService {
         }
     }
 
-    private static String createPdfDocumentNameFromCaseData(CaseData caseData, String documentLanguage) {
+    private static String createPdfDocumentNameFromCaseData(CaseData caseData,
+                                                            String documentLanguage,
+                                                            UserInfo userInfo) {
+
+        String claimantFirstName = caseData.getClaimantIndType().getClaimantFirstNames();
+        String claimantLastName = caseData.getClaimantIndType().getClaimantLastName();
+        if (Strings.isNullOrEmpty(claimantFirstName)) {
+            claimantFirstName = userInfo.getGivenName();
+        }
+        if (Strings.isNullOrEmpty(claimantLastName)) {
+            claimantLastName = userInfo.getFamilyName();
+        }
         return "ET1_CASE_DOCUMENT_"
-            + caseData.getClaimantIndType().getClaimantFirstNames().replace(" ", "_")
+            + claimantFirstName.replace(" ", "_")
             + "_"
-            + caseData.getClaimantIndType().getClaimantLastName().replace(" ", "_")
+            + claimantLastName.replace(" ", "_")
             +  (ENGLISH.equals(documentLanguage) ? "" : "_" + documentLanguage)
             + ".pdf";
     }
@@ -122,17 +135,17 @@ public class PdfService {
             + acasCertificate.getCertificateNumber();
     }
 
-    public List<PdfDecodedMultipartFile> convertCaseDataToPdfDecodedMultipartFile(CaseData caseData)
+    public List<PdfDecodedMultipartFile> convertCaseDataToPdfDecodedMultipartFile(CaseData caseData, UserInfo userInfo)
         throws PdfServiceException {
         List<PdfDecodedMultipartFile> files = new ArrayList<>();
         files.add(new PdfDecodedMultipartFile(convertCaseToPdf(caseData, this.englishPdfTemplateSource),
-                                              createPdfDocumentNameFromCaseData(caseData, ENGLISH),
+                                              createPdfDocumentNameFromCaseData(caseData, ENGLISH, userInfo),
                                               PDF_FILE_TIKA_CONTENT_TYPE,
                                               createPdfDocumentDescriptionFromCaseData(caseData)));
 
         if (WELSH.equals(caseData.getClaimantType().getClaimantContactLanguage())) {
             files.add(new PdfDecodedMultipartFile(convertCaseToPdf(caseData, this.welshPdfTemplateSource),
-                                                  createPdfDocumentNameFromCaseData(caseData, WELSH),
+                                                  createPdfDocumentNameFromCaseData(caseData, WELSH, userInfo),
                                                   PDF_FILE_TIKA_CONTENT_TYPE,
                                                   createPdfDocumentDescriptionFromCaseData(caseData)));
         }
