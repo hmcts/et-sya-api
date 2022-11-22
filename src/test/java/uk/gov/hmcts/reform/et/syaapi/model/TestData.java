@@ -146,6 +146,18 @@ public final class TestData {
         address10.setCountry("Turkey");
         address10.setPostCode("34730");
 
+        Address address11 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        address11.setCountry("United kingdom");
+        address11.setPostCode("AB111AB");
+
+        Address address12 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        address12.setCountry(null);
+        address12.setPostCode("AB121AB");
+
+        Address address13 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        address13.setCountry("");
+        address13.setPostCode("AB131AB");
+
         return Stream.of(
             Arguments.of("A1 1AA", address1),
             Arguments.of("A2 2AA", address2),
@@ -156,7 +168,10 @@ public final class TestData {
             Arguments.of("HU10 7NA", address7),
             Arguments.of("HU10 8NA", address8),
             Arguments.of("HU10 9NA", address9),
-            Arguments.of("34730", address10)
+            Arguments.of("34730", address10),
+            Arguments.of("AB11 1AB", address11),
+            Arguments.of("AB12 1AB", address12),
+            Arguments.of("AB13 1AB", address13)
         );
 
     }
