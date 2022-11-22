@@ -109,7 +109,7 @@ class PersonalDetailsMapperTest {
         assertThat(new PersonalDetailsMapper().mapPersonalDetails(caseData)).containsExactlyInAnyOrderEntriesOf(
             Map.of(
                 Q1_6_CLAIMANT_ADDRESS,
-                    Optional.of("Addressline1\nAddressline2\nAddressline3\nPosttown\nCounty\nCountry"),
+                    Optional.of("Addressline1,\nAddressline2,\nAddressline3,\nPosttown,\nCounty,\nCountry"),
                 Q1_6_CLAIMANT_POSTCODE,
                    Optional.of("SW1A 1AA"),
                 "1.6 phone number",

@@ -138,8 +138,9 @@ public class PersonalDetailsMapper {
         Address claimantAddressUK = claimantType.getClaimantAddressUK();
         if (claimantAddressUK != null) {
             printFields.put(PdfMapperConstants.Q1_6_CLAIMANT_ADDRESS,
-                            ofNullable(PdfMapperUtil.convertAddressToString(claimantAddressUK)));
-            printFields.put(PdfMapperConstants.Q1_6_CLAIMANT_POSTCODE, ofNullable(claimantAddressUK.getPostCode()));
+                            ofNullable(PdfMapperUtil.formatAddressForTextField(claimantAddressUK)));
+            printFields.put(PdfMapperConstants.Q1_6_CLAIMANT_POSTCODE,
+                            ofNullable(PdfMapperUtil.formatUkPostcode(claimantAddressUK)));
         }
 
         printFields.put(
