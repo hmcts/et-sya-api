@@ -38,12 +38,12 @@ class DocumentControllerFunctionalTest extends BaseFunctionalTest {
             .header(new Header(AUTHORIZATION, userToken))
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .when()
-            .get("/document/download/" + retrieveUploadedFileId())
+            .get("/document/details/" + retrieveUploadedFileId())
             .then()
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
             .assertThat().body("mimeType", equalTo("text/plain"))
-            .assertThat().body("metadata.originalDocumentName", equalTo(UPLOAD_TEST_FILE.getName()));
+            .assertThat().body("originalDocumentName", equalTo(UPLOAD_TEST_FILE.getName()));
     }
 
     private String retrieveUploadedFileId() {
