@@ -37,7 +37,6 @@ import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.et.syaapi.utils.TestConstants;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.service.notify.SendEmailResponse;
 
@@ -49,7 +48,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
-import static  org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -284,9 +283,10 @@ class CaseServiceTest {
     void shouldAddSupportingDocumentToDocumentCollection() throws CaseDocumentException, PdfServiceException,
         AcasException, InvalidAcasNumbersException {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
             USER_ID,
-            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
+            TEST_NAME,
             testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
             testData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
