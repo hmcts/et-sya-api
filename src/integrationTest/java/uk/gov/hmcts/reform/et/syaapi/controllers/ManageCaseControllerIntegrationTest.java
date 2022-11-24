@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.File;
 import java.io.IOException;
@@ -79,7 +79,7 @@ class ManageCaseControllerIntegrationTest {
     void setUpBeforeEach() {
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(authTokenGenerator.generate()).thenReturn("token");
-        when(idamClient.getUserDetails(any())).thenReturn(UserDetails.builder().id("1234").build());
+        when(idamClient.getUserInfo(any())).thenReturn(UserInfo.builder().uid("1234").build());
     }
 
     @DisplayName("Should get single case details")
