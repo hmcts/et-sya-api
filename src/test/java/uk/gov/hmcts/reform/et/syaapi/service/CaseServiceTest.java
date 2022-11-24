@@ -9,10 +9,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.JurCodesType;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -27,14 +31,21 @@ import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.et.syaapi.utils.TestConstants;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import static  org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
@@ -45,6 +56,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.USER_ID;
 
@@ -63,6 +75,16 @@ class CaseServiceTest {
     private IdamClient idamClient;
     @Mock
     private JurisdictionCodesMapper jurisdictionCodesMapper;
+    @Mock
+    private PdfService pdfService;
+    @Mock
+    private AcasService acasService;
+    @Mock
+    private CaseDocumentService caseDocumentService;
+    @Mock
+    private NotificationService notificationService;
+    @Spy
+    private NotificationsProperties notificationsProperties;
     @InjectMocks
     private CaseService caseService;
     private final TestData testData;
@@ -92,9 +114,10 @@ class CaseServiceTest {
     @Test
     void shouldGetAllUserCases() {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
             USER_ID,
-            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
+            TEST_NAME,
             testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
             testData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
@@ -116,9 +139,10 @@ class CaseServiceTest {
     @Test
     void shouldGetAllUserCasesDifferentCaseType() {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
             USER_ID,
-            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
+            TEST_NAME,
             testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
             testData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
@@ -151,9 +175,10 @@ class CaseServiceTest {
     void shouldCreateNewDraftCaseInCcd() {
 
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
             USER_ID,
-            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
+            TEST_NAME,
             testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
             testData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
@@ -191,9 +216,10 @@ class CaseServiceTest {
     @Test
     void shouldStartUpdateCaseInCcd() {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
             USER_ID,
-            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
+            TEST_NAME,
             testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
             testData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
@@ -223,9 +249,10 @@ class CaseServiceTest {
     @Test
     void shouldSubmitUpdateCaseInCcd() {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
             USER_ID,
-            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
+            TEST_NAME,
             testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
             testData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
@@ -249,6 +276,110 @@ class CaseServiceTest {
         );
 
         assertEquals(caseDetails, testData.getExpectedDetails());
+    }
+
+    @Test
+    void shouldAddSupportingDocumentToDocumentCollection() throws CaseDocumentException, PdfServiceException,
+        AcasException, InvalidAcasNumbersException {
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+            USER_ID,
+            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
+            testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
+            testData.getCaseData().getClaimantIndType().getClaimantLastName(),
+            null
+        ));
+
+        testData.getCaseRequest().setCaseId("1668421480426211");
+        when(ccdApiClient.submitEventForCitizen(
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(USER_ID),
+            eq(EtSyaConstants.JURISDICTION_ID),
+            eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
+            any(String.class),
+            eq(true),
+            any(CaseDataContent.class)
+        )).thenReturn(testData.getExpectedDetails());
+
+        when(ccdApiClient.startEventForCitizen(
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(USER_ID),
+            eq(EtSyaConstants.JURISDICTION_ID),
+            eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
+            any(String.class),
+            any(String.class)
+        )).thenReturn(testData.getStartEventResponse());
+
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            new PdfDecodedMultipartFile(
+                new byte[0],
+                "test",
+                "test",
+                "test");
+
+        when(pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(any(), any()))
+            .thenReturn(Arrays.asList(pdfDecodedMultipartFile));
+
+        when(pdfService.convertCaseDataToPdfDecodedMultipartFile(any()))
+            .thenReturn(pdfDecodedMultipartFile);
+
+        when(acasService.getAcasCertificatesByCaseData(any())).thenReturn(Arrays.asList());
+
+        when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any()))
+            .thenReturn(new LinkedList<>());
+
+        SendEmailResponse sendEmailResponse
+            = new SendEmailResponse("{\n"
+                                        + "  \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
+                                        + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
+                                        + "  \"template\": {\n"
+                                        + "    \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
+                                        + "    \"version\": \"3\",\n"
+                                        + "    \"uri\": \"TEST\"\n"
+                                        + "  },\n"
+                                        + "  \"content\": {\n"
+                                        + "    \"body\": \"Dear test, Please see your detail as 123456789. Regards, "
+                                        + "ET Team.\",\n"
+                                        + "    \"subject\": \"ET Test email created\",\n"
+                                        + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
+                                        + "  }\n"
+                                        + "}\n");
+        when(notificationService.sendSubmitCaseConfirmationEmail(any(), any(), any(), any(), any(), any(), any()))
+            .thenReturn(sendEmailResponse);
+
+        when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(createDocumentTypeItem());
+
+        CaseDetails caseDetails = caseService.submitCase(
+            TEST_SERVICE_AUTH_TOKEN,
+            testData.getCaseRequest()
+        );
+
+        assertEquals(1, ((LinkedList)caseDetails.getData().get("documentCollection")).size());
+
+        LinkedList docCollection = (LinkedList) caseDetails.getData().get("documentCollection");
+        assertEquals("DocumentType(typeOfDocument="
+            + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=https://document.binary.url, documentFilen"
+            + "ame=filename, documentUrl=https://document.url), ownerDocument=null, creationDate=null, shortDescription=nu"
+            + "ll)", ((DocumentTypeItem) docCollection.get(0)).getValue().toString());
+
+    }
+
+    private DocumentTypeItem createDocumentTypeItem() {
+        UploadedDocumentType uploadedDocumentType = new UploadedDocumentType();
+        uploadedDocumentType.setDocumentFilename("filename");
+        uploadedDocumentType.setDocumentUrl("https://document.url");
+        uploadedDocumentType.setDocumentBinaryUrl("https://document.binary.url");
+        DocumentTypeItem documentTypeItem = new DocumentTypeItem();
+        documentTypeItem.setId(UUID.randomUUID().toString());
+
+        DocumentType documentType = new DocumentType();
+        documentType.setTypeOfDocument("Other");
+        documentType.setUploadedDocument(uploadedDocumentType);
+
+        documentTypeItem.setValue(documentType);
+        return documentTypeItem;
     }
 
     @Test
@@ -405,9 +536,10 @@ class CaseServiceTest {
             .build();
 
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
             USER_ID,
-            TestConstants.EMAIL_TEST_GMAIL_COM,
+            TEST_NAME,
             TestConstants.TEST_FIRST_NAME,
             TestConstants.TEST_SURNAME,
             null
