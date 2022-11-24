@@ -466,4 +466,19 @@ class CaseDocumentServiceTest {
         assertEquals(typeOfDocument, createdDoc.getValue().getTypeOfDocument());
         assertEquals(uploadedDocumentType, createdDoc.getValue().getUploadedDocument());
     }
+
+    @Test
+    void shouldCreateDocumentTypeItem() {
+        UploadedDocumentType uploadedDocumentType = new UploadedDocumentType();
+        uploadedDocumentType.setDocumentFilename("filename");
+        uploadedDocumentType.setDocumentUrl("https://document.url");
+        uploadedDocumentType.setDocumentBinaryUrl("https://document.binary.url");
+
+        String typeOfDocument = "Other";
+        DocumentTypeItem createdDoc = caseDocumentService
+            .createDocumentTypeItem(typeOfDocument, uploadedDocumentType);
+
+        assertEquals(typeOfDocument, createdDoc.getValue().getTypeOfDocument());
+        assertEquals(uploadedDocumentType, createdDoc.getValue().getUploadedDocument());
+    }
 }
