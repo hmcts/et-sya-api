@@ -208,9 +208,11 @@ public class CaseService {
             log.error("Invalid ACAS numbers", e);
         }
 
-        PdfDecodedMultipartFile casePdfFile = pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData);
+        UserInfo userInfo = idamClient.getUserInfo(authorization);
+        List<PdfDecodedMultipartFile> casePdfFiles =
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData, userInfo);
         List<DocumentTypeItem> documentList = caseDocumentService
-            .uploadAllDocuments(authorization, caseRequest.getCaseTypeId(), casePdfFile, acasCertificates);
+            .uploadAllDocuments(authorization, caseRequest.getCaseTypeId(), casePdfFiles, acasCertificates);
 
         if (caseData.getClaimantRequests().getClaimDescriptionDocument() != null) {
             documentList.add(caseDocumentService.createDocumentTypeItem(OTHER_TYPE_OF_DOCUMENT,
@@ -220,6 +222,12 @@ public class CaseService {
         caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
         caseDetails.getData().put("documentCollection", documentList);
 
+        String emailTemplateId = notificationsProperties.getSubmitCaseEmailTemplateId();
+        String citizenPortalLink = notificationsProperties.getCitizenPortalLink() + "%s";
+        if (WELSH_LANGUAGE.equals(caseData.getClaimantType().getClaimantContactLanguage())) {
+            emailTemplateId = notificationsProperties.getCySubmitCaseEmailTemplateId();
+            citizenPortalLink = citizenPortalLink + "/?lng=cy";
+        }
         triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
                      caseDetails.getData());
         notificationService.sendSubmitCaseConfirmationEmail(
