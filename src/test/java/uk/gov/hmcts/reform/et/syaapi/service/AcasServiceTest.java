@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
+import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -18,7 +18,9 @@ import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,17 +36,28 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 class AcasServiceTest {
 
     private static final String ACAS_DEV_API_URL = "https://api-dev-acas-01.azure-api.net/ECCLDev";
-    private static final String ACAS_API_KEY = "ecd18c987120415b95f60b844e6730ef";
+    private static final String ACAS_API_KEY = "dummyApiKey";
     private static final String NO_CERTS_JSON = "[]";
-    private static final String ONE_CERT_JSON =
-        "[{\"CertificateNumber\":\"A123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW1...\"}]";
-    private static final String TWO_CERTS_JSON =
-        "[{\"CertificateNumber\":\"AB123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW1...\"},"
-            + "{\"CertificateNumber\":\"A123456/12/12\",\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW...\"}]";
+
+    private static final String CERT_JSON_OBJECT = "{\"CertificateNumber\":\"A123456/12/12\","
+        + "\"CertificateDocument\":\"JVBERi0xLjcNCiW1tbW1...\"}";
+    private static final String ONE_CERT_JSON = "[" + CERT_JSON_OBJECT + "]";
+    private static final String TWO_CERTS_JSON = "["
+        + String.join(", ", CERT_JSON_OBJECT, CERT_JSON_OBJECT) + "]";
+    private static final String THREE_CERTS_JSON = "["
+        + String.join(", ", CERT_JSON_OBJECT, CERT_JSON_OBJECT, CERT_JSON_OBJECT) + "]";
+    private static final String FOUR_CERTS_JSON = "["
+        + String.join(", ", CERT_JSON_OBJECT, CERT_JSON_OBJECT, CERT_JSON_OBJECT, CERT_JSON_OBJECT) + "]";
+    private static final String FIVE_CERTS_JSON = "["
+        + String.join(", ", CERT_JSON_OBJECT, CERT_JSON_OBJECT, CERT_JSON_OBJECT, CERT_JSON_OBJECT,
+                      CERT_JSON_OBJECT) + "]";
     public static final String A123 = "A123";
     public static final String Z456 = "Z456";
     public static final String R123456_11_12 = "R123456/11/12";
     public static final String R123456_13_14 = "R123456/13/14";
+    public static final String R600227_21_75 = "R600227/21/75";
+    public static final String R600227_21_76 = "R600227/21/76";
+    public static final String R600227_21_77 = "R600227/21/77";
     private AcasService acasService;
     private RestTemplate restTemplate;
     private TestData testData;
@@ -248,8 +261,14 @@ class AcasServiceTest {
     @Test
     void theGetAcasCertWithBadApiKeyFirstTimeProducesCertificates()
         throws AcasException, InvalidAcasNumbersException {
+        JSONObject expectedBody = new JSONObject();
+        expectedBody.put("certificateNumbers", List.of(R123456_11_12, R123456_13_14));
         getMockServer().expect(ExpectedCount.times(2), requestTo(ACAS_DEV_API_URL))
             .andExpect(method(HttpMethod.POST))
+            .andExpect(r -> {
+                String requestBody = ((ByteArrayOutputStream) r.getBody()).toString(StandardCharsets.UTF_8);
+                assertThat(requestBody).isEqualTo(expectedBody.toString());
+            })
             .andRespond(new DelegateResponseCreator(withStatus(HttpStatus.UNAUTHORIZED),
                                                     withStatus(HttpStatus.OK)
                                                         .contentType(MediaType.APPLICATION_JSON)
@@ -259,9 +278,22 @@ class AcasServiceTest {
     }
 
     @Test
-    @Disabled("Awaiting to be refactored")
     void theGetAcasCertificatesByCaseDataProducesTwoAcasCertificates() throws
         AcasException, InvalidAcasNumbersException {
+        JSONObject expectedBody = new JSONObject();
+        expectedBody.put("certificateNumbers", List.of(R600227_21_75, R600227_21_76,
+                                                       R600227_21_77, R600227_21_77, R600227_21_77));
+
+        getMockServer().expect(ExpectedCount.times(2), requestTo(ACAS_DEV_API_URL))
+            .andExpect(method(HttpMethod.POST))
+            .andExpect(r -> {
+                String requestBody = ((ByteArrayOutputStream) r.getBody()).toString(StandardCharsets.UTF_8);
+                assertThat(requestBody).isEqualTo(expectedBody.toString());
+            })
+            .andRespond(new DelegateResponseCreator(withStatus(HttpStatus.UNAUTHORIZED),
+                                                    withStatus(HttpStatus.OK)
+                                                        .contentType(MediaType.APPLICATION_JSON)
+                                                        .body(FIVE_CERTS_JSON)));
         List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(testData.getCaseData());
         assertThat(acasCertificates).hasSize(5);
     }
@@ -288,7 +320,21 @@ class AcasServiceTest {
         AcasException, InvalidAcasNumbersException {
         testData.getCaseData().getRespondentCollection().get(0).setValue(null);
         testData.getCaseData().getRespondentCollection().get(1).setValue(null);
+        JSONObject expectedBody = new JSONObject();
+        expectedBody.put("certificateNumbers", List.of(R600227_21_77, R600227_21_77, R600227_21_77));
+
+        getMockServer().expect(ExpectedCount.times(2), requestTo(ACAS_DEV_API_URL))
+            .andExpect(method(HttpMethod.POST))
+            .andExpect(r -> {
+                String requestBody = ((ByteArrayOutputStream) r.getBody()).toString(StandardCharsets.UTF_8);
+                assertThat(requestBody).isEqualTo(expectedBody.toString());
+            })
+            .andRespond(new DelegateResponseCreator(withStatus(HttpStatus.UNAUTHORIZED),
+                                                    withStatus(HttpStatus.OK)
+                                                        .contentType(MediaType.APPLICATION_JSON)
+                                                        .body(THREE_CERTS_JSON)));
         List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(testData.getCaseData());
+
         assertThat(acasCertificates).hasSize(3);
     }
 
@@ -297,6 +343,13 @@ class AcasServiceTest {
     void theGetAcasCertificatesByCaseDataDoesNotProduceAcasCertificatesWhenEmptyRespondentSumTypeItem() throws
         AcasException, InvalidAcasNumbersException {
         testData.getCaseData().getRespondentCollection().get(0).getValue().setRespondentAcas("");
+        getMockServer().expect(ExpectedCount.times(2), requestTo(ACAS_DEV_API_URL))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(new DelegateResponseCreator(withStatus(HttpStatus.UNAUTHORIZED),
+                                                    withStatus(HttpStatus.OK)
+                                                        .contentType(MediaType.APPLICATION_JSON)
+                                                        .body(FOUR_CERTS_JSON)));
+
         List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(testData.getCaseData());
         assertThat(acasCertificates).hasSize(4);
     }
