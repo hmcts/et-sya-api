@@ -23,7 +23,6 @@ import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.UPDATE_CASE_DRAFT;
 
-
 @Data
 public final class TestData {
 
@@ -173,6 +172,5 @@ public final class TestData {
             Arguments.of("AB12 1AB", address12),
             Arguments.of("AB13 1AB", address13)
         );
-
     }
 }
