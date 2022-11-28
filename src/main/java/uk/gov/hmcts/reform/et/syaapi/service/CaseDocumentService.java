@@ -305,6 +305,19 @@ public class CaseDocumentService {
         return documentTypeItems;
     }
 
+    public DocumentTypeItem createDocumentTypeItem(String typeOfDocument, UploadedDocumentType uploadedDoc) {
+        DocumentTypeItem documentTypeItem = new DocumentTypeItem();
+        documentTypeItem.setId(UUID.randomUUID().toString());
+
+        DocumentType documentType = new DocumentType();
+        documentType.setTypeOfDocument(typeOfDocument);
+        documentType.setUploadedDocument(uploadedDoc);
+
+        documentTypeItem.setValue(documentType);
+
+        return documentTypeItem;
+    }
+
     private DocumentTypeItem createDocumentTypeItem(String authToken,
                                                     String caseType,
                                                     String documentType,
