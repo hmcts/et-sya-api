@@ -23,7 +23,6 @@ import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.UPDATE_CASE_DRAFT;
 
-
 @Data
 public final class TestData {
 
