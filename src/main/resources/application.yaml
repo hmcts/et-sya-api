@@ -68,6 +68,5 @@ notifications:
   sampleSubmitCaseEmailTemplateId: "af0b26b7-17b6-4643-bbdc-e296d11e7b0c"
   submitCaseEmailTemplateId: ${SUBMIT_CASE_EMAIL_TEMPLATE_ID:4f4b378e-238a-46ed-ae1c-26b8038192f0}
 
-
 pdf:
-  source: "ET1_0922.pdf"
+  source: "ET1_1122.pdf"
