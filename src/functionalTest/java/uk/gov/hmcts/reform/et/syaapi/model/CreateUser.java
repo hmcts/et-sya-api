@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.et.syaapi;
+package uk.gov.hmcts.reform.et.syaapi.model;
 
 import lombok.Data;
 
