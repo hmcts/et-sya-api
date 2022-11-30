@@ -84,6 +84,8 @@ class CaseServiceTest {
     private CaseDocumentService caseDocumentService;
     @Mock
     private NotificationService notificationService;
+    @Mock
+    private AssignCaseToLocalOfficeService assignCaseToLocalOfficeService;
     @Spy
     private NotificationsProperties notificationsProperties;
     @InjectMocks
@@ -331,6 +333,9 @@ class CaseServiceTest {
 
         when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any()))
             .thenReturn(new LinkedList<>());
+
+        when(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(any()))
+            .thenReturn(testData.getCaseData());
 
         SendEmailResponse sendEmailResponse
             = new SendEmailResponse("{\n"

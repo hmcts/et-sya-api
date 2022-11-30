@@ -315,7 +315,6 @@ class AcasServiceTest {
     }
 
     @Test
-    @Disabled("Awaiting to be refactored")
     void theGetAcasCertificatesByCaseDataDoesNotProduceAcasCertificatesWhenNullRespondentSumTypeItem() throws
         AcasException, InvalidAcasNumbersException {
         testData.getCaseData().getRespondentCollection().get(0).setValue(null);
@@ -339,7 +338,6 @@ class AcasServiceTest {
     }
 
     @Test
-    @Disabled("Awaiting to be refactored")
     void theGetAcasCertificatesByCaseDataDoesNotProduceAcasCertificatesWhenEmptyRespondentSumTypeItem() throws
         AcasException, InvalidAcasNumbersException {
         testData.getCaseData().getRespondentCollection().get(0).getValue().setRespondentAcas("");
