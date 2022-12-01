@@ -12,6 +12,8 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+import uk.gov.hmcts.reform.et.syaapi.model.CreateUser;
+import uk.gov.hmcts.reform.et.syaapi.model.Role;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -54,8 +56,8 @@ public class IdamTestApiRequests {
 
     private void makePostRequest(String uri, String body) throws IOException {
         HttpResponse createUserResponse = client.execute(post(uri)
-                                                       .setEntity(new StringEntity(body, APPLICATION_JSON))
-                                                       .build());
+                                                             .setEntity(new StringEntity(body, APPLICATION_JSON))
+                                                             .build());
 
         assertEquals(CREATED.value(), createUserResponse.getStatusLine().getStatusCode());
     }
