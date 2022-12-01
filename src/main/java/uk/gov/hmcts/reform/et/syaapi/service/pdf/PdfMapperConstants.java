@@ -92,7 +92,7 @@ public final class PdfMapperConstants {
     public static final String Q8_TYPE_OF_DISCRIMINATION_SEXUAL_ORIENTATION = "8.1 sexual orientation";
     public static final String Q8_TYPE_OF_DISCRIMINATION_RELIGION_OR_BELIEF = "8.1 religion or belief";
     public static final String Q8_TYPE_OF_DISCRIMINATION_RACE = "8.1 race";
-    public static final String Q8_TYPE_OF_DISCRIMINATION_DISABILITY = "8_1_disability";
+    public static final String Q8_TYPE_OF_DISCRIMINATION_DISABILITY = "8.1 disability";
     public static final String Q8_TYPE_OF_DISCRIMINATION_MARRIAGE_OR_CIVIL_PARTNERSHIP =
         "8.1 marriage or civil partnership";
     public static final String Q8_TYPE_OF_PAY_CLAIMS_NOTICE_PAY = "8.1 notice pay";
