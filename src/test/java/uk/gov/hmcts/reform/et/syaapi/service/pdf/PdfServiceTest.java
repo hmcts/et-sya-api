@@ -150,6 +150,7 @@ class PdfServiceTest {
                                          "FamilyName", new ArrayList<>());
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), userInfo);
+
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
 
