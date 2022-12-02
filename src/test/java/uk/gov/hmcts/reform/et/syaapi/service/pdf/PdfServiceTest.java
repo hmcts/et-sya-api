@@ -48,7 +48,7 @@ class PdfServiceTest {
     );
 
     private TestData testData;
-    
+
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME = "englishPdfTemplateSource";
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE = "ET1_1122.pdf";
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME_WELSH = "welshPdfTemplateSource";
@@ -174,6 +174,14 @@ class PdfServiceTest {
         List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
             pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), null);
         assertThat(pdfDecodedMultipartFileList).hasSize(2);
+    }
+
+    @Test
+    void shouldCreatePdfDecodedMultipartFileInEnglishOnlyWhenNoContactLanguage() throws PdfServiceException {
+        testData.getCaseData().getClaimantType().setClaimantContactLanguage(null);
+        List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), null);
+        assertThat(pdfDecodedMultipartFileList).hasSize(1);
     }
 
     @Test
