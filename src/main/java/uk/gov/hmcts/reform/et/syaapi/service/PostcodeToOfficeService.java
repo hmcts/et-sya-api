@@ -9,9 +9,6 @@ import uk.gov.hmcts.reform.et.syaapi.config.PostcodeToOfficeMappings;
 
 import java.util.Optional;
 
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
-
 /**
  * This provides services to lookup {@link TribunalOffice}'s.
  */
@@ -50,7 +47,6 @@ public class PostcodeToOfficeService {
      * @throws InvalidPostcodeException if the postcode provided doesn't validate
      */
     public Optional<TribunalOffice> getTribunalOfficeFromPostcode(String postcode) throws InvalidPostcodeException {
-
         // validates postcode
         PostCodeValidator postCodeValidator = new PostCodeValidator(postcode);
         String outCode = postCodeValidator.returnOutwardCode();
@@ -63,16 +59,5 @@ public class PostcodeToOfficeService {
             return Optional.of(getTribunalOffice(config.getPostcodes().get(area)));
         }
         return Optional.empty();
-    }
-
-    public Optional<TribunalOffice> getTribunalOfficeByCaseTypeId(String caseTypeId) {
-        if (caseTypeId != null) {
-            if (caseTypeId.equals(ENGLAND_CASE_TYPE)) {
-                return Optional.of(TribunalOffice.LEEDS);
-            } else if (SCOTLAND_CASE_TYPE.equals(caseTypeId)) {
-                return Optional.of(TribunalOffice.GLASGOW);
-            }
-        }
-        return Optional.of(TribunalOffice.LEEDS);
     }
 }

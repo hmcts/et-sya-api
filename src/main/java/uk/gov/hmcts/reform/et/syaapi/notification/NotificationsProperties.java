@@ -4,7 +4,7 @@ import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 
 /**
  * Holds gov-notify api key and templateId details.
@@ -15,26 +15,22 @@ import javax.validation.constraints.NotBlank;
 public class NotificationsProperties {
 
     @Value("${notifications.govNotifyApiKey}")
-    @NotBlank
+    @NotEmpty
     private String govNotifyApiKey;
 
     @Value("${notifications.sampleEmailTemplateId}")
-    @NotBlank
+    @NotEmpty
     private String sampleEmailTemplateId;
 
     @Value("${notifications.sampleSubmitCaseEmailTemplateId}")
-    @NotBlank
+    @NotEmpty
     private String sampleSubmitCaseEmailTemplateId;
 
     @Value("${notifications.submitCaseEmailTemplateId}")
-    @NotBlank
+    @NotEmpty
     private String submitCaseEmailTemplateId;
 
-    @Value("${notifications.cySubmitCaseEmailTemplateId}")
-    @NotBlank
-    private String cySubmitCaseEmailTemplateId;
-
     @Value("${notifications.citizenPortalLink}")
-    @NotBlank
+    @NotEmpty
     private String citizenPortalLink;
 }
