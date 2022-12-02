@@ -326,7 +326,7 @@ class CaseServiceTest {
         when(pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(any(), any()))
             .thenReturn(Arrays.asList(pdfDecodedMultipartFile));
 
-        when(pdfService.convertCaseDataToPdfDecodedMultipartFile(any()))
+        when(pdfService.convertCaseDataToPdfDecodedMultipartFile(any(), any()))
             .thenReturn(pdfDecodedMultipartFile);
 
         when(acasService.getAcasCertificatesByCaseData(any())).thenReturn(Arrays.asList());
