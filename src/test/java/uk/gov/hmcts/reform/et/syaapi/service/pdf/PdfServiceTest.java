@@ -31,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -138,6 +139,17 @@ class PdfServiceTest {
     void shouldCreatePdfDecodedMultipartFileFromCaseData() throws PdfServiceException {
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), null);
+        assertThat(pdfDecodedMultipartFile).isNotNull();
+    }
+
+    @Test
+    void shouldCreatePdfDecodedMultipartFileFromCaseDataWithNullFirstAndLastName() throws PdfServiceException {
+        testData.getCaseData().getClaimantIndType().setClaimantFirstNames("");
+        testData.getCaseData().getClaimantIndType().setClaimantLastName("");
+        UserInfo userInfo = new UserInfo("", "", "", "GivenName",
+                                         "FamilyName", new ArrayList<>());
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), userInfo);
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
 
