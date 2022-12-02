@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.common.Strings;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
@@ -29,7 +28,6 @@ import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
-import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
@@ -72,10 +70,7 @@ public class CaseService {
     private final CaseDocumentService caseDocumentService;
     private final NotificationService notificationService;
     private final PdfService pdfService;
-    private final NotificationsProperties notificationsProperties;
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
-    private static final String WELSH_LANGUAGE = "Welsh";
-    private static final String WELSH_LANGUAGE_PARAM = "/?lng=cy";
     private final AssignCaseToLocalOfficeService assignCaseToLocalOfficeService;
 
     /**
@@ -218,29 +213,11 @@ public class CaseService {
         caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
         caseDetails.getData().put("documentCollection", documentList);
 
-        String emailTemplateId = notificationsProperties.getSubmitCaseEmailTemplateId();
-        String citizenPortalLink = notificationsProperties.getCitizenPortalLink() + "%s";
-        if (caseData.getClaimantType().getClaimantContactLanguage() != null
-            && WELSH_LANGUAGE.equals(caseData.getClaimantType().getClaimantContactLanguage())) {
-            emailTemplateId = notificationsProperties.getCySubmitCaseEmailTemplateId();
-            citizenPortalLink = citizenPortalLink + WELSH_LANGUAGE_PARAM;
-        }
         triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
                      caseDetails.getData()
         );
-        notificationService.sendSubmitCaseConfirmationEmail(
-            emailTemplateId,
-            caseData.getClaimantType().getClaimantEmailAddress(),
-            caseRequest.getCaseId(),
-            Strings.isNullOrEmpty(caseData.getClaimantIndType().getClaimantFirstNames())
-                ? userInfo.getGivenName()
-                : caseData.getClaimantIndType().getClaimantFirstNames(),
-            Strings.isNullOrEmpty(caseData.getClaimantIndType().getClaimantLastName())
-                ? userInfo.getFamilyName()
-                : caseData.getClaimantIndType().getClaimantLastName(),
-            caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString(),
-            citizenPortalLink
-        );
+        notificationService.sendSubmitCaseConfirmationEmail(caseDetails, caseData, userInfo);
+
         return caseDetails;
     }
 

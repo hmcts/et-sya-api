@@ -17,6 +17,9 @@ public final class EtSyaConstants {
 
     public static final String OTHER_TYPE_OF_DOCUMENT = "Other";
 
+    public static final String WELSH_LANGUAGE = "Welsh";
+    public static final String WELSH_LANGUAGE_PARAM = "/?lng=cy";
+
     private EtSyaConstants() {
         // restrict instantiation
     }

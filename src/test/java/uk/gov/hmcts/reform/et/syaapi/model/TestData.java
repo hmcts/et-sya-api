@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.service.notify.SendEmailResponse;
 
 import java.io.IOException;
@@ -81,6 +82,11 @@ public final class TestData {
     private final CaseRequest emptyCaseRequest = ResourceLoader.fromString(
         "requests/noManagingOfficeAndRespondentsAddressCaseRequest.json",
         CaseRequest.class
+    );
+
+    private final UserInfo userInfo = ResourceLoader.fromString(
+        "responses/userInfo.json",
+        UserInfo.class
     );
 
     public Map<String, Object> getCaseRequestCaseDataMap() {
