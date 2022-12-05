@@ -2,6 +2,9 @@ package uk.gov.hmcts.reform.et.syaapi.constants;
 
 import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 
+/**
+ * Defines attributes used by et-sya-api as constants.
+ */
 public final class EtSyaConstants {
 
     public static final String REMOTE_REPO = "https://github.com/hmcts/et-sya-api";

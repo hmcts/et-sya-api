@@ -9,12 +9,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.Arrays;
 
-/*
- *<p>
- * Trivial implementation of the {@link MultipartFile} interface to wrap a byte[] decoded
- * from a PDF encoded String
- *</p>
- */
+/**
+ * Trivial implementation of the {@link MultipartFile} interface to wrap a byte[] decoded from a PDF encoded String.
+ **/
 @SuppressWarnings({"NullableProblems", "resource"})
 public class PdfDecodedMultipartFile implements MultipartFile {
     private final byte[] fileContent;

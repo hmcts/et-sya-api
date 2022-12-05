@@ -3,6 +3,10 @@ package uk.gov.hmcts.reform.et.syaapi.enums;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Defines the different case events as an enumerator.
+ * Used as a parameter in triggerEvent function
+ */
 @Getter
 @RequiredArgsConstructor
 public enum CaseEvent {

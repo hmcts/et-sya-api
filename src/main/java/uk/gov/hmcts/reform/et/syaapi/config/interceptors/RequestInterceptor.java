@@ -11,6 +11,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
+/**
+ * Intercepts any call to the et-sya-api and validates the token
+ */
 @Slf4j
 @Component
 public class RequestInterceptor implements HandlerInterceptor {
@@ -20,6 +23,13 @@ public class RequestInterceptor implements HandlerInterceptor {
     @Autowired
     VerifyTokenService verifyTokenService;
 
+    /**
+     * Intercepts any incoming calls and throws exception if token is invalid.
+     * @param requestServlet current HTTP request
+     * @param responseServlet current HTTP response
+     * @param handler chosen handler to execute, for type and/or instance evaluation
+     * @return true if the token is verified
+     */
     @Override
     public boolean preHandle(HttpServletRequest requestServlet, HttpServletResponse responseServlet, Object handler) {
         String authorizationHeader = requestServlet.getHeader(AUTHORIZATION);
