@@ -82,6 +82,10 @@ public final class TestData {
         "requests/noManagingOfficeAndRespondentsAddressCaseRequest.json",
         CaseRequest.class
     );
+    private final CaseRequest englandWalesRequest = ResourceLoader.fromString(
+        "requests/caseRequestEnglandWales.json",
+        CaseRequest.class
+    );
 
     public Map<String, Object> getCaseRequestCaseDataMap() {
         Map<String, Object> requestCaseData = new ConcurrentHashMap<>();

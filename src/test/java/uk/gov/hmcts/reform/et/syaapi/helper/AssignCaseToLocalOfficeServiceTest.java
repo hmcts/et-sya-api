@@ -63,4 +63,30 @@ class AssignCaseToLocalOfficeServiceTest {
             assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
             .isEqualTo("Glasgow");
     }
+
+    @Test
+    void shouldAssignUnassignedIfCaseTypeIdIsScotlandAndPostCodeFromEnglandArea() throws InvalidPostcodeException {
+        CaseRequest request = testData.getCaseRequestWithoutManagingAddress();
+
+        when(postcodeToOfficeService.getTribunalOfficeFromPostcode(any())).thenReturn(Optional.of(
+            TribunalOffice.LEEDS
+        ));
+
+        assertThat(
+            assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
+            .isEqualTo(UNASSIGNED_OFFICE);
+    }
+
+    @Test
+    void shouldAssignUnassignedIfCaseTypeIdIsEnglandAndPostCodeFromScotlandArea() throws InvalidPostcodeException {
+        CaseRequest request = testData.getEnglandWalesRequest();
+
+        when(postcodeToOfficeService.getTribunalOfficeFromPostcode(any())).thenReturn(Optional.of(
+            TribunalOffice.EDINBURGH
+        ));
+
+        assertThat(
+            assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
+            .isEqualTo(UNASSIGNED_OFFICE);
+    }
 }
