@@ -93,6 +93,21 @@ public class AssignCaseToLocalOfficeService {
             || SCOTLAND_CASE_TYPE.equals(caseTypeId) && ENGLANDWALES_OFFICES.contains(office.get())) {
             return UNASSIGNED_OFFICE;
         } else {
+            return reassignAnyScottishOfficeToGlasgow(office);
+        }
+    }
+
+    /**
+     * All Scottish cases, that have provided a valid Scottish respondent/work postcode, should be assigned by default
+     * to the Glasgow office.
+     *
+     * @param office retrieved from getTribunalOfficeFromPostcode method
+     * @return Returns officeName
+     */
+    private String reassignAnyScottishOfficeToGlasgow(Optional<TribunalOffice> office) {
+        if (SCOTLAND_OFFICES.contains(office.get())) {
+            return TribunalOffice.GLASGOW.getOfficeName();
+        } else {
             return office.get().getOfficeName();
         }
     }

@@ -89,4 +89,17 @@ class AssignCaseToLocalOfficeServiceTest {
             assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
             .isEqualTo(UNASSIGNED_OFFICE);
     }
+
+    @Test
+    void shouldAssignAnyScottlandOfficeToGlasgowByDefault() throws InvalidPostcodeException {
+        CaseRequest request = testData.getCaseRequestWithoutManagingAddress();
+
+        when(postcodeToOfficeService.getTribunalOfficeFromPostcode(any())).thenReturn(Optional.of(
+            TribunalOffice.DUNDEE
+        ));
+
+        assertThat(
+            assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
+            .isEqualTo(TribunalOffice.GLASGOW.getOfficeName());
+    }
 }
