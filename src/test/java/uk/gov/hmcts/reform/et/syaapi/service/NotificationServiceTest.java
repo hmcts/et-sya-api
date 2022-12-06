@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
@@ -213,7 +214,7 @@ class NotificationServiceTest {
             any(),
             eq(testData.getExpectedDetails().getId().toString())
         )).thenReturn(inputSendEmailResponse);
-        testData.getCaseData().getClaimantType().setClaimantContactLanguage("Welsh");
+        testData.getCaseData().getClaimantType().setClaimantContactLanguage(EtSyaConstants.WELSH_LANGUAGE);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
             testData.getExpectedDetails(),
             testData.getCaseData(),

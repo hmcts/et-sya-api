@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 
 /**
  * Uses {@link PdfMapperService} to convert a given case into a Pdf Document.
@@ -31,9 +33,6 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor()
 public class PdfService {
-
-    private static final String ENGLISH = "English";
-    private static final String WELSH = "Welsh";
 
     private final PdfMapperService pdfMapperService;
     @Value("${pdf.english}")
@@ -104,7 +103,7 @@ public class PdfService {
             + claimantFirstName.replace(" ", "_")
             + "_"
             + claimantLastName.replace(" ", "_")
-            + (ENGLISH.equals(documentLanguage) ? "" : "_" + documentLanguage)
+            + (ENGLISH_LANGUAGE.equals(documentLanguage) ? "" : "_" + documentLanguage)
             + ".pdf";
     }
 
@@ -141,16 +140,16 @@ public class PdfService {
         List<PdfDecodedMultipartFile> files = new ArrayList<>();
         files.add(new PdfDecodedMultipartFile(
             convertCaseToPdf(caseData, this.englishPdfTemplateSource),
-            createPdfDocumentNameFromCaseData(caseData, ENGLISH, userInfo),
+            createPdfDocumentNameFromCaseData(caseData, ENGLISH_LANGUAGE, userInfo),
             PDF_FILE_TIKA_CONTENT_TYPE,
             createPdfDocumentDescriptionFromCaseData(caseData)
         ));
 
         if (caseData.getClaimantType().getClaimantContactLanguage() != null
-            && WELSH.equals(caseData.getClaimantType().getClaimantContactLanguage())) {
+            && WELSH_LANGUAGE.equals(caseData.getClaimantType().getClaimantContactLanguage())) {
             files.add(new PdfDecodedMultipartFile(
                 convertCaseToPdf(caseData, this.welshPdfTemplateSource),
-                createPdfDocumentNameFromCaseData(caseData, WELSH, userInfo),
+                createPdfDocumentNameFromCaseData(caseData, WELSH_LANGUAGE, userInfo),
                 PDF_FILE_TIKA_CONTENT_TYPE,
                 createPdfDocumentDescriptionFromCaseData(caseData)
             ));
