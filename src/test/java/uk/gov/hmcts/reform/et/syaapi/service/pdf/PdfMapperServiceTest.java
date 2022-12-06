@@ -51,6 +51,7 @@ class PdfMapperServiceTest {
 
     @Test
     void givenCaseProducesPdfHeaderMap() {
+        caseData.setClaimantWorkAddressQuestion(NO);
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
         assertEquals(TOTAL_VALUES, pdfMap.size());
     }
