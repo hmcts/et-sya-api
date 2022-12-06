@@ -25,6 +25,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings({"PMD.LawOfDemeter"})
 public class AssignCaseToLocalOfficeService {
     private final PostcodeToOfficeService postcodeToOfficeService;
 
