@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.common.Strings;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
@@ -29,7 +28,6 @@ import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
-import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
@@ -72,9 +70,7 @@ public class CaseService {
     private final CaseDocumentService caseDocumentService;
     private final NotificationService notificationService;
     private final PdfService pdfService;
-    private final NotificationsProperties notificationsProperties;
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
-    private static final String WELSH_LANGUAGE = "Welsh";
     private final AssignCaseToLocalOfficeService assignCaseToLocalOfficeService;
 
     /**
@@ -101,11 +97,13 @@ public class CaseService {
 
         List<CaseDetails> scotlandCases = ccdApiClient.searchForCitizen(
             authorization, authTokenGenerator.generate(),
-            userInfo.getUid(), JURISDICTION_ID, SCOTLAND_CASE_TYPE, Collections.emptyMap());
+            userInfo.getUid(), JURISDICTION_ID, SCOTLAND_CASE_TYPE, Collections.emptyMap()
+        );
 
         List<CaseDetails> englandCases = ccdApiClient.searchForCitizen(
             authorization, authTokenGenerator.generate(),
-            userInfo.getUid(), JURISDICTION_ID, ENGLAND_CASE_TYPE, Collections.emptyMap());
+            userInfo.getUid(), JURISDICTION_ID, ENGLAND_CASE_TYPE, Collections.emptyMap()
+        );
 
         return Stream.of(scotlandCases, englandCases).flatMap(Collection::stream).collect(toList());
     }
@@ -114,7 +112,7 @@ public class CaseService {
      * Given a caseID, this will retrieve the correct {@link CaseDetails}.
      *
      * @param authorization is used to find the {@link UserInfo} for request
-     * @param caseRequest  case data for request
+     * @param caseRequest   case data for request
      * @return the associated {@link CaseDetails} if the case is created
      */
     @Retryable({FeignException.class, RuntimeException.class})
@@ -165,7 +163,8 @@ public class CaseService {
     public CaseDetails updateCase(String authorization,
                                   CaseRequest caseRequest) {
         return triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.UPDATE_CASE_DRAFT,
-                            caseRequest.getCaseTypeId(), caseRequest.getCaseData());
+                            caseRequest.getCaseTypeId(), caseRequest.getCaseData()
+        );
     }
 
     /**
@@ -173,7 +172,7 @@ public class CaseService {
      * sets managing office (tribunal office), created PDF file for the case and saves PDF file.
      *
      * @param authorization is used to seek the {UserInfo} for request
-     * @param caseRequest is used to provide the caseId, caseTypeId and {@link CaseData} in JSON Format
+     * @param caseRequest   is used to provide the caseId, caseTypeId and {@link CaseData} in JSON Format
      * @return the associated {@link CaseData} if the case is submitted
      */
     public CaseDetails submitCase(String authorization, CaseRequest caseRequest)
@@ -183,9 +182,10 @@ public class CaseService {
         caseRequest.getCaseData().put("feeGroupReference", caseRequest.getCaseId());
         CaseData caseData = assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
         CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), SUBMIT_CASE_DRAFT,
-                                               caseRequest.getCaseTypeId(), caseRequest.getCaseData());
+                                               caseRequest.getCaseTypeId(), caseRequest.getCaseData()
+        );
         caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :
-            caseDetails.getData().get("ethosCaseReference").toString());
+                                           caseDetails.getData().get("ethosCaseReference").toString());
 
         List<PdfDecodedMultipartFile> acasCertificates = null;
         try {
@@ -204,33 +204,20 @@ public class CaseService {
             .uploadAllDocuments(authorization, caseRequest.getCaseTypeId(), casePdfFiles, acasCertificates);
 
         if (caseData.getClaimantRequests().getClaimDescriptionDocument() != null) {
-            documentList.add(caseDocumentService.createDocumentTypeItem(OTHER_TYPE_OF_DOCUMENT,
-                                                    caseData.getClaimantRequests().getClaimDescriptionDocument()));
+            documentList.add(caseDocumentService.createDocumentTypeItem(
+                OTHER_TYPE_OF_DOCUMENT,
+                caseData.getClaimantRequests().getClaimDescriptionDocument()
+            ));
         }
 
         caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
         caseDetails.getData().put("documentCollection", documentList);
 
-        String emailTemplateId = notificationsProperties.getSubmitCaseEmailTemplateId();
-        String citizenPortalLink = notificationsProperties.getCitizenPortalLink() + "%s";
-        if (WELSH_LANGUAGE.equals(caseData.getClaimantType().getClaimantContactLanguage())) {
-            emailTemplateId = notificationsProperties.getCySubmitCaseEmailTemplateId();
-            citizenPortalLink = citizenPortalLink + "/?lng=cy";
-        }
         triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
-                     caseDetails.getData());
-        notificationService.sendSubmitCaseConfirmationEmail(
-            emailTemplateId,
-            caseData.getClaimantType().getClaimantEmailAddress(),
-            caseRequest.getCaseId(),
-            Strings.isNullOrEmpty(caseData.getClaimantIndType().getClaimantFirstNames())
-                ? userInfo.getGivenName()
-                : caseData.getClaimantIndType().getClaimantFirstNames(),
-            Strings.isNullOrEmpty(caseData.getClaimantIndType().getClaimantLastName())
-                ? userInfo.getFamilyName()
-                : caseData.getClaimantIndType().getClaimantLastName(),
-            caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString(),
-            citizenPortalLink);
+                     caseDetails.getData()
+        );
+        notificationService.sendSubmitCaseConfirmationEmail(caseDetails, caseData, userInfo);
+
         return caseDetails;
     }
 
@@ -238,10 +225,10 @@ public class CaseService {
      * Given a caseId, initialization of trigger event to start and submit update for case.
      *
      * @param authorization is used to seek the {@link UserInfo} for request
-     * @param caseId used to retrieve get case details
-     * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
-     * @param eventName is used to determine INITIATE_CASE_DRAFT or UPDATE_CASE_DRAFT
-     * @param caseData is used to provide the {@link Et1CaseData} in json format
+     * @param caseId        used to retrieve get case details
+     * @param caseType      is used to determine if the case is for ET_EnglandWales or ET_Scotland
+     * @param eventName     is used to determine INITIATE_CASE_DRAFT or UPDATE_CASE_DRAFT
+     * @param caseData      is used to provide the {@link Et1CaseData} in json format
      * @return the associated {@link CaseData} if the case is updated
      */
     public CaseDetails triggerEvent(String authorization, String caseId, CaseEvent eventName,
@@ -255,19 +242,21 @@ public class CaseService {
             enrichCaseDataWithJurisdictionCodes(caseData1);
         }
 
-        return submitUpdate(authorization,
-                            caseId,
-                            caseDetailsConverter.caseDataContent(startEventResponse, caseData1),
-                            caseType);
+        return submitUpdate(
+            authorization,
+            caseId,
+            caseDetailsConverter.caseDataContent(startEventResponse, caseData1),
+            caseType
+        );
     }
 
     /**
      * Given a caseId, start update for the case.
      *
      * @param authorization is used to seek the {@link UserInfo} for request
-     * @param caseId used to retrieve get case details
-     * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
-     * @param eventName is used to determine INITIATE_CASE_DRAFT or UPDATE_CASE_DRAFT
+     * @param caseId        used to retrieve get case details
+     * @param caseType      is used to determine if the case is for ET_EnglandWales or ET_Scotland
+     * @param eventName     is used to determine INITIATE_CASE_DRAFT or UPDATE_CASE_DRAFT
      * @return startEventResponse associated case details updated
      */
     public StartEventResponse startUpdate(String authorization, String caseId,
@@ -289,10 +278,10 @@ public class CaseService {
     /**
      * Given a caseId, submit update for the case.
      *
-     * @param authorization is used to seek the {@link UserInfo} for request
-     * @param caseId used to retrieve get case details
+     * @param authorization   is used to seek the {@link UserInfo} for request
+     * @param caseId          used to retrieve get case details
      * @param caseDataContent provides overall content of the case
-     * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
+     * @param caseType        is used to determine if the case is for ET_EnglandWales or ET_Scotland
      */
     public CaseDetails submitUpdate(String authorization, String caseId,
                                     CaseDataContent caseDataContent, String caseType) {
@@ -310,9 +299,11 @@ public class CaseService {
         );
     }
 
-    /** Given a datetime, this method will return a list of caseIds which have been modified since the datetime
+    /**
+     * Given a datetime, this method will return a list of caseIds which have been modified since the datetime
      * provided.
-     * @param authorisation used for IDAM authentication for the query
+     *
+     * @param authorisation   used for IDAM authentication for the query
      * @param requestDateTime used as the query parameter
      * @return a list of caseIds
      */
@@ -357,7 +348,8 @@ public class CaseService {
     private List<CaseDetails> searchCaseType(String authorisation, String caseTypeId, String query) {
         List<CaseDetails> caseDetailsList = new ArrayList<>();
         SearchResult searchResult = ccdApiClient.searchCases(authorisation, authTokenGenerator.generate(),
-                                                             caseTypeId, query);
+                                                             caseTypeId, query
+        );
         if (searchResult != null && !CollectionUtils.isEmpty(searchResult.getCases())) {
             caseDetailsList.addAll(searchResult.getCases());
         }
