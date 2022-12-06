@@ -204,7 +204,7 @@ public class PdfMapperService {
                 printFields.putAll(printRespondentAcas(respondent, ACAS_PREFIX[i]));
             }
         }
-        if (caseData.getClaimantWorkAddress() != null
+        if (NO.equals(caseData.getClaimantWorkAddressQuestion()) && caseData.getClaimantWorkAddress() != null
             && caseData.getClaimantWorkAddress().getClaimantWorkAddress() != null) {
             Address claimantWorkAddress = caseData.getClaimantWorkAddress().getClaimantWorkAddress();
             printFields.putAll(printWorkAddress(claimantWorkAddress));
