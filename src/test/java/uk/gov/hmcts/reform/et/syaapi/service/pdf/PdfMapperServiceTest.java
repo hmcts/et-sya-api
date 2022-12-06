@@ -146,6 +146,7 @@ class PdfMapperServiceTest {
         ClaimantWorkAddressType claimantWorkAddressType = new ClaimantWorkAddressType();
         claimantWorkAddressType.setClaimantWorkAddress(claimantAddress);
         caseData.setClaimantWorkAddress(claimantWorkAddressType);
+        caseData.setClaimantWorkAddressQuestion(NO);
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
         assertNotNull(pdfMap.get(Q2_4_DIFFERENT_WORK_ADDRESS));
     }
