@@ -7,6 +7,9 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.util.Map;
 
+/**
+ * Stores a {@link Map} which is used to pass case data and id within a http request
+ */
 @Data
 @Builder
 @Jacksonized
