@@ -20,6 +20,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -137,7 +138,19 @@ class PdfServiceTest {
     @Test
     void shouldCreatePdfDecodedMultipartFileFromCaseData() throws PdfServiceException {
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData());
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), null);
+        assertThat(pdfDecodedMultipartFile).isNotNull();
+    }
+
+    @Test
+    void shouldCreatePdfDecodedMultipartFileFromCaseDataWithNullFirstAndLastName() throws PdfServiceException {
+        testData.getCaseData().getClaimantIndType().setClaimantFirstNames("");
+        testData.getCaseData().getClaimantIndType().setClaimantLastName("");
+        UserInfo userInfo = new UserInfo("", "", "", "GivenName",
+                                         "FamilyName", new ArrayList<>());
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), userInfo);
+
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
 

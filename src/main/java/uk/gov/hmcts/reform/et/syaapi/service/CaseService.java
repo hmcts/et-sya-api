@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.common.Strings;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
@@ -194,8 +195,8 @@ public class CaseService {
         } catch (InvalidAcasNumbersException e) {
             log.error("Invalid ACAS numbers", e);
         }
-
-        PdfDecodedMultipartFile casePdfFile = pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData);
+        UserInfo userInfo = idamClient.getUserInfo(authorization);
+        PdfDecodedMultipartFile casePdfFile = pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData, userInfo);
         List<DocumentTypeItem> documentList = caseDocumentService
             .uploadAllDocuments(authorization, caseRequest.getCaseTypeId(), casePdfFile, acasCertificates);
 
@@ -214,8 +215,12 @@ public class CaseService {
                 notificationsProperties.getSubmitCaseEmailTemplateId(),
                 caseData.getClaimantType().getClaimantEmailAddress(),
                 caseRequest.getCaseId(),
-                caseData.getClaimantIndType().getClaimantFirstNames(),
-                caseData.getClaimantIndType().getClaimantLastName(),
+                Strings.isNullOrEmpty(caseData.getClaimantIndType().getClaimantFirstNames())
+                    ? userInfo.getGivenName()
+                    : caseData.getClaimantIndType().getClaimantFirstNames(),
+                Strings.isNullOrEmpty(caseData.getClaimantIndType().getClaimantLastName())
+                    ? userInfo.getFamilyName()
+                    : caseData.getClaimantIndType().getClaimantLastName(),
                 caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString(),
                 notificationsProperties.getCitizenPortalLink());
         return caseDetails;
