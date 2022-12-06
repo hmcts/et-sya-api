@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"PMD.UnusedPrivateField"})
+@SuppressWarnings({"PMD.UnusedPrivateField", "PMD.LawOfDemeter"})
 class AssignCaseToLocalOfficeServiceTest {
     @InjectMocks
     private AssignCaseToLocalOfficeService assignCaseToLocalOfficeService;

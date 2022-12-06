@@ -81,7 +81,6 @@ public class AssignCaseToLocalOfficeService {
     /**
      * Checks if caseTypeId matches the office postcode area(E.g. ET_EnglandWales -> Leeds), otherwise it will assign
      * to Unassigned office.
-     *
      * @param caseTypeId 'ET_EnglandWales' or 'ET_Scotland'
      * @param office retrieved from getTribunalOfficeFromPostcode method
      * @return Returns officeName
@@ -101,7 +100,6 @@ public class AssignCaseToLocalOfficeService {
     /**
      * All Scottish cases, that have provided a valid Scottish respondent/work postcode, should be assigned by default
      * to the Glasgow office.
-     *
      * @param office retrieved from getTribunalOfficeFromPostcode method
      * @return Returns officeName
      */
