@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.idam.client.IdamApi;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.util.ArrayList;
 
@@ -26,8 +26,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.CITIZEN_PORTAL_LINK;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.SUBMIT_CASE_EMAIL_TEMPLATE_ID;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.USER_ID;
 
@@ -57,16 +55,18 @@ class CaseServiceBootTest {
         testData = new TestData();
 
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamApi.retrieveUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+        when(idamApi.retrieveUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
             USER_ID,
-            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
+            "name",
             testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
             testData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
         ));
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
             USER_ID,
-            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
+            "name",
             testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
             testData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
@@ -98,14 +98,10 @@ class CaseServiceBootTest {
             anyList()
         )).thenReturn(testData.getUploadDocumentResponse());
         when(notificationService.sendSubmitCaseConfirmationEmail(
-            eq(SUBMIT_CASE_EMAIL_TEMPLATE_ID),
-            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
-            eq(testData.getCaseRequest().getCaseId()),
-            eq(testData.getCaseData().getClaimantIndType().getClaimantFirstNames()),
-            eq(testData.getCaseData().getClaimantIndType().getClaimantLastName()),
-            any(String.class),
-            eq(CITIZEN_PORTAL_LINK)
-        )).thenReturn(null);
+            testData.getExpectedDetails(),
+            testData.getCaseData(),
+            testData.getUserInfo())
+        ).thenReturn(null);
     }
 
     @Test

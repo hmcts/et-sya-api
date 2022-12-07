@@ -12,8 +12,14 @@ public final class EtSyaConstants {
     public static final String AUTHORIZATION = "Authorization";
     public static final TribunalOffice DEFAULT_TRIBUNAL_OFFICE = TribunalOffice.LONDON_SOUTH;
     public static final String RESOURCE_NOT_FOUND = "Resource not found for case id %s, reason: %s";
-
+    public static final String UNASSIGNED_OFFICE = "Unassigned";
     public static final String CASE_FIELD_MANAGING_OFFICE = "managingOffice";
+
+    public static final String OTHER_TYPE_OF_DOCUMENT = "Other";
+
+    public static final String WELSH_LANGUAGE = "Welsh";
+    public static final String ENGLISH_LANGUAGE = "English";
+    public static final String WELSH_LANGUAGE_PARAM = "/?lng=cy";
 
     private EtSyaConstants() {
         // restrict instantiation

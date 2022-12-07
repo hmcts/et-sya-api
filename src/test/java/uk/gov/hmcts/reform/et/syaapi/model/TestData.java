@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.et.syaapi.model;
 
 import lombok.Data;
+import org.junit.jupiter.params.provider.Arguments;
+import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
@@ -11,15 +13,16 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.service.notify.SendEmailResponse;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.UPDATE_CASE_DRAFT;
-
 
 @Data
 public final class TestData {
@@ -72,6 +75,19 @@ public final class TestData {
         "requests/caseDataWithClaimTypes.json",
         CaseRequest.class
     );
+    private final CaseRequest caseRequestWithoutManagingAddress = ResourceLoader.fromString(
+        "requests/caseDataWithoutManagingAddress.json",
+        CaseRequest.class
+    );
+    private final CaseRequest emptyCaseRequest = ResourceLoader.fromString(
+        "requests/noManagingOfficeAndRespondentsAddressCaseRequest.json",
+        CaseRequest.class
+    );
+
+    private final UserInfo userInfo = ResourceLoader.fromString(
+        "responses/userInfo.json",
+        UserInfo.class
+    );
 
     public Map<String, Object> getCaseRequestCaseDataMap() {
         Map<String, Object> requestCaseData = new ConcurrentHashMap<>();
@@ -108,5 +124,68 @@ public final class TestData {
             "responses/sendEmailResponse.json"
         );
         return new SendEmailResponse(sendEmailResponseStringVal);
+    }
+
+    public static Stream<Arguments> postcodeAddressArguments() {
+
+        Address address1 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        address1.setPostCode("A1      1AA");
+
+        Address address2 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        address2.setPostCode("A22AA");
+
+        Address address3 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        address3.setPostCode("A 3  3 A  A");
+
+        Address address4 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        address4.setPostCode("NG44JF");
+
+        Address address5 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        address5.setPostCode("NG5      5JF");
+
+        Address address6 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        address6.setPostCode("N  G 6      6  J F");
+
+        Address address7 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        address7.setPostCode("HU107NA");
+
+        Address address8 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        address8.setPostCode("HU10      8NA");
+
+        Address address9 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        address9.setPostCode("H U 1 0 9 N A");
+
+        Address address10 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        address10.setCountry("Turkey");
+        address10.setPostCode("34730");
+
+        Address address11 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        address11.setCountry("United kingdom");
+        address11.setPostCode("AB111AB");
+
+        Address address12 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        address12.setCountry(null);
+        address12.setPostCode("AB121AB");
+
+        Address address13 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        address13.setCountry("");
+        address13.setPostCode("AB131AB");
+
+        return Stream.of(
+            Arguments.of("A1 1AA", address1),
+            Arguments.of("A2 2AA", address2),
+            Arguments.of("A3 3AA", address3),
+            Arguments.of("NG4 4JF", address4),
+            Arguments.of("NG5 5JF", address5),
+            Arguments.of("NG6 6JF", address6),
+            Arguments.of("HU10 7NA", address7),
+            Arguments.of("HU10 8NA", address8),
+            Arguments.of("HU10 9NA", address9),
+            Arguments.of("34730", address10),
+            Arguments.of("AB11 1AB", address11),
+            Arguments.of("AB12 1AB", address12),
+            Arguments.of("AB13 1AB", address13)
+        );
+
     }
 }

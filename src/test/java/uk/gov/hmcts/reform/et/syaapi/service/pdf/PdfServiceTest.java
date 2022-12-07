@@ -31,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -48,9 +49,9 @@ class PdfServiceTest {
     );
 
     private TestData testData;
-    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME = "englishPdfTemplateSource";
-    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE = "ET1_0922.pdf";
 
+    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME = "englishPdfTemplateSource";
+    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE = "ET1_1122.pdf";
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME_WELSH = "welshPdfTemplateSource";
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH = "CY_ET1_0922.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
@@ -153,7 +154,7 @@ class PdfServiceTest {
 
     @Test
     void shouldCreatePdfFileWelsh() throws IOException {
-        testData.getCaseData().getClaimantType().setClaimantContactLanguage("Welsh");
+        testData.getCaseData().getClaimantType().setClaimantContactLanguage(WELSH_LANGUAGE);
         PdfService pdfService1 = new PdfService(new PdfMapperService());
         pdfService1.welshPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH;
         byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
@@ -164,16 +165,24 @@ class PdfServiceTest {
     @Test
     void shouldCreatePdfDecodedMultipartFileFromCaseData() throws PdfServiceException {
         List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
-            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData());
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), null);
         assertThat(pdfDecodedMultipartFileList).hasSize(1);
     }
 
     @Test
     void shouldCreatePdfDecodedMultipartFileFromCaseDataWelsh() throws PdfServiceException {
-        testData.getCaseData().getClaimantType().setClaimantContactLanguage("Welsh");
+        testData.getCaseData().getClaimantType().setClaimantContactLanguage(WELSH_LANGUAGE);
         List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
-            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData());
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), null);
         assertThat(pdfDecodedMultipartFileList).hasSize(2);
+    }
+
+    @Test
+    void shouldCreatePdfDecodedMultipartFileInEnglishOnlyWhenNoContactLanguage() throws PdfServiceException {
+        testData.getCaseData().getClaimantType().setClaimantContactLanguage(null);
+        List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), null);
+        assertThat(pdfDecodedMultipartFileList).hasSize(1);
     }
 
     @Test
