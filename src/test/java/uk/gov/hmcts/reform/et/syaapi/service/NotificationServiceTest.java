@@ -4,8 +4,10 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
+import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
@@ -25,7 +27,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.CITIZEN_PORTAL_LINK;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.NOTIFICATION_CONFIRMATION_ID;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
@@ -38,15 +39,11 @@ class NotificationServiceTest {
 
     private static final String TEST_EMAIL = "TEST@GMAIL.COM";
 
-    private static final String SUBMIT_CASE_CONFIRMATION_TEST_EMAIL = "mehmet@tdmehmet.com";
-    private static final String SUBMIT_CASE_CONFIRMATION_FIRST_NAME = "John";
-    private static final String SUBMIT_CASE_CONFIRMATION_LAST_NAME = "Smith";
-    private static final String SUBMIT_CASE_CONFIRMATION_CASE_NUMBER = "123456722";
-
     @MockBean
     private NotificationService notificationService;
 
     private NotificationClient notificationClient;
+    private NotificationsProperties notificationsProperties;
 
     private final ConcurrentHashMap<String, String> parameters = new ConcurrentHashMap<>();
 
@@ -73,9 +70,14 @@ class NotificationServiceTest {
                    + "  }\n"
                    + "}\n");
         notificationClient = mock(NotificationClient.class);
-        notificationService = new NotificationService(notificationClient);
+        notificationsProperties = mock(NotificationsProperties.class);
+        notificationService = new NotificationService(notificationClient, notificationsProperties);
         given(notificationClient.sendEmail(anyString(), anyString(), any(), anyString()))
             .willReturn(inputSendEmailResponse);
+        given(notificationsProperties.getCySubmitCaseEmailTemplateId()).willReturn("1234_welsh");
+        given(notificationsProperties.getSubmitCaseEmailTemplateId())
+            .willReturn(SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID);
+        given(notificationsProperties.getCitizenPortalLink()).willReturn(REFERENCE_STRING);
         testData = new TestData();
     }
 
@@ -146,31 +148,27 @@ class NotificationServiceTest {
     @SneakyThrows
     private SendEmailResponse mockSendEmailResponse() {
         notificationClient = mock(NotificationClient.class);
-        notificationService = new NotificationService(notificationClient);
+        notificationService = new NotificationService(notificationClient, notificationsProperties);
         doReturn(inputSendEmailResponse).when(notificationClient).sendEmail(TEST_TEMPLATE_API_KEY,
-                                                                            TEST_EMAIL, parameters, REFERENCE_STRING);
+                                                                            TEST_EMAIL, parameters, REFERENCE_STRING
+        );
         return notificationService.sendEmail(TEST_TEMPLATE_API_KEY,
-                                             TEST_EMAIL, parameters, REFERENCE_STRING);
+                                             TEST_EMAIL, parameters, REFERENCE_STRING
+        );
     }
 
     @Test
     void shouldSendSubmitCaseConfirmationEmail() throws IOException {
         when(notificationService.sendSubmitCaseConfirmationEmail(
-            SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID,
-            SUBMIT_CASE_CONFIRMATION_TEST_EMAIL,
-            REFERENCE_STRING,
-            SUBMIT_CASE_CONFIRMATION_FIRST_NAME,
-            SUBMIT_CASE_CONFIRMATION_LAST_NAME,
-            SUBMIT_CASE_CONFIRMATION_CASE_NUMBER,
-            CITIZEN_PORTAL_LINK)).thenReturn(testData.getSendEmailResponse());
+            testData.getExpectedDetails(),
+            testData.getCaseData(),
+            testData.getUserInfo()
+        ))
+            .thenReturn(testData.getSendEmailResponse());
         assertThat(notificationService.sendSubmitCaseConfirmationEmail(
-            SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID,
-            SUBMIT_CASE_CONFIRMATION_TEST_EMAIL,
-            REFERENCE_STRING,
-            SUBMIT_CASE_CONFIRMATION_FIRST_NAME,
-            SUBMIT_CASE_CONFIRMATION_LAST_NAME,
-            SUBMIT_CASE_CONFIRMATION_CASE_NUMBER,
-            CITIZEN_PORTAL_LINK
+            testData.getExpectedDetails(),
+            testData.getCaseData(),
+            testData.getUserInfo()
         ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
     }
 
@@ -179,26 +177,22 @@ class NotificationServiceTest {
         throws NotificationClientException {
         when(notificationClient.sendEmail(
             eq(SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID),
-            eq(SUBMIT_CASE_CONFIRMATION_TEST_EMAIL),
+            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
             any(),
-            eq(REFERENCE_STRING)
+            eq(testData.getExpectedDetails().getId().toString())
         )).thenThrow(new NotificationException(new Exception("Error while trying to sending notification to client")));
         NotificationException notificationException = assertThrows(NotificationException.class, () ->
-                     notificationService.sendSubmitCaseConfirmationEmail(
-                         SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID,
-                         SUBMIT_CASE_CONFIRMATION_TEST_EMAIL,
-                         REFERENCE_STRING,
-                         SUBMIT_CASE_CONFIRMATION_FIRST_NAME,
-                         SUBMIT_CASE_CONFIRMATION_LAST_NAME,
-                         SUBMIT_CASE_CONFIRMATION_CASE_NUMBER,
-                         CITIZEN_PORTAL_LINK));
+            notificationService.sendSubmitCaseConfirmationEmail(
+                testData.getExpectedDetails(),
+                testData.getCaseData(),
+                testData.getUserInfo()
+            ));
         assertThat(notificationException.getMessage())
             .isEqualTo("java.lang.Exception: Error while trying to sending notification to client");
     }
 
     @Test
-    void shouldSendSubmitCaseConfirmationEmailInWelsh() throws IOException, NotificationClientException {
-        NotificationService notificationService = new NotificationService(notificationClient);
+    void shouldSendSubmitCaseConfirmationEmailInWelsh() throws NotificationClientException {
         inputSendEmailResponse = new SendEmailResponse("{\n"
                                                            + "  \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
                                                            + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
@@ -213,21 +207,32 @@ class NotificationServiceTest {
                                                            + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
                                                            + "  }\n"
                                                            + "}\n");
+        NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
         when(notificationClient.sendEmail(
-            eq(SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID),
-            eq(SUBMIT_CASE_CONFIRMATION_TEST_EMAIL),
+            eq("1234_welsh"),
+            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
             any(),
-            eq(REFERENCE_STRING)
+            eq(testData.getExpectedDetails().getId().toString())
         )).thenReturn(inputSendEmailResponse);
+        testData.getCaseData().getClaimantType().setClaimantContactLanguage(EtSyaConstants.WELSH_LANGUAGE);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
-            SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID,
-            SUBMIT_CASE_CONFIRMATION_TEST_EMAIL,
-            REFERENCE_STRING,
-            SUBMIT_CASE_CONFIRMATION_FIRST_NAME,
-            SUBMIT_CASE_CONFIRMATION_LAST_NAME,
-            SUBMIT_CASE_CONFIRMATION_CASE_NUMBER,
-            CITIZEN_PORTAL_LINK + "/%s/?lng=cy");
-        assertThat(response.getBody()).isEqualTo("Please click here. https://www.gov.uk/log-in-register-hmrc-online-services/123456722/?lng=cy.");
+            testData.getExpectedDetails(),
+            testData.getCaseData(),
+            testData.getUserInfo()
+        );
+        assertThat(response.getBody()).isEqualTo(
+            "Please click here. https://www.gov.uk/log-in-register-hmrc-online-services/123456722/?lng=cy.");
+    }
 
+    @Test
+    void shouldSendSubmitCaseConfirmationEmailNull() {
+        NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
+        testData.getCaseData().getClaimantType().setClaimantContactLanguage(null);
+        SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
+            testData.getExpectedDetails(),
+            testData.getCaseData(),
+            testData.getUserInfo()
+        );
+        assertThat(response.getBody()).isEqualTo("Dear test, Please see your detail as 123456789. Regards, ET Team.");
     }
 }

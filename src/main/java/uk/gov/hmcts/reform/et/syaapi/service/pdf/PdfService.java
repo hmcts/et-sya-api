@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 
 /**
  * Uses {@link PdfMapperService} to convert a given case into a Pdf Document.
@@ -31,9 +33,6 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor()
 public class PdfService {
-
-    private static final String ENGLISH = "English";
-    private static final String WELSH = "Welsh";
 
     private final PdfMapperService pdfMapperService;
     @Value("${pdf.english}")
@@ -47,9 +46,10 @@ public class PdfService {
     /**
      * Converts a {@link CaseData} class object into a pdf document
      * using template (ver. ET1_1122)
-     * @param caseData      The data that is to be converted into pdf
-     * @param pdfSource     The source location of the PDF file to be used as the template
-     * @return              a byte array that contains the pdf document.
+     *
+     * @param caseData  The data that is to be converted into pdf
+     * @param pdfSource The source location of the PDF file to be used as the template
+     * @return A byte array that contains the pdf document.
      */
     public byte[] convertCaseToPdf(CaseData caseData, String pdfSource) throws PdfServiceException {
         byte[] pdfDocumentBytes;
@@ -103,7 +103,7 @@ public class PdfService {
             + claimantFirstName.replace(" ", "_")
             + "_"
             + claimantLastName.replace(" ", "_")
-            +  (ENGLISH.equals(documentLanguage) ? "" : "_" + documentLanguage)
+            + (ENGLISH_LANGUAGE.equals(documentLanguage) ? "" : "_" + documentLanguage)
             + ".pdf";
     }
 
@@ -138,16 +138,21 @@ public class PdfService {
     public List<PdfDecodedMultipartFile> convertCaseDataToPdfDecodedMultipartFile(CaseData caseData, UserInfo userInfo)
         throws PdfServiceException {
         List<PdfDecodedMultipartFile> files = new ArrayList<>();
-        files.add(new PdfDecodedMultipartFile(convertCaseToPdf(caseData, this.englishPdfTemplateSource),
-                                              createPdfDocumentNameFromCaseData(caseData, ENGLISH, userInfo),
-                                              PDF_FILE_TIKA_CONTENT_TYPE,
-                                              createPdfDocumentDescriptionFromCaseData(caseData)));
+        files.add(new PdfDecodedMultipartFile(
+            convertCaseToPdf(caseData, this.englishPdfTemplateSource),
+            createPdfDocumentNameFromCaseData(caseData, ENGLISH_LANGUAGE, userInfo),
+            PDF_FILE_TIKA_CONTENT_TYPE,
+            createPdfDocumentDescriptionFromCaseData(caseData)
+        ));
 
-        if (WELSH.equals(caseData.getClaimantType().getClaimantContactLanguage())) {
-            files.add(new PdfDecodedMultipartFile(convertCaseToPdf(caseData, this.welshPdfTemplateSource),
-                                                  createPdfDocumentNameFromCaseData(caseData, WELSH, userInfo),
-                                                  PDF_FILE_TIKA_CONTENT_TYPE,
-                                                  createPdfDocumentDescriptionFromCaseData(caseData)));
+        if (caseData.getClaimantType().getClaimantContactLanguage() != null
+            && WELSH_LANGUAGE.equals(caseData.getClaimantType().getClaimantContactLanguage())) {
+            files.add(new PdfDecodedMultipartFile(
+                convertCaseToPdf(caseData, this.welshPdfTemplateSource),
+                createPdfDocumentNameFromCaseData(caseData, WELSH_LANGUAGE, userInfo),
+                PDF_FILE_TIKA_CONTENT_TYPE,
+                createPdfDocumentDescriptionFromCaseData(caseData)
+            ));
         }
 
         return files;
