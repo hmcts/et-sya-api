@@ -33,7 +33,7 @@ import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q2_4_
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class PdfMapperServiceTest {
-    private static final Integer TOTAL_VALUES = 70;
+    private static final Integer TOTAL_VALUES = 71;
     private PdfMapperService pdfMapperService;
     private CaseData caseData;
     private static final String ACAS_PREFIX = "2.3";
@@ -51,6 +51,7 @@ class PdfMapperServiceTest {
 
     @Test
     void givenCaseProducesPdfHeaderMap() {
+        caseData.setClaimantWorkAddressQuestion(NO);
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
         assertEquals(TOTAL_VALUES, pdfMap.size());
     }
@@ -146,6 +147,7 @@ class PdfMapperServiceTest {
         ClaimantWorkAddressType claimantWorkAddressType = new ClaimantWorkAddressType();
         claimantWorkAddressType.setClaimantWorkAddress(claimantAddress);
         caseData.setClaimantWorkAddress(claimantWorkAddressType);
+        caseData.setClaimantWorkAddressQuestion(NO);
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
         assertNotNull(pdfMap.get(Q2_4_DIFFERENT_WORK_ADDRESS));
     }
