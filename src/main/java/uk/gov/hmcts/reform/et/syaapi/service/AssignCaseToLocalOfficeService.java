@@ -41,15 +41,14 @@ public class AssignCaseToLocalOfficeService {
             ClaimantWorkAddressType claimantWorkAddressType = new ClaimantWorkAddressType();
             for (RespondentSumTypeItem respondentSumTypeItem : respondentSumTypeList) {
                 if (respondentSumTypeItem.getValue() != null
-                    && respondentSumTypeItem.getValue().getRespondentAddress() != null) {
+                    && respondentSumTypeItem.getValue().getRespondentAddress() != null
+                    && StringUtils.isNotBlank(respondentSumTypeItem.getValue().getRespondentAddress().getPostCode())) {
                     claimantWorkAddressType.setClaimantWorkAddress(
                         respondentSumTypeItem.getValue().getRespondentAddress());
                     caseData.setClaimantWorkAddress(claimantWorkAddressType);
-                    if (StringUtils.isNotBlank(respondentSumTypeItem.getValue().getRespondentAddress().getPostCode())) {
-                        managingOffice = getManagingOffice(
-                            respondentSumTypeItem.getValue().getRespondentAddress().getPostCode());
-                        break;
-                    }
+                    managingOffice = getManagingOffice(
+                        respondentSumTypeItem.getValue().getRespondentAddress().getPostCode());
+                    break;
                 }
             }
         }
