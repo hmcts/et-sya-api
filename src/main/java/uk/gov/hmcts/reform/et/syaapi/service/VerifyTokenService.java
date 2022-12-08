@@ -13,10 +13,19 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.exceptions.InvalidTokenException;
+import uk.gov.hmcts.reform.et.syaapi.config.interceptors.RequestInterceptor;
 
 import java.net.URL;
 import java.security.Key;
 
+/**
+ * Used by {@link RequestInterceptor} to test the validity of the jwt of the caller
+ *
+ * This relies upon the following configurations to be set at an environment level:
+ * <ul>
+ *   <li>IDAM_JWKS_BASEURL</li>
+ * </ul>
+ */
 @Slf4j
 @Service
 public class VerifyTokenService {
@@ -30,6 +39,11 @@ public class VerifyTokenService {
         this.jwsVerifierFactory = new DefaultJWSVerifierFactory();
     }
 
+    /**
+     * Accepts a JWT and verifies via a {@link JWSVerifierFactory}
+     * @param token the jwt to be verified
+     * @return a {@link Boolean} true if the jwt is validated
+     */
     public boolean verifyTokenSignature(String token) {
         try {
             var tokenTocheck = StringUtils.replace(token, "Bearer ", "");

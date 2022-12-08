@@ -10,6 +10,9 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGeneratorFactory;
 import uk.gov.hmcts.reform.authorisation.validators.AuthTokenValidator;
 import uk.gov.hmcts.reform.authorisation.validators.ServiceAuthTokenValidator;
 
+/**
+ *
+ */
 @Configuration
 @Lazy
 public class AuthConfiguration {

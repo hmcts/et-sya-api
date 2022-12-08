@@ -43,6 +43,18 @@ public class NotificationService {
         return sendEmailResponse;
     }
 
+    /**
+     * Upon successful completion of a case submission, this function will send the confirmation email.
+     *
+     * @param templateId the name of the email template to create the body of the email
+     * @param targetEmail the recipient of the confirmation email
+     * @param reference  A reference specified by the service for filtering notifications.
+     * @param firstName the first name of the recipient
+     * @param lastName the last name of the recipient
+     * @param caseNumber the submitted case's ID number
+     * @param citizenPortalLink citizen hub link appended to the email
+     * @return returns the outcome of sending the confirmation email wrapped in a {@link SendEmailResponse}
+     */
     public SendEmailResponse sendSubmitCaseConfirmationEmail(String templateId,
                                                              String targetEmail,
                                                              String reference,
