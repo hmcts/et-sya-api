@@ -9,6 +9,7 @@ import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.ClaimantWorkAddressType;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 
@@ -37,10 +38,14 @@ public class AssignCaseToLocalOfficeService {
             managingOffice = getManagingOffice(
                 caseData.getClaimantWorkAddress().getClaimantWorkAddress().getPostCode());
         } else if (!CollectionUtils.isEmpty(respondentSumTypeList)) {
+            ClaimantWorkAddressType claimantWorkAddressType = new ClaimantWorkAddressType();
             for (RespondentSumTypeItem respondentSumTypeItem : respondentSumTypeList) {
                 if (respondentSumTypeItem.getValue() != null
                     && respondentSumTypeItem.getValue().getRespondentAddress() != null
                     && StringUtils.isNotBlank(respondentSumTypeItem.getValue().getRespondentAddress().getPostCode())) {
+                    claimantWorkAddressType.setClaimantWorkAddress(
+                        respondentSumTypeItem.getValue().getRespondentAddress());
+                    caseData.setClaimantWorkAddress(claimantWorkAddressType);
                     managingOffice = getManagingOffice(
                         respondentSumTypeItem.getValue().getRespondentAddress().getPostCode());
                     break;
