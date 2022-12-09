@@ -154,7 +154,7 @@ class PdfServiceTest {
 
     @Test
     void shouldCreatePdfFileWelsh() throws IOException {
-        testData.getCaseData().getClaimantType().setClaimantContactLanguage(WELSH_LANGUAGE);
+        testData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
         PdfService pdfService1 = new PdfService(new PdfMapperService());
         pdfService1.welshPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH;
         byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
@@ -171,7 +171,7 @@ class PdfServiceTest {
 
     @Test
     void shouldCreatePdfDecodedMultipartFileFromCaseDataWelsh() throws PdfServiceException {
-        testData.getCaseData().getClaimantType().setClaimantContactLanguage(WELSH_LANGUAGE);
+        testData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
         List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
             pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), null);
         assertThat(pdfDecodedMultipartFileList).hasSize(2);
@@ -179,7 +179,7 @@ class PdfServiceTest {
 
     @Test
     void shouldCreatePdfDecodedMultipartFileInEnglishOnlyWhenNoContactLanguage() throws PdfServiceException {
-        testData.getCaseData().getClaimantType().setClaimantContactLanguage(null);
+        testData.getCaseData().getClaimantHearingPreference().setContactLanguage(null);
         List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
             pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), null);
         assertThat(pdfDecodedMultipartFileList).hasSize(1);
