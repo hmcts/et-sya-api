@@ -21,7 +21,7 @@ import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -36,8 +36,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.EMAIL_TEST_GMAIL_COM;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_FIRST_NAME;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SURNAME;
 
@@ -109,7 +109,7 @@ class ManageCaseControllerTest {
     @Test
     void shouldGetCaseDetailsByUser() {
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(UserDetails.builder().id(USER_ID).build());
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(UserInfo.builder().uid(USER_ID).build());
         when(caseService.getAllUserCases(
             TEST_SERVICE_AUTH_TOKEN
         )).thenReturn(requestCaseDataList);
@@ -198,14 +198,14 @@ class ManageCaseControllerTest {
 
         // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
             "12",
-            EMAIL_TEST_GMAIL_COM,
+            TEST_NAME,
             TEST_FIRST_NAME,
             TEST_SURNAME,
             null
         ));
-
         when(caseService.triggerEvent(
             TEST_SERVICE_AUTH_TOKEN,
             CASE_ID,
@@ -234,9 +234,10 @@ class ManageCaseControllerTest {
 
         // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
             "12",
-            EMAIL_TEST_GMAIL_COM,
+            TEST_NAME,
             TEST_FIRST_NAME,
             TEST_SURNAME,
             null
@@ -269,9 +270,10 @@ class ManageCaseControllerTest {
 
         // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
             "12",
-            EMAIL_TEST_GMAIL_COM,
+            TEST_NAME,
             TEST_FIRST_NAME,
             TEST_SURNAME,
             null
@@ -302,9 +304,10 @@ class ManageCaseControllerTest {
 
         // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(idamClient.getUserDetails(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserDetails(
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
             "12",
-            "test@gmail.com",
+            TEST_NAME,
             "Joe",
             "Bloggs",
             null

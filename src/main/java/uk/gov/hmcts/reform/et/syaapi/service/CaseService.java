@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.common.Strings;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
@@ -33,7 +34,7 @@ import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -48,7 +49,6 @@ import static java.util.stream.Collectors.toList;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CASE_FIELD_MANAGING_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
@@ -74,6 +74,7 @@ public class CaseService {
     private final PdfService pdfService;
     private final NotificationsProperties notificationsProperties;
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
+    private final AssignCaseToLocalOfficeService assignCaseToLocalOfficeService;
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
@@ -90,20 +91,20 @@ public class CaseService {
      * Given a user derived from the authorisation token in the request,
      * this will get all cases {@link CaseDetails} for that user.
      *
-     * @param authorization is used to get the {@link UserDetails} for the request
+     * @param authorization is used to get the {@link UserInfo} for the request
      * @return the associated {@link CaseDetails} for the ID provided
      */
     @Retryable({FeignException.class, RuntimeException.class})
     public List<CaseDetails> getAllUserCases(String authorization) {
-        UserDetails userDetails = idamClient.getUserDetails(authorization);
+        UserInfo userInfo = idamClient.getUserInfo(authorization);
 
         List<CaseDetails> scotlandCases = ccdApiClient.searchForCitizen(
             authorization, authTokenGenerator.generate(),
-            userDetails.getId(), JURISDICTION_ID, SCOTLAND_CASE_TYPE, Collections.emptyMap());
+            userInfo.getUid(), JURISDICTION_ID, SCOTLAND_CASE_TYPE, Collections.emptyMap());
 
         List<CaseDetails> englandCases = ccdApiClient.searchForCitizen(
             authorization, authTokenGenerator.generate(),
-            userDetails.getId(), JURISDICTION_ID, ENGLAND_CASE_TYPE, Collections.emptyMap());
+            userInfo.getUid(), JURISDICTION_ID, ENGLAND_CASE_TYPE, Collections.emptyMap());
 
         return Stream.of(scotlandCases, englandCases).flatMap(Collection::stream).collect(toList());
     }
@@ -111,7 +112,7 @@ public class CaseService {
     /**
      * Given a caseID, this will retrieve the correct {@link CaseDetails}.
      *
-     * @param authorization is used to find the {@link UserDetails} for request
+     * @param authorization is used to find the {@link UserInfo} for request
      * @param caseRequest  case data for request
      * @return the associated {@link CaseDetails} if the case is created
      */
@@ -119,7 +120,7 @@ public class CaseService {
     public CaseDetails createCase(String authorization,
                                   CaseRequest caseRequest) {
         String s2sToken = authTokenGenerator.generate();
-        String userId = idamClient.getUserDetails(authorization).getId();
+        String userId = idamClient.getUserInfo(authorization).getUid();
         String eventTypeName = INITIATE_CASE_DRAFT.name();
         String caseType = getCaseType(caseRequest);
         Et1CaseData data = new EmployeeObjectMapper().getEmploymentCaseData(caseRequest.getCaseData());
@@ -160,28 +161,17 @@ public class CaseService {
         }
     }
 
-    private String getTribunalOfficeByCaseTypeId(String caseTypeId) {
-        return postcodeToOfficeService.getTribunalOfficeByCaseTypeId(caseTypeId)
-            .orElse(DEFAULT_TRIBUNAL_OFFICE).getOfficeName();
-    }
-
     public CaseDetails updateCase(String authorization,
                                   CaseRequest caseRequest) {
         return triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.UPDATE_CASE_DRAFT,
                             caseRequest.getCaseTypeId(), caseRequest.getCaseData());
     }
 
-    private CaseData convertCaseRequestToCaseDataWithTribunalOffice(CaseRequest caseRequest) {
-        caseRequest.getCaseData().put(CASE_FIELD_MANAGING_OFFICE,
-                                      getTribunalOfficeByCaseTypeId(caseRequest.getCaseTypeId()));
-        return EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseRequest.getCaseData());
-    }
-
     /**
      * Given Case Request, triggers submit case events for the case. Before submitting case events
      * sets managing office (tribunal office), created PDF file for the case and saves PDF file.
      *
-     * @param authorization is used to seek the {UserDetails} for request
+     * @param authorization is used to seek the {UserInfo} for request
      * @param caseRequest is used to provide the caseId, caseTypeId and {@link CaseData} in JSON Format
      * @return the associated {@link CaseData} if the case is submitted
      */
@@ -190,7 +180,7 @@ public class CaseService {
         caseRequest.getCaseData().put("receiptDate", LocalDateTime.now().format(DateTimeFormatter
                                                                                     .ofPattern("yyyy-MM-dd")));
         caseRequest.getCaseData().put("feeGroupReference", caseRequest.getCaseId());
-        CaseData caseData = convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
+        CaseData caseData = assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
         CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), SUBMIT_CASE_DRAFT,
                                                caseRequest.getCaseTypeId(), caseRequest.getCaseData());
         caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :
@@ -205,8 +195,8 @@ public class CaseService {
         } catch (InvalidAcasNumbersException e) {
             log.error("Invalid ACAS numbers", e);
         }
-
-        PdfDecodedMultipartFile casePdfFile = pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData);
+        UserInfo userInfo = idamClient.getUserInfo(authorization);
+        PdfDecodedMultipartFile casePdfFile = pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData, userInfo);
         List<DocumentTypeItem> documentList = caseDocumentService
             .uploadAllDocuments(authorization, caseRequest.getCaseTypeId(), casePdfFile, acasCertificates);
 
@@ -225,8 +215,12 @@ public class CaseService {
                 notificationsProperties.getSubmitCaseEmailTemplateId(),
                 caseData.getClaimantType().getClaimantEmailAddress(),
                 caseRequest.getCaseId(),
-                caseData.getClaimantIndType().getClaimantFirstNames(),
-                caseData.getClaimantIndType().getClaimantLastName(),
+                Strings.isNullOrEmpty(caseData.getClaimantIndType().getClaimantFirstNames())
+                    ? userInfo.getGivenName()
+                    : caseData.getClaimantIndType().getClaimantFirstNames(),
+                Strings.isNullOrEmpty(caseData.getClaimantIndType().getClaimantLastName())
+                    ? userInfo.getFamilyName()
+                    : caseData.getClaimantIndType().getClaimantLastName(),
                 caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString(),
                 notificationsProperties.getCitizenPortalLink());
         return caseDetails;
@@ -235,7 +229,7 @@ public class CaseService {
     /**
      * Given a caseId, initialization of trigger event to start and submit update for case.
      *
-     * @param authorization is used to seek the {@link UserDetails} for request
+     * @param authorization is used to seek the {@link UserInfo} for request
      * @param caseId used to retrieve get case details
      * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
      * @param eventName is used to determine INITIATE_CASE_DRAFT or UPDATE_CASE_DRAFT
@@ -262,7 +256,7 @@ public class CaseService {
     /**
      * Given a caseId, start update for the case.
      *
-     * @param authorization is used to seek the {@link UserDetails} for request
+     * @param authorization is used to seek the {@link UserInfo} for request
      * @param caseId used to retrieve get case details
      * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
      * @param eventName is used to determine INITIATE_CASE_DRAFT or UPDATE_CASE_DRAFT
@@ -271,12 +265,12 @@ public class CaseService {
     public StartEventResponse startUpdate(String authorization, String caseId,
                                           String caseType, CaseEvent eventName) {
         String s2sToken = authTokenGenerator.generate();
-        UserDetails userDetails = idamClient.getUserDetails(authorization);
+        UserInfo userInfo = idamClient.getUserInfo(authorization);
 
         return ccdApiClient.startEventForCitizen(
             authorization,
             s2sToken,
-            userDetails.getId(),
+            userInfo.getUid(),
             JURISDICTION_ID,
             caseType,
             caseId,
@@ -287,19 +281,19 @@ public class CaseService {
     /**
      * Given a caseId, submit update for the case.
      *
-     * @param authorization is used to seek the {@link UserDetails} for request
+     * @param authorization is used to seek the {@link UserInfo} for request
      * @param caseId used to retrieve get case details
      * @param caseDataContent provides overall content of the case
      * @param caseType is used to determine if the case is for ET_EnglandWales or ET_Scotland
      */
     public CaseDetails submitUpdate(String authorization, String caseId,
                                     CaseDataContent caseDataContent, String caseType) {
-        UserDetails userDetails = idamClient.getUserDetails(authorization);
+        UserInfo userInfo = idamClient.getUserInfo(authorization);
         String s2sToken = authTokenGenerator.generate();
         return ccdApiClient.submitEventForCitizen(
             authorization,
             s2sToken,
-            userDetails.getId(),
+            userInfo.getUid(),
             JURISDICTION_ID,
             caseType,
             caseId,
@@ -368,4 +362,3 @@ public class CaseService {
     }
 
 }
-

@@ -74,6 +74,14 @@ public final class TestData {
         "requests/caseDataWithClaimTypes.json",
         CaseRequest.class
     );
+    private final CaseRequest caseRequestWithoutManagingAddress = ResourceLoader.fromString(
+        "requests/caseDataWithoutManagingAddress.json",
+        CaseRequest.class
+    );
+    private final CaseRequest emptyCaseRequest = ResourceLoader.fromString(
+        "requests/noManagingOfficeAndRespondentsAddressCaseRequest.json",
+        CaseRequest.class
+    );
 
     public Map<String, Object> getCaseRequestCaseDataMap() {
         Map<String, Object> requestCaseData = new ConcurrentHashMap<>();
@@ -172,5 +180,6 @@ public final class TestData {
             Arguments.of("AB12 1AB", address12),
             Arguments.of("AB13 1AB", address13)
         );
+
     }
 }
