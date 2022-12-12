@@ -10,8 +10,8 @@ public class ResourceNotFoundException extends RuntimeException {
 
     /**
      * Throws a {@link ResourceNotFoundException} with a message and a cause.
-     * @param message
-     * @param ex
+     * @param message exception message
+     * @param ex exception cause
      */
     public ResourceNotFoundException(String message, Throwable ex) {
         super(message, ex);

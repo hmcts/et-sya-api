@@ -57,7 +57,7 @@ public class ManageCaseController {
     /**
      * Uses the authorization token to extract the user and return all the cases that belong to that user.
      * @param authorization the JWT that contains the user information
-     * @return a list of cases for the given user wrapped in a {@link List<CaseDetails>} object
+     * @return a list of cases for the given user wrapped in a {@link CaseDetails} object
      */
     @GetMapping("/user-cases")
     @Operation(summary = "Return list of case details for a given user")

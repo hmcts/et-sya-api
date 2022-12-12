@@ -57,7 +57,7 @@ import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 
 /**
- * Provides read and write access to cases stored by ET
+ * Provides read and write access to cases stored by ET.
  */
 @Slf4j
 @Service
@@ -164,7 +164,7 @@ public class CaseService {
     }
 
     /**
-     * Will accept a {@link CaseRequest} trigger an event to update a give case in ET
+     * Will accept a {@link CaseRequest} trigger an event to update a give case in ET.
      * @param authorization jwt of the user
      * @param caseRequest case to be updated
      * @return the newly updated case wrapped in a {@link CaseDetails} object.

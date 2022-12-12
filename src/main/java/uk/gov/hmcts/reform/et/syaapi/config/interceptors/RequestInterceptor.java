@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 /**
- * Intercepts any call to the et-sya-api and validates the token
+ * Intercepts any call to the et-sya-api and validates the token.
  */
 @Slf4j
 @Component

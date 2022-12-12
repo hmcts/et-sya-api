@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.enums;
 
 /**
- * defines the current stage of a case submission as an enumerator
+ * defines the current stage of a case submission as an enumerator.
  */
 public enum CaseState {
     DRAFT,

@@ -144,9 +144,9 @@ public class AcasService {
 
     /**
      * This will iterate through each respondent in the case and extract the acas certificate numbers. This
-     * list of certificate numbers are converted into {@link List<AcasCertificate>}
+     * list of certificate numbers are converted into {@link AcasCertificate}
      * @param caseData passed to extract Acas Certificates from
-     * @return the list of {@link List<AcasCertificate>}
+     * @return the list of {@link AcasCertificate}
      * @throws AcasException if a problem occurs obtaining the certificates.
      * @throws InvalidAcasNumbersException if any of the acas numbers provided are invalid.
      */

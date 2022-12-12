@@ -219,7 +219,7 @@ public class CaseDocumentService {
         return headers;
     }
 
-    private void validateFile(MultipartFile file) throws CaseDocumentException, IOException {
+    private void validateFile(MultipartFile file) throws CaseDocumentException {
         String filename = file.getOriginalFilename();
 
         assert filename != null;
@@ -279,7 +279,7 @@ public class CaseDocumentService {
     }
 
     /**
-     * Accepts all files for a given case as a {@link List<PdfDecodedMultipartFile>} and uploads them.
+     * Accepts all files for a given case as a list of {@link PdfDecodedMultipartFile} and uploads them.
      * Files are uploaded one at a file via this service and then returned as a list of {@link DocumentTypeItem}
      * @param authToken jwt token used to call this service
      * @param caseType defines the juridiction of the case e.g. ET_EnglandWales

@@ -62,7 +62,7 @@ public class PdfService {
     }
 
     /**
-     * Populates a pdf document with data stored in the case data parameter
+     * Populates a pdf document with data stored in the case data parameter.
      * @param caseData {@link CaseData} object with information in which to populate the pdf with
      * @param pdfSource file name of the pdf template used to create the pdf
      * @return a byte array of the generated pdf file.
@@ -143,10 +143,10 @@ public class PdfService {
     }
 
     /**
-     * Converts case data to a pdf byte array wrapped in a {@link PdfDecodedMultipartFile} Object
+     * Converts case data to a pdf byte array wrapped in a {@link PdfDecodedMultipartFile} Object.
      * @param caseData The case data to be converted into a pdf file wrapped in a {@link CaseData}
      * @param userInfo a {@link UserInfo} used user name as a backup if no name in case
-     * @return a {@link List<PdfDecodedMultipartFile>} which contains the pdf values
+     * @return a list of {@link PdfDecodedMultipartFile} which contains the pdf values
      * @throws PdfServiceException when convertCaseToPdf throws an exception
      */
     public List<PdfDecodedMultipartFile> convertCaseDataToPdfDecodedMultipartFile(CaseData caseData, UserInfo userInfo)
@@ -173,10 +173,10 @@ public class PdfService {
     }
 
     /**
-     * Converts a list of {@link AcasCertificate} into a list of pdf files
+     * Converts a list of {@link AcasCertificate} into a list of pdf files.
      * @param caseData case data wrapped in {@link CaseData} used when creating pdf name
-     * @param acasCertificates certificates as a {@link List<AcasCertificate>} to be converted into pdf files
-     * @return a list of pdf files wrapped in {@link List<PdfDecodedMultipartFile>}
+     * @param acasCertificates certificates as a {@link AcasCertificate} to be converted into pdf files
+     * @return a list of pdf files wrapped in {@link PdfDecodedMultipartFile}
      */
     public List<PdfDecodedMultipartFile> convertAcasCertificatesToPdfDecodedMultipartFiles(
         CaseData caseData, List<AcasCertificate> acasCertificates) {

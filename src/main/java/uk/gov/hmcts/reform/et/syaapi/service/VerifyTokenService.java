@@ -19,8 +19,7 @@ import java.net.URL;
 import java.security.Key;
 
 /**
- * Used by {@link RequestInterceptor} to test the validity of the jwt of the caller
- *
+ * Used by {@link RequestInterceptor} to test the validity of the jwt of the caller.
  * This relies upon the following configurations to be set at an environment level:
  * <ul>
  *   <li>IDAM_JWKS_BASEURL</li>
@@ -40,7 +39,7 @@ public class VerifyTokenService {
     }
 
     /**
-     * Accepts a JWT and verifies via a {@link JWSVerifierFactory}
+     * Accepts a JWT and verifies via a {@link JWSVerifierFactory}.
      * @param token the jwt to be verified
      * @return a {@link Boolean} true if the jwt is validated
      */

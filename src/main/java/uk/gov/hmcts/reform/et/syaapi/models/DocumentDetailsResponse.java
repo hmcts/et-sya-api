@@ -13,7 +13,7 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * Defines the response from successfully uploading a document with the {@link CaseDocumentService}
+ * Defines the response from successfully uploading a document with the {@link CaseDocumentService}.
  */
 @Getter
 @Setter

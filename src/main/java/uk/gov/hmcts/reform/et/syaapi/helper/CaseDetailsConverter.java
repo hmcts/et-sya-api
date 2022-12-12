@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Converts {@link CaseDetails} to other case related classes using {@link ObjectMapper}
+ * Converts {@link CaseDetails} to other case related classes using {@link ObjectMapper}.
  */
 @Service
 public class CaseDetailsConverter {

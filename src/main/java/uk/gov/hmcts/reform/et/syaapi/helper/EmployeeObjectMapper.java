@@ -34,9 +34,9 @@ public class EmployeeObjectMapper {
     }
 
     /**
-     * Converts caseData {@link Map<String, Object>} to {@link Et1CaseData} object.
+     * Converts caseData to {@link Et1CaseData} object.
      *
-     * @param caseData which would be in {@link Map<String, Object>} format
+     * @param caseData to be converted
      * @return case data wrapped in {@link Et1CaseData} format
      */
     public Et1CaseData getEmploymentCaseData(Map<String, Object> caseData) {
@@ -50,9 +50,9 @@ public class EmployeeObjectMapper {
     }
 
     /**
-     * Converts caseData {@link Map<String, Object>} to {@link CaseData} object.
+     * Converts caseData to {@link CaseData} object.
      *
-     * @param caseData which would be in {@link Map<String, Object>} format
+     * @param caseData to be converted
      * @return case data wrapped in {@link CaseData} format
      */
     public static CaseData mapRequestCaseDataToCaseData(Map<String, Object> caseData) {
