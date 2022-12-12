@@ -214,7 +214,7 @@ class NotificationServiceTest {
             any(),
             eq(testData.getExpectedDetails().getId().toString())
         )).thenReturn(inputSendEmailResponse);
-        testData.getCaseData().getClaimantType().setClaimantContactLanguage(EtSyaConstants.WELSH_LANGUAGE);
+        testData.getCaseData().getClaimantHearingPreference().setContactLanguage(EtSyaConstants.WELSH_LANGUAGE);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
             testData.getExpectedDetails(),
             testData.getCaseData(),
@@ -227,7 +227,7 @@ class NotificationServiceTest {
     @Test
     void shouldSendSubmitCaseConfirmationEmailNull() {
         NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
-        testData.getCaseData().getClaimantType().setClaimantContactLanguage(null);
+        testData.getCaseData().getClaimantHearingPreference().setContactLanguage(null);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
             testData.getExpectedDetails(),
             testData.getCaseData(),

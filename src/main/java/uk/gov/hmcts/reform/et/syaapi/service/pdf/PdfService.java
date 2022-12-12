@@ -145,8 +145,8 @@ public class PdfService {
             createPdfDocumentDescriptionFromCaseData(caseData)
         ));
 
-        if (caseData.getClaimantType().getClaimantContactLanguage() != null
-            && WELSH_LANGUAGE.equals(caseData.getClaimantType().getClaimantContactLanguage())) {
+        if (caseData.getClaimantHearingPreference().getContactLanguage() != null
+            && WELSH_LANGUAGE.equals(caseData.getClaimantHearingPreference().getContactLanguage())) {
             files.add(new PdfDecodedMultipartFile(
                 convertCaseToPdf(caseData, this.welshPdfTemplateSource),
                 createPdfDocumentNameFromCaseData(caseData, WELSH_LANGUAGE, userInfo),

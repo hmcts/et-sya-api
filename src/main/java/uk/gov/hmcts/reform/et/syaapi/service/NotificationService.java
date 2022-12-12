@@ -73,8 +73,8 @@ public class NotificationService {
         String caseNumber = caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString();
         String emailTemplateId = notificationsProperties.getSubmitCaseEmailTemplateId();
         String citizenPortalLink = notificationsProperties.getCitizenPortalLink() + "%s";
-        if (caseData.getClaimantType().getClaimantContactLanguage() != null
-            && WELSH_LANGUAGE.equals(caseData.getClaimantType().getClaimantContactLanguage())) {
+        if (caseData.getClaimantHearingPreference().getContactLanguage() != null
+            && WELSH_LANGUAGE.equals(caseData.getClaimantHearingPreference().getContactLanguage())) {
             emailTemplateId = notificationsProperties.getCySubmitCaseEmailTemplateId();
             citizenPortalLink = citizenPortalLink + WELSH_LANGUAGE_PARAM;
         }
