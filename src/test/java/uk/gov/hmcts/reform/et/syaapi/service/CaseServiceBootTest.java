@@ -26,8 +26,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.CITIZEN_PORTAL_LINK;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.SUBMIT_CASE_EMAIL_TEMPLATE_ID;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.USER_ID;
 
@@ -100,14 +98,10 @@ class CaseServiceBootTest {
             anyList()
         )).thenReturn(testData.getUploadDocumentResponse());
         when(notificationService.sendSubmitCaseConfirmationEmail(
-            eq(SUBMIT_CASE_EMAIL_TEMPLATE_ID),
-            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
-            eq(testData.getCaseRequest().getCaseId()),
-            eq(testData.getCaseData().getClaimantIndType().getClaimantFirstNames()),
-            eq(testData.getCaseData().getClaimantIndType().getClaimantLastName()),
-            any(String.class),
-            eq(CITIZEN_PORTAL_LINK)
-        )).thenReturn(null);
+            testData.getExpectedDetails(),
+            testData.getCaseData(),
+            testData.getUserInfo())
+        ).thenReturn(null);
     }
 
     @Test
