@@ -97,7 +97,6 @@ public class PdfService {
     private static String createPdfDocumentNameFromCaseData(CaseData caseData,
                                                             String documentLanguage,
                                                             UserInfo userInfo) {
-
         String claimantFirstName = caseData.getClaimantIndType().getClaimantFirstNames();
         String claimantLastName = caseData.getClaimantIndType().getClaimantLastName();
         if (Strings.isNullOrEmpty(claimantFirstName)) {
@@ -111,7 +110,6 @@ public class PdfService {
             + "_"
             + claimantLastName.replace(" ", "_")
             + (ENGLISH_LANGUAGE.equals(documentLanguage) ? "" : "_" + documentLanguage)
-            + ".pdf";
     }
 
     private static String createPdfDocumentNameFromCaseDataAndAcasCertificate(
