@@ -9,9 +9,16 @@ import org.springframework.context.annotation.Configuration;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.REMOTE_REPO;
 
+/**
+ * Configures the settings for OpenAPI for the project.
+ */
 @Configuration
 public class OpenAPIConfiguration {
 
+    /**
+     * Configures the settings for OpenAPI for the project.
+     * @return {@link OpenAPI} object with project specific information
+     */
     @Bean
     public OpenAPI openAPI() {
         return new OpenAPI()

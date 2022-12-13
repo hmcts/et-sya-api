@@ -14,6 +14,9 @@ import uk.gov.hmcts.reform.et.syaapi.enums.CaseState;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Converts {@link CaseDetails} to other case related classes using {@link ObjectMapper}.
+ */
 @Service
 public class CaseDetailsConverter {
 
@@ -22,7 +25,7 @@ public class CaseDetailsConverter {
     /**
      * Constructor for @ObjectMapper class.
      *
-     * @param objectMapper jackson {$ObjectMapper}object to initialize object
+     * @param objectMapper jackson {@link ObjectMapper} object to initialize object
      */
     public CaseDetailsConverter(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;

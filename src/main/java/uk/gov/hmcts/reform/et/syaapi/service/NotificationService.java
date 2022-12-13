@@ -1,8 +1,8 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
+import com.microsoft.applicationinsights.core.dependencies.google.common.base.Strings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.common.Strings;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;

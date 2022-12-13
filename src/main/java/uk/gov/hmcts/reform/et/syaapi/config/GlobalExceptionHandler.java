@@ -16,10 +16,18 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
+/**
+ * Creates a handler that will handle specific exceptions that occur anywhere in the API.
+ */
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
+    /**
+     * Intercepts any {@link InvalidTokenException} occurances within the api and builds an appropriate response.
+     * @param exception that just occured
+     * @return {@link ErrorResponse} with the Unauthorised (401) response
+     */
     @ExceptionHandler(InvalidTokenException.class)
     public ResponseEntity<ErrorResponse> handleInvalidTokenException(InvalidTokenException exception) {
         log.error(exception.getMessage(), exception);
@@ -31,6 +39,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         );
     }
 
+    /**
+     * Intercepts any {@link UnAuthorisedServiceException} occurances within the api and builds an appropriate response.
+     * @param unAuthorisedServiceException that just occured
+     * @return {@link ErrorResponse} with the Forbidden response
+     */
     @ExceptionHandler(UnAuthorisedServiceException.class)
     public ResponseEntity<ErrorResponse> handleUnAuthorisedServiceException(
         UnAuthorisedServiceException unAuthorisedServiceException
@@ -44,6 +57,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         );
     }
 
+    /**
+     * Intercepts any {@link FeignException} occurances within the api and builds an appropriate response.
+     * @param exception that just occured
+     * @return {@link ErrorResponse} with the exception details
+     */
     @ExceptionHandler(FeignException.class)
     ResponseEntity<ErrorResponse> handleFeignException(FeignException exception) {
         log.error(exception.getMessage(), exception);
@@ -56,6 +74,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         );
     }
 
+    /**
+     * Intercepts any {@link ResponseStatusException} occurances within the api and builds an appropriate response.
+     * @param exception that just occured
+     * @return {@link ErrorResponse} with the exception details
+     */
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorResponse> handleResponseStatusException(ResponseStatusException exception) {
         log.error(exception.getMessage(), exception);
@@ -67,6 +90,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         );
     }
 
+    /**
+     * Intercepts any {@link ResourceNotFoundException} occurances within the api and builds an appropriate response.
+     * @param exception that just occured
+     * @return {@link ErrorResponse} with the Not Found (404) response
+     */
     @ExceptionHandler(ResourceNotFoundException.class)
     protected ResponseEntity<Object> handleResourceNotFoundException(final ResourceNotFoundException exception) {
         return ResponseEntity.status(NOT_FOUND).body(
