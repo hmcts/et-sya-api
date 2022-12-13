@@ -110,6 +110,7 @@ public class PdfService {
             + "_"
             + claimantLastName.replace(" ", "_")
             + (ENGLISH_LANGUAGE.equals(documentLanguage) ? "" : "_" + documentLanguage)
+            + ".pdf";
     }
 
     private static String createPdfDocumentNameFromCaseDataAndAcasCertificate(
