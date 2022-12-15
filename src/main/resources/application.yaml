@@ -69,4 +69,4 @@ notifications:
   submitCaseEmailTemplateId: ${SUBMIT_CASE_EMAIL_TEMPLATE_ID:4f4b378e-238a-46ed-ae1c-26b8038192f0}
 
 pdf:
-  source: "ET1_1122.pdf"
+  source: "ET1_2222.pdf"
