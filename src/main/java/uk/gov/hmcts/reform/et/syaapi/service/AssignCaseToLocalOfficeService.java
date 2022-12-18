@@ -16,11 +16,11 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import java.util.List;
 import java.util.Optional;
 
+import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.ENGLANDWALES_OFFICES;
+import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.SCOTLAND_OFFICES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CASE_FIELD_MANAGING_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
-import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.ENGLANDWALES_OFFICES;
-import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.SCOTLAND_OFFICES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 
 @Slf4j
