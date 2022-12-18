@@ -90,7 +90,7 @@ public class AssignCaseToLocalOfficeService {
             || SCOTLAND_CASE_TYPE.equals(caseTypeId) && ENGLANDWALES_OFFICES.contains(office.get())) {
             return UNASSIGNED_OFFICE;
         } else {
-            return reassignAnyScottishOfficeToGlasgow(office);
+            return reassignAnyScottishOfficeToGlasgow(office.get());
         }
     }
 
@@ -100,15 +100,12 @@ public class AssignCaseToLocalOfficeService {
      * @param office retrieved from getTribunalOfficeFromPostcode method
      * @return Returns officeName
      */
-    private String reassignAnyScottishOfficeToGlasgow(Optional<TribunalOffice> office) {
-        if (office.isPresent()) {
-            if (SCOTLAND_OFFICES.contains(office.get())) {
+    private String reassignAnyScottishOfficeToGlasgow(TribunalOffice office) {
+            if (SCOTLAND_OFFICES.contains(office)) {
                 return TribunalOffice.GLASGOW.getOfficeName();
             } else {
-                return office.get().getOfficeName();
+                return office.getOfficeName();
             }
-        }
-        return UNASSIGNED_OFFICE;
     }
 
     private boolean claimantHasWorkingAddressPostCode(CaseData caseData) {
