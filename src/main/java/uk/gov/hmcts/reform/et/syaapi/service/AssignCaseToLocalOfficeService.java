@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -12,11 +13,13 @@ import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantWorkAddressType;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
-
 import java.util.List;
-
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CASE_FIELD_MANAGING_OFFICE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
+import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.ENGLANDWALES_OFFICES;
+import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.SCOTLAND_OFFICES;
 
 @Slf4j
 @Service
@@ -36,7 +39,8 @@ public class AssignCaseToLocalOfficeService {
         String managingOffice = UNASSIGNED_OFFICE;
         if (claimantHasWorkingAddressPostCode(caseData)) {
             managingOffice = getManagingOffice(
-                caseData.getClaimantWorkAddress().getClaimantWorkAddress().getPostCode());
+                caseData.getClaimantWorkAddress().getClaimantWorkAddress().getPostCode(),
+                caseRequest.getCaseTypeId());
         } else if (!CollectionUtils.isEmpty(respondentSumTypeList)) {
             ClaimantWorkAddressType claimantWorkAddressType = new ClaimantWorkAddressType();
             for (RespondentSumTypeItem respondentSumTypeItem : respondentSumTypeList) {
@@ -47,7 +51,8 @@ public class AssignCaseToLocalOfficeService {
                         respondentSumTypeItem.getValue().getRespondentAddress());
                     caseData.setClaimantWorkAddress(claimantWorkAddressType);
                     managingOffice = getManagingOffice(
-                        respondentSumTypeItem.getValue().getRespondentAddress().getPostCode());
+                        respondentSumTypeItem.getValue().getRespondentAddress().getPostCode()
+                        , caseRequest.getCaseTypeId());
                     break;
                 }
             }
@@ -57,14 +62,46 @@ public class AssignCaseToLocalOfficeService {
         return caseData;
     }
 
-    private String getManagingOffice(String postcode) {
+    private String getManagingOffice(String postcode, String caseTypeId) {
         try {
-            return postcodeToOfficeService.getTribunalOfficeFromPostcode(postcode)
-                .map(TribunalOffice::getOfficeName)
-                .orElse(UNASSIGNED_OFFICE);
+            Optional<TribunalOffice> office = postcodeToOfficeService.getTribunalOfficeFromPostcode(postcode);
+            return retrieveManagingOfficeAccordingToCaseTypeId(caseTypeId, office);
         } catch (InvalidPostcodeException e) {
             log.info("Failed to find tribunal office : {} ", e.getMessage());
             return UNASSIGNED_OFFICE;
+        }
+    }
+
+    /**
+     * Checks if caseTypeId matches the office postcode area(E.g. ET_EnglandWales -> Leeds), otherwise it will assign
+     * to Unassigned office.
+     * @param caseTypeId 'ET_EnglandWales' or 'ET_Scotland'
+     * @param office retrieved from getTribunalOfficeFromPostcode method
+     * @return Returns officeName
+     */
+    private String retrieveManagingOfficeAccordingToCaseTypeId(String caseTypeId, Optional<TribunalOffice> office) {
+        if (office.isEmpty()) {
+            return UNASSIGNED_OFFICE;
+        }
+        if (ENGLAND_CASE_TYPE.equals(caseTypeId) && SCOTLAND_OFFICES.contains(office.get())
+            || SCOTLAND_CASE_TYPE.equals(caseTypeId) && ENGLANDWALES_OFFICES.contains(office.get())) {
+            return UNASSIGNED_OFFICE;
+        } else {
+            return reassignAnyScottishOfficeToGlasgow(office);
+        }
+    }
+
+    /**
+     * All Scottish cases, that have provided a valid Scottish respondent/work postcode, should be assigned by default
+     * to the Glasgow office.
+     * @param office retrieved from getTribunalOfficeFromPostcode method
+     * @return Returns officeName
+     */
+    private String reassignAnyScottishOfficeToGlasgow(Optional<TribunalOffice> office) {
+        if (SCOTLAND_OFFICES.contains(office.get())) {
+            return TribunalOffice.GLASGOW.getOfficeName();
+        } else {
+            return office.get().getOfficeName();
         }
     }
 

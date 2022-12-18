@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"PMD.UnusedPrivateField"})
+@SuppressWarnings({"PMD.UnusedPrivateField", "PMD.LawOfDemeter"})
 class AssignCaseToLocalOfficeServiceTest {
     @InjectMocks
     private AssignCaseToLocalOfficeService assignCaseToLocalOfficeService;
@@ -62,5 +62,44 @@ class AssignCaseToLocalOfficeServiceTest {
         assertThat(
             assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
             .isEqualTo("Glasgow");
+    }
+
+    @Test
+    void shouldAssignUnassignedIfCaseTypeIdIsScotlandAndPostCodeFromEnglandArea() throws InvalidPostcodeException {
+        CaseRequest request = testData.getCaseRequestWithoutManagingAddress();
+
+        when(postcodeToOfficeService.getTribunalOfficeFromPostcode(any())).thenReturn(Optional.of(
+            TribunalOffice.LEEDS
+        ));
+
+        assertThat(
+            assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
+            .isEqualTo(UNASSIGNED_OFFICE);
+    }
+
+    @Test
+    void shouldAssignUnassignedIfCaseTypeIdIsEnglandAndPostCodeFromScotlandArea() throws InvalidPostcodeException {
+        CaseRequest request = testData.getEnglandWalesRequest();
+
+        when(postcodeToOfficeService.getTribunalOfficeFromPostcode(any())).thenReturn(Optional.of(
+            TribunalOffice.EDINBURGH
+        ));
+
+        assertThat(
+            assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
+            .isEqualTo(UNASSIGNED_OFFICE);
+    }
+
+    @Test
+    void shouldAssignAnyScottlandOfficeToGlasgowByDefault() throws InvalidPostcodeException {
+        CaseRequest request = testData.getCaseRequestWithoutManagingAddress();
+
+        when(postcodeToOfficeService.getTribunalOfficeFromPostcode(any())).thenReturn(Optional.of(
+            TribunalOffice.DUNDEE
+        ));
+
+        assertThat(
+            assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
+            .isEqualTo(TribunalOffice.GLASGOW.getOfficeName());
     }
 }
