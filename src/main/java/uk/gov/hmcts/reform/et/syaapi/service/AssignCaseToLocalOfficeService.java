@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -14,6 +13,7 @@ import uk.gov.hmcts.et.common.model.ccd.types.ClaimantWorkAddressType;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import java.util.List;
+import java.util.Optional;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CASE_FIELD_MANAGING_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
@@ -52,8 +52,8 @@ public class AssignCaseToLocalOfficeService {
                         respondentSumTypeItem.getValue().getRespondentAddress());
                     caseData.setClaimantWorkAddress(claimantWorkAddressType);
                     managingOffice = getManagingOffice(
-                        respondentSumTypeItem.getValue().getRespondentAddress().getPostCode()
-                        , caseRequest.getCaseTypeId());
+                        respondentSumTypeItem.getValue().getRespondentAddress().getPostCode(),
+                        caseRequest.getCaseTypeId());
                     break;
                 }
             }
