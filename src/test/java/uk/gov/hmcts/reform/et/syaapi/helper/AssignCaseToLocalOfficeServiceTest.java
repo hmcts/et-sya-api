@@ -46,10 +46,19 @@ class AssignCaseToLocalOfficeServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionForWrongPostcode() throws InvalidPostcodeException {
+    void shouldReturnAssignedForWrongPostcode() throws InvalidPostcodeException {
         CaseRequest request = testData.getCaseRequest();
         when(postcodeToOfficeService.getTribunalOfficeFromPostcode(any()))
             .thenThrow(new InvalidPostcodeException(""));
+        assertThat(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(
+            request).getManagingOffice()).isEqualTo("Unassigned");
+    }
+
+    @Test
+    void shouldReturnAssignedForEmptyOffice() throws InvalidPostcodeException {
+        CaseRequest request = testData.getCaseRequest();
+        when(postcodeToOfficeService.getTribunalOfficeFromPostcode(any()))
+            .thenReturn(Optional.empty());
         assertThat(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(
             request).getManagingOffice()).isEqualTo("Unassigned");
     }
