@@ -101,11 +101,14 @@ public class AssignCaseToLocalOfficeService {
      * @return Returns officeName
      */
     private String reassignAnyScottishOfficeToGlasgow(Optional<TribunalOffice> office) {
-        if (SCOTLAND_OFFICES.contains(office.get())) {
-            return TribunalOffice.GLASGOW.getOfficeName();
-        } else {
-            return office.get().getOfficeName();
+        if (office.isPresent()) {
+            if (SCOTLAND_OFFICES.contains(office.get())) {
+                return TribunalOffice.GLASGOW.getOfficeName();
+            } else {
+                return office.get().getOfficeName();
+            }
         }
+        return UNASSIGNED_OFFICE;
     }
 
     private boolean claimantHasWorkingAddressPostCode(CaseData caseData) {
