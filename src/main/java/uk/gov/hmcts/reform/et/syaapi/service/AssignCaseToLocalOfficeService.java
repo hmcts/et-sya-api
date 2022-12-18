@@ -24,6 +24,7 @@ import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.SCOTLAND_OFFIC
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings({"PMD.LawOfDemeter"})
 public class AssignCaseToLocalOfficeService {
     private final PostcodeToOfficeService postcodeToOfficeService;
 
