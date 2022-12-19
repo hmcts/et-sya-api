@@ -79,10 +79,6 @@ public class AcasService {
         throws AcasException {
         try {
             List<AcasCertificate> acasCertificates = fetchAcasCertificates(acasNumbers).getBody();
-            log.info("Retrieved AcasCertificates: {} using AcasNumbers: {}",
-                     acasCertificates,
-                     acasNumbers
-            );
             return acasCertificates;
         } catch (RestClientResponseException e) {
             if (attempts < MAX_ACAS_RETRIES) {
