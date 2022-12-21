@@ -10,7 +10,7 @@ def branchesToSync = ['perftest', 'demo', 'ithc']
 
 withPipeline(type, product, component) {
   disableLegacyDeployment()
-  enableFun
+  enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
 
   afterAlways('functionalTest:preview') {
           util.archiveArtifacts allowEmptyArchive: true, artifacts: '**/site/serenity/**/*'
