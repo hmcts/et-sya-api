@@ -42,7 +42,6 @@ import uk.gov.service.notify.SendEmailResponse;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -324,12 +323,12 @@ class CaseServiceTest {
                 "test");
 
         when(pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(any(), any()))
-            .thenReturn(Arrays.asList(pdfDecodedMultipartFile));
+            .thenReturn(List.of(pdfDecodedMultipartFile));
 
         when(pdfService.convertCaseDataToPdfDecodedMultipartFile(any(), any()))
-            .thenReturn(pdfDecodedMultipartFile);
+            .thenReturn(List.of(pdfDecodedMultipartFile));
 
-        when(acasService.getAcasCertificatesByCaseData(any())).thenReturn(Arrays.asList());
+        when(acasService.getAcasCertificatesByCaseData(any())).thenReturn(List.of());
 
         when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any()))
             .thenReturn(new LinkedList<>());
@@ -353,7 +352,7 @@ class CaseServiceTest {
                                         + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
                                         + "  }\n"
                                         + "}\n");
-        when(notificationService.sendSubmitCaseConfirmationEmail(any(), any(), any(), any(), any(), any(), any()))
+        when(notificationService.sendSubmitCaseConfirmationEmail(any(), any(), any()))
             .thenReturn(sendEmailResponse);
 
         when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(createDocumentTypeItem());

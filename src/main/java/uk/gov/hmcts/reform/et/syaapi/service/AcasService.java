@@ -78,12 +78,7 @@ public class AcasService {
     private List<AcasCertificate> attemptWithRetriesToFetchAcasCertificates(int attempts, String... acasNumbers)
         throws AcasException {
         try {
-            List<AcasCertificate> acasCertificates = fetchAcasCertificates(acasNumbers).getBody();
-            log.info("Retrieved AcasCertificates: {} using AcasNumbers: {}",
-                     acasCertificates,
-                     acasNumbers
-            );
-            return acasCertificates;
+            return fetchAcasCertificates(acasNumbers).getBody();
         } catch (RestClientResponseException e) {
             if (attempts < MAX_ACAS_RETRIES) {
                 return attemptWithRetriesToFetchAcasCertificates(attempts + 1, acasNumbers);
@@ -142,6 +137,14 @@ public class AcasService {
         }
     }
 
+    /**
+     * This will iterate through each respondent in the case and extract the acas certificate numbers. This
+     * list of certificate numbers are converted into {@link AcasCertificate}
+     * @param caseData passed to extract Acas Certificates from
+     * @return the list of {@link AcasCertificate}
+     * @throws AcasException if a problem occurs obtaining the certificates.
+     * @throws InvalidAcasNumbersException if any of the acas numbers provided are invalid.
+     */
     public List<AcasCertificate> getAcasCertificatesByCaseData(CaseData caseData)
         throws AcasException, InvalidAcasNumbersException {
         List<String> acasCertificateNumbers = new ArrayList<>();

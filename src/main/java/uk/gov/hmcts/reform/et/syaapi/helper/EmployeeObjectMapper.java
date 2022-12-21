@@ -9,13 +9,15 @@ import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 
 import java.util.Map;
 
+/**
+ * Converts case data that is stored in a format used in http calls and wraps it in a class for API use.
+ */
 @Slf4j
 @Service
 public class EmployeeObjectMapper {
 
     /**
-     * Converts caseData string to @{@link Et1CaseData} object.
-     *
+     * Converts caseData string to {@link Et1CaseData} object.
      *
      * @param caseData which would be in json format
      * @return @link Et1CaseData format of input json object
@@ -31,6 +33,12 @@ public class EmployeeObjectMapper {
         return data;
     }
 
+    /**
+     * Converts caseData to {@link Et1CaseData} object.
+     *
+     * @param caseData to be converted
+     * @return case data wrapped in {@link Et1CaseData} format
+     */
     public Et1CaseData getEmploymentCaseData(Map<String, Object> caseData) {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.convertValue(caseData, Et1CaseData.class);
@@ -41,6 +49,12 @@ public class EmployeeObjectMapper {
         return mapper.convertValue(caseData, CaseData.class);
     }
 
+    /**
+     * Converts caseData to {@link CaseData} object.
+     *
+     * @param caseData to be converted
+     * @return case data wrapped in {@link CaseData} format
+     */
     public static CaseData mapRequestCaseDataToCaseData(Map<String, Object> caseData) {
         return getCaseData(caseData);
     }
