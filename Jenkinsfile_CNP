@@ -10,6 +10,23 @@ def branchesToSync = ['perftest', 'demo', 'ithc']
 
 withPipeline(type, product, component) {
   disableLegacyDeployment()
-  enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
+  enableFun
+
+  afterAlways('functionalTest:preview') {
+          util.archiveArtifacts allowEmptyArchive: true, artifacts: '**/site/serenity/**/*'
+      }
+
+  afterAlways('functionalTest:aat') {
+          util.archiveArtifacts allowEmptyArchive: true, artifacts: '**/site/serenity/**/*'
+      }
+
+      onMaster() {
+          enablePactAs([AppPipelineDsl.PactRoles.CONSUMER, AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK])
+      }
+      onPR() {
+          enablePactAs([AppPipelineDsl.PactRoles.CONSUMER, AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK])
+      }
+  }
+
   syncBranchesWithMaster(branchesToSync)
 }
