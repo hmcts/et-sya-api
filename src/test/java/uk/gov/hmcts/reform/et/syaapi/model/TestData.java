@@ -83,6 +83,11 @@ public final class TestData {
         CaseRequest.class
     );
 
+    private final CaseRequest englandWalesRequest = ResourceLoader.fromString(
+        "requests/caseRequestEnglandWales.json",
+        CaseRequest.class
+    );
+
     public Map<String, Object> getCaseRequestCaseDataMap() {
         Map<String, Object> requestCaseData = new ConcurrentHashMap<>();
         requestCaseData.put("typesOfClaim", et1CaseData.getTypesOfClaim());

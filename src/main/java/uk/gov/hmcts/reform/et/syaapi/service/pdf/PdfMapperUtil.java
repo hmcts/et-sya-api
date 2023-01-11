@@ -64,8 +64,10 @@ public final class PdfMapperUtil {
 
         StringBuilder addressLineModified = new StringBuilder();
         for (String word : addressLineWords) {
-            addressLineModified.append(word.substring(0, 1).toUpperCase(Locale.UK))
-                .append(word.substring(1)).append(' ');
+            if (!StringUtils.isEmpty(word.trim())) {
+                addressLineModified.append(word.substring(0, 1).toUpperCase(Locale.UK))
+                    .append(word.substring(1)).append(' ');
+            }
         }
         return addressLineModified.toString().trim();
     }
