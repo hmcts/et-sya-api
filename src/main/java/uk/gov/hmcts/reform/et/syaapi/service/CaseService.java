@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.GenericTseApplication;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
@@ -71,6 +72,7 @@ public class CaseService {
     private final PostcodeToOfficeService postcodeToOfficeService;
     private final AcasService acasService;
     private final CaseDocumentService caseDocumentService;
+    private final DocumentGenerationService documentGenerationService;
     private final NotificationService notificationService;
     private final PdfService pdfService;
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
@@ -369,4 +371,19 @@ public class CaseService {
         caseData.setJurCodesCollection(jurCodesTypeItems);
     }
 
+    private byte[] tseApplicationCyaToPdf(CaseData caseData) throws DocumentGenerationException {
+        if (caseData.getClaimantTse() != null) { // TODO check if TSE is null or not
+            GenericTseApplication genericTseApplication = new GenericTseApplication();
+            genericTseApplication.setApplicationType(caseData.getClaimantTse().getContactApplicationType());
+            genericTseApplication.setTellOrAskTribunal(caseData.getClaimantTse().getContactApplicationText());
+            genericTseApplication.setSupportingEvidence(caseData.getClaimantTse().getContactApplicationFile());
+            genericTseApplication.setCopyToOtherPartyYesOrNo(caseData.getResTseCopyToOtherPartyYesOrNo());
+            genericTseApplication.setCopyToOtherPartyText(caseData.getResTseCopyToOtherPartyTextArea());
+
+            // TODO: Add template name as resource? confirm output name
+            return documentGenerationService.genPdfDocument("doc", "doc", genericTseApplication);
+        }
+
+        return null;
+    }
 }

@@ -82,6 +82,8 @@ class CaseServiceTest {
     @Mock
     private CaseDocumentService caseDocumentService;
     @Mock
+    private DocumentGenerationService documentGenerationService;
+    @Mock
     private NotificationService notificationService;
     @Mock
     private AssignCaseToLocalOfficeService assignCaseToLocalOfficeService;
@@ -590,6 +592,11 @@ class CaseServiceTest {
                                                    TestConstants.CASE_ID,
                                                    true,
                                                    expectedEnrichedData);
+    }
+
+    @Test
+    void givenTseApplicationShouldProduceCyaPdf() {
+
     }
 
     private List<JurCodesTypeItem> mockJurCodesTypeItems() {
