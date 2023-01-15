@@ -371,7 +371,7 @@ public class CaseService {
         caseData.setJurCodesCollection(jurCodesTypeItems);
     }
 
-    private byte[] tseApplicationCyaToPdf(CaseData caseData) throws DocumentGenerationException {
+    public byte[] tseApplicationCyaToPdf(CaseData caseData) throws DocumentGenerationException {
         if (caseData.getClaimantTse() != null) { // TODO check if TSE is null or not
             GenericTseApplication genericTseApplication = new GenericTseApplication();
             genericTseApplication.setApplicationType(caseData.getClaimantTse().getContactApplicationType());
@@ -381,7 +381,7 @@ public class CaseService {
             genericTseApplication.setCopyToOtherPartyText(caseData.getResTseCopyToOtherPartyTextArea());
 
             // TODO: Add template name as resource? confirm output name
-            return documentGenerationService.genPdfDocument("doc", "doc", genericTseApplication);
+            return documentGenerationService.genPdfDocument("EM-TRB-EGW-ENG-00068.docx", "doc", genericTseApplication);
         }
 
         return null;

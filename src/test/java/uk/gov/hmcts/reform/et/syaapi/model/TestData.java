@@ -76,6 +76,10 @@ public final class TestData {
         "requests/caseDataWithClaimTypes.json",
         CaseRequest.class
     );
+    private final CaseRequest caseDataWithTse = ResourceLoader.fromString(
+        "requests/caseDataWithTse.json",
+        CaseRequest.class
+    );
     private final CaseRequest caseRequestWithoutManagingAddress = ResourceLoader.fromString(
         "requests/caseDataWithoutManagingAddress.json",
         CaseRequest.class

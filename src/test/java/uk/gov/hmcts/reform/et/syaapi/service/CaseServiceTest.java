@@ -51,6 +51,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -92,7 +93,6 @@ class CaseServiceTest {
     @InjectMocks
     private CaseService caseService;
     private final TestData testData;
-
 
     CaseServiceTest() {
         testData = new TestData();
@@ -595,8 +595,15 @@ class CaseServiceTest {
     }
 
     @Test
-    void givenTseApplicationShouldProduceCyaPdf() {
+    void givenTseApplicationShouldProduceCyaPdf() throws DocumentGenerationException {
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(testData.getCaseDataWithTse()
+            .getCaseData());
 
+        when(documentGenerationService.genPdfDocument(anyString(), anyString(), any())).thenReturn("1111".getBytes());
+
+        byte[] result = caseService.tseApplicationCyaToPdf(caseData);
+
+        assertThat(result).isEqualTo("1111".getBytes());
     }
 
     private List<JurCodesTypeItem> mockJurCodesTypeItems() {
