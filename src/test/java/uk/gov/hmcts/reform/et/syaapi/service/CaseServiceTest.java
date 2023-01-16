@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.EqualsAndHashCode;
+import lombok.SneakyThrows;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
@@ -11,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
@@ -50,6 +52,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -93,6 +96,7 @@ class CaseServiceTest {
     @InjectMocks
     private CaseService caseService;
     private final TestData testData;
+    private final byte[] DOC_GEN_SERVICE_RESPONSE = "test".getBytes();
 
     CaseServiceTest() {
         testData = new TestData();
@@ -596,14 +600,32 @@ class CaseServiceTest {
 
     @Test
     void givenTseApplicationShouldProduceCyaPdf() throws DocumentGenerationException {
+        ReflectionTestUtils.setField(
+            caseService,
+            "contactTheTribunalPdfTemplate",
+            "test"
+        );
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(testData.getCaseDataWithTse()
             .getCaseData());
-
-        when(documentGenerationService.genPdfDocument(anyString(), anyString(), any())).thenReturn("1111".getBytes());
-
+        when(documentGenerationService.genPdfDocument(anyString(), anyString(), any())).thenReturn(
+            DOC_GEN_SERVICE_RESPONSE);
         byte[] result = caseService.tseApplicationCyaToPdf(caseData);
+        assertThat(result).isEqualTo(DOC_GEN_SERVICE_RESPONSE);
+    }
 
-        assertThat(result).isEqualTo("1111".getBytes());
+    @SneakyThrows
+    @Test
+    void givenDocumentGenerationFailsProducesException() {
+        ReflectionTestUtils.setField(
+            caseService,
+            "contactTheTribunalPdfTemplate",
+            "test"
+        );
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(testData.getCaseDataWithTse()
+            .getCaseData());
+        when(documentGenerationService.genPdfDocument(anyString(), anyString(), any())).thenThrow(
+            new DocumentGenerationException("test"));
+        assertThrows(DocumentGenerationException.class, () -> caseService.tseApplicationCyaToPdf(caseData));
     }
 
     private List<JurCodesTypeItem> mockJurCodesTypeItems() {

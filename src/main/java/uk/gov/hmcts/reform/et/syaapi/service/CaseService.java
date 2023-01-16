@@ -8,6 +8,7 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -77,6 +78,9 @@ public class CaseService {
     private final PdfService pdfService;
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
     private final AssignCaseToLocalOfficeService assignCaseToLocalOfficeService;
+    @Value("${pdf.contact_tribunal_template}")
+    public String contactTheTribunalPdfTemplate;
+    private final String TSE_CONTACT_THE_TRIBUNAL_FILENAME = "contact_about_something_else.pdf";
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
@@ -372,18 +376,16 @@ public class CaseService {
     }
 
     public byte[] tseApplicationCyaToPdf(CaseData caseData) throws DocumentGenerationException {
-        if (caseData.getClaimantTse() != null) { // TODO check if TSE is null or not
+        if (caseData.getClaimantTse() != null) { // TODO move check to parent function
             GenericTseApplication genericTseApplication = new GenericTseApplication();
             genericTseApplication.setApplicationType(caseData.getClaimantTse().getContactApplicationType());
             genericTseApplication.setTellOrAskTribunal(caseData.getClaimantTse().getContactApplicationText());
             genericTseApplication.setSupportingEvidence(caseData.getClaimantTse().getContactApplicationFile());
             genericTseApplication.setCopyToOtherPartyYesOrNo(caseData.getResTseCopyToOtherPartyYesOrNo());
             genericTseApplication.setCopyToOtherPartyText(caseData.getResTseCopyToOtherPartyTextArea());
-
-            // TODO: Add template name as resource? confirm output name
-            return documentGenerationService.genPdfDocument("EM-TRB-EGW-ENG-00068.docx", "doc", genericTseApplication);
+            return documentGenerationService.genPdfDocument(contactTheTribunalPdfTemplate,
+                TSE_CONTACT_THE_TRIBUNAL_FILENAME, genericTseApplication);
         }
-
         return null;
     }
 }
