@@ -176,6 +176,7 @@ dependencyUpdates {
     def regex = /^[0-9,.v-]+$/
     return !stableKeyword && !(version ==~ regex)
   }
+
   rejectVersionIf { selection -> // <---- notice how the closure argument is named
     return isNonStable(selection.candidate.version) && !isNonStable(selection.currentVersion)
   }
