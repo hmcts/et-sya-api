@@ -94,7 +94,7 @@ public class AcasService {
 
     private ResponseEntity<List<AcasCertificate>> fetchAcasCertificates(String... acasNumbers) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set(OCP_APIM_SUBSCRIPTION_KEY, "27703f6efe064209ac619eb51dbabefd");
+        headers.set(OCP_APIM_SUBSCRIPTION_KEY, acasApiKey);
         AcasCertificateRequest acasCertificateRequest = new AcasCertificateRequest();
         acasCertificateRequest.setCertificateNumbers(acasNumbers);
         HttpEntity<AcasCertificateRequest> request = new HttpEntity<>(acasCertificateRequest, headers);

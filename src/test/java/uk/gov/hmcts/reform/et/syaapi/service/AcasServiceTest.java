@@ -36,7 +36,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 class AcasServiceTest {
 
     private static final String ACAS_DEV_API_URL = "https://api-dev-acas-01.azure-api.net/ECCLDev";
-    private static final String ACAS_API_KEY = "27703f6efe064209ac619eb51dbabefd";
+    private static final String ACAS_API_KEY = "dummyApiKey";
     private static final String NO_CERTS_JSON = "[]";
 
     private static final String CERT_JSON_OBJECT = "{\"CertificateNumber\":\"A123456/12/12\","
