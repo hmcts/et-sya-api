@@ -79,7 +79,7 @@ public class CaseService {
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
      *
-     * @param caseRequest contains case id get the {@link CaseDetails} for
+     * @param caseId id of the case
      * @return the associated {@link CaseDetails} for the ID provided
      */
     @Retryable({FeignException.class, RuntimeException.class})

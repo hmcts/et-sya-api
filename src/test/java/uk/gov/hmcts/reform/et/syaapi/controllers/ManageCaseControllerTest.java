@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -94,7 +93,7 @@ class ManageCaseControllerTest {
 
         // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(caseService.getUserCase(TEST_SERVICE_AUTH_TOKEN, caseRequest.getCaseId()                ))
+        when(caseService.getUserCase(TEST_SERVICE_AUTH_TOKEN, caseRequest.getCaseId()))
             .thenReturn(expectedDetails);
 
         // when
