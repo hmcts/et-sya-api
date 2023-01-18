@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentException;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
@@ -50,7 +51,7 @@ public class ManageCaseController {
     public ResponseEntity<CaseDetails> getUserCaseDetails(
         @RequestHeader(AUTHORIZATION) String authorization,
         @RequestBody CaseRequest caseRequest) {
-        var caseDetails = caseService.getUserCase(authorization, caseRequest);
+        CaseDetails caseDetails = caseService.getUserCase(authorization, caseRequest.getCaseId());
         return ok(caseDetails);
     }
 
@@ -130,28 +131,31 @@ public class ManageCaseController {
     }
 
     /**
-     * Updates the submitted case with the new information defined in parameters.
+     * Updates the Citizen Hub links Statuses.
      * @param authorization jwt of the user
-     * @param caseRequest the new case set to replace the current case wrapped in a {@link CaseRequest} object
+     * @param request the request object which contains the HubLinksStatuses passed from sya-frontend
      * @return the new updated case wrapped in a {@link CaseDetails}
      */
-    @PutMapping("/update-case-submitted")
-    @Operation(summary = "Update submitted case API method")
+    @PutMapping("/update-hub-links-statuses")
+    @Operation(summary = "Update Citizen Hub links Statuses")
     @ApiResponseGroup
-    public ResponseEntity<CaseDetails> updateCase(
+    public ResponseEntity<CaseDetails> updateHubLinksStatuses(
         @RequestHeader(AUTHORIZATION) String authorization,
-        @NotNull @RequestBody CaseRequest caseRequest
+        @NotNull @RequestBody HubLinksStatusesRequest request
     ) {
-        log.info("Received update-case-submitted request - caseTypeId: {} caseId: {}",
-                 caseRequest.getCaseTypeId(), caseRequest.getCaseId());
+        log.info("Received update hub link statuses request - caseTypeId: {} caseId: {}",
+                 request.getCaseTypeId(), request.getCaseId());
 
-        var caseDetails = caseService.triggerEvent(
+        CaseDetails caseDetails = caseService.getUserCase(authorization, request.getCaseId());
+        caseDetails.getData().put("hubLinksStatuses", request.getHubLinksStatuses());
+
+        CaseDetails finalCaseDetails = caseService.triggerEvent(
             authorization,
-            caseRequest.getCaseId(),
+            request.getCaseId(),
             CaseEvent.UPDATE_CASE_SUBMITTED,
-            caseRequest.getCaseTypeId(),
-            caseRequest.getCaseData()
+            request.getCaseTypeId(),
+            caseDetails.getData()
         );
-        return ok(caseDetails);
+        return ok(finalCaseDetails);
     }
 }
