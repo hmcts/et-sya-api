@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.UPDATE_CASE_DRAFT;
 
 @Data
+@SuppressWarnings("PMD.TooManyFields")
 public final class TestData {
 
     private final Et1CaseData et1CaseData = ResourceLoader.fromString(
@@ -81,6 +82,11 @@ public final class TestData {
     );
     private final CaseRequest emptyCaseRequest = ResourceLoader.fromString(
         "requests/noManagingOfficeAndRespondentsAddressCaseRequest.json",
+        CaseRequest.class
+    );
+
+    private final CaseRequest englandWalesRequest = ResourceLoader.fromString(
+        "requests/caseRequestEnglandWales.json",
         CaseRequest.class
     );
 
