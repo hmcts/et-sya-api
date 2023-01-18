@@ -83,8 +83,8 @@ public class CaseService {
      * @return the associated {@link CaseDetails} for the ID provided
      */
     @Retryable({FeignException.class, RuntimeException.class})
-    public CaseDetails getUserCase(String authorization, CaseRequest caseRequest) {
-        return ccdApiClient.getCase(authorization, authTokenGenerator.generate(), caseRequest.getCaseId());
+    public CaseDetails getUserCase(String authorization, String caseId) {
+        return ccdApiClient.getCase(authorization, authTokenGenerator.generate(), caseId);
     }
 
     /**
