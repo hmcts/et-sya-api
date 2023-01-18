@@ -8,7 +8,6 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -29,7 +28,6 @@ import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.GenericTseApplication;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
@@ -56,6 +54,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.OTHER_TYPE_
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.INITIATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_CASE_DRAFT;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_CLAIMANT_TSE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 
 /**
@@ -73,14 +72,10 @@ public class CaseService {
     private final PostcodeToOfficeService postcodeToOfficeService;
     private final AcasService acasService;
     private final CaseDocumentService caseDocumentService;
-    private final DocumentGenerationService documentGenerationService;
     private final NotificationService notificationService;
     private final PdfService pdfService;
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
     private final AssignCaseToLocalOfficeService assignCaseToLocalOfficeService;
-    @Value("${pdf.contact_tribunal_template}")
-    public String contactTheTribunalPdfTemplate;
-    private final String TSE_CONTACT_THE_TRIBUNAL_FILENAME = "contact_about_something_else.pdf";
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
@@ -256,6 +251,19 @@ public class CaseService {
             enrichCaseDataWithJurisdictionCodes(caseData1);
         }
 
+        if(SUBMIT_CLAIMANT_TSE == eventName) {
+            try {
+                PdfDecodedMultipartFile pdfDecodedMultipartFile =
+                    pdfService.convertClaimantTseIntoMultipartFile(caseData1);
+                caseDocumentService.uploadDocument(authorization, caseType, pdfDecodedMultipartFile);
+            } catch (DocumentGenerationException e) {
+                throw new RuntimeException(e);
+            } catch (CaseDocumentException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
         return submitUpdate(
             authorization,
             caseId,
@@ -373,19 +381,5 @@ public class CaseService {
     private void enrichCaseDataWithJurisdictionCodes(CaseData caseData) {
         List<JurCodesTypeItem> jurCodesTypeItems = jurisdictionCodesMapper.mapToJurCodes(caseData);
         caseData.setJurCodesCollection(jurCodesTypeItems);
-    }
-
-    public byte[] tseApplicationCyaToPdf(CaseData caseData) throws DocumentGenerationException {
-        if (caseData.getClaimantTse() != null) { // TODO move check to parent function
-            GenericTseApplication genericTseApplication = new GenericTseApplication();
-            genericTseApplication.setApplicationType(caseData.getClaimantTse().getContactApplicationType());
-            genericTseApplication.setTellOrAskTribunal(caseData.getClaimantTse().getContactApplicationText());
-            genericTseApplication.setSupportingEvidence(caseData.getClaimantTse().getContactApplicationFile());
-            genericTseApplication.setCopyToOtherPartyYesOrNo(caseData.getResTseCopyToOtherPartyYesOrNo());
-            genericTseApplication.setCopyToOtherPartyText(caseData.getResTseCopyToOtherPartyTextArea());
-            return documentGenerationService.genPdfDocument(contactTheTribunalPdfTemplate,
-                TSE_CONTACT_THE_TRIBUNAL_FILENAME, genericTseApplication);
-        }
-        return null;
     }
 }

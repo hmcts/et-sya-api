@@ -10,7 +10,9 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -97,6 +99,10 @@ public final class TestData {
     private final UserInfo userInfo = ResourceLoader.fromString(
         "responses/userInfo.json",
         UserInfo.class
+    );
+    private final CaseDocument tsePdfUploadResponse = ResourceLoader.fromString(
+        "responses/tsePdfUploadResponse.json",
+        CaseDocument.class
     );
 
     public Map<String, Object> getCaseRequestCaseDataMap() {
