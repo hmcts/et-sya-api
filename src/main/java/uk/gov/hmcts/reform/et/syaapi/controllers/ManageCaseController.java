@@ -51,7 +51,7 @@ public class ManageCaseController {
     public ResponseEntity<CaseDetails> getUserCaseDetails(
         @RequestHeader(AUTHORIZATION) String authorization,
         @RequestBody CaseRequest caseRequest) {
-        var caseDetails = caseService.getUserCase(authorization, caseRequest.getCaseId());
+        CaseDetails caseDetails = caseService.getUserCase(authorization, caseRequest.getCaseId());
         return ok(caseDetails);
     }
 
@@ -149,13 +149,13 @@ public class ManageCaseController {
         CaseDetails caseDetails = caseService.getUserCase(authorization, request.getCaseId());
         caseDetails.getData().put("hubLinksStatuses", request.getHubLinksStatuses());
 
-        var details = caseService.triggerEvent(
+        CaseDetails finalCaseDetails = caseService.triggerEvent(
             authorization,
             request.getCaseId(),
             CaseEvent.UPDATE_CASE_SUBMITTED,
             request.getCaseTypeId(),
             caseDetails.getData()
         );
-        return ok(details);
+        return ok(finalCaseDetails);
     }
 }
