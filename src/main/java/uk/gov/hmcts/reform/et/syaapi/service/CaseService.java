@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
@@ -252,16 +253,7 @@ public class CaseService {
         }
 
         if(SUBMIT_CLAIMANT_TSE == eventName) {
-            try {
-                PdfDecodedMultipartFile pdfDecodedMultipartFile =
-                    pdfService.convertClaimantTseIntoMultipartFile(caseData1);
-                caseDocumentService.uploadDocument(authorization, caseType, pdfDecodedMultipartFile);
-            } catch (DocumentGenerationException e) {
-                throw new RuntimeException(e);
-            } catch (CaseDocumentException e) {
-                throw new RuntimeException(e);
-            }
-
+            CaseDocument uploadedPdf = uploadTseCyaAnswersAsPdf(authorization, caseData1, caseType);
         }
 
         return submitUpdate(
@@ -381,5 +373,15 @@ public class CaseService {
     private void enrichCaseDataWithJurisdictionCodes(CaseData caseData) {
         List<JurCodesTypeItem> jurCodesTypeItems = jurisdictionCodesMapper.mapToJurCodes(caseData);
         caseData.setJurCodesCollection(jurCodesTypeItems);
+    }
+
+    private CaseDocument uploadTseCyaAnswersAsPdf(String authorization, CaseData caseData, String caseType) {
+        try {
+            PdfDecodedMultipartFile pdfDecodedMultipartFile =
+                pdfService.convertClaimantTseIntoMultipartFile(caseData);
+            return caseDocumentService.uploadDocument(authorization, caseType, pdfDecodedMultipartFile);
+        } catch (DocumentGenerationException | CaseDocumentException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

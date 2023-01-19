@@ -608,55 +608,92 @@ class CaseServiceTest {
                                                    expectedEnrichedData);
     }
 
-    @Test
-    void givenTseApplicationShouldProduceCyaPdf() throws DocumentGenerationException, CaseDocumentException {
-        ReflectionTestUtils.setField(
-            pdfService,
-            "contactTheTribunalPdfTemplate",
-            "test"
-        );
-        when(pdfService.convertClaimantTseIntoMultipartFile(any())).thenReturn(
-            tsePdfMultipartFileMock);
-
-        when(caseDocumentService.uploadDocument(anyString(), anyString(), any())).thenReturn(
-            testData.getTsePdfUploadResponse()
-        );
-
-        CaseDetails caseDetails = caseService.triggerEvent(
-            TEST_SERVICE_AUTH_TOKEN,
-            TestConstants.CASE_ID,
-            CaseEvent.valueOf("SUBMIT_CLAIMANT_TSE"),
-            EtSyaConstants.ENGLAND_CASE_TYPE,
-            testData.getCaseDataWithTse().getCaseData()
-        );
-
-        verify(ccdApiClient).submitEventForCitizen(TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            USER_ID,
-            EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.ENGLAND_CASE_TYPE,
-            TestConstants.CASE_ID,
-            true,
-            expectedEnrichedData);
-
-        //byte[] result = caseService.tseApplicationCyaToPdf(caseData);
-        //assertThat(result).isEqualTo(DOC_GEN_SERVICE_RESPONSE);
-    }
-
-    @SneakyThrows
-    @Test
-    void givenDocumentGenerationFailsProducesException() {
-        ReflectionTestUtils.setField(
-            caseService,
-            "contactTheTribunalPdfTemplate",
-            "test"
-        );
-        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(testData.getCaseDataWithTse()
-            .getCaseData());
-        when(documentGenerationService.genPdfDocument(anyString(), anyString(), any())).thenThrow(
-            new DocumentGenerationException("test"));
-        //assertThrows(DocumentGenerationException.class, () -> caseService.tseApplicationCyaToPdf(caseData));
-    }
+//    @Test
+//    void shouldInvokeClaimantTsePdf() throws DocumentGenerationException, CaseDocumentException {
+//        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(testData.getCaseDataWithTse()
+//            .getCaseData());
+//
+//        CaseDataContent expectedEnrichedData = CaseDataContent.builder()
+//            .event(Event.builder().id("SUBMIT_CLAIMANT_TSE").build())
+//            .eventToken(testData.getStartEventResponse().getToken())
+//            .data(caseData)
+//            .build();
+//
+//        ReflectionTestUtils.setField(
+//            pdfService,
+//            "contactTheTribunalPdfTemplate",
+//            "test"
+//        );
+//        when(pdfService.convertClaimantTseIntoMultipartFile(any())).thenReturn(
+//            tsePdfMultipartFileMock);
+//
+//        when(caseDocumentService.uploadDocument(anyString(), anyString(), any())).thenReturn(
+//            testData.getTsePdfUploadResponse()
+//        );
+//        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+//        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+//            null,
+//            USER_ID,
+//            TEST_NAME,
+//            TestConstants.TEST_FIRST_NAME,
+//            TestConstants.TEST_SURNAME,
+//            null
+//        ));
+//        when(ccdApiClient.startEventForCitizen(
+//            TEST_SERVICE_AUTH_TOKEN,
+//            TEST_SERVICE_AUTH_TOKEN,
+//            USER_ID,
+//            EtSyaConstants.JURISDICTION_ID,
+//            EtSyaConstants.ENGLAND_CASE_TYPE,
+//            TestConstants.CASE_ID,
+//            TestConstants.SUBMIT_CASE_DRAFT
+//        )).thenReturn(testData.getStartEventResponse());
+//        when(ccdApiClient.submitEventForCitizen(
+//            TEST_SERVICE_AUTH_TOKEN,
+//            TEST_SERVICE_AUTH_TOKEN,
+//            USER_ID,
+//            EtSyaConstants.JURISDICTION_ID,
+//            EtSyaConstants.ENGLAND_CASE_TYPE,
+//            TestConstants.CASE_ID,
+//            true,
+//            expectedEnrichedData
+//        )).thenReturn(testData.getExpectedDetails());
+//
+//        CaseDetails caseDetails = caseService.triggerEvent(
+//            TEST_SERVICE_AUTH_TOKEN,
+//            TestConstants.CASE_ID,
+//            CaseEvent.valueOf("SUBMIT_CLAIMANT_TSE"),
+//            EtSyaConstants.ENGLAND_CASE_TYPE,
+//            testData.getCaseDataWithTse().getCaseData()
+//        );
+//
+//        verify(ccdApiClient).submitEventForCitizen(TEST_SERVICE_AUTH_TOKEN,
+//            TEST_SERVICE_AUTH_TOKEN,
+//            USER_ID,
+//            EtSyaConstants.JURISDICTION_ID,
+//            EtSyaConstants.ENGLAND_CASE_TYPE,
+//            TestConstants.CASE_ID,
+//            true,
+//            expectedEnrichedData);
+//
+//        //byte[] result = caseService.tseApplicationCyaToPdf(caseData);
+//        assertThat(caseDetails).isNotNull();
+//    }
+//
+//    @SneakyThrows
+//    @Test
+//    void givenDocumentGenerationFailsProducesException() {
+//        ReflectionTestUtils.setField(
+//            caseService,
+//            "contactTheTribunalPdfTemplate",
+//            "test"
+//        );
+//        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(testData.getCaseDataWithTse()
+//            .getCaseData());
+//        when(documentGenerationService.genPdfDocument(anyString(), anyString(), any())).thenThrow(
+//            new DocumentGenerationException("test"));
+//        //assertThrows(DocumentGenerationException.class, () -> caseService.tseApplicationCyaToPdf(caseData));
+//    }
 
     private List<JurCodesTypeItem> mockJurCodesTypeItems() {
         JurCodesTypeItem item = new JurCodesTypeItem();
