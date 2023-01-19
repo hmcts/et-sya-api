@@ -138,7 +138,7 @@ public final class PdfMapperUtil {
     public static String formatUkPostcode(Address address) {
         if (isUkCountry(address.getCountry())) {
             try {
-                if(StringUtils.isNotBlank(address.getPostCode())) {
+                if (StringUtils.isNotBlank(address.getPostCode())) {
                     PostCodeValidator postCodeValidator = new PostCodeValidator(address.getPostCode());
 
                     String outward = postCodeValidator.returnOutwardCode().trim() + " ";
