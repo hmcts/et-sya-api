@@ -17,8 +17,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.test.util.ReflectionTestUtils;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
+import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationException;
 import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationService;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 
@@ -195,5 +197,13 @@ class PdfServiceTest {
         List<PdfDecodedMultipartFile> pdfDecodedMultipartFiles =
             pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(testData.getCaseData(), acasCertificates);
         assertThat(pdfDecodedMultipartFiles).hasSize(1);
+    }
+
+    @Test
+    void shouldCreatePdfDecodedMultipartFileFromTseApplication() throws DocumentGenerationException {
+        testData.getCaseData().setClaimantTse(new ClaimantTse());
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            pdfService.convertClaimantTseIntoMultipartFile(testData.getCaseData());
+        assertThat(pdfDecodedMultipartFile).isNotNull();
     }
 }

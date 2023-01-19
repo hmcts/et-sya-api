@@ -253,7 +253,11 @@ public class CaseService {
         }
 
         if(SUBMIT_CLAIMANT_TSE == eventName) {
-            CaseDocument uploadedPdf = uploadTseCyaAnswersAsPdf(authorization, caseData1, caseType);
+            try {
+                CaseDocument uploadedPdf = uploadTseCyaAnswersAsPdf(authorization, caseData1, caseType);
+            } catch (CaseDocumentException | DocumentGenerationException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         return submitUpdate(
@@ -375,13 +379,11 @@ public class CaseService {
         caseData.setJurCodesCollection(jurCodesTypeItems);
     }
 
-    private CaseDocument uploadTseCyaAnswersAsPdf(String authorization, CaseData caseData, String caseType) {
-        try {
-            PdfDecodedMultipartFile pdfDecodedMultipartFile =
-                pdfService.convertClaimantTseIntoMultipartFile(caseData);
-            return caseDocumentService.uploadDocument(authorization, caseType, pdfDecodedMultipartFile);
-        } catch (DocumentGenerationException | CaseDocumentException e) {
-            throw new RuntimeException(e);
-        }
+    // public until 2815 is implemented to show that doc is created in testing
+    public CaseDocument uploadTseCyaAnswersAsPdf(String authorization, CaseData caseData, String caseType)
+        throws DocumentGenerationException, CaseDocumentException {
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            pdfService.convertClaimantTseIntoMultipartFile(caseData);
+        return caseDocumentService.uploadDocument(authorization, caseType, pdfDecodedMultipartFile);
     }
 }
