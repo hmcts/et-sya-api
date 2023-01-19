@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
+import com.microsoft.applicationinsights.core.dependencies.apachecommons.lang3.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.Address;
@@ -231,7 +232,7 @@ public class PdfMapperService {
     private Map<String, Optional<String>> printRespondentAcas(RespondentSumType respondent,
                                                               String questionPrefix) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
-        String acasYesNo = respondent.getRespondentAcasQuestion().isEmpty() ? NO :
+        String acasYesNo = StringUtils.isEmpty(respondent.getRespondentAcasQuestion()) ? NO :
             respondent.getRespondentAcasQuestion();
         if (YES.equals(acasYesNo)) {
             if (PREFIX_2_8.equals(questionPrefix)) {
@@ -256,21 +257,23 @@ public class PdfMapperService {
                 printFields.put(String.format(
                     PdfMapperConstants.QX_HAVE_ACAS_NO, questionPrefix), Optional.of(NO_LOWERCASE));
             }
-            switch (respondent.getRespondentAcasNo()) {
-                case "Unfair Dismissal":
-                    printFields.put(String.format(PdfMapperConstants.QX_ACAS_A1, questionPrefix), Optional.of(YES));
-                    break;
-                case "Another person":
-                    printFields.put(String.format(PdfMapperConstants.QX_ACAS_A2, questionPrefix), Optional.of(YES));
-                    break;
-                case "No Power":
-                    printFields.put(String.format(PdfMapperConstants.QX_ACAS_A3, questionPrefix), Optional.of(YES));
-                    break;
-                case "Employer already in touch":
-                    printFields.put(String.format(PdfMapperConstants.QX_ACAS_A4, questionPrefix), Optional.of(YES));
-                    break;
-                default:
-                    break;
+            if (StringUtils.isNotEmpty(respondent.getRespondentAcasNo())) {
+                switch (respondent.getRespondentAcasNo()) {
+                    case "Unfair Dismissal":
+                        printFields.put(String.format(PdfMapperConstants.QX_ACAS_A1, questionPrefix), Optional.of(YES));
+                        break;
+                    case "Another person":
+                        printFields.put(String.format(PdfMapperConstants.QX_ACAS_A2, questionPrefix), Optional.of(YES));
+                        break;
+                    case "No Power":
+                        printFields.put(String.format(PdfMapperConstants.QX_ACAS_A3, questionPrefix), Optional.of(YES));
+                        break;
+                    case "Employer already in touch":
+                        printFields.put(String.format(PdfMapperConstants.QX_ACAS_A4, questionPrefix), Optional.of(YES));
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         return printFields;
