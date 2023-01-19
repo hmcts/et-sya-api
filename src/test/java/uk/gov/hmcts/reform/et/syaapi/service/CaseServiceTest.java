@@ -108,7 +108,7 @@ class CaseServiceTest {
         CaseRequest caseRequest = CaseRequest.builder()
             .caseId(testData.getCaseRequest().getCaseId()).build();
 
-        CaseDetails caseDetails = caseService.getUserCase(TEST_SERVICE_AUTH_TOKEN, caseRequest);
+        CaseDetails caseDetails = caseService.getUserCase(TEST_SERVICE_AUTH_TOKEN, caseRequest.getCaseId());
 
         assertEquals(testData.getExpectedDetails(), caseDetails);
     }

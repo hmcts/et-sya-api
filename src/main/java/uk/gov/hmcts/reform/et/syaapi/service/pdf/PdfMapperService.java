@@ -447,7 +447,9 @@ public class PdfMapperService {
                 );
 
             } else {
-                printFields.put(PdfMapperConstants.Q6_PENSION_NO, Optional.of(YES));
+                if (NO.equals(pensionContributionYesNo)) {
+                    printFields.put(PdfMapperConstants.Q6_PENSION_NO, Optional.of(NO));
+                }
             }
         }
 
