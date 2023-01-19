@@ -14,7 +14,7 @@
     ]]></notes>
     <cve>CVE-2020-10663</cve>
     <cve>CVE-2020-7712</cve>
-   </suppress>
+  </suppress>
   <suppress>
     <notes>Suppresses commons-io-2.6.jar vulnerabilities</notes>
     <cve>CVE-2021-29425</cve>
@@ -142,5 +142,26 @@
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/commons-logging/commons-logging@.*$</packageUrl>
     <cve>CVE-2021-37533</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+   file name: LatencyUtils-2.0.3.jar
+   ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.latencyutils/LatencyUtils@.*$</packageUrl>
+    <cve>CVE-2021-4277</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+   file name: snakeyaml-1.33.jar
+   ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
+    <cve>CVE-2022-3064</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+   file name: snakeyaml-1.33.jar
+   ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
+    <cpe>cpe:/a:yaml_project:yaml</cpe>
   </suppress>
 </suppressions>
