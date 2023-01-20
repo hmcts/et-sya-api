@@ -12,7 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
@@ -42,8 +41,6 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.service.notify.SendEmailResponse;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -98,8 +95,8 @@ class CaseServiceTest {
     @InjectMocks
     private CaseService caseService;
     private final TestData testData;
-    private final byte[] TSE_PDF_BYTES = "test".getBytes();
-    private final String TSE_PDF_NAME = "contact_about_something_else.pdf";
+    private static final byte[] TSE_PDF_BYTES = "test".getBytes();
+    private static final String TSE_PDF_NAME = "contact_about_something_else.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private static final String TSE_PDF_DESCRIPTION = "Test description";
 

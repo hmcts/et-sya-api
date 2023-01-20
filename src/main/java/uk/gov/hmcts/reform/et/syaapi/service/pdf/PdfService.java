@@ -47,7 +47,7 @@ public class PdfService {
     @Value("${pdf.contact_tribunal_template}")
     public String contactTheTribunalPdfTemplate;
 
-    private final String TSE_CONTACT_THE_TRIBUNAL_FILENAME = "contact_about_something_else.pdf";
+    private static final String TSE_CONTACT_THE_TRIBUNAL_FILENAME = "contact_about_something_else.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private static final String NOT_FOUND = "not found";
 

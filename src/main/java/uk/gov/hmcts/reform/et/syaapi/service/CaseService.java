@@ -252,9 +252,9 @@ public class CaseService {
             enrichCaseDataWithJurisdictionCodes(caseData1);
         }
 
-        if(SUBMIT_CLAIMANT_TSE == eventName) {
+        if (SUBMIT_CLAIMANT_TSE == eventName) {
             try {
-                CaseDocument uploadedPdf = uploadTseCyaAnswersAsPdf(authorization, caseData1, caseType);
+                uploadTseCyaAnswersAsPdf(authorization, caseData1, caseType);
             } catch (CaseDocumentException | DocumentGenerationException e) {
                 throw new RuntimeException(e);
             }
