@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.common.Strings;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -231,7 +232,7 @@ public class PdfMapperService {
     private Map<String, Optional<String>> printRespondentAcas(RespondentSumType respondent,
                                                               String questionPrefix) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
-        String acasYesNo = respondent.getRespondentAcasQuestion().isEmpty() ? NO :
+        String acasYesNo = Strings.isNullOrEmpty(respondent.getRespondentAcasQuestion()) ? NO :
             respondent.getRespondentAcasQuestion();
         if (YES.equals(acasYesNo)) {
             if (PREFIX_2_8.equals(questionPrefix)) {
