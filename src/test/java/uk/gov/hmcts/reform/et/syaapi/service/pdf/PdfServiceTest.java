@@ -22,8 +22,6 @@ import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -133,7 +131,6 @@ class PdfServiceTest {
         PdfService pdfService1 = new PdfService(new PdfMapperService());
         pdfService1.pdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE;
         byte[] pdfData = pdfService1.createPdf(testData.getCaseData());
-        new FileOutputStream(new File("output.pdf")).write(pdfData);
         assertThat(pdfData).isNotEmpty();
         assertThat(new Tika().detect(pdfData)).isEqualTo(PDF_FILE_TIKA_CONTENT_TYPE);
     }

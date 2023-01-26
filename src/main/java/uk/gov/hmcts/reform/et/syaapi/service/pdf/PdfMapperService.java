@@ -116,7 +116,8 @@ public class PdfMapperService {
         try {
             printFields.put(PdfMapperConstants.TRIBUNAL_OFFICE, ofNullable(caseData.getManagingOffice()));
             printFields.put(PdfMapperConstants.CASE_NUMBER, ofNullable(caseData.getEthosCaseReference()));
-            printFields.put(PdfMapperConstants.DATE_RECEIVED, ofNullable(PdfMapperUtil.formatDate(caseData.getReceiptDate())));
+            printFields.put(PdfMapperConstants.DATE_RECEIVED,
+                            ofNullable(PdfMapperUtil.formatDate(caseData.getReceiptDate())));
             printFields.putAll(printHearingPreferences(caseData));
             printFields.putAll(printRespondentDetails(caseData));
             printFields.putAll(printMultipleClaimsDetails(caseData));
