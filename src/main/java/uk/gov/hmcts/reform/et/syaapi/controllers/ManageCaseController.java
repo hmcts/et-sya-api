@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentException;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
@@ -148,6 +149,35 @@ public class ManageCaseController {
 
         CaseDetails caseDetails = caseService.getUserCase(authorization, request.getCaseId());
         caseDetails.getData().put("hubLinksStatuses", request.getHubLinksStatuses());
+
+        CaseDetails finalCaseDetails = caseService.triggerEvent(
+            authorization,
+            request.getCaseId(),
+            CaseEvent.UPDATE_CASE_SUBMITTED,
+            request.getCaseTypeId(),
+            caseDetails.getData()
+        );
+        return ok(finalCaseDetails);
+    }
+
+    /**
+     * Submits a Claimant Application.
+     * @param authorization jwt of the user
+     * @param request the request object which contains the claimant application passed from sya-frontend
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    @PutMapping("/submit-claimant-application")
+    @Operation(summary = "Submit a claimant application")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> submitClaimantApplication(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody ClaimantApplicationRequest request
+    ) {
+        log.info("Received submit claimant application request - caseTypeId: {} caseId: {}",
+                 request.getCaseTypeId(), request.getCaseId());
+
+        CaseDetails caseDetails = caseService.getUserCase(authorization, request.getCaseId());
+        caseDetails.getData().put("claimantTse", request.getClaimantTse());
 
         CaseDetails finalCaseDetails = caseService.triggerEvent(
             authorization,
