@@ -15,10 +15,12 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperUtil.formatDate;
 import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperUtil.formatUkPostcode;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
+@SuppressWarnings({"PMD.TooManyMethods"})
 class PdfMapperUtilTest {
 
     private static final String ADDRESS_LINE1 = "CO-OPERATIVE RETAIL SERVICES LTD, 11, MERRION WAY";
@@ -161,6 +163,14 @@ class PdfMapperUtilTest {
         address.setCountry("United Arab Emirates");
         address.setPostCode("1WEXO9NYZ");
         assertThat(formatUkPostcode(address)).isEqualTo("1WEXO9NYZ");
+    }
+
+    @Test
+    void theFormatDate() {
+        String dateToBeFormatted = "2022-12-01";
+        String expectedDateString = "01-12-2022";
+
+        assertThat(formatDate(dateToBeFormatted)).isEqualTo(expectedDateString);
     }
 
     private static Stream<Arguments> postcodeArguments() {
