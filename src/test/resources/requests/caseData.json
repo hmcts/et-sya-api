@@ -66,10 +66,10 @@
   },
   "claimantOtherType" : {
     "claimant_occupation" : "Software Engineer",
-    "claimant_employed_from" : "2020-01-01T07:22:05.000Z",
+    "claimant_employed_from" : "2020-11-01",
     "claimant_employed_currently" : "Yes",
-    "claimant_employed_to" : "2022-01-01T07:22:05.000Z",
-    "claimant_employed_notice_period" : "Yes",
+    "claimant_employed_to" : "2022-12-01",
+    "claimant_employed_notice_period" : "2023-02-15",
     "claimant_disabled" : "Yes",
     "claimant_disabled_details" : "I need a wheelchair",
     "claimant_notice_period" : "Yes",
@@ -84,7 +84,7 @@
     "claimant_benefits" : "Yes",
     "claimant_benefits_detail" : "Car",
     "pastEmployer" : "Yes",
-    "stillWorking" : "No"
+    "stillWorking" : "Notice"
   },
   "respondentCollection" : [ {
     "id" : "1",
@@ -363,10 +363,10 @@
   "additionalCaseInfo" : null,
   "managingOffice" : "Aberdeen",
   "newEmploymentType" : {
-    "new_job" : "Software Specialist",
-    "newly_employed_from" : "2022-03-01T07:22:05.000Z",
-    "new_pay_before_tax" : "30000",
-    "new_job_pay_interval" : "Weekly"
+    "new_job" : "Yes",
+    "newly_employed_from" : "2023-01-01",
+    "new_pay_before_tax" : "35000",
+    "new_job_pay_interval" : "Months"
   },
   "claimantRequests" : {
     "claim_outcome" : ["compensation", "tribunal", "oldJob", "anotherJob"],
@@ -413,7 +413,7 @@
   "claimant_TypeOfClaimant" : null,
   "claimant_Company" : null,
   "preAcceptCase" : null,
-  "receiptDate" : "2022-09-20 12:00",
+  "receiptDate" : "2022-09-20",
   "claimServedDate" : null,
   "feeGroupReference" : null,
   "claimantWorkAddressQRespondent" : null,
