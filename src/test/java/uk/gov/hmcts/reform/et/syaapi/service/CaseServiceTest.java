@@ -95,7 +95,8 @@ class CaseServiceTest {
     @InjectMocks
     private CaseService caseService;
     private final TestData testData;
-    private static final byte[] TSE_PDF_BYTES = "test".getBytes();
+    public static final String TEST = "test";
+    private static final byte[] TSE_PDF_BYTES = TEST.getBytes();
     private static final String TSE_PDF_NAME = "contact_about_something_else.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private static final String TSE_PDF_DESCRIPTION = "Test description";
@@ -333,9 +334,10 @@ class CaseServiceTest {
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             new PdfDecodedMultipartFile(
                 new byte[0],
-                "test",
-                "test",
-                "test");
+                TEST,
+                TEST,
+                TEST
+            );
 
         when(pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(any(), any()))
             .thenReturn(List.of(pdfDecodedMultipartFile));
@@ -377,9 +379,9 @@ class CaseServiceTest {
             testData.getCaseRequest()
         );
 
-        assertEquals(1, ((LinkedList)caseDetails.getData().get("documentCollection")).size());
+        assertEquals(1, ((LinkedList<?>)caseDetails.getData().get("documentCollection")).size());
 
-        LinkedList docCollection = (LinkedList) caseDetails.getData().get("documentCollection");
+        LinkedList<?> docCollection = (LinkedList<?>) caseDetails.getData().get("documentCollection");
         assertEquals("DocumentType(typeOfDocument="
             + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=https://document.binary.url, documentFilen"
             + "ame=filename, documentUrl=https://document.url), ownerDocument=null, creationDate=null, shortDescription=nu"
@@ -628,7 +630,7 @@ class CaseServiceTest {
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(testData.getCaseDataWithTse()
             .getCaseData());
         when(pdfService.convertClaimantTseIntoMultipartFile(any())).thenThrow(
-            new DocumentGenerationException("test"));
+            new DocumentGenerationException(TEST));
         assertThrows(DocumentGenerationException.class, () -> caseService.uploadTseCyaAnswersAsPdf(
             "", caseData, ""));
     }
@@ -641,7 +643,7 @@ class CaseServiceTest {
         when(pdfService.convertClaimantTseIntoMultipartFile(any())).thenReturn(
             tsePdfMultipartFileMock);
         when(caseDocumentService.uploadDocument(anyString(), anyString(), any())).thenThrow(
-            new CaseDocumentException("test"));
+            new CaseDocumentException(TEST));
         assertThrows(CaseDocumentException.class, () -> caseService.uploadTseCyaAnswersAsPdf(
             "", caseData, ""));
     }

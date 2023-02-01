@@ -243,9 +243,6 @@ public class CaseService {
      */
     public CaseDetails triggerEvent(String authorization, String caseId, CaseEvent eventName,
                                     String caseType, Map<String, Object> caseData) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
-        StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
         CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseData);
 
         if (SUBMIT_CASE_DRAFT == eventName) {
@@ -259,6 +256,9 @@ public class CaseService {
                 throw new RuntimeException(e);
             }
         }
+
+        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(new ObjectMapper());
+        StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
 
         return submitUpdate(
             authorization,
