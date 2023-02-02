@@ -4,11 +4,11 @@ provider "azurerm" {
 
 locals {
   tags = merge(var.common_tags,
-    map(
+    tomap({
       "environment", var.env,
       "managedBy", var.team_name,
-      "Team Contact", var.team_contact,
-    )
+      "Team Contact", var.team_contact
+    })
   )
 
   api_mgmt_suffix = var.apim_suffix == "" ? var.env : var.apim_suffix
