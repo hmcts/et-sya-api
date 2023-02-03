@@ -69,18 +69,6 @@ public class PdfService {
         return pdfDocumentBytes;
     }
 
-    private byte[] convertClaimantTseToPdf(CaseData caseData) throws DocumentGenerationException {
-        GenericTseApplication genericTseApplication = new GenericTseApplication();
-        genericTseApplication.setApplicationType(caseData.getClaimantTse().getContactApplicationType());
-        genericTseApplication.setTellOrAskTribunal(caseData.getClaimantTse().getContactApplicationText());
-        genericTseApplication.setSupportingEvidence(caseData.getClaimantTse().getContactApplicationFile());
-        genericTseApplication.setCopyToOtherPartyYesOrNo(caseData.getResTseCopyToOtherPartyYesOrNo());
-        genericTseApplication.setCopyToOtherPartyText(caseData.getResTseCopyToOtherPartyTextArea());
-
-        return documentGenerationService.genPdfDocument(contactTheTribunalPdfTemplate,
-            TSE_CONTACT_THE_TRIBUNAL_FILENAME, genericTseApplication);
-    }
-
     /**
      * Populates a pdf document with data stored in the case data parameter.
      * @param caseData {@link CaseData} object with information in which to populate the pdf with
@@ -223,17 +211,29 @@ public class PdfService {
     /**
      * Converts a given object of type {@link ClaimantTse} to a {@link PdfDecodedMultipartFile}.
      * Firstly by converting to a pdf byte array and then wrapping within the return object.
-     * @param caseData {@link CaseData} object that contains the {@link ClaimantTse} object to be converted.
+     * @param claimantTse {@link CaseData} object that contains the {@link ClaimantTse} object to be converted.
      * @return {@link PdfDecodedMultipartFile} with the claiment tse CYA page in pdf format.
      * @throws DocumentGenerationException if there is an error generating the PDF.
      */
-    public PdfDecodedMultipartFile convertClaimantTseIntoMultipartFile(CaseData caseData)
+    public PdfDecodedMultipartFile convertClaimantTseIntoMultipartFile(ClaimantTse claimantTse)
         throws DocumentGenerationException {
         return new PdfDecodedMultipartFile(
-            convertClaimantTseToPdf(caseData),
+            convertClaimantTseToPdf(claimantTse),
             TSE_CONTACT_THE_TRIBUNAL_FILENAME,
             PDF_FILE_TIKA_CONTENT_TYPE,
             "Test"
         );
+    }
+
+    private byte[] convertClaimantTseToPdf(ClaimantTse claimantTse) throws DocumentGenerationException {
+        GenericTseApplication genericTseApplication = new GenericTseApplication();
+        genericTseApplication.setApplicationType(claimantTse.getContactApplicationType());
+        genericTseApplication.setTellOrAskTribunal(claimantTse.getContactApplicationText());
+        genericTseApplication.setSupportingEvidence(claimantTse.getContactApplicationFile());
+        genericTseApplication.setCopyToOtherPartyYesOrNo(claimantTse.getCopyToOtherPartyYesOrNo());
+        genericTseApplication.setCopyToOtherPartyText(claimantTse.getCopyToOtherPartyText());
+
+        return documentGenerationService.genPdfDocument(contactTheTribunalPdfTemplate,
+                                                        TSE_CONTACT_THE_TRIBUNAL_FILENAME, genericTseApplication);
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
@@ -21,6 +22,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentException;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
+import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationException;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 
 import java.util.List;
@@ -173,17 +175,26 @@ public class ManageCaseController {
         @RequestHeader(AUTHORIZATION) String authorization,
         @NotNull @RequestBody ClaimantApplicationRequest request
     ) {
+        String caseTypeId = request.getCaseTypeId();
+
         log.info("Received submit claimant application request - caseTypeId: {} caseId: {}",
-                 request.getCaseTypeId(), request.getCaseId());
+                 caseTypeId, request.getCaseId());
 
         CaseDetails caseDetails = caseService.getUserCase(authorization, request.getCaseId());
-        caseDetails.getData().put("claimantTse", request.getClaimantTse());
+        ClaimantTse claimantTse = request.getClaimantTse();
+        caseDetails.getData().put("claimantTse", claimantTse);
+
+        try {
+            caseService.uploadTseCyaAnswersAsPdf(authorization, claimantTse, caseTypeId);
+        } catch (CaseDocumentException | DocumentGenerationException e) {
+            throw new RuntimeException(e);
+        }
 
         CaseDetails finalCaseDetails = caseService.triggerEvent(
             authorization,
             request.getCaseId(),
             CaseEvent.UPDATE_CASE_SUBMITTED,
-            request.getCaseTypeId(),
+            caseTypeId,
             caseDetails.getData()
         );
         return ok(finalCaseDetails);

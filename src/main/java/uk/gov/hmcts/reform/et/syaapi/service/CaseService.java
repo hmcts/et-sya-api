@@ -16,6 +16,7 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -249,14 +250,6 @@ public class CaseService {
             enrichCaseDataWithJurisdictionCodes(caseData1);
         }
 
-        if (SUBMIT_CLAIMANT_TSE == eventName) {
-            try {
-                uploadTseCyaAnswersAsPdf(authorization, caseData1, caseType);
-            } catch (CaseDocumentException | DocumentGenerationException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(new ObjectMapper());
         StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
 
@@ -380,10 +373,10 @@ public class CaseService {
     }
 
     // public until 2815 is implemented to show that doc is created in testing
-    public CaseDocument uploadTseCyaAnswersAsPdf(String authorization, CaseData caseData, String caseType)
+    public CaseDocument uploadTseCyaAnswersAsPdf(String authorization, ClaimantTse claimantTse, String caseType)
         throws DocumentGenerationException, CaseDocumentException {
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            pdfService.convertClaimantTseIntoMultipartFile(caseData);
+            pdfService.convertClaimantTseIntoMultipartFile(claimantTse);
         return caseDocumentService.uploadDocument(authorization, caseType, pdfDecodedMultipartFile);
     }
 }
