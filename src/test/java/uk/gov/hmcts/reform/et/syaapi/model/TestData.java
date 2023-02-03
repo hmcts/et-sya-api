@@ -6,6 +6,7 @@ import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
@@ -77,10 +78,6 @@ public final class TestData {
         "requests/caseDataWithClaimTypes.json",
         CaseRequest.class
     );
-    private final CaseRequest caseDataWithTse = ResourceLoader.fromString(
-        "requests/caseDataWithTse.json",
-        CaseRequest.class
-    );
     private final CaseRequest caseRequestWithoutManagingAddress = ResourceLoader.fromString(
         "requests/caseDataWithoutManagingAddress.json",
         CaseRequest.class
@@ -89,12 +86,14 @@ public final class TestData {
         "requests/noManagingOfficeAndRespondentsAddressCaseRequest.json",
         CaseRequest.class
     );
-
     private final CaseRequest englandWalesRequest = ResourceLoader.fromString(
         "requests/caseRequestEnglandWales.json",
         CaseRequest.class
     );
-
+    private final ClaimantTse claimantTse = ResourceLoader.fromString(
+        "requests/claimantTse.json",
+        ClaimantTse.class
+    );
     private final UserInfo userInfo = ResourceLoader.fromString(
         "responses/userInfo.json",
         UserInfo.class

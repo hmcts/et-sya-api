@@ -203,7 +203,7 @@ class PdfServiceTest {
     void shouldCreatePdfDecodedMultipartFileFromTseApplication() throws DocumentGenerationException {
         testData.getCaseData().setClaimantTse(new ClaimantTse());
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            pdfService.convertClaimantTseIntoMultipartFile(testData.getCaseData());
+            pdfService.convertClaimantTseIntoMultipartFile(testData.getClaimantTse());
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
 }

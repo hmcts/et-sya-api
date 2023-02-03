@@ -18,6 +18,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.JurCodesType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -612,8 +613,7 @@ class CaseServiceTest {
     @Test
     void shouldInvokeClaimantTsePdf()
         throws DocumentGenerationException, CaseDocumentException {
-        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(testData.getCaseDataWithTse()
-            .getCaseData());
+        ClaimantTse claimantTse = testData.getClaimantTse();
         when(pdfService.convertClaimantTseIntoMultipartFile(any())).thenReturn(
             tsePdfMultipartFileMock);
 
@@ -621,31 +621,29 @@ class CaseServiceTest {
             testData.getTsePdfUploadResponse()
         );
 
-        assertThat(caseService.uploadTseCyaAnswersAsPdf(TEST_SERVICE_AUTH_TOKEN, caseData, "TEST")).isNotNull();
+        assertThat(caseService.uploadTseCyaAnswersAsPdf(TEST_SERVICE_AUTH_TOKEN, claimantTse, "TEST")).isNotNull();
     }
 
     @SneakyThrows
     @Test
     void givenPdfServiceErrorProducesDocumentGenerationException() {
-        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(testData.getCaseDataWithTse()
-            .getCaseData());
+        ClaimantTse claimantTse = testData.getClaimantTse();
         when(pdfService.convertClaimantTseIntoMultipartFile(any())).thenThrow(
             new DocumentGenerationException(TEST));
         assertThrows(DocumentGenerationException.class, () -> caseService.uploadTseCyaAnswersAsPdf(
-            "", caseData, ""));
+            "", claimantTse, ""));
     }
 
     @SneakyThrows
     @Test
     void givenUploadDocumentErrorProducesCaseDocumentException() {
-        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(testData.getCaseDataWithTse()
-            .getCaseData());
+        ClaimantTse claimantTse = testData.getClaimantTse();
         when(pdfService.convertClaimantTseIntoMultipartFile(any())).thenReturn(
             tsePdfMultipartFileMock);
         when(caseDocumentService.uploadDocument(anyString(), anyString(), any())).thenThrow(
             new CaseDocumentException(TEST));
         assertThrows(CaseDocumentException.class, () -> caseService.uploadTseCyaAnswersAsPdf(
-            "", caseData, ""));
+            "", claimantTse, ""));
     }
 
     private List<JurCodesTypeItem> mockJurCodesTypeItems() {
