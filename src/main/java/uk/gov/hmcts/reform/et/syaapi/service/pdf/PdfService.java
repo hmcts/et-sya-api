@@ -11,6 +11,7 @@ import org.elasticsearch.common.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 import uk.gov.hmcts.reform.et.syaapi.models.GenericTseApplication;
@@ -226,12 +227,16 @@ public class PdfService {
     }
 
     private byte[] convertClaimantTseToPdf(ClaimantTse claimantTse) throws DocumentGenerationException {
-        GenericTseApplication genericTseApplication = new GenericTseApplication();
-        genericTseApplication.setApplicationType(claimantTse.getContactApplicationType());
-        genericTseApplication.setTellOrAskTribunal(claimantTse.getContactApplicationText());
-        genericTseApplication.setSupportingEvidence(claimantTse.getContactApplicationFile());
-        genericTseApplication.setCopyToOtherPartyYesOrNo(claimantTse.getCopyToOtherPartyYesOrNo());
-        genericTseApplication.setCopyToOtherPartyText(claimantTse.getCopyToOtherPartyText());
+        UploadedDocumentType contactApplicationFile = claimantTse.getContactApplicationFile();
+        String supportingEvidence = contactApplicationFile == null ? null : contactApplicationFile.getDocumentFilename();
+
+        GenericTseApplication genericTseApplication = GenericTseApplication.builder()
+            .applicationType(claimantTse.getContactApplicationType())
+            .tellOrAskTribunal(claimantTse.getContactApplicationText())
+            .supportingEvidence(supportingEvidence)
+            .copyToOtherPartyYesOrNo(claimantTse.getCopyToOtherPartyYesOrNo())
+            .copyToOtherPartyText(claimantTse.getCopyToOtherPartyText())
+            .build();
 
         return documentGenerationService.genPdfDocument(contactTheTribunalPdfTemplate,
                                                         TSE_CONTACT_THE_TRIBUNAL_FILENAME, genericTseApplication);
