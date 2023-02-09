@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentException;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
@@ -39,6 +40,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 public class ManageCaseController {
 
     private final CaseService caseService;
+    private final ApplicationService applicationService;
 
     /**
      * Accepts parameter of type {@link CaseRequest} and returns the case specified in 'getCaseId'.
@@ -176,16 +178,8 @@ public class ManageCaseController {
         log.info("Received submit claimant application request - caseTypeId: {} caseId: {}",
                  request.getCaseTypeId(), request.getCaseId());
 
-        CaseDetails caseDetails = caseService.getUserCase(authorization, request.getCaseId());
-        caseDetails.getData().put("claimantTse", request.getClaimantTse());
+        CaseDetails finalCaseDetails = applicationService.submitApplication(authorization, request);
 
-        CaseDetails finalCaseDetails = caseService.triggerEvent(
-            authorization,
-            request.getCaseId(),
-            CaseEvent.UPDATE_CASE_SUBMITTED,
-            request.getCaseTypeId(),
-            caseDetails.getData()
-        );
         return ok(finalCaseDetails);
     }
 }

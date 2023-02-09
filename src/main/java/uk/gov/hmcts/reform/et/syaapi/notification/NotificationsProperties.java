@@ -37,4 +37,16 @@ public class NotificationsProperties {
     @Value("${notifications.citizenPortalLink}")
     @NotBlank
     private String citizenPortalLink;
+
+    @Value("${notifications.applicationAcknowledgementYes}")
+    @NotBlank
+    private String claimantTseEmailYesTemplateId;
+
+    @Value("${notifications.applicationAcknowledgementNo}")
+    @NotBlank
+    private String claimantTseEmailNoTemplateId;
+
+    @Value("${notifications.applicationAcknowledgementTypeC}")
+    @NotBlank
+    private String claimantTseEmailTypeCTemplateId;
 }

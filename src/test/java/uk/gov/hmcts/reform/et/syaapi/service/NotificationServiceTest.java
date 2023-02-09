@@ -13,6 +13,7 @@ import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,6 +36,7 @@ class NotificationServiceTest {
 
     private static final String SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID = "af0b26b7-17b6-4643-bbdc-e296d11e7b0c";
 
+
     private static final String REFERENCE_STRING = "TEST_EMAIL_ALERT";
 
     private static final String TEST_EMAIL = "TEST@GMAIL.COM";
@@ -56,19 +58,19 @@ class NotificationServiceTest {
         parameters.put("firstname", "test");
         parameters.put("references", "123456789");
         inputSendEmailResponse = new SendEmailResponse("{\n"
-                   + "  \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                   + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
-                   + "  \"template\": {\n"
-                   + "    \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                   + "    \"version\": \"3\",\n"
-                   + "    \"uri\": \"TEST\"\n"
-                   + "  },\n"
-                   + "  \"content\": {\n"
-                   + "    \"body\": \"Dear test, Please see your detail as 123456789. Regards, ET Team.\",\n"
-                   + "    \"subject\": \"ET Test email created\",\n"
-                   + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
-                   + "  }\n"
-                   + "}\n");
+                           + "  \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
+                           + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
+                           + "  \"template\": {\n"
+                           + "    \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
+                           + "    \"version\": \"3\",\n"
+                           + "    \"uri\": \"TEST\"\n"
+                           + "  },\n"
+                           + "  \"content\": {\n"
+                           + "    \"body\": \"Dear test, Please see your detail as 123456789. Regards, ET Team.\",\n"
+                           + "    \"subject\": \"ET Test email created\",\n"
+                           + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
+                           + "  }\n"
+                           + "}\n");
         notificationClient = mock(NotificationClient.class);
         notificationsProperties = mock(NotificationsProperties.class);
         notificationService = new NotificationService(notificationClient, notificationsProperties);
@@ -77,6 +79,9 @@ class NotificationServiceTest {
         given(notificationsProperties.getCySubmitCaseEmailTemplateId()).willReturn("1234_welsh");
         given(notificationsProperties.getSubmitCaseEmailTemplateId())
             .willReturn(SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID);
+        given(notificationsProperties.getClaimantTseEmailNoTemplateId()).willReturn("No");
+        given(notificationsProperties.getClaimantTseEmailYesTemplateId()).willReturn("Yes");
+        given(notificationsProperties.getClaimantTseEmailTypeCTemplateId()).willReturn("C");
         given(notificationsProperties.getCitizenPortalLink()).willReturn(REFERENCE_STRING);
         testData = new TestData();
     }
@@ -171,6 +176,80 @@ class NotificationServiceTest {
             testData.getUserInfo()
         ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
     }
+
+    @Test
+    void shouldSendCopyYesEmail() throws NotificationClientException, IOException {
+        when(notificationClient.sendEmail(
+            eq("Yes"),
+            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        )).thenReturn(testData.getSendEmailResponse());
+
+        assertThat(notificationService.sendAcknowledgementEmailToClaimant(
+            testData.getExpectedDetails(),
+            testData.getClaimantApplication()
+        ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
+    }
+
+    @Test
+    void shouldSendCopyNoEmail() throws NotificationClientException, IOException {
+        testData.getClaimantApplication().setCopyToOtherPartyYesOrNo("No");
+        when(notificationClient.sendEmail(
+            eq("No"),
+            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        )).thenReturn(testData.getSendEmailResponse());
+
+        assertThat(notificationService.sendAcknowledgementEmailToClaimant(
+            testData.getExpectedDetails(),
+            testData.getClaimantApplication()
+        ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
+    }
+
+    @Test
+    void shouldSendTypeCEmail() throws NotificationClientException, IOException {
+        testData.getClaimantApplication().setContactApplicationType("witness");
+        when(notificationClient.sendEmail(
+            eq("C"),
+            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        )).thenReturn(testData.getSendEmailResponse());
+
+        assertThat(notificationService.sendAcknowledgementEmailToClaimant(
+            testData.getExpectedDetails(),
+            testData.getClaimantApplication()
+        ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
+    }
+
+    @Test
+    void shouldSendTypeAEmail() throws  NotificationClientException {
+        Map<String, String> parameters = new ConcurrentHashMap<>();
+        parameters.put("claimant", "Michael Jackson");
+        parameters.put("respondentNames", "Test Respondent Organisation -1-, Mehmet Tahir Dede, "
+            + "Abuzer Kadayif, Kate Winslet, Jeniffer Lopez");
+        parameters.put("caseId", "1646225213651590");
+        parameters.put("hearingDate", "Not set");
+        parameters.put("shortText", "Withdraw all/part of claim");
+        parameters.put("abText", "The other party is not expected to respond to this application. "
+            + "However, they have been notified that any objections to your Withdraw all/part of claim application "
+            + "should be sent to the tribunal as soon as possible, and in any event within 7 days");
+        when(notificationClient.sendEmail(
+            eq("Yes"),
+            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            eq(parameters),
+            eq(testData.getExpectedDetails().getId().toString())
+        )).thenReturn(inputSendEmailResponse);
+        var response = notificationService.sendAcknowledgementEmailToClaimant(
+            testData.getExpectedDetails(),
+            testData.getClaimantApplication()
+        );
+        assertThat(response.getBody().contains("Blap,"));
+    }
+
+
 
     @Test
     void shouldThrowNotificationExceptionWhenNotAbleToSendEmailBySendSubmitCaseConfirmationEmail()
