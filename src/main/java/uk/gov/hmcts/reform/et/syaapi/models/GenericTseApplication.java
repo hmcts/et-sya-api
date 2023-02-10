@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.et.syaapi.models;
 
 import lombok.Builder;
 import lombok.Data;
-import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 
 @Data
 @Builder

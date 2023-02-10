@@ -228,7 +228,9 @@ public class PdfService {
 
     private byte[] convertClaimantTseToPdf(ClaimantTse claimantTse) throws DocumentGenerationException {
         UploadedDocumentType contactApplicationFile = claimantTse.getContactApplicationFile();
-        String supportingEvidence = contactApplicationFile == null ? null : contactApplicationFile.getDocumentFilename();
+        String supportingEvidence = contactApplicationFile == null
+            ? null
+            : contactApplicationFile.getDocumentFilename();
 
         GenericTseApplication genericTseApplication = GenericTseApplication.builder()
             .applicationType(claimantTse.getContactApplicationType())
