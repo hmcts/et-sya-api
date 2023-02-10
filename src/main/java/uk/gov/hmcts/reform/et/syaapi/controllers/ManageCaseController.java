@@ -185,7 +185,7 @@ public class ManageCaseController {
         caseDetails.getData().put("claimantTse", claimantTse);
 
         try {
-            caseService.uploadTseCyaAnswersAsPdf(authorization, claimantTse, caseTypeId);
+            caseService.uploadTseCyaAnswersAsPdf(authorization, caseDetails, claimantTse, caseTypeId);
         } catch (CaseDocumentException | DocumentGenerationException e) {
             log.error("Couldn't upload pdf of TSE application");
         }

@@ -167,8 +167,9 @@ public class CaseService {
 
     /**
      * Will accept a {@link CaseRequest} trigger an event to update a give case in ET.
+     *
      * @param authorization jwt of the user
-     * @param caseRequest case to be updated
+     * @param caseRequest   case to be updated
      * @return the newly updated case wrapped in a {@link CaseDetails} object.
      */
     public CaseDetails updateCase(String authorization,
@@ -372,10 +373,22 @@ public class CaseService {
     }
 
     // public until 2815 is implemented to show that doc is created in testing
-    public CaseDocument uploadTseCyaAnswersAsPdf(String authorization, ClaimantTse claimantTse, String caseType)
+    public CaseDocument uploadTseCyaAnswersAsPdf(String authorization, CaseDetails caseDetails, ClaimantTse claimantTse, String caseType)
         throws DocumentGenerationException, CaseDocumentException {
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             pdfService.convertClaimantTseIntoMultipartFile(claimantTse);
-        return caseDocumentService.uploadDocument(authorization, caseType, pdfDecodedMultipartFile);
+        var caseDocument = caseDocumentService.uploadDocument(authorization, caseType, pdfDecodedMultipartFile);
+
+        CaseData  caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        List<DocumentTypeItem> docList = caseData.getDocumentCollection();
+        DocumentTypeItem finalDoc = caseDocumentService.createDocumentTypeItem(
+            authorization,
+            caseType,
+            "Claimant correspondence",
+            pdfDecodedMultipartFile
+        );
+        docList.add(finalDoc);
+        caseDetails.getData().put("documentCollection", docList);
+        return caseDocument;
     }
 }
