@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.idam.client.IdamApi;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
@@ -27,8 +26,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.CITIZEN_PORTAL_LINK;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.SUBMIT_CASE_EMAIL_TEMPLATE_ID;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.USER_ID;
 
@@ -97,18 +94,14 @@ class CaseServiceBootTest {
         when(caseDocumentService.uploadAllDocuments(
             eq(TEST_SERVICE_AUTH_TOKEN),
             eq(testData.getCaseRequest().getCaseTypeId()),
-            any(PdfDecodedMultipartFile.class),
+            anyList(),
             anyList()
         )).thenReturn(testData.getUploadDocumentResponse());
         when(notificationService.sendSubmitCaseConfirmationEmail(
-            eq(SUBMIT_CASE_EMAIL_TEMPLATE_ID),
-            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
-            eq(testData.getCaseRequest().getCaseId()),
-            eq(testData.getCaseData().getClaimantIndType().getClaimantFirstNames()),
-            eq(testData.getCaseData().getClaimantIndType().getClaimantLastName()),
-            any(String.class),
-            eq(CITIZEN_PORTAL_LINK)
-        )).thenReturn(null);
+            testData.getExpectedDetails(),
+            testData.getCaseData(),
+            testData.getUserInfo())
+        ).thenReturn(null);
     }
 
     @Test

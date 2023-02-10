@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.service.notify.SendEmailResponse;
 
 import java.io.IOException;
@@ -24,6 +25,7 @@ import java.util.stream.Stream;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.UPDATE_CASE_DRAFT;
 
 @Data
+@SuppressWarnings("PMD.TooManyFields")
 public final class TestData {
 
     private final Et1CaseData et1CaseData = ResourceLoader.fromString(
@@ -86,6 +88,11 @@ public final class TestData {
     private final CaseRequest englandWalesRequest = ResourceLoader.fromString(
         "requests/caseRequestEnglandWales.json",
         CaseRequest.class
+    );
+
+    private final UserInfo userInfo = ResourceLoader.fromString(
+        "responses/userInfo.json",
+        UserInfo.class
     );
 
     public Map<String, Object> getCaseRequestCaseDataMap() {
