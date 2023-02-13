@@ -373,21 +373,21 @@ public class CaseService {
     }
 
     // public until 2815 is implemented to show that doc is created in testing
-    public CaseDocument uploadTseCyaAnswersAsPdf(String authorization, CaseDetails caseDetails, ClaimantTse claimantTse, String caseType)
+    public CaseDocument uploadTseCyaAsPdf(String authorization, CaseDetails caseDetails, ClaimantTse claimantTse, String caseType)
         throws DocumentGenerationException, CaseDocumentException {
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             pdfService.convertClaimantTseIntoMultipartFile(claimantTse);
         var caseDocument = caseDocumentService.uploadDocument(authorization, caseType, pdfDecodedMultipartFile);
 
-        CaseData  caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
         List<DocumentTypeItem> docList = caseData.getDocumentCollection();
-        DocumentTypeItem finalDoc = caseDocumentService.createDocumentTypeItem(
+        docList.add(caseDocumentService.createDocumentTypeItem(
             authorization,
             caseType,
             "Claimant correspondence",
             pdfDecodedMultipartFile
-        );
-        docList.add(finalDoc);
+        ));
+
         caseDetails.getData().put("documentCollection", docList);
         return caseDocument;
     }

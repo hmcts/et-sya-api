@@ -38,6 +38,10 @@ public final class TestData {
         "requests/caseData.json",
         CaseData.class
     );
+    private final CaseDetails caseDetails = ResourceLoader.fromString(
+        "responses/caseDetails.json",
+        CaseDetails.class
+    );
     private final CaseDetails expectedDetails = ResourceLoader.fromString(
         "responses/caseDetails.json",
         CaseDetails.class
