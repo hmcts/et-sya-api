@@ -14,3 +14,7 @@ java:
         - AppInsightsInstrumentationKey
         - name: gov-notify-api-key
           alias: GOV_UK_NOTIFY_API_KEY
+        - name: et-api-caseworker-user-name
+          alias: CASEWORKER_USER_NAME
+        - name: et-api-caseworker-password
+          alias: CASEWORKER_PASSWORD
