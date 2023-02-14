@@ -620,8 +620,12 @@ class CaseServiceTest {
         );
 
         assertThat(
-            caseService.uploadTseCyaAsPdf(TEST_SERVICE_AUTH_TOKEN, testData.getCaseDetails(), testData.getClaimantTse(), "TEST"
-        )).isNotNull();
+            caseService.uploadTseCyaAsPdf(
+                TEST_SERVICE_AUTH_TOKEN,
+                testData.getCaseDetails(),
+                testData.getClaimantTse(),
+                "TEST"
+            )).isNotNull();
     }
 
     @SneakyThrows

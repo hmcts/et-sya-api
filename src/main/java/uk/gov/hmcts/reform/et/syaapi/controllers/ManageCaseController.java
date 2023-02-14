@@ -40,6 +40,8 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 @RequestMapping("/cases")
 public class ManageCaseController {
 
+    public static final String YES = "Yes";
+
     private final CaseService caseService;
 
     /**
@@ -184,10 +186,12 @@ public class ManageCaseController {
         ClaimantTse claimantTse = request.getClaimantTse();
         caseDetails.getData().put("claimantTse", claimantTse);
 
-        try {
-            caseService.uploadTseCyaAsPdf(authorization, caseDetails, claimantTse, caseTypeId);
-        } catch (CaseDocumentException | DocumentGenerationException e) {
-            log.error("Couldn't upload pdf of TSE application");
+        if (!request.isTypeC() && claimantTse.getCopyToOtherPartyYesOrNo().equals(YES)) {
+            try {
+                caseService.uploadTseCyaAsPdf(authorization, caseDetails, claimantTse, caseTypeId);
+            } catch (CaseDocumentException | DocumentGenerationException e) {
+                log.error("Couldn't upload pdf of TSE application");
+            }
         }
 
         CaseDetails finalCaseDetails = caseService.triggerEvent(

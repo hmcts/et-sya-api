@@ -373,8 +373,12 @@ public class CaseService {
     }
 
     // public until 2815 is implemented to show that doc is created in testing
-    public CaseDocument uploadTseCyaAsPdf(String authorization, CaseDetails caseDetails, ClaimantTse claimantTse, String caseType)
-        throws DocumentGenerationException, CaseDocumentException {
+    public CaseDocument uploadTseCyaAsPdf(
+        String authorization,
+        CaseDetails caseDetails,
+        ClaimantTse claimantTse,
+        String caseType
+    ) throws DocumentGenerationException, CaseDocumentException {
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             pdfService.convertClaimantTseIntoMultipartFile(claimantTse);
         var caseDocument = caseDocumentService.uploadDocument(authorization, caseType, pdfDecodedMultipartFile);

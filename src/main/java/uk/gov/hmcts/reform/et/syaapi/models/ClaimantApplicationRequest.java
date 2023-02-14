@@ -13,9 +13,10 @@ public class ClaimantApplicationRequest {
 
     @JsonProperty("case_id")
     private String caseId;
-
     @JsonProperty("case_type_id")
     private String caseTypeId;
+    @JsonProperty("is_type_c")
+    private boolean isTypeC;
     @JsonProperty("claimant_tse")
     private ClaimantTse claimantTse;
 }
