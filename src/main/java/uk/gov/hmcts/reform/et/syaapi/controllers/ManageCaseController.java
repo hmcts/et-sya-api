@@ -186,7 +186,7 @@ public class ManageCaseController {
         ClaimantTse claimantTse = request.getClaimantTse();
         caseDetails.getData().put("claimantTse", claimantTse);
 
-        if (!request.isTypeC() && claimantTse.getCopyToOtherPartyYesOrNo().equals(YES)) {
+        if (!request.isTypeC() && YES.equals(claimantTse.getCopyToOtherPartyYesOrNo())) {
             try {
                 caseService.uploadTseCyaAsPdf(authorization, caseDetails, claimantTse, caseTypeId);
             } catch (CaseDocumentException | DocumentGenerationException e) {
