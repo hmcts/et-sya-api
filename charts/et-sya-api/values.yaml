@@ -10,6 +10,10 @@ java:
           alias: ET_SYA_S2S_SECRET
         - name: Ocp-Apim-Subscription-Key
           alias: ACAS_KEY
+        - name: et-api-caseworker-user-name
+          alias: CASEWORKER_USER_NAME
+        - name: et-api-caseworker-password
+          alias: CASEWORKER_PASSWORD
     et:
       secrets:
         - AppInsightsInstrumentationKey
@@ -17,6 +21,7 @@ java:
           alias: TORNADO_ACCESS_KEY
         - name: gov-notify-api-key
           alias: GOV_UK_NOTIFY_API_KEY
+
   environment:
     IDAM_API_BASEURL: "https://idam-api.{{ .Values.global.environment }}.platform.hmcts.net"
     IDAM_JWKS_BASEURL: "https://idam-api.{{ .Values.global.environment }}.platform.hmcts.net/o/jwks"
