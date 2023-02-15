@@ -17,8 +17,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.test.util.ReflectionTestUtils;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
+import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationException;
+import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationService;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 
 import java.io.IOException;
@@ -63,6 +66,8 @@ class PdfServiceTest {
 
     @Mock
     private PdfMapperService pdfMapperService;
+    @Mock
+    private DocumentGenerationService documentGenerationService;
     @InjectMocks
     private PdfService pdfService;
 
@@ -144,7 +149,7 @@ class PdfServiceTest {
 
     @Test
     void shouldCreatePdfFile() throws IOException {
-        PdfService pdfService1 = new PdfService(new PdfMapperService());
+        PdfService pdfService1 = new PdfService(new PdfMapperService(), documentGenerationService);
         pdfService1.englishPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE;
         byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
         assertThat(pdfData).isNotEmpty();
@@ -155,7 +160,7 @@ class PdfServiceTest {
     @Test
     void shouldCreatePdfFileWelsh() throws IOException {
         testData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
-        PdfService pdfService1 = new PdfService(new PdfMapperService());
+        PdfService pdfService1 = new PdfService(new PdfMapperService(), documentGenerationService);
         pdfService1.welshPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH;
         byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
         assertThat(pdfData).isNotEmpty();
@@ -192,5 +197,13 @@ class PdfServiceTest {
         List<PdfDecodedMultipartFile> pdfDecodedMultipartFiles =
             pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(testData.getCaseData(), acasCertificates);
         assertThat(pdfDecodedMultipartFiles).hasSize(1);
+    }
+
+    @Test
+    void shouldCreatePdfDecodedMultipartFileFromTseApplication() throws DocumentGenerationException {
+        testData.getCaseData().setClaimantTse(new ClaimantTse());
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            pdfService.convertClaimantTseIntoMultipartFile(testData.getClaimantTse());
+        assertThat(pdfDecodedMultipartFile).isNotNull();
     }
 }
