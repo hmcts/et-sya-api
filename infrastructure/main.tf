@@ -74,7 +74,6 @@ resource "azurerm_api_management_user" "et_api_management_user" {
   last_name           = "Moores"
 }
 
-
 data "azurerm_key_vault" "et-msg-handler-vault" {
   name = "et-msg-handler-${var.env}"
   resource_group_name = "et-msg-handler-${var.env}"
