@@ -21,6 +21,8 @@ public final class EtSyaConstants {
     public static final String CASE_FIELD_MANAGING_OFFICE = "managingOffice";
 
     public static final String OTHER_TYPE_OF_DOCUMENT = "Other";
+    public static final String TSE_SUPPORT_DOCUMENT = "TSE supporting document";
+    public static final String CLAIMANT_CORRESPONDENCE_DOCUMENT = "Claimant correspondence";
 
     public static final String WELSH_LANGUAGE = "Welsh";
     public static final String ENGLISH_LANGUAGE = "English";
