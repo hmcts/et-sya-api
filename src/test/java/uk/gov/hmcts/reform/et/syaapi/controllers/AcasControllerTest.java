@@ -1,12 +1,17 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
+import org.apache.commons.collections4.MultiValuedMap;
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -15,13 +20,17 @@ import org.springframework.web.context.WebApplicationContext;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.SyaApiApplication;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
+import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -39,6 +48,8 @@ class AcasControllerTest {
     private static final String AUTH_TOKEN = "some-token";
     private static final String GET_LAST_MODIFIED_CASE_LIST_URL = "/getLastModifiedCaseList";
     private static final String GET_CASE_DATA_URL = "/getCaseData";
+    private static final String GET_ACAS_DOCUMENTS_URL = "/getAcasDocuments";
+    private static final String DOWNLOAD_ACAS_DOCUMENTS_URL = "/downloadAcasDocuments";
 
     @Autowired
     private WebApplicationContext webApplicationContext;
@@ -48,6 +59,12 @@ class AcasControllerTest {
 
     @MockBean
     private CaseService caseService;
+
+    @MockBean
+    private CaseDocumentService caseDocumentService;
+
+    @MockBean
+    private IdamClient idamClient;
 
     private MockMvc mockMvc;
 
@@ -133,5 +150,77 @@ class AcasControllerTest {
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                             .param("caseIds", caseIds.toString()))
             .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getAcasDocumentsDocumentsFound() throws Exception {
+        MultiValuedMap<String, CaseDocumentAcasResponse> acasResponseMultiValuedMap = new ArrayListValuedHashMap<>();
+        CaseDocumentAcasResponse caseDocumentAcasResponse = CaseDocumentAcasResponse.builder()
+            .documentId(UUID.randomUUID().toString())
+            .modifiedOn("2023-02-06T12:41:47.000+00:00")
+            .build();
+        acasResponseMultiValuedMap.put("ET1", caseDocumentAcasResponse);
+        when(caseService.retrieveAcasDocuments(anyString())).thenReturn(acasResponseMultiValuedMap);
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+
+        mockMvc.perform(get(GET_ACAS_DOCUMENTS_URL)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                            .param("caseId", "123"))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void getAcasDocumentsNoParameter() throws Exception {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+        mockMvc.perform(get(GET_ACAS_DOCUMENTS_URL)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getAcasDocumentsInvalidToken() throws Exception {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(false);
+        mockMvc.perform(get(GET_ACAS_DOCUMENTS_URL)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                            .param("caseId", "dummy"))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void downloadAcasDocumentsDocumentsFound() throws Exception {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+        when(idamClient.getAccessToken(anyString(), anyString())).thenReturn(AUTH_TOKEN);
+        when(caseDocumentService.downloadDocument(anyString(), any())).thenReturn(getDocumentBinaryContent());
+        mockMvc.perform(get(DOWNLOAD_ACAS_DOCUMENTS_URL)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                            .param("documentId", UUID.randomUUID().toString()))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void downloadAcasDocumentsNoParameter() throws Exception {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+        mockMvc.perform(get(DOWNLOAD_ACAS_DOCUMENTS_URL)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void downloadAcasDocumentsInvalidToken() throws Exception {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(false);
+        mockMvc.perform(get(DOWNLOAD_ACAS_DOCUMENTS_URL)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                            .param("documentId", UUID.randomUUID().toString()))
+            .andExpect(status().isForbidden());
+    }
+
+    private ResponseEntity<ByteArrayResource> getDocumentBinaryContent() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json; charset=utf-8");
+        return new ResponseEntity<>(
+            new ByteArrayResource("test document content".getBytes()),
+            headers,
+            HttpStatus.OK
+        );
     }
 }

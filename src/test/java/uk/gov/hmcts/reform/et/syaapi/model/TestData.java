@@ -95,6 +95,11 @@ public final class TestData {
         UserInfo.class
     );
 
+    private final List<CaseDetails> requestCaseDataListEnglandAcas = ResourceLoader.fromStringToList(
+        "responses/caseDetailsEnglandAcasDocs.json",
+        CaseDetails.class
+    );
+
     public Map<String, Object> getCaseRequestCaseDataMap() {
         Map<String, Object> requestCaseData = new ConcurrentHashMap<>();
         requestCaseData.put("typesOfClaim", et1CaseData.getTypesOfClaim());
