@@ -9,12 +9,12 @@ java:
       secrets:
         - name: et-sya-api-s2s-secret
           alias: ET_SYA_S2S_SECRET
+        - name: et-api-caseworker-user-name
+          alias: CASEWORKER_USER_NAME
+        - name: et-api-caseworker-password
+          alias: CASEWORKER_PASSWORD
     et:
       secrets:
         - AppInsightsInstrumentationKey
         - name: gov-notify-api-key
           alias: GOV_UK_NOTIFY_API_KEY
-        - name: et-api-caseworker-user-name
-          alias: CASEWORKER_USER_NAME
-        - name: et-api-caseworker-password
-          alias: CASEWORKER_PASSWORD
