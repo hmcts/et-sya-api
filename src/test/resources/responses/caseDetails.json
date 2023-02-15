@@ -9,8 +9,15 @@
   "security_level": null,
   "case_data": {
     "caseType": "Single",
-    "caseSource": "Manually Created"
-  },
-  "security_classification": "PUBLIC",
-  "callback_response_status": null
+    "caseSource": "Manually Created",
+    "claimantIndType": {
+      "claimant_first_names": "Michael",
+      "claimant_last_name": "Jackson"
+    },
+    "ethosCaseReference": "1646225213651590",
+    "claimantType": {
+      "claimant_email_address": "test@gmail.com"
+    },
+    "security_classification": "PUBLIC"
+  }
 }

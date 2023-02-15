@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.helper;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DateListedTypeItem;
@@ -53,6 +54,9 @@ public final class NotificationsHelper {
      * @return respondent names
      */
     public static String getRespondentNames(CaseData caseData) {
+        if (CollectionUtils.isEmpty(caseData.getRespondentCollection())) {
+            return StringUtils.EMPTY;
+        }
         return caseData.getRespondentCollection().stream()
             .map(o -> o.getValue().getRespondentName())
             .collect(Collectors.joining(", "));

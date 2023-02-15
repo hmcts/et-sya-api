@@ -374,6 +374,7 @@ class ManageCaseControllerTest {
             .build();
 
         // when
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
 
         when(applicationService.submitApplication(any(), any())).thenReturn(expectedDetails);
         mockMvc.perform(

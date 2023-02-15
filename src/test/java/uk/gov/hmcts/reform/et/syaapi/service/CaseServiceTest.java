@@ -352,8 +352,6 @@ class CaseServiceTest {
                                         + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
                                         + "  }\n"
                                         + "}\n");
-        when(notificationService.sendSubmitCaseConfirmationEmail(any(), any(), any()))
-            .thenReturn(sendEmailResponse);
 
         when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(createDocumentTypeItem());
 
