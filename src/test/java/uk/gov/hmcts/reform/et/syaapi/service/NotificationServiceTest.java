@@ -48,20 +48,21 @@ class NotificationServiceTest {
     void before() throws NotificationClientException {
         parameters.put("firstname", "test");
         parameters.put("references", "123456789");
-        inputSendEmailResponse = new SendEmailResponse("{\n"
-                                                           + "  \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                                                           + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
-                                                           + "  \"template\": {\n"
-                                                           + "    \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                                                           + "    \"version\": \"3\",\n"
-                                                           + "    \"uri\": \"TEST\"\n"
-                                                           + "  },\n"
-                                                           + "  \"content\": {\n"
-                                                           + "    \"body\": \"Dear test, Please see your detail as 123456789. Regards, ET Team.\",\n"
-                                                           + "    \"subject\": \"ET Test email created\",\n"
-                                                           + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
-                                                           + "  }\n"
-                                                           + "}\n");
+        inputSendEmailResponse = new SendEmailResponse(
+            "{\n"
+                + "  \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
+                + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
+                + "  \"template\": {\n"
+                + "    \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
+                + "    \"version\": \"3\",\n"
+                + "    \"uri\": \"TEST\"\n"
+                + "  },\n"
+                + "  \"content\": {\n"
+                + "    \"body\": \"Dear test, Please see your detail as 123456789. Regards, ET Team.\",\n"
+                + "    \"subject\": \"ET Test email created\",\n"
+                + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
+                + "  }\n"
+                + "}\n");
         notificationClient = mock(NotificationClient.class);
         notificationsProperties = mock(NotificationsProperties.class);
         notificationService = new NotificationService(notificationClient, notificationsProperties);
@@ -259,20 +260,23 @@ class NotificationServiceTest {
 
     @Test
     void shouldSendSubmitCaseConfirmationEmailInWelsh() throws NotificationClientException {
-        inputSendEmailResponse = new SendEmailResponse("{\n"
-                                                           + "  \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                                                           + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
-                                                           + "  \"template\": {\n"
-                                                           + "    \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                                                           + "    \"version\": \"3\",\n"
-                                                           + "    \"uri\": \"TEST\"\n"
-                                                           + "  },\n"
-                                                           + "  \"content\": {\n"
-                                                           + "    \"body\": \"Please click here. https://www.gov.uk/log-in-register-hmrc-online-services/123456722/?lng=cy.\",\n"
-                                                           + "    \"subject\": \"ET Test email created\",\n"
-                                                           + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
-                                                           + "  }\n"
-                                                           + "}\n");
+        inputSendEmailResponse = new SendEmailResponse(
+            "{\n"
+                + "  \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
+                + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
+                + "  \"template\": {\n"
+                + "    \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
+                + "    \"version\": \"3\",\n"
+                + "    \"uri\": \"TEST\"\n"
+                + "  },\n"
+                + "  \"content\": {\n"
+                + "    \"body\": \"Please click here. " +
+                "https://www.gov.uk/log-in-register-hmrc-online-services/123456722/?lng=cy.\",\n"
+                + "    \"subject\": \"ET Test email created\",\n"
+                + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
+                + "  }\n"
+                + "}\n"
+        );
         NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
         when(notificationClient.sendEmail(
             eq("1234_welsh"),
@@ -299,6 +303,7 @@ class NotificationServiceTest {
             testData.getCaseData(),
             testData.getUserInfo()
         );
-        assertThat(response.getBody()).isEqualTo("Dear test, Please see your detail as 123456789. Regards, ET Team.");
+        assertThat(response.getBody()).isEqualTo("Dear test, Please see your detail as 123456789. " +
+                                                     "Regards, ET Team.");
     }
 }
