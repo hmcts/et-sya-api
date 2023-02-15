@@ -9,7 +9,8 @@
   "security_level": null,
   "case_data": {
     "caseType": "Single",
-    "caseSource": "Manually Created"
+    "caseSource": "Manually Created",
+    "documentCollection": []
   },
   "security_classification": "PUBLIC",
   "callback_response_status": null
