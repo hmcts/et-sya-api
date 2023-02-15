@@ -258,7 +258,7 @@ public class PdfMapperService {
                 printFields.put(String.format(
                     PdfMapperConstants.QX_HAVE_ACAS_NO, questionPrefix), Optional.of(NO_LOWERCASE));
             }
-            if (StringUtils.isNotEmpty(respondent.getRespondentAcasNo())) {
+            if (!Strings.isNullOrEmpty(respondent.getRespondentAcasNo())) {
                 switch (respondent.getRespondentAcasNo()) {
                     case "Unfair Dismissal":
                         printFields.put(String.format(PdfMapperConstants.QX_ACAS_A1, questionPrefix), Optional.of(YES));
