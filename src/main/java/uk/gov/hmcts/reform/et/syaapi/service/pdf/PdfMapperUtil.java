@@ -6,6 +6,8 @@ import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.dwp.regex.PostCodeValidator;
 import uk.gov.hmcts.et.common.model.ccd.Address;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.Set;
 
@@ -155,5 +157,22 @@ public final class PdfMapperUtil {
         } else {
             return address.getPostCode();
         }
+    }
+
+    /**
+     * Formats date from YYYY/MM/DD to DD/MM/YYYY.
+     * @param dateToFormat String value of date to be formatted
+     * @return Formatted date
+     */
+    public static String formatDate(String dateToFormat) {
+        SimpleDateFormat parsingFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.UK);
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy", Locale.UK);
+        String formattedDateStringValue;
+        try {
+            formattedDateStringValue = formatter.format(parsingFormatter.parse(dateToFormat));
+        } catch (ParseException e) {
+            return dateToFormat;
+        }
+        return formattedDateStringValue;
     }
 }

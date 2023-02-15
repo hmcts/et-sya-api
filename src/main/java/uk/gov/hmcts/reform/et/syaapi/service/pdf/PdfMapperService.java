@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.common.Strings;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -116,7 +116,8 @@ public class PdfMapperService {
         try {
             printFields.put(PdfMapperConstants.TRIBUNAL_OFFICE, ofNullable(caseData.getManagingOffice()));
             printFields.put(PdfMapperConstants.CASE_NUMBER, ofNullable(caseData.getEthosCaseReference()));
-            printFields.put(PdfMapperConstants.DATE_RECEIVED, ofNullable(caseData.getReceiptDate()));
+            printFields.put(PdfMapperConstants.DATE_RECEIVED,
+                            ofNullable(PdfMapperUtil.formatDate(caseData.getReceiptDate())));
             printFields.putAll(printHearingPreferences(caseData));
             printFields.putAll(printRespondentDetails(caseData));
             printFields.putAll(printMultipleClaimsDetails(caseData));
@@ -232,7 +233,7 @@ public class PdfMapperService {
     private Map<String, Optional<String>> printRespondentAcas(RespondentSumType respondent,
                                                               String questionPrefix) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
-        String acasYesNo = StringUtils.isEmpty(respondent.getRespondentAcasQuestion()) ? NO :
+        String acasYesNo = Strings.isNullOrEmpty(respondent.getRespondentAcasQuestion()) ? NO :
             respondent.getRespondentAcasQuestion();
         if (YES.equals(acasYesNo)) {
             if (PREFIX_2_8.equals(questionPrefix)) {
@@ -311,7 +312,7 @@ public class PdfMapperService {
 
                 printFields.put(
                     PdfMapperConstants.Q5_EMPLOYMENT_START,
-                    ofNullable(claimantOtherType.getClaimantEmployedFrom())
+                    ofNullable(PdfMapperUtil.formatDate(claimantOtherType.getClaimantEmployedFrom()))
                 );
 
                 String stillWorking = NO_LONGER_WORKING.equals(claimantOtherType.getStillWorking()) ? NO :
@@ -321,7 +322,7 @@ public class PdfMapperService {
                     if (NOTICE.equals(claimantOtherType.getStillWorking())) {
                         printFields.put(
                             PdfMapperConstants.Q5_NOT_ENDED,
-                            ofNullable(claimantOtherType.getClaimantEmployedNoticePeriod())
+                            ofNullable(PdfMapperUtil.formatDate(claimantOtherType.getClaimantEmployedNoticePeriod()))
                         );
                     }
 
@@ -329,7 +330,7 @@ public class PdfMapperService {
                     printFields.put(PdfMapperConstants.Q5_CONTINUING_NO, Optional.of(NO_LOWERCASE));
                     printFields.put(
                         PdfMapperConstants.Q5_EMPLOYMENT_END,
-                        ofNullable(claimantOtherType.getClaimantEmployedTo())
+                        ofNullable(PdfMapperUtil.formatDate(claimantOtherType.getClaimantEmployedTo()))
                     );
                 }
 
@@ -358,7 +359,7 @@ public class PdfMapperService {
                 printFields.put(PdfMapperConstants.Q7_OTHER_JOB_YES, Optional.of(YES));
                 printFields.put(
                     PdfMapperConstants.Q7_START_WORK,
-                    ofNullable(newEmploymentType.getNewlyEmployedFrom())
+                    ofNullable(PdfMapperUtil.formatDate(newEmploymentType.getNewlyEmployedFrom()))
                 );
                 printFields.put(
                     PdfMapperConstants.Q7_EARNING,
