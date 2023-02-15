@@ -96,6 +96,11 @@ public final class TestData {
         UserInfo.class
     );
 
+    private final List<CaseDetails> requestCaseDataListEnglandAcas = ResourceLoader.fromStringToList(
+        "responses/caseDetailsEnglandAcasDocs.json",
+        CaseDetails.class
+    );
+
     private final ClaimantTse claimantApplication = ResourceLoader.fromString(
         "responses/claimantTse.json",
         ClaimantTse.class
