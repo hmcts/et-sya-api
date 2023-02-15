@@ -9,16 +9,12 @@ import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 @RequiredArgsConstructor
 @Service
 public class ApplicationService {
-
     private final CaseService caseService;
     private final NotificationService notificationService;
-
 
     public CaseDetails submitApplication(String authorization, ClaimantApplicationRequest request) {
         CaseDetails caseDetails = caseService.getUserCase(authorization, request.getCaseId());
         caseDetails.getData().put("claimantTse", request.getClaimantTse());
-
-
         CaseDetails finalCaseDetails = caseService.triggerEvent(
             authorization,
             request.getCaseId(),
@@ -31,11 +27,6 @@ public class ApplicationService {
             finalCaseDetails,
             request.getClaimantTse()
         );
-
         return finalCaseDetails;
-
-
     }
-
-
 }

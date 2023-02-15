@@ -32,25 +32,16 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.NOTIFICATION_CON
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class NotificationServiceTest {
-    private static final String TEST_TEMPLATE_API_KEY = "dummy template id";
-
-    private static final String SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID = "af0b26b7-17b6-4643-bbdc-e296d11e7b0c";
-
-
-    private static final String REFERENCE_STRING = "TEST_EMAIL_ALERT";
-
-    private static final String TEST_EMAIL = "TEST@GMAIL.COM";
-
     @MockBean
     private NotificationService notificationService;
-
+    private static final String TEST_TEMPLATE_API_KEY = "dummy template id";
+    private static final String SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID = "af0b26b7-17b6-4643-bbdc-e296d11e7b0c";
+    private static final String REFERENCE_STRING = "TEST_EMAIL_ALERT";
+    private static final String TEST_EMAIL = "TEST@GMAIL.COM";
     private NotificationClient notificationClient;
     private NotificationsProperties notificationsProperties;
-
     private final ConcurrentHashMap<String, String> parameters = new ConcurrentHashMap<>();
-
     private SendEmailResponse inputSendEmailResponse;
-
     private TestData testData;
 
     @BeforeEach
@@ -58,19 +49,19 @@ class NotificationServiceTest {
         parameters.put("firstname", "test");
         parameters.put("references", "123456789");
         inputSendEmailResponse = new SendEmailResponse("{\n"
-                           + "  \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                           + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
-                           + "  \"template\": {\n"
-                           + "    \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                           + "    \"version\": \"3\",\n"
-                           + "    \"uri\": \"TEST\"\n"
-                           + "  },\n"
-                           + "  \"content\": {\n"
-                           + "    \"body\": \"Dear test, Please see your detail as 123456789. Regards, ET Team.\",\n"
-                           + "    \"subject\": \"ET Test email created\",\n"
-                           + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
-                           + "  }\n"
-                           + "}\n");
+                                                           + "  \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
+                                                           + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
+                                                           + "  \"template\": {\n"
+                                                           + "    \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
+                                                           + "    \"version\": \"3\",\n"
+                                                           + "    \"uri\": \"TEST\"\n"
+                                                           + "  },\n"
+                                                           + "  \"content\": {\n"
+                                                           + "    \"body\": \"Dear test, Please see your detail as 123456789. Regards, ET Team.\",\n"
+                                                           + "    \"subject\": \"ET Test email created\",\n"
+                                                           + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
+                                                           + "  }\n"
+                                                           + "}\n");
         notificationClient = mock(NotificationClient.class);
         notificationsProperties = mock(NotificationsProperties.class);
         notificationService = new NotificationService(notificationClient, notificationsProperties);
@@ -117,7 +108,6 @@ class NotificationServiceTest {
             UUID.fromString("8835039a-3544-439b-a3da-882490d959eb"));
     }
 
-
     @Test
     void ifTargetEmailIsNullWillThrowNotificationException() throws NotificationClientException {
         given(notificationClient.sendEmail(anyString(), nullable(String.class), any(), anyString()))
@@ -127,7 +117,6 @@ class NotificationServiceTest {
             .isInstanceOf(NotificationException.class)
             .hasMessageContaining("email_address is a required property");
     }
-
 
     @Test
     void ifTemplateIdIsNullWillThrowNotificationException() throws NotificationClientException {
@@ -225,7 +214,7 @@ class NotificationServiceTest {
     }
 
     @Test
-    void shouldSendTypeAEmail() throws  NotificationClientException {
+    void shouldSendTypeAEmail() throws NotificationClientException {
         Map<String, String> parameters = new ConcurrentHashMap<>();
         parameters.put("claimant", "Michael Jackson");
         parameters.put("respondentNames", "Test Respondent Organisation -1-, Mehmet Tahir Dede, "
@@ -248,8 +237,6 @@ class NotificationServiceTest {
         );
         assertThat(response.getBody().contains("Blap,"));
     }
-
-
 
     @Test
     void shouldThrowNotificationExceptionWhenNotAbleToSendEmailBySendSubmitCaseConfirmationEmail()

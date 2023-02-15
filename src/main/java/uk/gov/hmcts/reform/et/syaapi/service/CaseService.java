@@ -179,8 +179,9 @@ public class CaseService {
 
     /**
      * Will accept a {@link CaseRequest} trigger an event to update a give case in ET.
+     *
      * @param authorization jwt of the user
-     * @param caseRequest case to be updated
+     * @param caseRequest   case to be updated
      * @return the newly updated case wrapped in a {@link CaseDetails} object.
      */
     public CaseDetails updateCase(String authorization,
@@ -239,7 +240,7 @@ public class CaseService {
         triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
                      caseDetails.getData()
         );
-        // notificationService.sendSubmitCaseConfirmationEmail(caseDetails, caseData, userInfo);
+        notificationService.sendSubmitCaseConfirmationEmail(caseDetails, caseData, userInfo);
         return caseDetails;
     }
 
@@ -344,6 +345,7 @@ public class CaseService {
 
     /**
      * Given a caseId, return a list of document IDs which are visible to ACAS.
+     *
      * @param caseId 16 digit CCD id
      * @return a MultiValuedMap containing a list of document ids and timestamps
      */
@@ -365,8 +367,11 @@ public class CaseService {
 
         for (CaseData caseData : caseDataList) {
             documentTypeItemList.addAll(caseData.getDocumentCollection().stream()
-                .filter(d -> ACAS_VISIBLE_DOCS.contains(defaultIfEmpty(d.getValue().getTypeOfDocument(), "")))
-                         .collect(toList()));
+                                            .filter(d -> ACAS_VISIBLE_DOCS.contains(defaultIfEmpty(
+                                                d.getValue().getTypeOfDocument(),
+                                                ""
+                                            )))
+                                            .collect(toList()));
         }
 
         MultiValuedMap<String, CaseDocumentAcasResponse> documentIds = new ArrayListValuedHashMap<>();
@@ -378,8 +383,8 @@ public class CaseService {
                 CaseDocumentAcasResponse caseDocumentAcasResponse = CaseDocumentAcasResponse.builder()
                     .documentId(matcher.group())
                     .modifiedOn(caseDocumentService.getDocumentDetails(
-                        authorisation, UUID.fromString(matcher.group()))
-                                   .getBody().getModifiedOn())
+                            authorisation, UUID.fromString(matcher.group()))
+                                    .getBody().getModifiedOn())
                     .build();
                 documentIds.put(documentTypeItem.getValue().getTypeOfDocument(), caseDocumentAcasResponse);
             }
@@ -406,7 +411,7 @@ public class CaseService {
     }
 
     private List<CaseData> searchAndReturnCaseDataList(String authorisation, String query) {
-        List<CaseDetails> searchResults =  searchEnglandScotlandCases(authorisation, query);
+        List<CaseDetails> searchResults = searchEnglandScotlandCases(authorisation, query);
         List<CaseData> caseDataList = new ArrayList<>();
         for (CaseDetails caseDetails : searchResults) {
             caseDataList.add(EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData()));

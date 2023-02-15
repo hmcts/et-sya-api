@@ -364,9 +364,7 @@ class ManageCaseControllerTest {
     @SneakyThrows
     @Test
     void shouldSubmitClaimantApplication() {
-
         ClaimantTse claimantTse = new ClaimantTse();
-
         ClaimantApplicationRequest claimantApplicationRequest = ClaimantApplicationRequest.builder()
             .caseId(CASE_ID)
             .caseTypeId(CASE_TYPE)
@@ -388,6 +386,5 @@ class ManageCaseControllerTest {
             eq(TEST_SERVICE_AUTH_TOKEN),
             eq(claimantApplicationRequest)
         );
-
     }
 }

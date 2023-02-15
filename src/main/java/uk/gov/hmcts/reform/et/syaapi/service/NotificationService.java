@@ -37,12 +37,9 @@ import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespon
 public class NotificationService {
     private final NotificationClient notificationClient;
     private final NotificationsProperties notificationsProperties;
-
     private final String[] typeA =
         {"strike", "amend", "non-compliance", "other", "postpone", "vary", "respondent", "publicity"};
-
     private final String[] typeB = {"withdraw", "change-details", "reconsider-decision", "reconsider-judgement"};
-
     private static final String TYPE_C = "witness";
     private static final String DONT_SEND_COPY = "No";
 
@@ -55,7 +52,6 @@ public class NotificationService {
      * @param reference   - reference string for email template
      * @return response from notification api
      */
-
     public SendEmailResponse sendEmail(
         String templateId, String targetEmail, Map<String, String> parameters, String reference) {
         SendEmailResponse sendEmailResponse;
