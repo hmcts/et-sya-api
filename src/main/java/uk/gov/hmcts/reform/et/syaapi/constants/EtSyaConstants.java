@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.et.syaapi.constants;
 
 import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 
+import java.util.List;
+
 /**
  * Defines attributes used by et-sya-api as constants.
  */
@@ -23,6 +25,13 @@ public final class EtSyaConstants {
     public static final String WELSH_LANGUAGE = "Welsh";
     public static final String ENGLISH_LANGUAGE = "English";
     public static final String WELSH_LANGUAGE_PARAM = "/?lng=cy";
+
+    public static final List<String> ACAS_VISIBLE_DOCS = List.of("ET1", "ACAS Certificate", "Notice of a claim",
+                                                                 "ET3", "Claimant correspondence",
+                                                                 "Respondent correspondence", "Notice of Hearing",
+                                                                 "Tribunal correspondence",
+                                                                 "Tribunal Order/Deposit Order",
+                                                                 "Tribunal Judgment/Reasons");
 
     private EtSyaConstants() {
         // restrict instantiation

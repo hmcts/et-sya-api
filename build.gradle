@@ -248,7 +248,9 @@ dependencies {
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '9.0.71'
   implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.7.6'
 
+
   implementation group: 'com.fasterxml.jackson.core', name:  'jackson-databind', version: '2.14.1'
+  implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
 
   compileOnly 'org.projectlombok:lombok'
   annotationProcessor group: 'org.projectlombok', name: 'lombok'
