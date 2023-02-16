@@ -13,6 +13,8 @@ java:
           alias: CASEWORKER_USER_NAME
         - name: et-api-caseworker-password
           alias: CASEWORKER_PASSWORD
+        - name: acas-idam-client-secret
+          alias: IDAM_CLIENT_SECRET
     et:
       secrets:
         - AppInsightsInstrumentationKey
