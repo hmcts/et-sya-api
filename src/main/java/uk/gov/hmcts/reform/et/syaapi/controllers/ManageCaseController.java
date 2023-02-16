@@ -41,7 +41,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 @RequestMapping("/cases")
 public class ManageCaseController {
 
-    public static final String YES = "Yes";
     private final CaseService caseService;
     private final ApplicationService applicationService;
 
