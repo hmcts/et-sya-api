@@ -2,6 +2,9 @@ package uk.gov.hmcts.reform.et.syaapi.constants;
 
 import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 
+/**
+ * Defines attributes used by et-sya-api as constants.
+ */
 public final class EtSyaConstants {
 
     public static final String REMOTE_REPO = "https://github.com/hmcts/et-sya-api";
@@ -16,6 +19,10 @@ public final class EtSyaConstants {
     public static final String CASE_FIELD_MANAGING_OFFICE = "managingOffice";
 
     public static final String OTHER_TYPE_OF_DOCUMENT = "Other";
+
+    public static final String WELSH_LANGUAGE = "Welsh";
+    public static final String ENGLISH_LANGUAGE = "English";
+    public static final String WELSH_LANGUAGE_PARAM = "/?lng=cy";
 
     private EtSyaConstants() {
         // restrict instantiation

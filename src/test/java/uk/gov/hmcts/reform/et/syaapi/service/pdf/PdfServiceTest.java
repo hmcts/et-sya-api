@@ -20,7 +20,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,9 +31,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
+@SuppressWarnings({"PMD.TooManyMethods"})
 class PdfServiceTest {
     private static final Map<String, Optional<String>> PDF_VALUES = Map.of(
         PdfMapperConstants.TRIBUNAL_OFFICE, Optional.of("Manchester"),
@@ -48,8 +49,11 @@ class PdfServiceTest {
     );
 
     private TestData testData;
-    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME = "pdfTemplateSource";
-    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE = "ET1_2222.pdf";
+
+    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME = "englishPdfTemplateSource";
+    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE = "ET1_1122.pdf";
+    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME_WELSH = "welshPdfTemplateSource";
+    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH = "CY_ET1_2222.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
 
     private final AcasCertificate acasCertificate = ResourceLoader.fromString(
@@ -65,15 +69,22 @@ class PdfServiceTest {
     @BeforeEach
     void beforeEach() {
         testData = new TestData();
-        ReflectionTestUtils.setField(pdfService,
-                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
-                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
+        ReflectionTestUtils.setField(
+            pdfService,
+            PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
+            PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE
+        );
+        ReflectionTestUtils.setField(
+            pdfService,
+            PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME_WELSH,
+            PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH
+        );
     }
 
     @Test
     void givenPdfValuesProducesAPdfDocument() throws PdfServiceException, IOException {
         when(pdfMapperService.mapHeadersToPdf(testData.getCaseData())).thenReturn(PDF_VALUES);
-        byte[] pdfBytes = pdfService.convertCaseToPdf(testData.getCaseData());
+        byte[] pdfBytes = pdfService.convertCaseToPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
         try (PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
             Map<String, Optional<String>> actualPdfValues = processPdf(actualPdf);
             PDF_VALUES.forEach((k, v) -> assertThat(actualPdfValues).containsEntry(k, v));
@@ -82,21 +93,26 @@ class PdfServiceTest {
 
     @Test
     void givenInvalidPdfTemplateProducesException() {
-        ReflectionTestUtils.setField(pdfService,
-                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
-                                     "dummy_source");
+        ReflectionTestUtils.setField(
+            pdfService,
+            PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
+            "dummy_source"
+        );
         assertThrows(
             NullPointerException.class,
-            () -> pdfService.convertCaseToPdf(testData.getCaseData()));
-        ReflectionTestUtils.setField(pdfService,
-                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
-                                     PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
+            () -> pdfService.convertCaseToPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME), "English"
+        );
+        ReflectionTestUtils.setField(
+            pdfService,
+            PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
+            PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE
+        );
     }
 
     @Test
     void givenNullValuesProducesDocumentWithoutGivenValues() throws PdfServiceException, IOException {
         when(pdfMapperService.mapHeadersToPdf(testData.getCaseData())).thenReturn(PDF_VALUES_WITH_NULL);
-        byte[] pdfBytes = pdfService.convertCaseToPdf(testData.getCaseData());
+        byte[] pdfBytes = pdfService.convertCaseToPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
         try (PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
             Map<String, Optional<String>> actualPdfValues = processPdf(actualPdf);
             PDF_VALUES_WITH_NULL.forEach((k, v) -> assertThat(actualPdfValues).containsEntry(k, v));
@@ -129,29 +145,44 @@ class PdfServiceTest {
     @Test
     void shouldCreatePdfFile() throws IOException {
         PdfService pdfService1 = new PdfService(new PdfMapperService());
-        pdfService1.pdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE;
-        byte[] pdfData = pdfService1.createPdf(testData.getCaseData());
+        pdfService1.englishPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE;
+        byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
+        assertThat(pdfData).isNotEmpty();
+        assertThat(new Tika().detect(pdfData)).isEqualTo(PDF_FILE_TIKA_CONTENT_TYPE);
+    }
+
+
+    @Test
+    void shouldCreatePdfFileWelsh() throws IOException {
+        testData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
+        PdfService pdfService1 = new PdfService(new PdfMapperService());
+        pdfService1.welshPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH;
+        byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
         assertThat(pdfData).isNotEmpty();
         assertThat(new Tika().detect(pdfData)).isEqualTo(PDF_FILE_TIKA_CONTENT_TYPE);
     }
 
     @Test
     void shouldCreatePdfDecodedMultipartFileFromCaseData() throws PdfServiceException {
-        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+        List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
             pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), null);
-        assertThat(pdfDecodedMultipartFile).isNotNull();
+        assertThat(pdfDecodedMultipartFileList).hasSize(1);
     }
 
     @Test
-    void shouldCreatePdfDecodedMultipartFileFromCaseDataWithNullFirstAndLastName() throws PdfServiceException {
-        testData.getCaseData().getClaimantIndType().setClaimantFirstNames("");
-        testData.getCaseData().getClaimantIndType().setClaimantLastName("");
-        UserInfo userInfo = new UserInfo("", "", "", "GivenName",
-                                         "FamilyName", new ArrayList<>());
-        PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), userInfo);
+    void shouldCreatePdfDecodedMultipartFileFromCaseDataWelsh() throws PdfServiceException {
+        testData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
+        List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), null);
+        assertThat(pdfDecodedMultipartFileList).hasSize(2);
+    }
 
-        assertThat(pdfDecodedMultipartFile).isNotNull();
+    @Test
+    void shouldCreatePdfDecodedMultipartFileInEnglishOnlyWhenNoContactLanguage() throws PdfServiceException {
+        testData.getCaseData().getClaimantHearingPreference().setContactLanguage(null);
+        List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), null);
+        assertThat(pdfDecodedMultipartFileList).hasSize(1);
     }
 
     @Test

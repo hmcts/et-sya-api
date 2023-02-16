@@ -219,7 +219,7 @@ public class CaseDocumentService {
         return headers;
     }
 
-    private void validateFile(MultipartFile file) throws CaseDocumentException, IOException {
+    private void validateFile(MultipartFile file) throws CaseDocumentException {
         String filename = file.getOriginalFilename();
 
         assert filename != null;
@@ -278,19 +278,31 @@ public class CaseDocumentService {
         }
     }
 
+    /**
+     * Accepts all files for a given case as a list of {@link PdfDecodedMultipartFile} and uploads them.
+     * Files are uploaded one at a file via this service and then returned as a list of {@link DocumentTypeItem}
+     * @param authToken jwt token used to call this service
+     * @param caseType defines the juridiction of the case e.g. ET_EnglandWales
+     * @param pdfDecodedMultipartFiles The pdf files that are generated for the case upon submittion
+     * @param acasCertificates The acas certificates that are converted to pdf format for a case
+     * @return a complete list of each successfully uploaded file passed to the function
+     * @throws CaseDocumentException thrown if there is an error encounted whilst uploading a file
+     */
     public List<DocumentTypeItem> uploadAllDocuments(String authToken,
                                                      String caseType,
-                                                     PdfDecodedMultipartFile pdfDecodedMultipartFile,
+                                                     List<PdfDecodedMultipartFile> pdfDecodedMultipartFiles,
                                                      List<PdfDecodedMultipartFile> acasCertificates)
         throws CaseDocumentException {
         List<DocumentTypeItem> documentTypeItems = new ArrayList<>();
-        if (pdfDecodedMultipartFile != null) {
-            documentTypeItems.add(createDocumentTypeItem(
-                authToken,
-                caseType,
-                TYPE_OF_DOCUMENT_ET1_CASE_PDF,
-                pdfDecodedMultipartFile
-            ));
+        if (pdfDecodedMultipartFiles != null) {
+            for (PdfDecodedMultipartFile casePdf : pdfDecodedMultipartFiles) {
+                documentTypeItems.add(createDocumentTypeItem(
+                    authToken,
+                    caseType,
+                    TYPE_OF_DOCUMENT_ET1_CASE_PDF,
+                    casePdf
+                ));
+            }
         }
         if (acasCertificates != null) {
             for (PdfDecodedMultipartFile acasCertificate : acasCertificates) {
@@ -305,6 +317,12 @@ public class CaseDocumentService {
         return documentTypeItems;
     }
 
+    /**
+     * Accepts a {@link UploadedDocumentType} and wraps it in a {@link DocumentTypeItem} and assigns a randon UUID.
+     * @param typeOfDocument specifies the relevance of the document to the case
+     * @param uploadedDoc is to be wrapped and returned
+     * @return a {@link DocumentTypeItem} with the document and a new UUID
+     */
     public DocumentTypeItem createDocumentTypeItem(String typeOfDocument, UploadedDocumentType uploadedDoc) {
         DocumentTypeItem documentTypeItem = new DocumentTypeItem();
         documentTypeItem.setId(UUID.randomUUID().toString());

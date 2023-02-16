@@ -4,25 +4,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.HubLinksStatuses;
 
-import java.util.Map;
-
-/**
- * Stores a {@link Map} which is used to pass case data and id within a http request.
- */
 @Data
 @Builder
 @Jacksonized
-public class CaseRequest {
+public class HubLinksStatusesRequest {
+
     @JsonProperty("case_id")
     private String caseId;
 
     @JsonProperty("case_type_id")
     private String caseTypeId;
-
-    @JsonProperty("post_code")
-    private String postCode;
-
-    @JsonProperty("case_data")
-    private Map<String, Object> caseData;
+    @JsonProperty("hub_links_statuses")
+    private HubLinksStatuses hubLinksStatuses;
 }
