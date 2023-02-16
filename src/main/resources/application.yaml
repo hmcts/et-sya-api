@@ -39,6 +39,10 @@ idam:
     url: ${SERVICE_AUTH_PROVIDER_URL:http://localhost:4502}
     secret: ${ET_SYA_S2S_SECRET:AAAAAAAAAAAAAAAA}
     microservice: ${MICRO_SERVICE:et_sya_api}
+  client:
+    id: et-sya-api
+    secret: ${IDAM_CLIENT_SECRET:AAAAAAAAAAAAAAAA}
+    scope: openid profile roles
 
 core_case_data:
   api:
