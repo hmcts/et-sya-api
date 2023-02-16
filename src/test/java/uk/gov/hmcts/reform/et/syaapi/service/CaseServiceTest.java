@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.EqualsAndHashCode;
+import lombok.SneakyThrows;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.RangeQueryBuilder;
@@ -58,6 +59,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -91,6 +93,8 @@ class CaseServiceTest {
     @Mock
     private CaseDocumentService caseDocumentService;
     @Mock
+    private DocumentGenerationService documentGenerationService;
+    @Mock
     private NotificationService notificationService;
     @Mock
     private AssignCaseToLocalOfficeService assignCaseToLocalOfficeService;
@@ -99,7 +103,18 @@ class CaseServiceTest {
     @InjectMocks
     private CaseService caseService;
     private final TestData testData;
+    public static final String TEST = "test";
+    private static final byte[] TSE_PDF_BYTES = TEST.getBytes();
+    private static final String TSE_PDF_NAME = "contact_about_something_else.pdf";
+    private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
+    private static final String TSE_PDF_DESCRIPTION = "Test description";
 
+    private final PdfDecodedMultipartFile tsePdfMultipartFileMock = new PdfDecodedMultipartFile(
+        TSE_PDF_BYTES,
+        TSE_PDF_NAME,
+        PDF_FILE_TIKA_CONTENT_TYPE,
+        TSE_PDF_DESCRIPTION
+    );
 
     CaseServiceTest() {
         testData = new TestData();
@@ -327,9 +342,10 @@ class CaseServiceTest {
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             new PdfDecodedMultipartFile(
                 new byte[0],
-                "test",
-                "test",
-                "test");
+                TEST,
+                TEST,
+                TEST
+            );
 
         when(pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(any(), any()))
             .thenReturn(List.of(pdfDecodedMultipartFile));
@@ -369,9 +385,9 @@ class CaseServiceTest {
             testData.getCaseRequest()
         );
 
-        assertEquals(1, ((LinkedList)caseDetails.getData().get("documentCollection")).size());
+        assertEquals(1, ((LinkedList<?>)caseDetails.getData().get("documentCollection")).size());
 
-        LinkedList docCollection = (LinkedList) caseDetails.getData().get("documentCollection");
+        LinkedList<?> docCollection = (LinkedList<?>) caseDetails.getData().get("documentCollection");
         assertEquals("DocumentType(typeOfDocument="
             + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=https://document.binary.url, documentFilen"
             + "ame=filename, documentUrl=https://document.url), ownerDocument=null, creationDate=null, shortDescription=nu"
@@ -597,6 +613,47 @@ class CaseServiceTest {
                                                    TestConstants.CASE_ID,
                                                    true,
                                                    expectedEnrichedData);
+    }
+
+    @Test
+    void shouldInvokeClaimantTsePdf()
+        throws DocumentGenerationException, CaseDocumentException {
+        when(pdfService.convertClaimantTseIntoMultipartFile(any())).thenReturn(
+            tsePdfMultipartFileMock);
+
+        when(caseDocumentService.uploadDocument(anyString(), anyString(), any())).thenReturn(
+            testData.getTsePdfUploadResponse()
+        );
+
+        assertThat(
+            caseService.uploadTseCyaAsPdf(
+                TEST_SERVICE_AUTH_TOKEN,
+                testData.getCaseDetails(),
+                testData.getClaimantTse(),
+                "TEST"
+            )).isNotNull();
+    }
+
+    @SneakyThrows
+    @Test
+    void givenPdfServiceErrorProducesDocumentGenerationException() {
+        when(pdfService.convertClaimantTseIntoMultipartFile(any())).thenThrow(
+            new DocumentGenerationException(TEST));
+
+        assertThrows(DocumentGenerationException.class, () -> caseService.uploadTseCyaAsPdf(
+            "", testData.getCaseDetails(), testData.getClaimantTse(), ""));
+    }
+
+    @SneakyThrows
+    @Test
+    void givenUploadDocumentErrorProducesCaseDocumentException() {
+        when(pdfService.convertClaimantTseIntoMultipartFile(any())).thenReturn(
+            tsePdfMultipartFileMock);
+        when(caseDocumentService.uploadDocument(anyString(), anyString(), any())).thenThrow(
+            new CaseDocumentException(TEST));
+
+        assertThrows(CaseDocumentException.class, () -> caseService.uploadTseCyaAsPdf(
+            "", testData.getCaseDetails(), testData.getClaimantTse(), ""));
     }
 
     private List<JurCodesTypeItem> mockJurCodesTypeItems() {

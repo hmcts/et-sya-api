@@ -75,6 +75,7 @@ notifications:
 pdf:
   english: "ET1_1122.pdf"
   welsh: "CY_ET1_2222.pdf"
+  contact_tribunal_template: "EM-TRB-EGW-ENG-00068.docx"
 
 caseWorkerUserName: ${CASEWORKER_USER_NAME:user_name}
 caseWorkerPassword: ${CASEWORKER_PASSWORD:password}

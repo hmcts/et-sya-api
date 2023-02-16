@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentException;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
+import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationException;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 
 import java.util.List;
@@ -39,6 +41,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 @RequestMapping("/cases")
 public class ManageCaseController {
 
+    public static final String YES = "Yes";
     private final CaseService caseService;
     private final ApplicationService applicationService;
 

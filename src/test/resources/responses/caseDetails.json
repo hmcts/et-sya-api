@@ -18,6 +18,8 @@
     "claimantType": {
       "claimant_email_address": "test@gmail.com"
     },
-    "security_classification": "PUBLIC"
-  }
+    "documentCollection": []
+  },
+  "security_classification": "PUBLIC",
+  "callback_response_status": null
 }
