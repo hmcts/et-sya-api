@@ -112,6 +112,11 @@ public final class TestData {
         CaseDetails.class
     );
 
+    private final ClaimantTse claimantApplication = ResourceLoader.fromString(
+        "responses/claimantTse.json",
+        ClaimantTse.class
+    );
+
     public Map<String, Object> getCaseRequestCaseDataMap() {
         Map<String, Object> requestCaseData = new ConcurrentHashMap<>();
         requestCaseData.put("typesOfClaim", et1CaseData.getTypesOfClaim());

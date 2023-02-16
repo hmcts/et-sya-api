@@ -10,6 +10,14 @@
   "case_data": {
     "caseType": "Single",
     "caseSource": "Manually Created",
+    "claimantIndType": {
+      "claimant_first_names": "Michael",
+      "claimant_last_name": "Jackson"
+    },
+    "ethosCaseReference": "1646225213651590",
+    "claimantType": {
+      "claimant_email_address": "test@gmail.com"
+    },
     "documentCollection": []
   },
   "security_classification": "PUBLIC",

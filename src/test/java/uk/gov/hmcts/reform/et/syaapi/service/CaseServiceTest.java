@@ -45,7 +45,6 @@ import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.et.syaapi.utils.TestConstants;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
-import uk.gov.service.notify.SendEmailResponse;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -360,25 +359,6 @@ class CaseServiceTest {
 
         when(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(any()))
             .thenReturn(testData.getCaseData());
-
-        SendEmailResponse sendEmailResponse
-            = new SendEmailResponse("{\n"
-                                        + "  \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                                        + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
-                                        + "  \"template\": {\n"
-                                        + "    \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                                        + "    \"version\": \"3\",\n"
-                                        + "    \"uri\": \"TEST\"\n"
-                                        + "  },\n"
-                                        + "  \"content\": {\n"
-                                        + "    \"body\": \"Dear test, Please see your detail as 123456789. Regards, "
-                                        + "ET Team.\",\n"
-                                        + "    \"subject\": \"ET Test email created\",\n"
-                                        + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
-                                        + "  }\n"
-                                        + "}\n");
-        when(notificationService.sendSubmitCaseConfirmationEmail(any(), any(), any()))
-            .thenReturn(sendEmailResponse);
 
         when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(createDocumentTypeItem());
 
