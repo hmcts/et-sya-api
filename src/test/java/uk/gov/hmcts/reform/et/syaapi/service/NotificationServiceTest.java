@@ -270,8 +270,8 @@ class NotificationServiceTest {
                 + "    \"uri\": \"TEST\"\n"
                 + "  },\n"
                 + "  \"content\": {\n"
-                + "    \"body\": \"Please click here. " +
-                "https://www.gov.uk/log-in-register-hmrc-online-services/123456722/?lng=cy.\",\n"
+                + "    \"body\": \"Please click here. "
+                + "https://www.gov.uk/log-in-register-hmrc-online-services/123456722/?lng=cy.\",\n"
                 + "    \"subject\": \"ET Test email created\",\n"
                 + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
                 + "  }\n"
@@ -303,7 +303,7 @@ class NotificationServiceTest {
             testData.getCaseData(),
             testData.getUserInfo()
         );
-        assertThat(response.getBody()).isEqualTo("Dear test, Please see your detail as 123456789. " +
-                                                     "Regards, ET Team.");
+        assertThat(response.getBody()).isEqualTo("Dear test, Please see your detail as 123456789. "
+                                                     + "Regards, ET Team.");
     }
 }
