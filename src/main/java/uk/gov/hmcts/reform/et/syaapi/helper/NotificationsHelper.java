@@ -63,7 +63,7 @@ public final class NotificationsHelper {
     }
 
     /**
-     * Gets the .
+     * Gets the nearest future hearing date.
      *
      * @param caseData existing case data next future hearing date
      * @return hearing date

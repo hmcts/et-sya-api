@@ -113,7 +113,7 @@ public class NotificationService {
     /**
      * Format details of claimant request and retrieve case data, then send email.
      *
-     * @param caseDetails existing case details
+     * @param caseDetails         existing case details
      * @param claimantApplication application request data
      * @return Gov notify email format
      */
@@ -134,40 +134,10 @@ public class NotificationService {
         parameters.put("caseId", caseId);
         parameters.put("caseNumber", caseNumber);
 
-        String emailTemplate = notificationsProperties.getClaimantTseEmailTypeCTemplateId();
-        if (!TYPE_C.equals(claimantApplication.getContactApplicationType())) {
-            String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
-            parameters.put("hearingDate", hearingDate);
-            if (DONT_SEND_COPY.equals(claimantApplication.getCopyToOtherPartyYesOrNo())) {
-                String shortText = SHORT_TEXT_MAP.get(claimantApplication.getContactApplicationType());
-                parameters.put("shortText", shortText);
-                emailTemplate = notificationsProperties.getClaimantTseEmailNoTemplateId();
-            } else {
-                String shortText = SHORT_TEXT_MAP.get(claimantApplication.getContactApplicationType());
-                String abText = "";
-                if (Stream.of(typeA).anyMatch(appType -> Objects.equals(
-                    appType,
-                    claimantApplication.getContactApplicationType()
-                ))) {
-                    abText = "The other party will be notified that any objections to your "
-                        + shortText
-                        + " application should be sent to the tribunal as soon as possible, "
-                        + "and in any event within 7 days";
+        String emailTemplate = TYPE_C.equals(claimantApplication.getContactApplicationType())
+            ? notificationsProperties.getClaimantTseEmailTypeCTemplateId() :
+            getAndSetRule92EmailTemplate(claimantApplication, caseData, parameters);
 
-                } else if (Stream.of(typeB).anyMatch(appType -> Objects.equals(
-                    appType,
-                    claimantApplication.getContactApplicationType()
-                ))) {
-                    abText = "The other party is not expected to respond to this application. "
-                        + "However, they have been notified that any objections to your "
-                        + shortText
-                        + " application should be sent to the tribunal as soon as possible, "
-                        + "and in any event within 7 days";
-                }
-                parameters.put("abText", abText);
-                emailTemplate = notificationsProperties.getClaimantTseEmailYesTemplateId();
-            }
-        }
         try {
             sendEmailResponse = notificationClient.sendEmail(
                 emailTemplate,
@@ -179,6 +149,49 @@ public class NotificationService {
             throw new NotificationException(ne);
         }
         return sendEmailResponse;
+    }
+
+    private String getAndSetRule92EmailTemplate(ClaimantTse claimantApplication,
+                                                CaseData caseData,
+                                                Map<String, String> parameters) {
+        String emailTemplate;
+        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
+        parameters.put("hearingDate", hearingDate);
+        if (DONT_SEND_COPY.equals(claimantApplication.getCopyToOtherPartyYesOrNo())) {
+            String shortText = SHORT_TEXT_MAP.get(claimantApplication.getContactApplicationType());
+            parameters.put("shortText", shortText);
+            emailTemplate = notificationsProperties.getClaimantTseEmailNoTemplateId();
+        } else {
+            String shortText = SHORT_TEXT_MAP.get(claimantApplication.getContactApplicationType());
+            String abText = getCustomTextForAOrBApplication(claimantApplication, shortText);
+            parameters.put("abText", abText);
+            emailTemplate = notificationsProperties.getClaimantTseEmailYesTemplateId();
+        }
+        return emailTemplate;
+    }
+
+    private String getCustomTextForAOrBApplication(ClaimantTse claimantApplication, String shortText) {
+        String abText = "";
+        if (Stream.of(typeA).anyMatch(appType -> Objects.equals(
+            appType,
+            claimantApplication.getContactApplicationType()
+        ))) {
+            abText = "The other party will be notified that any objections to your "
+                + shortText
+                + " application should be sent to the tribunal as soon as possible, "
+                + "and in any event within 7 days";
+
+        } else if (Stream.of(typeB).anyMatch(appType -> Objects.equals(
+            appType,
+            claimantApplication.getContactApplicationType()
+        ))) {
+            abText = "The other party is not expected to respond to this application. "
+                + "However, they have been notified that any objections to your "
+                + shortText
+                + " application should be sent to the tribunal as soon as possible, "
+                + "and in any event within 7 days";
+        }
+        return abText;
     }
 
 }
