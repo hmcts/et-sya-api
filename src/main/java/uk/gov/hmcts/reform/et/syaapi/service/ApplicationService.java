@@ -18,7 +18,7 @@ public class ApplicationService {
 
     public CaseDetails submitApplication(String authorization, ClaimantApplicationRequest request) {
         String caseTypeId = request.getCaseTypeId();
-        CaseDetails caseDetails = caseService.getUserCase(authorization, caseTypeId);
+        CaseDetails caseDetails = caseService.getUserCase(authorization, request.getCaseId());
         ClaimantTse claimantTse = request.getClaimantTse();
         caseDetails.getData().put("claimantTse", claimantTse);
 
