@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
@@ -22,7 +23,11 @@ public class ApplicationService {
         ClaimantTse claimantTse = request.getClaimantTse();
         caseDetails.getData().put("claimantTse", claimantTse);
 
-        // todo upload supporting document no matter what
+        UploadedDocumentType contactApplicationFile = claimantTse.getContactApplicationFile();
+        if (contactApplicationFile != null) {
+            caseService.uploadTseSupportingDocument(caseDetails, contactApplicationFile);
+        }
+
         if (!request.isTypeC() && YES.equals(claimantTse.getCopyToOtherPartyYesOrNo())) {
             try {
                 caseService.uploadTseCyaAsPdf(authorization, caseDetails, claimantTse, caseTypeId);
@@ -31,7 +36,7 @@ public class ApplicationService {
             }
         }
 
-        CaseDetails finalCaseDetails = caseService.triggerEvent(
+        return caseService.triggerEvent(
             authorization,
             request.getCaseId(),
             CaseEvent.UPDATE_CASE_SUBMITTED,
