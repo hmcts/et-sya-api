@@ -1,7 +1,7 @@
 java:
   applicationPort: 4550
   image: 'hmctspublic.azurecr.io/et/sya-api:latest'
-  ingressHost: et-sya-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
+  ingressHost: et-sya-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.platform.hmcts.net
   aadIdentityName: et
   keyVaults:
     et-sya-api:
