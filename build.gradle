@@ -232,6 +232,7 @@ dependencies {
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '3.18.0-RELEASE'
 
   implementation 'org.apache.tika:tika-core:2.6.0'
+  implementation("com.google.guava:guava:31.1-jre")
 
   implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '3.0.0-alpha2'
 

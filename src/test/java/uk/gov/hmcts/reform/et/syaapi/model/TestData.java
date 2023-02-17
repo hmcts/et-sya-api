@@ -107,9 +107,15 @@ public final class TestData {
         CaseDocument.class
     );
 
+
     private final List<CaseDetails> requestCaseDataListEnglandAcas = ResourceLoader.fromStringToList(
         "responses/caseDetailsEnglandAcasDocs.json",
         CaseDetails.class
+    );
+
+    private final ClaimantTse claimantApplication = ResourceLoader.fromString(
+        "responses/claimantTse.json",
+        ClaimantTse.class
     );
 
     public Map<String, Object> getCaseRequestCaseDataMap() {
