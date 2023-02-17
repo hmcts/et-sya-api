@@ -95,6 +95,7 @@ public final class TestData {
         UserInfo.class
     );
 
+
     private final List<CaseDetails> requestCaseDataListEnglandAcas = ResourceLoader.fromStringToList(
         "responses/caseDetailsEnglandAcasDocs.json",
         CaseDetails.class

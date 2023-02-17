@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.et.syaapi.constants;
 import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 
 import java.util.List;
-
 /**
  * Defines attributes used by et-sya-api as constants.
  */
@@ -32,6 +31,7 @@ public final class EtSyaConstants {
                                                                  "Tribunal correspondence",
                                                                  "Tribunal Order/Deposit Order",
                                                                  "Tribunal Judgment/Reasons");
+
 
     private EtSyaConstants() {
         // restrict instantiation
