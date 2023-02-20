@@ -36,7 +36,7 @@ public class ApplicationService {
             }
         }
 
-        return caseService.triggerEvent(
+        CaseDetails finalCaseDetails = caseService.triggerEvent(
             authorization,
             request.getCaseId(),
             CaseEvent.UPDATE_CASE_SUBMITTED,
@@ -48,6 +48,7 @@ public class ApplicationService {
             finalCaseDetails,
             request.getClaimantTse()
         );
+
         return finalCaseDetails;
     }
 }
