@@ -67,7 +67,7 @@ public class CaseService {
 
     private final AuthTokenGenerator authTokenGenerator;
     private final CoreCaseDataApi ccdApiClient;
-    private final IdamClient idamClient;
+    private final IdamClient idamClient;x
     private final PostcodeToOfficeService postcodeToOfficeService;
     private final AcasService acasService;
     private final CaseDocumentService caseDocumentService;
