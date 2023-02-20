@@ -17,7 +17,9 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentException;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
@@ -38,6 +40,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 public class ManageCaseController {
 
     private final CaseService caseService;
+    private final ApplicationService applicationService;
 
     /**
      * Accepts parameter of type {@link CaseRequest} and returns the case specified in 'getCaseId'.
@@ -156,6 +159,27 @@ public class ManageCaseController {
             request.getCaseTypeId(),
             caseDetails.getData()
         );
+        return ok(finalCaseDetails);
+    }
+
+    /**
+     * Submits a Claimant Application.
+     * @param authorization jwt of the user
+     * @param request the request object which contains the claimant application passed from sya-frontend
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    @PutMapping("/submit-claimant-application")
+    @Operation(summary = "Submit a claimant application")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> submitClaimantApplication(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody ClaimantApplicationRequest request
+    ) {
+        log.info("Received submit claimant application request - caseTypeId: {} caseId: {}",
+                 request.getCaseTypeId(), request.getCaseId());
+
+        CaseDetails finalCaseDetails = applicationService.submitApplication(authorization, request);
+
         return ok(finalCaseDetails);
     }
 }
