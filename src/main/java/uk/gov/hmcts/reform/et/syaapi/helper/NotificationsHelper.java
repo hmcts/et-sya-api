@@ -6,6 +6,9 @@ import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DateListedTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.HearingTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
+import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
+import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -18,6 +21,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -60,6 +64,30 @@ public final class NotificationsHelper {
         return caseData.getRespondentCollection().stream()
             .map(o -> o.getValue().getRespondentName())
             .collect(Collectors.joining(", "));
+    }
+
+    public static String getEmailAddressForRespondent(CaseData caseData, RespondentSumType respondent) {
+        RepresentedTypeR representative = getRespondentRepresentative(caseData, respondent);
+        if (representative != null) {
+            String email = representative.getRepresentativeEmailAddress();
+            return isNullOrEmpty(email) ? "" : email;
+        }
+
+        return isNullOrEmpty(respondent.getRespondentEmail()) ? "" : respondent.getRespondentEmail();
+    }
+
+    private static RepresentedTypeR getRespondentRepresentative(CaseData caseData, RespondentSumType respondent) {
+        List<RepresentedTypeRItem> repCollection = caseData.getRepCollection();
+
+        if (CollectionUtils.isEmpty(repCollection)) {
+            return null;
+        }
+
+        Optional<RepresentedTypeRItem> respondentRep = repCollection.stream()
+            .filter(o -> respondent.getRespondentName().equals(o.getValue().getRespRepName()))
+            .findFirst();
+
+        return respondentRep.map(RepresentedTypeRItem::getValue).orElse(null);
     }
 
     /**

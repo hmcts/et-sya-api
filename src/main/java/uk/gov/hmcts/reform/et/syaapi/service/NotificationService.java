@@ -1,14 +1,13 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
-import com.microsoft.applicationinsights.core.dependencies.google.common.base.Strings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
-import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -16,15 +15,16 @@ import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.SHORT_TEXT_MAP;
-import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 
 
 /**
@@ -76,10 +76,10 @@ public class NotificationService {
                                                              CaseData caseData,
                                                              UserInfo userInfo) {
 
-        String firstName = Strings.isNullOrEmpty(caseData.getClaimantIndType().getClaimantFirstNames())
+        String firstName = isNullOrEmpty(caseData.getClaimantIndType().getClaimantFirstNames())
             ? userInfo.getGivenName()
             : caseData.getClaimantIndType().getClaimantFirstNames();
-        String lastName = Strings.isNullOrEmpty(caseData.getClaimantIndType().getClaimantLastName())
+        String lastName = isNullOrEmpty(caseData.getClaimantIndType().getClaimantLastName())
             ? userInfo.getFamilyName()
             : caseData.getClaimantIndType().getClaimantLastName();
         String caseNumber = caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString();
@@ -113,56 +113,189 @@ public class NotificationService {
     /**
      * Format details of claimant request and retrieve case data, then send email.
      *
-     * @param caseDetails         existing case details
+     * @param caseData            existing case details
+     * @param claimant            claimant's full name
+     * @param caseNumber          ethos case reference
+     * @param respondentNames     concatenated respondent names
+     * @param hearingDate         date of the nearest hearing
+     * @param caseId              16 digit case id
      * @param claimantApplication application request data
+
      * @return Gov notify email format
      */
-    public SendEmailResponse sendAcknowledgementEmailToClaimant(CaseDetails caseDetails,
+    public SendEmailResponse sendAcknowledgementEmailToClaimant(CaseData caseData,
+                                                                String claimant,
+                                                                String caseNumber,
+                                                                String respondentNames,
+                                                                String hearingDate,
+                                                                String caseId,
                                                                 ClaimantTse claimantApplication) {
 
-        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
-        String claimant = caseData.getClaimantIndType().getClaimantFirstNames() + " "
-            + caseData.getClaimantIndType().getClaimantLastName();
-        String caseNumber = caseData.getEthosCaseReference();
-        String respondentNames = getRespondentNames(caseData);
-        String caseId = caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString();
+        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
 
-        SendEmailResponse sendEmailResponse;
-        Map<String, String> parameters = new ConcurrentHashMap<>();
-        parameters.put("claimant", claimant);
-        parameters.put("respondentNames", respondentNames);
-        parameters.put("caseId", caseId);
-        parameters.put("caseNumber", caseNumber);
+        addCommonParameters(
+            claimantParameters,
+            claimant,
+            respondentNames,
+            caseId,
+            caseNumber
+        );
 
-        String emailTemplate = TYPE_C.equals(claimantApplication.getContactApplicationType())
+        SendEmailResponse claimantEmail;
+        String emailToClaimantTemplate = TYPE_C.equals(claimantApplication.getContactApplicationType())
             ? notificationsProperties.getClaimantTseEmailTypeCTemplateId() :
-            getAndSetRule92EmailTemplate(claimantApplication, caseData, parameters);
+            getAndSetRule92EmailTemplate(claimantApplication, hearingDate, claimantParameters);
 
         try {
-            sendEmailResponse = notificationClient.sendEmail(
-                emailTemplate,
+            claimantEmail = notificationClient.sendEmail(
+                emailToClaimantTemplate,
                 caseData.getClaimantType().getClaimantEmailAddress(),
-                parameters,
+                claimantParameters,
                 caseId
             );
         } catch (NotificationClientException ne) {
             throw new NotificationException(ne);
         }
-        return sendEmailResponse;
+        return claimantEmail;
     }
 
+
+    /**
+     * Format details of claimant request and retrieve case data, then send email to confirmation to respondent.
+     *
+     * @param caseData            existing case details
+     * @param claimant            claimant's full name
+     * @param caseNumber          ethos case reference
+     * @param respondentNames     concatenated respondent names
+     * @param hearingDate         date of the nearest hearing
+     * @param caseId              16 digit case id
+     * @param claimantApplication application request data
+     */
+    public void sendEmailToRespondents(CaseData caseData,
+                                       String claimant,
+                                       String caseNumber,
+                                       String respondentNames,
+                                       String hearingDate,
+                                       String caseId,
+                                       ClaimantTse claimantApplication) throws NotificationClientException {
+
+        if (TYPE_C.equals(claimantApplication.getContactApplicationType())
+            || DONT_SEND_COPY.equals(claimantApplication.getCopyToOtherPartyYesOrNo())) {
+            return;
+        }
+        Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
+        addCommonParameters(
+            respondentParameters,
+            claimant,
+            respondentNames,
+            caseId,
+            caseNumber
+        );
+        respondentParameters.put(
+            "hearingDate",
+            hearingDate
+        );
+        respondentParameters.put("shortText", SHORT_TEXT_MAP.get(claimantApplication.getContactApplicationType()));
+        respondentParameters.put("datePlus7", LocalDate.now().plusDays(7).toString());
+
+        String emailToRespondentTemplate;
+        if (Stream.of(typeB).anyMatch(appType -> Objects.equals(
+            appType,
+            claimantApplication.getContactApplicationType()
+        ))) {
+            emailToRespondentTemplate = notificationsProperties.getRespondentTseEmailTypeBTemplateId();
+        } else {
+            emailToRespondentTemplate = notificationsProperties.getRespondentTseEmailTypeATemplateId();
+        }
+        byte[] document = new byte[0];
+        JSONObject documentJson = NotificationClient.prepareUpload(document, false, true, "52 weeks");
+        respondentParameters.put("linkToDocument", documentJson);
+        caseData.getRespondentCollection()
+            .forEach(resp -> {
+                String respondentEmailAddress = NotificationsHelper.getEmailAddressForRespondent(
+                    caseData,
+                    resp.getValue()
+                );
+                if (!isNullOrEmpty(respondentEmailAddress)) {
+                    try {
+                        notificationClient.sendEmail(
+                            emailToRespondentTemplate,
+                            caseData.getClaimantType().getClaimantEmailAddress(),
+                            respondentParameters,
+                            caseId
+                        );
+                    } catch (NotificationClientException ne) {
+                        throw new NotificationException(ne);
+                    }
+                }
+            });
+    }
+
+    /**
+     * Format details of claimant request and retrieve case data, then send email to confirmation to tribunal.
+     *
+     * @param caseData        existing case details
+     * @param claimant        claimant's full name
+     * @param caseNumber      ethos case reference
+     * @param respondentNames concatenated respondent names
+     * @param hearingDate     date of the nearest hearing
+     * @param caseId          16 digit case id
+     * @return Gov notify email format
+     */
+    public SendEmailResponse sendAcknowledgementEmailToTribunal(CaseData caseData,
+                                                                String claimant,
+                                                                String caseNumber,
+                                                                String respondentNames,
+                                                                String hearingDate,
+                                                                String caseId) {
+
+        Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
+        addCommonParameters(
+            tribunalParameters,
+            claimant,
+            respondentNames,
+            caseId,
+            caseNumber
+        );
+
+        tribunalParameters.put(
+            "hearingDate",
+            hearingDate
+        );
+
+        SendEmailResponse tribunalEmail;
+        try {
+            tribunalEmail = notificationClient.sendEmail(
+                notificationsProperties.getTribunalAcknowledgementTemplateId(),
+                caseData.getClaimantType().getClaimantEmailAddress(),
+                tribunalParameters,
+                caseId
+            );
+        } catch (NotificationClientException ne) {
+            throw new NotificationException(ne);
+        }
+        return tribunalEmail;
+    }
+
+    private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
+                                            String caseId, String caseNumber) {
+        parameters.put("claimant", claimant);
+        parameters.put("respondentNames", respondentNames);
+        parameters.put("caseId", caseId);
+        parameters.put("caseNumber", caseNumber);
+    }
+
+
     private String getAndSetRule92EmailTemplate(ClaimantTse claimantApplication,
-                                                CaseData caseData,
-                                                Map<String, String> parameters) {
+                                                String hearingDate,
+                                                Map<String, Object> parameters) {
         String emailTemplate;
-        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
         parameters.put("hearingDate", hearingDate);
+        String shortText = SHORT_TEXT_MAP.get(claimantApplication.getContactApplicationType());
         if (DONT_SEND_COPY.equals(claimantApplication.getCopyToOtherPartyYesOrNo())) {
-            String shortText = SHORT_TEXT_MAP.get(claimantApplication.getContactApplicationType());
             parameters.put("shortText", shortText);
             emailTemplate = notificationsProperties.getClaimantTseEmailNoTemplateId();
         } else {
-            String shortText = SHORT_TEXT_MAP.get(claimantApplication.getContactApplicationType());
             String abText = getCustomTextForAOrBApplication(claimantApplication, shortText);
             parameters.put("abText", abText);
             emailTemplate = notificationsProperties.getClaimantTseEmailYesTemplateId();

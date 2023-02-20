@@ -49,4 +49,16 @@ public class NotificationsProperties {
     @Value("${notifications.applicationAcknowledgementTypeC}")
     @NotBlank
     private String claimantTseEmailTypeCTemplateId;
+
+    @Value("${notifications.respondentCopyTypeA}")
+    @NotBlank
+    private String respondentTseEmailTypeATemplateId;
+
+    @Value("${notifications.respondentCopyTypeB}")
+    @NotBlank
+    private String respondentTseEmailTypeBTemplateId;
+
+    @Value("${notifications.tribunalAcknowledgement}")
+    @NotBlank
+    private String tribunalAcknowledgementTemplateId;
 }

@@ -13,7 +13,6 @@ import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -177,7 +176,12 @@ class NotificationServiceTest {
         )).thenReturn(testData.getSendEmailResponse());
 
         assertThat(notificationService.sendAcknowledgementEmailToClaimant(
-            testData.getExpectedDetails(),
+            testData.getCaseData(),
+            "Michael Jackson",
+            "1",
+            "Test Respondent",
+            "Not set",
+            testData.getExpectedDetails().getId().toString(),
             testData.getClaimantApplication()
         ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
     }
@@ -193,7 +197,12 @@ class NotificationServiceTest {
         )).thenReturn(testData.getSendEmailResponse());
 
         assertThat(notificationService.sendAcknowledgementEmailToClaimant(
-            testData.getExpectedDetails(),
+            testData.getCaseData(),
+            "Michael Jackson",
+            "1",
+            "Test Respondent",
+            "Not set",
+            testData.getExpectedDetails().getId().toString(),
             testData.getClaimantApplication()
         ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
     }
@@ -209,34 +218,14 @@ class NotificationServiceTest {
         )).thenReturn(testData.getSendEmailResponse());
 
         assertThat(notificationService.sendAcknowledgementEmailToClaimant(
-            testData.getExpectedDetails(),
+            testData.getCaseData(),
+            "Michael Jackson",
+            "1",
+            "Test Respondent",
+            "Not set",
+            testData.getExpectedDetails().getId().toString(),
             testData.getClaimantApplication()
         ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
-    }
-
-    @Test
-    void shouldSendTypeAEmail() throws NotificationClientException {
-        Map<String, String> parameters = new ConcurrentHashMap<>();
-        parameters.put("claimant", "Michael Jackson");
-        parameters.put("respondentNames", "Test Respondent Organisation -1-, Mehmet Tahir Dede, "
-            + "Abuzer Kadayif, Kate Winslet, Jeniffer Lopez");
-        parameters.put("caseId", "1646225213651590");
-        parameters.put("hearingDate", "Not set");
-        parameters.put("shortText", "Withdraw all/part of claim");
-        parameters.put("abText", "The other party is not expected to respond to this application. "
-            + "However, they have been notified that any objections to your Withdraw all/part of claim application "
-            + "should be sent to the tribunal as soon as possible, and in any event within 7 days");
-        when(notificationClient.sendEmail(
-            eq("Yes"),
-            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
-            eq(parameters),
-            eq(testData.getExpectedDetails().getId().toString())
-        )).thenReturn(inputSendEmailResponse);
-        var response = notificationService.sendAcknowledgementEmailToClaimant(
-            testData.getExpectedDetails(),
-            testData.getClaimantApplication()
-        );
-        assertThat(response.getBody().contains("Blap,"));
     }
 
     @Test

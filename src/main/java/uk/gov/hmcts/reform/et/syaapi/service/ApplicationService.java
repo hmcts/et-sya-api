@@ -4,10 +4,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
+import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
+import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
+import uk.gov.service.notify.NotificationClientException;
+
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 
 @RequiredArgsConstructor
 @Service
@@ -17,7 +23,9 @@ public class ApplicationService {
     private final NotificationService notificationService;
     public static final String YES = "Yes";
 
-    public CaseDetails submitApplication(String authorization, ClaimantApplicationRequest request) {
+    public CaseDetails submitApplication(String authorization, ClaimantApplicationRequest request)
+        throws NotificationClientException {
+
         String caseTypeId = request.getCaseTypeId();
         CaseDetails caseDetails = caseService.getUserCase(authorization, request.getCaseId());
         ClaimantTse claimantTse = request.getClaimantTse();
@@ -44,10 +52,43 @@ public class ApplicationService {
             caseDetails.getData()
         );
 
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(finalCaseDetails.getData());
+        String claimant = caseData.getClaimantIndType().getClaimantFirstNames() + " "
+            + caseData.getClaimantIndType().getClaimantLastName();
+        String caseNumber = caseData.getEthosCaseReference();
+        String respondentNames = getRespondentNames(caseData);
+        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
+        String caseId = finalCaseDetails.getId() == null ? "case id not found" : finalCaseDetails.getId().toString();
+
         notificationService.sendAcknowledgementEmailToClaimant(
-            finalCaseDetails,
+            caseData,
+            claimant,
+            caseNumber,
+            respondentNames,
+            hearingDate,
+            caseId,
             request.getClaimantTse()
         );
+
+        notificationService.sendEmailToRespondents(
+            caseData,
+            claimant,
+            caseNumber,
+            respondentNames,
+            hearingDate,
+            caseId,
+            request.getClaimantTse()
+        );
+
+        notificationService.sendAcknowledgementEmailToTribunal(
+            caseData,
+            claimant,
+            caseNumber,
+            respondentNames,
+            hearingDate,
+            caseId
+        );
+
 
         return finalCaseDetails;
     }
