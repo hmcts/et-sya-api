@@ -56,6 +56,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -607,13 +608,14 @@ class CaseServiceTest {
             testData.getTsePdfUploadResponse()
         );
 
-        assertThat(
+        assertDoesNotThrow(() ->
             caseService.uploadTseCyaAsPdf(
                 TEST_SERVICE_AUTH_TOKEN,
                 testData.getCaseDetails(),
                 testData.getClaimantTse(),
                 "TEST"
-            )).isNotNull();
+            )
+        );
     }
 
     @SneakyThrows

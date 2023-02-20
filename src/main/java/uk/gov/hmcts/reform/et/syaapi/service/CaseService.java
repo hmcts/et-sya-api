@@ -19,6 +19,7 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
@@ -31,7 +32,6 @@ import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
-import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
@@ -58,6 +58,7 @@ import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ACAS_VISIBLE_DOCS;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
@@ -444,27 +445,36 @@ public class CaseService {
         caseData.setJurCodesCollection(jurCodesTypeItems);
     }
 
-    // public until 2815 is implemented to show that doc is created in testing
-    public CaseDocument uploadTseCyaAsPdf(
+    void uploadTseSupportingDocument(CaseDetails caseDetails, UploadedDocumentType contactApplicationFile) {
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        List<DocumentTypeItem> docList = caseData.getDocumentCollection();
+
+        docList.add(caseDocumentService.createDocumentTypeItem(
+            CLAIMANT_CORRESPONDENCE_DOCUMENT,
+            contactApplicationFile
+        ));
+        caseDetails.getData().put("documentCollection", docList);
+    }
+
+    void uploadTseCyaAsPdf(
         String authorization,
         CaseDetails caseDetails,
         ClaimantTse claimantTse,
         String caseType
     ) throws DocumentGenerationException, CaseDocumentException {
-        PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            pdfService.convertClaimantTseIntoMultipartFile(claimantTse);
-        var caseDocument = caseDocumentService.uploadDocument(authorization, caseType, pdfDecodedMultipartFile);
 
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
         List<DocumentTypeItem> docList = caseData.getDocumentCollection();
+
+        PdfDecodedMultipartFile pdfDecodedMultipartFile = pdfService.convertClaimantTseIntoMultipartFile(claimantTse);
+        caseDocumentService.uploadDocument(authorization, caseType, pdfDecodedMultipartFile);
         docList.add(caseDocumentService.createDocumentTypeItem(
             authorization,
             caseType,
-            "Claimant correspondence",
+            CLAIMANT_CORRESPONDENCE_DOCUMENT,
             pdfDecodedMultipartFile
         ));
 
         caseDetails.getData().put("documentCollection", docList);
-        return caseDocument;
     }
 }

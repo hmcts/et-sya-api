@@ -30,6 +30,7 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.SHORT_TEXT_MAP;
 
 /**
  * Uses {@link PdfMapperService} to convert a given case into a Pdf Document.
@@ -48,7 +49,7 @@ public class PdfService {
     @Value("${pdf.contact_tribunal_template}")
     public String contactTheTribunalPdfTemplate;
 
-    private static final String TSE_CONTACT_THE_TRIBUNAL_FILENAME = "contact_about_something_else.pdf";
+    private static final String TSE_FILENAME = "Contact the tribunal.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private static final String NOT_FOUND = "not found";
 
@@ -220,9 +221,9 @@ public class PdfService {
         throws DocumentGenerationException {
         return new PdfDecodedMultipartFile(
             convertClaimantTseToPdf(claimantTse),
-            TSE_CONTACT_THE_TRIBUNAL_FILENAME,
+            TSE_FILENAME,
             PDF_FILE_TIKA_CONTENT_TYPE,
-            "Test"
+            SHORT_TEXT_MAP.get(claimantTse.getContactApplicationType())
         );
     }
 
@@ -240,7 +241,10 @@ public class PdfService {
             .copyToOtherPartyText(claimantTse.getCopyToOtherPartyText())
             .build();
 
-        return documentGenerationService.genPdfDocument(contactTheTribunalPdfTemplate,
-                                                        TSE_CONTACT_THE_TRIBUNAL_FILENAME, genericTseApplication);
+        return documentGenerationService.genPdfDocument(
+            contactTheTribunalPdfTemplate,
+            TSE_FILENAME,
+            genericTseApplication
+        );
     }
 }
