@@ -7,6 +7,7 @@ import java.util.List;
 /**
  * Defines attributes used by et-sya-api as constants.
  */
+
 public final class EtSyaConstants {
 
     public static final String REMOTE_REPO = "https://github.com/hmcts/et-sya-api";
