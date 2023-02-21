@@ -26,11 +26,16 @@ import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.NOTIFICATION_CONFIRMATION_ID;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class NotificationServiceTest {
+    public static final String CLAIMANT = "Michael Jackson";
+    public static final String NOT_SET = "Not set";
+    public static final String TEST_RESPONDENT = "Test Respondent";
     @MockBean
     private NotificationService notificationService;
     private static final String TEST_TEMPLATE_API_KEY = "dummy template id";
@@ -73,6 +78,9 @@ class NotificationServiceTest {
         given(notificationsProperties.getClaimantTseEmailNoTemplateId()).willReturn("No");
         given(notificationsProperties.getClaimantTseEmailYesTemplateId()).willReturn("Yes");
         given(notificationsProperties.getClaimantTseEmailTypeCTemplateId()).willReturn("C");
+        given(notificationsProperties.getTribunalAcknowledgementTemplateId()).willReturn("Tribunal");
+        given(notificationsProperties.getRespondentTseEmailTypeATemplateId()).willReturn("A");
+        given(notificationsProperties.getRespondentTseEmailTypeBTemplateId()).willReturn("B");
         given(notificationsProperties.getCitizenPortalLink()).willReturn(REFERENCE_STRING);
         testData = new TestData();
     }
@@ -177,10 +185,10 @@ class NotificationServiceTest {
 
         assertThat(notificationService.sendAcknowledgementEmailToClaimant(
             testData.getCaseData(),
-            "Michael Jackson",
+            CLAIMANT,
             "1",
-            "Test Respondent",
-            "Not set",
+            TEST_RESPONDENT,
+            NOT_SET,
             testData.getExpectedDetails().getId().toString(),
             testData.getClaimantApplication()
         ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
@@ -198,10 +206,10 @@ class NotificationServiceTest {
 
         assertThat(notificationService.sendAcknowledgementEmailToClaimant(
             testData.getCaseData(),
-            "Michael Jackson",
+            CLAIMANT,
             "1",
-            "Test Respondent",
-            "Not set",
+            TEST_RESPONDENT,
+            NOT_SET,
             testData.getExpectedDetails().getId().toString(),
             testData.getClaimantApplication()
         ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
@@ -219,12 +227,116 @@ class NotificationServiceTest {
 
         assertThat(notificationService.sendAcknowledgementEmailToClaimant(
             testData.getCaseData(),
-            "Michael Jackson",
+            CLAIMANT,
             "1",
-            "Test Respondent",
-            "Not set",
+            TEST_RESPONDENT,
+            NOT_SET,
             testData.getExpectedDetails().getId().toString(),
             testData.getClaimantApplication()
+        ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
+    }
+
+    @Test
+    void shouldSendEmailToRespondentTypeB() throws NotificationClientException {
+        notificationService.sendEmailToRespondents(
+            testData.getCaseData(),
+            CLAIMANT,
+            "1",
+            "Test Respondent Organisation -1-, Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez",
+            NOT_SET,
+            testData.getExpectedDetails().getId().toString(),
+            NOT_SET,
+            testData.getClaimantApplication()
+        );
+
+        verify(notificationClient, times(5)).sendEmail(
+            eq("B"),
+            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void shouldSendEmailToRespondentTypeA() throws NotificationClientException {
+        testData.getClaimantApplication().setContactApplicationType("strike");
+        notificationService.sendEmailToRespondents(
+            testData.getCaseData(),
+            CLAIMANT,
+            "1",
+            "Test Respondent Organisation -1-, Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez",
+            NOT_SET,
+            testData.getExpectedDetails().getId().toString(),
+            NOT_SET,
+            testData.getClaimantApplication()
+        );
+
+        verify(notificationClient, times(5)).sendEmail(
+            eq("A"),
+            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void shouldNotSendEmailToRespondentTypeC() throws NotificationClientException {
+        testData.getClaimantApplication().setContactApplicationType("witness");
+        notificationService.sendEmailToRespondents(
+            testData.getCaseData(),
+            CLAIMANT,
+            "1",
+            "Test Respondent Organisation -1-, Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez",
+            NOT_SET,
+            testData.getExpectedDetails().getId().toString(),
+            NOT_SET,
+            testData.getClaimantApplication()
+        );
+
+        verify(notificationClient, times(0)).sendEmail(
+            any(),
+            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void shouldSendEmailToTribunalTypeAOrB() throws NotificationClientException, IOException {
+        when(notificationClient.sendEmail(
+            eq("Tribunal"),
+            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        )).thenReturn(testData.getSendEmailResponse());
+
+        assertThat(notificationService.sendAcknowledgementEmailToTribunal(
+            testData.getCaseData(),
+            CLAIMANT,
+            "1",
+            TEST_RESPONDENT,
+            NOT_SET,
+            testData.getExpectedDetails().getId().toString()
+        ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
+    }
+
+    @Test
+    void shouldSendEmailToTribunalTypeC() throws NotificationClientException, IOException {
+        testData.getClaimantApplication().setContactApplicationType("witness");
+        when(notificationClient.sendEmail(
+            eq("Tribunal"),
+            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        )).thenReturn(testData.getSendEmailResponse());
+
+        assertThat(notificationService.sendAcknowledgementEmailToTribunal(
+            testData.getCaseData(),
+            CLAIMANT,
+            "1",
+            TEST_RESPONDENT,
+            NOT_SET,
+            testData.getExpectedDetails().getId().toString()
         ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
     }
 

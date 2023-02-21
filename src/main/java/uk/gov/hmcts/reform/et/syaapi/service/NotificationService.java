@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
@@ -120,7 +119,6 @@ public class NotificationService {
      * @param hearingDate         date of the nearest hearing
      * @param caseId              16 digit case id
      * @param claimantApplication application request data
-
      * @return Gov notify email format
      */
     public SendEmailResponse sendAcknowledgementEmailToClaimant(CaseData caseData,
@@ -177,7 +175,8 @@ public class NotificationService {
                                        String respondentNames,
                                        String hearingDate,
                                        String caseId,
-                                       ClaimantTse claimantApplication) throws NotificationClientException {
+                                       Object documentJson,
+                                       ClaimantTse claimantApplication) {
 
         if (TYPE_C.equals(claimantApplication.getContactApplicationType())
             || DONT_SEND_COPY.equals(claimantApplication.getCopyToOtherPartyYesOrNo())) {
@@ -207,8 +206,6 @@ public class NotificationService {
         } else {
             emailToRespondentTemplate = notificationsProperties.getRespondentTseEmailTypeATemplateId();
         }
-        byte[] document = new byte[0];
-        JSONObject documentJson = NotificationClient.prepareUpload(document, false, true, "52 weeks");
         respondentParameters.put("linkToDocument", documentJson);
         caseData.getRespondentCollection()
             .forEach(resp -> {
