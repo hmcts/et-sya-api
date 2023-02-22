@@ -109,6 +109,9 @@ public class ApplicationService {
     private Object getDocumentDownload(String authorization, ClaimantTse claimantApplication)
         throws NotificationClientException {
         String documentBinaryUrl = claimantApplication.getContactApplicationFile().getDocumentBinaryUrl();
+        if (documentBinaryUrl == null) {
+            return "Supporting file was not provided by claimant.";
+        }
         String docId = documentBinaryUrl.substring(documentBinaryUrl.lastIndexOf('/') + 1);
         UUID doc = UUID.fromString(docId);
         ByteArrayResource downloadDocument = caseDocumentService.downloadDocument(
@@ -123,6 +126,6 @@ public class ApplicationService {
                 "52 weeks"
             );
         }
-        return "Could not retrieve document download.";
+        return "Could not retrieve claimant's supporting file.";
     }
 }
