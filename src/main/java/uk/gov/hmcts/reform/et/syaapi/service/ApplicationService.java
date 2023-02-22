@@ -71,7 +71,7 @@ public class ApplicationService {
         String caseNumber = caseData.getEthosCaseReference();
         String respondentNames = getRespondentNames(caseData);
         String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
-        String caseId = finalCaseDetails.getId() == null ? "case id not found" : finalCaseDetails.getId().toString();
+        String caseId = finalCaseDetails.getId().toString();
 
         notificationService.sendAcknowledgementEmailToClaimant(
             caseData,

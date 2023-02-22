@@ -29,7 +29,7 @@ public final class EtSyaConstants {
     public static final String WELSH_LANGUAGE_PARAM = "/?lng=cy";
 
     public static final List<String> ACAS_VISIBLE_DOCS = List.of("ET1", "ACAS Certificate", "Notice of a claim",
-                                                                 "ET3", "Claimant correspondence",
+                                                                 "ET3", CLAIMANT_CORRESPONDENCE_DOCUMENT,
                                                                  "Respondent correspondence", "Notice of Hearing",
                                                                  "Tribunal correspondence",
                                                                  "Tribunal Order/Deposit Order",

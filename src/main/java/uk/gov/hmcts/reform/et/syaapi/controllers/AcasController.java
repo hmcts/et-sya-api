@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.et.syaapi.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MultiValuedMap;
@@ -42,9 +41,9 @@ public class AcasController {
     private final IdamClient idamClient;
 
     @Value("${caseWorkerUserName}")
-    private transient String caseWorkerUserName;
+    private String caseWorkerUserName;
     @Value("${caseWorkerPassword}")
-    private transient String caseWorkerPassword;
+    private String caseWorkerPassword;
 
 
     /**
@@ -104,14 +103,8 @@ public class AcasController {
      */
     @GetMapping("/downloadAcasDocuments")
     @Operation(summary = "Get a document from CDAM in binary format")
-    @ApiResponses(
-        {@ApiResponse(
-            responseCode = "200",
-            description = "OK"),
-            @ApiResponse(
-                responseCode = "404",
-                description = "Case document not found")
-        })
+    @ApiResponse(responseCode = "200",description = "OK")
+    @ApiResponse(responseCode = "404", description = "Case document not found")
     public ResponseEntity<ByteArrayResource> getDocumentBinaryContent(
         @RequestParam(name = "documentId") final UUID documentId,
         @RequestHeader(AUTHORIZATION) String authToken) {

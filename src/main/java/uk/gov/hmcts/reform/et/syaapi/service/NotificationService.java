@@ -34,6 +34,7 @@ import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.SHORT_TEX
 @Slf4j
 @RequiredArgsConstructor
 public class NotificationService {
+    public static final String HEARING_DATE = "hearingDate";
     private final NotificationClient notificationClient;
     private final NotificationsProperties notificationsProperties;
     private final String[] typeA =
@@ -191,7 +192,7 @@ public class NotificationService {
             caseNumber
         );
         respondentParameters.put(
-            "hearingDate",
+            HEARING_DATE,
             hearingDate
         );
         respondentParameters.put("shortText", SHORT_TEXT_MAP.get(claimantApplication.getContactApplicationType()));
@@ -256,7 +257,7 @@ public class NotificationService {
         );
 
         tribunalParameters.put(
-            "hearingDate",
+            HEARING_DATE,
             hearingDate
         );
 
@@ -287,7 +288,7 @@ public class NotificationService {
                                                 String hearingDate,
                                                 Map<String, Object> parameters) {
         String emailTemplate;
-        parameters.put("hearingDate", hearingDate);
+        parameters.put(HEARING_DATE, hearingDate);
         String shortText = SHORT_TEXT_MAP.get(claimantApplication.getContactApplicationType());
         if (DONT_SEND_COPY.equals(claimantApplication.getCopyToOtherPartyYesOrNo())) {
             parameters.put("shortText", shortText);

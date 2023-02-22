@@ -78,6 +78,7 @@ import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTE
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 public class CaseService {
 
+    public static final String DOCUMENT_COLLECTION = "documentCollection";
     private final AuthTokenGenerator authTokenGenerator;
     private final CoreCaseDataApi ccdApiClient;
     private final IdamClient idamClient;
@@ -90,9 +91,9 @@ public class CaseService {
     private final AssignCaseToLocalOfficeService assignCaseToLocalOfficeService;
 
     @Value("${caseWorkerUserName}")
-    private transient String caseWorkerUserName;
+    private String caseWorkerUserName;
     @Value("${caseWorkerPassword}")
-    private transient String caseWorkerPassword;
+    private String caseWorkerPassword;
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
@@ -239,7 +240,7 @@ public class CaseService {
         }
 
         caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
-        caseDetails.getData().put("documentCollection", documentList);
+        caseDetails.getData().put(DOCUMENT_COLLECTION, documentList);
 
         triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
                      caseDetails.getData()
@@ -456,7 +457,7 @@ public class CaseService {
             CLAIMANT_CORRESPONDENCE_DOCUMENT,
             contactApplicationFile
         ));
-        caseDetails.getData().put("documentCollection", docList);
+        caseDetails.getData().put(DOCUMENT_COLLECTION, docList);
     }
 
     void uploadTseCyaAsPdf(
@@ -478,6 +479,6 @@ public class CaseService {
             pdfDecodedMultipartFile
         ));
 
-        caseDetails.getData().put("documentCollection", docList);
+        caseDetails.getData().put(DOCUMENT_COLLECTION, docList);
     }
 }
