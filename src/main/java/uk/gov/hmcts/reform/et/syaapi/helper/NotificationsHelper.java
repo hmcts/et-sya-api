@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.helper;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
@@ -28,7 +30,10 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.HEARING_STATUS_LISTED;
 
 @Slf4j
-@SuppressWarnings({"PMD.SimpleDateFormatNeedsLocale", "PMD.UseConcurrentHashMap"})
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@SuppressWarnings({"PMD.SimpleDateFormatNeedsLocale",
+    "PMD.UseConcurrentHashMap",
+    "checkstyle:HideUtilityClassConstructor"})
 public final class NotificationsHelper {
 
     public static final Map<String, String> SHORT_TEXT_MAP = Map.ofEntries(
@@ -46,10 +51,6 @@ public final class NotificationsHelper {
         new AbstractMap.SimpleEntry<>("reconsider-judgement", "Reconsider judgement"),
         new AbstractMap.SimpleEntry<>("other", "Contact about something else")
     );
-
-    private NotificationsHelper() {
-        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
-    }
 
     /**
      * Format all respondent names into one string.
