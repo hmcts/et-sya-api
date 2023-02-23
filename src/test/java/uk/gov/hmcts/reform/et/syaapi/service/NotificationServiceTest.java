@@ -29,6 +29,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.NOTIFICATION_CONFIRMATION_ID;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
@@ -302,42 +303,66 @@ class NotificationServiceTest {
     }
 
     @Test
-    void shouldSendEmailToTribunalTypeAOrB() throws NotificationClientException, IOException {
-        when(notificationClient.sendEmail(
-            eq("Tribunal"),
-            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
-            any(),
-            eq(testData.getExpectedDetails().getId().toString())
-        )).thenReturn(testData.getSendEmailResponse());
-
-        assertThat(notificationService.sendAcknowledgementEmailToTribunal(
+    void shouldSendEmailToTribunalTypeAOrB() throws NotificationClientException {
+        notificationService.sendAcknowledgementEmailToTribunal(
             testData.getCaseData(),
             CLAIMANT,
             "1",
             TEST_RESPONDENT,
             NOT_SET,
-            testData.getExpectedDetails().getId().toString()
-        ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
+            testData.getExpectedDetails().getId().toString(),
+            testData.getClaimantApplication()
+        );
+
+        verify(notificationClient, times(1)).sendEmail(
+            any(),
+            eq(testData.getCaseData().getTribunalCorrespondenceEmail()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
+
     }
 
     @Test
-    void shouldSendEmailToTribunalTypeC() throws NotificationClientException, IOException {
+    void shouldSendEmailToTribunalTypeC() throws NotificationClientException {
         testData.getClaimantApplication().setContactApplicationType("witness");
-        when(notificationClient.sendEmail(
-            eq("Tribunal"),
-            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
-            any(),
-            eq(testData.getExpectedDetails().getId().toString())
-        )).thenReturn(testData.getSendEmailResponse());
-
-        assertThat(notificationService.sendAcknowledgementEmailToTribunal(
+        notificationService.sendAcknowledgementEmailToTribunal(
             testData.getCaseData(),
             CLAIMANT,
             "1",
             TEST_RESPONDENT,
             NOT_SET,
-            testData.getExpectedDetails().getId().toString()
-        ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
+            testData.getExpectedDetails().getId().toString(),
+            testData.getClaimantApplication()
+        );
+
+        verify(notificationClient, times(1)).sendEmail(
+            any(),
+            eq(testData.getCaseData().getTribunalCorrespondenceEmail()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void shouldNotSendEmailToTribunalUnassignedManagingOffice() throws NotificationClientException {
+        testData.getCaseData().setManagingOffice(UNASSIGNED_OFFICE);
+        notificationService.sendAcknowledgementEmailToTribunal(
+            testData.getCaseData(),
+            CLAIMANT,
+            "1",
+            TEST_RESPONDENT,
+            NOT_SET,
+            testData.getExpectedDetails().getId().toString(),
+            testData.getClaimantApplication()
+        );
+
+        verify(notificationClient, times(0)).sendEmail(
+            any(),
+            any(),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
     }
 
     @Test

@@ -150,7 +150,8 @@ class ApplicationServiceTest {
             eq(CASE_REF),
             eq(RESPONDENT_LIST),
             eq(NOT_SET),
-            eq(CASE_ID)
+            eq(CASE_ID),
+            any()
         );
     }
 

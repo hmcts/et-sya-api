@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.SHORT_TEXT_MAP;
@@ -182,6 +183,7 @@ public class NotificationService {
 
         if (TYPE_C.equals(claimantApplication.getContactApplicationType())
             || DONT_SEND_COPY.equals(claimantApplication.getCopyToOtherPartyYesOrNo())) {
+            log.info("Acknowledgement email not sent to respondents for this application type");
             return;
         }
         Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
@@ -208,11 +210,7 @@ public class NotificationService {
         } else {
             emailToRespondentTemplate = notificationsProperties.getRespondentTseEmailTypeATemplateId();
         }
-        if (documentJson == null) {
-            respondentParameters.put("linkToDocument", "");
-        } else {
-            respondentParameters.put("linkToDocument", documentJson);
-        }
+        respondentParameters.put("linkToDocument", Objects.requireNonNullElse(documentJson, ""));
 
         caseData.getRespondentCollection()
             .forEach(resp -> {
@@ -220,7 +218,9 @@ public class NotificationService {
                     caseData,
                     resp.getValue()
                 );
-                if (!isNullOrEmpty(respondentEmailAddress)) {
+                if (isNullOrEmpty(respondentEmailAddress)) {
+                    log.info("Respondent did not have an email address associated with their account");
+                } else {
                     try {
                         notificationClient.sendEmail(
                             emailToRespondentTemplate,
@@ -228,6 +228,7 @@ public class NotificationService {
                             respondentParameters,
                             caseId
                         );
+                        log.info("Sent email to respondent");
                     } catch (NotificationClientException ne) {
                         throw new NotificationException(ne);
                     }
@@ -244,14 +245,15 @@ public class NotificationService {
      * @param respondentNames concatenated respondent names
      * @param hearingDate     date of the nearest hearing
      * @param caseId          16 digit case id
-     * @return Gov notify email format
      */
-    public SendEmailResponse sendAcknowledgementEmailToTribunal(CaseData caseData,
-                                                                String claimant,
-                                                                String caseNumber,
-                                                                String respondentNames,
-                                                                String hearingDate,
-                                                                String caseId) {
+    public void sendAcknowledgementEmailToTribunal(CaseData caseData,
+                                                   String claimant,
+                                                   String caseNumber,
+                                                   String respondentNames,
+                                                   String hearingDate,
+                                                   String caseId,
+                                                   ClaimantTse claimantApplication
+    ) {
 
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
         addCommonParameters(
@@ -261,24 +263,33 @@ public class NotificationService {
             caseId,
             caseNumber
         );
-
         tribunalParameters.put(
             HEARING_DATE,
             hearingDate
         );
 
-        SendEmailResponse tribunalEmail;
-        try {
-            tribunalEmail = notificationClient.sendEmail(
-                notificationsProperties.getTribunalAcknowledgementTemplateId(),
-                caseData.getClaimantType().getClaimantEmailAddress(),
-                tribunalParameters,
-                caseId
-            );
-        } catch (NotificationClientException ne) {
-            throw new NotificationException(ne);
+        String subjectLine =  caseNumber + " " + SHORT_TEXT_MAP.get(claimantApplication.getContactApplicationType());
+        tribunalParameters.put(
+            "subjectLine",
+            subjectLine
+        );
+
+
+        String managingOffice = caseData.getManagingOffice();
+        if (managingOffice.equals(UNASSIGNED_OFFICE) || isNullOrEmpty(managingOffice)) {
+            log.info("Could not send email as no office has been assigned");
+        } else {
+            try {
+                notificationClient.sendEmail(
+                    notificationsProperties.getTribunalAcknowledgementTemplateId(),
+                    caseData.getTribunalCorrespondenceEmail(),
+                    tribunalParameters,
+                    caseId
+                );
+            } catch (NotificationClientException ne) {
+                throw new NotificationException(ne);
+            }
         }
-        return tribunalEmail;
     }
 
     private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,

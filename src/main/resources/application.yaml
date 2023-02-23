@@ -77,7 +77,7 @@ notifications:
   applicationAcknowledgementNo: ${APPLICATION_ACKNOWLEDGEMENT_NO:e6c8b8c4-e58b-4bae-a8ec-cca68bca0c4e}
   respondentCopyTypeA: ${RESPONDENT_COPY_A:a2ffb9b3-8bf7-4e9a-aab8-08a6c5a82636}
   respondentCopyTypeB: ${RESPONDENT_COPY_B:d5f319f1-229f-4dcb-9293-f164bb327601}
-  tribunalAcknowledgement: ${TRIBUNAL_ACKNOWLEDGEMENT:91db4e44-ce62-44d2-af41-791341a067a6}
+  tribunalAcknowledgement: ${TRIBUNAL_ACKNOWLEDGEMENT:d82aa18a-1a3d-44af-91fa-565d178f5e0e}
 
 pdf:
   english: "ET1_1122.pdf"

@@ -109,7 +109,8 @@ public class ApplicationService {
             caseNumber,
             respondentNames,
             hearingDate,
-            caseId
+            caseId,
+            request.getClaimantTse()
         );
     }
 
