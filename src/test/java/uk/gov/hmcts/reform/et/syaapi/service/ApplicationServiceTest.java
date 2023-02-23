@@ -70,9 +70,8 @@ class ApplicationServiceTest {
             any()
         )).thenReturn(testData.getCaseDetailsWithData());
 
-
-        ResponseEntity<ByteArrayResource> responseEntity = new ResponseEntity<>(HttpStatus.OK);
-
+        ResponseEntity<ByteArrayResource> responseEntity =
+            new ResponseEntity<>(HttpStatus.OK);
         when(caseDocumentService.downloadDocument(eq(TEST_SERVICE_AUTH_TOKEN), any())).thenReturn(responseEntity);
 
     }
@@ -96,6 +95,12 @@ class ApplicationServiceTest {
 
     @Test
     void shouldSendRespondentEmailWithCorrectParameters() throws NotificationClientException {
+        byte[] bytes = "Sample".getBytes();
+        ResponseEntity<ByteArrayResource> responseEntity =
+            new ResponseEntity<>(new ByteArrayResource(bytes), HttpStatus.OK);
+
+        when(caseDocumentService.downloadDocument(eq(TEST_SERVICE_AUTH_TOKEN), any())).thenReturn(responseEntity);
+
         applicationService.submitApplication(
             TEST_SERVICE_AUTH_TOKEN,
             testData.getClaimantApplicationRequest()
@@ -108,18 +113,16 @@ class ApplicationServiceTest {
             eq(RESPONDENT_LIST),
             eq(NOT_SET),
             eq(CASE_ID),
-            eq("Could not retrieve claimant's supporting file."),
+            any(),
             any()
         );
     }
 
     @Test
     void shouldSendRespondentEmailWithNoSupportingDocument() throws NotificationClientException {
-        var claimantRequest = testData.getClaimantApplicationRequest();
-        claimantRequest.getClaimantTse().getContactApplicationFile().setDocumentBinaryUrl(null);
         applicationService.submitApplication(
             TEST_SERVICE_AUTH_TOKEN,
-            claimantRequest
+            testData.getClaimantApplicationRequest()
         );
 
         verify(notificationService, times(1)).sendAcknowledgementEmailToRespondents(
@@ -129,7 +132,7 @@ class ApplicationServiceTest {
             eq(RESPONDENT_LIST),
             eq(NOT_SET),
             eq(CASE_ID),
-            eq("Supporting file was not provided by claimant."),
+            eq(null),
             any()
         );
     }

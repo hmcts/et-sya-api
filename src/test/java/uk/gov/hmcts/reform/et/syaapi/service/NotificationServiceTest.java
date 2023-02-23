@@ -245,7 +245,7 @@ class NotificationServiceTest {
             "Test Respondent Organisation -1-, Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez",
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
-            NOT_SET,
+            null,
             testData.getClaimantApplication()
         );
 
@@ -267,7 +267,7 @@ class NotificationServiceTest {
             "Test Respondent Organisation -1-, Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez",
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
-            NOT_SET,
+            null,
             testData.getClaimantApplication()
         );
 
@@ -289,7 +289,7 @@ class NotificationServiceTest {
             "Test Respondent Organisation -1-, Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez",
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
-            NOT_SET,
+            null,
             testData.getClaimantApplication()
         );
 

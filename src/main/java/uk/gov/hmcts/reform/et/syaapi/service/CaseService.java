@@ -471,7 +471,6 @@ public class CaseService {
         List<DocumentTypeItem> docList = caseData.getDocumentCollection();
 
         PdfDecodedMultipartFile pdfDecodedMultipartFile = pdfService.convertClaimantTseIntoMultipartFile(claimantTse);
-        caseDocumentService.uploadDocument(authorization, caseType, pdfDecodedMultipartFile);
         docList.add(caseDocumentService.createDocumentTypeItem(
             authorization,
             caseType,

@@ -488,7 +488,41 @@
     "bfActions": null,
     "clerkResponsible": null,
     "userLocation": null,
-    "documentCollection": null,
+    "documentCollection": [
+      {
+        "id": "1",
+        "value": {
+          "creationDate": "2019-12-30T19:34:50.63",
+          "uploadedDocument": {
+            "document_binary_url": "https://document.binary.url/36c8b8b7-2f73-4ba6-968c-1e4863127001",
+            "document_filename": "Contact the tribunal.pdf",
+            "document_url": "https://document.url/36c8b8b7-2f73-4ba6-968c-1e4863127001"
+          }
+        }
+      },
+      {
+        "id": "2",
+        "value": {
+          "creationDate": "2018-12-30T19:34:50.63",
+          "uploadedDocument": {
+            "document_binary_url": "https://document.binary.url/36c8b8b7-2f73-4ba6-968c-1e4863127002",
+            "document_filename": "Contact the tribunal.pdf",
+            "document_url": "https://document.url/36c8b8b7-2f73-4ba6-968c-1e4863127002"
+          }
+        }
+      },
+      {
+        "id": "3",
+        "value": {
+          "creationDate": "2022-12-30T19:34:50.63",
+          "uploadedDocument": {
+            "document_binary_url": "https://document.binary.url/36c8b8b7-2f73-4ba6-968c-1e4863127003",
+            "document_filename": "Contact.pdf",
+            "document_url": "https://document.url/36c8b8b7-2f73-4ba6-968c-1e4863127003"
+          }
+        }
+      }
+    ],
     "correspondenceScotType": null,
     "correspondenceType": null,
     "addressLabelsSelectionType": null,

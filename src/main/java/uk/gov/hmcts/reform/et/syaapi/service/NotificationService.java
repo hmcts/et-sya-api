@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
@@ -176,7 +177,7 @@ public class NotificationService {
                                                       String respondentNames,
                                                       String hearingDate,
                                                       String caseId,
-                                                      Object documentJson,
+                                                      JSONObject documentJson,
                                                       ClaimantTse claimantApplication) {
 
         if (TYPE_C.equals(claimantApplication.getContactApplicationType())
@@ -207,7 +208,12 @@ public class NotificationService {
         } else {
             emailToRespondentTemplate = notificationsProperties.getRespondentTseEmailTypeATemplateId();
         }
-        respondentParameters.put("linkToDocument", documentJson);
+        if (documentJson == null) {
+            respondentParameters.put("linkToDocument", "");
+        } else {
+            respondentParameters.put("linkToDocument", documentJson);
+        }
+
         caseData.getRespondentCollection()
             .forEach(resp -> {
                 String respondentEmailAddress = NotificationsHelper.getEmailAddressForRespondent(

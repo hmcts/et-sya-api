@@ -2,9 +2,11 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -15,7 +17,11 @@ import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 
@@ -23,6 +29,7 @@ import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespon
 @Service
 @Slf4j
 public class ApplicationService {
+    private static final String TSE_FILENAME = "Contact the tribunal.pdf";
     private final CaseService caseService;
     private final NotificationService notificationService;
     private final CaseDocumentService caseDocumentService;
@@ -83,7 +90,7 @@ public class ApplicationService {
             request.getClaimantTse()
         );
 
-        Object documentJson = getDocumentDownload(authorization, request.getClaimantTse());
+        JSONObject documentJson = getDocumentDownload(authorization, caseData);
 
         notificationService.sendAcknowledgementEmailToRespondents(
             caseData,
@@ -106,12 +113,18 @@ public class ApplicationService {
         );
     }
 
-    private Object getDocumentDownload(String authorization, ClaimantTse claimantApplication)
+    private JSONObject getDocumentDownload(String authorization, CaseData caseData)
         throws NotificationClientException {
-        String documentBinaryUrl = claimantApplication.getContactApplicationFile().getDocumentBinaryUrl();
-        if (documentBinaryUrl == null) {
-            return "Supporting file was not provided by claimant.";
-        }
+
+        List<DocumentTypeItem> tseFiles = caseData.getDocumentCollection().stream()
+            .filter(n -> TSE_FILENAME.equals(n.getValue().getUploadedDocument().getDocumentFilename()))
+            .collect(Collectors.toList());
+
+        String documentBinaryUrl = Collections.max(
+            tseFiles,
+            Comparator.comparing(c -> c.getValue().getCreationDate())
+        ).getValue().getUploadedDocument().getDocumentBinaryUrl();
+
         String docId = documentBinaryUrl.substring(documentBinaryUrl.lastIndexOf('/') + 1);
         UUID doc = UUID.fromString(docId);
         ByteArrayResource downloadDocument = caseDocumentService.downloadDocument(
@@ -126,6 +139,6 @@ public class ApplicationService {
                 "52 weeks"
             );
         }
-        return "Could not retrieve claimant's supporting file.";
+        return null;
     }
 }
