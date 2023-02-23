@@ -238,7 +238,7 @@ class NotificationServiceTest {
 
     @Test
     void shouldSendEmailToRespondentTypeB() throws NotificationClientException {
-        notificationService.sendEmailToRespondents(
+        notificationService.sendAcknowledgementEmailToRespondents(
             testData.getCaseData(),
             CLAIMANT,
             "1",
@@ -260,7 +260,7 @@ class NotificationServiceTest {
     @Test
     void shouldSendEmailToRespondentTypeA() throws NotificationClientException {
         testData.getClaimantApplication().setContactApplicationType("strike");
-        notificationService.sendEmailToRespondents(
+        notificationService.sendAcknowledgementEmailToRespondents(
             testData.getCaseData(),
             CLAIMANT,
             "1",
@@ -282,7 +282,7 @@ class NotificationServiceTest {
     @Test
     void shouldNotSendEmailToRespondentTypeC() throws NotificationClientException {
         testData.getClaimantApplication().setContactApplicationType("witness");
-        notificationService.sendEmailToRespondents(
+        notificationService.sendAcknowledgementEmailToRespondents(
             testData.getCaseData(),
             CLAIMANT,
             "1",

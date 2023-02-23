@@ -55,8 +55,8 @@ class ApplicationServiceTest {
         applicationService = new ApplicationService(caseService, notificationService, caseDocumentService);
 
         when(caseService.getUserCase(
-            eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(testData.getClaimantApplicationRequest().getCaseId())
+            TEST_SERVICE_AUTH_TOKEN,
+            testData.getClaimantApplicationRequest().getCaseId()
         )).thenReturn(testData.getCaseDetailsWithData());
 
         doNothing().when(caseService).uploadTseSupportingDocument(any(), any());
@@ -101,7 +101,7 @@ class ApplicationServiceTest {
             testData.getClaimantApplicationRequest()
         );
 
-        verify(notificationService, times(1)).sendEmailToRespondents(
+        verify(notificationService, times(1)).sendAcknowledgementEmailToRespondents(
             any(),
             eq(CLAIMANT),
             eq(CASE_REF),
@@ -122,7 +122,7 @@ class ApplicationServiceTest {
             claimantRequest
         );
 
-        verify(notificationService, times(1)).sendEmailToRespondents(
+        verify(notificationService, times(1)).sendAcknowledgementEmailToRespondents(
             any(),
             eq(CLAIMANT),
             eq(CASE_REF),

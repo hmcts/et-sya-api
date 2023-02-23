@@ -170,14 +170,14 @@ public class NotificationService {
      * @param caseId              16 digit case id
      * @param claimantApplication application request data
      */
-    public void sendEmailToRespondents(CaseData caseData,
-                                       String claimant,
-                                       String caseNumber,
-                                       String respondentNames,
-                                       String hearingDate,
-                                       String caseId,
-                                       Object documentJson,
-                                       ClaimantTse claimantApplication) {
+    public void sendAcknowledgementEmailToRespondents(CaseData caseData,
+                                                      String claimant,
+                                                      String caseNumber,
+                                                      String respondentNames,
+                                                      String hearingDate,
+                                                      String caseId,
+                                                      Object documentJson,
+                                                      ClaimantTse claimantApplication) {
 
         if (TYPE_C.equals(claimantApplication.getContactApplicationType())
             || DONT_SEND_COPY.equals(claimantApplication.getCopyToOtherPartyYesOrNo())) {

@@ -85,7 +85,7 @@ public class ApplicationService {
 
         Object documentJson = getDocumentDownload(authorization, request.getClaimantTse());
 
-        notificationService.sendEmailToRespondents(
+        notificationService.sendAcknowledgementEmailToRespondents(
             caseData,
             claimant,
             caseNumber,

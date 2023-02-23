@@ -85,7 +85,7 @@ class NotificationHelperTest {
         );
 
         // Then
-        assertThat(email).isEqualTo("");
+        assertThat(email).isEmpty();
     }
 
     @Test
@@ -101,7 +101,7 @@ class NotificationHelperTest {
         );
 
         // Then
-        assertThat(email).isEqualTo("");
+        assertThat(email).isEmpty();
     }
 
     @Test
