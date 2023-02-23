@@ -25,7 +25,6 @@ class NotificationHelperTest {
         testData = new TestData();
     }
 
-
     @Test
     void shouldReturnEmptyStringUtil() {
         // Given

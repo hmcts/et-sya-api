@@ -45,7 +45,6 @@ class ApplicationServiceTest {
         testData = new TestData();
     }
 
-
     @BeforeEach
     void before() throws CaseDocumentException, DocumentGenerationException {
         caseService = mock(CaseService.class);

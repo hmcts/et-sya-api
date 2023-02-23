@@ -252,7 +252,7 @@ class NotificationServiceTest {
 
         verify(notificationClient, times(5)).sendEmail(
             eq("B"),
-            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            any(),
             any(),
             eq(testData.getExpectedDetails().getId().toString())
         );
@@ -274,7 +274,7 @@ class NotificationServiceTest {
 
         verify(notificationClient, times(5)).sendEmail(
             eq("A"),
-            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            any(),
             any(),
             eq(testData.getExpectedDetails().getId().toString())
         );

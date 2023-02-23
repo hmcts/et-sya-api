@@ -160,7 +160,6 @@ public class NotificationService {
         return claimantEmail;
     }
 
-
     /**
      * Format details of claimant request and retrieve case data, then send email to confirmation to respondent.
      *
@@ -224,7 +223,7 @@ public class NotificationService {
                     try {
                         notificationClient.sendEmail(
                             emailToRespondentTemplate,
-                            caseData.getClaimantType().getClaimantEmailAddress(),
+                            respondentEmailAddress,
                             respondentParameters,
                             caseId
                         );
@@ -273,7 +272,6 @@ public class NotificationService {
             "subjectLine",
             subjectLine
         );
-
 
         String managingOffice = caseData.getManagingOffice();
         if (managingOffice.equals(UNASSIGNED_OFFICE) || isNullOrEmpty(managingOffice)) {
