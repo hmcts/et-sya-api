@@ -45,11 +45,13 @@ public class ApplicationService {
 
         UploadedDocumentType contactApplicationFile = claimantTse.getContactApplicationFile();
         if (contactApplicationFile != null) {
+            log.info("Uploading supporting file to document collection");
             caseService.uploadTseSupportingDocument(caseDetails, contactApplicationFile);
         }
 
         if (!request.isTypeC() && YES.equals(claimantTse.getCopyToOtherPartyYesOrNo())) {
             try {
+                log.info("Uploading pdf of TSE application");
                 caseService.uploadTseCyaAsPdf(authorization, caseDetails, claimantTse, caseTypeId);
             } catch (CaseDocumentException | DocumentGenerationException e) {
                 log.error("Couldn't upload pdf of TSE application");
@@ -120,25 +122,28 @@ public class ApplicationService {
         List<DocumentTypeItem> tseFiles = caseData.getDocumentCollection().stream()
             .filter(n -> TSE_FILENAME.equals(n.getValue().getUploadedDocument().getDocumentFilename()))
             .collect(Collectors.toList());
+        if (!tseFiles.isEmpty()) {
+            String documentBinaryUrl = Collections.max(
+                tseFiles,
+                Comparator.comparing(c -> c.getValue().getCreationDate())
+            ).getValue().getUploadedDocument().getDocumentBinaryUrl();
 
-        String documentBinaryUrl = Collections.max(
-            tseFiles,
-            Comparator.comparing(c -> c.getValue().getCreationDate())
-        ).getValue().getUploadedDocument().getDocumentBinaryUrl();
+            String docId = documentBinaryUrl.substring(documentBinaryUrl.lastIndexOf('/') + 1);
+            UUID doc = UUID.fromString(docId);
 
-        String docId = documentBinaryUrl.substring(documentBinaryUrl.lastIndexOf('/') + 1);
-        UUID doc = UUID.fromString(docId);
-        ByteArrayResource downloadDocument = caseDocumentService.downloadDocument(
-            authorization,
-            doc
-        ).getBody();
-        if (downloadDocument != null) {
-            return NotificationClient.prepareUpload(
-                downloadDocument.getByteArray(),
-                false,
-                true,
-                "52 weeks"
-            );
+            log.info("Downloading pdf of TSE application");
+            ByteArrayResource downloadDocument = caseDocumentService.downloadDocument(
+                authorization,
+                doc
+            ).getBody();
+            if (downloadDocument != null) {
+                return NotificationClient.prepareUpload(
+                    downloadDocument.getByteArray(),
+                    false,
+                    true,
+                    "52 weeks"
+                );
+            }
         }
         return null;
     }
