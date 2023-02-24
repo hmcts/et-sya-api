@@ -384,8 +384,8 @@ class ManageCaseControllerTest {
         ).andExpect(status().isOk());
 
         verify(applicationService, times(1)).submitApplication(
-            eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(claimantApplicationRequest)
+            TEST_SERVICE_AUTH_TOKEN,
+            claimantApplicationRequest
         );
     }
 }

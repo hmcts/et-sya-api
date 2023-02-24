@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -116,6 +117,16 @@ public final class TestData {
     private final ClaimantTse claimantApplication = ResourceLoader.fromString(
         "responses/claimantTse.json",
         ClaimantTse.class
+    );
+
+    private final ClaimantApplicationRequest claimantApplicationRequest = ResourceLoader.fromString(
+        "requests/claimantTseRequest.json",
+        ClaimantApplicationRequest.class
+    );
+
+    private final CaseDetails caseDetailsWithData = ResourceLoader.fromString(
+        "responses/caseDetailsWithCaseData.json",
+        CaseDetails.class
     );
 
     public Map<String, Object> getCaseRequestCaseDataMap() {

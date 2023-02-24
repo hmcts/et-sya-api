@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentException;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
+import uk.gov.service.notify.NotificationClientException;
 
 import java.util.List;
 import javax.validation.constraints.NotNull;
@@ -174,7 +175,7 @@ public class ManageCaseController {
     public ResponseEntity<CaseDetails> submitClaimantApplication(
         @RequestHeader(AUTHORIZATION) String authorization,
         @NotNull @RequestBody ClaimantApplicationRequest request
-    ) {
+    ) throws NotificationClientException {
         log.info("Received submit claimant application request - caseTypeId: {} caseId: {}",
                  request.getCaseTypeId(), request.getCaseId());
 
