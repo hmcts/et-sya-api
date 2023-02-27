@@ -232,6 +232,7 @@ dependencies {
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '3.19.0-RELEASE'
 
   implementation 'org.apache.tika:tika-core:2.7.0'
+  implementation("com.google.guava:guava:31.1-jre")
 
   implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '3.0.0-RC1'
 
@@ -249,6 +250,7 @@ dependencies {
   implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '6.0.2'
 
   implementation group: 'com.fasterxml.jackson.core', name:  'jackson-databind', version: '2.14.2'
+  implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
 
   compileOnly 'org.projectlombok:lombok'
   annotationProcessor group: 'org.projectlombok', name: 'lombok'

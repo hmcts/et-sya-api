@@ -11,7 +11,12 @@ import org.elasticsearch.common.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
+import uk.gov.hmcts.reform.et.syaapi.models.GenericTseApplication;
+import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationException;
+import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationService;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.ByteArrayOutputStream;
@@ -25,6 +30,7 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.SHORT_TEXT_MAP;
 
 /**
  * Uses {@link PdfMapperService} to convert a given case into a Pdf Document.
@@ -35,11 +41,15 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGU
 public class PdfService {
 
     private final PdfMapperService pdfMapperService;
+    private final DocumentGenerationService documentGenerationService;
     @Value("${pdf.english}")
     public String englishPdfTemplateSource;
     @Value("${pdf.welsh}")
     public String welshPdfTemplateSource;
+    @Value("${pdf.contact_tribunal_template}")
+    public String contactTheTribunalPdfTemplate;
 
+    private static final String TSE_FILENAME = "Contact the tribunal.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private static final String NOT_FOUND = "not found";
 
@@ -198,5 +208,43 @@ public class PdfService {
             }
         }
         return pdfDecodedMultipartFiles;
+    }
+
+    /**
+     * Converts a given object of type {@link ClaimantTse} to a {@link PdfDecodedMultipartFile}.
+     * Firstly by converting to a pdf byte array and then wrapping within the return object.
+     * @param claimantTse {@link CaseData} object that contains the {@link ClaimantTse} object to be converted.
+     * @return {@link PdfDecodedMultipartFile} with the claiment tse CYA page in pdf format.
+     * @throws DocumentGenerationException if there is an error generating the PDF.
+     */
+    public PdfDecodedMultipartFile convertClaimantTseIntoMultipartFile(ClaimantTse claimantTse)
+        throws DocumentGenerationException {
+        return new PdfDecodedMultipartFile(
+            convertClaimantTseToPdf(claimantTse),
+            TSE_FILENAME,
+            PDF_FILE_TIKA_CONTENT_TYPE,
+            SHORT_TEXT_MAP.get(claimantTse.getContactApplicationType())
+        );
+    }
+
+    private byte[] convertClaimantTseToPdf(ClaimantTse claimantTse) throws DocumentGenerationException {
+        UploadedDocumentType contactApplicationFile = claimantTse.getContactApplicationFile();
+        String supportingEvidence = contactApplicationFile == null
+            ? null
+            : contactApplicationFile.getDocumentFilename();
+
+        GenericTseApplication genericTseApplication = GenericTseApplication.builder()
+            .applicationType(claimantTse.getContactApplicationType())
+            .tellOrAskTribunal(claimantTse.getContactApplicationText())
+            .supportingEvidence(supportingEvidence)
+            .copyToOtherPartyYesOrNo(claimantTse.getCopyToOtherPartyYesOrNo())
+            .copyToOtherPartyText(claimantTse.getCopyToOtherPartyText())
+            .build();
+
+        return documentGenerationService.genPdfDocument(
+            contactTheTribunalPdfTemplate,
+            TSE_FILENAME,
+            genericTseApplication
+        );
     }
 }
