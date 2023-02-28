@@ -18,7 +18,8 @@ java:
           alias: IDAM_CLIENT_SECRET
     et:
       secrets:
-        - AppInsightsInstrumentationKey
+        - name: AppInsightsInstrumentationKey
+          alias: APP_INSIGHTS_KEY
         - name: tornado-access-key
           alias: TORNADO_ACCESS_KEY
         - name: gov-notify-api-key
