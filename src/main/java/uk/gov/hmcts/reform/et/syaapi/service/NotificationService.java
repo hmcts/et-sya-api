@@ -325,7 +325,7 @@ public class NotificationService {
             abText = "The other party will be notified that any objections to your "
                 + shortText
                 + " application should be sent to the tribunal as soon as possible, "
-                + "and in any event within 7 days";
+                + "and in any event within 7 days.";
 
         } else if (Stream.of(typeB).anyMatch(appType -> Objects.equals(
             appType,
@@ -335,7 +335,7 @@ public class NotificationService {
                 + "However, they have been notified that any objections to your "
                 + shortText
                 + " application should be sent to the tribunal as soon as possible, "
-                + "and in any event within 7 days";
+                + "and in any event within 7 days.";
         }
         return abText;
     }
