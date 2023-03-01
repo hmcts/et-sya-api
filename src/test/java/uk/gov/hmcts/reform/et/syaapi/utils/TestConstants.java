@@ -28,6 +28,7 @@ public final class TestConstants {
     public static final String TEST_NAME = "Name";
     public static final String DUMMY_CASE_TYPE = "Dummy_Case_Type";
     public static final String CASE_ID = "TEST_CASE_ID";
+    public static final String DIGIT_CASE_ID = "1646225213651598";
 
     private TestConstants() {
 

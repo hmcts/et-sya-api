@@ -59,12 +59,19 @@ import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.ENGLANDWALES_CASE_TYPE_ID;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.CASE_ID;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.DIGIT_CASE_ID;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.SUBMIT_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.USER_ID;
@@ -540,12 +547,14 @@ class CaseServiceTest {
     @Test
     void shouldInvokeCaseEnrichmentWithJurCodesInSubmitEvent() {
         List<JurCodesTypeItem> expectedItems = mockJurCodesTypeItems();
+        testData.getStartEventResponse().setEventId(SUBMIT_CASE_DRAFT);
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(testData.getCaseDataWithClaimTypes()
                                                                                  .getCaseData());
         caseData.setJurCodesCollection(expectedItems);
+        caseData.setFeeGroupReference(CASE_ID);
 
         CaseDataContent expectedEnrichedData = CaseDataContent.builder()
-            .event(Event.builder().id(TestConstants.INITIATE_CASE_DRAFT).build())
+            .event(Event.builder().id(TestConstants.SUBMIT_CASE_DRAFT).build())
             .eventToken(testData.getStartEventResponse().getToken())
             .data(caseData)
             .build();
@@ -560,7 +569,7 @@ class CaseServiceTest {
             null
         ));
 
-        when(ccdApiClient.startEventForCitizen(
+        lenient().when(ccdApiClient.startEventForCitizen(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
             USER_ID,
@@ -570,7 +579,7 @@ class CaseServiceTest {
             TestConstants.SUBMIT_CASE_DRAFT
         )).thenReturn(testData.getStartEventResponse());
 
-        when(ccdApiClient.submitEventForCitizen(
+        lenient().when(ccdApiClient.submitEventForCitizen(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
             USER_ID,
@@ -583,13 +592,22 @@ class CaseServiceTest {
 
         when(jurisdictionCodesMapper.mapToJurCodes(any())).thenReturn(expectedItems);
 
-        caseService.triggerEvent(
+        caseService.triggerEventForSubmitCase(
             TEST_SERVICE_AUTH_TOKEN,
-            TestConstants.CASE_ID,
-            CaseEvent.valueOf("SUBMIT_CASE_DRAFT"),
-            EtSyaConstants.ENGLAND_CASE_TYPE,
-            testData.getCaseDataWithClaimTypes().getCaseData()
+            CaseRequest.builder()
+                .caseId(TestConstants.CASE_ID)
+                .caseTypeId(EtSyaConstants.ENGLAND_CASE_TYPE)
+                .build()
         );
+
+        verify(ccdApiClient).submitEventForCitizen(anyString(),
+                                                   anyString(),
+                                                   anyString(),
+                                                   anyString(),
+                                                   anyString(),
+                                                   anyString(),
+                                                   anyBoolean(),
+                                                   any());
 
         verify(ccdApiClient).submitEventForCitizen(TEST_SERVICE_AUTH_TOKEN,
                                                    TEST_SERVICE_AUTH_TOKEN,
