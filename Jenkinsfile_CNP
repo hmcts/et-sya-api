@@ -12,4 +12,5 @@ withPipeline(type, product, component) {
   disableLegacyDeployment()
   enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
   syncBranchesWithMaster(branchesToSync)
+  enableSlackNotifications('#et-builds')
 }
