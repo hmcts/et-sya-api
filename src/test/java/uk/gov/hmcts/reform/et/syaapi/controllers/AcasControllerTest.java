@@ -41,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @WebMvcTest({AcasController.class})
 @ContextConfiguration(classes = SyaApiApplication.class)
-@SuppressWarnings({"PMD.LinguisticNaming"})
+@SuppressWarnings({"PMD.LinguisticNaming", "PMD.TooManyMethods"})
 class AcasControllerTest {
     private final List<String> caseIds = new ArrayList<>();
     private static final String REQUEST_DATE_TIME_STRING = "2022-09-01T12:34:00";
