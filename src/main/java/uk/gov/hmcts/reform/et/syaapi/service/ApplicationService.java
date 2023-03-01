@@ -17,8 +17,6 @@ import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -54,7 +52,7 @@ public class ApplicationService {
                 log.info("Uploading pdf of TSE application");
                 caseService.uploadTseCyaAsPdf(authorization, caseDetails, claimantTse, caseTypeId);
             } catch (CaseDocumentException | DocumentGenerationException e) {
-                log.error("Couldn't upload pdf of TSE application");
+                log.error("Couldn't upload pdf of TSE application " + e.getMessage());
             }
         }
 
@@ -91,7 +89,6 @@ public class ApplicationService {
             caseId,
             request.getClaimantTse()
         );
-
         JSONObject documentJson = getDocumentDownload(authorization, caseData);
 
         notificationService.sendAcknowledgementEmailToRespondents(
@@ -123,12 +120,9 @@ public class ApplicationService {
             .filter(n -> TSE_FILENAME.equals(n.getValue().getUploadedDocument().getDocumentFilename()))
             .collect(Collectors.toList());
         if (!tseFiles.isEmpty()) {
-            String documentBinaryUrl = Collections.max(
-                tseFiles,
-                Comparator.comparing(c -> c.getValue().getCreationDate())
-            ).getValue().getUploadedDocument().getDocumentBinaryUrl();
-
-            String docId = documentBinaryUrl.substring(documentBinaryUrl.lastIndexOf('/') + 1);
+            String documentUrl = tseFiles.get(tseFiles.size() - 1)
+                .getValue().getUploadedDocument().getDocumentUrl();
+            String docId = documentUrl.substring(documentUrl.lastIndexOf('/') + 1);
             UUID doc = UUID.fromString(docId);
 
             log.info("Downloading pdf of TSE application");
