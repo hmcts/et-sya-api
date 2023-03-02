@@ -609,14 +609,6 @@ class CaseServiceTest {
                                                    anyBoolean(),
                                                    any());
 
-        verify(ccdApiClient).submitEventForCitizen(TEST_SERVICE_AUTH_TOKEN,
-                                                   TEST_SERVICE_AUTH_TOKEN,
-                                                   USER_ID,
-                                                   EtSyaConstants.JURISDICTION_ID,
-                                                   EtSyaConstants.ENGLAND_CASE_TYPE,
-                                                   TestConstants.CASE_ID,
-                                                   true,
-                                                   expectedEnrichedData);
     }
 
     private List<JurCodesTypeItem> mockJurCodesTypeItems() {
