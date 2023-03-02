@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 
 @Slf4j
 @TestMethodOrder(MethodOrderer.MethodName.class)
-class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
+class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
 
     private Long caseId;
     private static final String CASE_TYPE = "ET_EnglandWales";

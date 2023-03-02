@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.UPDATE_CASE_DRAFT;
 
 @Data
-@SuppressWarnings("PMD.TooManyFields")
+@SuppressWarnings({"PMD.TooManyFields", "PMD.TestClassWithoutTestCases"})
 public final class TestData {
 
     private final Et1CaseData et1CaseData = ResourceLoader.fromString(
