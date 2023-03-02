@@ -70,7 +70,7 @@ public class PdfService {
      * @return a byte array of the generated pdf file.
      * @throws IOException if there is an issue reading the pdf template
      */
-    protected byte[] createPdf(CaseData caseData, String pdfSource) throws IOException {
+    public byte[] createPdf(CaseData caseData, String pdfSource) throws IOException {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         InputStream stream = cl.getResourceAsStream(pdfSource);
         try (PDDocument pdfDocument = Loader.loadPDF(
