@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -73,16 +74,17 @@ public class PdfService {
 
     /**
      * Populates a pdf document with data stored in the case data parameter.
-     * @param caseData {@link CaseData} object with information in which to populate the pdf with
+     *
+     * @param caseData  {@link CaseData} object with information in which to populate the pdf with
      * @param pdfSource file name of the pdf template used to create the pdf
      * @return a byte array of the generated pdf file.
      * @throws IOException if there is an issue reading the pdf template
      */
     protected byte[] createPdf(CaseData caseData, String pdfSource) throws IOException {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-
+        InputStream stream = cl.getResourceAsStream(pdfSource);
         try (PDDocument pdfDocument = Loader.loadPDF(
-            Objects.requireNonNull(cl.getResourceAsStream(pdfSource)))) {
+            Objects.requireNonNull(stream))) {
             PDDocumentCatalog pdDocumentCatalog = pdfDocument.getDocumentCatalog();
             PDAcroForm pdfForm = pdDocumentCatalog.getAcroForm();
             for (Map.Entry<String, Optional<String>> entry : this.pdfMapperService.mapHeadersToPdf(caseData)
@@ -101,6 +103,18 @@ public class PdfService {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             pdfDocument.save(byteArrayOutputStream);
             return byteArrayOutputStream.toByteArray();
+        } finally {
+            safeClose(stream);
+        }
+    }
+
+    private static void safeClose(InputStream is) {
+        if (is != null) {
+            try {
+                is.close();
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+            }
         }
     }
 
@@ -153,12 +167,14 @@ public class PdfService {
 
     /**
      * Converts case data to a pdf byte array wrapped in a {@link PdfDecodedMultipartFile} Object.
+     *
      * @param caseData The case data to be converted into a pdf file wrapped in a {@link CaseData}
      * @param userInfo a {@link UserInfo} used user name as a backup if no name in case
      * @return a list of {@link PdfDecodedMultipartFile} which contains the pdf values
      * @throws PdfServiceException when convertCaseToPdf throws an exception
      */
-    public List<PdfDecodedMultipartFile> convertCaseDataToPdfDecodedMultipartFile(CaseData caseData, UserInfo userInfo)
+    public List<PdfDecodedMultipartFile> convertCaseDataToPdfDecodedMultipartFile(CaseData caseData, UserInfo
+        userInfo)
         throws PdfServiceException {
         List<PdfDecodedMultipartFile> files = new ArrayList<>();
         files.add(new PdfDecodedMultipartFile(
@@ -183,7 +199,8 @@ public class PdfService {
 
     /**
      * Converts a list of {@link AcasCertificate} into a list of pdf files.
-     * @param caseData case data wrapped in {@link CaseData} used when creating pdf name
+     *
+     * @param caseData         case data wrapped in {@link CaseData} used when creating pdf name
      * @param acasCertificates certificates as a {@link AcasCertificate} to be converted into pdf files
      * @return a list of pdf files wrapped in {@link PdfDecodedMultipartFile}
      */
