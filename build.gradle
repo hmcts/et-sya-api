@@ -228,7 +228,7 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'et-data-model', version: '1.8.0'
   implementation group: 'com.github.hmcts', name: 'ccd-client', version: '4.9.1'
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '2.1.1'
-  implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.0.0'
+  implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '4.1.0'
 
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '3.19.0-RELEASE'
 
@@ -248,7 +248,7 @@ dependencies {
 
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '10.1.6'
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.6'
-  implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '6.0.2'
+  implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.7.6'
 
   implementation group: 'com.fasterxml.jackson.core', name:  'jackson-databind', version: '2.14.2'
   implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
