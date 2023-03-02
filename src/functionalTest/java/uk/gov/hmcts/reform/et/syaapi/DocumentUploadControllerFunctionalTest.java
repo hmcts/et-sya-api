@@ -10,7 +10,7 @@ import java.io.File;
 
 import static org.hamcrest.Matchers.equalTo;
 
-class DocumentUploadControllerFunctionalTest extends BaseFunctionalTest {
+class DocumentUploadControllerFunctionalTest extends FunctionalTestBase {
     private static final String CASE_TYPE = "ET_EnglandWales";
     private static final String AUTHORIZATION = "Authorization";
     private static final File UPLOAD_TEST_FILE = new File("src/functionalTest/resources/uploads/zipcode.txt");

@@ -7,7 +7,7 @@ import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.et.syaapi.consumer.SpringBootContractBaseTest;
+import uk.gov.hmcts.reform.et.syaapi.consumer.SpringBootContractTestBase;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -15,7 +15,7 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpStatus.OK;
 
 @PactTestFor(providerName = "ccd_data_store_get_casebyid", port = "8890")
-class CcdGetCasesByCaseIdPactTest extends SpringBootContractBaseTest {
+class CcdGetCasesByCaseIdPactTest extends SpringBootContractTestBase {
     private static final String CCD_CASE_URL = "/cases/" + CASE_ID;
 
     @Pact(provider = "ccd_data_store_get_casebyid", consumer = "et_sya_api_service")
