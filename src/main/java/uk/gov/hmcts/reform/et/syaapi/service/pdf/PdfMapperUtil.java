@@ -138,15 +138,18 @@ public final class PdfMapperUtil {
      * @return formatted String value of Postcode
      */
     public static String formatUkPostcode(Address address) {
-
         if (isUkCountry(address.getCountry())) {
             try {
-                PostCodeValidator postCodeValidator = new PostCodeValidator(address.getPostCode());
+                if (StringUtils.isNotBlank(address.getPostCode())) {
+                    PostCodeValidator postCodeValidator = new PostCodeValidator(address.getPostCode());
 
-                String outward = postCodeValidator.returnOutwardCode().trim() + " ";
-                String inward = postCodeValidator.returnInwardCode().trim();
+                    String outward = postCodeValidator.returnOutwardCode().trim() + " ";
+                    String inward = postCodeValidator.returnInwardCode().trim();
 
-                return outward + inward;
+                    return outward + inward;
+                } else {
+                    return "";
+                }
             } catch (InvalidPostcodeException e) {
                 log.error("Exception occurred when formatting postcode " + address.getPostCode(), e);
                 return address.getPostCode();
