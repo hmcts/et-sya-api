@@ -191,6 +191,7 @@
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-core@.*$</packageUrl>
     <cve>CVE-2022-45688</cve>
+  </suppress>
   <suppress until="2023-04-15">
     <notes>Temporary suppression for commons-fileupload-1.4.jar</notes>
     <cve>CVE-2023-24998</cve>
