@@ -216,6 +216,7 @@ class PdfServiceTest {
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             pdfService.convertClaimantTseIntoMultipartFile(testData.getClaimantTse());
         assertThat(pdfDecodedMultipartFile).isNotNull();
+    }
 
     @Test
     void shouldNotCreateWhenCertificateDocumentNotFound() {
