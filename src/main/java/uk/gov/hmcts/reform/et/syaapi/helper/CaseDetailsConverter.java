@@ -61,4 +61,12 @@ public class CaseDetailsConverter {
             .data(et1CaseData)
             .build();
     }
+
+    public CaseDataContent caseDataContent(StartEventResponse startEventResponse, CaseData caseData) {
+        return CaseDataContent.builder()
+            .eventToken(startEventResponse.getToken())
+            .event(Event.builder().id(startEventResponse.getEventId()).build())
+            .data(caseData)
+            .build();
+    }
 }

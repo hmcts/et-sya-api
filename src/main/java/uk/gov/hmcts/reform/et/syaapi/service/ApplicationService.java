@@ -2,21 +2,32 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.json.JSONObject;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.TseRespondTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
+import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -31,6 +42,7 @@ public class ApplicationService {
     private final CaseService caseService;
     private final NotificationService notificationService;
     private final CaseDocumentService caseDocumentService;
+    private final CaseDetailsConverter caseDetailsConverter;
     public static final String YES = "Yes";
 
     public CaseDetails submitApplication(String authorization, ClaimantApplicationRequest request)
@@ -68,6 +80,55 @@ public class ApplicationService {
 
         return finalCaseDetails;
     }
+
+    public CaseDetails respondToApplication(String authorization, RespondToApplicationRequest request) {
+        StartEventResponse startEventResponse = caseService.startUpdate(
+            authorization,
+            request.getCaseId(),
+            request.getCaseTypeId(),
+            CaseEvent.UPDATE_CASE_SUBMITTED
+        );
+
+        CaseData caseData = EmployeeObjectMapper
+            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
+
+        GenericTseApplicationType appToModify = getSelectedApplication(
+            request,
+            caseData.getGenericTseApplicationCollection()
+        );
+
+        setRespondentApplicationWithResponse(request, appToModify);
+
+        CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
+
+        return caseService.submitUpdate(authorization, request.getCaseId(), content, request.getCaseTypeId());
+    }
+
+    private static void setRespondentApplicationWithResponse(RespondToApplicationRequest request,
+                                                             GenericTseApplicationType appToModify) {
+        if (CollectionUtils.isEmpty(appToModify.getRespondCollection())) {
+            appToModify.setRespondCollection(new ArrayList<>());
+        }
+
+        TseRespondType responseToAdd = request.getResponse();
+        responseToAdd.setDate(LocalDate.now().toString());
+        responseToAdd.setFrom("Claimant");
+
+        appToModify.getRespondCollection().add(TseRespondTypeItem.builder()
+                                                   .id(UUID.randomUUID().toString())
+                                                   .value(responseToAdd).build());
+
+        appToModify.setResponsesCount(
+            String.valueOf(appToModify.getRespondCollection().size()));
+    }
+
+    private static GenericTseApplicationType getSelectedApplication(RespondToApplicationRequest request,
+                                                                    List<GenericTseApplicationTypeItem> applications) {
+        return applications.stream()
+            .filter(a -> a.getId().equals(request.getApplicationId()))
+            .collect(Collectors.toList()).get(0).getValue();
+    }
+
 
     private void sendAcknowledgementEmails(String authorization,
                                            ClaimantApplicationRequest request,
@@ -112,6 +173,7 @@ public class ApplicationService {
             request.getClaimantTse()
         );
     }
+
 
     private JSONObject getDocumentDownload(String authorization, CaseData caseData)
         throws NotificationClientException {

@@ -8,6 +8,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
+import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.service.notify.NotificationClientException;
 
@@ -35,9 +36,10 @@ class ApplicationServiceTest {
     private NotificationService notificationService;
     @MockBean
     private CaseDocumentService caseDocumentService;
-
     @MockBean
     private ApplicationService applicationService;
+    @MockBean
+    private CaseDetailsConverter caseDetailsConverter;
 
     private final TestData testData;
 
@@ -51,7 +53,12 @@ class ApplicationServiceTest {
         notificationService = mock(NotificationService.class);
         caseDocumentService = mock(CaseDocumentService.class);
 
-        applicationService = new ApplicationService(caseService, notificationService, caseDocumentService);
+        applicationService = new ApplicationService(
+            caseService,
+            notificationService,
+            caseDocumentService,
+            caseDetailsConverter
+        );
 
         when(caseService.getUserCase(
             TEST_SERVICE_AUTH_TOKEN,
