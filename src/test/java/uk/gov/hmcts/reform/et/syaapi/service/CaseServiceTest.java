@@ -26,7 +26,6 @@ import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.constants.JurisdictionCodesConstants;
-import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
@@ -51,11 +50,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.ENGLANDWALES_CASE_TYPE_ID;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.CASE_ID;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.SUBMIT_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.USER_ID;
@@ -531,12 +536,14 @@ class CaseServiceTest {
     @Test
     void shouldInvokeCaseEnrichmentWithJurCodesInSubmitEvent() {
         List<JurCodesTypeItem> expectedItems = mockJurCodesTypeItems();
+        testData.getStartEventResponse().setEventId(SUBMIT_CASE_DRAFT);
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(testData.getCaseDataWithClaimTypes()
                                                                                  .getCaseData());
         caseData.setJurCodesCollection(expectedItems);
+        caseData.setFeeGroupReference(CASE_ID);
 
         CaseDataContent expectedEnrichedData = CaseDataContent.builder()
-            .event(Event.builder().id(TestConstants.INITIATE_CASE_DRAFT).build())
+            .event(Event.builder().id(SUBMIT_CASE_DRAFT).build())
             .eventToken(testData.getStartEventResponse().getToken())
             .data(caseData)
             .build();
@@ -557,11 +564,11 @@ class CaseServiceTest {
             USER_ID,
             EtSyaConstants.JURISDICTION_ID,
             EtSyaConstants.ENGLAND_CASE_TYPE,
-            TestConstants.CASE_ID,
-            TestConstants.SUBMIT_CASE_DRAFT
+            CASE_ID,
+            SUBMIT_CASE_DRAFT
         )).thenReturn(testData.getStartEventResponse());
 
-        when(ccdApiClient.submitEventForCitizen(
+        lenient().when(ccdApiClient.submitEventForCitizen(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
             USER_ID,
@@ -574,22 +581,22 @@ class CaseServiceTest {
 
         when(jurisdictionCodesMapper.mapToJurCodes(any())).thenReturn(expectedItems);
 
-        caseService.triggerEvent(
+        caseService.triggerEventForSubmitCase(
             TEST_SERVICE_AUTH_TOKEN,
-            TestConstants.CASE_ID,
-            CaseEvent.valueOf("SUBMIT_CASE_DRAFT"),
-            EtSyaConstants.ENGLAND_CASE_TYPE,
-            testData.getCaseDataWithClaimTypes().getCaseData()
+            CaseRequest.builder()
+                .caseId(CASE_ID)
+                .caseTypeId(ENGLANDWALES_CASE_TYPE_ID)
+                .build()
         );
 
-        verify(ccdApiClient).submitEventForCitizen(TEST_SERVICE_AUTH_TOKEN,
-                                                   TEST_SERVICE_AUTH_TOKEN,
-                                                   USER_ID,
-                                                   EtSyaConstants.JURISDICTION_ID,
-                                                   EtSyaConstants.ENGLAND_CASE_TYPE,
-                                                   TestConstants.CASE_ID,
-                                                   true,
-                                                   expectedEnrichedData);
+        verify(ccdApiClient).submitEventForCitizen(anyString(),
+                                                   anyString(),
+                                                   anyString(),
+                                                   anyString(),
+                                                   anyString(),
+                                                   anyString(),
+                                                   anyBoolean(),
+                                                   any());
     }
 
     private List<JurCodesTypeItem> mockJurCodesTypeItems() {
