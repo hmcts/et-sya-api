@@ -574,7 +574,7 @@ class CaseServiceTest {
             USER_ID,
             EtSyaConstants.JURISDICTION_ID,
             EtSyaConstants.ENGLAND_CASE_TYPE,
-            TestConstants.CASE_ID,
+            CASE_ID,
             true,
             expectedEnrichedData
         )).thenReturn(testData.getExpectedDetails());
