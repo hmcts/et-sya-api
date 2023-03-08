@@ -186,6 +186,7 @@ public class CaseService {
      */
     public CaseDetails submitCase(String authorization, CaseRequest caseRequest)
         throws PdfServiceException, CaseDocumentException {
+        log.info(caseRequest.toString());
         CaseData caseData = assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
         CaseDetails caseDetails = triggerEventForSubmitCase(authorization, caseRequest);
         caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :
