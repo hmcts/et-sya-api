@@ -202,7 +202,7 @@ repositories {
 
 ext {
   reformLoggingVersion = "5.1.9"
-  log4JVersion = "2.19.0"
+  log4JVersion = "2.20.0"
 }
 
 dependencies {
