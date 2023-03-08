@@ -42,6 +42,7 @@ import uk.gov.service.notify.SendEmailResponse;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -586,6 +587,7 @@ class CaseServiceTest {
             CaseRequest.builder()
                 .caseId(CASE_ID)
                 .caseTypeId(ENGLANDWALES_CASE_TYPE_ID)
+                .caseData(new HashMap<>())
                 .build()
         );
 

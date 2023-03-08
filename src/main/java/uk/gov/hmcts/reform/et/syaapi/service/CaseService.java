@@ -52,6 +52,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CAS
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.OTHER_TYPE_OF_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.INITIATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
@@ -265,7 +266,8 @@ public class CaseService {
         CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(
             startEventResponse.getCaseDetails().getData());
         enrichCaseDataWithJurisdictionCodes(caseData1);
-        caseData1.setManagingOffice(caseRequest.getCaseData().get("managingOffice").toString());
+        caseData1.setManagingOffice(caseRequest.getCaseData().get("managingOffice") == null ? UNASSIGNED_OFFICE :
+                                        caseRequest.getCaseData().get("managingOffice").toString());
         caseData1.setReceiptDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         caseData1.setFeeGroupReference(caseRequest.getCaseId());
         ObjectMapper objectMapper = new ObjectMapper();
