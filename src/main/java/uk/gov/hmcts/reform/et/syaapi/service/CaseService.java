@@ -186,7 +186,6 @@ public class CaseService {
      */
     public CaseDetails submitCase(String authorization, CaseRequest caseRequest)
         throws PdfServiceException, CaseDocumentException {
-        log.info(caseRequest.toString());
         CaseData caseData = assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
         CaseDetails caseDetails = triggerEventForSubmitCase(authorization, caseRequest);
         caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :
@@ -266,6 +265,7 @@ public class CaseService {
         CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(
             startEventResponse.getCaseDetails().getData());
         enrichCaseDataWithJurisdictionCodes(caseData1);
+        caseData1.setManagingOffice(caseRequest.getCaseData().get("managingOffice").toString());
         caseData1.setReceiptDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         caseData1.setFeeGroupReference(caseRequest.getCaseId());
         ObjectMapper objectMapper = new ObjectMapper();
