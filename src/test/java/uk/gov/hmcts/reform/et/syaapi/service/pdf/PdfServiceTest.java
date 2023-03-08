@@ -20,6 +20,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -170,6 +171,16 @@ class PdfServiceTest {
     }
 
     @Test
+    void shouldCreatePdfDecodedMultipartFileFromUserInfo() throws PdfServiceException {
+        testData.getCaseData().getClaimantIndType().setClaimantFirstNames(null);
+        testData.getCaseData().getClaimantIndType().setClaimantLastName(null);
+        UserInfo userInfo = testData.getUserInfo();
+        List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), userInfo);
+        assertThat(pdfDecodedMultipartFileList).hasSize(1);
+    }
+
+    @Test
     void shouldCreatePdfDecodedMultipartFileFromCaseDataWelsh() throws PdfServiceException {
         testData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
         List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
@@ -192,5 +203,16 @@ class PdfServiceTest {
         List<PdfDecodedMultipartFile> pdfDecodedMultipartFiles =
             pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(testData.getCaseData(), acasCertificates);
         assertThat(pdfDecodedMultipartFiles).hasSize(1);
+    }
+
+    @Test
+    void shouldNotCreateWhenCertificateDocumentNotFound() {
+        List<AcasCertificate> acasCertificates = new ArrayList<>();
+        AcasCertificate acasCert = new AcasCertificate();
+        acasCert.setCertificateDocument("not found");
+        acasCertificates.add(acasCert);
+        List<PdfDecodedMultipartFile> pdfDecodedMultipartFiles =
+            pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(testData.getCaseData(), acasCertificates);
+        assertThat(pdfDecodedMultipartFiles).isEmpty();
     }
 }
