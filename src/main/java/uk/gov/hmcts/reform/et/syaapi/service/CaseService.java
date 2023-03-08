@@ -273,7 +273,7 @@ public class CaseService {
         return submitUpdate(
             authorization,
             caseId,
-            caseDetailsConverter.caseDataContent(startEventResponse, caseData1),
+            caseDetailsConverter.et1ToCaseDataContent(startEventResponse, caseData1),
             caseType
         );
     }

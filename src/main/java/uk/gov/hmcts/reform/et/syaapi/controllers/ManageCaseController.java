@@ -80,7 +80,7 @@ public class ManageCaseController {
      * Creates an initial draft case using the passed parameters.
      *
      * @param authorization jwt of the user
-     * @param caseRequest   the inital values for the case to be created within a {@link CaseRequest} object
+     * @param caseRequest   the initial values for the case to be created within a {@link CaseRequest} object
      * @return the newly created draft in an {@link CaseDetails} object
      */
     @PostMapping("/initiate-case")
@@ -200,7 +200,7 @@ public class ManageCaseController {
      * Respond to an Application.
      *
      * @param authorization jwt of the user
-     * @param request       the request object which contains the claimant application passed from sya-frontend
+     * @param request       the request object which contains the appId and claimant response passed from sya-frontend
      * @return the new updated case wrapped in a {@link CaseDetails}
      */
     @PutMapping("/respond-to-application")

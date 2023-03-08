@@ -144,7 +144,6 @@ public class ApplicationService {
         );
     }
 
-
     private JSONObject getDocumentDownload(String authorization, CaseData caseData)
         throws NotificationClientException {
 
