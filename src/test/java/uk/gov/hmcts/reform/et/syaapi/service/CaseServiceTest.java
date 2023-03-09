@@ -42,7 +42,6 @@ import uk.gov.service.notify.SendEmailResponse;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -91,6 +90,7 @@ class CaseServiceTest {
     private CaseService caseService;
     private final TestData testData;
 
+    private static final String ALL_CASES_QUERY = "{\"query\":{\"match_all\": {}}}";
 
     CaseServiceTest() {
         testData = new TestData();
@@ -116,22 +116,19 @@ class CaseServiceTest {
     @Test
     void shouldGetAllUserCases() {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
-            null,
-            USER_ID,
-            TEST_NAME,
-            testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
-            testData.getCaseData().getClaimantIndType().getClaimantLastName(),
-            null
-        ));
-        when(ccdApiClient.searchForCitizen(
+        when(ccdApiClient.searchCases(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
-            USER_ID,
-            testData.getExpectedDetails().getJurisdiction(),
             EtSyaConstants.SCOTLAND_CASE_TYPE,
-            Collections.emptyMap()
-        )).thenReturn(testData.getRequestCaseDataList());
+            ALL_CASES_QUERY
+        )).thenReturn(testData.requestCaseDataListSearchResult());
+
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.ENGLAND_CASE_TYPE,
+            ALL_CASES_QUERY
+        )).thenReturn(SearchResult.builder().build());
 
         List<CaseDetails> caseDetails = caseService.getAllUserCases(TEST_SERVICE_AUTH_TOKEN);
 
@@ -141,31 +138,20 @@ class CaseServiceTest {
     @Test
     void shouldGetAllUserCasesDifferentCaseType() {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
-            null,
-            USER_ID,
-            TEST_NAME,
-            testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
-            testData.getCaseData().getClaimantIndType().getClaimantLastName(),
-            null
-        ));
-        when(ccdApiClient.searchForCitizen(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            USER_ID,
-            testData.getExpectedDetails().getJurisdiction(),
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
-            Collections.emptyMap()
-        )).thenReturn(testData.getRequestCaseDataListScotland());
 
-        when(ccdApiClient.searchForCitizen(
+        when(ccdApiClient.searchCases(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
-            USER_ID,
-            testData.getExpectedDetails().getJurisdiction(),
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            ALL_CASES_QUERY
+        )).thenReturn(testData.getSearchResultRequestCaseDataListScotland());
+
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
             EtSyaConstants.ENGLAND_CASE_TYPE,
-            Collections.emptyMap()
-        )).thenReturn(testData.getRequestCaseDataListEngland());
+            ALL_CASES_QUERY
+        )).thenReturn(testData.getSearchResultRequestCaseDataListEngland());
 
         List<CaseDetails> caseDetails = caseService.getAllUserCases(TEST_SERVICE_AUTH_TOKEN);
 
