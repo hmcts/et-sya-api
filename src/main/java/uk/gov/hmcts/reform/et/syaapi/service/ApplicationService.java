@@ -7,13 +7,19 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
+import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
+import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 
@@ -31,6 +37,7 @@ public class ApplicationService {
     private final CaseService caseService;
     private final NotificationService notificationService;
     private final CaseDocumentService caseDocumentService;
+    private final CaseDetailsConverter caseDetailsConverter;
     public static final String YES = "Yes";
 
     public CaseDetails submitApplication(String authorization, ClaimantApplicationRequest request)
@@ -67,6 +74,30 @@ public class ApplicationService {
         sendAcknowledgementEmails(authorization, request, finalCaseDetails);
 
         return finalCaseDetails;
+    }
+
+    public CaseDetails respondToApplication(String authorization, RespondToApplicationRequest request) {
+        StartEventResponse startEventResponse = caseService.startUpdate(
+            authorization,
+            request.getCaseId(),
+            request.getCaseTypeId(),
+            CaseEvent.UPDATE_CASE_SUBMITTED
+        );
+
+        CaseData caseData = EmployeeObjectMapper
+            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
+
+        GenericTseApplicationTypeItem appToModify = TseApplicationHelper.getSelectedApplication(
+            request,
+            caseData.getGenericTseApplicationCollection()
+        );
+        if (appToModify != null) {
+            TseApplicationHelper.setRespondentApplicationWithResponse(request, appToModify.getValue());
+            CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
+            return caseService.submitUpdate(authorization, request.getCaseId(), content, request.getCaseTypeId());
+        } else {
+            throw new IllegalArgumentException("Application id provided is invalid");
+        }
     }
 
     private void sendAcknowledgementEmails(String authorization,

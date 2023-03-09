@@ -170,7 +170,7 @@ public class PdfService {
      * Converts case data to a pdf byte array wrapped in a {@link PdfDecodedMultipartFile} Object.
      *
      * @param caseData The case data to be converted into a pdf file wrapped in a {@link CaseData}
-     * @param userInfo a {@link UserInfo} used user name as a backup if no name in case
+     * @param userInfo a {@link UserInfo} used username as a backup if no name in case
      * @return a list of {@link PdfDecodedMultipartFile} which contains the pdf values
      * @throws PdfServiceException when convertCaseToPdf throws an exception
      */
@@ -232,7 +232,7 @@ public class PdfService {
      * Converts a given object of type {@link ClaimantTse} to a {@link PdfDecodedMultipartFile}.
      * Firstly by converting to a pdf byte array and then wrapping within the return object.
      * @param claimantTse {@link CaseData} object that contains the {@link ClaimantTse} object to be converted.
-     * @return {@link PdfDecodedMultipartFile} with the claiment tse CYA page in pdf format.
+     * @return {@link PdfDecodedMultipartFile} with the claimant tse CYA page in pdf format.
      * @throws DocumentGenerationException if there is an error generating the PDF.
      */
     public PdfDecodedMultipartFile convertClaimantTseIntoMultipartFile(ClaimantTse claimantTse)

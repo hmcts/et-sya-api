@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 
+import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -8,9 +9,12 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
+import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
+import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.service.notify.NotificationClientException;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
@@ -35,9 +39,10 @@ class ApplicationServiceTest {
     private NotificationService notificationService;
     @MockBean
     private CaseDocumentService caseDocumentService;
-
     @MockBean
     private ApplicationService applicationService;
+    @MockBean
+    private CaseDetailsConverter caseDetailsConverter;
 
     private final TestData testData;
 
@@ -50,8 +55,14 @@ class ApplicationServiceTest {
         caseService = mock(CaseService.class);
         notificationService = mock(NotificationService.class);
         caseDocumentService = mock(CaseDocumentService.class);
+        caseDetailsConverter = mock(CaseDetailsConverter.class);
 
-        applicationService = new ApplicationService(caseService, notificationService, caseDocumentService);
+        applicationService = new ApplicationService(
+            caseService,
+            notificationService,
+            caseDocumentService,
+            caseDetailsConverter
+        );
 
         when(caseService.getUserCase(
             TEST_SERVICE_AUTH_TOKEN,
@@ -151,6 +162,81 @@ class ApplicationServiceTest {
             eq(NOT_SET),
             eq(CASE_ID),
             any()
+        );
+    }
+
+    @Test
+    void shouldSubmitResponseToApplication() {
+        RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
+
+        when(caseService.startUpdate(
+            TEST_SERVICE_AUTH_TOKEN,
+            testRequest.getCaseId(),
+            testRequest.getCaseTypeId(),
+            CaseEvent.UPDATE_CASE_SUBMITTED
+        )).thenReturn(testData.getUpdateCaseEventResponse());
+
+
+        applicationService.respondToApplication(
+            TEST_SERVICE_AUTH_TOKEN,
+            testRequest
+        );
+
+        verify(caseDetailsConverter, times(1)).caseDataContent(
+            any(),
+            any()
+        );
+    }
+
+    @Test
+    void shouldNotSubmitResponseToApplication() {
+        RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
+        testRequest.setApplicationId("12");
+        when(caseService.startUpdate(
+            TEST_SERVICE_AUTH_TOKEN,
+            testRequest.getCaseId(),
+            testRequest.getCaseTypeId(),
+            CaseEvent.UPDATE_CASE_SUBMITTED
+        )).thenReturn(testData.getUpdateCaseEventResponse());
+
+
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> applicationService.respondToApplication(
+                TEST_SERVICE_AUTH_TOKEN,
+                testRequest
+            )
+        );
+
+        verify(caseDetailsConverter, times(0)).caseDataContent(
+            any(),
+            any()
+        );
+    }
+
+    @Test
+    void shouldThrowErrorWhenSavingApplication() {
+        RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
+        when(caseService.startUpdate(
+            TEST_SERVICE_AUTH_TOKEN,
+            testRequest.getCaseId(),
+            testRequest.getCaseTypeId(),
+            CaseEvent.UPDATE_CASE_SUBMITTED
+        )).thenReturn(testData.getUpdateCaseEventResponse());
+
+        when(caseService.submitUpdate(
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(testRequest.getCaseId()),
+            any(),
+            any()
+        )).thenThrow(new JSONException("Could not save response"));
+
+        assertThrows(
+            JSONException.class,
+            () -> applicationService.respondToApplication(
+                TEST_SERVICE_AUTH_TOKEN,
+                testRequest
+            )
         );
     }
 
