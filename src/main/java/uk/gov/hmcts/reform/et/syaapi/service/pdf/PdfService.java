@@ -39,6 +39,7 @@ import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.SHORT_TEX
 @Slf4j
 @Service
 @RequiredArgsConstructor()
+@SuppressWarnings({"PMD.TooManyMethods"})
 public class PdfService {
 
     private final PdfMapperService pdfMapperService;
