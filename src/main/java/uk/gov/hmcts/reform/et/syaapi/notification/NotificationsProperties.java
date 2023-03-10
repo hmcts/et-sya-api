@@ -37,4 +37,21 @@ public class NotificationsProperties {
     @Value("${notifications.citizenPortalLink}")
     @NotBlank
     private String citizenPortalLink;
+
+
+    @Value("${notifications.submitCaseDocUploadErrorEmailTemplateId}")
+    @NotBlank
+    private String submitCaseDocUploadErrorEmailTemplateId;
+
+    @Value("${notifications.et1EcmDtsCoreTeamSlackNotificationEmail}")
+    @NotBlank
+    private String et1EcmDtsCoreTeamSlackNotificationEmail;
+
+    @Value("${notifications.et1ServiceOwnerNotificationEmail}")
+    @NotBlank
+    private String et1ServiceOwnerNotificationEmail;
+
+    @Value("${notifications.servicePortalLink}")
+    @NotBlank
+    private String servicePortalLink;
 }
