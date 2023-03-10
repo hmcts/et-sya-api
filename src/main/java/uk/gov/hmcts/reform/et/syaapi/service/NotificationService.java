@@ -62,7 +62,7 @@ public class NotificationService {
      */
     public SendEmailResponse sendSubmitCaseConfirmationEmail(CaseDetails caseDetails,
                                                               CaseData caseData,
-                                                              UserInfo userInfo) {
+                                                              UserInfo userInfo, byte[] et1Pdf) {
 
         String firstName = Strings.isNullOrEmpty(caseData.getClaimantIndType().getClaimantFirstNames())
             ? userInfo.getGivenName()
@@ -73,6 +73,7 @@ public class NotificationService {
         String caseNumber = caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString();
         String emailTemplateId = notificationsProperties.getSubmitCaseEmailTemplateId();
         String citizenPortalLink = notificationsProperties.getCitizenPortalLink() + "%s";
+
         if (caseData.getClaimantHearingPreference().getContactLanguage() != null
             && WELSH_LANGUAGE.equals(caseData.getClaimantHearingPreference().getContactLanguage())) {
             emailTemplateId = notificationsProperties.getCySubmitCaseEmailTemplateId();
@@ -81,11 +82,13 @@ public class NotificationService {
 
         SendEmailResponse sendEmailResponse;
         try {
-            Map<String, String> parameters = new ConcurrentHashMap<>();
+            Map<String, Object> parameters = new ConcurrentHashMap<>();
             parameters.put("firstName", firstName);
             parameters.put("lastName", lastName);
             parameters.put("caseNumber", caseNumber);
             parameters.put("citizenPortalLink", String.format(citizenPortalLink, caseNumber));
+            parameters.put("link_to_et1_pdf_file", new ConcurrentHashMap<>().put("file", et1Pdf));
+
             sendEmailResponse = notificationClient.sendEmail(
                 emailTemplateId,
                 caseData.getClaimantType().getClaimantEmailAddress(),
@@ -96,5 +99,45 @@ public class NotificationService {
             throw new NotificationException(ne);
         }
         return sendEmailResponse;
+    }
+
+    /**
+     * Format serviceUser and case data then send email to the service.
+     *
+     * @param caseDetails  top level non-modifiable case details
+     * @return Gov notify email format
+     */
+    public SendEmailResponse sendDocUploadErrorEmail(CaseDetails caseDetails) {
+        String caseNumber = caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString();
+        String emailTemplateId = notificationsProperties.getSubmitCaseDocUploadErrorEmailTemplateId();
+        String et1EcmDtsCoreTeamSlackNotificationEmail = notificationsProperties
+            .getEt1EcmDtsCoreTeamSlackNotificationEmail();
+        String et1ServiceNotificationEmail = notificationsProperties.getEt1ServiceOwnerNotificationEmail();
+        SendEmailResponse sendEmailResponse;
+        try {
+            Map<String, String> parameters = new ConcurrentHashMap<>();
+            parameters.put("serviceOwnerName", "Service Owner");
+            parameters.put("caseNumber", caseNumber);
+
+            // email to the service
+            sendEmailResponse = notificationClient.sendEmail(
+                emailTemplateId,
+                et1ServiceNotificationEmail,
+                parameters,
+                caseNumber
+            );
+
+            // email an alert copy to ECM DTS core team
+             notificationClient.sendEmail(
+                emailTemplateId,
+                et1EcmDtsCoreTeamSlackNotificationEmail,
+                parameters,
+                caseNumber
+            );
+        } catch (NotificationClientException ne) {
+            throw new NotificationException(ne);
+        }
+        return sendEmailResponse;
+
     }
 }

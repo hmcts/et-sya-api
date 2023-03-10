@@ -100,7 +100,8 @@ class CaseServiceBootTest {
         when(notificationService.sendSubmitCaseConfirmationEmail(
             testData.getExpectedDetails(),
             testData.getCaseData(),
-            testData.getUserInfo())
+            testData.getUserInfo(),
+            any())
         ).thenReturn(null);
     }
 

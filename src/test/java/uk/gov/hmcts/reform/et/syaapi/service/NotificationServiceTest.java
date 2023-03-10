@@ -162,13 +162,15 @@ class NotificationServiceTest {
         when(notificationService.sendSubmitCaseConfirmationEmail(
             testData.getExpectedDetails(),
             testData.getCaseData(),
-            testData.getUserInfo()
+            testData.getUserInfo(),
+            any()
         ))
             .thenReturn(testData.getSendEmailResponse());
         assertThat(notificationService.sendSubmitCaseConfirmationEmail(
             testData.getExpectedDetails(),
             testData.getCaseData(),
-            testData.getUserInfo()
+            testData.getUserInfo(),
+            any()
         ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
     }
 
@@ -185,7 +187,8 @@ class NotificationServiceTest {
             notificationService.sendSubmitCaseConfirmationEmail(
                 testData.getExpectedDetails(),
                 testData.getCaseData(),
-                testData.getUserInfo()
+                testData.getUserInfo(),
+                any()
             ));
         assertThat(notificationException.getMessage())
             .isEqualTo("java.lang.Exception: Error while trying to sending notification to client");
@@ -218,7 +221,8 @@ class NotificationServiceTest {
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
             testData.getExpectedDetails(),
             testData.getCaseData(),
-            testData.getUserInfo()
+            testData.getUserInfo(),
+            any()
         );
         assertThat(response.getBody()).isEqualTo(
             "Please click here. https://www.gov.uk/log-in-register-hmrc-online-services/123456722/?lng=cy.");
@@ -231,7 +235,8 @@ class NotificationServiceTest {
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
             testData.getExpectedDetails(),
             testData.getCaseData(),
-            testData.getUserInfo()
+            testData.getUserInfo(),
+            any()
         );
         assertThat(response.getBody()).isEqualTo("Dear test, Please see your detail as 123456789. Regards, ET Team.");
     }
