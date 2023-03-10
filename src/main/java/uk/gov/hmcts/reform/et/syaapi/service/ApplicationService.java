@@ -66,7 +66,7 @@ public class ApplicationService {
         CaseDetails finalCaseDetails = caseService.triggerEvent(
             authorization,
             request.getCaseId(),
-            CaseEvent.UPDATE_CASE_SUBMITTED,
+            CaseEvent.SUBMIT_CLAIMANT_TSE,
             caseTypeId,
             caseDetails.getData()
         );
