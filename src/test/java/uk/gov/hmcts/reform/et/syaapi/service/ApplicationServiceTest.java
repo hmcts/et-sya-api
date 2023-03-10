@@ -75,7 +75,7 @@ class ApplicationServiceTest {
         when(caseService.triggerEvent(
             eq(TEST_SERVICE_AUTH_TOKEN),
             eq(testData.getClaimantApplicationRequest().getCaseId()),
-            eq(CaseEvent.UPDATE_CASE_SUBMITTED),
+            eq(CaseEvent.SUBMIT_CLAIMANT_TSE),
             eq(testData.getClaimantApplicationRequest().getCaseTypeId()),
             any()
         )).thenReturn(testData.getCaseDetailsWithData());
