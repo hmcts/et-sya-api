@@ -53,23 +53,25 @@ public class NotificationService {
     }
 
     /**
-     * Format user and case data then send email.
+     * Prepared case submission confirmation email content from user and case data then sends email to the user.
      *
      * @param caseDetails  top level non-modifiable case details
      * @param caseData  user provided data
-     * @param userInfo   user details from Idam
+     * @param userInfo  user details from Idam
+     * @param et1Pdf  pdf form of the ET1 form
      * @return Gov notify email format
      */
     public SendEmailResponse sendSubmitCaseConfirmationEmail(CaseDetails caseDetails,
                                                               CaseData caseData,
-                                                              UserInfo userInfo, byte[] et1Pdf) {
-
+                                                              UserInfo userInfo,
+                                                             byte[] et1Pdf) {
         String firstName = Strings.isNullOrEmpty(caseData.getClaimantIndType().getClaimantFirstNames())
             ? userInfo.getGivenName()
             : caseData.getClaimantIndType().getClaimantFirstNames();
         String lastName = Strings.isNullOrEmpty(caseData.getClaimantIndType().getClaimantLastName())
             ? userInfo.getFamilyName()
             : caseData.getClaimantIndType().getClaimantLastName();
+
         String caseNumber = caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString();
         String emailTemplateId = notificationsProperties.getSubmitCaseEmailTemplateId();
         String citizenPortalLink = notificationsProperties.getCitizenPortalLink() + "%s";
@@ -87,7 +89,10 @@ public class NotificationService {
             parameters.put("lastName", lastName);
             parameters.put("caseNumber", caseNumber);
             parameters.put("citizenPortalLink", String.format(citizenPortalLink, caseNumber));
-            parameters.put("link_to_et1_pdf_file", new ConcurrentHashMap<>().put("file", et1Pdf));
+
+            ConcurrentHashMap<String, byte[]> hashMap = new ConcurrentHashMap<>();
+            hashMap.put("file", et1Pdf);
+            parameters.put("link_to_et1_pdf_file", hashMap);
 
             sendEmailResponse = notificationClient.sendEmail(
                 emailTemplateId,
@@ -102,12 +107,13 @@ public class NotificationService {
     }
 
     /**
-     * Format serviceUser and case data then send email to the service.
+     * Prepared doc upload error alert email content from user and case data then sends email to the service.
      *
      * @param caseDetails  top level non-modifiable case details
      * @return Gov notify email format
      */
-    public SendEmailResponse sendDocUploadErrorEmail(CaseDetails caseDetails) {
+    public SendEmailResponse sendDocUploadErrorEmail(CaseDetails caseDetails)
+        throws NotificationException {
         String caseNumber = caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString();
         String emailTemplateId = notificationsProperties.getSubmitCaseDocUploadErrorEmailTemplateId();
         String et1EcmDtsCoreTeamSlackNotificationEmail = notificationsProperties
