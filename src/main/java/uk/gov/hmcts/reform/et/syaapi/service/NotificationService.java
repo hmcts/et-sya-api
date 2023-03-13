@@ -89,11 +89,9 @@ public class NotificationService {
             parameters.put("lastName", lastName);
             parameters.put("caseNumber", caseNumber);
             parameters.put("citizenPortalLink", String.format(citizenPortalLink, caseNumber));
-
             ConcurrentHashMap<String, byte[]> hashMap = new ConcurrentHashMap<>();
             hashMap.put("file", et1Pdf);
             parameters.put("link_to_et1_pdf_file", hashMap);
-
             sendEmailResponse = notificationClient.sendEmail(
                 emailTemplateId,
                 caseData.getClaimantType().getClaimantEmailAddress(),
