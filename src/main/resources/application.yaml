@@ -74,5 +74,5 @@ notifications:
   cySubmitCaseEmailTemplateId: ${CY_SUBMIT_CASE_EMAIL_TEMPLATE_ID:f61f7f2a-4825-491b-bc48-0299f1a8ba23}
 
 pdf:
-  english: "ET1_1122.pdf"
+  english: "ET1_2222.pdf"
   welsh: "CY_ET1_2222.pdf"
