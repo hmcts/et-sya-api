@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
+import groovyjarjarantlr.collections.impl.LList;
 import lombok.EqualsAndHashCode;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.RangeQueryBuilder;
@@ -41,6 +42,8 @@ import uk.gov.service.notify.SendEmailResponse;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -320,7 +323,8 @@ class CaseServiceTest {
         when(pdfService.convertCaseDataToPdfDecodedMultipartFile(any(), any()))
             .thenReturn(List.of(pdfDecodedMultipartFile));
 
-        when(acasService.getAcasCertificatesByCaseData(any())).thenReturn(List.of());
+        when(acasService.getAcasCertificatesByCaseData(any()))
+            .thenReturn(List.of());
 
         when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any()))
             .thenReturn(new LinkedList<>());
@@ -347,7 +351,8 @@ class CaseServiceTest {
         when(notificationService.sendSubmitCaseConfirmationEmail(any(), any(), any(), any()))
             .thenReturn(sendEmailResponse);
 
-        when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(createDocumentTypeItem());
+        when(caseDocumentService.createDocumentTypeItem(any(), any()))
+            .thenReturn(createDocumentTypeItem());
 
         CaseDetails caseDetails = caseService.submitCase(
             TEST_SERVICE_AUTH_TOKEN,
@@ -361,7 +366,6 @@ class CaseServiceTest {
             + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=https://document.binary.url, documentFilen"
             + "ame=filename, documentUrl=https://document.url), ownerDocument=null, creationDate=null, shortDescription=nu"
             + "ll)", ((DocumentTypeItem) docCollection.get(0)).getValue().toString());
-
     }
 
     private DocumentTypeItem createDocumentTypeItem() {

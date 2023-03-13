@@ -253,7 +253,6 @@ public class CaseService {
         //New - send notification
         notificationService.sendSubmitCaseConfirmationEmail(caseDetails, caseData, userInfo, et1Pdf);
 
-
         // Retrieve all docs and upload all docs
         List<DocumentTypeItem> documentList = uploadAllCaseDocuments(caseData, authorization, casePdfFiles, caseDetails);
 
@@ -271,7 +270,7 @@ public class CaseService {
                                         List<PdfDecodedMultipartFile> casePdfFiles, CaseDetails caseDetails) {
         List<DocumentTypeItem> documentList = new ArrayList<>();
 
-        // create Claim Description Document
+        // Create Claim Description Document
         if (caseData.getClaimantRequests().getClaimDescriptionDocument() != null) {
             DocumentTypeItem claimDescriptionDocTypeItem = caseDocumentService.createDocumentTypeItem(
                 OTHER_TYPE_OF_DOCUMENT, caseData.getClaimantRequests().getClaimDescriptionDocument());
@@ -285,11 +284,10 @@ public class CaseService {
         try {
            documentList.addAll(caseDocumentService
                 .uploadAllDocuments(authorization, caseDetails.getCaseTypeId(), casePdfFiles, acasCertificates));
-        } catch (CaseDocumentException e) {
-            //send upload error alert email to shared inbox
-
+        } catch (CaseDocumentException exception) {
+            // Send upload error alert email to shared inbox
             notificationService.sendDocUploadErrorEmail(caseDetails);
-            log.error("Case Documents Upload error - Failed to complete case documents upload.", e);
+            log.error("Case Documents Upload error - Failed to complete case documents upload.", exception);
         }
 
         return documentList;

@@ -23,6 +23,7 @@ public final class TestConstants {
     public static final String CITIZEN_PORTAL_LINK = "https://www.gov.uk/log-in-register-hmrc-online-services";
     public static final UUID NOTIFICATION_CONFIRMATION_ID = UUID.fromString("f30b2148-b1a6-4c0d-8a10-50109c96dc2c");
     public static final String EMAIL_TEST_GMAIL_COM = "test@gmail.com";
+    public static final String EMAIL_TEST_SERVICEOWNER_GMAIL_COM = "test.serviceowner@gmail.com";
     public static final String TEST_FIRST_NAME = "Joe";
     public static final String TEST_SURNAME = "Bloggs";
     public static final String TEST_NAME = "Name";

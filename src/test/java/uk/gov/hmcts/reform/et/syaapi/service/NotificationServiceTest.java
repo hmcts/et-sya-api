@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
@@ -27,6 +28,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.EMAIL_TEST_SERVICEOWNER_GMAIL_COM;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.NOTIFICATION_CONFIRMATION_ID;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
@@ -34,6 +36,7 @@ class NotificationServiceTest {
     private static final String TEST_TEMPLATE_API_KEY = "dummy template id";
 
     private static final String SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID = "af0b26b7-17b6-4643-bbdc-e296d11e7b0c";
+    private static final String DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID = "af0b26b7-17b6-4643-bbdc-e29e11d37b0c";
 
     private static final String REFERENCE_STRING = "TEST_EMAIL_ALERT";
 
@@ -163,33 +166,37 @@ class NotificationServiceTest {
             testData.getExpectedDetails(),
             testData.getCaseData(),
             testData.getUserInfo(),
-            any()
-        ))
-            .thenReturn(testData.getSendEmailResponse());
+            new byte[0]
+        )).thenReturn(testData.getSendEmailResponse());
+
         assertThat(notificationService.sendSubmitCaseConfirmationEmail(
             testData.getExpectedDetails(),
             testData.getCaseData(),
             testData.getUserInfo(),
-            any()
+            new byte[0]
         ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
     }
 
     @Test
     void shouldThrowNotificationExceptionWhenNotAbleToSendEmailBySendSubmitCaseConfirmationEmail()
         throws NotificationClientException {
+        var testHashMap = new ConcurrentHashMap<String, String>();
+        testHashMap.put("testKey", "testValue");
         when(notificationClient.sendEmail(
-            eq(SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID),
-            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
-            any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID,
+            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
+            testHashMap,
+            testData.getExpectedDetails().getId().toString()
         )).thenThrow(new NotificationException(new Exception("Error while trying to sending notification to client")));
+
+        byte[] testPdfByteArray = "Any String you want".getBytes();
+
         NotificationException notificationException = assertThrows(NotificationException.class, () ->
             notificationService.sendSubmitCaseConfirmationEmail(
                 testData.getExpectedDetails(),
                 testData.getCaseData(),
                 testData.getUserInfo(),
-                any()
-            ));
+                testPdfByteArray));
         assertThat(notificationException.getMessage())
             .isEqualTo("java.lang.Exception: Error while trying to sending notification to client");
     }
@@ -211,6 +218,7 @@ class NotificationServiceTest {
                                                            + "  }\n"
                                                            + "}\n");
         NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
+
         when(notificationClient.sendEmail(
             eq("1234_welsh"),
             eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
@@ -239,5 +247,49 @@ class NotificationServiceTest {
             any()
         );
         assertThat(response.getBody()).isEqualTo("Dear test, Please see your detail as 123456789. Regards, ET Team.");
+    }
+
+
+    @Test
+    void shouldSuccessfullySendDocUploadErrorEmail()
+        throws NotificationClientException {
+        var testHashMap = new ConcurrentHashMap<String, String>();
+        testHashMap.put("testKey", "testValue");
+        SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
+            testData.getExpectedDetails(),
+            testData.getCaseData(),
+            testData.getUserInfo(),
+            any()
+        );
+
+        when(notificationClient.sendEmail(
+            DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID,
+            EMAIL_TEST_SERVICEOWNER_GMAIL_COM,
+            testHashMap,
+            testData.getExpectedDetails().getId().toString()
+        )).thenReturn(response);
+
+        var sendEmailResponse = notificationService.sendDocUploadErrorEmail(testData.getExpectedDetails());
+        assertThat(sendEmailResponse.getFromEmail())
+            .isEqualTo(EMAIL_TEST_SERVICEOWNER_GMAIL_COM);
+    }
+
+    @Test
+    void shouldThrowNotificationExceptionWhenNotAbleToSendDocUploadErrorEmail()
+        throws NotificationClientException {
+        var testHashMap = new ConcurrentHashMap<String, String>();
+        testHashMap.put("testKey", "testValue");
+        when(notificationClient.sendEmail(
+            DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID,
+            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
+            testHashMap,
+            testData.getExpectedDetails().getId().toString()
+        )).thenThrow(new NotificationException(
+            new Exception("Error while trying to send doc upload error notification to service owner")));
+
+        NotificationException notificationException = assertThrows(NotificationException.class, () ->
+            notificationService.sendDocUploadErrorEmail(testData.getExpectedDetails()));
+        assertThat(notificationException.getMessage())
+            .isEqualTo("java.lang.Exception: Error while trying to send doc upload error notification to service owner");
     }
 }
