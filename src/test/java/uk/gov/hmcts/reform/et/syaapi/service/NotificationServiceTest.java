@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import uk.gov.hmcts.et.common.model.ccd.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
@@ -28,7 +29,8 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.EMAIL_TEST_SERVICEOWNER_GMAIL_COM;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.EMAIL_TEST_SERVICE_OWNER_GMAIL_COM;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.NOTIFICATION_CONFIRMATION_ID;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
@@ -36,7 +38,6 @@ class NotificationServiceTest {
     private static final String TEST_TEMPLATE_API_KEY = "dummy template id";
 
     private static final String SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID = "af0b26b7-17b6-4643-bbdc-e296d11e7b0c";
-    private static final String DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID = "af0b26b7-17b6-4643-bbdc-e29e11d37b0c";
 
     private static final String REFERENCE_STRING = "TEST_EMAIL_ALERT";
 
@@ -253,25 +254,31 @@ class NotificationServiceTest {
     @Test
     void shouldSuccessfullySendDocUploadErrorEmail()
         throws NotificationClientException {
-        var testHashMap = new ConcurrentHashMap<String, String>();
-        testHashMap.put("testKey", "testValue");
-        SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
-            testData.getExpectedDetails(),
-            testData.getCaseData(),
-            testData.getUserInfo(),
-            any()
-        );
+        SendEmailResponse response =
+            new SendEmailResponse("{\n"
+                                      + "  \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
+                                      + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
+                                      + "  \"template\": {\n"
+                                      + "    \"id\": \"af0b26b7-17b6-4643-bbdc-e29e11d37b0c\",\n"
+                                      + "    \"version\": \"2\",\n"
+                                      + "    \"uri\": \"TEST\"\n"
+                                      + "  },\n"
+                                      + "  \"content\": {\n"
+                                      + "    \"body\": \"Dear Service owner, Please see the doc upload error details"
+                                      + "  Regards, ET Team.\",\n"
+                                      + "    \"subject\": \"ET Test Doc upload error alert email created\",\n"
+                                      + "    \"from_email\": \"test.serviceowner@gmail.com\"\n"
+                                      + "  }\n"
+                                      + "}\n");
 
-        when(notificationClient.sendEmail(
-            DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID,
-            EMAIL_TEST_SERVICEOWNER_GMAIL_COM,
-            testHashMap,
-            testData.getExpectedDetails().getId().toString()
-        )).thenReturn(response);
+        when(notificationClient.sendEmail(any(), any(), any(), any())).thenReturn(response);
 
-        var sendEmailResponse = notificationService.sendDocUploadErrorEmail(testData.getExpectedDetails());
-        assertThat(sendEmailResponse.getFromEmail())
-            .isEqualTo(EMAIL_TEST_SERVICEOWNER_GMAIL_COM);
+        uk.gov.hmcts.reform.ccd.client.model.CaseDetails testCaseDetails = testData.getExpectedDetails();
+        SendEmailResponse sendEmailResponse = notificationService.sendDocUploadErrorEmail(testCaseDetails);
+        assert(sendEmailResponse.getFromEmail().isPresent());
+        assertThat(sendEmailResponse.getFromEmail()).asString()
+            .isEqualTo("Optional[" + EMAIL_TEST_SERVICE_OWNER_GMAIL_COM +"]");
+        assertThat(sendEmailResponse.getTemplateId().toString()).isEqualTo(DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID);
     }
 
     @Test
