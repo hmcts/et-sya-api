@@ -4,10 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MultiValuedMap;
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -16,6 +19,8 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -27,6 +32,8 @@ import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
@@ -41,12 +48,18 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ACAS_VISIBLE_DOCS;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
@@ -62,9 +75,10 @@ import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTE
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@SuppressWarnings({"PMD.ExcessiveImports"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 public class CaseService {
 
+    public static final String DOCUMENT_COLLECTION = "documentCollection";
     private final AuthTokenGenerator authTokenGenerator;
     private final CoreCaseDataApi ccdApiClient;
     private final IdamClient idamClient;
@@ -75,6 +89,11 @@ public class CaseService {
     private final PdfService pdfService;
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
     private final AssignCaseToLocalOfficeService assignCaseToLocalOfficeService;
+
+    @Value("${caseWorkerUserName}")
+    private String caseWorkerUserName;
+    @Value("${caseWorkerPassword}")
+    private String caseWorkerPassword;
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
@@ -165,8 +184,9 @@ public class CaseService {
 
     /**
      * Will accept a {@link CaseRequest} trigger an event to update a give case in ET.
+     *
      * @param authorization jwt of the user
-     * @param caseRequest case to be updated
+     * @param caseRequest   case to be updated
      * @return the newly updated case wrapped in a {@link CaseDetails} object.
      */
     public CaseDetails updateCase(String authorization,
@@ -220,7 +240,7 @@ public class CaseService {
         }
 
         caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
-        caseDetails.getData().put("documentCollection", documentList);
+        caseDetails.getData().put(DOCUMENT_COLLECTION, documentList);
 
         triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
                      caseDetails.getData()
@@ -241,19 +261,19 @@ public class CaseService {
      */
     public CaseDetails triggerEvent(String authorization, String caseId, CaseEvent eventName,
                                     String caseType, Map<String, Object> caseData) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
-        StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
         CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseData);
 
         if (SUBMIT_CASE_DRAFT == eventName) {
             enrichCaseDataWithJurisdictionCodes(caseData1);
         }
 
+        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(new ObjectMapper());
+        StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
+
         return submitUpdate(
             authorization,
             caseId,
-            caseDetailsConverter.caseDataContent(startEventResponse, caseData1),
+            caseDetailsConverter.et1ToCaseDataContent(startEventResponse, caseData1),
             caseType
         );
     }
@@ -329,6 +349,57 @@ public class CaseService {
     }
 
     /**
+     * Given a caseId, return a list of document IDs which are visible to ACAS.
+     *
+     * @param caseId 16 digit CCD id
+     * @return a MultiValuedMap containing a list of document ids and timestamps
+     */
+    public MultiValuedMap<String, CaseDocumentAcasResponse> retrieveAcasDocuments(String caseId) {
+        BoolQueryBuilder boolQueryBuilder = boolQuery()
+            .filter(new TermsQueryBuilder("reference.keyword", caseId));
+        String query = new SearchSourceBuilder()
+            .size(MAX_ES_SIZE)
+            .query(boolQueryBuilder)
+            .toString();
+        return getDocumentUuids(query);
+    }
+
+    private MultiValuedMap<String, CaseDocumentAcasResponse> getDocumentUuids(String query) {
+        String authorisation = idamClient.getAccessToken(caseWorkerUserName, caseWorkerPassword);
+        List<CaseData> caseDataList = searchAndReturnCaseDataList(authorisation, query);
+
+        List<DocumentTypeItem> documentTypeItemList = new ArrayList<>();
+
+        for (CaseData caseData : caseDataList) {
+            documentTypeItemList.addAll(caseData.getDocumentCollection().stream()
+                                            .filter(d -> ACAS_VISIBLE_DOCS.contains(defaultIfEmpty(
+                                                d.getValue().getTypeOfDocument(),
+                                                ""
+                                            )))
+                                            .collect(toList()));
+        }
+
+        MultiValuedMap<String, CaseDocumentAcasResponse> documentIds = new ArrayListValuedHashMap<>();
+        Pattern pattern = Pattern.compile(".{36}$");
+
+        for (DocumentTypeItem documentTypeItem : documentTypeItemList) {
+            Matcher matcher = pattern.matcher(documentTypeItem.getValue().getUploadedDocument().getDocumentUrl());
+            if (matcher.find()) {
+                CaseDocument caseDocument = caseDocumentService.getDocumentDetails(
+                    authorisation, UUID.fromString(matcher.group())).getBody();
+                if (caseDocument != null) {
+                    CaseDocumentAcasResponse caseDocumentAcasResponse = CaseDocumentAcasResponse.builder()
+                        .documentId(matcher.group())
+                        .modifiedOn(caseDocument.getModifiedOn())
+                        .build();
+                    documentIds.put(documentTypeItem.getValue().getTypeOfDocument(), caseDocumentAcasResponse);
+                }
+            }
+        }
+        return documentIds;
+    }
+
+    /**
      * Given a list of caseIds, this method will return a list of case details.
      *
      * @param authorisation used for IDAM authentication for the query
@@ -344,6 +415,15 @@ public class CaseService {
             .toString();
 
         return searchEnglandScotlandCases(authorisation, query);
+    }
+
+    private List<CaseData> searchAndReturnCaseDataList(String authorisation, String query) {
+        List<CaseDetails> searchResults = searchEnglandScotlandCases(authorisation, query);
+        List<CaseData> caseDataList = new ArrayList<>();
+        for (CaseDetails caseDetails : searchResults) {
+            caseDataList.add(EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData()));
+        }
+        return caseDataList;
     }
 
     private List<CaseDetails> searchEnglandScotlandCases(String authorisation, String query) {
@@ -369,4 +449,35 @@ public class CaseService {
         caseData.setJurCodesCollection(jurCodesTypeItems);
     }
 
+    void uploadTseSupportingDocument(CaseDetails caseDetails, UploadedDocumentType contactApplicationFile) {
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        List<DocumentTypeItem> docList = caseData.getDocumentCollection();
+
+        docList.add(caseDocumentService.createDocumentTypeItem(
+            CLAIMANT_CORRESPONDENCE_DOCUMENT,
+            contactApplicationFile
+        ));
+        caseDetails.getData().put(DOCUMENT_COLLECTION, docList);
+    }
+
+    void uploadTseCyaAsPdf(
+        String authorization,
+        CaseDetails caseDetails,
+        ClaimantTse claimantTse,
+        String caseType
+    ) throws DocumentGenerationException, CaseDocumentException {
+
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        List<DocumentTypeItem> docList = caseData.getDocumentCollection();
+
+        PdfDecodedMultipartFile pdfDecodedMultipartFile = pdfService.convertClaimantTseIntoMultipartFile(claimantTse);
+        docList.add(caseDocumentService.createDocumentTypeItem(
+            authorization,
+            caseType,
+            CLAIMANT_CORRESPONDENCE_DOCUMENT,
+            pdfDecodedMultipartFile
+        ));
+
+        caseDetails.getData().put(DOCUMENT_COLLECTION, docList);
+    }
 }
