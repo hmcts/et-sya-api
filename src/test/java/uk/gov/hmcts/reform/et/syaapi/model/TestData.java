@@ -9,6 +9,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
+import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
@@ -193,5 +194,26 @@ public final class TestData {
             Arguments.of("AB13 1AB", address13)
         );
 
+    }
+
+    public SearchResult requestCaseDataListSearchResult() {
+        SearchResult searchResult = SearchResult.builder().build();
+        searchResult.setCases(getRequestCaseDataList());
+        searchResult.setTotal(2);
+        return searchResult;
+    }
+
+    public SearchResult getSearchResultRequestCaseDataListScotland() {
+        SearchResult searchResult = SearchResult.builder().build();
+        searchResult.setCases(getRequestCaseDataListScotland());
+        searchResult.setTotal(2);
+        return searchResult;
+    }
+
+    public SearchResult getSearchResultRequestCaseDataListEngland() {
+        SearchResult searchResult = SearchResult.builder().build();
+        searchResult.setCases(getRequestCaseDataListEngland());
+        searchResult.setTotal(1);
+        return searchResult;
     }
 }

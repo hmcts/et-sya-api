@@ -41,6 +41,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -75,6 +76,7 @@ public class CaseService {
     private final PdfService pdfService;
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
     private final AssignCaseToLocalOfficeService assignCaseToLocalOfficeService;
+    private static final String ALL_CASES_QUERY = "{\"query\":{\"match_all\": {}}}";
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
@@ -96,17 +98,19 @@ public class CaseService {
      */
     @Retryable({FeignException.class, RuntimeException.class})
     public List<CaseDetails> getAllUserCases(String authorization) {
-        UserInfo userInfo = idamClient.getUserInfo(authorization);
+        // Elasticsearch
+        List<CaseDetails> scotlandCases = Optional.ofNullable(ccdApiClient.searchCases(
+            authorization,
+            authTokenGenerator.generate(),
+            SCOTLAND_CASE_TYPE,
+            ALL_CASES_QUERY).getCases()).orElse(Collections.emptyList());
 
-        List<CaseDetails> scotlandCases = ccdApiClient.searchForCitizen(
-            authorization, authTokenGenerator.generate(),
-            userInfo.getUid(), JURISDICTION_ID, SCOTLAND_CASE_TYPE, Collections.emptyMap()
-        );
-
-        List<CaseDetails> englandCases = ccdApiClient.searchForCitizen(
-            authorization, authTokenGenerator.generate(),
-            userInfo.getUid(), JURISDICTION_ID, ENGLAND_CASE_TYPE, Collections.emptyMap()
-        );
+        // Elasticsearch
+        List<CaseDetails> englandCases = Optional.ofNullable(ccdApiClient.searchCases(
+            authorization,
+            authTokenGenerator.generate(),
+            ENGLAND_CASE_TYPE,
+            ALL_CASES_QUERY).getCases()).orElse(Collections.emptyList());
 
         return Stream.of(scotlandCases, englandCases).flatMap(Collection::stream).collect(toList());
     }
