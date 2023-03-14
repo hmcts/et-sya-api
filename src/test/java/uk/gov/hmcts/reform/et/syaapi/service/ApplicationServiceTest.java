@@ -173,7 +173,7 @@ class ApplicationServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             testRequest.getCaseId(),
             testRequest.getCaseTypeId(),
-            CaseEvent.UPDATE_CASE_SUBMITTED
+            CaseEvent.CLAIMANT_TSE_RESPOND
         )).thenReturn(testData.getUpdateCaseEventResponse());
 
 
@@ -196,7 +196,7 @@ class ApplicationServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             testRequest.getCaseId(),
             testRequest.getCaseTypeId(),
-            CaseEvent.UPDATE_CASE_SUBMITTED
+            CaseEvent.CLAIMANT_TSE_RESPOND
         )).thenReturn(testData.getUpdateCaseEventResponse());
 
 
@@ -221,7 +221,7 @@ class ApplicationServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             testRequest.getCaseId(),
             testRequest.getCaseTypeId(),
-            CaseEvent.UPDATE_CASE_SUBMITTED
+            CaseEvent.CLAIMANT_TSE_RESPOND
         )).thenReturn(testData.getUpdateCaseEventResponse());
 
         when(caseService.submitUpdate(
