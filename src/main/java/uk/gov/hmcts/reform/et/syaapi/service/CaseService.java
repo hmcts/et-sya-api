@@ -245,16 +245,17 @@ public class CaseService {
         UserInfo userInfo = idamClient.getUserInfo(authorization);
 
         //New - generate ET1 PDF
-        List<PdfDecodedMultipartFile> casePdfFiles = pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData,
+        List<PdfDecodedMultipartFile> caseEt1PdfFiles = pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData,
                                                                                                        userInfo);
         // attach ET1 pdf to notification email
-        byte[] et1Pdf = casePdfFiles.get(0).getBytes();
+        byte[] et1Pdf = caseEt1PdfFiles.get(0).getBytes();
 
         //New - send notification
         notificationService.sendSubmitCaseConfirmationEmail(caseDetails, caseData, userInfo, et1Pdf);
 
         // Retrieve all docs and upload all docs
-        List<DocumentTypeItem> documentList = uploadAllCaseDocuments(caseData, authorization, casePdfFiles, caseDetails);
+        List<DocumentTypeItem> documentList = uploadAllCaseDocuments(caseData, authorization, caseEt1PdfFiles,
+                                                                     caseDetails);
 
         caseDetails.getData().put("documentCollection", documentList);
 
@@ -266,8 +267,9 @@ public class CaseService {
         return caseDetails;
     }
 
-    private List<DocumentTypeItem> uploadAllCaseDocuments( CaseData caseData, String authorization,
-                                        List<PdfDecodedMultipartFile> casePdfFiles, CaseDetails caseDetails) {
+    private List<DocumentTypeItem> uploadAllCaseDocuments(CaseData caseData, String authorization,
+                                                          List<PdfDecodedMultipartFile> caseEt1PdfFiles,
+                                                          CaseDetails caseDetails) {
         List<DocumentTypeItem> documentList = new ArrayList<>();
 
         // Create Claim Description Document
@@ -282,11 +284,16 @@ public class CaseService {
 
         // Upload all docs
         try {
-           documentList.addAll(caseDocumentService
-                .uploadAllDocuments(authorization, caseDetails.getCaseTypeId(), casePdfFiles, acasCertificates));
+            documentList.addAll(
+                caseDocumentService.uploadAllDocuments(authorization, caseDetails.getCaseTypeId(), caseEt1PdfFiles,
+                                                       acasCertificates));
         } catch (CaseDocumentException exception) {
+            //get et1 pdf file base64 byte array
+            byte[] et1FormContentPdf = caseEt1PdfFiles.get(0).getBytes();
+            byte[] acasCertificatesPdf = acasCertificates.get(0).getBytes();
+
             // Send upload error alert email to shared inbox
-            notificationService.sendDocUploadErrorEmail(caseDetails);
+            notificationService.sendDocUploadErrorEmail(caseDetails, et1FormContentPdf, acasCertificatesPdf);
             log.error("Case Documents Upload error - Failed to complete case documents upload.", exception);
         }
 
@@ -298,11 +305,11 @@ public class CaseService {
         caseRequest.getCaseData().put("receiptDate",dateToSet);
         caseRequest.getCaseData().put("feeGroupReference", caseRequest.getCaseId());
         //  - submit case to ECM to get reference number
-       return triggerEvent(authorization, caseRequest.getCaseId(), SUBMIT_CASE_DRAFT,
-                                               caseRequest.getCaseTypeId(), caseRequest.getCaseData());
+        return triggerEvent(authorization, caseRequest.getCaseId(), SUBMIT_CASE_DRAFT, caseRequest.getCaseTypeId(),
+                            caseRequest.getCaseData());
     }
 
-    private List<PdfDecodedMultipartFile> getAcasCertificatesInPdfs(CaseData caseData ) {
+    private List<PdfDecodedMultipartFile> getAcasCertificatesInPdfs(CaseData caseData) {
         // - convert acas certificate to pdf
         List<PdfDecodedMultipartFile> acasCertificates = null;
 

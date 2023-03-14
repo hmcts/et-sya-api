@@ -110,18 +110,28 @@ public class NotificationService {
      * @param caseDetails  top level non-modifiable case details
      * @return Gov notify email format
      */
-    public SendEmailResponse sendDocUploadErrorEmail(CaseDetails caseDetails)
-        throws NotificationException {
-        String caseNumber = caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString();
-        String emailTemplateId = notificationsProperties.getSubmitCaseDocUploadErrorEmailTemplateId();
-        String et1EcmDtsCoreTeamSlackNotificationEmail = notificationsProperties
-            .getEt1EcmDtsCoreTeamSlackNotificationEmail();
-        String et1ServiceNotificationEmail = notificationsProperties.getEt1ServiceOwnerNotificationEmail();
+    public SendEmailResponse sendDocUploadErrorEmail(CaseDetails caseDetails, byte[] et1FormContentPdf,
+                                                     byte[] acasCertificatesPdf) {
         SendEmailResponse sendEmailResponse;
+
         try {
-            Map<String, String> parameters = new ConcurrentHashMap<>();
+            String caseNumber = caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString();
+            Map<String, Object> parameters = new ConcurrentHashMap<>();
             parameters.put("serviceOwnerName", "Service Owner");
             parameters.put("caseNumber", caseNumber);
+
+            ConcurrentHashMap<String, byte[]> et1FormHashMap = new ConcurrentHashMap<>();
+            et1FormHashMap.put("file", et1FormContentPdf);
+            parameters.put("link_to_et1_pdf_file", et1FormHashMap);
+
+            ConcurrentHashMap<String, byte[]> acasCertificatesHashMap = new ConcurrentHashMap<>();
+            acasCertificatesHashMap.put("file", acasCertificatesPdf);
+            parameters.put("link_to_acas_cert_pdf_file", acasCertificatesHashMap);
+
+            String emailTemplateId = notificationsProperties.getSubmitCaseDocUploadErrorEmailTemplateId();
+            String et1EcmDtsCoreTeamSlackNotificationEmail = notificationsProperties
+                .getEt1EcmDtsCoreTeamSlackNotificationEmail();
+            String et1ServiceNotificationEmail = notificationsProperties.getEt1ServiceOwnerNotificationEmail();
 
             // email to the service
             sendEmailResponse = notificationClient.sendEmail(
@@ -132,7 +142,7 @@ public class NotificationService {
             );
 
             // email an alert copy to ECM DTS core team
-             notificationClient.sendEmail(
+            notificationClient.sendEmail(
                 emailTemplateId,
                 et1EcmDtsCoreTeamSlackNotificationEmail,
                 parameters,

@@ -373,13 +373,13 @@ class CaseServiceTest {
         uploadedDocumentType.setDocumentFilename("filename");
         uploadedDocumentType.setDocumentUrl("https://document.url");
         uploadedDocumentType.setDocumentBinaryUrl("https://document.binary.url");
+
         DocumentTypeItem documentTypeItem = new DocumentTypeItem();
         documentTypeItem.setId(UUID.randomUUID().toString());
 
         DocumentType documentType = new DocumentType();
         documentType.setTypeOfDocument("Other");
         documentType.setUploadedDocument(uploadedDocumentType);
-
         documentTypeItem.setValue(documentType);
         return documentTypeItem;
     }
