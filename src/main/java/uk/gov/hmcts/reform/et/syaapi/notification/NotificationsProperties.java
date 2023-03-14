@@ -38,7 +38,6 @@ public class NotificationsProperties {
     @NotBlank
     private String citizenPortalLink;
 
-
     @Value("${notifications.submitCaseDocUploadErrorEmailTemplateId}")
     @NotBlank
     private String submitCaseDocUploadErrorEmailTemplateId;
@@ -50,8 +49,4 @@ public class NotificationsProperties {
     @Value("${notifications.et1ServiceOwnerNotificationEmail}")
     @NotBlank
     private String et1ServiceOwnerNotificationEmail;
-
-    @Value("${notifications.servicePortalLink}")
-    @NotBlank
-    private String servicePortalLink;
 }

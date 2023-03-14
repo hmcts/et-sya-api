@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
-import groovyjarjarantlr.collections.impl.LList;
 import lombok.EqualsAndHashCode;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.RangeQueryBuilder;
@@ -368,7 +367,7 @@ class CaseServiceTest {
 
         assertEquals(1, ((ArrayList)caseDetails.getData().get("documentCollection")).size());
 
-        ArrayList docCollection = ((ArrayList) caseDetails.getData().get("documentCollection"));
+        ArrayList docCollection = (ArrayList) caseDetails.getData().get("documentCollection");
 
         assertEquals("DocumentType(typeOfDocument="
             + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=https://document.binary.url, documentFilen"
@@ -381,13 +380,13 @@ class CaseServiceTest {
         uploadedDocumentType.setDocumentFilename("filename");
         uploadedDocumentType.setDocumentUrl("https://document.url");
         uploadedDocumentType.setDocumentBinaryUrl("https://document.binary.url");
+
         DocumentTypeItem documentTypeItem = new DocumentTypeItem();
         documentTypeItem.setId(UUID.randomUUID().toString());
 
         DocumentType documentType = new DocumentType();
         documentType.setTypeOfDocument("Other");
         documentType.setUploadedDocument(uploadedDocumentType);
-
         documentTypeItem.setValue(documentType);
         return documentTypeItem;
     }
