@@ -76,7 +76,8 @@ public class NotificationService {
         String emailTemplateId = notificationsProperties.getSubmitCaseEmailTemplateId();
         String citizenPortalLink = notificationsProperties.getCitizenPortalLink() + "%s";
 
-        if (caseData.getClaimantHearingPreference().getContactLanguage() != null
+        if (caseData.getClaimantHearingPreference() != null
+            && caseData.getClaimantHearingPreference().getContactLanguage() != null
             && WELSH_LANGUAGE.equals(caseData.getClaimantHearingPreference().getContactLanguage())) {
             emailTemplateId = notificationsProperties.getCySubmitCaseEmailTemplateId();
             citizenPortalLink = citizenPortalLink + WELSH_LANGUAGE_PARAM;
@@ -89,9 +90,10 @@ public class NotificationService {
             parameters.put("lastName", lastName);
             parameters.put("caseNumber", caseNumber);
             parameters.put("citizenPortalLink", String.format(citizenPortalLink, caseNumber));
-            ConcurrentHashMap<String, byte[]> hashMap = new ConcurrentHashMap<>();
-            hashMap.put("file", et1Pdf);
-            parameters.put("link_to_et1_pdf_file", hashMap);
+
+
+            parameters.put("link_to_et1_pdf_file", et1Pdf.toString());
+
             sendEmailResponse = notificationClient.sendEmail(
                 emailTemplateId,
                 caseData.getClaimantType().getClaimantEmailAddress(),

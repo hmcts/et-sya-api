@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
+import uk.gov.hmcts.reform.et.syaapi.service.util.CaseServiceUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
@@ -49,6 +50,7 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.OTHER_TYPE_OF_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
@@ -185,7 +187,6 @@ public class CaseService {
      * @param caseRequest   is used to provide the caseId, caseTypeId and {@link CaseData} in JSON Format
      * @return the associated {@link CaseData} if the case is submitted
      */
-    /*
     public CaseDetails submitCase(String authorization, CaseRequest caseRequest)
         throws PdfServiceException, CaseDocumentException {
         caseRequest.getCaseData().put("receiptDate", LocalDateTime.now().format(DateTimeFormatter
@@ -198,6 +199,17 @@ public class CaseService {
         );
         caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :
                                            caseDetails.getData().get("ethosCaseReference").toString());
+        //  - create case pdf file(s). If selected language is WELSH then we also create WELSH pdf file
+        //  and add it to our pdf file list
+        UserInfo userInfo = idamClient.getUserInfo(authorization);
+        List<PdfDecodedMultipartFile> casePdfFiles =
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData, userInfo);
+
+        //  - submit e-mail to client with generated PDF file according to his/her selected language value
+        PdfDecodedMultipartFile pdfFile = ENGLISH_LANGUAGE.equals(CaseServiceUtil.findClaimantLanguage(caseData))
+            ? casePdfFiles.get(0) : casePdfFiles.get(1);
+        notificationService.sendSubmitCaseConfirmationEmail(caseDetails, caseData, userInfo, pdfFile.getBytes());
+
 
         //  - Retrieve all docs and generate ET1 PDF
         List<PdfDecodedMultipartFile> acasCertificates = null;
@@ -210,9 +222,7 @@ public class CaseService {
             log.error("Invalid ACAS numbers", e);
         }
 
-        UserInfo userInfo = idamClient.getUserInfo(authorization);
-        List<PdfDecodedMultipartFile> casePdfFiles =
-            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData, userInfo);
+
         List<DocumentTypeItem> documentList = caseDocumentService
             .uploadAllDocuments(authorization, caseRequest.getCaseTypeId(), casePdfFiles, acasCertificates);
 
@@ -231,47 +241,10 @@ public class CaseService {
                      caseDetails.getData()
         );
 
-        //  - Send notification
-        notificationService.sendSubmitCaseConfirmationEmail(caseDetails, caseData, userInfo);
-        return caseDetails;
-    }
-*/
-
-    public CaseDetails submitCase(String authorization, CaseRequest caseRequest)
-        throws PdfServiceException, CaseDocumentException {
-
-        CaseData caseData = assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
-        //  - submit case to ECM to get reference number
-        CaseDetails caseDetails = getCaseDetailsWithCaseRefNumberFromEcm(caseRequest, authorization);
-        caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :
-                                           caseDetails.getData().get("ethosCaseReference").toString());
-        caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
-        UserInfo userInfo = idamClient.getUserInfo(authorization);
-
-        //New - generate ET1 PDF
-        List<PdfDecodedMultipartFile> caseEt1PdfFiles = pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData,
-                                                                                                       userInfo);
-        // attach ET1 pdf to notification email
-        byte[] et1Pdf = caseEt1PdfFiles.get(0).getBytes();
-
-        //New - send notification
-        notificationService.sendSubmitCaseConfirmationEmail(caseDetails, caseData, userInfo, et1Pdf);
-
-        // Retrieve all docs and upload all docs
-        List<DocumentTypeItem> documentList = uploadAllCaseDocuments(caseData, authorization, caseEt1PdfFiles,
-                                                                     caseDetails);
-
-        caseDetails.getData().put("documentCollection", documentList);
-
-        //  - submit case to ECM to update case
-        triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
-                     caseDetails.getData()
-        );
-
         return caseDetails;
     }
 
-    private List<DocumentTypeItem> uploadAllCaseDocuments(CaseData caseData, String authorization,
+    /*private List<DocumentTypeItem> uploadAllCaseDocuments(CaseData caseData, String authorization,
                                                           List<PdfDecodedMultipartFile> caseEt1PdfFiles,
                                                           CaseDetails caseDetails) {
         List<DocumentTypeItem> documentList = new ArrayList<>();
@@ -326,7 +299,7 @@ public class CaseService {
             log.error("Invalid ACAS numbers", e);
         }
         return acasCertificates;
-    }
+    }*/
 
     /**
      * Given a caseId, initialization of trigger event to start and submit update for case.
