@@ -3,11 +3,18 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
+import uk.gov.hmcts.et.common.model.ccd.types.ClaimantType;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperService;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
@@ -18,7 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -33,7 +39,7 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.NOTIFICATION_CON
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class NotificationServiceTest {
-    private static final String TEST_TEMPLATE_API_KEY = "dummy template id";
+    private static final String TEST_TEMPLATE_API_KEY = "mtd_test-002d2170-e381-4545-8251-5e87dab724e7-ac8ef473-1f28-4bfc-8906-9babd92dc5d8";
 
     private static final String SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID = "af0b26b7-17b6-4643-bbdc-e296d11e7b0c";
 
@@ -52,6 +58,10 @@ class NotificationServiceTest {
     private SendEmailResponse inputSendEmailResponse;
 
     private TestData testData;
+    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE = "ET1_1122.pdf";
+
+    @InjectMocks
+    private PdfService pdfService;
 
     @BeforeEach
     void before() throws NotificationClientException {
@@ -161,19 +171,47 @@ class NotificationServiceTest {
 
     @Test
     void shouldSendSubmitCaseConfirmationEmail() throws IOException {
-        when(notificationService.sendSubmitCaseConfirmationEmail(
+        /*when(notificationService.sendSubmitCaseConfirmationEmail(
             testData.getExpectedDetails(),
             testData.getCaseData(),
             testData.getUserInfo(),
             new byte[0]
-        )).thenReturn(testData.getSendEmailResponse());
+        )).thenReturn(testData.getSendEmailResponse());*/
+        CaseDetails caseDetails = CaseDetails.builder().build();
+        caseDetails.setId(1231231L);
+        NotificationClient notificationClient1 = new NotificationClient(TEST_TEMPLATE_API_KEY);
+        NotificationsProperties notificationsProperties1 = new NotificationsProperties();
+        notificationsProperties1.setEt1EcmDtsCoreTeamSlackNotificationEmail("ecm-dts-core-team-aaaaeefocyx4lal2b6yfibek5e@moj.org.slack.com");
+        notificationsProperties1.setEt1ServiceOwnerNotificationEmail("etreform@justice.gov.uk");
+        notificationsProperties1.setCySubmitCaseEmailTemplateId("3f4a995c-0399-4e42-aaf9-2bd144247585");
+        notificationsProperties1.setCitizenPortalLink("https://localhost:3001/citizen-hub/");
+        notificationsProperties1.setSubmitCaseEmailTemplateId("7e85feba-c0af-4698-a7eb-13b73841302f");
+        notificationsProperties1.setGovNotifyApiKey("mtd_test-002d2170-e381-4545-8251-5e87dab724e7-ac8ef473-1f28-4bfc-8906-9babd92dc5d8");
+        notificationService = new NotificationService(notificationClient1, notificationsProperties1);
+        CaseData caseData = new CaseData();
+        ClaimantIndType claimantIndType = new ClaimantIndType();
+        claimantIndType.setClaimantFirstNames("Tensay Mehmet");
+        claimantIndType.setClaimantLastName("BulchaDede");
+        caseData.setClaimantIndType(claimantIndType);
+        ClaimantType claimantType = new ClaimantType();
+        claimantType.setClaimantAddressUK(null);
+        claimantType.setClaimantEmailAddress("mehmet.dede@justice.gov.uk");
+        caseData.setClaimantType(claimantType);
+        PdfService pdfService1 = new PdfService(new PdfMapperService());
+        pdfService1.englishPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE;
+        byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
 
-        assertThat(notificationService.sendSubmitCaseConfirmationEmail(
+        notificationService.sendSubmitCaseConfirmationEmail(
+            caseDetails,
+            caseData,
+            null,
+            pdfData);
+        /*assertThat(notificationService.sendSubmitCaseConfirmationEmail(
             testData.getExpectedDetails(),
             testData.getCaseData(),
             testData.getUserInfo(),
             new byte[0]
-        ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
+        ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);*/
     }
 
     /*

@@ -169,7 +169,8 @@ public final class PdfMapperUtil {
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy", Locale.UK);
         String formattedDateStringValue;
         try {
-            formattedDateStringValue = formatter.format(parsingFormatter.parse(dateToFormat));
+            formattedDateStringValue = dateToFormat == null ? "" :
+                formatter.format(parsingFormatter.parse(dateToFormat));
         } catch (ParseException e) {
             return dateToFormat;
         }
