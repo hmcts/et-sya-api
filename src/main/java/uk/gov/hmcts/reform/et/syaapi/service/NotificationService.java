@@ -61,10 +61,8 @@ public class NotificationService {
      * @param et1Pdf  pdf form of the ET1 form
      * @return Gov notify email format
      */
-    public SendEmailResponse sendSubmitCaseConfirmationEmail(CaseDetails caseDetails,
-                                                              CaseData caseData,
-                                                              UserInfo userInfo,
-                                                             byte[] et1Pdf) {
+    public SendEmailResponse sendSubmitCaseConfirmationEmail(CaseDetails caseDetails, CaseData caseData,
+                                                             UserInfo userInfo, byte[] et1Pdf) {
         String firstName = Strings.isNullOrEmpty(caseData.getClaimantIndType().getClaimantFirstNames())
             ? userInfo.getGivenName()
             : caseData.getClaimantIndType().getClaimantFirstNames();
@@ -90,9 +88,7 @@ public class NotificationService {
             parameters.put("lastName", lastName);
             parameters.put("caseNumber", caseNumber);
             parameters.put("citizenPortalLink", String.format(citizenPortalLink, caseNumber));
-
-
-            parameters.put("link_to_et1_pdf_file", et1Pdf.toString());
+            parameters.put("link_to_et1_pdf_file", NotificationClient.prepareUpload(et1Pdf));
 
             sendEmailResponse = notificationClient.sendEmail(
                 emailTemplateId,
@@ -121,14 +117,8 @@ public class NotificationService {
             Map<String, Object> parameters = new ConcurrentHashMap<>();
             parameters.put("serviceOwnerName", "Service Owner");
             parameters.put("caseNumber", caseNumber);
-
-            ConcurrentHashMap<String, byte[]> et1FormHashMap = new ConcurrentHashMap<>();
-            et1FormHashMap.put("file", et1FormContentPdf);
-            parameters.put("link_to_et1_pdf_file", et1FormHashMap);
-
-            ConcurrentHashMap<String, byte[]> acasCertificatesHashMap = new ConcurrentHashMap<>();
-            acasCertificatesHashMap.put("file", acasCertificatesPdf);
-            parameters.put("link_to_acas_cert_pdf_file", acasCertificatesHashMap);
+            parameters.put("link_to_et1_pdf_file", NotificationClient.prepareUpload(et1FormContentPdf));
+            parameters.put("link_to_acas_cert_pdf_file", NotificationClient.prepareUpload(acasCertificatesPdf));
 
             String emailTemplateId = notificationsProperties.getSubmitCaseDocUploadErrorEmailTemplateId();
             String et1EcmDtsCoreTeamSlackNotificationEmail = notificationsProperties
