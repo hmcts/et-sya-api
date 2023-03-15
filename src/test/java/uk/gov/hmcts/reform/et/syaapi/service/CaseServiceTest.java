@@ -42,7 +42,6 @@ import uk.gov.service.notify.SendEmailResponse;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -365,9 +364,9 @@ class CaseServiceTest {
             testData.getCaseRequest()
         );
 
-        assertEquals(1, ((ArrayList)caseDetails.getData().get("documentCollection")).size());
+        assertEquals(1, ((LinkedList)caseDetails.getData().get("documentCollection")).size());
 
-        ArrayList docCollection = (ArrayList) caseDetails.getData().get("documentCollection");
+        LinkedList docCollection = (LinkedList) caseDetails.getData().get("documentCollection");
 
         assertEquals("DocumentType(typeOfDocument="
             + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=https://document.binary.url, documentFilen"
