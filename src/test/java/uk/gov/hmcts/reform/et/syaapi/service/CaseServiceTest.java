@@ -41,7 +41,6 @@ import uk.gov.service.notify.SendEmailResponse;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
