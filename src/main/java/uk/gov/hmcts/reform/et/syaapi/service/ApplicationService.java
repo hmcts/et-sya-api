@@ -92,11 +92,17 @@ public class ApplicationService {
             caseData.getGenericTseApplicationCollection()
         );
         if (appToModify != null) {
-            TseApplicationHelper.setRespondentApplicationWithResponse(request, appToModify.getValue());
+            TseApplicationHelper.setRespondentApplicationWithResponse(
+                request,
+                appToModify.getValue(),
+                caseData,
+                caseDocumentService
+            );
+
             CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
             return caseService.submitUpdate(authorization, request.getCaseId(), content, request.getCaseTypeId());
         } else {
-            throw new IllegalArgumentException("Application id provided is invalid");
+            throw new IllegalArgumentException("Application id provided is incorrect");
         }
     }
 
