@@ -52,6 +52,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CAS
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.OTHER_TYPE_OF_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.INITIATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
@@ -186,16 +187,14 @@ public class CaseService {
      */
     public CaseDetails submitCase(String authorization, CaseRequest caseRequest)
         throws PdfServiceException, CaseDocumentException {
-        caseRequest.getCaseData().put("receiptDate", LocalDateTime.now().format(DateTimeFormatter
-                                                                                    .ofPattern("yyyy-MM-dd")));
-        caseRequest.getCaseData().put("feeGroupReference", caseRequest.getCaseId());
         CaseData caseData = assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
-        CaseDetails caseDetails = triggerEvent(authorization, caseRequest.getCaseId(), SUBMIT_CASE_DRAFT,
-                                               caseRequest.getCaseTypeId(), caseRequest.getCaseData()
-        );
+        CaseDetails caseDetails = triggerEventForSubmitCase(authorization, caseRequest);
         caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :
                                            caseDetails.getData().get("ethosCaseReference").toString());
-
+        caseData.setReceiptDate(caseDetails.getData().get("receiptDate") == null ? "" :
+                                    caseDetails.getData().get("receiptDate").toString());
+        caseData.setFeeGroupReference(caseDetails.getData().get("feeGroupReference") == null ? "" :
+                                          caseDetails.getData().get("feeGroupReference").toString());
         List<PdfDecodedMultipartFile> acasCertificates = null;
         try {
             acasCertificates = pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
@@ -246,15 +245,38 @@ public class CaseService {
         StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
         CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseData);
 
-        if (SUBMIT_CASE_DRAFT == eventName) {
-            enrichCaseDataWithJurisdictionCodes(caseData1);
-        }
-
         return submitUpdate(
             authorization,
             caseId,
             caseDetailsConverter.caseDataContent(startEventResponse, caseData1),
             caseType
+        );
+    }
+
+    /**
+     * Given a caseId, submit the case into ECM.
+     *
+     * @param authorization is used to seek the {@link UserInfo} for request
+     * @param caseRequest   is used to provide the caseId, caseTypeId and {@link CaseData} in JSON Format
+     * @return the associated {@link CaseData} on submission
+     */
+    public CaseDetails triggerEventForSubmitCase(String authorization, CaseRequest caseRequest) {
+        StartEventResponse startEventResponse = startUpdate(authorization, caseRequest.getCaseId(),
+                                                            caseRequest.getCaseTypeId(), SUBMIT_CASE_DRAFT);
+        CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(
+            startEventResponse.getCaseDetails().getData());
+        enrichCaseDataWithJurisdictionCodes(caseData1);
+        caseData1.setManagingOffice(caseRequest.getCaseData().get("managingOffice") == null ? UNASSIGNED_OFFICE :
+                                        caseRequest.getCaseData().get("managingOffice").toString());
+        caseData1.setReceiptDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        caseData1.setFeeGroupReference(caseRequest.getCaseId());
+        ObjectMapper objectMapper = new ObjectMapper();
+        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
+        return submitUpdate(
+            authorization,
+            caseRequest.getCaseId(),
+            caseDetailsConverter.caseDataContent(startEventResponse, caseData1),
+            caseRequest.getCaseTypeId()
         );
     }
 
