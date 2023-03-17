@@ -89,7 +89,6 @@ public class NotificationService {
             parameters.put("caseNumber", caseNumber);
             parameters.put("citizenPortalLink", String.format(citizenPortalLink, caseNumber));
             parameters.put("link_to_et1_pdf_file", NotificationClient.prepareUpload(et1Pdf));
-
             sendEmailResponse = notificationClient.sendEmail(
                 emailTemplateId,
                 caseData.getClaimantType().getClaimantEmailAddress(),
@@ -106,6 +105,8 @@ public class NotificationService {
      * Prepared doc upload error alert email content from user and case data then sends email to the service.
      *
      * @param caseDetails  top level non-modifiable case details
+     * @param et1FormContentPdf  pdf copy of ET1 form content
+     * @param acasCertificatesPdf  pdf copy of Acas Certificates
      * @return Gov notify email format
      */
     public SendEmailResponse sendDocUploadErrorEmail(CaseDetails caseDetails, byte[] et1FormContentPdf,
@@ -125,7 +126,7 @@ public class NotificationService {
                 .getEt1EcmDtsCoreTeamSlackNotificationEmail();
             String et1ServiceNotificationEmail = notificationsProperties.getEt1ServiceOwnerNotificationEmail();
 
-            // email to the service
+            // Send an alert email to the service owner
             sendEmailResponse = notificationClient.sendEmail(
                 emailTemplateId,
                 et1ServiceNotificationEmail,
@@ -133,7 +134,7 @@ public class NotificationService {
                 caseNumber
             );
 
-            // email an alert copy to ECM DTS core team
+            // Send a copy alert email to ECM DTS core team
             notificationClient.sendEmail(
                 emailTemplateId,
                 et1EcmDtsCoreTeamSlackNotificationEmail,

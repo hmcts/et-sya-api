@@ -3,9 +3,9 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-//import org.mockito.InjectMocks;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.types.ClaimantHearingPreference;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -25,9 +25,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doReturn;
@@ -35,34 +35,24 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.EMAIL_TEST_SERVICE_OWNER_GMAIL_COM;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.NOTIFICATION_CONFIRMATION_ID;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class NotificationServiceTest {
     private static final String TEST_TEMPLATE_API_KEY =
         "mtd_test-002d2170-e381-4545-8251-5e87dab724e7-ac8ef473-1f28-4bfc-8906-9babd92dc5d8";
-
     private static final String SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID = "af0b26b7-17b6-4643-bbdc-e296d11e7b0c";
-
     private static final String REFERENCE_STRING = "TEST_EMAIL_ALERT";
-
     private static final String TEST_EMAIL = "TEST@GMAIL.COM";
+    private static final String TEMP_TEST_EMAIL = "tensay.bulcha@justice.gov.uk";
 
     @MockBean
     private NotificationService notificationService;
-
     private NotificationClient notificationClient;
     private NotificationsProperties notificationsProperties;
-
     private final ConcurrentHashMap<String, String> parameters = new ConcurrentHashMap<>();
-
     private SendEmailResponse inputSendEmailResponse;
-
     private TestData testData;
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE = "ET1_1122.pdf";
-
-    //@InjectMocks
-    //private PdfService pdfService;
 
     @BeforeEach
     void before() throws NotificationClientException {
@@ -136,7 +126,6 @@ class NotificationServiceTest {
             .hasMessageContaining("email_address is a required property");
     }
 
-
     @Test
     void ifTemplateIdIsNullWillThrowNotificationException() throws NotificationClientException {
         given(notificationClient.sendEmail(nullable(String.class), anyString(), any(), anyString()))
@@ -163,10 +152,12 @@ class NotificationServiceTest {
         notificationClient = mock(NotificationClient.class);
         notificationService = new NotificationService(notificationClient, notificationsProperties);
         doReturn(inputSendEmailResponse).when(notificationClient).sendEmail(TEST_TEMPLATE_API_KEY,
-                                                                            TEST_EMAIL, parameters, REFERENCE_STRING
+                                                                            TEST_EMAIL, parameters,
+                                                                            REFERENCE_STRING
         );
         return notificationService.sendEmail(TEST_TEMPLATE_API_KEY,
-                                             TEST_EMAIL, parameters, REFERENCE_STRING
+                                             TEST_EMAIL, parameters,
+                                             REFERENCE_STRING
         );
     }
 
@@ -182,8 +173,7 @@ class NotificationServiceTest {
         notificationsProperties1.setCySubmitCaseEmailTemplateId("3f4a995c-0399-4e42-aaf9-2bd144247585");
         notificationsProperties1.setCitizenPortalLink("https://localhost:3001/citizen-hub/");
         notificationsProperties1.setSubmitCaseEmailTemplateId("7e85feba-c0af-4698-a7eb-13b73841302f");
-        notificationsProperties1.setGovNotifyApiKey(
-            "mtd_test-002d2170-e381-4545-8251-5e87dab724e7-ac8ef473-1f28-4bfc-8906-9babd92dc5d8");
+        notificationsProperties1.setGovNotifyApiKey(TEST_TEMPLATE_API_KEY);
         NotificationClient notificationClient1 = new NotificationClient(TEST_TEMPLATE_API_KEY);
         notificationService = new NotificationService(notificationClient1, notificationsProperties1);
 
@@ -194,40 +184,29 @@ class NotificationServiceTest {
         caseData.setClaimantIndType(claimantIndType);
         ClaimantType claimantType = new ClaimantType();
         claimantType.setClaimantAddressUK(null);
-        claimantType.setClaimantEmailAddress("tensay.bulcha@justice.gov.uk");
+        claimantType.setClaimantEmailAddress(TEMP_TEST_EMAIL);
         caseData.setClaimantType(claimantType);
         PdfService pdfService1 = new PdfService(new PdfMapperService());
         pdfService1.englishPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE;
         byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
 
-        notificationService.sendSubmitCaseConfirmationEmail(
+        SendEmailResponse emailResponse = notificationService.sendSubmitCaseConfirmationEmail(
             caseDetails,
             caseData,
             null,
             pdfData
         );
 
-        /*
-        assertThat(notificationService.sendSubmitCaseConfirmationEmail(
-            caseDetails,
-            caseData,
-            null,
-            pdfData
-        ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
-        */
+        assertThat(emailResponse.getTemplateId().toString()
+                       .equals(notificationsProperties1.getCySubmitCaseEmailTemplateId()));
     }
 
-    /*
     @Test
     void shouldThrowNotificationExceptionWhenNotAbleToSendEmailBySendSubmitCaseConfirmationEmail()
         throws NotificationClientException {
         var testHashMap = new ConcurrentHashMap<String, String>();
         testHashMap.put("testKey", "testValue");
-        when(notificationClient.sendEmail(
-            SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID,
-            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
-            testHashMap,
-            testData.getExpectedDetails().getId().toString())
+        when(notificationClient.sendEmail(any(), any(), any(), any())
         ).thenThrow(new NotificationException(new Exception("Error while trying to sending notification to client")));
 
         byte[] testPdfByteArray = "Any String you want".getBytes();
@@ -241,42 +220,51 @@ class NotificationServiceTest {
         assertThat(notificationException.getMessage())
             .isEqualTo("java.lang.Exception: Error while trying to sending notification to client");
     }
-*/
 
     @Test
-    void shouldSendSubmitCaseConfirmationEmailInWelsh() throws NotificationClientException {
-        inputSendEmailResponse = new SendEmailResponse("{\n"
-                                                           + "  \"id\": \"f30b2148-b1a6-4c0d-8a10-50109c96dc2c\",\n"
-                                                           + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
-                                                           + "  \"template\": {\n"
-                                                           + "    \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                                                           + "    \"version\": \"3\",\n"
-                                                           + "    \"uri\": \"TEST\"\n"
-                                                           + "  },\n"
-                                                           + "  \"content\": {\n"
-                                                           + "    \"body\": \"Please click here. https://www.gov.uk/log-in-register-hmrc-online-services/123456722/?lng=cy.\",\n"
-                                                           + "    \"subject\": \"ET Test email created\",\n"
-                                                           + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
-                                                           + "  }\n"
-                                                           + "}\n");
-        NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
+    void shouldSendSubmitCaseConfirmationEmailInWelsh() throws IOException {
+        CaseDetails caseDetails = CaseDetails.builder().build();
+        caseDetails.setId(1_231_231L);
 
-        when(notificationClient.sendEmail(
-            eq("1234_welsh"),
-            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
-            any(),
-            eq(testData.getExpectedDetails().getId().toString())
-        )).thenReturn(inputSendEmailResponse);
+        NotificationsProperties notificationsProperties1 = new NotificationsProperties();
+        notificationsProperties1.setEt1EcmDtsCoreTeamSlackNotificationEmail(
+            "ecm-dts-core-team-aaaaeefocyx4lal2b6yfibek5e@moj.org.slack.com");
+        notificationsProperties1.setEt1ServiceOwnerNotificationEmail("etreform@justice.gov.uk");
+        notificationsProperties1.setCySubmitCaseEmailTemplateId("3f4a995c-0399-4e42-aaf9-2bd144247585");
+        notificationsProperties1.setCitizenPortalLink("https://localhost:3001/citizen-hub/");
+        notificationsProperties1.setSubmitCaseEmailTemplateId("7e85feba-c0af-4698-a7eb-13b73841302f");
+        notificationsProperties1.setGovNotifyApiKey(TEST_TEMPLATE_API_KEY);
+        NotificationClient notificationClient1 = new NotificationClient(TEST_TEMPLATE_API_KEY);
+        notificationService = new NotificationService(notificationClient1, notificationsProperties1);
 
-        testData.getCaseData().getClaimantHearingPreference().setContactLanguage(EtSyaConstants.WELSH_LANGUAGE);
-        SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
-            testData.getExpectedDetails(),
-            testData.getCaseData(),
-            testData.getUserInfo(),
-            new byte[0]
+        CaseData caseData = new CaseData();
+        ClaimantIndType claimantIndType = new ClaimantIndType();
+        claimantIndType.setClaimantFirstNames("Tensay Mehmet");
+        claimantIndType.setClaimantLastName("BulchaDede");
+        caseData.setClaimantIndType(claimantIndType);
+        ClaimantType claimantType = new ClaimantType();
+        claimantType.setClaimantAddressUK(null);
+        claimantType.setClaimantEmailAddress(TEMP_TEST_EMAIL);
+        var pref = new ClaimantHearingPreference();
+        pref.setContactLanguage(EtSyaConstants.WELSH_LANGUAGE);
+        caseData.setClaimantHearingPreference(pref);
+
+        caseData.setClaimantType(claimantType);
+        PdfService pdfService1 = new PdfService(new PdfMapperService());
+        pdfService1.englishPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE;
+        byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
+
+        caseData.getClaimantHearingPreference().setContactLanguage(EtSyaConstants.WELSH_LANGUAGE);
+
+        SendEmailResponse emailResponse = notificationService.sendSubmitCaseConfirmationEmail(
+            caseDetails,
+            caseData,
+            null,
+            pdfData
         );
-        assertThat(response.getBody()).isEqualTo(
-            "Please click here. https://www.gov.uk/log-in-register-hmrc-online-services/123456722/?lng=cy.");
+
+        assertThat(emailResponse.getTemplateId().toString()
+                       .equals(notificationsProperties1.getCySubmitCaseEmailTemplateId()));
     }
 
     @Test
@@ -292,23 +280,20 @@ class NotificationServiceTest {
         assertThat(response.getBody()).isEqualTo("Dear test, Please see your detail as 123456789. Regards, ET Team.");
     }
 
-
     @Test
     void shouldSuccessfullySendDocUploadErrorEmail()
-        throws NotificationClientException, IOException {
+        throws  IOException, InvalidAcasNumbersException {
 
         CaseDetails caseDetails = CaseDetails.builder().build();
         caseDetails.setId(1_231_231L);
 
         NotificationsProperties notificationsProperties1 = new NotificationsProperties();
         notificationsProperties1.setEt1EcmDtsCoreTeamSlackNotificationEmail(
-            "ecm-dts-core-team-aaaaeefocyx4lal2b6yfibek5e@moj.org.slack.com");
-        notificationsProperties1.setEt1ServiceOwnerNotificationEmail("etreform@justice.gov.uk");
-        notificationsProperties1.setCySubmitCaseEmailTemplateId("3f4a995c-0399-4e42-aaf9-2bd144247585");
+            "tensay.bulcha@justice.gov.uk");
+        notificationsProperties1.setEt1ServiceOwnerNotificationEmail(TEMP_TEST_EMAIL);
         notificationsProperties1.setCitizenPortalLink("https://localhost:3001/citizen-hub/");
-        notificationsProperties1.setSubmitCaseEmailTemplateId("7e85feba-c0af-4698-a7eb-13b73841302f");
-        notificationsProperties1.setGovNotifyApiKey(
-            "mtd_test-002d2170-e381-4545-8251-5e87dab724e7-ac8ef473-1f28-4bfc-8906-9babd92dc5d8");
+        notificationsProperties1.setSubmitCaseDocUploadErrorEmailTemplateId("3007a1e9-13b0-4bf9-9753-398ea91b8564");
+        notificationsProperties1.setGovNotifyApiKey(TEST_TEMPLATE_API_KEY);
         NotificationClient notificationClient1 = new NotificationClient(TEST_TEMPLATE_API_KEY);
         notificationService = new NotificationService(notificationClient1, notificationsProperties1);
 
@@ -319,37 +304,19 @@ class NotificationServiceTest {
         caseData.setClaimantIndType(claimantIndType);
         ClaimantType claimantType = new ClaimantType();
         claimantType.setClaimantAddressUK(null);
-        claimantType.setClaimantEmailAddress("tensay.bulcha@justice.gov.uk");
+        claimantType.setClaimantEmailAddress(TEMP_TEST_EMAIL);
         caseData.setClaimantType(claimantType);
+
         PdfService pdfService1 = new PdfService(new PdfMapperService());
         pdfService1.englishPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE;
-        byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
-
-        SendEmailResponse response = new SendEmailResponse("{\n"
-                                      + "  \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                                      + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
-                                      + "  \"template\": {\n"
-                                      + "    \"id\": \"af0b26b7-17b6-4643-bbdc-e29e11d37b0c\",\n"
-                                      + "    \"version\": \"2\",\n"
-                                      + "    \"uri\": \"TEST\"\n"
-                                      + "  },\n"
-                                      + "  \"content\": {\n"
-                                      + "    \"body\": \"Dear Service owner, Please see the doc upload error details"
-                                      + "  Regards, ET Team.\",\n"
-                                      + "    \"subject\": \"ET Test Doc upload error alert email created\",\n"
-                                      + "    \"from_email\": \"test.serviceowner@gmail.com\"\n"
-                                      + "  }\n"
-                                      + "}\n");
-
-        when(notificationClient.sendEmail(any(), any(), any(), any())).thenReturn(response);
-
-        byte[] testEt1PdfByteArray = "test et1 Pdf String".getBytes();
-        byte[] testAcasPdfByteArray = "test Acas padf String".getBytes();
+        byte[] testEt1PdfByteArray = pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
+        // copy the pdf file for test as it is only pdf formatted file required
+        byte[] testAcasPdfByteArray = testEt1PdfByteArray;
 
         CaseDetails testCaseDetails = testData.getExpectedDetails();
-        SendEmailResponse sendEmailResponse = notificationService
-            .sendDocUploadErrorEmail(testCaseDetails, testEt1PdfByteArray, testAcasPdfByteArray);
-
+        SendEmailResponse sendEmailResponse = notificationService.sendDocUploadErrorEmail(testCaseDetails,
+                                                                                          testEt1PdfByteArray,
+                                                                                          testAcasPdfByteArray);
         assertThat(sendEmailResponse.getFromEmail().isPresent()).isTrue();
         assertThat(sendEmailResponse.getFromEmail()).asString()
             .isEqualTo("Optional[" + EMAIL_TEST_SERVICE_OWNER_GMAIL_COM + "]");
@@ -357,25 +324,20 @@ class NotificationServiceTest {
             .isEqualTo(DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID);
     }
 
-    /*
     @Test
     void shouldThrowNotificationExceptionWhenNotAbleToSendDocUploadErrorEmail()
         throws NotificationClientException {
-        byte[] testEt1PdfByteArray = "test et1 Pdf String".getBytes();
-        byte[] testAcasPdfByteArray = "test Acas padf String".getBytes();
-        var testHashMap = new ConcurrentHashMap<String, String>();
+        ConcurrentHashMap<String, String> testHashMap = new ConcurrentHashMap<>();
         testHashMap.put("testKey", "testValue");
-        when(notificationClient.sendEmail(
-            DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID,
-            testData.getCaseData().getClaimantType().getClaimantEmailAddress(),
-            testHashMap,
-            testData.getExpectedDetails().getId().toString()
+
+        when(notificationClient.sendEmail(any(), any(), any(), any()
         )).thenThrow(new NotificationException(
             new Exception("Error while trying to send doc upload error notification to service owner")));
-
         when(notificationsProperties.getSubmitCaseDocUploadErrorEmailTemplateId()).thenReturn(null);
         when(notificationsProperties.getEt1EcmDtsCoreTeamSlackNotificationEmail()).thenReturn(null);
 
+        byte[] testEt1PdfByteArray = "test et1 Pdf String".getBytes();
+        byte[] testAcasPdfByteArray = "test Acas padf String".getBytes();
         NotificationException notificationException = assertThrows(NotificationException.class, () ->
             notificationService.sendDocUploadErrorEmail(testData.getExpectedDetails(),
                                                         testEt1PdfByteArray,
@@ -383,7 +345,7 @@ class NotificationServiceTest {
         assertThat(notificationException.getMessage())
             .isEqualTo("java.lang.Exception: Error while trying to send doc upload"
                        + " error notification to service owner");
+
     }
-*/
 
 }

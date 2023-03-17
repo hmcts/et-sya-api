@@ -125,7 +125,7 @@ public class ManageCaseController {
                  caseRequest.getCaseTypeId(), caseRequest.getCaseId());
         try {
             return ok(caseService.submitCase(authorization, caseRequest));
-        } catch (PdfServiceException | CaseDocumentException e) {
+        } catch (PdfServiceException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }
