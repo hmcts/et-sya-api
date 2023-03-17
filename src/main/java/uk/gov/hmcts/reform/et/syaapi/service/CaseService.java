@@ -183,7 +183,6 @@ public class CaseService {
         );
     }
 
-
     /**
      * Given Case Request, triggers submit case events for the case. Before submitting case events
      * sets managing office (tribunal office), created PDF file for the case and saves PDF file.
@@ -196,9 +195,13 @@ public class CaseService {
         throws PdfServiceException {
 
         CaseData caseData = assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
+
         CaseDetails caseDetails = getCaseDetailsWithCaseRefNumberFromEcm(caseRequest, authorization);
         //  Create case pdf file(s). If the user selected language is Welsh, then we also create Welsh pdf file
         //  and add it to our pdf files list
+        caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :
+                                           caseDetails.getData().get("ethosCaseReference").toString());
+
         UserInfo userInfo = idamClient.getUserInfo(authorization);
         List<PdfDecodedMultipartFile> casePdfFiles =
             pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData, userInfo);
@@ -212,14 +215,8 @@ public class CaseService {
         List<DocumentTypeItem> documentList = uploadAllCaseDocuments(caseData, authorization,
                                                                      casePdfFiles, caseDetails);
 
-        if (caseData.getClaimantRequests().getClaimDescriptionDocument() != null) {
-            documentList.add(caseDocumentService.createDocumentTypeItem(
-                OTHER_TYPE_OF_DOCUMENT,
-                caseData.getClaimantRequests().getClaimDescriptionDocument()
-            ));
-        }
-
         caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
+
         caseDetails.getData().put("documentCollection", documentList);
         triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
                      caseDetails.getData()
@@ -233,26 +230,29 @@ public class CaseService {
                                                           CaseDetails caseDetails) {
         List<DocumentTypeItem> documentList = new ArrayList<>();
 
-        // Create Claim Description document
+        // Create Claim Description Document
         if (caseData.getClaimantRequests().getClaimDescriptionDocument() != null) {
             DocumentTypeItem claimDescriptionDocTypeItem = caseDocumentService.createDocumentTypeItem(
                 OTHER_TYPE_OF_DOCUMENT, caseData.getClaimantRequests().getClaimDescriptionDocument());
             documentList.add(claimDescriptionDocTypeItem);
         }
 
-        // Convert ACAS Certificates to pdfs
+        // Convert ACAS Certificates to Pdfs
         List<PdfDecodedMultipartFile> acasCertificates = getAcasCertificatesInPdfs(caseData);
+
+        // Upload all docs
         try {
             documentList.addAll(
-                caseDocumentService.uploadAllDocuments(authorization, caseDetails.getCaseTypeId(),
-                                                       caseEt1PdfFiles, acasCertificates));
+                caseDocumentService.uploadAllDocuments(authorization, caseDetails.getCaseTypeId(), caseEt1PdfFiles,
+                                                       acasCertificates));
         } catch (CaseDocumentException exception) {
-            // Get ET1 pdf file in base64 byte array
+            //get et1 pdf file base64 byte array
             byte[] et1FormContentPdf = caseEt1PdfFiles.get(0).getBytes();
             byte[] acasCertificatesPdf = acasCertificates.get(0).getBytes();
 
             // Send upload error alert email to shared inbox
             notificationService.sendDocUploadErrorEmail(caseDetails, et1FormContentPdf, acasCertificatesPdf);
+
             log.error("Case Documents Upload error - Failed to complete case documents upload for case id: "
                           + caseDetails.getCaseTypeId(), exception);
         }
@@ -264,13 +264,13 @@ public class CaseService {
         String dateToSet = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         caseRequest.getCaseData().put("receiptDate",dateToSet);
         caseRequest.getCaseData().put("feeGroupReference", caseRequest.getCaseId());
+
         // Submit case to ECM to get reference number
         return triggerEvent(authorization, caseRequest.getCaseId(), SUBMIT_CASE_DRAFT, caseRequest.getCaseTypeId(),
                             caseRequest.getCaseData());
     }
 
     private List<PdfDecodedMultipartFile> getAcasCertificatesInPdfs(CaseData caseData) {
-        // Convert Acas Certificate to pdf
         List<PdfDecodedMultipartFile> acasCertificates = null;
 
         try {

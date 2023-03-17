@@ -358,6 +358,7 @@ class CaseServiceTest {
         assertEquals(2, ((ArrayList)caseDetails.getData().get("documentCollection")).size());
 
         ArrayList docCollection = (ArrayList) caseDetails.getData().get("documentCollection");
+
         assertEquals("DocumentType(typeOfDocument="
             + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=https://document.binary.url, documentFilen"
             + "ame=filename, documentUrl=https://document.url), ownerDocument=null, creationDate=null, shortDescription=nu"

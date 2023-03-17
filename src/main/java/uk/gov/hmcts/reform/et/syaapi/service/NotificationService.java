@@ -89,6 +89,7 @@ public class NotificationService {
             parameters.put("caseNumber", caseNumber);
             parameters.put("citizenPortalLink", String.format(citizenPortalLink, caseNumber));
             parameters.put("link_to_et1_pdf_file", NotificationClient.prepareUpload(et1Pdf));
+
             sendEmailResponse = notificationClient.sendEmail(
                 emailTemplateId,
                 caseData.getClaimantType().getClaimantEmailAddress(),

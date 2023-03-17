@@ -28,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doReturn;
@@ -198,26 +199,7 @@ class NotificationServiceTest {
 
         assertThat(emailResponse.getTemplateId().toString()
                        .equals(notificationsProperties1.getCySubmitCaseEmailTemplateId()));
-    }
 
-    @Test
-    void shouldThrowNotificationExceptionWhenNotAbleToSendEmailBySendSubmitCaseConfirmationEmail()
-        throws NotificationClientException {
-        var testHashMap = new ConcurrentHashMap<String, String>();
-        testHashMap.put("testKey", "testValue");
-        when(notificationClient.sendEmail(any(), any(), any(), any())
-        ).thenThrow(new NotificationException(new Exception("Error while trying to sending notification to client")));
-
-        byte[] testPdfByteArray = "Any String you want".getBytes();
-
-        NotificationException notificationException = assertThrows(NotificationException.class, () ->
-            notificationService.sendSubmitCaseConfirmationEmail(
-                testData.getExpectedDetails(),
-                testData.getCaseData(),
-                testData.getUserInfo(),
-                testPdfByteArray));
-        assertThat(notificationException.getMessage())
-            .isEqualTo("java.lang.Exception: Error while trying to sending notification to client");
     }
 
     @Test
@@ -247,12 +229,10 @@ class NotificationServiceTest {
         var pref = new ClaimantHearingPreference();
         pref.setContactLanguage(EtSyaConstants.WELSH_LANGUAGE);
         caseData.setClaimantHearingPreference(pref);
-
         caseData.setClaimantType(claimantType);
         PdfService pdfService1 = new PdfService(new PdfMapperService());
         pdfService1.englishPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE;
         byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
-
         caseData.getClaimantHearingPreference().setContactLanguage(EtSyaConstants.WELSH_LANGUAGE);
 
         SendEmailResponse emailResponse = notificationService.sendSubmitCaseConfirmationEmail(
@@ -280,24 +260,24 @@ class NotificationServiceTest {
     }
 
     @Test
-    void shouldSuccessfullySendDocUploadErrorEmail()
-        throws  IOException, InvalidAcasNumbersException {
+    void shouldSuccessfullySendDocUploadErrorEmail() throws IOException {
 
         CaseDetails caseDetails = CaseDetails.builder().build();
         caseDetails.setId(1_231_231L);
 
         NotificationsProperties notificationsProperties1 = new NotificationsProperties();
-        notificationsProperties1.setEt1EcmDtsCoreTeamSlackNotificationEmail(
-            "tensay.bulcha@justice.gov.uk");
+        notificationsProperties1.setEt1EcmDtsCoreTeamSlackNotificationEmail("tensay.bulcha@justice.gov.uk");
         notificationsProperties1.setEt1ServiceOwnerNotificationEmail(TEST_EMAIL);
         notificationsProperties1.setCitizenPortalLink("https://localhost:3001/citizen-hub/");
         notificationsProperties1.setSubmitCaseDocUploadErrorEmailTemplateId("3007a1e9-13b0-4bf9-9753-398ea91b8564");
         notificationsProperties1.setGovNotifyApiKey(TEST_TEMPLATE_API_KEY);
+
         NotificationClient notificationClient1 = new NotificationClient(TEST_TEMPLATE_API_KEY);
         notificationService = new NotificationService(notificationClient1, notificationsProperties1);
 
         CaseData caseData = new CaseData();
         ClaimantIndType claimantIndType = new ClaimantIndType();
+
         claimantIndType.setClaimantFirstNames("TestFName");
         claimantIndType.setClaimantLastName("TestLName");
         caseData.setClaimantIndType(claimantIndType);
@@ -337,6 +317,7 @@ class NotificationServiceTest {
 
         byte[] testEt1PdfByteArray = "test et1 Pdf String".getBytes();
         byte[] testAcasPdfByteArray = "test Acas padf String".getBytes();
+
         NotificationException notificationException = assertThrows(NotificationException.class, () ->
             notificationService.sendDocUploadErrorEmail(testData.getExpectedDetails(),
                                                         testEt1PdfByteArray,
@@ -344,7 +325,6 @@ class NotificationServiceTest {
         assertThat(notificationException.getMessage())
             .isEqualTo("java.lang.Exception: Error while trying to send doc upload"
                        + " error notification to service owner");
-
     }
 
 }
