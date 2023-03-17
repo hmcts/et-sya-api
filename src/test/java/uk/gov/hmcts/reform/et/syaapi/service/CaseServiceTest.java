@@ -11,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ecm.common.model.helper.Constants;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
@@ -41,6 +42,7 @@ import uk.gov.service.notify.SendEmailResponse;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -521,14 +523,14 @@ class CaseServiceTest {
     @Test
     void shouldInvokeCaseEnrichmentWithJurCodesInSubmitEvent() {
         List<JurCodesTypeItem> expectedItems = mockJurCodesTypeItems();
-        testData.getStartEventResponse().setEventId(SUBMIT_CASE_DRAFT);
+        testData.getStartEventResponse().setEventId(TestConstants.SUBMIT_CASE_DRAFT);
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(testData.getCaseDataWithClaimTypes()
                                                                                  .getCaseData());
         caseData.setJurCodesCollection(expectedItems);
-        caseData.setFeeGroupReference(CASE_ID);
+        caseData.setFeeGroupReference(TestConstants.CASE_ID);
 
         CaseDataContent expectedEnrichedData = CaseDataContent.builder()
-            .event(Event.builder().id(SUBMIT_CASE_DRAFT).build())
+            .event(Event.builder().id(TestConstants.SUBMIT_CASE_DRAFT).build())
             .eventToken(testData.getStartEventResponse().getToken())
             .data(caseData)
             .build();
@@ -549,8 +551,8 @@ class CaseServiceTest {
             USER_ID,
             EtSyaConstants.JURISDICTION_ID,
             EtSyaConstants.ENGLAND_CASE_TYPE,
-            CASE_ID,
-            SUBMIT_CASE_DRAFT
+            TestConstants.CASE_ID,
+            TestConstants.SUBMIT_CASE_DRAFT
         )).thenReturn(testData.getStartEventResponse());
 
         lenient().when(ccdApiClient.submitEventForCitizen(
@@ -559,7 +561,7 @@ class CaseServiceTest {
             USER_ID,
             EtSyaConstants.JURISDICTION_ID,
             EtSyaConstants.ENGLAND_CASE_TYPE,
-            CASE_ID,
+            TestConstants.CASE_ID,
             true,
             expectedEnrichedData
         )).thenReturn(testData.getExpectedDetails());
@@ -569,8 +571,8 @@ class CaseServiceTest {
         caseService.triggerEventForSubmitCase(
             TEST_SERVICE_AUTH_TOKEN,
             CaseRequest.builder()
-                .caseId(CASE_ID)
-                .caseTypeId(ENGLANDWALES_CASE_TYPE_ID)
+                .caseId(TestConstants.CASE_ID)
+                .caseTypeId(Constants.ENGLANDWALES_CASE_TYPE_ID)
                 .caseData(new HashMap<>())
                 .build()
         );

@@ -43,7 +43,6 @@ class NotificationServiceTest {
     private static final String SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID = "af0b26b7-17b6-4643-bbdc-e296d11e7b0c";
     private static final String REFERENCE_STRING = "TEST_EMAIL_ALERT";
     private static final String TEST_EMAIL = "TEST@GMAIL.COM";
-    private static final String TEMP_TEST_EMAIL = "tensay.bulcha@justice.gov.uk";
 
     @MockBean
     private NotificationService notificationService;
@@ -179,12 +178,12 @@ class NotificationServiceTest {
 
         CaseData caseData = new CaseData();
         ClaimantIndType claimantIndType = new ClaimantIndType();
-        claimantIndType.setClaimantFirstNames("Tensay Mehmet");
-        claimantIndType.setClaimantLastName("BulchaDede");
+        claimantIndType.setClaimantFirstNames("TestFName");
+        claimantIndType.setClaimantLastName("TestLName");
         caseData.setClaimantIndType(claimantIndType);
         ClaimantType claimantType = new ClaimantType();
         claimantType.setClaimantAddressUK(null);
-        claimantType.setClaimantEmailAddress(TEMP_TEST_EMAIL);
+        claimantType.setClaimantEmailAddress(TEST_EMAIL);
         caseData.setClaimantType(claimantType);
         PdfService pdfService1 = new PdfService(new PdfMapperService());
         pdfService1.englishPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE;
@@ -239,12 +238,12 @@ class NotificationServiceTest {
 
         CaseData caseData = new CaseData();
         ClaimantIndType claimantIndType = new ClaimantIndType();
-        claimantIndType.setClaimantFirstNames("Tensay Mehmet");
-        claimantIndType.setClaimantLastName("BulchaDede");
+        claimantIndType.setClaimantFirstNames("TestFName");
+        claimantIndType.setClaimantLastName("TestLName");
         caseData.setClaimantIndType(claimantIndType);
         ClaimantType claimantType = new ClaimantType();
         claimantType.setClaimantAddressUK(null);
-        claimantType.setClaimantEmailAddress(TEMP_TEST_EMAIL);
+        claimantType.setClaimantEmailAddress(TEST_EMAIL);
         var pref = new ClaimantHearingPreference();
         pref.setContactLanguage(EtSyaConstants.WELSH_LANGUAGE);
         caseData.setClaimantHearingPreference(pref);
@@ -290,7 +289,7 @@ class NotificationServiceTest {
         NotificationsProperties notificationsProperties1 = new NotificationsProperties();
         notificationsProperties1.setEt1EcmDtsCoreTeamSlackNotificationEmail(
             "tensay.bulcha@justice.gov.uk");
-        notificationsProperties1.setEt1ServiceOwnerNotificationEmail(TEMP_TEST_EMAIL);
+        notificationsProperties1.setEt1ServiceOwnerNotificationEmail(TEST_EMAIL);
         notificationsProperties1.setCitizenPortalLink("https://localhost:3001/citizen-hub/");
         notificationsProperties1.setSubmitCaseDocUploadErrorEmailTemplateId("3007a1e9-13b0-4bf9-9753-398ea91b8564");
         notificationsProperties1.setGovNotifyApiKey(TEST_TEMPLATE_API_KEY);
@@ -299,12 +298,12 @@ class NotificationServiceTest {
 
         CaseData caseData = new CaseData();
         ClaimantIndType claimantIndType = new ClaimantIndType();
-        claimantIndType.setClaimantFirstNames("Tensay Mehmet");
-        claimantIndType.setClaimantLastName("BulchaDede");
+        claimantIndType.setClaimantFirstNames("TestFName");
+        claimantIndType.setClaimantLastName("TestLName");
         caseData.setClaimantIndType(claimantIndType);
         ClaimantType claimantType = new ClaimantType();
         claimantType.setClaimantAddressUK(null);
-        claimantType.setClaimantEmailAddress(TEMP_TEST_EMAIL);
+        claimantType.setClaimantEmailAddress(TEST_EMAIL);
         caseData.setClaimantType(claimantType);
 
         PdfService pdfService1 = new PdfService(new PdfMapperService());
