@@ -172,7 +172,7 @@ class PdfMapperUtilTest {
     void theFormatUkPostcodeNull() {
         Address address = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
         address.setPostCode(null);
-        assertThat(formatUkPostcode(address)).isEqualTo("");
+        assertThat(formatUkPostcode(address)).isEmpty();
     }
 
 
@@ -193,26 +193,23 @@ class PdfMapperUtilTest {
 
     @Test
     void theGenerateClaimantCompensationCaseDataNull() {
-        String expectedValue = "";
-        assertThat(generateClaimantCompensation(null)).isEqualTo(expectedValue);
+        assertThat(generateClaimantCompensation(null)).isEmpty();
     }
 
     @Test
     void theGenerateClaimantCompensationClaimantRequestNull() {
-        String expectedValue = "";
         CaseData caseData = new TestData().getCaseData();
         caseData.setClaimantRequests(null);
-        assertThat(generateClaimantCompensation(caseData)).isEqualTo(expectedValue);
+        assertThat(generateClaimantCompensation(caseData)).isEmpty();
     }
 
     @Test
     void theGenerateClaimantCompensationClaimantCompensationTextPoint() {
-        String expectedValue = "";
         CaseData caseData = new TestData().getCaseData();
         caseData.getClaimantRequests().setClaimantCompensationAmount("");
         caseData.getClaimantRequests().setClaimantTribunalRecommendation("");
         caseData.getClaimantRequests().setClaimantCompensationText(":");
-        assertThat(generateClaimantCompensation(caseData)).isEqualTo(expectedValue);
+        assertThat(generateClaimantCompensation(caseData)).isEmpty();
     }
 
     @Test
@@ -238,24 +235,21 @@ class PdfMapperUtilTest {
 
     @Test
     void theGenerateClaimantTribunalRecommendationCaseDataNull() {
-        String expectedValue = "";
-        assertThat(generateClaimantTribunalRecommendation(null)).isEqualTo(expectedValue);
+        assertThat(generateClaimantTribunalRecommendation(null)).isEmpty();
     }
 
     @Test
     void theGenerateClaimantClaimantRequestsNull() {
-        String expectedValue = "";
         CaseData caseData = new TestData().getCaseData();
         caseData.setClaimantRequests(null);
-        assertThat(generateClaimantTribunalRecommendation(caseData)).isEqualTo(expectedValue);
+        assertThat(generateClaimantTribunalRecommendation(caseData)).isEmpty();
     }
 
     @Test
     void theGenerateClaimantClaimantTribunalRecommendationNull() {
-        String expectedValue = "";
         CaseData caseData = new TestData().getCaseData();
         caseData.getClaimantRequests().setClaimantTribunalRecommendation(null);
-        assertThat(generateClaimantTribunalRecommendation(caseData)).isEqualTo(expectedValue);
+        assertThat(generateClaimantTribunalRecommendation(caseData)).isEmpty();
     }
 
     private static Stream<Arguments> postcodeArguments() {
