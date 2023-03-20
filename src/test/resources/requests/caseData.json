@@ -371,8 +371,8 @@
   },
   "claimantRequests" : {
     "claim_outcome" : ["compensation", "tribunal", "oldJob", "anotherJob"],
-    "claimant_compensation_text" : null,
-    "claimant_compensation_amount" : null,
+    "claimant_compensation_text" : "I would like to have test compensation. This is a test compensation.",
+    "claimant_compensation_amount" : "2000",
     "claimant_tribunal_recommendation" : "I would like to have test claimant recommendation. This is a test recommendation",
     "whistleblowing" : "Yes",
     "whistleblowing_authority" : "Whistle Blowing Authority",
