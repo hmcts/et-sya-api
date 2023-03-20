@@ -37,7 +37,7 @@ class CaseDetailsConverterTest {
     void shouldGetCaseDetailsConverter() {
         ObjectMapper objectMapper = new ObjectMapper();
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
-        caseDetailsConverter.caseDataContent(startEventResponse, et1CaseData);
+        caseDetailsConverter.et1ToCaseDataContent(startEventResponse, et1CaseData);
         assertThat("Manually Created".equalsIgnoreCase(
             caseDetailsConverter.toCaseData(expectedDetails).getCaseSource())).isTrue();
     }
