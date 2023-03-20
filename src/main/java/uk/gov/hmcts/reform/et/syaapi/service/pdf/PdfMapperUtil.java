@@ -215,10 +215,17 @@ public final class PdfMapperUtil {
 
     private static String addClaimantCompensationAmount(String claimantCompensation,
                                                         String claimantCompensationAmount) {
-        return StringUtils.isNotBlank(claimantCompensation)
-            && StringUtils.isNotBlank(claimantCompensationAmount)
-            ? claimantCompensation + "\n" + claimantCompensationAmount
-            : StringUtils.isNotBlank(claimantCompensationAmount) ? claimantCompensationAmount : claimantCompensation;
+        String tmpClaimantCompensation;
+        if (StringUtils.isNotBlank(claimantCompensation) && StringUtils.isNotBlank(claimantCompensationAmount)) {
+            tmpClaimantCompensation = claimantCompensation + "\n" + claimantCompensationAmount;
+        } else {
+            if (StringUtils.isNotBlank(claimantCompensationAmount)) {
+                tmpClaimantCompensation = claimantCompensationAmount;
+            } else {
+                tmpClaimantCompensation = claimantCompensation;
+            }
+        }
+        return tmpClaimantCompensation;
     }
 
     /**
