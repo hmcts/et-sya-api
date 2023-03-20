@@ -33,8 +33,7 @@ public final class EtSyaConstants {
                                                                  "Respondent correspondence", "Notice of Hearing",
                                                                  "Tribunal correspondence",
                                                                  "Tribunal Order/Deposit Order",
-                                                                 "Tribunal Judgment/Reasons", "ET1 Attachment",
-                                                                 "ET3 Attachment");
+                                                                 "Tribunal Judgment/Reasons");
 
 
     private EtSyaConstants() {

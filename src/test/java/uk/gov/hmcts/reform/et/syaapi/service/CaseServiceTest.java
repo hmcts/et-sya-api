@@ -366,7 +366,7 @@ class CaseServiceTest {
         when(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(any()))
             .thenReturn(testData.getCaseData());
 
-        when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(createDocumentTypeItem("Other"));
+        when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(createDocumentTypeItem());
 
         CaseDetails caseDetails = caseService.submitCase(
             TEST_SERVICE_AUTH_TOKEN,
@@ -377,23 +377,22 @@ class CaseServiceTest {
 
         LinkedList<?> docCollection = (LinkedList<?>) caseDetails.getData().get("documentCollection");
         assertEquals("DocumentType(typeOfDocument="
-            + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=http://document.url/2333482f-1eb9-44f1" +
-                         "-9b78-f5d8f0c74b15/binary, documentFilename=filename, documentUrl=http://document.binary.ur" +
-                         "l/2333482f-1eb9-44f1-9b78-f5d8f0c74b15), ownerDocument=null, creationDate=null, shortDescri" +
-                         "ption=null)", ((DocumentTypeItem) docCollection.get(0)).getValue().toString());
+            + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=https://document.binary.url, documentFilen"
+            + "ame=filename, documentUrl=https://document.url), ownerDocument=null, creationDate=null, shortDescription=nu"
+            + "ll)", ((DocumentTypeItem) docCollection.get(0)).getValue().toString());
 
     }
 
-    private DocumentTypeItem createDocumentTypeItem(String typeOfDocument) {
+    private DocumentTypeItem createDocumentTypeItem() {
         UploadedDocumentType uploadedDocumentType = new UploadedDocumentType();
         uploadedDocumentType.setDocumentFilename("filename");
-        uploadedDocumentType.setDocumentUrl("http://document.binary.url/2333482f-1eb9-44f1-9b78-f5d8f0c74b15");
-        uploadedDocumentType.setDocumentBinaryUrl("http://document.url/2333482f-1eb9-44f1-9b78-f5d8f0c74b15/binary");
+        uploadedDocumentType.setDocumentUrl("https://document.url");
+        uploadedDocumentType.setDocumentBinaryUrl("https://document.binary.url");
         DocumentTypeItem documentTypeItem = new DocumentTypeItem();
         documentTypeItem.setId(UUID.randomUUID().toString());
 
         DocumentType documentType = new DocumentType();
-        documentType.setTypeOfDocument(typeOfDocument);
+        documentType.setTypeOfDocument("Other");
         documentType.setUploadedDocument(uploadedDocumentType);
 
         documentTypeItem.setValue(documentType);
@@ -666,12 +665,11 @@ class CaseServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             EtSyaConstants.SCOTLAND_CASE_TYPE, generateCaseDataEsQuery(Collections.singletonList(caseId))
         )).thenReturn(scotlandSearchResult);
-        when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(
-            createDocumentTypeItem("ET1 Attachment"));
+
         when(caseDocumentService.getDocumentDetails(anyString(), any())).thenReturn(getDocumentDetails());
         MultiValuedMap<String, CaseDocumentAcasResponse> documents = caseService.retrieveAcasDocuments(caseId);
         assertNotNull(documents);
-        assertThat(documents.size()).isEqualTo(3);
+        assertThat(documents.size()).isEqualTo(2);
     }
 
     private ResponseEntity<CaseDocument> getDocumentDetails() {

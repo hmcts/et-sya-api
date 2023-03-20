@@ -11,13 +11,6 @@
     "case_data": {
       "caseType": "Single",
       "caseSource": "Manually Created",
-      "claimantRequests": {
-        "claim_description_document": {
-          "document_url": "http://document.binary.url/documents/2333482f-1eb9-44f1-9b78-f5d8f0c74b15",
-          "document_filename": "SupportingDoc.docx",
-          "document_binary_url": "http://document.secure.url/documents/2333482f-1eb9-44f1-9b78-f5d8f0c74b15/binary"
-        }
-      },
       "documentCollection" : [
         {
           "id":  "1",
