@@ -196,6 +196,46 @@ public final class TestData {
             Arguments.of("AB13 1AB", address13),
             Arguments.of("", address14)
         );
+    }
+
+    public static Stream<Arguments> compensationArguments() {
+
+        CaseData caseData1 = new TestData().getCaseData();
+        caseData1.getClaimantRequests().setClaimantCompensationText("Test Compensation");
+        caseData1.getClaimantRequests().setClaimantCompensationAmount("");
+        caseData1.getClaimantRequests().setClaimantTribunalRecommendation("");
+
+        CaseData caseData2 = new TestData().getCaseData();
+        caseData2.getClaimantRequests().setClaimantCompensationText("Test Compensation");
+        caseData2.getClaimantRequests().setClaimantCompensationAmount("2000");
+        caseData2.getClaimantRequests().setClaimantTribunalRecommendation("");
+
+        CaseData caseData3 = new TestData().getCaseData();
+        caseData3.getClaimantRequests().setClaimantCompensationText(null);
+        caseData3.getClaimantRequests().setClaimantCompensationAmount("2000");
+        caseData3.getClaimantRequests().setClaimantTribunalRecommendation("");
+
+        CaseData caseData4 = new TestData().getCaseData();
+        caseData4.getClaimantRequests().setClaimantCompensationAmount("");
+        caseData4.getClaimantRequests().setClaimantTribunalRecommendation("");
+        caseData4.getClaimantRequests().setClaimantCompensationText(":");
+
+        CaseData caseData5 = new TestData().getCaseData();
+        caseData5.setClaimantRequests(null);
+
+        return Stream.of(
+            Arguments.of(null, ""),
+
+            Arguments.of(caseData1, "Compensation:\"Test Compensation\"" + System.lineSeparator()
+                + System.lineSeparator()),
+            Arguments.of(caseData2, "Compensation:\"Test Compensation\nAmount requested: £2000\""
+                + System.lineSeparator() + System.lineSeparator()),
+            Arguments.of(caseData3, "Compensation:\"Amount requested: £2000\"" + System.lineSeparator()
+                + System.lineSeparator()),
+            Arguments.of(caseData4, ""),
+            Arguments.of(caseData5, "")
+        );
 
     }
+
 }

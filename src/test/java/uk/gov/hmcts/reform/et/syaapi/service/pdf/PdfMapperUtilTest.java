@@ -191,56 +191,9 @@ class PdfMapperUtilTest {
         assertThat(formatDate(null)).isEqualTo(expectedDateString);
     }
 
-    @Test
-    void theGenerateClaimantCompensationCaseDataNull() {
-        assertThat(generateClaimantCompensation(null)).isEmpty();
-    }
-
-    @Test
-    void theGenerateClaimantCompensationClaimantRequestNull() {
-        CaseData caseData = new TestData().getCaseData();
-        caseData.setClaimantRequests(null);
-        assertThat(generateClaimantCompensation(caseData)).isEmpty();
-    }
-
-    @Test
-    void theGenerateClaimantCompensationClaimantCompensationTextPoint() {
-        CaseData caseData = new TestData().getCaseData();
-        caseData.getClaimantRequests().setClaimantCompensationAmount("");
-        caseData.getClaimantRequests().setClaimantTribunalRecommendation("");
-        caseData.getClaimantRequests().setClaimantCompensationText(":");
-        assertThat(generateClaimantCompensation(caseData)).isEmpty();
-    }
-
-    @Test
-    void theGenerateClaimantCompensationClaimantCompensationNotNull() {
-        String expectedValue = "Compensation:\"Test Compensation\"" + System.lineSeparator() + System.lineSeparator();
-        CaseData caseData = new TestData().getCaseData();
-        caseData.getClaimantRequests().setClaimantCompensationText("Test Compensation");
-        caseData.getClaimantRequests().setClaimantCompensationAmount("");
-        caseData.getClaimantRequests().setClaimantTribunalRecommendation("");
-        assertThat(generateClaimantCompensation(caseData)).isEqualTo(expectedValue);
-    }
-
-    @Test
-    void theGenerateClaimantCompensationClaimantCompensationAmountNotNull() {
-        String expectedValue = "Compensation:\"Test Compensation\nAmount requested: £2000\""
-            + System.lineSeparator() + System.lineSeparator();
-        CaseData caseData = new TestData().getCaseData();
-        caseData.getClaimantRequests().setClaimantCompensationText("Test Compensation");
-        caseData.getClaimantRequests().setClaimantCompensationAmount("2000");
-        caseData.getClaimantRequests().setClaimantTribunalRecommendation("");
-        assertThat(generateClaimantCompensation(caseData)).isEqualTo(expectedValue);
-    }
-
-    @Test
-    void theGenerateClaimantCompensationClaimantCompensationAmountNotNullCompensationTextNull() {
-        String expectedValue = "Compensation:\"Amount requested: £2000\""
-            + System.lineSeparator() + System.lineSeparator();
-        CaseData caseData = new TestData().getCaseData();
-        caseData.getClaimantRequests().setClaimantCompensationText(null);
-        caseData.getClaimantRequests().setClaimantCompensationAmount("2000");
-        caseData.getClaimantRequests().setClaimantTribunalRecommendation("");
+    @ParameterizedTest
+    @MethodSource("compensationArguments")
+    void theGenerateClaimantCompensation(CaseData caseData, String expectedValue) {
         assertThat(generateClaimantCompensation(caseData)).isEqualTo(expectedValue);
     }
 
@@ -265,5 +218,9 @@ class PdfMapperUtilTest {
 
     private static Stream<Arguments> postcodeArguments() {
         return TestData.postcodeAddressArguments();
+    }
+
+    private static Stream<Arguments> compensationArguments() {
+        return TestData.compensationArguments();
     }
 }
