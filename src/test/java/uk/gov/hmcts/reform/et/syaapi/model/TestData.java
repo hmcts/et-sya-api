@@ -177,6 +177,9 @@ public final class TestData {
         address13.setCountry("");
         address13.setPostCode("AB131AB");
 
+        Address address14 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        address14.setPostCode("");
+
         return Stream.of(
             Arguments.of("A1 1AA", address1),
             Arguments.of("A2 2AA", address2),
@@ -190,7 +193,8 @@ public final class TestData {
             Arguments.of("34730", address10),
             Arguments.of("AB11 1AB", address11),
             Arguments.of("AB12 1AB", address12),
-            Arguments.of("AB13 1AB", address13)
+            Arguments.of("AB13 1AB", address13),
+            Arguments.of("", address14)
         );
 
     }
