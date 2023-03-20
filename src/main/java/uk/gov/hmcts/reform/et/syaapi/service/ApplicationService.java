@@ -7,6 +7,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
@@ -100,7 +101,16 @@ public class ApplicationService {
             );
 
             CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
-            return caseService.submitUpdate(authorization, request.getCaseId(), content, request.getCaseTypeId());
+            CaseDetails caseDetails = caseService.submitUpdate(
+                authorization,
+                request.getCaseId(),
+                content,
+                request.getCaseTypeId()
+            );
+
+            sendResponseToApplicationEmails(appToModify.getValue(), caseData, request.getCaseId());
+
+            return caseDetails;
         } else {
             throw new IllegalArgumentException("Application id provided is incorrect");
         }
@@ -147,6 +157,27 @@ public class ApplicationService {
             hearingDate,
             caseId,
             request.getClaimantTse()
+        );
+    }
+
+    private void sendResponseToApplicationEmails(GenericTseApplicationType application,
+                                                 CaseData caseData,
+                                                 String caseId) {
+        String claimant = caseData.getClaimantIndType().getClaimantFirstNames() + " "
+            + caseData.getClaimantIndType().getClaimantLastName();
+
+        String caseNumber = caseData.getEthosCaseReference();
+        String respondentNames = getRespondentNames(caseData);
+        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
+
+        notificationService.sendResponseEmailToTribunal(
+            caseData,
+            claimant,
+            caseNumber,
+            respondentNames,
+            hearingDate,
+            caseId,
+            application.getType()
         );
     }
 

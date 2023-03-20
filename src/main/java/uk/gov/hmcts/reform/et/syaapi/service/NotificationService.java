@@ -267,7 +267,7 @@ public class NotificationService {
             hearingDate
         );
 
-        String subjectLine =  caseNumber + " " + SHORT_TEXT_MAP.get(claimantApplication.getContactApplicationType());
+        String subjectLine = caseNumber + " " + SHORT_TEXT_MAP.get(claimantApplication.getContactApplicationType());
         tribunalParameters.put(
             "subjectLine",
             subjectLine
@@ -280,6 +280,62 @@ public class NotificationService {
             try {
                 notificationClient.sendEmail(
                     notificationsProperties.getTribunalAcknowledgementTemplateId(),
+                    caseData.getTribunalCorrespondenceEmail(),
+                    tribunalParameters,
+                    caseId
+                );
+            } catch (NotificationClientException ne) {
+                throw new NotificationException(ne);
+            }
+        }
+    }
+
+    /**
+     * Format details of claimant request and retrieve case data, then send email to confirmation to tribunal.
+     *
+     * @param caseData        existing case details
+     * @param claimant        claimant's full name
+     * @param caseNumber      ethos case reference
+     * @param respondentNames concatenated respondent names
+     * @param hearingDate     date of the nearest hearing
+     * @param caseId          16 digit case id
+     * @param applicationType type of application
+     */
+    public void sendResponseEmailToTribunal(
+        CaseData caseData,
+        String claimant,
+        String caseNumber,
+        String respondentNames,
+        String hearingDate,
+        String caseId,
+        String applicationType
+    ) {
+        Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
+        addCommonParameters(
+            tribunalParameters,
+            claimant,
+            respondentNames,
+            caseId,
+            caseNumber
+        );
+        tribunalParameters.put(
+            HEARING_DATE,
+            hearingDate
+        );
+
+        String subjectLine = caseNumber + " " + applicationType;
+        tribunalParameters.put(
+            "subjectLine",
+            subjectLine
+        );
+
+        String managingOffice = caseData.getManagingOffice();
+        if (managingOffice.equals(UNASSIGNED_OFFICE) || isNullOrEmpty(managingOffice)) {
+            log.info("Could not send email as no office has been assigned");
+        } else {
+            try {
+                notificationClient.sendEmail(
+                    notificationsProperties.getTribunalResponseTemplateId(),
                     caseData.getTribunalCorrespondenceEmail(),
                     tribunalParameters,
                     caseId
