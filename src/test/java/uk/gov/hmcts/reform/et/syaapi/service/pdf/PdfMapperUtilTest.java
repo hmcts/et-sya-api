@@ -234,6 +234,17 @@ class PdfMapperUtilTest {
     }
 
     @Test
+    void theGenerateClaimantCompensationClaimantCompensationAmountNotNullCompensationTextNull() {
+        String expectedValue = "Compensation:\"Amount requested: £2000\""
+            + System.lineSeparator() + System.lineSeparator();
+        CaseData caseData = new TestData().getCaseData();
+        caseData.getClaimantRequests().setClaimantCompensationText(null);
+        caseData.getClaimantRequests().setClaimantCompensationAmount("2000");
+        caseData.getClaimantRequests().setClaimantTribunalRecommendation("");
+        assertThat(generateClaimantCompensation(caseData)).isEqualTo(expectedValue);
+    }
+
+    @Test
     void theGenerateClaimantTribunalRecommendationCaseDataNull() {
         assertThat(generateClaimantTribunalRecommendation(null)).isEmpty();
     }
