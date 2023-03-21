@@ -90,9 +90,10 @@ public class NotificationService {
             parameters.put("citizenPortalLink", String.format(citizenPortalLink, caseNumber));
             parameters.put("link_to_et1_pdf_file", NotificationClient.prepareUpload(et1Pdf));
 
+            String claimantEmailAddress = caseData.getClaimantType().getClaimantEmailAddress();
             sendEmailResponse = notificationClient.sendEmail(
                 emailTemplateId,
-                caseData.getClaimantType().getClaimantEmailAddress(),
+                claimantEmailAddress,
                 parameters,
                 caseNumber
             );
@@ -110,7 +111,8 @@ public class NotificationService {
      * @param acasCertificatesPdf  pdf copy of Acas Certificates
      * @return Gov notify email format
      */
-    public SendEmailResponse sendDocUploadErrorEmail(CaseDetails caseDetails, byte[] et1FormContentPdf,
+    public SendEmailResponse sendDocUploadErrorEmail(CaseDetails caseDetails,
+                                                     byte[] et1FormContentPdf,
                                                      byte[] acasCertificatesPdf) {
         SendEmailResponse sendEmailResponse;
 
@@ -123,14 +125,11 @@ public class NotificationService {
             parameters.put("link_to_acas_cert_pdf_file", NotificationClient.prepareUpload(acasCertificatesPdf));
 
             String emailTemplateId = notificationsProperties.getSubmitCaseDocUploadErrorEmailTemplateId();
-            String et1EcmDtsCoreTeamSlackNotificationEmail = notificationsProperties
-                .getEt1EcmDtsCoreTeamSlackNotificationEmail();
-            String et1ServiceNotificationEmail = notificationsProperties.getEt1ServiceOwnerNotificationEmail();
 
             // Send an alert email to the service owner
             sendEmailResponse = notificationClient.sendEmail(
                 emailTemplateId,
-                et1ServiceNotificationEmail,
+                notificationsProperties.getEt1ServiceOwnerNotificationEmail(),
                 parameters,
                 caseNumber
             );
@@ -138,7 +137,7 @@ public class NotificationService {
             // Send a copy alert email to ECM DTS core team
             notificationClient.sendEmail(
                 emailTemplateId,
-                et1EcmDtsCoreTeamSlackNotificationEmail,
+                notificationsProperties.getEt1EcmDtsCoreTeamSlackNotificationEmail(),
                 parameters,
                 caseNumber
             );
@@ -146,6 +145,5 @@ public class NotificationService {
             throw new NotificationException(ne);
         }
         return sendEmailResponse;
-
     }
 }

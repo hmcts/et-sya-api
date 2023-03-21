@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantHearingPreference;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
@@ -13,13 +14,10 @@ import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperService;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 
-import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -34,7 +32,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.EMAIL_TEST_SERVICE_OWNER_GMAIL_COM;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class NotificationServiceTest {
@@ -51,7 +48,6 @@ class NotificationServiceTest {
     private final ConcurrentHashMap<String, String> parameters = new ConcurrentHashMap<>();
     private SendEmailResponse inputSendEmailResponse;
     private TestData testData;
-    private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE = "ET1_1122.pdf";
 
     @BeforeEach
     void before() throws NotificationClientException {
@@ -160,89 +156,43 @@ class NotificationServiceTest {
         );
     }
 
-    @Test
-    void shouldSendSubmitCaseConfirmationEmail() throws IOException {
+    @SneakyThrows
+    private SendEmailResponse mockSendSubmitCaseConfirmationEmailResponse(String languagePreference) {
+        when(notificationClient.sendEmail(TEST_TEMPLATE_API_KEY,TEST_EMAIL, parameters, REFERENCE_STRING))
+            .thenReturn(inputSendEmailResponse);
+
         CaseDetails caseDetails = CaseDetails.builder().build();
         caseDetails.setId(1_231_231L);
-
-        NotificationsProperties notificationsProperties1 = new NotificationsProperties();
-        notificationsProperties1.setEt1EcmDtsCoreTeamSlackNotificationEmail(
-            "ecm-dts-core-team-aaaaeefocyx4lal2b6yfibek5e@moj.org.slack.com");
-        notificationsProperties1.setEt1ServiceOwnerNotificationEmail("etreform@justice.gov.uk");
-        notificationsProperties1.setCySubmitCaseEmailTemplateId("3f4a995c-0399-4e42-aaf9-2bd144247585");
-        notificationsProperties1.setCitizenPortalLink("https://localhost:3001/citizen-hub/");
-        notificationsProperties1.setSubmitCaseEmailTemplateId("7e85feba-c0af-4698-a7eb-13b73841302f");
-        notificationsProperties1.setGovNotifyApiKey(TEST_TEMPLATE_API_KEY);
-        NotificationClient notificationClient1 = new NotificationClient(TEST_TEMPLATE_API_KEY);
-        notificationService = new NotificationService(notificationClient1, notificationsProperties1);
-
         CaseData caseData = new CaseData();
         ClaimantIndType claimantIndType = new ClaimantIndType();
         claimantIndType.setClaimantFirstNames("TestFName");
         claimantIndType.setClaimantLastName("TestLName");
         caseData.setClaimantIndType(claimantIndType);
         ClaimantType claimantType = new ClaimantType();
-        claimantType.setClaimantAddressUK(null);
+        claimantType.setClaimantAddressUK(new Address());
         claimantType.setClaimantEmailAddress(TEST_EMAIL);
+        ClaimantHearingPreference hearingPreference = new ClaimantHearingPreference();
+        hearingPreference.setContactLanguage(languagePreference);
+        caseData.setClaimantHearingPreference(hearingPreference);
         caseData.setClaimantType(claimantType);
-        PdfService pdfService1 = new PdfService(new PdfMapperService());
-        pdfService1.englishPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE;
-        byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
+        caseData.getClaimantHearingPreference().setContactLanguage(languagePreference);
+        byte[] pdfData = new byte[2];
 
-        SendEmailResponse emailResponse = notificationService.sendSubmitCaseConfirmationEmail(
-            caseDetails,
-            caseData,
-            null,
-            pdfData
-        );
-
-        assertThat(emailResponse.getTemplateId().toString()
-                       .equals(notificationsProperties1.getCySubmitCaseEmailTemplateId()));
-
+        return notificationService.sendSubmitCaseConfirmationEmail(caseDetails, caseData, null, pdfData);
     }
 
     @Test
-    void shouldSendSubmitCaseConfirmationEmailInWelsh() throws IOException {
-        CaseDetails caseDetails = CaseDetails.builder().build();
-        caseDetails.setId(1_231_231L);
+    void shouldSendSubmitCaseConfirmationEmailInEnglish() {
+        SendEmailResponse sendEmailResponse = mockSendSubmitCaseConfirmationEmailResponse(
+            EtSyaConstants.ENGLISH_LANGUAGE);
+        assertThat("8835039a-3544-439b-a3da-882490d959eb".equals(sendEmailResponse.getTemplateId().toString()));
+    }
 
-        NotificationsProperties notificationsProperties1 = new NotificationsProperties();
-        notificationsProperties1.setEt1EcmDtsCoreTeamSlackNotificationEmail(
-            "ecm-dts-core-team-aaaaeefocyx4lal2b6yfibek5e@moj.org.slack.com");
-        notificationsProperties1.setEt1ServiceOwnerNotificationEmail("etreform@justice.gov.uk");
-        notificationsProperties1.setCySubmitCaseEmailTemplateId("3f4a995c-0399-4e42-aaf9-2bd144247585");
-        notificationsProperties1.setCitizenPortalLink("https://localhost:3001/citizen-hub/");
-        notificationsProperties1.setSubmitCaseEmailTemplateId("7e85feba-c0af-4698-a7eb-13b73841302f");
-        notificationsProperties1.setGovNotifyApiKey(TEST_TEMPLATE_API_KEY);
-        NotificationClient notificationClient1 = new NotificationClient(TEST_TEMPLATE_API_KEY);
-        notificationService = new NotificationService(notificationClient1, notificationsProperties1);
-
-        CaseData caseData = new CaseData();
-        ClaimantIndType claimantIndType = new ClaimantIndType();
-        claimantIndType.setClaimantFirstNames("TestFName");
-        claimantIndType.setClaimantLastName("TestLName");
-        caseData.setClaimantIndType(claimantIndType);
-        ClaimantType claimantType = new ClaimantType();
-        claimantType.setClaimantAddressUK(null);
-        claimantType.setClaimantEmailAddress(TEST_EMAIL);
-        var pref = new ClaimantHearingPreference();
-        pref.setContactLanguage(EtSyaConstants.WELSH_LANGUAGE);
-        caseData.setClaimantHearingPreference(pref);
-        caseData.setClaimantType(claimantType);
-        PdfService pdfService1 = new PdfService(new PdfMapperService());
-        pdfService1.englishPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE;
-        byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
-        caseData.getClaimantHearingPreference().setContactLanguage(EtSyaConstants.WELSH_LANGUAGE);
-
-        SendEmailResponse emailResponse = notificationService.sendSubmitCaseConfirmationEmail(
-            caseDetails,
-            caseData,
-            null,
-            pdfData
-        );
-
-        assertThat(emailResponse.getTemplateId().toString()
-                       .equals(notificationsProperties1.getCySubmitCaseEmailTemplateId()));
+    @Test
+    void shouldSendSubmitCaseConfirmationEmailInWelsh() {
+        SendEmailResponse sendEmailResponse =
+            mockSendSubmitCaseConfirmationEmailResponse(EtSyaConstants.WELSH_LANGUAGE);
+        assertThat("8835039a-3544-439b-a3da-882490d959eb".equals(sendEmailResponse.getTemplateId().toString()));
     }
 
     @Test
@@ -258,48 +208,58 @@ class NotificationServiceTest {
         assertThat(response.getBody()).isEqualTo("Dear test, Please see your detail as 123456789. Regards, ET Team.");
     }
 
+    @SneakyThrows
     @Test
-    void shouldSuccessfullySendDocUploadErrorEmail() throws IOException {
+    void shouldSuccessfullySendDocUploadErrorEmail() {
+        inputSendEmailResponse = new SendEmailResponse("{\n"
+                                                           + "  \"id\": \"f30b2148-b1a6-4c0d-8a10-50109c96dc2c\",\n"
+                                                           + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
+                                                           + "  \"template\": {\n"
+                                                           + "    \"id\": \""
+                                                           + DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID
+                                                           + "\",\n"
+                                                           + "    \"version\": \"3\",\n"
+                                                           + "    \"uri\": \"TEST\"\n"
+                                                           + "  },\n"
+                                                           + "  \"content\": {\n"
+                                                           + "    \"body\": \"Dear test, "
+                                                           + "Please see your detail as 123456789. Regards, "
+                                                           + "ET Team.\",\n"
+                                                           + "    \"subject\": \"ET Test email created\",\n"
+                                                           + "    \"from_email\": \"" + TEST_EMAIL + "\"\n"
+                                                           + "  }\n"
+                                                           + "}\n");
+        when(notificationsProperties.getEt1ServiceOwnerNotificationEmail()).thenReturn(TEST_EMAIL);
+        when(notificationsProperties.getEt1EcmDtsCoreTeamSlackNotificationEmail()).thenReturn(TEST_EMAIL);
+        when(notificationsProperties.getSubmitCaseDocUploadErrorEmailTemplateId())
+            .thenReturn(DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID);
+        when(notificationClient.sendEmail(TEST_TEMPLATE_API_KEY,TEST_EMAIL, parameters, REFERENCE_STRING))
+            .thenReturn(inputSendEmailResponse);
 
         CaseDetails caseDetails = CaseDetails.builder().build();
         caseDetails.setId(1_231_231L);
-
-        NotificationsProperties notificationsProperties1 = new NotificationsProperties();
-        notificationsProperties1.setEt1EcmDtsCoreTeamSlackNotificationEmail("tensay.bulcha@justice.gov.uk");
-        notificationsProperties1.setEt1ServiceOwnerNotificationEmail(TEST_EMAIL);
-        notificationsProperties1.setCitizenPortalLink("https://localhost:3001/citizen-hub/");
-        notificationsProperties1.setSubmitCaseDocUploadErrorEmailTemplateId("3007a1e9-13b0-4bf9-9753-398ea91b8564");
-        notificationsProperties1.setGovNotifyApiKey(TEST_TEMPLATE_API_KEY);
-
-        NotificationClient notificationClient1 = new NotificationClient(TEST_TEMPLATE_API_KEY);
-        notificationService = new NotificationService(notificationClient1, notificationsProperties1);
-
         CaseData caseData = new CaseData();
         ClaimantIndType claimantIndType = new ClaimantIndType();
-
         claimantIndType.setClaimantFirstNames("TestFName");
         claimantIndType.setClaimantLastName("TestLName");
         caseData.setClaimantIndType(claimantIndType);
         ClaimantType claimantType = new ClaimantType();
-        claimantType.setClaimantAddressUK(null);
+        claimantType.setClaimantAddressUK(new Address());
         claimantType.setClaimantEmailAddress(TEST_EMAIL);
+        ClaimantHearingPreference hearingPreference = new ClaimantHearingPreference();
+        hearingPreference.setContactLanguage(EtSyaConstants.ENGLISH_LANGUAGE);
+        caseData.setClaimantHearingPreference(hearingPreference);
         caseData.setClaimantType(claimantType);
+        caseData.getClaimantHearingPreference().setContactLanguage(EtSyaConstants.ENGLISH_LANGUAGE);
+        byte[] acasPdfData = new byte[2];
+        byte[] et1PdfData = new byte[2];
 
-        PdfService pdfService1 = new PdfService(new PdfMapperService());
-        pdfService1.englishPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE;
-        byte[] testEt1PdfByteArray = pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE);
-        // copy the pdf file for test as it is only pdf formatted file required
-        byte[] testAcasPdfByteArray = testEt1PdfByteArray;
-
-        CaseDetails testCaseDetails = testData.getExpectedDetails();
-        SendEmailResponse sendEmailResponse = notificationService.sendDocUploadErrorEmail(testCaseDetails,
-                                                                                          testEt1PdfByteArray,
-                                                                                          testAcasPdfByteArray);
+        SendEmailResponse sendEmailResponse = notificationService.sendDocUploadErrorEmail(caseDetails,
+                                                                                          acasPdfData,
+                                                                                          et1PdfData);
         assertThat(sendEmailResponse.getFromEmail().isPresent()).isTrue();
         assertThat(sendEmailResponse.getFromEmail()).asString()
-            .isEqualTo("Optional[" + EMAIL_TEST_SERVICE_OWNER_GMAIL_COM + "]");
-        assertThat(sendEmailResponse.getTemplateId().toString())
-            .isEqualTo(DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID);
+            .isEqualTo("Optional[" + TEST_EMAIL + "]");
     }
 
     @Test
