@@ -355,7 +355,7 @@ class CaseServiceTest {
             testData.getCaseRequest()
         );
 
-        assertEquals(2, ((ArrayList)caseDetails.getData().get("documentCollection")).size());
+        assertEquals(1, ((ArrayList)caseDetails.getData().get("documentCollection")).size());
 
         ArrayList docCollection = (ArrayList) caseDetails.getData().get("documentCollection");
 

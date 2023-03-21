@@ -325,5 +325,4 @@ class NotificationServiceTest {
             .isEqualTo("java.lang.Exception: Error while trying to send doc upload"
                        + " error notification to service owner");
     }
-
 }
