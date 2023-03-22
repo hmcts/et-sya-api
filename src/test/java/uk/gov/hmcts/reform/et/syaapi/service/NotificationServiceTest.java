@@ -432,4 +432,45 @@ class NotificationServiceTest {
         assertThat(response.getBody()).isEqualTo("Dear test, Please see your detail as 123456789. "
                                                      + "Regards, ET Team.");
     }
+
+    @Test
+    void shouldSendResponseEmailToTribunal() throws NotificationClientException {
+        notificationService.sendResponseEmailToTribunal(
+            testData.getCaseData(),
+            CLAIMANT,
+            "1",
+            TEST_RESPONDENT,
+            NOT_SET,
+            testData.getExpectedDetails().getId().toString(),
+            "Change my personal details"
+        );
+
+        verify(notificationClient, times(1)).sendEmail(
+            any(),
+            eq(testData.getCaseData().getTribunalCorrespondenceEmail()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void shouldNotSendResponseEmailToTribunal() throws NotificationClientException {
+        testData.getCaseData().setManagingOffice(UNASSIGNED_OFFICE);
+        notificationService.sendResponseEmailToTribunal(
+            testData.getCaseData(),
+            CLAIMANT,
+            "1",
+            TEST_RESPONDENT,
+            NOT_SET,
+            testData.getExpectedDetails().getId().toString(),
+            "Change my personal details"
+        );
+
+        verify(notificationClient, times(0)).sendEmail(
+            any(),
+            eq(testData.getCaseData().getTribunalCorrespondenceEmail()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
 }
