@@ -9,6 +9,7 @@ import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
+import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.service.notify.NotificationClient;
@@ -343,6 +344,74 @@ public class NotificationService {
             } catch (NotificationClientException ne) {
                 throw new NotificationException(ne);
             }
+        }
+    }
+
+    /**
+     *  Send acknowledgment email to the claimant when they are responding to
+     *  an application (type A/B) made by the Respondent.
+     *
+     * @param caseData        existing case details
+     * @param claimant        claimant's full name
+     * @param caseNumber      ethos case reference
+     * @param respondentNames concatenated respondent names
+     * @param hearingDate     date of the nearest hearing
+     * @param caseId          16 digit case id
+     * @param applicationType type of application
+     */
+    public void sendResponseEmailToClaimant(
+        CaseData caseData,
+        String claimant,
+        String caseNumber,
+        String respondentNames,
+        String hearingDate,
+        String caseId,
+        String applicationType,
+        RespondToApplicationRequest respondToApplicationRequest
+    ) {
+
+        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
+
+        addCommonParameters(
+            claimantParameters,
+            claimant,
+            respondentNames,
+            caseId,
+            caseNumber
+        );
+        claimantParameters.put(
+            HEARING_DATE,
+            hearingDate
+        );
+
+        String subjectLine = caseNumber + " " + applicationType;
+        claimantParameters.put(
+            "subjectLine",
+            subjectLine
+        );
+        claimantParameters.put(
+            "shortText",
+            applicationType
+        );
+        // create respondent application
+        // reply to this from citizen hub
+        //
+        String yesOrNo = respondToApplicationRequest.getResponse().getCopyToOtherParty();
+        log.info("copy to other party is " + yesOrNo);
+        // for now only send the 'no' template
+        String emailToClaimantTemplate = "Yesssss!".equals(yesOrNo)
+            ? notificationsProperties.getClaimantResponseYesTemplateId() :
+            notificationsProperties.getClaimantResponseNoTemplateId();
+
+        try {
+            notificationClient.sendEmail(
+                emailToClaimantTemplate,
+                caseData.getClaimantType().getClaimantEmailAddress(),
+                claimantParameters,
+                caseId
+            );
+        } catch (NotificationClientException ne) {
+            throw new NotificationException(ne);
         }
     }
 

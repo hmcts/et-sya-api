@@ -108,7 +108,7 @@ public class ApplicationService {
                 request.getCaseTypeId()
             );
 
-            sendResponseToApplicationEmails(appToModify.getValue(), caseData, request.getCaseId());
+            sendResponseToApplicationEmails(appToModify.getValue(), caseData, request.getCaseId(), request);
 
             return caseDetails;
         } else {
@@ -162,7 +162,8 @@ public class ApplicationService {
 
     private void sendResponseToApplicationEmails(GenericTseApplicationType application,
                                                  CaseData caseData,
-                                                 String caseId) {
+                                                 String caseId,
+                                                    RespondToApplicationRequest respondToApplicationRequest) {
         String claimant = caseData.getClaimantIndType().getClaimantFirstNames() + " "
             + caseData.getClaimantIndType().getClaimantLastName();
 
@@ -178,6 +179,17 @@ public class ApplicationService {
             hearingDate,
             caseId,
             application.getType()
+        );
+
+        notificationService.sendResponseEmailToClaimant(
+            caseData,
+            claimant,
+            caseNumber,
+            respondentNames,
+            hearingDate,
+            caseId,
+            application.getType(),
+            respondToApplicationRequest
         );
     }
 
