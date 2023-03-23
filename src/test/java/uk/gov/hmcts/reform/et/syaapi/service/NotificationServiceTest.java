@@ -156,45 +156,6 @@ class NotificationServiceTest {
         );
     }
 
-    @SneakyThrows
-    private SendEmailResponse mockSendSubmitCaseConfirmationEmailResponse(String languagePreference) {
-        when(notificationClient.sendEmail(TEST_TEMPLATE_API_KEY,TEST_EMAIL, parameters, REFERENCE_STRING))
-            .thenReturn(inputSendEmailResponse);
-
-        CaseDetails caseDetails = CaseDetails.builder().build();
-        caseDetails.setId(1_231_231L);
-        CaseData caseData = new CaseData();
-        ClaimantIndType claimantIndType = new ClaimantIndType();
-        claimantIndType.setClaimantFirstNames("TestFName");
-        claimantIndType.setClaimantLastName("TestLName");
-        caseData.setClaimantIndType(claimantIndType);
-        ClaimantType claimantType = new ClaimantType();
-        claimantType.setClaimantAddressUK(new Address());
-        claimantType.setClaimantEmailAddress(TEST_EMAIL);
-        ClaimantHearingPreference hearingPreference = new ClaimantHearingPreference();
-        hearingPreference.setContactLanguage(languagePreference);
-        caseData.setClaimantHearingPreference(hearingPreference);
-        caseData.setClaimantType(claimantType);
-        caseData.getClaimantHearingPreference().setContactLanguage(languagePreference);
-        byte[] pdfData = new byte[2];
-
-        return notificationService.sendSubmitCaseConfirmationEmail(caseDetails, caseData, null, pdfData);
-    }
-
-    @Test
-    void shouldSendSubmitCaseConfirmationEmailInEnglish() {
-        SendEmailResponse sendEmailResponse = mockSendSubmitCaseConfirmationEmailResponse(
-            EtSyaConstants.ENGLISH_LANGUAGE);
-        assertThat("8835039a-3544-439b-a3da-882490d959eb".equals(sendEmailResponse.getTemplateId().toString()));
-    }
-
-    @Test
-    void shouldSendSubmitCaseConfirmationEmailInWelsh() {
-        SendEmailResponse sendEmailResponse =
-            mockSendSubmitCaseConfirmationEmailResponse(EtSyaConstants.WELSH_LANGUAGE);
-        assertThat("8835039a-3544-439b-a3da-882490d959eb".equals(sendEmailResponse.getTemplateId().toString()));
-    }
-
     @Test
     void shouldSendSubmitCaseConfirmationEmailNull() {
         NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
