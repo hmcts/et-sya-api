@@ -371,9 +371,9 @@
   },
   "claimantRequests" : {
     "claim_outcome" : ["compensation", "tribunal", "oldJob", "anotherJob"],
-    "claimant_compensation_text" : "Yes",
+    "claimant_compensation_text" : "I would like to have test compensation. This is a test compensation.",
     "claimant_compensation_amount" : "2000",
-    "claimant_tribunal_recommendation" : "Yes",
+    "claimant_tribunal_recommendation" : "I would like to have test claimant recommendation. This is a test recommendation",
     "whistleblowing" : "Yes",
     "whistleblowing_authority" : "Whistle Blowing Authority",
     "claim_description" : "This is a test claim",
@@ -384,7 +384,7 @@
       "document_url" : "https://document.url"
     },
     "discrimination_claims" : ["age", "disability", "ethnicity", "genderReassignment", "marriageOrCivilPartnership",
-    "pregnancyOrMaternity", "race", "religionOrBelief", "Sex (Including equal pay)", "sexualOrientation"],
+      "pregnancyOrMaternity", "race", "religionOrBelief", "Sex (Including equal pay)", "sexualOrientation"],
     "pay_claims" : ["arrears", "holidayPay", "noticePay", "redundancyPay", "otherPayments"]
   },
   "claimantHearingPreference" : {
@@ -798,3 +798,4 @@
   "confirmCloseReferral" : null,
   "closeReferralGeneralNotes" : null
 }
+
