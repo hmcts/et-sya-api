@@ -31,7 +31,6 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
-import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.SHORT_TEXT_MAP;
 
 /**
  * Uses {@link PdfMapperService} to convert a given case into a Pdf Document.
@@ -241,7 +240,7 @@ public class PdfService {
             convertClaimantTseToPdf(claimantTse),
             TSE_FILENAME,
             PDF_FILE_TIKA_CONTENT_TYPE,
-            SHORT_TEXT_MAP.get(claimantTse.getContactApplicationType())
+            ClaimantTse.APP_TYPE_MAP.get(claimantTse.getContactApplicationType())
         );
     }
 
