@@ -129,7 +129,7 @@ task contract(type: Test) {
 
 checkstyle {
   maxWarnings = 0
-  toolVersion = '10.8.1'
+  toolVersion = '10.9.2'
   getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
 
@@ -228,14 +228,14 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'et-data-model', version: '1.11.4'
   implementation group: 'com.github.hmcts', name: 'ccd-client', version: '4.9.1'
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '2.1.1'
-  implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '4.1.0'
+  implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '4.1.2'
 
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '3.19.1-RELEASE'
 
   implementation 'org.apache.tika:tika-core:2.7.0'
   implementation("com.google.guava:guava:31.1-jre")
 
-  implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '3.0.0-alpha2'
+  implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '3.0.0-RC1'
 
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4JVersion
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
@@ -268,7 +268,7 @@ dependencies {
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     exclude group: 'com.vaadin.external.google', module: 'android-json'
   }
-  testImplementation group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version: '3.14'
+  testImplementation group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version: '3.14.1'
   testImplementation('org.assertj:assertj-core:3.24.2')
   testImplementation group: 'io.rest-assured', name: 'rest-assured'
   testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit', version: '2.36.1'
