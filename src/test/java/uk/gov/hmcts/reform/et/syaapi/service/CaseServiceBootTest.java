@@ -98,9 +98,10 @@ class CaseServiceBootTest {
             anyList()
         )).thenReturn(testData.getUploadDocumentResponse());
         when(notificationService.sendSubmitCaseConfirmationEmail(
-            testData.getExpectedDetails(),
-            testData.getCaseData(),
-            testData.getUserInfo())
+            eq(testData.getExpectedDetails()),
+            eq(testData.getCaseData()),
+            eq(testData.getUserInfo()),
+            any())
         ).thenReturn(null);
     }
 
