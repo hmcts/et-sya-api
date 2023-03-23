@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 
@@ -240,7 +241,7 @@ public class PdfService {
             convertClaimantTseToPdf(claimantTse),
             TSE_FILENAME,
             PDF_FILE_TIKA_CONTENT_TYPE,
-            ClaimantTse.APP_TYPE_MAP.get(claimantTse.getContactApplicationType())
+            APP_TYPE_MAP.get(claimantTse.getContactApplicationType())
         );
     }
 
