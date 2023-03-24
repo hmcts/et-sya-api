@@ -51,11 +51,11 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.OTHER_TYPE_OF_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.INITIATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
@@ -205,10 +205,11 @@ public class CaseService {
         List<PdfDecodedMultipartFile> casePdfFiles =
             pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData, userInfo);
 
-        //  Submit e-mail to the user with generated ET1 pdf file attached. The pdf file is the user selected
+        //  Submit e-mail to the user with generated ET1 pdf file attached. The pdf file is in the user selected
         //  contact language (Welsh or English)
-        PdfDecodedMultipartFile pdfFile = ENGLISH_LANGUAGE.equals(CaseServiceUtil.findClaimantLanguage(caseData))
-            ? casePdfFiles.get(0) : casePdfFiles.get(1);
+        PdfDecodedMultipartFile pdfFile = WELSH_LANGUAGE.equals(CaseServiceUtil.findClaimantLanguage(caseData))
+            ? casePdfFiles.get(1) : casePdfFiles.get(0);
+
         notificationService.sendSubmitCaseConfirmationEmail(caseDetails, caseData, userInfo, pdfFile.getBytes());
 
         List<DocumentTypeItem> documentList = uploadAllCaseDocuments(caseData, authorization,
