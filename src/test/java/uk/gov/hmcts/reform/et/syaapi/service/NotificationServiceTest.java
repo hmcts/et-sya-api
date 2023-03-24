@@ -118,7 +118,6 @@ class NotificationServiceTest {
             UUID.fromString("f30b2148-b1a6-4c0d-8a10-50109c96dc2c"));
     }
 
-
     @Test
     void ifTargetEmailIsNullWillThrowNotificationException() throws NotificationClientException {
         given(notificationClient.sendEmail(anyString(), nullable(String.class), any(), anyString()))
