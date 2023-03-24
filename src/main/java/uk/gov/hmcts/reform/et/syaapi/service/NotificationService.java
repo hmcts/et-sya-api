@@ -22,10 +22,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM;
-import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.SHORT_TEXT_MAP;
 
 
 /**
@@ -197,7 +197,8 @@ public class NotificationService {
             HEARING_DATE,
             hearingDate
         );
-        respondentParameters.put("shortText", SHORT_TEXT_MAP.get(claimantApplication.getContactApplicationType()));
+        respondentParameters.put("shortText",
+                                 APP_TYPE_MAP.get(claimantApplication.getContactApplicationType()));
         respondentParameters.put("datePlus7", LocalDate.now().plusDays(7).toString());
 
         String emailToRespondentTemplate;
@@ -267,7 +268,8 @@ public class NotificationService {
             hearingDate
         );
 
-        String subjectLine = caseNumber + " " + SHORT_TEXT_MAP.get(claimantApplication.getContactApplicationType());
+        String subjectLine = caseNumber + " "
+            + APP_TYPE_MAP.get(claimantApplication.getContactApplicationType());
         tribunalParameters.put(
             "subjectLine",
             subjectLine
@@ -360,7 +362,7 @@ public class NotificationService {
                                                 Map<String, Object> parameters) {
         String emailTemplate;
         parameters.put(HEARING_DATE, hearingDate);
-        String shortText = SHORT_TEXT_MAP.get(claimantApplication.getContactApplicationType());
+        String shortText = APP_TYPE_MAP.get(claimantApplication.getContactApplicationType());
         if (DONT_SEND_COPY.equals(claimantApplication.getCopyToOtherPartyYesOrNo())) {
             parameters.put("shortText", shortText);
             emailTemplate = notificationsProperties.getClaimantTseEmailNoTemplateId();
