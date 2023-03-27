@@ -18,11 +18,13 @@ java:
           alias: IDAM_CLIENT_SECRET
     et:
       secrets:
-        - AppInsightsInstrumentationKey
+        - name: AppInsightsInstrumentationKey
+          alias: APP_INSIGHTS_KEY
         - name: tornado-access-key
           alias: TORNADO_ACCESS_KEY
         - name: gov-notify-api-key
           alias: GOV_UK_NOTIFY_API_KEY
+
   environment:
     IDAM_API_BASEURL: "https://idam-api.{{ .Values.global.environment }}.platform.hmcts.net"
     IDAM_JWKS_BASEURL: "https://idam-api.{{ .Values.global.environment }}.platform.hmcts.net/o/jwks"
@@ -35,3 +37,10 @@ java:
     CITIZEN_PORTAL_LINK: "https://et-sya.{{ .Values.global.environment }}.platform.hmcts.net/citizen-hub/"
     SUBMIT_CASE_EMAIL_TEMPLATE_ID: "4f4b378e-238a-46ed-ae1c-26b8038192f0"
     CY_SUBMIT_CASE_EMAIL_TEMPLATE_ID: "970257cd-3464-4ec9-bbb8-45fd9128001c"
+    APPLICATION_ACKNOWLEDGEMENT_TYPE_C: "197c69b6-254c-4f8d-8909-e85549496d8b"
+    APPLICATION_ACKNOWLEDGEMENT_YES: "d5f319f1-229f-4dcb-9293-f164bb327601"
+    APPLICATION_ACKNOWLEDGEMENT_NO: "e6c8b8c4-e58b-4bae-a8ec-cca68bca0c4e"
+    RESPONDENT_COPY_A: "a2ffb9b3-8bf7-4e9a-aab8-08a6c5a82636"
+    RESPONDENT_COPY_B: "59ccc472-8f2e-43e4-b275-832f1c714eff"
+    TRIBUNAL_ACKNOWLEDGEMENT: "d82aa18a-1a3d-44af-91fa-565d178f5e0e"
+    TRIBUNAL_RESPONSE: "9da290ff-c7da-4897-80d2-114361271dfa"

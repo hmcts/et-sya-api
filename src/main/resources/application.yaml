@@ -29,7 +29,7 @@ spring:
 
 azure:
   application-insights:
-    instrumentation-key: ${AppInsightsInstrumentationKey:00000000-0000-0000-0000-000000000000}
+    instrumentation-key: ${APP_INSIGHTS_KEY:00000000-0000-0000-0000-000000000000}
 
 idam:
   api:
@@ -67,12 +67,23 @@ tornado:
 
 notifications:
   citizenPortalLink: ${CITIZEN_PORTAL_LINK:https://localhost:3001/citizen-hub/}
-  govNotifyApiKey: ${GOV_UK_NOTIFY_API_KEY:AAAAAAAAAAAAAAAAA}
+  govNotifyApiKey: ${GOV_UK_NOTIFY_API_KEY:AAAAA}
   sampleEmailTemplateId: "4ea3cf16-0cbb-4f27-8cfb-a084b126086e"
   sampleSubmitCaseEmailTemplateId: "af0b26b7-17b6-4643-bbdc-e296d11e7b0c"
   submitCaseEmailTemplateId: ${SUBMIT_CASE_EMAIL_TEMPLATE_ID:4f4b378e-238a-46ed-ae1c-26b8038192f0}
   cySubmitCaseEmailTemplateId: ${CY_SUBMIT_CASE_EMAIL_TEMPLATE_ID:f61f7f2a-4825-491b-bc48-0299f1a8ba23}
+  applicationAcknowledgementTypeC: ${APPLICATION_ACKNOWLEDGEMENT_TYPE_C:197c69b6-254c-4f8d-8909-e85549496d8b}
+  applicationAcknowledgementYes: ${APPLICATION_ACKNOWLEDGEMENT_YES:d5f319f1-229f-4dcb-9293-f164bb327601}
+  applicationAcknowledgementNo: ${APPLICATION_ACKNOWLEDGEMENT_NO:e6c8b8c4-e58b-4bae-a8ec-cca68bca0c4e}
+  respondentCopyTypeA: ${RESPONDENT_COPY_A:a2ffb9b3-8bf7-4e9a-aab8-08a6c5a82636}
+  respondentCopyTypeB: ${RESPONDENT_COPY_B:59ccc472-8f2e-43e4-b275-832f1c714eff}
+  tribunalAcknowledgement: ${TRIBUNAL_ACKNOWLEDGEMENT:d82aa18a-1a3d-44af-91fa-565d178f5e0e}
+  tribunalResponse: ${TRIBUNAL_RESPONSE:9da290ff-c7da-4897-80d2-114361271dfa}
 
 pdf:
   english: "ET1_2222.pdf"
   welsh: "CY_ET1_2222.pdf"
+  contact_tribunal_template: "EM-TRB-EGW-ENG-00068.docx"
+
+caseWorkerUserName: ${CASEWORKER_USER_NAME:user_name}
+caseWorkerPassword: ${CASEWORKER_PASSWORD:password}
