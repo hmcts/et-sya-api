@@ -53,16 +53,16 @@ public class NotificationService {
     }
 
     /**
-     * Format user and case data then send email.
+     * Prepares case submission confirmation email content from user and case data & sends email to the user.
      *
      * @param caseDetails  top level non-modifiable case details
      * @param caseData  user provided data
      * @param userInfo   user details from Idam
+     * @param et1Pdf  pdf form of the ET1 form
      * @return Gov notify email format
      */
-    public SendEmailResponse sendSubmitCaseConfirmationEmail(CaseDetails caseDetails,
-                                                              CaseData caseData,
-                                                              UserInfo userInfo) {
+    public SendEmailResponse sendSubmitCaseConfirmationEmail(CaseDetails caseDetails, CaseData caseData,
+                                                             UserInfo userInfo, byte[] et1Pdf) {
 
         String firstName = Strings.isNullOrEmpty(caseData.getClaimantIndType().getClaimantFirstNames())
             ? userInfo.getGivenName()
@@ -73,6 +73,7 @@ public class NotificationService {
         String caseNumber = caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString();
         String emailTemplateId = notificationsProperties.getSubmitCaseEmailTemplateId();
         String citizenPortalLink = notificationsProperties.getCitizenPortalLink() + "%s";
+
         if (caseData.getClaimantHearingPreference().getContactLanguage() != null
             && WELSH_LANGUAGE.equals(caseData.getClaimantHearingPreference().getContactLanguage())) {
             emailTemplateId = notificationsProperties.getCySubmitCaseEmailTemplateId();
@@ -81,14 +82,61 @@ public class NotificationService {
 
         SendEmailResponse sendEmailResponse;
         try {
-            Map<String, String> parameters = new ConcurrentHashMap<>();
+            Map<String, Object> parameters = new ConcurrentHashMap<>();
             parameters.put("firstName", firstName);
             parameters.put("lastName", lastName);
             parameters.put("caseNumber", caseNumber);
             parameters.put("citizenPortalLink", String.format(citizenPortalLink, caseNumber));
+            parameters.put("link_to_et1_pdf_file", NotificationClient.prepareUpload(et1Pdf));
+
+            String claimantEmailAddress = caseData.getClaimantType().getClaimantEmailAddress();
             sendEmailResponse = notificationClient.sendEmail(
                 emailTemplateId,
-                caseData.getClaimantType().getClaimantEmailAddress(),
+                claimantEmailAddress,
+                parameters,
+                caseNumber
+            );
+        } catch (NotificationClientException ne) {
+            throw new NotificationException(ne);
+        }
+        return sendEmailResponse;
+    }
+
+    /**
+     * Prepared doc upload error alert email content from user and case data then sends email to the service.
+     *
+     * @param caseDetails  top level non-modifiable case details
+     * @param et1FormContentPdf  pdf copy of ET1 form content
+     * @param acasCertificatesPdf  pdf copy of Acas Certificates
+     * @return Gov notify email format
+     */
+    public SendEmailResponse sendDocUploadErrorEmail(CaseDetails caseDetails,
+                                                     byte[] et1FormContentPdf,
+                                                     byte[] acasCertificatesPdf) {
+        SendEmailResponse sendEmailResponse;
+
+        try {
+            String caseNumber = caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString();
+            Map<String, Object> parameters = new ConcurrentHashMap<>();
+            parameters.put("serviceOwnerName", "Service Owner");
+            parameters.put("caseNumber", caseNumber);
+            parameters.put("link_to_et1_pdf_file", NotificationClient.prepareUpload(et1FormContentPdf));
+            parameters.put("link_to_acas_cert_pdf_file", NotificationClient.prepareUpload(acasCertificatesPdf));
+
+            String emailTemplateId = notificationsProperties.getSubmitCaseDocUploadErrorEmailTemplateId();
+
+            // Send an alert email to the service owner
+            sendEmailResponse = notificationClient.sendEmail(
+                emailTemplateId,
+                notificationsProperties.getEt1ServiceOwnerNotificationEmail(),
+                parameters,
+                caseNumber
+            );
+
+            // Send a copy alert email to ECM DTS core team
+            notificationClient.sendEmail(
+                emailTemplateId,
+                notificationsProperties.getEt1EcmDtsCoreTeamSlackNotificationEmail(),
                 parameters,
                 caseNumber
             );
