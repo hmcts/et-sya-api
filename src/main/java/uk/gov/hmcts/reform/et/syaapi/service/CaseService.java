@@ -200,6 +200,10 @@ public class CaseService {
         //  and add it to our pdf files list
         caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :
                                            caseDetails.getData().get("ethosCaseReference").toString());
+        caseData.setReceiptDate(caseDetails.getData().get("receiptDate") == null ? "" :
+                                    caseDetails.getData().get("receiptDate").toString());
+        caseData.setFeeGroupReference(caseDetails.getData().get("feeGroupReference") == null ? "" :
+                                          caseDetails.getData().get("feeGroupReference").toString());
 
         UserInfo userInfo = idamClient.getUserInfo(authorization);
         List<PdfDecodedMultipartFile> casePdfFiles =
