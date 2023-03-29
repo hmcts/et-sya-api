@@ -55,6 +55,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.ENGLANDWALES_CASE_TYPE_ID;
@@ -68,7 +69,7 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.USER_ID;
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"PMD.TooManyMethods","PMD.ExcessiveImports"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.AvoidDuplicateLiterals"})
 class CaseServiceTest {
 
     @Mock
@@ -191,7 +192,7 @@ class CaseServiceTest {
         when(ccdApiClient.submitForCitizen(
             eq(TEST_SERVICE_AUTH_TOKEN),
             eq(TEST_SERVICE_AUTH_TOKEN),
-             eq(USER_ID),
+            eq(USER_ID),
             eq(EtSyaConstants.JURISDICTION_ID),
             eq(EtSyaConstants.ENGLAND_CASE_TYPE),
             eq(true),
@@ -313,7 +314,8 @@ class CaseServiceTest {
                 new byte[0],
                 "test",
                 "test",
-                "test");
+                "test"
+            );
 
         when(pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(any(), any()))
             .thenReturn(List.of(pdfDecodedMultipartFile));
@@ -362,6 +364,93 @@ class CaseServiceTest {
             + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=https://document.binary.url, documentFilen"
             + "ame=filename, documentUrl=https://document.url), ownerDocument=null, creationDate=null, shortDescription=nu"
             + "ll)", ((DocumentTypeItem) docCollection.get(0)).getValue().toString());
+
+    }
+
+    @Test
+    void shouldSendErrorEmail() throws PdfServiceException, AcasException, InvalidAcasNumbersException,
+        CaseDocumentException {
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
+            USER_ID,
+            TEST_NAME,
+            testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
+            testData.getCaseData().getClaimantIndType().getClaimantLastName(),
+            null
+        ));
+
+        testData.getCaseRequest().setCaseId("1668421480426211");
+        when(ccdApiClient.submitEventForCitizen(
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(USER_ID),
+            eq(EtSyaConstants.JURISDICTION_ID),
+            eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
+            any(String.class),
+            eq(true),
+            any(CaseDataContent.class)
+        )).thenReturn(testData.getExpectedDetails());
+
+        when(ccdApiClient.startEventForCitizen(
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(USER_ID),
+            eq(EtSyaConstants.JURISDICTION_ID),
+            eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
+            any(String.class),
+            any(String.class)
+        )).thenReturn(testData.getStartEventResponse());
+
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            new PdfDecodedMultipartFile(
+                new byte[0],
+                "test",
+                "test",
+                "test"
+            );
+
+        when(pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(any(), any()))
+            .thenReturn(List.of(pdfDecodedMultipartFile));
+
+        when(pdfService.convertCaseDataToPdfDecodedMultipartFile(any(), any()))
+            .thenReturn(List.of(pdfDecodedMultipartFile));
+
+        when(acasService.getAcasCertificatesByCaseData(any())).thenReturn(List.of());
+
+        when(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(any()))
+            .thenReturn(testData.getCaseData());
+
+        when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(createDocumentTypeItem());
+
+        when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any()))
+            .thenThrow(new CaseDocumentException("Failed to upload documents"));
+
+        SendEmailResponse sendEmailResponse
+            = new SendEmailResponse("{\n"
+                                        + "  \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
+                                        + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
+                                        + "  \"template\": {\n"
+                                        + "    \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
+                                        + "    \"version\": \"3\",\n"
+                                        + "    \"uri\": \"TEST\"\n"
+                                        + "  },\n"
+                                        + "  \"content\": {\n"
+                                        + "    \"body\": \"Dear test, Please see your detail as 123456789. Regards, "
+                                        + "ET Team.\",\n"
+                                        + "    \"subject\": \"ET Test email created\",\n"
+                                        + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
+                                        + "  }\n"
+                                        + "}\n");
+
+        when(notificationService.sendDocUploadErrorEmail(any(), any(), any()))
+            .thenReturn(sendEmailResponse);
+        caseService.submitCase(
+            TEST_SERVICE_AUTH_TOKEN,
+            testData.getCaseRequest()
+        );
+
+        verify(notificationService, times(1)).sendDocUploadErrorEmail(any(), any(), any());
 
     }
 
@@ -526,7 +615,7 @@ class CaseServiceTest {
         List<JurCodesTypeItem> expectedItems = mockJurCodesTypeItems();
         testData.getStartEventResponse().setEventId(SUBMIT_CASE_DRAFT);
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(testData.getCaseDataWithClaimTypes()
-                                                                                 .getCaseData());
+                                                                                  .getCaseData());
         caseData.setJurCodesCollection(expectedItems);
         caseData.setFeeGroupReference(CASE_ID);
 
@@ -578,14 +667,16 @@ class CaseServiceTest {
                 .build()
         );
 
-        verify(ccdApiClient).submitEventForCitizen(anyString(),
-                                                   anyString(),
-                                                   anyString(),
-                                                   anyString(),
-                                                   anyString(),
-                                                   anyString(),
-                                                   anyBoolean(),
-                                                   any());
+        verify(ccdApiClient).submitEventForCitizen(
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyBoolean(),
+            any()
+        );
     }
 
     private List<JurCodesTypeItem> mockJurCodesTypeItems() {
