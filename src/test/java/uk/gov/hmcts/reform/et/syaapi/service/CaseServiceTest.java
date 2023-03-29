@@ -69,7 +69,7 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.USER_ID;
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.AvoidDuplicateLiterals"})
 class CaseServiceTest {
 
     @Mock
@@ -445,7 +445,7 @@ class CaseServiceTest {
 
         when(notificationService.sendDocUploadErrorEmail(any(), any(), any()))
             .thenReturn(sendEmailResponse);
-        CaseDetails caseDetails = caseService.submitCase(
+        caseService.submitCase(
             TEST_SERVICE_AUTH_TOKEN,
             testData.getCaseRequest()
         );
