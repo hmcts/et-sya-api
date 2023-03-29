@@ -249,7 +249,7 @@ public class CaseService {
             //get et1 pdf file base64 byte array
             byte[] acasCertificatesPdf = new byte[0];
             byte[] et1FormContentPdf = caseEt1PdfFiles.get(0).getBytes();
-            if (!acasCertificates.isEmpty()) {
+            if (!CollectionUtils.isEmpty(acasCertificates)) {
                 acasCertificatesPdf = acasCertificates.get(0).getBytes();
             }
 
