@@ -247,8 +247,11 @@ public class CaseService {
                                                        acasCertificates));
         } catch (CaseDocumentException exception) {
             //get et1 pdf file base64 byte array
+            byte[] acasCertificatesPdf = new byte[0];
             byte[] et1FormContentPdf = caseEt1PdfFiles.get(0).getBytes();
-            byte[] acasCertificatesPdf = acasCertificates.get(0).getBytes();
+            if (!CollectionUtils.isEmpty(acasCertificates)) {
+                acasCertificatesPdf = acasCertificates.get(0).getBytes();
+            }
 
             // Send upload error alert email to shared inbox
             notificationService.sendDocUploadErrorEmail(caseDetails, et1FormContentPdf, acasCertificatesPdf);
