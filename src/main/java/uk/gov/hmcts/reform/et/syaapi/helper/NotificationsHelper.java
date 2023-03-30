@@ -16,12 +16,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -35,22 +33,6 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.HEARING_STATUS_LIST
     "PMD.UseConcurrentHashMap",
     "checkstyle:HideUtilityClassConstructor"})
 public final class NotificationsHelper {
-
-    public static final Map<String, String> SHORT_TEXT_MAP = Map.ofEntries(
-        new AbstractMap.SimpleEntry<>("withdraw", "Withdraw all/part of claim"),
-        new AbstractMap.SimpleEntry<>("change-details", "Change my personal details"),
-        new AbstractMap.SimpleEntry<>("postpone", "Postpone a hearing"),
-        new AbstractMap.SimpleEntry<>("vary", "Vary/revoke an order"),
-        new AbstractMap.SimpleEntry<>("reconsider-decision", "Consider a decision afresh"),
-        new AbstractMap.SimpleEntry<>("amend", "Amend my claim"),
-        new AbstractMap.SimpleEntry<>("respondent", "Order respondent to do something"),
-        new AbstractMap.SimpleEntry<>("witness", "Order a witness to attend"),
-        new AbstractMap.SimpleEntry<>("non-compliance", "Tell tribunal respondent not complied"),
-        new AbstractMap.SimpleEntry<>("publicity", "Restrict publicity"),
-        new AbstractMap.SimpleEntry<>("strike", "Strike out all/part of response"),
-        new AbstractMap.SimpleEntry<>("reconsider-judgement", "Reconsider judgement"),
-        new AbstractMap.SimpleEntry<>("other", "Contact about something else")
-    );
 
     /**
      * Format all respondent names into one string.
