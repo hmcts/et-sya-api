@@ -203,7 +203,7 @@ public class ApplicationService {
                     downloadDocument.getByteArray(),
                     false,
                     true,
-                    "52 weeks"
+                    "78 weeks"
                 );
             }
         }
