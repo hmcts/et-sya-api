@@ -5,10 +5,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.service.notify.NotificationClient;
@@ -200,7 +200,7 @@ class NotificationServiceTest {
         NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
         testData.getCaseData().getClaimantHearingPreference().setContactLanguage(null);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
-            testData.getExpectedDetails(),
+            testData.getCaseRequest(),
             testData.getCaseData(),
             testData.getUserInfo(),
             null
@@ -214,7 +214,7 @@ class NotificationServiceTest {
         testData.getCaseData().getClaimantHearingPreference().setContactLanguage(null);
         List<PdfDecodedMultipartFile> casePdfFiles = new ArrayList<>();
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
-            testData.getExpectedDetails(),
+            testData.getCaseRequest(),
             testData.getCaseData(),
             testData.getUserInfo(),
             casePdfFiles
@@ -229,7 +229,7 @@ class NotificationServiceTest {
         List<PdfDecodedMultipartFile> casePdfFiles = new ArrayList<>();
         casePdfFiles.add(pdfDecodedMultipartFileNull);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
-            testData.getExpectedDetails(),
+            testData.getCaseRequest(),
             testData.getCaseData(),
             testData.getUserInfo(),
             casePdfFiles
@@ -251,7 +251,7 @@ class NotificationServiceTest {
         casePdfFiles.add(pdfDecodedMultipartFileNotNull);
         NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
-            testData.getExpectedDetails(),
+            testData.getCaseRequest(),
             testData.getCaseData(),
             testData.getUserInfo(),
             casePdfFiles
@@ -274,7 +274,7 @@ class NotificationServiceTest {
         casePdfFiles.add(pdfDecodedMultipartFileNotNull);
         NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
-            testData.getExpectedDetails(),
+            testData.getCaseRequest(),
             testData.getCaseData(),
             testData.getUserInfo(),
             casePdfFiles
@@ -293,10 +293,10 @@ class NotificationServiceTest {
         when(notificationClient.sendEmail(TEST_TEMPLATE_API_KEY,TEST_EMAIL, parameters, REFERENCE_STRING))
             .thenReturn(SEND_EMAIL_RESPONSE_DOC_UPLOAD_FAILURE);
 
-        CaseDetails caseDetails = CaseDetails.builder().build();
-        caseDetails.setId(1_231_231L);
+        CaseRequest caseRequest = CaseRequest.builder().build();
+        caseRequest.setCaseId("1_231_231");
 
-        SendEmailResponse sendEmailResponse = notificationService.sendDocUploadErrorEmail(caseDetails,
+        SendEmailResponse sendEmailResponse = notificationService.sendDocUploadErrorEmail(caseRequest,
                                                                                           casePdfFiles,
                                                                                           acasCertificates,
                                                                                           claimDescriptionDocument);
@@ -321,7 +321,7 @@ class NotificationServiceTest {
         acasCertificates.add(pdfDecodedMultipartFileAcasPdf1);
         UploadedDocumentType claimDescriptionDocument = new UploadedDocumentType();
         NotificationException notificationException = assertThrows(NotificationException.class, () ->
-            notificationService.sendDocUploadErrorEmail(testData.getExpectedDetails(),
+            notificationService.sendDocUploadErrorEmail(testData.getCaseRequest(),
                                                         casePdfFiles,
                                                         acasCertificates,
                                                         claimDescriptionDocument));

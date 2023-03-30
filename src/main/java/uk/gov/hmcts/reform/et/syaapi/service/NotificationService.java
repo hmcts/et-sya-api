@@ -7,8 +7,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.util.ServiceUtil;
@@ -61,20 +61,20 @@ public class NotificationService {
     /**
      * Prepares case submission confirmation email content from user and case data & sends email to the user.
      *
-     * @param caseDetails  top level non-modifiable case details
+     * @param caseRequest  top level non-modifiable case details
      * @param caseData  user provided data
      * @param userInfo   user details from Idam
      * @param casePdfFiles  pdf files of the ET1 form according to selected language
      * @return Gov notify email format
      */
-    public SendEmailResponse sendSubmitCaseConfirmationEmail(CaseDetails caseDetails, CaseData caseData,
+    public SendEmailResponse sendSubmitCaseConfirmationEmail(CaseRequest caseRequest, CaseData caseData,
                                                              UserInfo userInfo,
                                                              List<PdfDecodedMultipartFile> casePdfFiles) {
         SendEmailResponse sendEmailResponse = null;
         if (ServiceUtil.hasPdfFile(casePdfFiles, 0)) {
             String firstName = ServiceUtil.findClaimantFirstNameByCaseDataUserInfo(caseData, userInfo);
             String lastName = ServiceUtil.findClaimantLastNameByCaseDataUserInfo(caseData, userInfo);
-            String caseNumber = caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString();
+            String caseNumber = caseRequest.getCaseId() == null ? "case id not found" : caseRequest.getCaseId();
             String selectedLanguage = ServiceUtil.findClaimantLanguage(caseData);
             String emailTemplateId = WELSH_LANGUAGE.equals(selectedLanguage)
                 ? notificationsProperties.getSubmitCaseEmailTemplateId()
@@ -110,18 +110,18 @@ public class NotificationService {
     /**
      * Prepared doc upload error alert email content from user and case data then sends email to the service.
      *
-     * @param caseDetails  top level non-modifiable case details
+     * @param caseRequest  top level non-modifiable case details
      * @param casePdfFiles  pdf copy of ET1 form content
      * @param acasCertificates  pdf copy of Acas Certificates
      * @return Gov notify email format
      */
-    public SendEmailResponse sendDocUploadErrorEmail(CaseDetails caseDetails,
+    public SendEmailResponse sendDocUploadErrorEmail(CaseRequest caseRequest,
                                                      List<PdfDecodedMultipartFile> casePdfFiles,
                                                      List<PdfDecodedMultipartFile> acasCertificates,
                                                      UploadedDocumentType claimDescriptionDocument) {
         SendEmailResponse sendEmailResponse = null;
         try {
-            String caseNumber = caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString();
+            String caseNumber = caseRequest.getCaseId() == null ? "case id not found" : caseRequest.getCaseId();
             Map<String, Object> parameters = new ConcurrentHashMap<>();
             parameters.put("serviceOwnerName", "Service Owner");
             parameters.put("caseNumber", caseNumber);
@@ -157,7 +157,7 @@ public class NotificationService {
             );
         } catch (NotificationClientException ne) {
             ServiceUtil.logException("Case Documents Upload error - Failed to send document upload error message",
-                                     caseDetails.getCaseTypeId(), ne.getMessage(),
+                                     caseRequest.getCaseId(), ne.getMessage(),
                                      this.getClass().getName(), "sendDocUploadErrorEmail");
         }
         return sendEmailResponse;

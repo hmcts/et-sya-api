@@ -207,14 +207,14 @@ public class CaseService {
             pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData, userInfo);
         // Submit e-mail to the user with attached ET1 pdf file according to selected contact language
         // (Welsh or English)
-        notificationService.sendSubmitCaseConfirmationEmail(caseDetails, caseData, userInfo, casePdfFiles);
+        notificationService.sendSubmitCaseConfirmationEmail(caseRequest, caseData, userInfo, casePdfFiles);
         // Creating acas certificates for each respondent
         List<PdfDecodedMultipartFile> acasCertificates =
             pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
                 caseData, acasService.getAcasCertificatesByCaseData(caseData));
         // Uploading all documents to document store
-        List<DocumentTypeItem> documentList = uploadAllDocuments(authorization, caseRequest, caseData, caseDetails,
-                                                                 casePdfFiles,acasCertificates);
+        List<DocumentTypeItem> documentList = uploadAllDocuments(authorization, caseRequest, caseData, casePdfFiles,
+                                                                 acasCertificates);
         // Setting caliamantPCqId and documentCollection to case details
         caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
         caseDetails.getData().put("documentCollection", documentList);
@@ -227,11 +227,10 @@ public class CaseService {
     }
 
     private List<DocumentTypeItem> uploadAllDocuments(String authorization,
-                                                             CaseRequest caseRequest,
-                                                             CaseData caseData,
-                                                             CaseDetails caseDetails,
-                                                             List<PdfDecodedMultipartFile> casePdfFiles,
-                                                             List<PdfDecodedMultipartFile> acasCertificates) {
+                                                      CaseRequest caseRequest,
+                                                      CaseData caseData,
+                                                      List<PdfDecodedMultipartFile> casePdfFiles,
+                                                      List<PdfDecodedMultipartFile> acasCertificates) {
         List<DocumentTypeItem> documentList = new ArrayList<>();
         try {
             documentList.addAll(caseDocumentService
@@ -246,10 +245,10 @@ public class CaseService {
             }
         } catch (CaseDocumentException cde) {
             // Send upload error alert email to shared inbox
-            notificationService.sendDocUploadErrorEmail(caseDetails, casePdfFiles, acasCertificates,
+            notificationService.sendDocUploadErrorEmail(caseRequest, casePdfFiles, acasCertificates,
                                                         caseData.getClaimantRequests().getClaimDescriptionDocument());
             ServiceUtil.logException("Case Documents Upload error - Failed to complete case documents upload",
-                                     caseDetails.getCaseTypeId(), cde.getMessage(),
+                                     caseData.getEthosCaseReference(), cde.getMessage(),
                                      this.getClass().getName(), "submitCase");
         }
         return documentList;
