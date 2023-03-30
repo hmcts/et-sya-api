@@ -5,11 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
-import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.service.notify.NotificationClient;
@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static org.apache.tika.utils.StringUtils.isBlank;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM;
@@ -367,9 +368,18 @@ public class NotificationService {
         String hearingDate,
         String caseId,
         String applicationType,
-        RespondToApplicationRequest respondToApplicationRequest
+        TseRespondType tseRespondType
     ) {
 
+        if (TYPE_C.equals(applicationType)) {
+            log.info("Type C application -  Claimant is only notified of "
+                         + "Type A/B application responses, email not being sent");
+            return;
+        }
+        if (isBlank(caseData.getClaimantType().getClaimantEmailAddress())) {
+            log.info("No claimant email found - Application response acknowledgment not being sent");
+            return;
+        }
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
 
         addCommonParameters(
@@ -393,15 +403,10 @@ public class NotificationService {
             "shortText",
             applicationType
         );
-        // create respondent application
-        // reply to this from citizen hub
-        //
-        String yesOrNo = respondToApplicationRequest.getResponse().getCopyToOtherParty();
-        log.info("copy to other party is " + yesOrNo);
-        // for now only send the 'no' template
-        String emailToClaimantTemplate = "Yesssss!".equals(yesOrNo)
-            ? notificationsProperties.getClaimantResponseYesTemplateId() :
-            notificationsProperties.getClaimantResponseNoTemplateId();
+
+        String emailToClaimantTemplate = DONT_SEND_COPY.equals(tseRespondType.getCopyToOtherParty())
+            ? notificationsProperties.getClaimantResponseNoTemplateId()
+            : notificationsProperties.getClaimantResponseYesTemplateId();
 
         try {
             notificationClient.sendEmail(

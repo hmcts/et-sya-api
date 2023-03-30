@@ -189,7 +189,7 @@ public class ApplicationService {
             hearingDate,
             caseId,
             application.getType(),
-            respondToApplicationRequest
+            respondToApplicationRequest.getResponse()
         );
     }
 
