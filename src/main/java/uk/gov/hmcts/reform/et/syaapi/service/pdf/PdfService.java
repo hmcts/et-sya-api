@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
+import uk.gov.hmcts.reform.et.syaapi.service.util.ServiceUtil;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.ByteArrayOutputStream;
@@ -164,26 +165,35 @@ public class PdfService {
      * @throws PdfServiceException when convertCaseToPdf throws an exception
      */
     public List<PdfDecodedMultipartFile> convertCaseDataToPdfDecodedMultipartFile(CaseData caseData, UserInfo
-        userInfo)
-        throws PdfServiceException {
+        userInfo) {
         List<PdfDecodedMultipartFile> files = new ArrayList<>();
-        files.add(new PdfDecodedMultipartFile(
-            convertCaseToPdf(caseData, this.englishPdfTemplateSource),
-            createPdfDocumentNameFromCaseData(caseData, ENGLISH_LANGUAGE, userInfo),
-            PDF_FILE_TIKA_CONTENT_TYPE,
-            createPdfDocumentDescriptionFromCaseData(caseData)
-        ));
-
-        if (caseData.getClaimantHearingPreference().getContactLanguage() != null
-            && WELSH_LANGUAGE.equals(caseData.getClaimantHearingPreference().getContactLanguage())) {
+        try {
             files.add(new PdfDecodedMultipartFile(
-                convertCaseToPdf(caseData, this.welshPdfTemplateSource),
-                createPdfDocumentNameFromCaseData(caseData, WELSH_LANGUAGE, userInfo),
+                convertCaseToPdf(caseData, this.englishPdfTemplateSource),
+                createPdfDocumentNameFromCaseData(caseData, ENGLISH_LANGUAGE, userInfo),
                 PDF_FILE_TIKA_CONTENT_TYPE,
                 createPdfDocumentDescriptionFromCaseData(caseData)
             ));
+        } catch (PdfServiceException e) {
+            ServiceUtil.logException("Case English PDF file could not be created for case: ",
+                                     caseData.getEthosCaseReference(), e.getMessage(),
+                                     this.getClass().getName(), "convertCaseDataToPdfDecodedMultipartFile");
         }
-
+        try {
+            if (caseData.getClaimantHearingPreference().getContactLanguage() != null
+                && WELSH_LANGUAGE.equals(caseData.getClaimantHearingPreference().getContactLanguage())) {
+                files.add(new PdfDecodedMultipartFile(
+                    convertCaseToPdf(caseData, this.welshPdfTemplateSource),
+                    createPdfDocumentNameFromCaseData(caseData, WELSH_LANGUAGE, userInfo),
+                    PDF_FILE_TIKA_CONTENT_TYPE,
+                    createPdfDocumentDescriptionFromCaseData(caseData)
+                ));
+            }
+        } catch (PdfServiceException e) {
+            ServiceUtil.logException("Case Welsh PDF file could not be created for case: ",
+                                        caseData.getEthosCaseReference(), e.getMessage(),
+                                        this.getClass().getName(), "convertCaseDataToPdfDecodedMultipartFile");
+        }
         return files;
     }
 
