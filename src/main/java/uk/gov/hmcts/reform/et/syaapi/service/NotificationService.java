@@ -361,6 +361,7 @@ public class NotificationService {
      * @param hearingDate     date of the nearest hearing
      * @param caseId          16 digit case id
      * @param applicationType type of application
+     * @param tseRespondType  the claimant's response to the application
      */
     public void sendResponseEmailToClaimant(
         CaseData caseData,
