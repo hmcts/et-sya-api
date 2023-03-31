@@ -1,23 +1,29 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
-import com.microsoft.applicationinsights.core.dependencies.google.common.base.Strings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
+import uk.gov.hmcts.reform.et.syaapi.service.util.ServiceUtil;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM;
+import static uk.gov.service.notify.NotificationClient.prepareUpload;
 
 /**
  * Holds details for sending email to user(s) provided template been created beforehand.
@@ -55,49 +61,48 @@ public class NotificationService {
     /**
      * Prepares case submission confirmation email content from user and case data & sends email to the user.
      *
-     * @param caseDetails  top level non-modifiable case details
+     * @param caseRequest  top level non-modifiable case details
      * @param caseData  user provided data
      * @param userInfo   user details from Idam
-     * @param et1Pdf  pdf form of the ET1 form
+     * @param casePdfFiles  pdf files of the ET1 form according to selected language
      * @return Gov notify email format
      */
-    public SendEmailResponse sendSubmitCaseConfirmationEmail(CaseDetails caseDetails, CaseData caseData,
-                                                             UserInfo userInfo, byte[] et1Pdf) {
+    public SendEmailResponse sendSubmitCaseConfirmationEmail(CaseRequest caseRequest, CaseData caseData,
+                                                             UserInfo userInfo,
+                                                             List<PdfDecodedMultipartFile> casePdfFiles) {
+        SendEmailResponse sendEmailResponse = null;
+        if (ServiceUtil.hasPdfFile(casePdfFiles, 0)) {
+            String firstName = ServiceUtil.findClaimantFirstNameByCaseDataUserInfo(caseData, userInfo);
+            String lastName = ServiceUtil.findClaimantLastNameByCaseDataUserInfo(caseData, userInfo);
+            String caseNumber = caseRequest.getCaseId() == null ? "case id not found" : caseRequest.getCaseId();
+            String selectedLanguage = ServiceUtil.findClaimantLanguage(caseData);
+            String emailTemplateId = WELSH_LANGUAGE.equals(selectedLanguage)
+                ? notificationsProperties.getCySubmitCaseEmailTemplateId()
+                : notificationsProperties.getSubmitCaseEmailTemplateId();
+            String citizenPortalLink = WELSH_LANGUAGE.equals(selectedLanguage)
+                ? notificationsProperties.getCitizenPortalLink() + WELSH_LANGUAGE_PARAM
+                : notificationsProperties.getCitizenPortalLink() + "%s";
+            byte[] et1Pdf = ServiceUtil.findPdfFileBySelectedLanguage(casePdfFiles, selectedLanguage);
+            try {
+                Map<String, Object> parameters = new ConcurrentHashMap<>();
+                parameters.put("firstName", firstName);
+                parameters.put("lastName", lastName);
+                parameters.put("caseNumber", caseNumber);
+                parameters.put("citizenPortalLink", String.format(citizenPortalLink, caseNumber));
+                parameters.put("link_to_et1_pdf_file", prepareUpload(et1Pdf));
 
-        String firstName = Strings.isNullOrEmpty(caseData.getClaimantIndType().getClaimantFirstNames())
-            ? userInfo.getGivenName()
-            : caseData.getClaimantIndType().getClaimantFirstNames();
-        String lastName = Strings.isNullOrEmpty(caseData.getClaimantIndType().getClaimantLastName())
-            ? userInfo.getFamilyName()
-            : caseData.getClaimantIndType().getClaimantLastName();
-        String caseNumber = caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString();
-        String emailTemplateId = notificationsProperties.getSubmitCaseEmailTemplateId();
-        String citizenPortalLink = notificationsProperties.getCitizenPortalLink() + "%s";
-
-        if (caseData.getClaimantHearingPreference().getContactLanguage() != null
-            && WELSH_LANGUAGE.equals(caseData.getClaimantHearingPreference().getContactLanguage())) {
-            emailTemplateId = notificationsProperties.getCySubmitCaseEmailTemplateId();
-            citizenPortalLink = citizenPortalLink + WELSH_LANGUAGE_PARAM;
-        }
-
-        SendEmailResponse sendEmailResponse;
-        try {
-            Map<String, Object> parameters = new ConcurrentHashMap<>();
-            parameters.put("firstName", firstName);
-            parameters.put("lastName", lastName);
-            parameters.put("caseNumber", caseNumber);
-            parameters.put("citizenPortalLink", String.format(citizenPortalLink, caseNumber));
-            parameters.put("link_to_et1_pdf_file", NotificationClient.prepareUpload(et1Pdf));
-
-            String claimantEmailAddress = caseData.getClaimantType().getClaimantEmailAddress();
-            sendEmailResponse = notificationClient.sendEmail(
-                emailTemplateId,
-                claimantEmailAddress,
-                parameters,
-                caseNumber
-            );
-        } catch (NotificationClientException ne) {
-            throw new NotificationException(ne);
+                String claimantEmailAddress = caseData.getClaimantType().getClaimantEmailAddress();
+                sendEmailResponse = notificationClient.sendEmail(
+                    emailTemplateId,
+                    claimantEmailAddress,
+                    parameters,
+                    caseNumber
+                );
+            } catch (NotificationClientException ne) {
+                ServiceUtil.logException("Submit case confirmation email was not sent to client.",
+                                         caseData.getEthosCaseReference(), ne.getMessage(),
+                                         this.getClass().getName(), "sendSubmitCaseConfirmationEmail");
+            }
         }
         return sendEmailResponse;
     }
@@ -105,23 +110,33 @@ public class NotificationService {
     /**
      * Prepared doc upload error alert email content from user and case data then sends email to the service.
      *
-     * @param caseDetails  top level non-modifiable case details
-     * @param et1FormContentPdf  pdf copy of ET1 form content
-     * @param acasCertificatesPdf  pdf copy of Acas Certificates
+     * @param caseRequest  top level non-modifiable case details
+     * @param casePdfFiles  pdf copy of ET1 form content
+     * @param acasCertificates  pdf copy of Acas Certificates
      * @return Gov notify email format
      */
-    public SendEmailResponse sendDocUploadErrorEmail(CaseDetails caseDetails,
-                                                     byte[] et1FormContentPdf,
-                                                     byte[] acasCertificatesPdf) {
-        SendEmailResponse sendEmailResponse;
-
+    public SendEmailResponse sendDocUploadErrorEmail(CaseRequest caseRequest,
+                                                     List<PdfDecodedMultipartFile> casePdfFiles,
+                                                     List<PdfDecodedMultipartFile> acasCertificates,
+                                                     UploadedDocumentType claimDescriptionDocument) {
+        SendEmailResponse sendEmailResponse = null;
         try {
-            String caseNumber = caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString();
+            String caseNumber = caseRequest.getCaseId() == null ? "case id not found" : caseRequest.getCaseId();
             Map<String, Object> parameters = new ConcurrentHashMap<>();
             parameters.put("serviceOwnerName", "Service Owner");
             parameters.put("caseNumber", caseNumber);
-            parameters.put("link_to_et1_pdf_file", NotificationClient.prepareUpload(et1FormContentPdf));
-            parameters.put("link_to_acas_cert_pdf_file", NotificationClient.prepareUpload(acasCertificatesPdf));
+            parameters.put("link_to_et1_pdf_file_en", ServiceUtil.prepareUpload(casePdfFiles, 0));
+            parameters.put("link_to_et1_pdf_file_cy", ServiceUtil.prepareUpload(casePdfFiles, 1));
+            parameters.put("link_to_acas_cert_pdf_file_1", ServiceUtil.prepareUpload(acasCertificates, 0));
+            parameters.put("link_to_acas_cert_pdf_file_2", ServiceUtil.prepareUpload(acasCertificates, 1));
+            parameters.put("link_to_acas_cert_pdf_file_3", ServiceUtil.prepareUpload(acasCertificates, 2));
+            parameters.put("link_to_acas_cert_pdf_file_4", ServiceUtil.prepareUpload(acasCertificates, 3));
+            parameters.put("link_to_acas_cert_pdf_file_5", ServiceUtil.prepareUpload(acasCertificates, 4));
+            parameters.put("link_to_claim_description_file",
+                           ObjectUtils.isNotEmpty(claimDescriptionDocument)
+                                && StringUtils.isNotBlank(claimDescriptionDocument.getDocumentUrl())
+                                ? claimDescriptionDocument.getDocumentUrl()
+                                : "File does not exist");
 
             String emailTemplateId = notificationsProperties.getSubmitCaseDocUploadErrorEmailTemplateId();
 
@@ -141,7 +156,9 @@ public class NotificationService {
                 caseNumber
             );
         } catch (NotificationClientException ne) {
-            throw new NotificationException(ne);
+            ServiceUtil.logException("Case Documents Upload error - Failed to send document upload error message",
+                                     caseRequest.getCaseId(), ne.getMessage(),
+                                     this.getClass().getName(), "sendDocUploadErrorEmail");
         }
         return sendEmailResponse;
     }
