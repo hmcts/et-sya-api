@@ -127,4 +127,18 @@
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-expression@.*$</packageUrl>
     <cve>CVE-2023-20861</cve>
   </suppress>
+  <suppress>
+    <notes><![CDATA[
+   file name: tomcat-embed-core-9.0.71.jar
+   ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org.apache.tomcat.embed.*$</packageUrl>
+    <cve>CVE-2023-28708</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+   file name: tomcat-embed-websocket-9.0.71.jar
+   ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org.apache.tomcat.embed.*$</packageUrl>
+    <cve>CVE-2023-28708</cve>
+  </suppress>
 </suppressions>
