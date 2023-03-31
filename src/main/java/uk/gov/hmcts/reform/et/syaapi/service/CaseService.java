@@ -399,6 +399,13 @@ public class CaseService {
                                                 ""
                                             )))
                                             .collect(toList()));
+
+            if (caseData.getClaimantRequests() != null
+                && caseData.getClaimantRequests().getClaimDescriptionDocument() != null) {
+                documentTypeItemList.add(caseDocumentService.createDocumentTypeItem("ET1 Attachment",
+                                                    caseData.getClaimantRequests().getClaimDescriptionDocument()
+                ));
+            }
         }
 
         MultiValuedMap<String, CaseDocumentAcasResponse> documentIds = new ArrayListValuedHashMap<>();

@@ -83,7 +83,7 @@ notifications:
   claimantResponseNo: ${CLAIMANT_RESPONSE_NO:0727a137-322f-458b-9941-ee8b6d3c11c2}
 
 pdf:
-  english: "ET1_1122.pdf"
+  english: "ET1_2222.pdf"
   welsh: "CY_ET1_2222.pdf"
   contact_tribunal_template: "EM-TRB-EGW-ENG-00068.docx"
 
