@@ -91,7 +91,7 @@ class CaseServiceTest {
     @Mock
     private NotificationService notificationService;
     @Mock
-    private AssignCaseToLocalOfficeService assignCaseToLocalOfficeService;
+    private CaseOfficeService assignCaseToLocalOfficeService;
     @Spy
     private NotificationsProperties notificationsProperties;
     @InjectMocks

@@ -78,7 +78,7 @@ public class CaseService {
     private final NotificationService notificationService;
     private final PdfService pdfService;
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
-    private final AssignCaseToLocalOfficeService assignCaseToLocalOfficeService;
+    private final CaseOfficeService caseOfficeService;
     private static final String ALL_CASES_QUERY = "{\"query\":{\"match_all\": {}}}";
 
     /**
@@ -195,7 +195,7 @@ public class CaseService {
         throws PdfServiceException {
         // Assigning local office to case data
         // TODO name of assign case to local office service class should be changed.
-        CaseData caseData = assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
+        CaseData caseData = caseOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
         // Getting user info from IDAM
         UserInfo userInfo = idamClient.getUserInfo(authorization);
         // Submitting the case to CCD, receiving caseDetails and setting ethosCaseReference,

@@ -27,7 +27,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_
 @Service
 @RequiredArgsConstructor
 @SuppressWarnings({"PMD.LawOfDemeter"})
-public class AssignCaseToLocalOfficeService {
+public class CaseOfficeService {
     private final PostcodeToOfficeService postcodeToOfficeService;
 
     /**
@@ -40,7 +40,7 @@ public class AssignCaseToLocalOfficeService {
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseRequest.getCaseData());
         List<RespondentSumTypeItem> respondentSumTypeList = caseData.getRespondentCollection();
         String managingOffice = UNASSIGNED_OFFICE;
-        if (claimantHasWorkingAddressPostCode(caseData)) {
+        if (doesClaimantHaveWorkingAddressPostcode(caseData)) {
             managingOffice = getManagingOffice(
                 caseData.getClaimantWorkAddress().getClaimantWorkAddress().getPostCode(),
                 caseRequest.getCaseTypeId());
@@ -108,7 +108,7 @@ public class AssignCaseToLocalOfficeService {
         }
     }
 
-    private boolean claimantHasWorkingAddressPostCode(CaseData caseData) {
+    private boolean doesClaimantHaveWorkingAddressPostcode(CaseData caseData) {
         return caseData.getClaimantWorkAddress() != null
             && caseData.getClaimantWorkAddress().getClaimantWorkAddress() != null
             && StringUtils.isNotBlank(caseData.getClaimantWorkAddress().getClaimantWorkAddress().getPostCode());
