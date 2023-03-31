@@ -81,7 +81,7 @@ notifications:
   tribunalResponse: ${TRIBUNAL_RESPONSE:9da290ff-c7da-4897-80d2-114361271dfa}
 
 pdf:
-  english: "ET1_1122.pdf"
+  english: "ET1_2222.pdf"
   welsh: "CY_ET1_2222.pdf"
   contact_tribunal_template: "EM-TRB-EGW-ENG-00068.docx"
 

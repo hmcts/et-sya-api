@@ -4,7 +4,7 @@ plugins {
   id 'pmd'
   id 'jacoco'
   id 'io.spring.dependency-management' version '1.1.0'
-  id 'org.springframework.boot' version '2.7.5'
+  id 'org.springframework.boot' version '2.7.10'
   id 'org.owasp.dependencycheck' version '8.1.2'
   id 'com.github.ben-manes.versions' version '0.46.0'
   id 'org.sonarqube' version '4.0.0.2929'
@@ -246,8 +246,8 @@ dependencies {
   implementation 'org.json:json:20230227'
   implementation group: 'org.yaml', name: 'snakeyaml', version: '1.33'
 
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.71'
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '9.0.71'
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.73'
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '9.0.73'
   implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.7.6'
 
 
