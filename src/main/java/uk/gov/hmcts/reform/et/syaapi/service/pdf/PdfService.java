@@ -10,10 +10,14 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.elasticsearch.common.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
+import uk.gov.hmcts.reform.et.syaapi.models.ClaimantResponseCYA;
 import uk.gov.hmcts.reform.et.syaapi.models.GenericTseApplication;
 import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationException;
 import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationService;
@@ -50,8 +54,11 @@ public class PdfService {
     public String welshPdfTemplateSource;
     @Value("${pdf.contact_tribunal_template}")
     public String contactTheTribunalPdfTemplate;
+    @Value("${pdf.claimant_response_template}")
+    public String claimantResponsePdfTemplate;
 
     private static final String TSE_FILENAME = "Contact the tribunal.pdf";
+    private static final String CLAIMANT_RESPONSE = "ClaimantResponse.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private static final String NOT_FOUND = "not found";
 
@@ -231,6 +238,7 @@ public class PdfService {
     /**
      * Converts a given object of type {@link ClaimantTse} to a {@link PdfDecodedMultipartFile}.
      * Firstly by converting to a pdf byte array and then wrapping within the return object.
+     *
      * @param claimantTse {@link CaseData} object that contains the {@link ClaimantTse} object to be converted.
      * @return {@link PdfDecodedMultipartFile} with the claimant tse CYA page in pdf format.
      * @throws DocumentGenerationException if there is an error generating the PDF.
@@ -242,6 +250,40 @@ public class PdfService {
             TSE_FILENAME,
             PDF_FILE_TIKA_CONTENT_TYPE,
             APP_TYPE_MAP.get(claimantTse.getContactApplicationType())
+        );
+    }
+
+    /**
+     * Converts a given object of type {@link TseRespondType} to a {@link PdfDecodedMultipartFile}.
+     * Firstly by converting to a pdf byte array and then wrapping within the return object.
+     *
+     * @param response {@link TseRespondType} object that contains the {@link TseRespondType} object to be converted.
+     * @return {@link PdfDecodedMultipartFile} with the claimant response CYA page in pdf format.
+     * @throws DocumentGenerationException if there is an error generating the PDF.
+     */
+    public PdfDecodedMultipartFile convertClaimantResponseIntoMultipartFile(TseRespondType response, String description)
+        throws DocumentGenerationException {
+        return new PdfDecodedMultipartFile(
+            convertClaimantResponseToPdf(response),
+            CLAIMANT_RESPONSE,
+            PDF_FILE_TIKA_CONTENT_TYPE,
+            description
+        );
+    }
+
+    private byte[] convertClaimantResponseToPdf(TseRespondType response) throws DocumentGenerationException {
+        String fileName = response.getHasSupportingMaterial().equals("Yes") ? response.getSupportingMaterial().get(
+            0).getValue().getUploadedDocument().getDocumentFilename() : null;
+        ClaimantResponseCYA claimantResponseCYA = ClaimantResponseCYA.builder()
+            .response(response.getResponse())
+            .fileName(fileName)
+            .copyToOtherPartyYesOrNo(response.getCopyToOtherParty())
+            .build();
+
+        return documentGenerationService.genPdfDocument(
+            claimantResponsePdfTemplate,
+            CLAIMANT_RESPONSE,
+            claimantResponseCYA
         );
     }
 

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 
 @RequiredArgsConstructor
@@ -101,6 +102,8 @@ public class ApplicationService {
                 caseDocumentService
             );
 
+            createPdfOfResponse(authorization, request, caseData, appToModify.getValue());
+
             CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
             CaseDetails caseDetails = caseService.submitUpdate(
                 authorization,
@@ -114,6 +117,26 @@ public class ApplicationService {
             return caseDetails;
         } else {
             throw new IllegalArgumentException("Application id provided is incorrect");
+        }
+    }
+
+    private void createPdfOfResponse(String authorization,
+                                     RespondToApplicationRequest request,
+                                     CaseData caseData,
+                                     GenericTseApplicationType application) {
+        if (YES.equals(request.getResponse().getCopyToOtherParty())) {
+            try {
+                log.info("Uploading pdf of claimant response to application");
+                caseService.createResponsePdf(
+                    authorization,
+                    caseData,
+                    request.getCaseTypeId(),
+                    request.getResponse(),
+                    application.getType()
+                );
+            } catch (CaseDocumentException | DocumentGenerationException e) {
+                log.error("Couldn't upload pdf of TSE application " + e.getMessage());
+            }
         }
     }
 

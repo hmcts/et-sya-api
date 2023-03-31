@@ -19,6 +19,7 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -282,7 +283,8 @@ public class CaseService {
      */
     public CaseDetails triggerEventForSubmitCase(String authorization, CaseRequest caseRequest) {
         StartEventResponse startEventResponse = startUpdate(authorization, caseRequest.getCaseId(),
-                                                            caseRequest.getCaseTypeId(), SUBMIT_CASE_DRAFT);
+                                                            caseRequest.getCaseTypeId(), SUBMIT_CASE_DRAFT
+        );
         CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(
             startEventResponse.getCaseDetails().getData());
         enrichCaseDataWithJurisdictionCodes(caseData1);
@@ -508,5 +510,26 @@ public class CaseService {
         ));
 
         caseDetails.getData().put(DOCUMENT_COLLECTION, docList);
+    }
+
+    void createResponsePdf(String authorization,
+                           CaseData caseData,
+                           String caseType,
+                           TseRespondType response,
+                           String appType)
+        throws DocumentGenerationException, CaseDocumentException {
+        String description = "Response to " + appType;
+        PdfDecodedMultipartFile multipartResponsePdf =
+            pdfService.convertClaimantResponseIntoMultipartFile(response, description);
+
+        var responsePdf = caseDocumentService.createDocumentTypeItem(
+            authorization,
+            caseType,
+            CLAIMANT_CORRESPONDENCE_DOCUMENT,
+            multipartResponsePdf
+        );
+
+        var docCollection = caseData.getDocumentCollection();
+        docCollection.add(responsePdf);
     }
 }
