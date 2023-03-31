@@ -42,6 +42,13 @@ public class ApplicationService {
     private final CaseDetailsConverter caseDetailsConverter;
     public static final String WEEKS_78 = "78 weeks";
 
+    /**
+     * Submit Claimant Application to Tell Something Else.
+     *
+     * @param authorization - authorization
+     * @param request - application request from the claimant
+     * @return the associated {@link CaseDetails} for the ID provided in request
+     */
     public CaseDetails submitApplication(String authorization, ClaimantApplicationRequest request)
         throws NotificationClientException {
 
@@ -78,6 +85,13 @@ public class ApplicationService {
         return finalCaseDetails;
     }
 
+    /**
+     * Submit Claimant Response to Respondent's request to Tell Something Else.
+     *
+     * @param authorization - authorization
+     * @param request - response from the claimant
+     * @return the associated {@link CaseDetails} for the ID provided in request
+     */
     public CaseDetails respondToApplication(String authorization, RespondToApplicationRequest request) {
         StartEventResponse startEventResponse = caseService.startUpdate(
             authorization,

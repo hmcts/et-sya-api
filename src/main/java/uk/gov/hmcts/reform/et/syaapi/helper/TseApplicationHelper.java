@@ -34,6 +34,13 @@ public final class TseApplicationHelper {
         return date.format(NEW_DATE_PATTERN);
     }
 
+    /**
+     * Finds the application by ID.
+     *
+     * @param request - request from the claimant
+     * @param applications - list of all applications attached to the case
+     * @return the {@link GenericTseApplicationTypeItem} to be updated
+     */
     public static GenericTseApplicationTypeItem getSelectedApplication(
         RespondToApplicationRequest request,
         List<GenericTseApplicationTypeItem> applications) {
@@ -43,6 +50,14 @@ public final class TseApplicationHelper {
             .orElse(null);
     }
 
+    /**
+     * Sets case data with claimant's response to the respondent.
+     *
+     * @param request - request from the claimant
+     * @param appToModify - selected respondent application to respond to
+     * @param caseData - case data
+     * @param caseDocumentService - case document service to create pdf of response
+     */
     public static void setRespondentApplicationWithResponse(RespondToApplicationRequest request,
                                                             GenericTseApplicationType appToModify,
                                                             CaseData caseData,
