@@ -238,8 +238,8 @@ public class CaseService {
                                     .uploadAllDocuments(authorization, caseRequest.getCaseTypeId(),
                                                         casePdfFiles, acasCertificates));
 
-            if (!ObjectUtils.isEmpty(caseData.getClaimantRequests()) &&
-                !ObjectUtils.isEmpty(caseData.getClaimantRequests().getClaimDescriptionDocument())) {
+            if (!ObjectUtils.isEmpty(caseData.getClaimantRequests())
+                && !ObjectUtils.isEmpty(caseData.getClaimantRequests().getClaimDescriptionDocument())) {
                 documentList.add(caseDocumentService.createDocumentTypeItem(
                     OTHER_TYPE_OF_DOCUMENT,
                     caseData.getClaimantRequests().getClaimDescriptionDocument()
