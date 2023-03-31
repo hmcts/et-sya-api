@@ -217,7 +217,7 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-json'
   implementation group: 'org.springframework.boot', name: 'spring-boot-configuration-processor'
   implementation group: 'org.springframework.retry', name: 'spring-retry', version: '1.3.4'
-  implementation group: 'com.fasterxml.jackson.core', name:  'jackson-databind', version: '2.14.2'
+  implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.2'
   implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.14.2'
 
   implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.15'
@@ -250,8 +250,6 @@ dependencies {
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '9.0.73'
   implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.7.6'
 
-
-  implementation group: 'com.fasterxml.jackson.core', name:  'jackson-databind', version: '2.14.2'
   implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
 
   compileOnly 'org.projectlombok:lombok'
@@ -315,7 +313,7 @@ wrapper {
   distributionType = Wrapper.DistributionType.ALL
 }
 
-task runAndPublishConsumerPactTests(type: Test){
+task runAndPublishConsumerPactTests(type: Test) {
   logger.lifecycle("Runs pact Tests")
   testClassesDirs = sourceSets.contractTest.output.classesDirs
   classpath = sourceSets.contractTest.runtimeClasspath
@@ -329,11 +327,11 @@ project.ext {
   pactVersion = getCheckedOutGitCommitHash()
 }
 
-task fortifyScan(type: JavaExec)  {
-    // main = "uk.gov.hmcts.fortifyclient.FortifyClientMainApp"
-    mainClass.set("uk.gov.hmcts.fortifyclient.FortifyClientMainApp")
-    classpath += sourceSets.test.runtimeClasspath
-    jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
+task fortifyScan(type: JavaExec) {
+  // main = "uk.gov.hmcts.fortifyclient.FortifyClientMainApp"
+  mainClass.set("uk.gov.hmcts.fortifyclient.FortifyClientMainApp")
+  classpath += sourceSets.test.runtimeClasspath
+  jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
 }
 
 pact {

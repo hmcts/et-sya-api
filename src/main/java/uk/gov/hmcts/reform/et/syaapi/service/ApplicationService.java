@@ -40,6 +40,7 @@ public class ApplicationService {
     private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
     public static final String YES = "Yes";
+    public static final String WEEKS_78 = "78 weeks";
 
     public CaseDetails submitApplication(String authorization, ClaimantApplicationRequest request)
         throws NotificationClientException {
@@ -215,7 +216,7 @@ public class ApplicationService {
                     downloadDocument.getByteArray(),
                     false,
                     true,
-                    "52 weeks"
+                    WEEKS_78
                 );
             }
         }
