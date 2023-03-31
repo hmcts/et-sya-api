@@ -17,6 +17,7 @@ import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantResponseCya;
 import uk.gov.hmcts.reform.et.syaapi.models.GenericTseApplication;
+import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationException;
 import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationService;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -253,30 +254,33 @@ public class PdfService {
     }
 
     /**
-     * Converts a given object of type {@link TseRespondType} to a {@link PdfDecodedMultipartFile}.
+     * Converts a given object of type {@link RespondToApplicationRequest} to a {@link PdfDecodedMultipartFile}.
      * Firstly by converting to a pdf byte array and then wrapping within the return object.
      *
-     * @param response {@link TseRespondType} object that contains the {@link TseRespondType} object to be converted.
+     * @param request {@link RespondToApplicationRequest} object that contains the data to be converted
      * @return {@link PdfDecodedMultipartFile} with the claimant response CYA page in pdf format.
      * @throws DocumentGenerationException if there is an error generating the PDF.
      */
-    public PdfDecodedMultipartFile convertClaimantResponseIntoMultipartFile(TseRespondType response, String description)
+    public PdfDecodedMultipartFile convertClaimantResponseIntoMultipartFile(RespondToApplicationRequest request,
+                                                                            String description)
         throws DocumentGenerationException {
         return new PdfDecodedMultipartFile(
-            convertClaimantResponseToPdf(response),
+            convertClaimantResponseToPdf(request),
             CLAIMANT_RESPONSE,
             PDF_FILE_TIKA_CONTENT_TYPE,
             description
         );
     }
 
-    private byte[] convertClaimantResponseToPdf(TseRespondType response) throws DocumentGenerationException {
-        String fileName = YES.equals(response.getHasSupportingMaterial()) ? response.getSupportingMaterial().get(
-            0).getValue().getUploadedDocument().getDocumentFilename() : null;
+    private byte[] convertClaimantResponseToPdf(RespondToApplicationRequest request)
+        throws DocumentGenerationException {
+        TseRespondType claimantResponse = request.getResponse();
+        String fileName = YES.equals(claimantResponse.getHasSupportingMaterial())
+            ? request.getSupportingMaterialFile().getDocumentFilename() : null;
         ClaimantResponseCya claimantResponseCya = ClaimantResponseCya.builder()
-            .response(response.getResponse())
+            .response(claimantResponse.getResponse())
             .fileName(fileName)
-            .copyToOtherPartyYesOrNo(response.getCopyToOtherParty())
+            .copyToOtherPartyYesOrNo(claimantResponse.getCopyToOtherParty())
             .build();
 
         return documentGenerationService.genPdfDocument(

@@ -129,8 +129,7 @@ public class ApplicationService {
                 caseService.createResponsePdf(
                     authorization,
                     caseData,
-                    request.getCaseTypeId(),
-                    request.getResponse(),
+                    request,
                     application.getType()
                 );
             } catch (CaseDocumentException | DocumentGenerationException e) {

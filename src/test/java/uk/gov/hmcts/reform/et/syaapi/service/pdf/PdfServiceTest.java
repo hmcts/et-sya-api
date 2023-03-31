@@ -219,6 +219,31 @@ class PdfServiceTest {
     }
 
     @Test
+    void shouldCreatePdfDecodedMultipartFileFromTseApplicationNoSupportingFile() throws DocumentGenerationException {
+        testData.getClaimantTse().setContactApplicationFile(null);
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            pdfService.convertClaimantTseIntoMultipartFile(testData.getClaimantTse());
+        assertThat(pdfDecodedMultipartFile).isNotNull();
+    }
+
+    @Test
+    void shouldCreatePdfDecodedMultipartFileFromClaimantResponse() throws DocumentGenerationException {
+        var request = testData.getRespondToApplicationRequest();
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            pdfService.convertClaimantResponseIntoMultipartFile(request, "Response to app");
+        assertThat(pdfDecodedMultipartFile).isNotNull();
+    }
+
+    @Test
+    void shouldCreatePdfDecodedMultipartFileFromClaimantResponseNoSupportingFile() throws DocumentGenerationException {
+        var request = testData.getRespondToApplicationRequest();
+        request.getResponse().setHasSupportingMaterial("No");
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            pdfService.convertClaimantResponseIntoMultipartFile(request, "Response to app");
+        assertThat(pdfDecodedMultipartFile).isNotNull();
+    }
+
+    @Test
     void shouldNotCreateWhenCertificateDocumentNotFound() {
         List<AcasCertificate> acasCertificates = new ArrayList<>();
         AcasCertificate acasCert = new AcasCertificate();
