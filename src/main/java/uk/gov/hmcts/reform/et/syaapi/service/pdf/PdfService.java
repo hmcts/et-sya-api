@@ -180,8 +180,7 @@ public class PdfService {
                                      this.getClass().getName(), "convertCaseDataToPdfDecodedMultipartFile");
         }
         try {
-            if (caseData.getClaimantHearingPreference().getContactLanguage() != null
-                && WELSH_LANGUAGE.equals(caseData.getClaimantHearingPreference().getContactLanguage())) {
+            if (WELSH_LANGUAGE.equals(ServiceUtil.findClaimantLanguage(caseData))) {
                 files.add(new PdfDecodedMultipartFile(
                     convertCaseToPdf(caseData, this.welshPdfTemplateSource),
                     createPdfDocumentNameFromCaseData(caseData, WELSH_LANGUAGE, userInfo),

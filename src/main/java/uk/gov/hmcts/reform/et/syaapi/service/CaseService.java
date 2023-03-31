@@ -11,6 +11,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
@@ -237,7 +238,8 @@ public class CaseService {
                                     .uploadAllDocuments(authorization, caseRequest.getCaseTypeId(),
                                                         casePdfFiles, acasCertificates));
 
-            if (caseData.getClaimantRequests().getClaimDescriptionDocument() != null) {
+            if (!ObjectUtils.isEmpty(caseData.getClaimantRequests()) &&
+                !ObjectUtils.isEmpty(caseData.getClaimantRequests().getClaimDescriptionDocument())) {
                 documentList.add(caseDocumentService.createDocumentTypeItem(
                     OTHER_TYPE_OF_DOCUMENT,
                     caseData.getClaimantRequests().getClaimDescriptionDocument()
