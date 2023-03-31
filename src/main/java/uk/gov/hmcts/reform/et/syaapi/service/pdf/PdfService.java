@@ -10,14 +10,12 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.elasticsearch.common.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
-import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
-import uk.gov.hmcts.reform.et.syaapi.models.ClaimantResponseCYA;
+import uk.gov.hmcts.reform.et.syaapi.models.ClaimantResponseCya;
 import uk.gov.hmcts.reform.et.syaapi.models.GenericTseApplication;
 import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationException;
 import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationService;
@@ -36,6 +34,7 @@ import java.util.Optional;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 
 /**
  * Uses {@link PdfMapperService} to convert a given case into a Pdf Document.
@@ -272,9 +271,9 @@ public class PdfService {
     }
 
     private byte[] convertClaimantResponseToPdf(TseRespondType response) throws DocumentGenerationException {
-        String fileName = response.getHasSupportingMaterial().equals("Yes") ? response.getSupportingMaterial().get(
+        String fileName = YES.equals(response.getHasSupportingMaterial()) ? response.getSupportingMaterial().get(
             0).getValue().getUploadedDocument().getDocumentFilename() : null;
-        ClaimantResponseCYA claimantResponseCYA = ClaimantResponseCYA.builder()
+        ClaimantResponseCya claimantResponseCya = ClaimantResponseCya.builder()
             .response(response.getResponse())
             .fileName(fileName)
             .copyToOtherPartyYesOrNo(response.getCopyToOtherParty())
@@ -283,7 +282,7 @@ public class PdfService {
         return documentGenerationService.genPdfDocument(
             claimantResponsePdfTemplate,
             CLAIMANT_RESPONSE,
-            claimantResponseCYA
+            claimantResponseCya
         );
     }
 

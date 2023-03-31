@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class ClaimantResponseCYA implements TornadoDocument {
+public class ClaimantResponseCya implements TornadoDocument {
     String response;
     String fileName;
     String copyToOtherPartyYesOrNo;

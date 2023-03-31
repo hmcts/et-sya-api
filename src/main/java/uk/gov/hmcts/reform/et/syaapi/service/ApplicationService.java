@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 
 @RequiredArgsConstructor
@@ -40,7 +40,6 @@ public class ApplicationService {
     private final NotificationService notificationService;
     private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
-    public static final String YES = "Yes";
     public static final String WEEKS_78 = "78 weeks";
 
     public CaseDetails submitApplication(String authorization, ClaimantApplicationRequest request)
