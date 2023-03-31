@@ -396,7 +396,10 @@ public class NotificationService {
             HEARING_DATE,
             hearingDate
         );
-
+        claimantParameters.put(
+            "citizenPortalLink",
+            notificationsProperties.getCitizenPortalLink() + caseId
+        );
         String subjectLine = caseNumber + " " + applicationType;
         claimantParameters.put(
             "subjectLine",
