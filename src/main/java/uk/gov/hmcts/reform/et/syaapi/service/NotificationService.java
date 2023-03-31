@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
@@ -22,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static org.apache.tika.utils.StringUtils.isBlank;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
@@ -345,6 +347,82 @@ public class NotificationService {
             } catch (NotificationClientException ne) {
                 throw new NotificationException(ne);
             }
+        }
+    }
+
+    /**
+     *  Send acknowledgment email to the claimant when they are responding to
+     *  an application (type A/B) made by the Respondent.
+     *
+     * @param caseData        existing case details
+     * @param claimant        claimant's full name
+     * @param caseNumber      ethos case reference
+     * @param respondentNames concatenated respondent names
+     * @param hearingDate     date of the nearest hearing
+     * @param caseId          16 digit case id
+     * @param applicationType type of application
+     * @param tseRespondType  the claimant's response to the application
+     */
+    public void sendResponseEmailToClaimant(
+        CaseData caseData,
+        String claimant,
+        String caseNumber,
+        String respondentNames,
+        String hearingDate,
+        String caseId,
+        String applicationType,
+        TseRespondType tseRespondType
+    ) {
+
+        if (TYPE_C.equals(applicationType)) {
+            log.info("Type C application -  Claimant is only notified of "
+                         + "Type A/B application responses, email not being sent");
+            return;
+        }
+        if (isBlank(caseData.getClaimantType().getClaimantEmailAddress())) {
+            log.info("No claimant email found - Application response acknowledgment not being sent");
+            return;
+        }
+        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
+
+        addCommonParameters(
+            claimantParameters,
+            claimant,
+            respondentNames,
+            caseId,
+            caseNumber
+        );
+        claimantParameters.put(
+            HEARING_DATE,
+            hearingDate
+        );
+        claimantParameters.put(
+            "citizenPortalLink",
+            notificationsProperties.getCitizenPortalLink() + caseId
+        );
+        String subjectLine = caseNumber + " " + applicationType;
+        claimantParameters.put(
+            "subjectLine",
+            subjectLine
+        );
+        claimantParameters.put(
+            "shortText",
+            applicationType
+        );
+
+        String emailToClaimantTemplate = DONT_SEND_COPY.equals(tseRespondType.getCopyToOtherParty())
+            ? notificationsProperties.getClaimantResponseNoTemplateId()
+            : notificationsProperties.getClaimantResponseYesTemplateId();
+
+        try {
+            notificationClient.sendEmail(
+                emailToClaimantTemplate,
+                caseData.getClaimantType().getClaimantEmailAddress(),
+                claimantParameters,
+                caseId
+            );
+        } catch (NotificationClientException ne) {
+            throw new NotificationException(ne);
         }
     }
 

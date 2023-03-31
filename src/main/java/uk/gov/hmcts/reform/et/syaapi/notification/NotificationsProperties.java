@@ -65,4 +65,12 @@ public class NotificationsProperties {
     @Value("${notifications.tribunalResponse}")
     @NotBlank
     private String tribunalResponseTemplateId;
+    
+    @Value("${notifications.claimantResponseNo}")
+    @NotBlank
+    private String claimantResponseNoTemplateId;
+
+    @Value("${notifications.claimantResponseYes}")
+    @NotBlank
+    private String claimantResponseYesTemplateId;
 }
