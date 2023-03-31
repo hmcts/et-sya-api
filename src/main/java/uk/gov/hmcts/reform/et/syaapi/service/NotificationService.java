@@ -77,11 +77,11 @@ public class NotificationService {
             String caseNumber = caseRequest.getCaseId() == null ? "case id not found" : caseRequest.getCaseId();
             String selectedLanguage = ServiceUtil.findClaimantLanguage(caseData);
             String emailTemplateId = WELSH_LANGUAGE.equals(selectedLanguage)
-                ? notificationsProperties.getSubmitCaseEmailTemplateId()
-                : notificationsProperties.getCySubmitCaseEmailTemplateId();
+                ? notificationsProperties.getCySubmitCaseEmailTemplateId()
+                : notificationsProperties.getSubmitCaseEmailTemplateId();
             String citizenPortalLink = WELSH_LANGUAGE.equals(selectedLanguage)
-                ? notificationsProperties.getCitizenPortalLink() + "%s"
-                : notificationsProperties.getCitizenPortalLink() + WELSH_LANGUAGE_PARAM;
+                ? notificationsProperties.getCitizenPortalLink() + WELSH_LANGUAGE_PARAM
+                : notificationsProperties.getCitizenPortalLink() + "%s";
             byte[] et1Pdf = ServiceUtil.findPdfFileBySelectedLanguage(casePdfFiles, selectedLanguage);
             try {
                 Map<String, Object> parameters = new ConcurrentHashMap<>();

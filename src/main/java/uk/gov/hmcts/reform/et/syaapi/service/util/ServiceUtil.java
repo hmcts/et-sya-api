@@ -30,9 +30,12 @@ public final class ServiceUtil {
 
     public static void logException(String firstWord, String caseReferenceNumber, String errorMessage,
                              String className, String methodName) {
-        log.info("*************EXCEPTION OCCURED*************\nERROR DESCRIPTION: " + firstWord
-                     + "\nCASE REFERENCE: " + caseReferenceNumber + "\nERROR MESSAGE: " + errorMessage
-                     + "\nCLASS NAME: " + className + "\nMETHOD NAME: " + methodName
+        log.info("*************EXCEPTION OCCURED*************"
+                     + "\nERROR DESCRIPTION: " + firstWord
+                     + "\nCASE REFERENCE: " + caseReferenceNumber
+                     + "\nERROR MESSAGE: " + errorMessage
+                     + "\nCLASS NAME: " + className
+                     + "\nMETHOD NAME: " + methodName
                      + "\n*****************END OF EXCEPTION MESSAGE***********************");
     }
 
