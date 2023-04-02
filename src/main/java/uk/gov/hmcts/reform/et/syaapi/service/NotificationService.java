@@ -21,6 +21,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CASE_ID_NOT_FOUND;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.FILE_NOT_EXISTS;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ACAS_PDF1_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ACAS_PDF2_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ACAS_PDF3_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ACAS_PDF4_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ACAS_PDF5_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CASE_NUMBER_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CLAIM_DESCRIPTION_FILE_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ET1PDF_ENGLISH_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ET1PDF_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ET1PDF_WELSH_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_FIRSTNAME_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_LASTNAME_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_SERVICE_OWNER_NAME_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_SERVICE_OWNER_NAME_VALUE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM;
 import static uk.gov.service.notify.NotificationClient.prepareUpload;
@@ -45,14 +62,17 @@ public class NotificationService {
      * @param reference   - reference string for email template
      * @return response from notification api
      */
-
     public SendEmailResponse sendEmail(
         String templateId, String targetEmail, Map<String, String> parameters, String reference) {
         SendEmailResponse sendEmailResponse;
         try {
             sendEmailResponse = notificationClient.sendEmail(templateId, targetEmail, parameters, reference);
         } catch (NotificationClientException ne) {
-            log.error("Error while trying to sending notification to client", ne);
+            ServiceUtil.logException("Error while trying to sending notification to client",
+                                     ServiceUtil.getStringValueFromStringMap(parameters,
+                                                                             SEND_EMAIL_PARAMS_CASE_NUMBER_KEY),
+                                     ne.getMessage(),
+                                     this.getClass().getName(), "sendEmail");
             throw new NotificationException(ne);
         }
         return sendEmailResponse;
@@ -74,7 +94,7 @@ public class NotificationService {
         if (ServiceUtil.hasPdfFile(casePdfFiles, 0)) {
             String firstName = ServiceUtil.findClaimantFirstNameByCaseDataUserInfo(caseData, userInfo);
             String lastName = ServiceUtil.findClaimantLastNameByCaseDataUserInfo(caseData, userInfo);
-            String caseNumber = caseRequest.getCaseId() == null ? "case id not found" : caseRequest.getCaseId();
+            String caseNumber = caseRequest.getCaseId() == null ? CASE_ID_NOT_FOUND : caseRequest.getCaseId();
             String selectedLanguage = ServiceUtil.findClaimantLanguage(caseData);
             String emailTemplateId = WELSH_LANGUAGE.equals(selectedLanguage)
                 ? notificationsProperties.getCySubmitCaseEmailTemplateId()
@@ -85,11 +105,11 @@ public class NotificationService {
             byte[] et1Pdf = ServiceUtil.findPdfFileBySelectedLanguage(casePdfFiles, selectedLanguage);
             try {
                 Map<String, Object> parameters = new ConcurrentHashMap<>();
-                parameters.put("firstName", firstName);
-                parameters.put("lastName", lastName);
-                parameters.put("caseNumber", caseNumber);
-                parameters.put("citizenPortalLink", String.format(citizenPortalLink, caseNumber));
-                parameters.put("link_to_et1_pdf_file", prepareUpload(et1Pdf));
+                parameters.put(SEND_EMAIL_PARAMS_FIRSTNAME_KEY, firstName);
+                parameters.put(SEND_EMAIL_PARAMS_LASTNAME_KEY, lastName);
+                parameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
+                parameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, String.format(citizenPortalLink, caseNumber));
+                parameters.put(SEND_EMAIL_PARAMS_ET1PDF_LINK_KEY, prepareUpload(et1Pdf));
 
                 String claimantEmailAddress = caseData.getClaimantType().getClaimantEmailAddress();
                 sendEmailResponse = notificationClient.sendEmail(
@@ -121,22 +141,22 @@ public class NotificationService {
                                                      UploadedDocumentType claimDescriptionDocument) {
         SendEmailResponse sendEmailResponse = null;
         try {
-            String caseNumber = caseRequest.getCaseId() == null ? "case id not found" : caseRequest.getCaseId();
+            String caseNumber = caseRequest.getCaseId() == null ? CASE_ID_NOT_FOUND : caseRequest.getCaseId();
             Map<String, Object> parameters = new ConcurrentHashMap<>();
-            parameters.put("serviceOwnerName", "Service Owner");
-            parameters.put("caseNumber", caseNumber);
-            parameters.put("link_to_et1_pdf_file_en", ServiceUtil.prepareUpload(casePdfFiles, 0));
-            parameters.put("link_to_et1_pdf_file_cy", ServiceUtil.prepareUpload(casePdfFiles, 1));
-            parameters.put("link_to_acas_cert_pdf_file_1", ServiceUtil.prepareUpload(acasCertificates, 0));
-            parameters.put("link_to_acas_cert_pdf_file_2", ServiceUtil.prepareUpload(acasCertificates, 1));
-            parameters.put("link_to_acas_cert_pdf_file_3", ServiceUtil.prepareUpload(acasCertificates, 2));
-            parameters.put("link_to_acas_cert_pdf_file_4", ServiceUtil.prepareUpload(acasCertificates, 3));
-            parameters.put("link_to_acas_cert_pdf_file_5", ServiceUtil.prepareUpload(acasCertificates, 4));
-            parameters.put("link_to_claim_description_file",
+            parameters.put(SEND_EMAIL_SERVICE_OWNER_NAME_KEY, SEND_EMAIL_SERVICE_OWNER_NAME_VALUE);
+            parameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
+            parameters.put(SEND_EMAIL_PARAMS_ET1PDF_ENGLISH_LINK_KEY, ServiceUtil.prepareUpload(casePdfFiles, 0));
+            parameters.put(SEND_EMAIL_PARAMS_ET1PDF_WELSH_LINK_KEY, ServiceUtil.prepareUpload(casePdfFiles, 1));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF1_LINK_KEY, ServiceUtil.prepareUpload(acasCertificates, 0));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF2_LINK_KEY, ServiceUtil.prepareUpload(acasCertificates, 1));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF3_LINK_KEY, ServiceUtil.prepareUpload(acasCertificates, 2));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF4_LINK_KEY, ServiceUtil.prepareUpload(acasCertificates, 3));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF5_LINK_KEY, ServiceUtil.prepareUpload(acasCertificates, 4));
+            parameters.put(SEND_EMAIL_PARAMS_CLAIM_DESCRIPTION_FILE_LINK_KEY,
                            ObjectUtils.isNotEmpty(claimDescriptionDocument)
                                 && StringUtils.isNotBlank(claimDescriptionDocument.getDocumentUrl())
                                 ? claimDescriptionDocument.getDocumentUrl()
-                                : "File does not exist");
+                                : FILE_NOT_EXISTS);
 
             String emailTemplateId = notificationsProperties.getSubmitCaseDocUploadErrorEmailTemplateId();
 

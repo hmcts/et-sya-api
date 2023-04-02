@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
+import lombok.SneakyThrows;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,13 +62,14 @@ class AcasServiceTest {
     private static final String FIVE_CERTS_JSON = "["
         + String.join(", ", CERT_JSON_OBJECT, CERT_JSON_OBJECT, CERT_JSON_OBJECT, CERT_JSON_OBJECT,
                       CERT_JSON_OBJECT) + "]";
-    public static final String A123 = "A123";
-    public static final String Z456 = "Z456";
-    public static final String R123456_11_12 = "R123456/11/12";
-    public static final String R123456_13_14 = "R123456/13/14";
-    public static final String R600227_21_75 = "R600227/21/75";
-    public static final String R600227_21_76 = "R600227/21/76";
-    public static final String R600227_21_77 = "R600227/21/77";
+    private static final String A123 = "A123";
+    private static final String Z456 = "Z456";
+    private static final String R123456_11_12 = "R123456/11/12";
+    private static final String R123456_13_14 = "R123456/13/14";
+    private static final String R600227_21_75 = "R600227/21/75";
+    private static final String R600227_21_76 = "R600227/21/76";
+    private static final String R600227_21_77 = "R600227/21/77";
+    public static final String DUMMY_ACAS_NUMBER = "dummy acas number";
     private AcasService acasService;
     private RestTemplate restTemplate;
     private TestData testData;
@@ -149,9 +151,9 @@ class AcasServiceTest {
         return MockRestServiceServer.createServer(restTemplate);
     }
 
+    @SneakyThrows
     @Test
-    void theGetAcasCertWithValid13CharAcasNumberProducesCertFound()
-        throws AcasException, InvalidAcasNumbersException {
+    void theGetAcasCertWithValid13CharAcasNumberProducesCertFound() {
         getMockServer().expect(ExpectedCount.once(), requestTo(ACAS_DEV_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
@@ -162,9 +164,9 @@ class AcasServiceTest {
             .hasSize(1);
     }
 
+    @SneakyThrows
     @Test
-    void theGetAcasCertWithValid14CharAcasNumberProducesCertFound()
-        throws AcasException, InvalidAcasNumbersException {
+    void theGetAcasCertWithValid14CharAcasNumberProducesCertFound() {
         getMockServer().expect(ExpectedCount.once(), requestTo(ACAS_DEV_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
@@ -175,9 +177,9 @@ class AcasServiceTest {
             .hasSize(1);
     }
 
+    @SneakyThrows
     @Test
-    void theGetAcasCertsWithMultipleValidAcasNumbersProducesCertsFound()
-        throws AcasException, InvalidAcasNumbersException {
+    void theGetAcasCertsWithMultipleValidAcasNumbersProducesCertsFound() {
         getMockServer().expect(ExpectedCount.once(), requestTo(ACAS_DEV_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
@@ -188,9 +190,9 @@ class AcasServiceTest {
             .hasSize(2);
     }
 
+    @SneakyThrows
     @Test
-    void theGetAcasCertWithValid13CharAcasNumberProducesCertNotFound()
-        throws AcasException, InvalidAcasNumbersException {
+    void theGetAcasCertWithValid13CharAcasNumberProducesCertNotFound() {
         getMockServer().expect(ExpectedCount.once(), requestTo(ACAS_DEV_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
@@ -201,9 +203,9 @@ class AcasServiceTest {
             .isEmpty();
     }
 
+    @SneakyThrows
     @Test
-    void theGetAcasCertWithValid14CharAcasNumberProducesCertNotFound()
-        throws AcasException, InvalidAcasNumbersException {
+    void theGetAcasCertWithValid14CharAcasNumberProducesCertNotFound() {
         getMockServer().expect(ExpectedCount.once(), requestTo(ACAS_DEV_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
@@ -214,9 +216,9 @@ class AcasServiceTest {
             .isEmpty();
     }
 
+    @SneakyThrows
     @Test
-    void theGetAcasCertsWithMultipleValidAcasNumbersProducesCertsNotFound()
-        throws AcasException, InvalidAcasNumbersException {
+    void theGetAcasCertsWithMultipleValidAcasNumbersProducesCertsNotFound() {
         getMockServer().expect(ExpectedCount.once(), requestTo(ACAS_DEV_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
@@ -227,9 +229,9 @@ class AcasServiceTest {
             .isEmpty();
     }
 
+    @SneakyThrows
     @Test
-    void theGetAcasCertsWithMultipleValidAcasNumbersWithOneEmptyProducesOneCertFound()
-        throws AcasException, InvalidAcasNumbersException {
+    void theGetAcasCertsWithMultipleValidAcasNumbersWithOneEmptyProducesOneCertFound() {
         getMockServer().expect(ExpectedCount.once(), requestTo(ACAS_DEV_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withStatus(HttpStatus.OK)
@@ -268,9 +270,9 @@ class AcasServiceTest {
         assertThrows(AcasException.class, () -> acasService.getCertificates(R123456_11_12));
     }
 
+    @SneakyThrows
     @Test
-    void theGetAcasCertWithBadApiKeyFirstTimeProducesCertificates()
-        throws AcasException, InvalidAcasNumbersException {
+    void theGetAcasCertWithBadApiKeyFirstTimeProducesCertificates() {
         JSONObject expectedBody = new JSONObject();
         expectedBody.put("certificateNumbers", List.of(R123456_11_12, R123456_13_14));
         getMockServer().expect(ExpectedCount.times(2), requestTo(ACAS_DEV_API_URL))
@@ -374,7 +376,7 @@ class AcasServiceTest {
 
     @Test
     void theGetAcasCertificatesByCaseDataThrowsInvalidAcasNumbersException() {
-        testData.getCaseData().getRespondentCollection().get(0).getValue().setRespondentAcas("dsfdsfs");
+        testData.getCaseData().getRespondentCollection().get(0).getValue().setRespondentAcas(DUMMY_ACAS_NUMBER);
         try (MockedStatic<ServiceUtil> mockedServiceUtil = Mockito.mockStatic(ServiceUtil.class)) {
             acasService.getAcasCertificatesByCaseData(testData.getCaseData());
             mockedServiceUtil.verify(

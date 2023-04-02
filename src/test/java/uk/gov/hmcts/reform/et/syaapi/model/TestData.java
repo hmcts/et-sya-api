@@ -12,17 +12,21 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
-import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
-import uk.gov.service.notify.SendEmailResponse;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.EMPTY_RESPONSE;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_PDF_FILE_CONTENT_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_PDF_FILE_DOCUMENT_DESCRIPTION;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_PDF_FILE_ORIGINAL_NAME;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SUBMIT_CASE_PDF_FILE_RESPONSE;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.UPDATE_CASE_DRAFT;
 
 @Data
@@ -124,13 +128,6 @@ public final class TestData {
             .eventToken(getStartEventResponse().getToken())
             .data(getCaseRequestCaseDataMap())
             .build();
-    }
-
-    public SendEmailResponse getSendEmailResponse() throws IOException {
-        String sendEmailResponseStringVal = ResourceUtil.resourceAsString(
-            "responses/sendEmailResponse.json"
-        );
-        return new SendEmailResponse(sendEmailResponseStringVal);
     }
 
     public static Stream<Arguments> postcodeAddressArguments() {
@@ -235,6 +232,46 @@ public final class TestData {
                 + System.lineSeparator()),
             Arguments.of(caseData4, ""),
             Arguments.of(caseData5, "")
+        );
+
+    }
+
+    public static Stream<Arguments> submitCaseConfirmationEmailPdfFilesArguments() {
+        List<PdfDecodedMultipartFile> nullByteArrayPdfDecodedMultipartFile = new ArrayList<>();
+        nullByteArrayPdfDecodedMultipartFile.add(
+            new PdfDecodedMultipartFile(
+                null,
+                TEST_PDF_FILE_ORIGINAL_NAME,
+                TEST_PDF_FILE_CONTENT_TYPE,
+                TEST_PDF_FILE_DOCUMENT_DESCRIPTION
+            )
+        );
+        List<PdfDecodedMultipartFile> emptyByteArrayPdfDecodedMultipartFile = new ArrayList<>();
+        emptyByteArrayPdfDecodedMultipartFile.add(
+            new PdfDecodedMultipartFile(
+                new byte[0],
+                TEST_PDF_FILE_ORIGINAL_NAME,
+                TEST_PDF_FILE_CONTENT_TYPE,
+                TEST_PDF_FILE_DOCUMENT_DESCRIPTION
+            )
+        );
+
+        List<PdfDecodedMultipartFile> notEmptyByteArrayPdfDecodedMultipartFile = new ArrayList<>();
+        notEmptyByteArrayPdfDecodedMultipartFile.add(
+            new PdfDecodedMultipartFile(
+                TEST_SUBMIT_CASE_PDF_FILE_RESPONSE.getBytes(),
+                TEST_PDF_FILE_ORIGINAL_NAME,
+                TEST_PDF_FILE_CONTENT_TYPE,
+                TEST_PDF_FILE_DOCUMENT_DESCRIPTION
+            )
+        );
+        List<PdfDecodedMultipartFile> emptyPdfDecodedMultipartFile = new ArrayList<>();
+        return Stream.of(
+            Arguments.of(null, EMPTY_RESPONSE),
+            Arguments.of(emptyPdfDecodedMultipartFile, EMPTY_RESPONSE),
+            Arguments.of(nullByteArrayPdfDecodedMultipartFile, EMPTY_RESPONSE),
+            Arguments.of(emptyByteArrayPdfDecodedMultipartFile, EMPTY_RESPONSE),
+            Arguments.of(notEmptyByteArrayPdfDecodedMultipartFile, TEST_SUBMIT_CASE_PDF_FILE_RESPONSE)
         );
 
     }
