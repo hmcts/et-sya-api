@@ -91,7 +91,12 @@ public class PdfService {
                             PDField pdfField = pdfForm.getField(entryKey);
                             pdfField.setValue(entryValue.get());
                         } catch (Exception e) {
-                            log.error(e.getMessage(), e);
+                            ServiceUtil.logException("Error while parsing PDF file for entry key \""
+                                                         + entryKey
+                                                         + "\", entry value \""
+                                                         + getEntryValueFromOptionalString(entryValue)
+                                                         + "\"", caseData.getEthosCaseReference(), e.getMessage(),
+                                                            this.getClass().getName(), "createPdf");
                         }
                     }
                 }
@@ -103,6 +108,10 @@ public class PdfService {
             }
         }
         return new byte[0];
+    }
+
+    private String getEntryValueFromOptionalString(Optional<String> entryValue) {
+        return ObjectUtils.isEmpty(entryValue) || entryValue.isEmpty() ? "" : entryValue.get();
     }
 
     private static void safeClose(InputStream is) {
@@ -167,7 +176,7 @@ public class PdfService {
      * Converts case data to a pdf byte array wrapped in a {@link PdfDecodedMultipartFile} Object.
      *
      * @param caseData The case data to be converted into a pdf file wrapped in a {@link CaseData}
-     * @param userInfo a {@link UserInfo} used user name as a backup if no name in case
+     * @param userInfo a {@link UserInfo} used username as a backup if no name in case
      * @return a list of {@link PdfDecodedMultipartFile} which contains the pdf values
      */
     public List<PdfDecodedMultipartFile> convertCaseDataToPdfDecodedMultipartFile(CaseData caseData, UserInfo
