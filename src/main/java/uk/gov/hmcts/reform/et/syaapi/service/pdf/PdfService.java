@@ -104,7 +104,7 @@ public class PdfService {
                 pdfDocument.save(byteArrayOutputStream);
                 return byteArrayOutputStream.toByteArray();
             } finally {
-                safeClose(stream);
+                safeClose(stream, caseData);
             }
         }
         return new byte[0];
@@ -114,12 +114,14 @@ public class PdfService {
         return ObjectUtils.isEmpty(entryValue) || entryValue.isEmpty() ? "" : entryValue.get();
     }
 
-    private static void safeClose(InputStream is) {
+    public static void safeClose(InputStream is, CaseData caseData) {
         if (is != null) {
             try {
                 is.close();
             } catch (IOException e) {
-                log.error(e.getMessage(), e);
+                ServiceUtil.logException("Input stream for the template PDF file was not closed: ",
+                                         caseData.getEthosCaseReference(), e.getMessage(),
+                                         "PDFServiceUtil", "safeClose");
             }
         }
     }

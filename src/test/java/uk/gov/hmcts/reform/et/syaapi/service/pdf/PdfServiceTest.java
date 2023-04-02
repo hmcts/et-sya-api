@@ -39,6 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
@@ -46,7 +47,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGU
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-@SuppressWarnings({"PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.CloseResource"})
 class PdfServiceTest {
     private static final Map<String, Optional<String>> PDF_VALUES = Map.of(
         PdfMapperConstants.TRIBUNAL_OFFICE, Optional.of("Manchester"),
@@ -282,12 +283,24 @@ class PdfServiceTest {
 
     @Test
     void shouldConvertCaseToPdfThrowPdfServiceExceptionWhenCreatePdfThrowsIoException() {
-        PdfServiceException thrown;
-        try (MockedStatic<Loader> mockedServiceUtil = Mockito.mockStatic(Loader.class)) {
-            mockedServiceUtil.when(() -> Loader.loadPDF(any(InputStream.class))).thenThrow(new IOException());
-            thrown = assertThrows(PdfServiceException.class, () ->
+        try (MockedStatic<Loader> mockedLoader = Mockito.mockStatic(Loader.class)) {
+            mockedLoader.when(() -> Loader.loadPDF(any(InputStream.class))).thenThrow(new IOException());
+            PdfServiceException thrown = assertThrows(PdfServiceException.class, () ->
                 pdfService.convertCaseToPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH));
+            assertEquals("Failed to convert to PDF", thrown.getMessage());
         }
-        assertEquals("Failed to convert to PDF", thrown.getMessage());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenInputStreamNotClosed() throws IOException {
+        try (MockedStatic<ServiceUtil> mockedServiceUtil = Mockito.mockStatic(ServiceUtil.class)) {
+            InputStream is = Mockito.mock(InputStream.class);
+            doThrow(new IOException("Test IOException")).when(is).close();
+            PdfService.safeClose(is, testData.getCaseData());
+            mockedServiceUtil.verify(
+                () -> ServiceUtil.logException(anyString(), anyString(), anyString(), anyString(), anyString()),
+                times(1)
+            );
+        }
     }
 }
