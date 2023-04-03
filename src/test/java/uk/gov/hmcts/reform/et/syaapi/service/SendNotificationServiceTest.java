@@ -17,7 +17,9 @@ import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SendNotificationServiceTest {
@@ -52,11 +54,6 @@ class SendNotificationServiceTest {
         updatedCaseData.put("sendNotificationCollection", items);
 
         verify(caseService, times(1)).triggerEvent(
-            MOCK_TOKEN,
-            "11",
-            CaseEvent.UPDATE_CASE_SUBMITTED,
-            "1234",
-            updatedCaseData
-            );
+            MOCK_TOKEN, "11", CaseEvent.UPDATE_CASE_SUBMITTED, "1234", updatedCaseData);
     }
 }
