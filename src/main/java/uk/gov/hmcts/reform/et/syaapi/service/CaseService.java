@@ -35,6 +35,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
@@ -282,7 +283,8 @@ public class CaseService {
      */
     public CaseDetails triggerEventForSubmitCase(String authorization, CaseRequest caseRequest) {
         StartEventResponse startEventResponse = startUpdate(authorization, caseRequest.getCaseId(),
-                                                            caseRequest.getCaseTypeId(), SUBMIT_CASE_DRAFT);
+                                                            caseRequest.getCaseTypeId(), SUBMIT_CASE_DRAFT
+        );
         CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(
             startEventResponse.getCaseDetails().getData());
         enrichCaseDataWithJurisdictionCodes(caseData1);
@@ -508,5 +510,25 @@ public class CaseService {
         ));
 
         caseDetails.getData().put(DOCUMENT_COLLECTION, docList);
+    }
+
+    void createResponsePdf(String authorization,
+                           CaseData caseData,
+                           RespondToApplicationRequest request,
+                           String appType)
+        throws DocumentGenerationException, CaseDocumentException {
+        String description = "Response to " + appType;
+        PdfDecodedMultipartFile multipartResponsePdf =
+            pdfService.convertClaimantResponseIntoMultipartFile(request, description);
+
+        var responsePdf = caseDocumentService.createDocumentTypeItem(
+            authorization,
+            request.getCaseTypeId(),
+            CLAIMANT_CORRESPONDENCE_DOCUMENT,
+            multipartResponsePdf
+        );
+
+        var docCollection = caseData.getDocumentCollection();
+        docCollection.add(responsePdf);
     }
 }

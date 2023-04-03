@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 
 @RequiredArgsConstructor
@@ -39,9 +40,15 @@ public class ApplicationService {
     private final NotificationService notificationService;
     private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
-    public static final String YES = "Yes";
     public static final String WEEKS_78 = "78 weeks";
 
+    /**
+     * Submit Claimant Application to Tell Something Else.
+     *
+     * @param authorization - authorization
+     * @param request - application request from the claimant
+     * @return the associated {@link CaseDetails} for the ID provided in request
+     */
     public CaseDetails submitApplication(String authorization, ClaimantApplicationRequest request)
         throws NotificationClientException {
 
@@ -78,6 +85,13 @@ public class ApplicationService {
         return finalCaseDetails;
     }
 
+    /**
+     * Submit Claimant Response to Respondent's request to Tell Something Else.
+     *
+     * @param authorization - authorization
+     * @param request - response from the claimant
+     * @return the associated {@link CaseDetails} for the ID provided in request
+     */
     public CaseDetails respondToApplication(String authorization, RespondToApplicationRequest request) {
         StartEventResponse startEventResponse = caseService.startUpdate(
             authorization,
@@ -101,6 +115,8 @@ public class ApplicationService {
                 caseDocumentService
             );
 
+            createPdfOfResponse(authorization, request, caseData, appToModify.getValue());
+
             CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
             CaseDetails caseDetails = caseService.submitUpdate(
                 authorization,
@@ -114,6 +130,25 @@ public class ApplicationService {
             return caseDetails;
         } else {
             throw new IllegalArgumentException("Application id provided is incorrect");
+        }
+    }
+
+    private void createPdfOfResponse(String authorization,
+                                     RespondToApplicationRequest request,
+                                     CaseData caseData,
+                                     GenericTseApplicationType application) {
+        if (YES.equals(request.getResponse().getCopyToOtherParty())) {
+            try {
+                log.info("Uploading pdf of claimant response to application");
+                caseService.createResponsePdf(
+                    authorization,
+                    caseData,
+                    request,
+                    application.getType()
+                );
+            } catch (CaseDocumentException | DocumentGenerationException e) {
+                log.error("Couldn't upload pdf of TSE application " + e.getMessage());
+            }
         }
     }
 
