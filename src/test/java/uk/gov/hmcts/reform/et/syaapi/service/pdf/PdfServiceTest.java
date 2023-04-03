@@ -263,7 +263,7 @@ class PdfServiceTest {
                 .thenReturn(WELSH_LANGUAGE);
             List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
                 pdfService1.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), null);
-            assertThat(pdfDecodedMultipartFileList).hasSize(0);
+            assertThat(pdfDecodedMultipartFileList).isEmpty();
             mockedServiceUtil.verify(
                 () -> ServiceUtil.logException(anyString(), anyString(), anyString(), anyString(), anyString()),
                 times(2)
