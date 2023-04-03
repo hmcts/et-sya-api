@@ -1,0 +1,15 @@
+{
+  "case_id": "1663685972102820",
+  "case_type_id": "ET_EnglandWales",
+  "case_data": {
+    "sendNotificationCollection": [
+      {
+        "id": "777",
+        "value": {
+          "notificationState": "notViewed"
+        }
+      }
+    ]
+  }
+}
+
