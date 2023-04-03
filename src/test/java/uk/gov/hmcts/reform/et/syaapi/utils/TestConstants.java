@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.utils;
 
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.service.notify.SendEmailResponse;
 
 public final class TestConstants {
@@ -35,6 +36,40 @@ public final class TestConstants {
     public static final String REFERENCE_STRING = "TEST_EMAIL_ALERT";
     public static final String TEST_SUBMIT_CASE_PDF_FILE_RESPONSE = "Dear test, Please see your detail "
         + "as 123456789. Regards, ET Team.";
+    public static final String SEND_NOTIFICATION_ENGLISH_RESPONSE_BODY = "Please click here. "
+        + "https://www.gov.uk/log-in-register-hmrc-online-services/123456722/?lng=en.";
+    public static final String SEND_NOTIFICATION_WELSH_RESPONSE_BODY = "Please click here. "
+        + "https://www.gov.uk/log-in-register-hmrc-online-services/123456722/?lng=cy.";
+    public static final String SEND_NOTIFICATION_NO_LANGUAGE_RESPONSE_BODY = "Dear test, "
+        + "Please see your detail as 123456789. Regards, ET Team.";
+    public static final String UPLOADED_DOCUMENT_NAME = "Uploaded Document Name";
+    public static final String UPLOADED_DOCUMENT_BINARY_URL = "https://uploaded.document.binary.url";
+    public static final String UPLOADED_DOCUMENT_URL = "https://uploaded.document.url";
+    public static final String FILE_NOT_EXISTS = "File does not exist!...";
+    public static final String WELSH_LANGUAGE = "Welsh";
+    public static final String ENGLISH_LANGUAGE = "English";
+
+    public static final PdfDecodedMultipartFile PDF_DECODED_MULTIPART_FILE = new PdfDecodedMultipartFile(
+        TEST_SUBMIT_CASE_PDF_FILE_RESPONSE.getBytes(),
+        TestConstants.TEST_PDF_FILE_ORIGINAL_NAME,
+        TestConstants.TEST_PDF_FILE_CONTENT_TYPE,
+        TestConstants.TEST_PDF_FILE_DOCUMENT_DESCRIPTION
+    );
+
+    public static final PdfDecodedMultipartFile PDF_DECODED_MULTIPART_FILE_NULL = new PdfDecodedMultipartFile(
+        null,
+        TestConstants.TEST_PDF_FILE_ORIGINAL_NAME,
+        TestConstants.TEST_PDF_FILE_CONTENT_TYPE,
+        TestConstants.TEST_PDF_FILE_DOCUMENT_DESCRIPTION
+    );
+
+    public static final PdfDecodedMultipartFile PDF_DECODED_MULTIPART_FILE_EMPTY = new PdfDecodedMultipartFile(
+        new byte[0],
+        TestConstants.TEST_PDF_FILE_ORIGINAL_NAME,
+        TestConstants.TEST_PDF_FILE_CONTENT_TYPE,
+        TestConstants.TEST_PDF_FILE_DOCUMENT_DESCRIPTION
+    );
+
     private static final String SEND_EMAIL_RESPONSE_BEGINNING = "{\n"
         + "  \"id\": \"f30b2148-b1a6-4c0d-8a10-50109c96dc2c\",\n"
         + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"

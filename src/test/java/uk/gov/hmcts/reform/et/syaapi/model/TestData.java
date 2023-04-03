@@ -6,6 +6,7 @@ import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
@@ -14,6 +15,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
+import uk.gov.hmcts.reform.et.syaapi.utils.TestConstants;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.util.ArrayList;
@@ -23,11 +25,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.EMPTY_RESPONSE;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_PDF_FILE_CONTENT_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_PDF_FILE_DOCUMENT_DESCRIPTION;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_PDF_FILE_ORIGINAL_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SUBMIT_CASE_PDF_FILE_RESPONSE;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.UPDATE_CASE_DRAFT;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.UPLOADED_DOCUMENT_BINARY_URL;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.UPLOADED_DOCUMENT_NAME;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.UPLOADED_DOCUMENT_URL;
+
 
 @Data
 @SuppressWarnings("PMD.TooManyFields")
@@ -236,35 +239,13 @@ public final class TestData {
 
     }
 
-    public static Stream<Arguments> submitCaseConfirmationEmailPdfFilesArguments() {
-        List<PdfDecodedMultipartFile> nullByteArrayPdfDecodedMultipartFile = new ArrayList<>();
-        nullByteArrayPdfDecodedMultipartFile.add(
-            new PdfDecodedMultipartFile(
-                null,
-                TEST_PDF_FILE_ORIGINAL_NAME,
-                TEST_PDF_FILE_CONTENT_TYPE,
-                TEST_PDF_FILE_DOCUMENT_DESCRIPTION
-            )
-        );
-        List<PdfDecodedMultipartFile> emptyByteArrayPdfDecodedMultipartFile = new ArrayList<>();
-        emptyByteArrayPdfDecodedMultipartFile.add(
-            new PdfDecodedMultipartFile(
-                new byte[0],
-                TEST_PDF_FILE_ORIGINAL_NAME,
-                TEST_PDF_FILE_CONTENT_TYPE,
-                TEST_PDF_FILE_DOCUMENT_DESCRIPTION
-            )
-        );
-
-        List<PdfDecodedMultipartFile> notEmptyByteArrayPdfDecodedMultipartFile = new ArrayList<>();
-        notEmptyByteArrayPdfDecodedMultipartFile.add(
-            new PdfDecodedMultipartFile(
-                TEST_SUBMIT_CASE_PDF_FILE_RESPONSE.getBytes(),
-                TEST_PDF_FILE_ORIGINAL_NAME,
-                TEST_PDF_FILE_CONTENT_TYPE,
-                TEST_PDF_FILE_DOCUMENT_DESCRIPTION
-            )
-        );
+    public static Stream<Arguments> generateSubmitCaseConfirmationEmailPdfFilesArguments() {
+        List<PdfDecodedMultipartFile> nullByteArrayPdfDecodedMultipartFile = List.of(
+            TestConstants.PDF_DECODED_MULTIPART_FILE_NULL);
+        List<PdfDecodedMultipartFile> emptyByteArrayPdfDecodedMultipartFile = List.of(
+            TestConstants.PDF_DECODED_MULTIPART_FILE_EMPTY);
+        List<PdfDecodedMultipartFile> notEmptyByteArrayPdfDecodedMultipartFile = List.of(
+            TestConstants.PDF_DECODED_MULTIPART_FILE);
         List<PdfDecodedMultipartFile> emptyPdfDecodedMultipartFile = new ArrayList<>();
         return Stream.of(
             Arguments.of(null, EMPTY_RESPONSE),
@@ -272,6 +253,52 @@ public final class TestData {
             Arguments.of(nullByteArrayPdfDecodedMultipartFile, EMPTY_RESPONSE),
             Arguments.of(emptyByteArrayPdfDecodedMultipartFile, EMPTY_RESPONSE),
             Arguments.of(notEmptyByteArrayPdfDecodedMultipartFile, TEST_SUBMIT_CASE_PDF_FILE_RESPONSE)
+        );
+    }
+
+    private static UploadedDocumentType generateUploadedDocumentTypeByParams(String binaryUrl,
+                                                                             String documentUrl,
+                                                                             String fileName) {
+        UploadedDocumentType uploadedDocumentType = new UploadedDocumentType();
+        uploadedDocumentType.setDocumentBinaryUrl(binaryUrl);
+        uploadedDocumentType.setDocumentUrl(documentUrl);
+        uploadedDocumentType.setDocumentFilename(fileName);
+        return uploadedDocumentType;
+    }
+
+    public static Stream<Arguments> generateSendDocUploadErrorEmailPdfFilesArguments() {
+        List<PdfDecodedMultipartFile> nullByteArrayPdfDecodedMultipartFileList = List.of(
+            TestConstants.PDF_DECODED_MULTIPART_FILE_NULL);
+        List<PdfDecodedMultipartFile> emptyByteArrayPdfDecodedMultipartFileList = List.of(
+            TestConstants.PDF_DECODED_MULTIPART_FILE_EMPTY);
+        List<PdfDecodedMultipartFile> notEmptyByteArrayPdfDecodedMultipartFileList = List.of(
+            TestConstants.PDF_DECODED_MULTIPART_FILE);
+        List<PdfDecodedMultipartFile> emptyPdfDecodedMultipartFileList = new ArrayList<>();
+        UploadedDocumentType nullUploadedDocumentTypeFile = generateUploadedDocumentTypeByParams(null,
+                                                                                             null,
+                                                                                             null);
+        UploadedDocumentType emptyUploadedDocumentTypeFile = generateUploadedDocumentTypeByParams("",
+                                                                                              "",
+                                                                                              "");
+        UploadedDocumentType notEmptyUploadedDocumentTypeFile = generateUploadedDocumentTypeByParams(
+            UPLOADED_DOCUMENT_BINARY_URL,
+            UPLOADED_DOCUMENT_URL,
+            UPLOADED_DOCUMENT_NAME);
+        UploadedDocumentType emptyUploadedDocumentType = new UploadedDocumentType();
+        return Stream.of(
+            Arguments.of(null, null, null),
+            Arguments.of(nullByteArrayPdfDecodedMultipartFileList,
+                         nullByteArrayPdfDecodedMultipartFileList,
+                         nullUploadedDocumentTypeFile),
+            Arguments.of(emptyByteArrayPdfDecodedMultipartFileList,
+                         emptyByteArrayPdfDecodedMultipartFileList,
+                         emptyUploadedDocumentTypeFile),
+            Arguments.of(emptyPdfDecodedMultipartFileList,
+                         emptyPdfDecodedMultipartFileList,
+                         emptyUploadedDocumentType),
+            Arguments.of(notEmptyByteArrayPdfDecodedMultipartFileList,
+                         notEmptyByteArrayPdfDecodedMultipartFileList,
+                         notEmptyUploadedDocumentTypeFile)
         );
 
     }
