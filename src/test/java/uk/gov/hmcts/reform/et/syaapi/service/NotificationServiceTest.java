@@ -286,7 +286,7 @@ class NotificationServiceTest {
                                                                                           casePdfFiles,
                                                                                           acasCertificates,
                                                                                           claimDescriptionDocument);
-        assertThat(sendEmailResponse.getFromEmail().isPresent()).isTrue();
+        assertThat(sendEmailResponse.getFromEmail()).isPresent();
         assertThat(sendEmailResponse.getFromEmail()).asString()
             .isEqualTo("Optional[" + TestConstants.TEST_EMAIL + "]");
     }
