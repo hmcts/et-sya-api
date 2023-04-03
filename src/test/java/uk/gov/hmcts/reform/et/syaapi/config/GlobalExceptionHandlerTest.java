@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.config;
 
 
 import feign.FeignException;
+import feign.Request;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -11,9 +12,8 @@ import uk.gov.hmcts.reform.authorisation.exceptions.InvalidTokenException;
 import uk.gov.hmcts.reform.et.syaapi.config.interceptors.UnAuthorisedServiceException;
 import uk.gov.hmcts.reform.et.syaapi.models.ErrorResponse;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class GlobalExceptionHandlerTest {
@@ -21,50 +21,49 @@ class GlobalExceptionHandlerTest {
     @Test
     void shouldHandleInvalidTokenException() {
         final GlobalExceptionHandler exceptionHandler = new GlobalExceptionHandler();
-        final InvalidTokenException invalidTokenException = mock(InvalidTokenException.class);
+        final InvalidTokenException invalidTokenException = new InvalidTokenException("Unauthorized");
         final ErrorResponse errorResponse = ErrorResponse.builder().message("Unauthorized").code(401).build();
-
-        when(invalidTokenException.getMessage()).thenReturn("Unauthorized");
 
         final ResponseEntity<ErrorResponse> actualResponse =
             exceptionHandler.handleInvalidTokenException(invalidTokenException);
 
-        assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
-        assertEquals(errorResponse, actualResponse.getBody());
+        assertThat(HttpStatus.UNAUTHORIZED).isEqualTo(actualResponse.getStatusCode());
+        assertThat(errorResponse).isEqualTo(actualResponse.getBody());
     }
 
     @Test
     void shouldHandleUnAuthorisedServiceException() {
         final GlobalExceptionHandler exceptionHandler = new GlobalExceptionHandler();
-        final UnAuthorisedServiceException unAuthorisedServiceException = mock(UnAuthorisedServiceException.class);
+        final UnAuthorisedServiceException unAuthorisedServiceException = new UnAuthorisedServiceException("Forbidden");
         final ErrorResponse errorResponse = ErrorResponse.builder().message("Forbidden").code(403).build();
 
-        when(unAuthorisedServiceException.getMessage()).thenReturn("Forbidden");
+
 
         final ResponseEntity<ErrorResponse> actualResponse =
             exceptionHandler.handleUnAuthorisedServiceException(unAuthorisedServiceException);
 
-        assertEquals(HttpStatus.FORBIDDEN, actualResponse.getStatusCode());
-        assertEquals(errorResponse, actualResponse.getBody());
+        assertThat(HttpStatus.FORBIDDEN).isEqualTo(actualResponse.getStatusCode());
+        assertThat(errorResponse).isEqualTo(actualResponse.getBody());
     }
 
     @Test
     void shouldHandleFeignException() {
         final GlobalExceptionHandler exceptionHandler = new GlobalExceptionHandler();
-        final FeignException feignException = mock(FeignException.class);
+        final FeignException feignException = new FeignException.InternalServerError(
+            "Call failed",
+            mock(Request.class),
+            "service is down.".getBytes(),
+            null
+        );
         final ErrorResponse errorResponse = ErrorResponse.builder()
             .message("Call failed - service is down.")
             .code(500)
             .build();
 
-        when(feignException.status()).thenReturn(500);
-        when(feignException.getMessage()).thenReturn("Call failed");
-        when(feignException.contentUTF8()).thenReturn("service is down.");
-
         final ResponseEntity<ErrorResponse> actualResponse =
             exceptionHandler.handleFeignException(feignException);
 
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
-        assertEquals(errorResponse, actualResponse.getBody());
+        assertThat(HttpStatus.INTERNAL_SERVER_ERROR).isEqualTo(actualResponse.getStatusCode());
+        assertThat(errorResponse).isEqualTo(actualResponse.getBody());
     }
 }

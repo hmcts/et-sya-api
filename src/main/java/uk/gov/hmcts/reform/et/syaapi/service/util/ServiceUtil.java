@@ -10,8 +10,10 @@ import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 
 import java.util.List;
+import java.util.Map;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.FILE_NOT_EXISTS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 
 @Slf4j
@@ -62,16 +64,28 @@ public final class ServiceUtil {
         throws NotificationClientException {
         return hasPdfFile(pdfFileList, index)
             ? NotificationClient.prepareUpload(pdfFileList.get(index).getBytes())
-            : "File does not exist";
+            : FILE_NOT_EXISTS;
     }
 
     public static byte[] findPdfFileBySelectedLanguage(List<PdfDecodedMultipartFile> pdfFileList,
                                                        String selectedLanguage) {
-        if (WELSH_LANGUAGE.equals(selectedLanguage) && hasPdfFile(pdfFileList, 1)) {
-            return pdfFileList.get(1).getBytes();
+        if (WELSH_LANGUAGE.equals(selectedLanguage)) {
+            if (hasPdfFile(pdfFileList, 1)) {
+                return pdfFileList.get(1).getBytes();
+            } else {
+                return new byte[0];
+            }
         } else {
-            return pdfFileList.get(0).getBytes();
+            if (hasPdfFile(pdfFileList, 0)) {
+                return pdfFileList.get(0).getBytes();
+            } else {
+                return new byte[0];
+            }
         }
     }
 
+    public static String getStringValueFromStringMap(Map<String, String> parameters, String key) {
+        return ObjectUtils.isEmpty(parameters.get(key)) ? "" :
+            parameters.get(key);
+    }
 }
