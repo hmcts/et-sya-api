@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
@@ -43,6 +44,8 @@ class NotificationServiceTest {
     private static final String SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID = "af0b26b7-17b6-4643-bbdc-e296d11e7b0c";
     private static final String REFERENCE_STRING = "TEST_EMAIL_ALERT";
     private static final String TEST_EMAIL = "TEST@GMAIL.COM";
+    private static final String WITNESS = "witness";
+    private static final String CHANGE_DETAILS_APPLICATION_TYPE = "Change my personal details";
     private NotificationClient notificationClient;
     private NotificationsProperties notificationsProperties;
     private final ConcurrentHashMap<String, String> parameters = new ConcurrentHashMap<>();
@@ -218,7 +221,7 @@ class NotificationServiceTest {
 
     @Test
     void shouldSendTypeCEmail() throws NotificationClientException, IOException {
-        testData.getClaimantApplication().setContactApplicationType("witness");
+        testData.getClaimantApplication().setContactApplicationType(WITNESS);
         when(notificationClient.sendEmail(
             eq("C"),
             eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
@@ -282,7 +285,7 @@ class NotificationServiceTest {
 
     @Test
     void shouldNotSendEmailToRespondentTypeC() throws NotificationClientException {
-        testData.getClaimantApplication().setContactApplicationType("witness");
+        testData.getClaimantApplication().setContactApplicationType(WITNESS);
         notificationService.sendAcknowledgementEmailToRespondents(
             testData.getCaseData(),
             CLAIMANT,
@@ -325,7 +328,7 @@ class NotificationServiceTest {
 
     @Test
     void shouldSendEmailToTribunalTypeC() throws NotificationClientException {
-        testData.getClaimantApplication().setContactApplicationType("witness");
+        testData.getClaimantApplication().setContactApplicationType(WITNESS);
         notificationService.sendAcknowledgementEmailToTribunal(
             testData.getCaseData(),
             CLAIMANT,
@@ -442,7 +445,7 @@ class NotificationServiceTest {
             TEST_RESPONDENT,
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
-            "Change my personal details"
+            CHANGE_DETAILS_APPLICATION_TYPE
         );
 
         verify(notificationClient, times(1)).sendEmail(
@@ -463,7 +466,7 @@ class NotificationServiceTest {
             TEST_RESPONDENT,
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
-            "Change my personal details"
+            CHANGE_DETAILS_APPLICATION_TYPE
         );
 
         verify(notificationClient, times(0)).sendEmail(
@@ -473,4 +476,69 @@ class NotificationServiceTest {
             eq(testData.getExpectedDetails().getId().toString())
         );
     }
+
+    @Test
+    void shouldSendResponseEmailToClaimant() throws NotificationClientException {
+        notificationService.sendResponseEmailToClaimant(
+            testData.getCaseData(),
+            CLAIMANT,
+            "1",
+            TEST_RESPONDENT,
+            NOT_SET,
+            testData.getExpectedDetails().getId().toString(),
+            CHANGE_DETAILS_APPLICATION_TYPE,
+            new TseRespondType()
+        );
+
+        verify(notificationClient, times(1)).sendEmail(
+            any(),
+            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void shouldNotSendResponseWhenClaimantEmailDoesNotExist() throws NotificationClientException {
+        testData.getCaseData().getClaimantType().setClaimantEmailAddress("");
+        notificationService.sendResponseEmailToClaimant(
+            testData.getCaseData(),
+            CLAIMANT,
+            "1",
+            TEST_RESPONDENT,
+            NOT_SET,
+            testData.getExpectedDetails().getId().toString(),
+            CHANGE_DETAILS_APPLICATION_TYPE,
+            new TseRespondType()
+        );
+
+        verify(notificationClient, times(0)).sendEmail(
+            any(),
+            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void shouldNotSendResponseEmailToClaimantForTypeCApplication() throws NotificationClientException {
+        notificationService.sendResponseEmailToClaimant(
+            testData.getCaseData(),
+            CLAIMANT,
+            "1",
+            TEST_RESPONDENT,
+            NOT_SET,
+            testData.getExpectedDetails().getId().toString(),
+            WITNESS,
+            new TseRespondType()
+        );
+
+        verify(notificationClient, times(0)).sendEmail(
+            any(),
+            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
 }
+

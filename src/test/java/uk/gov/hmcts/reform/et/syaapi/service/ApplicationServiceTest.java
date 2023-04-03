@@ -271,4 +271,31 @@ class ApplicationServiceTest {
         );
     }
 
+    @Test
+    void shouldSendResponseEmailsToClaimantWithCorrectParameters() throws NotificationClientException {
+        RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
+        when(caseService.startUpdate(
+            TEST_SERVICE_AUTH_TOKEN,
+            testRequest.getCaseId(),
+            testRequest.getCaseTypeId(),
+            CaseEvent.CLAIMANT_TSE_RESPOND
+        )).thenReturn(testData.getUpdateCaseEventResponse());
+
+        applicationService.respondToApplication(
+            TEST_SERVICE_AUTH_TOKEN,
+            testRequest
+        );
+
+        verify(notificationService, times(1)).sendResponseEmailToClaimant(
+            any(),
+            eq(CLAIMANT),
+            eq(CASE_ID),
+            eq(""),
+            eq(NOT_SET),
+            eq("12345"),
+            eq("Amend details"),
+            any()
+        );
+    }
+
 }
