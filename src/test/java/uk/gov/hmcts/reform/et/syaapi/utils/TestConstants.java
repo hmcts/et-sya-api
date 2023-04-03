@@ -1,7 +1,12 @@
 package uk.gov.hmcts.reform.et.syaapi.utils;
 
+import org.json.JSONObject;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.service.notify.SendEmailResponse;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public final class TestConstants {
 
@@ -48,14 +53,7 @@ public final class TestConstants {
     public static final String FILE_NOT_EXISTS = "File does not exist!...";
     public static final String WELSH_LANGUAGE = "Welsh";
     public static final String ENGLISH_LANGUAGE = "English";
-
-    public static final PdfDecodedMultipartFile PDF_DECODED_MULTIPART_FILE = new PdfDecodedMultipartFile(
-        TEST_SUBMIT_CASE_PDF_FILE_RESPONSE.getBytes(),
-        TestConstants.TEST_PDF_FILE_ORIGINAL_NAME,
-        TestConstants.TEST_PDF_FILE_CONTENT_TYPE,
-        TestConstants.TEST_PDF_FILE_DOCUMENT_DESCRIPTION
-    );
-
+    public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
     public static final PdfDecodedMultipartFile PDF_DECODED_MULTIPART_FILE_NULL = new PdfDecodedMultipartFile(
         null,
         TestConstants.TEST_PDF_FILE_ORIGINAL_NAME,
@@ -117,9 +115,55 @@ public final class TestConstants {
                       + "  }\n"
                       + "}\n");
     public static final String EMPTY_RESPONSE = "Empty Response";
+    public static final List<PdfDecodedMultipartFile> NULL_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST = List.of(
+        PDF_DECODED_MULTIPART_FILE_NULL);
+    public static final List<PdfDecodedMultipartFile> EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST = List.of(
+        PDF_DECODED_MULTIPART_FILE_EMPTY);
+    public static final PdfDecodedMultipartFile PDF_DECODED_MULTIPART_FILE1 = new PdfDecodedMultipartFile(
+        SEND_EMAIL_RESPONSE_BEGINNING.getBytes(),
+        TestConstants.TEST_PDF_FILE_ORIGINAL_NAME,
+        TestConstants.TEST_PDF_FILE_CONTENT_TYPE,
+        TestConstants.TEST_PDF_FILE_DOCUMENT_DESCRIPTION
+    );
+
+    public static final PdfDecodedMultipartFile PDF_DECODED_MULTIPART_FILE2 = new PdfDecodedMultipartFile(
+        SEND_EMAIL_RESPONSE_END.getBytes(),
+        TestConstants.TEST_PDF_FILE_ORIGINAL_NAME,
+        TestConstants.TEST_PDF_FILE_CONTENT_TYPE,
+        TestConstants.TEST_PDF_FILE_DOCUMENT_DESCRIPTION
+    );
+    public static final List<PdfDecodedMultipartFile> NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST = List.of(
+        PDF_DECODED_MULTIPART_FILE1);
+    public static final List<PdfDecodedMultipartFile> MULTIPLE_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST = List.of(
+        PDF_DECODED_MULTIPART_FILE1, PDF_DECODED_MULTIPART_FILE2);
+    public static final List<PdfDecodedMultipartFile> EMPTY_PDF_DECODED_MULTIPART_FILE_LIST = new ArrayList<>();
+    public static final UploadedDocumentType NULL_UPLOADED_DOCUMENT_TYPE_FILE =
+        generateUploadedDocumentTypeByParams(null, null, null);
+    public static final UploadedDocumentType EMPTY_UPLOADED_DOCUMENT_TYPE_FILE =
+        generateUploadedDocumentTypeByParams("", "", "");
+    public static final UploadedDocumentType NOT_EMPTY_UPLOADED_DOCUMENT_TYPE_FILE =
+        generateUploadedDocumentTypeByParams(UPLOADED_DOCUMENT_BINARY_URL,
+                                             UPLOADED_DOCUMENT_URL,
+                                             UPLOADED_DOCUMENT_NAME);
+    public static final UploadedDocumentType EMPTY_UPLOADED_DOCUMENT_TYPE = new UploadedDocumentType();
+    public static final JSONObject PREPARE_PDF_UPLOAD_JSON_OBJECT = new JSONObject("{\"file\":\""
+                                               + "RGVhciB0ZXN0LCBQbGVhc2Ugc2VlIHlvdXIgZGV0YWlsIGFzIDEyMzQ1Njc"
+                                               + "4OS4gUmVnYXJkcywgRVQgVGVhbS4=\","
+                                               + "\"confirm_email_before_download\":null,\"retention_period\""
+                                               + ":null,\"is_csv\":false}");
 
     private TestConstants() {
 
+    }
+
+    private static UploadedDocumentType generateUploadedDocumentTypeByParams(String binaryUrl,
+                                                                             String documentUrl,
+                                                                             String fileName) {
+        UploadedDocumentType uploadedDocumentType = new UploadedDocumentType();
+        uploadedDocumentType.setDocumentBinaryUrl(binaryUrl);
+        uploadedDocumentType.setDocumentUrl(documentUrl);
+        uploadedDocumentType.setDocumentFilename(fileName);
+        return uploadedDocumentType;
     }
 }
 

@@ -6,34 +6,27 @@ import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
+import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.utils.TestConstants;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.EMPTY_RESPONSE;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SUBMIT_CASE_PDF_FILE_RESPONSE;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.UPDATE_CASE_DRAFT;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.UPLOADED_DOCUMENT_BINARY_URL;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.UPLOADED_DOCUMENT_NAME;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.UPLOADED_DOCUMENT_URL;
-
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.MULTIPLE_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST;
 
 @Data
-@SuppressWarnings("PMD.TooManyFields")
+@SuppressWarnings({"PMD.TooManyFields", "PMD.TooManyMethods"})
 public final class TestData {
 
     private final Et1CaseData et1CaseData = ResourceLoader.fromString(
@@ -127,7 +120,7 @@ public final class TestData {
 
     public CaseDataContent getUpdateCaseDataContent() {
         return CaseDataContent.builder()
-            .event(Event.builder().id(UPDATE_CASE_DRAFT).build())
+            .event(Event.builder().id(TestConstants.UPDATE_CASE_DRAFT).build())
             .eventToken(getStartEventResponse().getToken())
             .data(getCaseRequestCaseDataMap())
             .build();
@@ -240,67 +233,181 @@ public final class TestData {
     }
 
     public static Stream<Arguments> generateSubmitCaseConfirmationEmailPdfFilesArguments() {
-        List<PdfDecodedMultipartFile> nullByteArrayPdfDecodedMultipartFile = List.of(
-            TestConstants.PDF_DECODED_MULTIPART_FILE_NULL);
-        List<PdfDecodedMultipartFile> emptyByteArrayPdfDecodedMultipartFile = List.of(
-            TestConstants.PDF_DECODED_MULTIPART_FILE_EMPTY);
-        List<PdfDecodedMultipartFile> notEmptyByteArrayPdfDecodedMultipartFile = List.of(
-            TestConstants.PDF_DECODED_MULTIPART_FILE);
-        List<PdfDecodedMultipartFile> emptyPdfDecodedMultipartFile = new ArrayList<>();
         return Stream.of(
-            Arguments.of(null, EMPTY_RESPONSE),
-            Arguments.of(emptyPdfDecodedMultipartFile, EMPTY_RESPONSE),
-            Arguments.of(nullByteArrayPdfDecodedMultipartFile, EMPTY_RESPONSE),
-            Arguments.of(emptyByteArrayPdfDecodedMultipartFile, EMPTY_RESPONSE),
-            Arguments.of(notEmptyByteArrayPdfDecodedMultipartFile, TEST_SUBMIT_CASE_PDF_FILE_RESPONSE)
+            Arguments.of(null, TestConstants.EMPTY_RESPONSE),
+            Arguments.of(TestConstants.EMPTY_PDF_DECODED_MULTIPART_FILE_LIST, TestConstants.EMPTY_RESPONSE),
+            Arguments.of(TestConstants.NULL_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST, TestConstants.EMPTY_RESPONSE),
+            Arguments.of(TestConstants.EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST, TestConstants.EMPTY_RESPONSE),
+            Arguments.of(NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.TEST_SUBMIT_CASE_PDF_FILE_RESPONSE)
         );
     }
 
-    private static UploadedDocumentType generateUploadedDocumentTypeByParams(String binaryUrl,
-                                                                             String documentUrl,
-                                                                             String fileName) {
-        UploadedDocumentType uploadedDocumentType = new UploadedDocumentType();
-        uploadedDocumentType.setDocumentBinaryUrl(binaryUrl);
-        uploadedDocumentType.setDocumentUrl(documentUrl);
-        uploadedDocumentType.setDocumentFilename(fileName);
-        return uploadedDocumentType;
+    public static Stream<Arguments> generateCaseDataArgumentsForTheTestFindClaimantLanguage() {
+        CaseData caseDataNullClaimantHearingPreferences = new TestData().getCaseData();
+        caseDataNullClaimantHearingPreferences.setClaimantHearingPreference(null);
+
+        CaseData caseDataNullContactLanguage = new TestData().getCaseData();
+        caseDataNullContactLanguage.getClaimantHearingPreference().setContactLanguage(null);
+
+        CaseData caseDataEmptyContactLanguage = new TestData().getCaseData();
+        caseDataEmptyContactLanguage.getClaimantHearingPreference().setContactLanguage("");
+
+        CaseData caseDataInvalidContactLanguage = new TestData().getCaseData();
+        caseDataInvalidContactLanguage.getClaimantHearingPreference().setContactLanguage("invalid language");
+
+        CaseData caseDataWelshContactLanguage = new TestData().getCaseData();
+        caseDataWelshContactLanguage.getClaimantHearingPreference().setContactLanguage(TestConstants.WELSH_LANGUAGE);
+
+        CaseData caseDataEnglishContactLanguage = new TestData().getCaseData();
+        caseDataEnglishContactLanguage.getClaimantHearingPreference()
+            .setContactLanguage(TestConstants.ENGLISH_LANGUAGE);
+
+        return Stream.of(
+            Arguments.of(caseDataNullClaimantHearingPreferences, TestConstants.ENGLISH_LANGUAGE),
+            Arguments.of(caseDataNullContactLanguage, TestConstants.ENGLISH_LANGUAGE),
+            Arguments.of(caseDataEmptyContactLanguage, TestConstants.ENGLISH_LANGUAGE),
+            Arguments.of(caseDataInvalidContactLanguage, TestConstants.ENGLISH_LANGUAGE),
+            Arguments.of(caseDataWelshContactLanguage, TestConstants.WELSH_LANGUAGE),
+            Arguments.of(caseDataEnglishContactLanguage, TestConstants.ENGLISH_LANGUAGE)
+        );
     }
+
+    public static Stream<Arguments> generateCaseDataUserInfoArgumentsForTestingFirstNames() {
+
+        CaseData caseDataNullClaimantIndType = new TestData().getCaseData();
+        caseDataNullClaimantIndType.setClaimantIndType(null);
+
+        CaseData caseDataEmptyClaimantIndType = new TestData().getCaseData();
+        caseDataEmptyClaimantIndType.setClaimantIndType(new ClaimantIndType());
+
+        CaseData caseDataNullClaimantFirstNames = new TestData().getCaseData();
+        caseDataNullClaimantFirstNames.getClaimantIndType().setClaimantFirstNames(null);
+
+        CaseData caseDataEmptyClaimantFirstNames = new TestData().getCaseData();
+        caseDataEmptyClaimantFirstNames.getClaimantIndType().setClaimantFirstNames("");
+
+        CaseData caseDataNotEmptyClaimantFirstNames = new TestData().getCaseData();
+
+        TestData tmpTestData = new TestData();
+
+        return Stream.of(
+            Arguments.of(caseDataNullClaimantIndType, tmpTestData.getUserInfo(),
+                         tmpTestData.getUserInfo().getGivenName()),
+            Arguments.of(caseDataEmptyClaimantIndType, tmpTestData.getUserInfo(),
+                         tmpTestData.getUserInfo().getGivenName()),
+            Arguments.of(caseDataNullClaimantFirstNames, tmpTestData.getUserInfo(),
+                         tmpTestData.getUserInfo().getGivenName()),
+            Arguments.of(caseDataEmptyClaimantFirstNames, tmpTestData.getUserInfo(),
+                         tmpTestData.getUserInfo().getGivenName()),
+            Arguments.of(caseDataNotEmptyClaimantFirstNames, tmpTestData.getUserInfo(),
+                         tmpTestData.getCaseData().getClaimantIndType().getClaimantFirstNames())
+        );
+    }
+
+    public static Stream<Arguments> generateCaseDataUserInfoArgumentsForTestingLastName() {
+
+        CaseData caseDataNullClaimantIndType = new TestData().getCaseData();
+        caseDataNullClaimantIndType.setClaimantIndType(null);
+
+        CaseData caseDataEmptyClaimantIndType = new TestData().getCaseData();
+        caseDataEmptyClaimantIndType.setClaimantIndType(new ClaimantIndType());
+
+        CaseData caseDataNullClaimantFirstNames = new TestData().getCaseData();
+        caseDataNullClaimantFirstNames.getClaimantIndType().setClaimantLastName(null);
+
+        CaseData caseDataEmptyClaimantFirstNames = new TestData().getCaseData();
+        caseDataEmptyClaimantFirstNames.getClaimantIndType().setClaimantLastName("");
+
+        CaseData caseDataNotEmptyClaimantFirstNames = new TestData().getCaseData();
+
+        TestData tmpTestData = new TestData();
+
+        return Stream.of(
+            Arguments.of(caseDataNullClaimantIndType, tmpTestData.getUserInfo(),
+                         tmpTestData.getUserInfo().getFamilyName()),
+            Arguments.of(caseDataEmptyClaimantIndType, tmpTestData.getUserInfo(),
+                         tmpTestData.getUserInfo().getFamilyName()),
+            Arguments.of(caseDataNullClaimantFirstNames, tmpTestData.getUserInfo(),
+                         tmpTestData.getUserInfo().getFamilyName()),
+            Arguments.of(caseDataEmptyClaimantFirstNames, tmpTestData.getUserInfo(),
+                         tmpTestData.getUserInfo().getFamilyName()),
+            Arguments.of(caseDataNotEmptyClaimantFirstNames, tmpTestData.getUserInfo(),
+                         tmpTestData.getCaseData().getClaimantIndType().getClaimantLastName())
+        );
+    }
+
+    public static Stream<Arguments> generatePdfFileListForTestingHasPdfFileByGivenIndex() {
+        return Stream.of(
+            Arguments.of(null, 0, false),
+            Arguments.of(TestConstants.EMPTY_PDF_DECODED_MULTIPART_FILE_LIST, 0, false),
+            Arguments.of(TestConstants.NULL_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST, 0, false),
+            Arguments.of(TestConstants.EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST, 0, false),
+            Arguments.of(NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST, 0, true)
+        );
+    }
+
+    public static Stream<Arguments> generatePdfFileListForTestingPrepareUploadByGivenIndex() {
+        return Stream.of(
+            Arguments.of(null, 0, TestConstants.FILE_NOT_EXISTS),
+            Arguments.of(TestConstants.EMPTY_PDF_DECODED_MULTIPART_FILE_LIST, 0,
+                         TestConstants.FILE_NOT_EXISTS),
+            Arguments.of(TestConstants.NULL_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST, 0,
+                         TestConstants.FILE_NOT_EXISTS),
+            Arguments.of(TestConstants.EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST, 0,
+                         TestConstants.FILE_NOT_EXISTS),
+            Arguments.of(NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST, 0,
+                         TestConstants.PREPARE_PDF_UPLOAD_JSON_OBJECT)
+        );
+    }
+
+    public static Stream<Arguments> generatePdfFileListForTestingFindPdfFileBySelectedLanguage() {
+        return Stream.of(
+            Arguments.of(null, TestConstants.WELSH_LANGUAGE, TestConstants.EMPTY_BYTE_ARRAY),
+            Arguments.of(null, TestConstants.ENGLISH_LANGUAGE, TestConstants.EMPTY_BYTE_ARRAY),
+            Arguments.of(TestConstants.EMPTY_PDF_DECODED_MULTIPART_FILE_LIST, TestConstants.WELSH_LANGUAGE,
+                         TestConstants.EMPTY_BYTE_ARRAY),
+            Arguments.of(TestConstants.EMPTY_PDF_DECODED_MULTIPART_FILE_LIST, TestConstants.ENGLISH_LANGUAGE,
+                         TestConstants.EMPTY_BYTE_ARRAY),
+            Arguments.of(TestConstants.NULL_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.WELSH_LANGUAGE, TestConstants.EMPTY_BYTE_ARRAY),
+            Arguments.of(TestConstants.NULL_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.ENGLISH_LANGUAGE, TestConstants.EMPTY_BYTE_ARRAY),
+            Arguments.of(TestConstants.EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.WELSH_LANGUAGE, TestConstants.EMPTY_BYTE_ARRAY),
+            Arguments.of(TestConstants.EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.ENGLISH_LANGUAGE, TestConstants.EMPTY_BYTE_ARRAY),
+            Arguments.of(NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.WELSH_LANGUAGE, TestConstants.EMPTY_BYTE_ARRAY),
+            Arguments.of(NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.ENGLISH_LANGUAGE,
+                         NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST.get(0).getBytes()),
+            Arguments.of(MULTIPLE_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.WELSH_LANGUAGE,
+                         MULTIPLE_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST.get(1).getBytes()),
+            Arguments.of(MULTIPLE_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.ENGLISH_LANGUAGE,
+                         MULTIPLE_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST.get(0).getBytes())
+        );
+    }
+
 
     public static Stream<Arguments> generateSendDocUploadErrorEmailPdfFilesArguments() {
-        List<PdfDecodedMultipartFile> nullByteArrayPdfDecodedMultipartFileList = List.of(
-            TestConstants.PDF_DECODED_MULTIPART_FILE_NULL);
-        List<PdfDecodedMultipartFile> emptyByteArrayPdfDecodedMultipartFileList = List.of(
-            TestConstants.PDF_DECODED_MULTIPART_FILE_EMPTY);
-        List<PdfDecodedMultipartFile> notEmptyByteArrayPdfDecodedMultipartFileList = List.of(
-            TestConstants.PDF_DECODED_MULTIPART_FILE);
-        List<PdfDecodedMultipartFile> emptyPdfDecodedMultipartFileList = new ArrayList<>();
-        UploadedDocumentType nullUploadedDocumentTypeFile = generateUploadedDocumentTypeByParams(null,
-                                                                                             null,
-                                                                                             null);
-        UploadedDocumentType emptyUploadedDocumentTypeFile = generateUploadedDocumentTypeByParams("",
-                                                                                              "",
-                                                                                              "");
-        UploadedDocumentType notEmptyUploadedDocumentTypeFile = generateUploadedDocumentTypeByParams(
-            UPLOADED_DOCUMENT_BINARY_URL,
-            UPLOADED_DOCUMENT_URL,
-            UPLOADED_DOCUMENT_NAME);
-        UploadedDocumentType emptyUploadedDocumentType = new UploadedDocumentType();
         return Stream.of(
             Arguments.of(null, null, null),
-            Arguments.of(nullByteArrayPdfDecodedMultipartFileList,
-                         nullByteArrayPdfDecodedMultipartFileList,
-                         nullUploadedDocumentTypeFile),
-            Arguments.of(emptyByteArrayPdfDecodedMultipartFileList,
-                         emptyByteArrayPdfDecodedMultipartFileList,
-                         emptyUploadedDocumentTypeFile),
-            Arguments.of(emptyPdfDecodedMultipartFileList,
-                         emptyPdfDecodedMultipartFileList,
-                         emptyUploadedDocumentType),
-            Arguments.of(notEmptyByteArrayPdfDecodedMultipartFileList,
-                         notEmptyByteArrayPdfDecodedMultipartFileList,
-                         notEmptyUploadedDocumentTypeFile)
+            Arguments.of(TestConstants.NULL_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.NULL_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.NULL_UPLOADED_DOCUMENT_TYPE_FILE),
+            Arguments.of(TestConstants.EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.EMPTY_UPLOADED_DOCUMENT_TYPE_FILE),
+            Arguments.of(TestConstants.EMPTY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.EMPTY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.EMPTY_UPLOADED_DOCUMENT_TYPE),
+            Arguments.of(NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.NOT_EMPTY_UPLOADED_DOCUMENT_TYPE_FILE)
         );
-
     }
 
     public SearchResult requestCaseDataListSearchResult() {

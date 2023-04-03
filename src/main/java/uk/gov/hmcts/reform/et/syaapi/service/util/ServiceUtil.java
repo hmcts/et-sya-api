@@ -69,10 +69,18 @@ public final class ServiceUtil {
 
     public static byte[] findPdfFileBySelectedLanguage(List<PdfDecodedMultipartFile> pdfFileList,
                                                        String selectedLanguage) {
-        if (WELSH_LANGUAGE.equals(selectedLanguage) && hasPdfFile(pdfFileList, 1)) {
-            return pdfFileList.get(1).getBytes();
+        if (WELSH_LANGUAGE.equals(selectedLanguage)) {
+            if (hasPdfFile(pdfFileList, 1)) {
+                return pdfFileList.get(1).getBytes();
+            } else {
+                return new byte[0];
+            }
         } else {
-            return pdfFileList.get(0).getBytes();
+            if (hasPdfFile(pdfFileList, 0)) {
+                return pdfFileList.get(0).getBytes();
+            } else {
+                return new byte[0];
+            }
         }
     }
 

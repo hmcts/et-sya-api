@@ -182,7 +182,7 @@ class NotificationServiceTest {
         testData.getCaseRequest().setCaseId(caseId);
         testData.getCaseData().getClaimantHearingPreference().setContactLanguage(null);
         List<PdfDecodedMultipartFile> casePdfFiles = new ArrayList<>();
-        casePdfFiles.add(TestConstants.PDF_DECODED_MULTIPART_FILE);
+        casePdfFiles.add(TestConstants.PDF_DECODED_MULTIPART_FILE1);
         NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
             testData.getCaseRequest(),
@@ -215,7 +215,7 @@ class NotificationServiceTest {
         testData.getCaseRequest().setCaseId(testData.getExpectedDetails().getId().toString());
         testData.getCaseData().getClaimantHearingPreference().setContactLanguage(selectedLanguage);
         List<PdfDecodedMultipartFile> casePdfFiles = new ArrayList<>();
-        casePdfFiles.add(TestConstants.PDF_DECODED_MULTIPART_FILE);
+        casePdfFiles.add(TestConstants.PDF_DECODED_MULTIPART_FILE1);
         NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
             testData.getCaseRequest(),
@@ -237,7 +237,7 @@ class NotificationServiceTest {
                 anyString()
             )).thenThrow(NotificationClientException.class);
             List<PdfDecodedMultipartFile> casePdfFiles = new ArrayList<>();
-            casePdfFiles.add(TestConstants.PDF_DECODED_MULTIPART_FILE);
+            casePdfFiles.add(TestConstants.PDF_DECODED_MULTIPART_FILE1);
             mockedServiceUtil.when(() -> ServiceUtil.hasPdfFile(casePdfFiles, 0)).thenReturn(true);
             mockedServiceUtil.when(() -> ServiceUtil.findClaimantLanguage(testData.getCaseData()))
                 .thenReturn(ENGLISH_LANGUAGE);
@@ -304,8 +304,8 @@ class NotificationServiceTest {
                 .thenReturn(TestConstants.FILE_NOT_EXISTS);
             UploadedDocumentType claimDescriptionDocument = new UploadedDocumentType();
             notificationService.sendDocUploadErrorEmail(testData.getCaseRequest(),
-                                                            List.of(TestConstants.PDF_DECODED_MULTIPART_FILE),
-                                                            List.of(TestConstants.PDF_DECODED_MULTIPART_FILE),
+                                                            List.of(TestConstants.PDF_DECODED_MULTIPART_FILE1),
+                                                            List.of(TestConstants.PDF_DECODED_MULTIPART_FILE1),
                                                             claimDescriptionDocument);
             mockedServiceUtil.verify(
                 () -> ServiceUtil.logException(anyString(),
