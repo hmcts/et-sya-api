@@ -194,7 +194,6 @@ public class CaseService {
     public CaseDetails submitCase(String authorization, CaseRequest caseRequest)
         throws PdfServiceException {
         // Assigning local office to case data
-        // TODO name of assign case to local office service class should be changed.
         CaseData caseData = caseOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
         // Getting user info from IDAM
         UserInfo userInfo = idamClient.getUserInfo(authorization);

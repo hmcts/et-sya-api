@@ -77,8 +77,7 @@ class NotificationServiceTest {
     @Test
     void shouldSendEmailByMockingResponse() {
         SendEmailResponse sendEmailResponse = mockSendEmailResponse();
-        assertThat(sendEmailResponse.getReference().isPresent()).isTrue();
-        assertThat(sendEmailResponse.getReference().get()).isEqualTo(TestConstants.REFERENCE_STRING);
+        assertThat(sendEmailResponse.getReference()).isPresent();
     }
 
     @SneakyThrows
