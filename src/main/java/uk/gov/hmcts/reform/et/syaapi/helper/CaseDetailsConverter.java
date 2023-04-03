@@ -48,17 +48,32 @@ public class CaseDetailsConverter {
     }
 
     /**
-     * Converts Case related datails to CaseDataContent which gets saved to CCD.
+     * Converts pre-submitted case related details to CaseDataContent which gets saved to CCD.
      *
      * @param startEventResponse associated case details updated
-     * @param et1CaseData orginal json format represented object
+     * @param et1CaseData original json format represented object
      * @return {@link CaseDataContent} which returns overall contents of the case
      */
-    public CaseDataContent caseDataContent(StartEventResponse startEventResponse, Et1CaseData et1CaseData) {
+    public CaseDataContent et1ToCaseDataContent(StartEventResponse startEventResponse, Et1CaseData et1CaseData) {
         return CaseDataContent.builder()
             .eventToken(startEventResponse.getToken())
             .event(Event.builder().id(startEventResponse.getEventId()).build())
             .data(et1CaseData)
+            .build();
+    }
+
+    /**
+     * Converts Case related details to CaseDataContent which gets saved to CCD.
+     *
+     * @param startEventResponse associated case details updated
+     * @param caseData original json format represented object
+     * @return {@link CaseDataContent} which returns overall contents of the case
+     */
+    public CaseDataContent caseDataContent(StartEventResponse startEventResponse, CaseData caseData) {
+        return CaseDataContent.builder()
+            .eventToken(startEventResponse.getToken())
+            .event(Event.builder().id(startEventResponse.getEventId()).build())
+            .data(caseData)
             .build();
     }
 }

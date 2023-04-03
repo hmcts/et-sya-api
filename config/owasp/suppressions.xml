@@ -1,13 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
-  <suppress until="2030-01-01">
-    <notes><![CDATA[
-     Suppressing as it's a false positive (see: https://pivotal.io/security/cve-2018-1258)
-   ]]></notes>
-    <gav regex="true">^org\.springframework\.security:spring-security-crypto:5.4.[0-5]</gav>
-    <cpe>cpe:/a:pivotal_software:spring_security</cpe>
-    <cve>CVE-2018-1258</cve>
-  </suppress>
   <suppress>
    <notes><![CDATA[
    file name: json-20220924.jar
@@ -28,106 +20,10 @@
     ]]></notes>
     <cve>CVE-2020-10663</cve>
     <cve>CVE-2020-7712</cve>
-   </suppress>
+  </suppress>
   <suppress>
     <notes>Suppresses commons-io-2.6.jar vulnerabilities</notes>
     <cve>CVE-2021-29425</cve>
-  </suppress>
-  <suppress>
-    <notes>Suppresses snakeyaml-1.30.jar </notes>
-    <cve>CVE-2022-38749</cve>
-    <cve>CVE-2022-38751</cve>
-    <cve>CVE-2022-38750</cve>
-  </suppress>
-  <suppress>
-    <notes>Suppresses spring-web-5.3.22.jar</notes>
-    <cve>CVE-2016-1000027</cve>
-  </suppress>
-  <suppress>
-    <notes>Suppresses spring-security-crypto-5.7.5.jar vulnerabilities</notes>
-    <cve>CVE-2020-5408</cve>
-  </suppress>
-  <suppress>
-    <notes>Suppresses snakeyaml-1.30.jar vulnerabilities</notes>
-    <cve>CVE-2022-25857</cve>
-  </suppress>
-  <suppress>
-    <notes>Suppresses tomcat embedded version tomcat-embed-core-9.0.56.jar vulnerabilities</notes>
-    <cve>CVE-2022-23181</cve>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
-        Suppress until updated package is available file name: spring-retry-1.3.2.jar
-   ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.springframework\.retry/spring\-retry@.*$</packageUrl>
-    <cpe>cpe:/a:vmware:spring_framework</cpe>
-  </suppress>
-  <suppress until="2022-07-25">
-    <cve>CVE-2022-22968</cve>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
-     file name: tomcat-embed-core-9.0.62.jar
-     ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org.apache.tomcat.embed/tomcat-embed-core@.*$</packageUrl>
-    <cve>CVE-2022-29885</cve>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
-     file name: tomcat-embed-websocket-9.0.62.jar
-     ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org.apache.tomcat.embed/tomcat-embed-websocket@.*$</packageUrl>
-    <cve>CVE-2022-29885</cve>
-  </suppress>
-  <suppress until="2022-11-20">
-    <cve>CVE-2022-22976</cve>
-  </suppress>
-  <suppress until="2022-11-20">
-    <cve>CVE-2022-22978</cve>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
-   file name: tomcat-embed-core-9.0.63.jar
-   ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-core@.*$</packageUrl>
-    <cve>CVE-2022-34305</cve>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
-   file name: tomcat-embed-websocket-9.0.63.jar
-   ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-websocket@.*$</packageUrl>
-    <cve>CVE-2022-34305</cve>
-  </suppress>
-  <suppress until="2022-11-20">
-    <cve>CVE-2022-31569</cve>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
-   file name: snakeyaml-1.30.jar
-   ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
-    <cve>CVE-2022-38749</cve>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
-   file name: snakeyaml-1.31.jar
-   ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
-    <vulnerabilityName>CVE-2022-38752</vulnerabilityName>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
-   file name: spring-web-5.3.22.jar
-   ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-web@.*$</packageUrl>
-    <cve>CVE-2016-1000027</cve>
-  </suppress>
-  <suppress until="2022-11-20">
-    <cve>CVE-2022-25857</cve>
-  </suppress>
-  <suppress until="2022-11-20">
-    <cve>CVE-2022-42003</cve>
   </suppress>
   <suppress>
     <notes><![CDATA[
@@ -166,25 +62,18 @@
   </suppress>
   <suppress>
     <notes><![CDATA[
-   file name: snakeyaml-1.33.jar
+   file name: jackson-core-2.14.2.jar
    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
-    <cve>CVE-2022-3064</cve>
+    <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-core@.*$</packageUrl>
+    <cve>CVE-2022-45688</cve>
   </suppress>
   <suppress>
     <notes><![CDATA[
-   file name: snakeyaml-1.33.jar
-   ]]></notes>
+    file name: snakeyaml-1.33.jar
+    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
-    <cpe>cpe:/a:yaml_project:yaml</cpe>
+    <cve>CVE-2022-1471</cve>
   </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: snakeyaml-1.33.jar
-   ]]></notes>
-   <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
-   <cve>CVE-2022-1471</cve>
-</suppress>
   <suppress until="2023-04-15">
     <notes>Temporary suppression for commons-fileupload-1.4.jar</notes>
     <cve>CVE-2023-24998</cve>

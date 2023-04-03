@@ -37,4 +37,40 @@ public class NotificationsProperties {
     @Value("${notifications.citizenPortalLink}")
     @NotBlank
     private String citizenPortalLink;
+
+    @Value("${notifications.applicationAcknowledgementYes}")
+    @NotBlank
+    private String claimantTseEmailYesTemplateId;
+
+    @Value("${notifications.applicationAcknowledgementNo}")
+    @NotBlank
+    private String claimantTseEmailNoTemplateId;
+
+    @Value("${notifications.applicationAcknowledgementTypeC}")
+    @NotBlank
+    private String claimantTseEmailTypeCTemplateId;
+
+    @Value("${notifications.respondentCopyTypeA}")
+    @NotBlank
+    private String respondentTseEmailTypeATemplateId;
+
+    @Value("${notifications.respondentCopyTypeB}")
+    @NotBlank
+    private String respondentTseEmailTypeBTemplateId;
+
+    @Value("${notifications.tribunalAcknowledgement}")
+    @NotBlank
+    private String tribunalAcknowledgementTemplateId;
+
+    @Value("${notifications.tribunalResponse}")
+    @NotBlank
+    private String tribunalResponseTemplateId;
+    
+    @Value("${notifications.claimantResponseNo}")
+    @NotBlank
+    private String claimantResponseNoTemplateId;
+
+    @Value("${notifications.claimantResponseYes}")
+    @NotBlank
+    private String claimantResponseYesTemplateId;
 }

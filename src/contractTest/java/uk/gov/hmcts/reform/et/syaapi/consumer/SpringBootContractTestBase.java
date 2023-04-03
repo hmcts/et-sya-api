@@ -25,7 +25,7 @@ import static io.pactfoundation.consumer.dsl.LambdaDsl.newJsonBody;
 @SpringBootTest({
     "core_case_data.api.url : localhost:8890"
 })
-public class SpringBootContractBaseTest {
+public class SpringBootContractTestBase {
     public static final String AUTH_TOKEN = "Bearer someAuthorizationToken";
     public static final String SERVICE_AUTH_TOKEN = "Bearer someServiceAuthorizationToken";
 

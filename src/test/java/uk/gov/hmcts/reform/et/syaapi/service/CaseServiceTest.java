@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.EqualsAndHashCode;
+import lombok.SneakyThrows;
+import org.apache.commons.collections4.MultiValuedMap;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
@@ -11,6 +13,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
@@ -29,6 +34,8 @@ import uk.gov.hmcts.reform.et.syaapi.constants.JurisdictionCodesConstants;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
@@ -45,11 +52,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -68,7 +79,7 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.USER_ID;
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"PMD.TooManyMethods","PMD.ExcessiveImports"})
+@SuppressWarnings({"PMD.TooManyMethods","PMD.ExcessiveImports", "PMD.AvoidDuplicateLiterals"})
 class CaseServiceTest {
 
     @Mock
@@ -88,6 +99,8 @@ class CaseServiceTest {
     @Mock
     private CaseDocumentService caseDocumentService;
     @Mock
+    private DocumentGenerationService documentGenerationService;
+    @Mock
     private NotificationService notificationService;
     @Mock
     private AssignCaseToLocalOfficeService assignCaseToLocalOfficeService;
@@ -96,7 +109,18 @@ class CaseServiceTest {
     @InjectMocks
     private CaseService caseService;
     private final TestData testData;
+    public static final String TEST = "test";
+    private static final byte[] TSE_PDF_BYTES = TEST.getBytes();
+    private static final String TSE_PDF_NAME = "contact_about_something_else.pdf";
+    private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
+    private static final String TSE_PDF_DESCRIPTION = "Test description";
 
+    private final PdfDecodedMultipartFile tsePdfMultipartFileMock = new PdfDecodedMultipartFile(
+        TSE_PDF_BYTES,
+        TSE_PDF_NAME,
+        PDF_FILE_TIKA_CONTENT_TYPE,
+        TSE_PDF_DESCRIPTION
+    );
 
     CaseServiceTest() {
         testData = new TestData();
@@ -324,9 +348,10 @@ class CaseServiceTest {
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             new PdfDecodedMultipartFile(
                 new byte[0],
-                "test",
-                "test",
-                "test");
+                TEST,
+                TEST,
+                TEST
+            );
 
         when(pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(any(), any()))
             .thenReturn(List.of(pdfDecodedMultipartFile));
@@ -341,7 +366,6 @@ class CaseServiceTest {
 
         when(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(any()))
             .thenReturn(testData.getCaseData());
-
         SendEmailResponse sendEmailResponse
             = new SendEmailResponse("{\n"
                                         + "  \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
@@ -361,33 +385,34 @@ class CaseServiceTest {
         when(notificationService.sendSubmitCaseConfirmationEmail(any(), any(), any()))
             .thenReturn(sendEmailResponse);
 
-        when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(createDocumentTypeItem());
+        when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(createDocumentTypeItem("Other"));
 
         CaseDetails caseDetails = caseService.submitCase(
             TEST_SERVICE_AUTH_TOKEN,
             testData.getCaseRequest()
         );
 
-        assertEquals(1, ((LinkedList)caseDetails.getData().get("documentCollection")).size());
+        assertEquals(1, ((LinkedList<?>)caseDetails.getData().get("documentCollection")).size());
 
-        LinkedList docCollection = (LinkedList) caseDetails.getData().get("documentCollection");
+        LinkedList<?> docCollection = (LinkedList<?>) caseDetails.getData().get("documentCollection");
         assertEquals("DocumentType(typeOfDocument="
-            + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=https://document.binary.url, documentFilen"
-            + "ame=filename, documentUrl=https://document.url), ownerDocument=null, creationDate=null, shortDescription=nu"
-            + "ll)", ((DocumentTypeItem) docCollection.get(0)).getValue().toString());
+            + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=http://document.url/2333482f-1eb9-44f1"
+                         + "-9b78-f5d8f0c74b15/binary, documentFilename=filename, documentUrl=http://document.binary"
+                         + ".url/2333482f-1eb9-44f1-9b78-f5d8f0c74b15), ownerDocument=null, creationDate=null, "
+                         + "shortDescription=null)", ((DocumentTypeItem) docCollection.get(0)).getValue().toString());
 
     }
 
-    private DocumentTypeItem createDocumentTypeItem() {
+    private DocumentTypeItem createDocumentTypeItem(String typeOfDocument) {
         UploadedDocumentType uploadedDocumentType = new UploadedDocumentType();
         uploadedDocumentType.setDocumentFilename("filename");
-        uploadedDocumentType.setDocumentUrl("https://document.url");
-        uploadedDocumentType.setDocumentBinaryUrl("https://document.binary.url");
+        uploadedDocumentType.setDocumentUrl("http://document.binary.url/2333482f-1eb9-44f1-9b78-f5d8f0c74b15");
+        uploadedDocumentType.setDocumentBinaryUrl("http://document.url/2333482f-1eb9-44f1-9b78-f5d8f0c74b15/binary");
         DocumentTypeItem documentTypeItem = new DocumentTypeItem();
         documentTypeItem.setId(UUID.randomUUID().toString());
 
         DocumentType documentType = new DocumentType();
-        documentType.setTypeOfDocument("Other");
+        documentType.setTypeOfDocument(typeOfDocument);
         documentType.setUploadedDocument(uploadedDocumentType);
 
         documentTypeItem.setValue(documentType);
@@ -601,11 +626,85 @@ class CaseServiceTest {
                                                    any());
     }
 
+    @Test
+    void shouldInvokeClaimantTsePdf()
+        throws DocumentGenerationException, CaseDocumentException {
+        when(pdfService.convertClaimantTseIntoMultipartFile(any())).thenReturn(
+            tsePdfMultipartFileMock);
+
+        assertDoesNotThrow(() ->
+            caseService.uploadTseCyaAsPdf(
+                TEST_SERVICE_AUTH_TOKEN,
+                testData.getCaseDetails(),
+                testData.getClaimantTse(),
+                "TEST"
+            )
+        );
+    }
+
+    @SneakyThrows
+    @Test
+    void givenPdfServiceErrorProducesDocumentGenerationException() {
+        when(pdfService.convertClaimantTseIntoMultipartFile(any())).thenThrow(
+            new DocumentGenerationException(TEST));
+
+        assertThrows(DocumentGenerationException.class, () -> caseService.uploadTseCyaAsPdf(
+            "", testData.getCaseDetails(), testData.getClaimantTse(), ""));
+    }
+
     private List<JurCodesTypeItem> mockJurCodesTypeItems() {
         JurCodesTypeItem item = new JurCodesTypeItem();
         JurCodesType type = new JurCodesType();
         type.setJuridictionCodesList(JurisdictionCodesConstants.BOC);
         item.setValue(type);
         return List.of(item);
+    }
+
+    @Test
+    void retrieveAcasDocuments() {
+        when(idamClient.getAccessToken(any(), any())).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+
+        String caseId = "1646225213651598";
+        SearchResult englandWalesSearchResult = SearchResult.builder()
+            .total(1)
+            .cases(testData.getRequestCaseDataListEnglandAcas())
+            .build();
+        SearchResult scotlandSearchResult = SearchResult.builder()
+            .total(0)
+            .cases(null)
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.ENGLAND_CASE_TYPE, generateCaseDataEsQuery(Collections.singletonList(caseId))
+        )).thenReturn(englandWalesSearchResult);
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.SCOTLAND_CASE_TYPE, generateCaseDataEsQuery(Collections.singletonList(caseId))
+        )).thenReturn(scotlandSearchResult);
+        when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(
+            createDocumentTypeItem("ET1 Attachment"));
+        when(caseDocumentService.getDocumentDetails(anyString(), any())).thenReturn(getDocumentDetails());
+        MultiValuedMap<String, CaseDocumentAcasResponse> documents = caseService.retrieveAcasDocuments(caseId);
+        assertNotNull(documents);
+        assertThat(documents.size()).isEqualTo(3);
+    }
+
+    private ResponseEntity<CaseDocument> getDocumentDetails() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json; charset=utf-8");
+        return new ResponseEntity<>(
+            CaseDocument.builder()
+                .size("size").mimeType("mimeType").hashToken("token").createdOn("createdOn").createdBy("createdBy")
+                .lastModifiedBy("lastModifiedBy").modifiedOn("modifiedOn").ttl("ttl")
+                .metadata(Map.of("test", "test"))
+                .originalDocumentName("docName.txt").classification("PUBLIC")
+                .links(Map.of("self", Map.of("href", "TestURL.com"))).build(),
+            headers,
+            HttpStatus.OK
+        );
     }
 }

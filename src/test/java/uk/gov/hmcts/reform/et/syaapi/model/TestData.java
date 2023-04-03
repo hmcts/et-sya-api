@@ -6,11 +6,15 @@ import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -25,7 +29,7 @@ import java.util.stream.Stream;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.UPDATE_CASE_DRAFT;
 
 @Data
-@SuppressWarnings("PMD.TooManyFields")
+@SuppressWarnings({"PMD.TooManyFields", "PMD.TestClassWithoutTestCases"})
 public final class TestData {
 
     private final Et1CaseData et1CaseData = ResourceLoader.fromString(
@@ -35,6 +39,10 @@ public final class TestData {
     private final CaseData caseData = ResourceLoader.fromString(
         "requests/caseData.json",
         CaseData.class
+    );
+    private final CaseDetails caseDetails = ResourceLoader.fromString(
+        "responses/caseDetails.json",
+        CaseDetails.class
     );
     private final CaseDetails expectedDetails = ResourceLoader.fromString(
         "responses/caseDetails.json",
@@ -84,15 +92,52 @@ public final class TestData {
         "requests/noManagingOfficeAndRespondentsAddressCaseRequest.json",
         CaseRequest.class
     );
-
     private final CaseRequest englandWalesRequest = ResourceLoader.fromString(
         "requests/caseRequestEnglandWales.json",
         CaseRequest.class
     );
-
+    private final ClaimantTse claimantTse = ResourceLoader.fromString(
+        "requests/claimantTse.json",
+        ClaimantTse.class
+    );
     private final UserInfo userInfo = ResourceLoader.fromString(
         "responses/userInfo.json",
         UserInfo.class
+    );
+    private final CaseDocument tsePdfUploadResponse = ResourceLoader.fromString(
+        "responses/tsePdfUploadResponse.json",
+        CaseDocument.class
+    );
+
+
+    private final List<CaseDetails> requestCaseDataListEnglandAcas = ResourceLoader.fromStringToList(
+        "responses/caseDetailsEnglandAcasDocs.json",
+        CaseDetails.class
+    );
+
+    private final ClaimantTse claimantApplication = ResourceLoader.fromString(
+        "responses/claimantTse.json",
+        ClaimantTse.class
+    );
+
+    private final ClaimantApplicationRequest claimantApplicationRequest = ResourceLoader.fromString(
+        "requests/claimantTseRequest.json",
+        ClaimantApplicationRequest.class
+    );
+
+    private final RespondToApplicationRequest respondToApplicationRequest = ResourceLoader.fromString(
+        "requests/respondToApplication.json",
+        RespondToApplicationRequest.class
+    );
+
+    private final StartEventResponse updateCaseEventResponse = ResourceLoader.fromString(
+        "responses/updateCaseEventResponse.json",
+        StartEventResponse.class
+    );
+
+    private final CaseDetails caseDetailsWithData = ResourceLoader.fromString(
+        "responses/caseDetailsWithCaseData.json",
+        CaseDetails.class
     );
 
     public Map<String, Object> getCaseRequestCaseDataMap() {

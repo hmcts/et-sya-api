@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.utils;
 
 import java.util.UUID;
 
+@SuppressWarnings("PMD.TestClassWithoutTestCases")
 public final class TestConstants {
 
     public static final String TEST_SERVICE_AUTH_TOKEN = "Bearer TestServiceAuth";
