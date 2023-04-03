@@ -12,9 +12,9 @@ import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -50,7 +50,7 @@ class SendNotificationServiceTest {
                 .build()
         );
 
-        Map<String, Object> updatedCaseData = new HashMap<>();
+        Map<String, Object> updatedCaseData = new ConcurrentHashMap<>();
         updatedCaseData.put("sendNotificationCollection", items);
 
         verify(caseService, times(1)).triggerEvent(

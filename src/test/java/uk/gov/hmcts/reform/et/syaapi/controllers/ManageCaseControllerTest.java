@@ -56,7 +56,7 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SURNAME;
     controllers = {ManageCaseController.class}
 )
 @Import(ManageCaseController.class)
-@SuppressWarnings({"PMD.ExcessiveImports"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 class ManageCaseControllerTest {
 
     private static final String CASE_ID = "1646225213651590";
