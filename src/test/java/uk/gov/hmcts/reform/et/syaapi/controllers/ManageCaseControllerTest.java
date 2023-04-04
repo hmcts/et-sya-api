@@ -22,8 +22,10 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
+import uk.gov.hmcts.reform.et.syaapi.service.SendNotificationService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
@@ -54,7 +56,7 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SURNAME;
     controllers = {ManageCaseController.class}
 )
 @Import(ManageCaseController.class)
-@SuppressWarnings({"PMD.ExcessiveImports"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 class ManageCaseControllerTest {
 
     private static final String CASE_ID = "1646225213651590";
@@ -79,6 +81,9 @@ class ManageCaseControllerTest {
 
     @MockBean
     private ApplicationService applicationService;
+
+    @MockBean
+    private SendNotificationService sendNotificationService;
 
     ManageCaseControllerTest() {
         // Default constructor
@@ -414,6 +419,33 @@ class ManageCaseControllerTest {
         verify(applicationService, times(1)).respondToApplication(
             TEST_SERVICE_AUTH_TOKEN,
             caseRequest
+        );
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldUpdateSendNotificationState() {
+        SendNotificationStateUpdateRequest request = SendNotificationStateUpdateRequest.builder()
+            .caseTypeId(CASE_TYPE)
+            .caseId(CASE_ID)
+            .sendNotificationId("1")
+            .notificationState("viewed")
+            .build();
+
+        // when
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+
+        when(applicationService.submitApplication(any(), any())).thenReturn(expectedDetails);
+        mockMvc.perform(
+            put("/cases/update-notification-state", CASE_ID)
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ResourceLoader.toJson(request))
+        ).andExpect(status().isOk());
+
+        verify(sendNotificationService, times(1)).updateSendNotificationState(
+            TEST_SERVICE_AUTH_TOKEN,
+            request
         );
     }
 }
