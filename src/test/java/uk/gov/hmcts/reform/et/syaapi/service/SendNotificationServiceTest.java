@@ -8,7 +8,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationTypeItem;
-import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
+import uk.gov.hmcts.reform.ccd.client.model.Event;
+import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
 
@@ -20,15 +22,20 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_NOTIFICATION_STATE;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.UPDATE_CASE_DRAFT;
 
 @ExtendWith(MockitoExtension.class)
 class SendNotificationServiceTest {
     @Mock
     private CaseService caseService;
+    @Mock
+    private CaseDetailsConverter caseDetailsConverter;
     @InjectMocks
     private SendNotificationService sendNotificationService;
     private TestData testData;
-    private static final String MOCK_TOKEN = "Bearer Token";
+    private static final String MOCK_TOKEN = "Bearer TestServiceAuth";
 
     @BeforeEach
     void beforeEach() {
@@ -38,8 +45,13 @@ class SendNotificationServiceTest {
     @Test
     void shouldUpdateSendNotificationState() {
         SendNotificationStateUpdateRequest request = testData.getSendNotificationStateUpdateRequest();
-        when(caseService.getUserCase(any(),any())).thenReturn(testData.getCaseDetailWithSendNotification());
-        sendNotificationService.updateSendNotificationState(MOCK_TOKEN, request);
+
+        when(caseService.startUpdate(
+            TEST_SERVICE_AUTH_TOKEN,
+            request.getCaseId(),
+            request.getCaseTypeId(),
+            UPDATE_NOTIFICATION_STATE
+        )).thenReturn(testData.getUpdateCaseEventResponse());
 
         List<SendNotificationTypeItem> items = List.of(
             SendNotificationTypeItem.builder()
@@ -53,7 +65,17 @@ class SendNotificationServiceTest {
         Map<String, Object> updatedCaseData = new ConcurrentHashMap<>();
         updatedCaseData.put("sendNotificationCollection", items);
 
-        verify(caseService, times(1)).triggerEvent(
-            MOCK_TOKEN, "11", CaseEvent.UPDATE_CASE_SUBMITTED, "1234", updatedCaseData);
+        CaseDataContent expectedEnrichedData = CaseDataContent.builder()
+            .event(Event.builder().id(UPDATE_CASE_DRAFT).build())
+            .eventToken(testData.getStartEventResponse().getToken())
+            .data(updatedCaseData)
+            .build();
+
+        when(caseDetailsConverter.caseDataContent(any(), any())).thenReturn(expectedEnrichedData);
+
+        sendNotificationService.updateSendNotificationState(MOCK_TOKEN, request);
+
+        verify(caseService, times(1)).submitUpdate(
+            MOCK_TOKEN, "11", expectedEnrichedData, "1234");
     }
 }

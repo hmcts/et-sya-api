@@ -146,11 +146,6 @@ public final class TestData {
         SendNotificationStateUpdateRequest.class
     );
 
-    private final CaseDetails caseDetailWithSendNotification = ResourceLoader.fromString(
-        "requests/caseData_withSendNotification.json",
-        CaseDetails.class
-    );
-
     public Map<String, Object> getCaseRequestCaseDataMap() {
         Map<String, Object> requestCaseData = new ConcurrentHashMap<>();
         requestCaseData.put("typesOfClaim", et1CaseData.getTypesOfClaim());

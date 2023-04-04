@@ -38,6 +38,14 @@
             "applicationState": "notStartedYet"
           }
         }
+      ],
+      "sendNotificationCollection": [
+        {
+          "id": "777",
+          "value": {
+            "notificationState": "notViewed"
+          }
+        }
       ]
     },
     "security_classification": "PUBLIC",
