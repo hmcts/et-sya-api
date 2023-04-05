@@ -245,7 +245,7 @@ public class CaseService {
         triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
                      caseDetails.getData()
         );
-        notificationService.sendSubmitCaseConfirmationEmail(caseDetails, caseData, userInfo);
+//        notificationService.sendSubmitCaseConfirmationEmail(caseDetails, caseData, userInfo);
         return caseDetails;
     }
 

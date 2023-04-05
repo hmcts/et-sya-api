@@ -214,28 +214,7 @@ public class NotificationService {
         }
         respondentParameters.put("linkToDocument", Objects.requireNonNullElse(documentJson, ""));
 
-        caseData.getRespondentCollection()
-            .forEach(resp -> {
-                String respondentEmailAddress = NotificationsHelper.getEmailAddressForRespondent(
-                    caseData,
-                    resp.getValue()
-                );
-                if (isNullOrEmpty(respondentEmailAddress)) {
-                    log.info("Respondent did not have an email address associated with their account");
-                } else {
-                    try {
-                        notificationClient.sendEmail(
-                            emailToRespondentTemplate,
-                            respondentEmailAddress,
-                            respondentParameters,
-                            caseId
-                        );
-                        log.info("Sent email to respondent");
-                    } catch (NotificationClientException ne) {
-                        throw new NotificationException(ne);
-                    }
-                }
-            });
+        sendRespondentEmails(caseData, caseId, respondentParameters, emailToRespondentTemplate);
     }
 
     /**
@@ -333,6 +312,11 @@ public class NotificationService {
             subjectLine
         );
 
+        tribunalParameters.put(
+            "exuiCaseDetailsLink",
+            notificationsProperties.getCitizenPortalLink() + caseId
+        );
+
         String managingOffice = caseData.getManagingOffice();
         if (managingOffice.equals(UNASSIGNED_OFFICE) || isNullOrEmpty(managingOffice)) {
             log.info("Could not send email as no office has been assigned");
@@ -349,6 +333,8 @@ public class NotificationService {
             }
         }
     }
+
+
 
     /**
      *  Send acknowledgment email to the claimant when they are responding to
@@ -424,6 +410,91 @@ public class NotificationService {
         } catch (NotificationClientException ne) {
             throw new NotificationException(ne);
         }
+    }
+
+
+    /**
+     *  Send acknowledgment email to the claimant when they are responding to
+     *  an application (type A/B) made by the Respondent.
+     *
+     * @param caseData        existing case details
+     * @param claimant        claimant's full name
+     * @param caseNumber      ethos case reference
+     * @param respondentNames concatenated respondent names
+     * @param hearingDate     date of the nearest hearing
+     * @param caseId          16 digit case id
+     * @param applicationType type of application
+     */
+    public void sendResponseEmailToRespondent(
+        CaseData caseData,
+        String claimant,
+        String caseNumber,
+        String respondentNames,
+        String hearingDate,
+        String caseId,
+        String applicationType
+    ) {
+
+        if (TYPE_C.equals(applicationType)) {
+            log.info("Type C application -  Claimant is only notified of "
+                         + "Type A/B application responses, email not being sent");
+            return;
+        }
+        Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
+
+        addCommonParameters(
+            respondentParameters,
+            claimant,
+            respondentNames,
+            caseId,
+            caseNumber
+        );
+        respondentParameters.put(
+            HEARING_DATE,
+            hearingDate
+        );
+
+        String subjectLine = caseNumber + " " + applicationType;
+        respondentParameters.put(
+            "subjectLine",
+            subjectLine
+        );
+        respondentParameters.put(
+            "shortText",
+            applicationType
+        );
+
+        String emailToRespondentTemplate = notificationsProperties.getRespondentResponseTemplateId();
+
+        sendRespondentEmails(caseData, caseId, respondentParameters, emailToRespondentTemplate);
+    }
+
+    private void sendRespondentEmails(CaseData caseData, String caseId, Map<String, Object> respondentParameters,
+                                      String emailToRespondentTemplate) {
+        caseData.getRespondentCollection()
+            .forEach(resp -> {
+                String respondentEmailAddress = NotificationsHelper.getEmailAddressForRespondent(
+                    caseData,
+                    resp.getValue()
+                );
+                if (isNullOrEmpty(respondentEmailAddress)) {
+                    log.info(
+                        String.format("Respondent %s did not have an email address associated with their account",
+                                      resp.getId()));
+                } else {
+                    try {
+                        notificationClient.sendEmail(
+                            emailToRespondentTemplate,
+                            respondentEmailAddress,
+                            respondentParameters,
+                            caseId
+                        );
+                        log.info("Sent email to respondent");
+                    } catch (NotificationClientException ne) {
+                        throw new NotificationException(ne);
+                    }
+                }
+            });
     }
 
     private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
