@@ -269,6 +269,10 @@ public class NotificationService {
             HEARING_DATE,
             hearingDate
         );
+        tribunalParameters.put(
+            "exuiCaseDetailsLink",
+            notificationsProperties.getExuiCaseDetailsLink() + caseId
+        );
 
         String subjectLine = caseNumber + " "
             + APP_TYPE_MAP.get(claimantApplication.getContactApplicationType());
