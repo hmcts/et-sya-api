@@ -86,6 +86,7 @@ class NotificationServiceTest {
         given(notificationsProperties.getRespondentTseEmailTypeATemplateId()).willReturn("A");
         given(notificationsProperties.getRespondentTseEmailTypeBTemplateId()).willReturn("B");
         given(notificationsProperties.getCitizenPortalLink()).willReturn(REFERENCE_STRING);
+        given(notificationsProperties.getExuiCaseDetailsLink()).willReturn(REFERENCE_STRING);
         testData = new TestData();
     }
 

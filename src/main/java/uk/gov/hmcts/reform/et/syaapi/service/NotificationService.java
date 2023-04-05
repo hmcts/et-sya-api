@@ -326,6 +326,10 @@ public class NotificationService {
             HEARING_DATE,
             hearingDate
         );
+        tribunalParameters.put(
+            "exuiCaseDetailsLink",
+            notificationsProperties.getExuiCaseDetailsLink() + caseId
+        );
 
         String subjectLine = caseNumber + " " + applicationType;
         tribunalParameters.put(
