@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
-import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentException;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 
@@ -125,7 +124,7 @@ public class ManageCaseController {
                  caseRequest.getCaseTypeId(), caseRequest.getCaseId());
         try {
             return ok(caseService.submitCase(authorization, caseRequest));
-        } catch (PdfServiceException | CaseDocumentException e) {
+        } catch (PdfServiceException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }
