@@ -148,6 +148,7 @@ public class NotificationService {
         String emailToClaimantTemplate = TYPE_C.equals(claimantApplication.getContactApplicationType())
             ? notificationsProperties.getClaimantTseEmailTypeCTemplateId() :
             getAndSetRule92EmailTemplate(claimantApplication, hearingDate, claimantParameters);
+        claimantParameters.put("citizenPortalLink",notificationsProperties.getCitizenPortalLink() + caseId);
 
         try {
             claimantEmail = notificationClient.sendEmail(
