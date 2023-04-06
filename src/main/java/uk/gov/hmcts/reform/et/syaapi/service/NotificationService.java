@@ -37,6 +37,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGU
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@SuppressWarnings("PMD.TooManyMethods")
 public class NotificationService {
     public static final String HEARING_DATE = "hearingDate";
     private final NotificationClient notificationClient;
@@ -237,20 +238,23 @@ public class NotificationService {
     ) {
 
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
+
+        String subjectLine = caseNumber + " "
+            + APP_TYPE_MAP.get(claimantApplication.getContactApplicationType());
         addCommonParameters(
             tribunalParameters,
             claimant,
             respondentNames,
             caseId,
-            caseNumber
+            caseNumber,
+            subjectLine
         );
         tribunalParameters.put(
             HEARING_DATE,
             hearingDate
         );
 
-        String subjectLine = caseNumber + " "
-            + APP_TYPE_MAP.get(claimantApplication.getContactApplicationType());
+
         tribunalParameters.put(
             "subjectLine",
             subjectLine
@@ -293,24 +297,23 @@ public class NotificationService {
         String caseId,
         String applicationType
     ) {
+        String subjectLine = caseNumber + " " + applicationType;
+
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
         addCommonParameters(
             tribunalParameters,
             claimant,
             respondentNames,
             caseId,
-            caseNumber
+            caseNumber,
+            subjectLine,
+            applicationType
         );
         tribunalParameters.put(
             HEARING_DATE,
             hearingDate
         );
 
-        String subjectLine = caseNumber + " " + applicationType;
-        tribunalParameters.put(
-            "subjectLine",
-            subjectLine
-        );
 
         String managingOffice = caseData.getManagingOffice();
         if (managingOffice.equals(UNASSIGNED_OFFICE) || isNullOrEmpty(managingOffice)) {
@@ -366,12 +369,16 @@ public class NotificationService {
         }
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
 
+        String subjectLine = caseNumber + " " + applicationType;
+
         addCommonParameters(
             claimantParameters,
             claimant,
             respondentNames,
             caseId,
-            caseNumber
+            caseNumber,
+            subjectLine,
+            applicationType
         );
         claimantParameters.put(
             HEARING_DATE,
@@ -381,15 +388,7 @@ public class NotificationService {
             "citizenPortalLink",
             notificationsProperties.getCitizenPortalLink() + caseId
         );
-        String subjectLine = caseNumber + " " + applicationType;
-        claimantParameters.put(
-            "subjectLine",
-            subjectLine
-        );
-        claimantParameters.put(
-            "shortText",
-            applicationType
-        );
+
 
         String emailToClaimantTemplate = DONT_SEND_COPY.equals(tseRespondType.getCopyToOtherParty())
             ? notificationsProperties.getClaimantResponseNoTemplateId()
@@ -437,27 +436,21 @@ public class NotificationService {
         }
         Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
 
+        String subjectLine = caseNumber + " " + applicationType;
         addCommonParameters(
             respondentParameters,
             claimant,
             respondentNames,
             caseId,
-            caseNumber
+            caseNumber,
+            subjectLine,
+            applicationType
         );
         respondentParameters.put(
             HEARING_DATE,
             hearingDate
         );
 
-        String subjectLine = caseNumber + " " + applicationType;
-        respondentParameters.put(
-            "subjectLine",
-            subjectLine
-        );
-        respondentParameters.put(
-            "shortText",
-            applicationType
-        );
 
         String emailToRespondentTemplate = notificationsProperties.getRespondentResponseTemplateId();
 
@@ -498,6 +491,18 @@ public class NotificationService {
         parameters.put("respondentNames", respondentNames);
         parameters.put("caseId", caseId);
         parameters.put("caseNumber", caseNumber);
+    }
+
+    private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
+                                            String caseId, String caseNumber, String subjectLine) {
+        addCommonParameters(parameters,claimant, respondentNames, caseId, caseNumber);
+        parameters.put("subjectLine", subjectLine);
+    }
+
+    private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
+                                            String caseId, String caseNumber, String subjectLine, String shortText) {
+        addCommonParameters(parameters,claimant, respondentNames, caseId, caseNumber, subjectLine);
+        parameters.put("shortText", shortText);
     }
 
 

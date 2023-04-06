@@ -12,6 +12,7 @@ import javax.validation.constraints.NotBlank;
 
 @Validated
 @Data
+@SuppressWarnings("PMD.TooManyFields")
 public class NotificationsProperties {
 
     @Value("${notifications.govNotifyApiKey}")
