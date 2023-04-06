@@ -312,11 +312,6 @@ public class NotificationService {
             subjectLine
         );
 
-        tribunalParameters.put(
-            "exuiCaseDetailsLink",
-            notificationsProperties.getCitizenPortalLink() + caseId
-        );
-
         String managingOffice = caseData.getManagingOffice();
         if (managingOffice.equals(UNASSIGNED_OFFICE) || isNullOrEmpty(managingOffice)) {
             log.info("Could not send email as no office has been assigned");
