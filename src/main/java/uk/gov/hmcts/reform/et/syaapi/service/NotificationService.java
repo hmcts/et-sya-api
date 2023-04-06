@@ -213,6 +213,7 @@ public class NotificationService {
             emailToRespondentTemplate = notificationsProperties.getRespondentTseEmailTypeATemplateId();
         }
         respondentParameters.put("linkToDocument", Objects.requireNonNullElse(documentJson, ""));
+        respondentParameters.put("exuiCaseDetailsLink",notificationsProperties.getExuiCaseDetailsLink() + caseId);
 
         caseData.getRespondentCollection()
             .forEach(resp -> {
