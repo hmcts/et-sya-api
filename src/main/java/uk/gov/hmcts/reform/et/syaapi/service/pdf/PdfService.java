@@ -103,10 +103,9 @@ public class PdfService {
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 pdfDocument.save(byteArrayOutputStream);
                 return byteArrayOutputStream.toByteArray();
-            } finally {
-                safeClose(stream, caseData);
             }
         }
+        safeClose(stream, caseData);
         return new byte[0];
     }
 
