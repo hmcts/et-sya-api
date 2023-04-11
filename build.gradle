@@ -230,7 +230,7 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '2.1.1'
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '4.1.0'
 
-  implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '3.18.0-RELEASE'
+  implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '3.19.1-RELEASE'
 
   implementation 'org.apache.tika:tika-core:2.6.0'
 
@@ -259,6 +259,7 @@ dependencies {
   integrationTestAnnotationProcessor group: 'org.projectlombok', name: 'lombok'
 
   testImplementation group: 'io.github.openfeign', name: 'feign-jackson', version: '12.1'
+  testImplementation group: 'org.mockito', name: 'mockito-inline', version: '5.2.0'
   testImplementation(platform('org.junit:junit-bom:5.9.1'))
   testImplementation group: 'org.projectlombok', name: 'lombok'
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
