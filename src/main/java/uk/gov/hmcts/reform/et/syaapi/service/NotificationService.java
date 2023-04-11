@@ -37,7 +37,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGU
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.AvoidDuplicateLiterals"})
+@SuppressWarnings({"PMD.TooManyMethods"})
 public class NotificationService {
     public static final String HEARING_DATE = "hearingDate";
     private final NotificationClient notificationClient;
