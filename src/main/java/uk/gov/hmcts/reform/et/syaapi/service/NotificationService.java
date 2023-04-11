@@ -37,7 +37,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGU
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.AvoidDuplicateLiterals"})
 public class NotificationService {
     public static final String HEARING_DATE = "hearingDate";
     private final NotificationClient notificationClient;
@@ -239,8 +239,8 @@ public class NotificationService {
 
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
 
-        String subjectLine = caseNumber + " "
-            + APP_TYPE_MAP.get(claimantApplication.getContactApplicationType());
+        String subjectLine =
+            String.format("%s %s", caseNumber, APP_TYPE_MAP.get(claimantApplication.getContactApplicationType()));
         addCommonParameters(
             tribunalParameters,
             claimant,
@@ -253,7 +253,6 @@ public class NotificationService {
             HEARING_DATE,
             hearingDate
         );
-
 
         tribunalParameters.put(
             "subjectLine",
@@ -297,7 +296,7 @@ public class NotificationService {
         String caseId,
         String applicationType
     ) {
-        String subjectLine = caseNumber + " " + applicationType;
+        String subjectLine = String.format("%s %s", caseNumber, applicationType);
 
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
         addCommonParameters(
@@ -316,7 +315,7 @@ public class NotificationService {
 
 
         String managingOffice = caseData.getManagingOffice();
-        if (managingOffice.equals(UNASSIGNED_OFFICE) || isNullOrEmpty(managingOffice)) {
+        if (UNASSIGNED_OFFICE.equals(managingOffice) || isNullOrEmpty(managingOffice)) {
             log.info("Could not send email as no office has been assigned");
         } else {
             try {
@@ -331,8 +330,6 @@ public class NotificationService {
             }
         }
     }
-
-
 
     /**
      *  Send acknowledgment email to the claimant when they are responding to
@@ -369,7 +366,7 @@ public class NotificationService {
         }
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
 
-        String subjectLine = caseNumber + " " + applicationType;
+        String subjectLine = String.format("%s %s", caseNumber, applicationType);
 
         addCommonParameters(
             claimantParameters,
@@ -436,7 +433,7 @@ public class NotificationService {
         }
         Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
 
-        String subjectLine = caseNumber + " " + applicationType;
+        String subjectLine = String.format("%s %s", caseNumber, applicationType);
         addCommonParameters(
             respondentParameters,
             claimant,
