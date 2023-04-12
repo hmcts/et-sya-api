@@ -72,6 +72,9 @@ notifications:
   sampleSubmitCaseEmailTemplateId: "af0b26b7-17b6-4643-bbdc-e296d11e7b0c"
   submitCaseEmailTemplateId: ${SUBMIT_CASE_EMAIL_TEMPLATE_ID:4f4b378e-238a-46ed-ae1c-26b8038192f0}
   cySubmitCaseEmailTemplateId: ${CY_SUBMIT_CASE_EMAIL_TEMPLATE_ID:f61f7f2a-4825-491b-bc48-0299f1a8ba23}
+  submitCaseDocUploadErrorEmailTemplateId: ${SUBMIT_CASE_DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID:3007a1e9-13b0-4bf9-9753-398ea91b8564}
+  et1ServiceOwnerNotificationEmail: ${ET1_SERVICE_OWNER_NOTIFICATION_EMAIL:ignored_default_value}
+  et1EcmDtsCoreTeamSlackNotificationEmail: ${ET1_ECM_DTS_CORE_TEAM_SLACK_NOTIFICATION_EMAIL:ignored_default_value}
   applicationAcknowledgementTypeC: ${APPLICATION_ACKNOWLEDGEMENT_TYPE_C:197c69b6-254c-4f8d-8909-e85549496d8b}
   applicationAcknowledgementYes: ${APPLICATION_ACKNOWLEDGEMENT_YES:d5f319f1-229f-4dcb-9293-f164bb327601}
   applicationAcknowledgementNo: ${APPLICATION_ACKNOWLEDGEMENT_NO:e6c8b8c4-e58b-4bae-a8ec-cca68bca0c4e}

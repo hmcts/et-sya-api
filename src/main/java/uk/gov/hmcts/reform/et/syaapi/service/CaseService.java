@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
@@ -39,6 +40,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
+import uk.gov.hmcts.reform.et.syaapi.service.util.ServiceUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
@@ -52,6 +54,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -90,7 +93,8 @@ public class CaseService {
     private final NotificationService notificationService;
     private final PdfService pdfService;
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
-    private final AssignCaseToLocalOfficeService assignCaseToLocalOfficeService;
+    private final CaseOfficeService caseOfficeService;
+    private static final String ALL_CASES_QUERY = "{\"query\":{\"match_all\": {}}}";
 
     @Value("${caseWorkerUserName}")
     private String caseWorkerUserName;
@@ -117,17 +121,19 @@ public class CaseService {
      */
     @Retryable({FeignException.class, RuntimeException.class})
     public List<CaseDetails> getAllUserCases(String authorization) {
-        UserInfo userInfo = idamClient.getUserInfo(authorization);
+        // Elasticsearch
+        List<CaseDetails> scotlandCases = Optional.ofNullable(ccdApiClient.searchCases(
+            authorization,
+            authTokenGenerator.generate(),
+            SCOTLAND_CASE_TYPE,
+            ALL_CASES_QUERY).getCases()).orElse(Collections.emptyList());
 
-        List<CaseDetails> scotlandCases = ccdApiClient.searchForCitizen(
-            authorization, authTokenGenerator.generate(),
-            userInfo.getUid(), JURISDICTION_ID, SCOTLAND_CASE_TYPE, Collections.emptyMap()
-        );
-
-        List<CaseDetails> englandCases = ccdApiClient.searchForCitizen(
-            authorization, authTokenGenerator.generate(),
-            userInfo.getUid(), JURISDICTION_ID, ENGLAND_CASE_TYPE, Collections.emptyMap()
-        );
+        // Elasticsearch
+        List<CaseDetails> englandCases = Optional.ofNullable(ccdApiClient.searchCases(
+            authorization,
+            authTokenGenerator.generate(),
+            ENGLAND_CASE_TYPE,
+            ALL_CASES_QUERY).getCases()).orElse(Collections.emptyList());
 
         return Stream.of(scotlandCases, englandCases).flatMap(Collection::stream).collect(toList());
     }
@@ -207,46 +213,77 @@ public class CaseService {
      * @return the associated {@link CaseData} if the case is submitted
      */
     public CaseDetails submitCase(String authorization, CaseRequest caseRequest)
-        throws PdfServiceException, CaseDocumentException {
-        CaseData caseData = assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
+        throws PdfServiceException {
+        // Assigning local office to case data
+        CaseData caseData = caseOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
+        // Getting user info from IDAM
+        UserInfo userInfo = idamClient.getUserInfo(authorization);
+        // Submitting the case to CCD, receiving caseDetails and setting ethosCaseReference,
+        // receiptDate, feeGroupReference with the received details.
         CaseDetails caseDetails = triggerEventForSubmitCase(authorization, caseRequest);
+        setCaseDataWithSubmittedCaseDetails(caseDetails, caseData);
+        // Create case pdf file(s). If the user selected language is Welsh, we also create Welsh pdf file
+        // and add it to our pdf files list
+        List<PdfDecodedMultipartFile> casePdfFiles =
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData, userInfo);
+        // Submit e-mail to the user with attached ET1 pdf file according to selected contact language
+        // (Welsh or English)
+        notificationService.sendSubmitCaseConfirmationEmail(caseRequest, caseData, userInfo, casePdfFiles);
+        // Creating acas certificates for each respondent
+        List<PdfDecodedMultipartFile> acasCertificates =
+            pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
+                caseData, acasService.getAcasCertificatesByCaseData(caseData));
+        // Uploading all documents to document store
+        List<DocumentTypeItem> documentList = uploadAllDocuments(authorization, caseRequest, caseData, casePdfFiles,
+                                                                 acasCertificates);
+        // Setting caliamantPCqId and documentCollection to case details
+        caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
+        caseDetails.getData().put(DOCUMENT_COLLECTION, documentList);
+
+        // Updating case with ClaimantPcqId and Document collection
+        triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
+                     caseDetails.getData()
+        );
+
+        return caseDetails;
+    }
+
+    private List<DocumentTypeItem> uploadAllDocuments(String authorization,
+                                                      CaseRequest caseRequest,
+                                                      CaseData caseData,
+                                                      List<PdfDecodedMultipartFile> casePdfFiles,
+                                                      List<PdfDecodedMultipartFile> acasCertificates) {
+        List<DocumentTypeItem> documentList = new ArrayList<>();
+        try {
+            documentList.addAll(caseDocumentService
+                                    .uploadAllDocuments(authorization, caseRequest.getCaseTypeId(),
+                                                        casePdfFiles, acasCertificates));
+
+            if (!ObjectUtils.isEmpty(caseData.getClaimantRequests())
+                && !ObjectUtils.isEmpty(caseData.getClaimantRequests().getClaimDescriptionDocument())) {
+                documentList.add(caseDocumentService.createDocumentTypeItem(
+                    OTHER_TYPE_OF_DOCUMENT,
+                    caseData.getClaimantRequests().getClaimDescriptionDocument()
+                ));
+            }
+        } catch (CaseDocumentException cde) {
+            // Send upload error alert email to shared inbox
+            notificationService.sendDocUploadErrorEmail(caseRequest, casePdfFiles, acasCertificates,
+                                                        caseData.getClaimantRequests().getClaimDescriptionDocument());
+            ServiceUtil.logException("Case Documents Upload error - Failed to complete case documents upload",
+                                     caseData.getEthosCaseReference(), cde.getMessage(),
+                                     this.getClass().getName(), "submitCase");
+        }
+        return documentList;
+    }
+
+    private static void setCaseDataWithSubmittedCaseDetails(CaseDetails caseDetails, CaseData caseData) {
         caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :
                                            caseDetails.getData().get("ethosCaseReference").toString());
         caseData.setReceiptDate(caseDetails.getData().get("receiptDate") == null ? "" :
                                     caseDetails.getData().get("receiptDate").toString());
         caseData.setFeeGroupReference(caseDetails.getData().get("feeGroupReference") == null ? "" :
                                           caseDetails.getData().get("feeGroupReference").toString());
-        List<PdfDecodedMultipartFile> acasCertificates = null;
-        try {
-            acasCertificates = pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
-                caseData, acasService.getAcasCertificatesByCaseData(caseData));
-        } catch (AcasException e) {
-            log.error("Failed to connect to ACAS service", e);
-        } catch (InvalidAcasNumbersException e) {
-            log.error("Invalid ACAS numbers", e);
-        }
-
-        UserInfo userInfo = idamClient.getUserInfo(authorization);
-        List<PdfDecodedMultipartFile> casePdfFiles =
-            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData, userInfo);
-        List<DocumentTypeItem> documentList = caseDocumentService
-            .uploadAllDocuments(authorization, caseRequest.getCaseTypeId(), casePdfFiles, acasCertificates);
-
-        if (caseData.getClaimantRequests().getClaimDescriptionDocument() != null) {
-            documentList.add(caseDocumentService.createDocumentTypeItem(
-                OTHER_TYPE_OF_DOCUMENT,
-                caseData.getClaimantRequests().getClaimDescriptionDocument()
-            ));
-        }
-
-        caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
-        caseDetails.getData().put(DOCUMENT_COLLECTION, documentList);
-
-        triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
-                     caseDetails.getData()
-        );
-        notificationService.sendSubmitCaseConfirmationEmail(caseDetails, caseData, userInfo);
-        return caseDetails;
     }
 
     /**
@@ -265,6 +302,10 @@ public class CaseService {
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
         CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseData);
+
+        if (SUBMIT_CASE_DRAFT == eventName) {
+            enrichCaseDataWithJurisdictionCodes(caseData1);
+        }
 
         return submitUpdate(
             authorization,
