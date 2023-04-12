@@ -235,7 +235,8 @@ public class ApplicationService {
             respondentNames,
             hearingDate,
             caseId,
-            application.getType()
+            application.getType(),
+            respondToApplicationRequest.getResponse().getCopyToOtherParty()
         );
     }
 

@@ -423,12 +423,12 @@ public class NotificationService {
         String respondentNames,
         String hearingDate,
         String caseId,
-        String applicationType
+        String applicationType,
+        String copyToOtherParty
     ) {
 
-        if (TYPE_C.equals(applicationType)) {
-            log.info("Type C application -  Claimant is only notified of "
-                         + "Type A/B application responses, email not being sent");
+        if (TYPE_C.equals(applicationType) || DONT_SEND_COPY.equals(copyToOtherParty)) {
+            log.info("Acknowledgement email not sent to respondents for this application type");
             return;
         }
         Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
