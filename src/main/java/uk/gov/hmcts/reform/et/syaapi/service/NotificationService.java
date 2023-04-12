@@ -29,17 +29,30 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM;
 
-
 /**
  * Holds details for sending email to user(s) provided template been created beforehand.
  */
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
 @SuppressWarnings({"PMD.TooManyMethods"})
 public class NotificationService {
     public static final String HEARING_DATE = "hearingDate";
+    public static final String FIRST_NAME = "firstName";
+    public static final String LAST_NAME = "lastName";
+    public static final String CLAIMANT = "claimant";
+    public static final String RESPONDENT_NAMES = "respondentNames";
+    public static final String CASE_ID = "caseId";
+    public static final String SUBJECT_LINE = "subjectLine";
+    public static final String CASE_NUMBER = "caseNumber";
+    public static final String CUI_LINK = "citizenPortalLink";
+    public static final String EXUI_LINK = "exuiCaseDetailsLink";
+    public static final String SHORT_TEXT = "shortText";
+    public static final String A_OR_B_TEXT = "abText";
+    public static final String LINK_DOC = "linkToDocument";
+    public static final String DATE_PLUS7 = "datePlus7";
+    public static final String CONCAT2STRINGS = "%s%s";
+
     private final NotificationClient notificationClient;
     private final NotificationsProperties notificationsProperties;
     private final String[] typeA =
@@ -59,6 +72,7 @@ public class NotificationService {
      */
     public SendEmailResponse sendEmail(
         String templateId, String targetEmail, Map<String, String> parameters, String reference) {
+
         SendEmailResponse sendEmailResponse;
         try {
             sendEmailResponse = notificationClient.sendEmail(templateId, targetEmail, parameters, reference);
@@ -87,9 +101,10 @@ public class NotificationService {
         String lastName = isNullOrEmpty(caseData.getClaimantIndType().getClaimantLastName())
             ? userInfo.getFamilyName()
             : caseData.getClaimantIndType().getClaimantLastName();
-        String caseNumber = caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString();
+        String caseId = caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString();
         String emailTemplateId = notificationsProperties.getSubmitCaseEmailTemplateId();
         String citizenPortalLink = notificationsProperties.getCitizenPortalLink() + "%s";
+
         if (caseData.getClaimantHearingPreference().getContactLanguage() != null
             && WELSH_LANGUAGE.equals(caseData.getClaimantHearingPreference().getContactLanguage())) {
             emailTemplateId = notificationsProperties.getCySubmitCaseEmailTemplateId();
@@ -99,15 +114,14 @@ public class NotificationService {
         SendEmailResponse sendEmailResponse;
         try {
             Map<String, String> parameters = new ConcurrentHashMap<>();
-            parameters.put("firstName", firstName);
-            parameters.put("lastName", lastName);
-            parameters.put("caseNumber", caseNumber);
-            parameters.put("citizenPortalLink", String.format(citizenPortalLink, caseNumber));
+            parameters.put(FIRST_NAME, firstName);
+            parameters.put(LAST_NAME, lastName);
+            parameters.put(CUI_LINK, String.format(citizenPortalLink, caseId));
             sendEmailResponse = notificationClient.sendEmail(
                 emailTemplateId,
                 caseData.getClaimantType().getClaimantEmailAddress(),
                 parameters,
-                caseNumber
+                caseId
             );
         } catch (NotificationClientException ne) {
             throw new NotificationException(ne);
@@ -149,7 +163,10 @@ public class NotificationService {
         String emailToClaimantTemplate = TYPE_C.equals(claimantApplication.getContactApplicationType())
             ? notificationsProperties.getClaimantTseEmailTypeCTemplateId() :
             getAndSetRule92EmailTemplate(claimantApplication, hearingDate, claimantParameters);
-        claimantParameters.put("citizenPortalLink",notificationsProperties.getCitizenPortalLink() + caseId);
+        claimantParameters.put(
+            CUI_LINK,
+            String.format(CONCAT2STRINGS, notificationsProperties.getCitizenPortalLink(), caseId)
+        );
 
         try {
             claimantEmail = notificationClient.sendEmail(
@@ -197,13 +214,9 @@ public class NotificationService {
             caseId,
             caseNumber
         );
-        respondentParameters.put(
-            HEARING_DATE,
-            hearingDate
-        );
-        respondentParameters.put("shortText",
-                                 APP_TYPE_MAP.get(claimantApplication.getContactApplicationType()));
-        respondentParameters.put("datePlus7", LocalDate.now().plusDays(7).toString());
+        respondentParameters.put(HEARING_DATE, hearingDate);
+        respondentParameters.put(SHORT_TEXT, APP_TYPE_MAP.get(claimantApplication.getContactApplicationType()));
+        respondentParameters.put(DATE_PLUS7, LocalDate.now().plusDays(7).toString());
 
         String emailToRespondentTemplate;
         if (Stream.of(typeB).anyMatch(appType -> Objects.equals(
@@ -214,8 +227,11 @@ public class NotificationService {
         } else {
             emailToRespondentTemplate = notificationsProperties.getRespondentTseEmailTypeATemplateId();
         }
-        respondentParameters.put("linkToDocument", Objects.requireNonNullElse(documentJson, ""));
-        respondentParameters.put("exuiCaseDetailsLink",notificationsProperties.getExuiCaseDetailsLink() + caseId);
+        respondentParameters.put(LINK_DOC, Objects.requireNonNullElse(documentJson, ""));
+        respondentParameters.put(
+            EXUI_LINK,
+            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
+        );
 
         sendRespondentEmails(caseData, caseId, respondentParameters, emailToRespondentTemplate);
     }
@@ -251,18 +267,10 @@ public class NotificationService {
             caseNumber,
             subjectLine
         );
+        tribunalParameters.put(HEARING_DATE, hearingDate);
         tribunalParameters.put(
-            HEARING_DATE,
-            hearingDate
-        );
-        tribunalParameters.put(
-            "exuiCaseDetailsLink",
-            notificationsProperties.getExuiCaseDetailsLink() + caseId
-        );
-
-        tribunalParameters.put(
-            "subjectLine",
-            subjectLine
+            EXUI_LINK,
+            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
         );
 
         String managingOffice = caseData.getManagingOffice();
@@ -314,15 +322,11 @@ public class NotificationService {
             subjectLine,
             applicationType
         );
+        tribunalParameters.put(HEARING_DATE, hearingDate);
         tribunalParameters.put(
-            HEARING_DATE,
-            hearingDate
+            EXUI_LINK,
+            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
         );
-        tribunalParameters.put(
-            "exuiCaseDetailsLink",
-            notificationsProperties.getExuiCaseDetailsLink() + caseId
-        );
-
 
         String managingOffice = caseData.getManagingOffice();
         if (UNASSIGNED_OFFICE.equals(managingOffice) || isNullOrEmpty(managingOffice)) {
@@ -364,7 +368,6 @@ public class NotificationService {
         String applicationType,
         TseRespondType tseRespondType
     ) {
-
         if (TYPE_C.equals(applicationType)) {
             log.info("Type C application -  Claimant is only notified of "
                          + "Type A/B application responses, email not being sent");
@@ -377,7 +380,6 @@ public class NotificationService {
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
 
         String subjectLine = String.format("%s %s", caseNumber, applicationType);
-
         addCommonParameters(
             claimantParameters,
             claimant,
@@ -387,15 +389,11 @@ public class NotificationService {
             subjectLine,
             applicationType
         );
+        claimantParameters.put(HEARING_DATE, hearingDate);
         claimantParameters.put(
-            HEARING_DATE,
-            hearingDate
+            CUI_LINK,
+            String.format(CONCAT2STRINGS, notificationsProperties.getCitizenPortalLink(), caseId)
         );
-        claimantParameters.put(
-            "citizenPortalLink",
-            notificationsProperties.getCitizenPortalLink() + caseId
-        );
-
 
         String emailToClaimantTemplate = DONT_SEND_COPY.equals(tseRespondType.getCopyToOtherParty())
             ? notificationsProperties.getClaimantResponseNoTemplateId()
@@ -412,7 +410,6 @@ public class NotificationService {
             throw new NotificationException(ne);
         }
     }
-
 
     /**
      * Send acknowledgment email to the claimant when they are responding to
@@ -457,7 +454,10 @@ public class NotificationService {
             HEARING_DATE,
             hearingDate
         );
-
+        respondentParameters.put(
+            EXUI_LINK,
+            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
+        );
 
         String emailToRespondentTemplate = notificationsProperties.getRespondentResponseTemplateId();
 
@@ -494,22 +494,22 @@ public class NotificationService {
 
     private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
                                             String caseId, String caseNumber) {
-        parameters.put("claimant", claimant);
-        parameters.put("respondentNames", respondentNames);
-        parameters.put("caseId", caseId);
-        parameters.put("caseNumber", caseNumber);
+        parameters.put(CLAIMANT, claimant);
+        parameters.put(RESPONDENT_NAMES, respondentNames);
+        parameters.put(CASE_ID, caseId);
+        parameters.put(CASE_NUMBER, caseNumber);
     }
 
     private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
                                             String caseId, String caseNumber, String subjectLine) {
-        addCommonParameters(parameters,claimant, respondentNames, caseId, caseNumber);
-        parameters.put("subjectLine", subjectLine);
+        addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber);
+        parameters.put(SUBJECT_LINE, subjectLine);
     }
 
     private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
                                             String caseId, String caseNumber, String subjectLine, String shortText) {
-        addCommonParameters(parameters,claimant, respondentNames, caseId, caseNumber, subjectLine);
-        parameters.put("shortText", shortText);
+        addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber, subjectLine);
+        parameters.put(SHORT_TEXT, shortText);
     }
 
     private String getAndSetRule92EmailTemplate(ClaimantTse claimantApplication,
@@ -519,11 +519,11 @@ public class NotificationService {
         parameters.put(HEARING_DATE, hearingDate);
         String shortText = APP_TYPE_MAP.get(claimantApplication.getContactApplicationType());
         if (DONT_SEND_COPY.equals(claimantApplication.getCopyToOtherPartyYesOrNo())) {
-            parameters.put("shortText", shortText);
+            parameters.put(SHORT_TEXT, shortText);
             emailTemplate = notificationsProperties.getClaimantTseEmailNoTemplateId();
         } else {
             String abText = getCustomTextForAOrBApplication(claimantApplication, shortText);
-            parameters.put("abText", abText);
+            parameters.put(A_OR_B_TEXT, abText);
             emailTemplate = notificationsProperties.getClaimantTseEmailYesTemplateId();
         }
         return emailTemplate;
@@ -552,5 +552,4 @@ public class NotificationService {
         }
         return abText;
     }
-
 }

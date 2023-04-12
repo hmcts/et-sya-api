@@ -38,11 +38,12 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.NOTIFICATION_CON
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class NotificationServiceTest {
+    @MockBean
+    private NotificationService notificationService;
+
     public static final String CLAIMANT = "Michael Jackson";
     public static final String NOT_SET = "Not set";
     public static final String TEST_RESPONDENT = "Test Respondent";
-    @MockBean
-    private NotificationService notificationService;
     private static final String TEST_TEMPLATE_API_KEY = "dummy template id";
     private static final String SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID = "af0b26b7-17b6-4643-bbdc-e296d11e7b0c";
     private static final String REFERENCE_STRING = "TEST_EMAIL_ALERT";

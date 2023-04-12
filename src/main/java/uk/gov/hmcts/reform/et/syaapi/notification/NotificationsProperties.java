@@ -9,7 +9,6 @@ import javax.validation.constraints.NotBlank;
 /**
  * Holds gov-notify api key and templateId details.
  */
-
 @Validated
 @Data
 @SuppressWarnings("PMD.TooManyFields")
