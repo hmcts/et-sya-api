@@ -51,7 +51,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGU
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.CloseResource"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.CloseResource", "PMD.ExcessiveImports"})
 class PdfServiceTest {
     private static final Map<String, Optional<String>> PDF_VALUES = Map.of(
         PdfMapperConstants.TRIBUNAL_OFFICE, Optional.of("Manchester"),
@@ -154,7 +154,7 @@ class PdfServiceTest {
     @SneakyThrows
     @Test
     void shouldCreateEnglishPdfFile() {
-        PdfService pdfService1 = new PdfService(new PdfMapperService());
+        PdfService pdfService1 = new PdfService(new PdfMapperService(), documentGenerationService);
         pdfService1.englishPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH;
         byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH);
         assertThat(pdfData).isNotEmpty();
@@ -164,7 +164,7 @@ class PdfServiceTest {
     @SneakyThrows
     @Test
     void shouldNotCreateEnglishPdfFileWhenEnglishPdfTemplateIsNull() {
-        PdfService pdfService1 = new PdfService(new PdfMapperService());
+        PdfService pdfService1 = new PdfService(new PdfMapperService(), documentGenerationService);
         byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), null);
         assertThat(pdfData).isEmpty();
     }
@@ -172,7 +172,7 @@ class PdfServiceTest {
     @SneakyThrows
     @Test
     void shouldNotCreateEnglishPdfFileWhenEnglishPdfTemplateNotExists() {
-        PdfService pdfService1 = new PdfService(new PdfMapperService());
+        PdfService pdfService1 = new PdfService(new PdfMapperService(), documentGenerationService);
         pdfService1.englishPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH_NOT_EXISTS;
         byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), null);
         assertThat(pdfData).isEmpty();
@@ -184,7 +184,7 @@ class PdfServiceTest {
         try (MockedStatic<ServiceUtil> mockedServiceUtil = Mockito.mockStatic(ServiceUtil.class)) {
             mockedServiceUtil.when(() -> ServiceUtil.findClaimantLanguage(testData.getCaseData()))
                 .thenReturn(ENGLISH_LANGUAGE);
-            PdfService pdfService1 = new PdfService(new PdfMapperService());
+            PdfService pdfService1 = new PdfService(new PdfMapperService(), documentGenerationService);
             pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH_INVALID);
             mockedServiceUtil.verify(
                 () -> ServiceUtil.logException(anyString(), anyString(), anyString(), anyString(), anyString()),
@@ -208,7 +208,7 @@ class PdfServiceTest {
     @Test
     void shouldNotCreateWelshPdfFileWhenWelshPdfTemplateIsNull() {
         testData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
-        PdfService pdfService1 = new PdfService(new PdfMapperService());
+        PdfService pdfService1 = new PdfService(new PdfMapperService(), documentGenerationService);
         byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), null);
         assertThat(pdfData).isEmpty();
     }
@@ -217,7 +217,7 @@ class PdfServiceTest {
     @Test
     void shouldNotCreateWelshPdfFileWhenWelshPdfTemplateNotExists() {
         testData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
-        PdfService pdfService1 = new PdfService(new PdfMapperService());
+        PdfService pdfService1 = new PdfService(new PdfMapperService(), documentGenerationService);
         pdfService1.welshPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH_NOT_EXISTS;
         byte[] pdfData = pdfService1.createPdf(testData.getCaseData(),
                                                PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH_NOT_EXISTS);
@@ -260,7 +260,7 @@ class PdfServiceTest {
     @Test
     void shouldNotCreatePdfDecodedMultipartFileFromCaseDataWhenBothWelshAndEnglishTemplateSourcesNotExist() {
         testData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
-        PdfService pdfService1 = new PdfService(new PdfMapperService());
+        PdfService pdfService1 = new PdfService(new PdfMapperService(), documentGenerationService);
         pdfService1.welshPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH_NOT_EXISTS;
         pdfService1.englishPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH_NOT_EXISTS;
         try (MockedStatic<ServiceUtil> mockedServiceUtil = Mockito.mockStatic(ServiceUtil.class)) {
