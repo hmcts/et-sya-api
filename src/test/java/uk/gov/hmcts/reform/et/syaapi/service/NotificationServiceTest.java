@@ -566,6 +566,7 @@ class NotificationServiceTest {
             eq(testData.getExpectedDetails().getId().toString())
         );
     }
+
     @Test
     void shouldNotSendResponseEmailToRespondent() throws NotificationClientException {
         notificationService.sendResponseEmailToRespondent(
