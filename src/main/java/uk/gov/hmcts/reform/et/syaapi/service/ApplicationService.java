@@ -227,6 +227,16 @@ public class ApplicationService {
             application.getType(),
             respondToApplicationRequest.getResponse()
         );
+
+        notificationService.sendResponseEmailToRespondent(
+            caseData,
+            claimant,
+            caseNumber,
+            respondentNames,
+            hearingDate,
+            caseId,
+            application.getType()
+        );
     }
 
     private JSONObject getDocumentDownload(String authorization, CaseData caseData)

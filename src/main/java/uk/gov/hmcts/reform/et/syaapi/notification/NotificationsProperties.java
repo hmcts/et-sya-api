@@ -78,4 +78,9 @@ public class NotificationsProperties {
     @Value("${notifications.claimantResponseYes}")
     @NotBlank
     private String claimantResponseYesTemplateId;
+
+    @Value("${notifications.respondentResponse}")
+    @NotBlank
+    private String respondentResponseTemplateId;
+
 }

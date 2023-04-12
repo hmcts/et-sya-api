@@ -37,6 +37,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGU
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@SuppressWarnings({"PMD.TooManyMethods"})
 public class NotificationService {
     public static final String HEARING_DATE = "hearingDate";
     private final NotificationClient notificationClient;
@@ -216,28 +217,7 @@ public class NotificationService {
         respondentParameters.put("linkToDocument", Objects.requireNonNullElse(documentJson, ""));
         respondentParameters.put("exuiCaseDetailsLink",notificationsProperties.getExuiCaseDetailsLink() + caseId);
 
-        caseData.getRespondentCollection()
-            .forEach(resp -> {
-                String respondentEmailAddress = NotificationsHelper.getEmailAddressForRespondent(
-                    caseData,
-                    resp.getValue()
-                );
-                if (isNullOrEmpty(respondentEmailAddress)) {
-                    log.info("Respondent did not have an email address associated with their account");
-                } else {
-                    try {
-                        notificationClient.sendEmail(
-                            emailToRespondentTemplate,
-                            respondentEmailAddress,
-                            respondentParameters,
-                            caseId
-                        );
-                        log.info("Sent email to respondent");
-                    } catch (NotificationClientException ne) {
-                        throw new NotificationException(ne);
-                    }
-                }
-            });
+        sendRespondentEmails(caseData, caseId, respondentParameters, emailToRespondentTemplate);
     }
 
     /**
@@ -260,12 +240,16 @@ public class NotificationService {
     ) {
 
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
+
+        String subjectLine =
+            String.format("%s %s", caseNumber, APP_TYPE_MAP.get(claimantApplication.getContactApplicationType()));
         addCommonParameters(
             tribunalParameters,
             claimant,
             respondentNames,
             caseId,
-            caseNumber
+            caseNumber,
+            subjectLine
         );
         tribunalParameters.put(
             HEARING_DATE,
@@ -276,8 +260,6 @@ public class NotificationService {
             notificationsProperties.getExuiCaseDetailsLink() + caseId
         );
 
-        String subjectLine = caseNumber + " "
-            + APP_TYPE_MAP.get(claimantApplication.getContactApplicationType());
         tribunalParameters.put(
             "subjectLine",
             subjectLine
@@ -320,13 +302,17 @@ public class NotificationService {
         String caseId,
         String applicationType
     ) {
+        String subjectLine = String.format("%s %s", caseNumber, applicationType);
+
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
         addCommonParameters(
             tribunalParameters,
             claimant,
             respondentNames,
             caseId,
-            caseNumber
+            caseNumber,
+            subjectLine,
+            applicationType
         );
         tribunalParameters.put(
             HEARING_DATE,
@@ -337,14 +323,9 @@ public class NotificationService {
             notificationsProperties.getExuiCaseDetailsLink() + caseId
         );
 
-        String subjectLine = caseNumber + " " + applicationType;
-        tribunalParameters.put(
-            "subjectLine",
-            subjectLine
-        );
 
         String managingOffice = caseData.getManagingOffice();
-        if (managingOffice.equals(UNASSIGNED_OFFICE) || isNullOrEmpty(managingOffice)) {
+        if (UNASSIGNED_OFFICE.equals(managingOffice) || isNullOrEmpty(managingOffice)) {
             log.info("Could not send email as no office has been assigned");
         } else {
             try {
@@ -395,12 +376,16 @@ public class NotificationService {
         }
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
 
+        String subjectLine = String.format("%s %s", caseNumber, applicationType);
+
         addCommonParameters(
             claimantParameters,
             claimant,
             respondentNames,
             caseId,
-            caseNumber
+            caseNumber,
+            subjectLine,
+            applicationType
         );
         claimantParameters.put(
             HEARING_DATE,
@@ -410,15 +395,7 @@ public class NotificationService {
             "citizenPortalLink",
             notificationsProperties.getCitizenPortalLink() + caseId
         );
-        String subjectLine = caseNumber + " " + applicationType;
-        claimantParameters.put(
-            "subjectLine",
-            subjectLine
-        );
-        claimantParameters.put(
-            "shortText",
-            applicationType
-        );
+
 
         String emailToClaimantTemplate = DONT_SEND_COPY.equals(tseRespondType.getCopyToOtherParty())
             ? notificationsProperties.getClaimantResponseNoTemplateId()
@@ -436,6 +413,85 @@ public class NotificationService {
         }
     }
 
+
+    /**
+     * Send acknowledgment email to the claimant when they are responding to
+     * an application (type A/B) made by the Respondent.
+     *
+     * @param caseData        existing case details
+     * @param claimant        claimant's full name
+     * @param caseNumber      ethos case reference
+     * @param respondentNames concatenated respondent names
+     * @param hearingDate     date of the nearest hearing
+     * @param caseId          16 digit case id
+     * @param applicationType type of application
+     */
+    public void sendResponseEmailToRespondent(
+        CaseData caseData,
+        String claimant,
+        String caseNumber,
+        String respondentNames,
+        String hearingDate,
+        String caseId,
+        String applicationType
+    ) {
+
+        if (TYPE_C.equals(applicationType)) {
+            log.info("Type C application -  Claimant is only notified of "
+                         + "Type A/B application responses, email not being sent");
+            return;
+        }
+        Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
+
+        String subjectLine = String.format("%s %s", caseNumber, applicationType);
+        addCommonParameters(
+            respondentParameters,
+            claimant,
+            respondentNames,
+            caseId,
+            caseNumber,
+            subjectLine,
+            applicationType
+        );
+        respondentParameters.put(
+            HEARING_DATE,
+            hearingDate
+        );
+
+
+        String emailToRespondentTemplate = notificationsProperties.getRespondentResponseTemplateId();
+
+        sendRespondentEmails(caseData, caseId, respondentParameters, emailToRespondentTemplate);
+    }
+
+    private void sendRespondentEmails(CaseData caseData, String caseId, Map<String, Object> respondentParameters,
+                                      String emailToRespondentTemplate) {
+        caseData.getRespondentCollection()
+            .forEach(resp -> {
+                String respondentEmailAddress = NotificationsHelper.getEmailAddressForRespondent(
+                    caseData,
+                    resp.getValue()
+                );
+                if (isNullOrEmpty(respondentEmailAddress)) {
+                    log.info(
+                        String.format("Respondent %s did not have an email address associated with their account",
+                                      resp.getId()));
+                } else {
+                    try {
+                        notificationClient.sendEmail(
+                            emailToRespondentTemplate,
+                            respondentEmailAddress,
+                            respondentParameters,
+                            caseId
+                        );
+                        log.info("Sent email to respondent");
+                    } catch (NotificationClientException ne) {
+                        throw new NotificationException(ne);
+                    }
+                }
+            });
+    }
+
     private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
                                             String caseId, String caseNumber) {
         parameters.put("claimant", claimant);
@@ -444,6 +500,17 @@ public class NotificationService {
         parameters.put("caseNumber", caseNumber);
     }
 
+    private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
+                                            String caseId, String caseNumber, String subjectLine) {
+        addCommonParameters(parameters,claimant, respondentNames, caseId, caseNumber);
+        parameters.put("subjectLine", subjectLine);
+    }
+
+    private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
+                                            String caseId, String caseNumber, String subjectLine, String shortText) {
+        addCommonParameters(parameters,claimant, respondentNames, caseId, caseNumber, subjectLine);
+        parameters.put("shortText", shortText);
+    }
 
     private String getAndSetRule92EmailTemplate(ClaimantTse claimantApplication,
                                                 String hearingDate,
