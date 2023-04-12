@@ -544,7 +544,6 @@ class NotificationServiceTest {
         );
     }
 
-
     @Test
     void shouldSendResponseEmailToRespondent() throws NotificationClientException {
         notificationService.sendResponseEmailToRespondent(

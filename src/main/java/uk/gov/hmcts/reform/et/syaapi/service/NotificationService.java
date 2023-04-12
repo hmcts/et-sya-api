@@ -405,8 +405,8 @@ public class NotificationService {
 
 
     /**
-     *  Send acknowledgment email to the claimant when they are responding to
-     *  an application (type A/B) made by the Respondent.
+     * Send acknowledgment email to the claimant when they are responding to
+     * an application (type A/B) made by the Respondent.
      *
      * @param caseData        existing case details
      * @param claimant        claimant's full name
@@ -501,7 +501,6 @@ public class NotificationService {
         addCommonParameters(parameters,claimant, respondentNames, caseId, caseNumber, subjectLine);
         parameters.put("shortText", shortText);
     }
-
 
     private String getAndSetRule92EmailTemplate(ClaimantTse claimantApplication,
                                                 String hearingDate,
