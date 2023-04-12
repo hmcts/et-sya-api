@@ -12,6 +12,7 @@ import javax.validation.constraints.NotBlank;
 
 @Validated
 @Data
+@SuppressWarnings("PMD.TooManyFields")
 public class NotificationsProperties {
 
     @Value("${notifications.govNotifyApiKey}")
@@ -65,7 +66,7 @@ public class NotificationsProperties {
     @Value("${notifications.tribunalResponse}")
     @NotBlank
     private String tribunalResponseTemplateId;
-    
+
     @Value("${notifications.claimantResponseNo}")
     @NotBlank
     private String claimantResponseNoTemplateId;
@@ -73,4 +74,9 @@ public class NotificationsProperties {
     @Value("${notifications.claimantResponseYes}")
     @NotBlank
     private String claimantResponseYesTemplateId;
+
+    @Value("${notifications.respondentResponse}")
+    @NotBlank
+    private String respondentResponseTemplateId;
+
 }

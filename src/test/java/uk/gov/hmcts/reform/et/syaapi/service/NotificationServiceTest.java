@@ -4,6 +4,9 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
@@ -531,6 +534,97 @@ class NotificationServiceTest {
             testData.getExpectedDetails().getId().toString(),
             WITNESS,
             new TseRespondType()
+        );
+
+        verify(notificationClient, times(0)).sendEmail(
+            any(),
+            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void shouldSendResponseEmailToRespondent() throws NotificationClientException {
+        notificationService.sendResponseEmailToRespondent(
+            testData.getCaseData(),
+            CLAIMANT,
+            "1",
+            TEST_RESPONDENT,
+            NOT_SET,
+            testData.getExpectedDetails().getId().toString(),
+            CHANGE_DETAILS_APPLICATION_TYPE
+        );
+
+        verify(notificationClient, times(1)).sendEmail(
+            any(),
+            eq(testData.getCaseData().getRespondentCollection().get(0).getValue().getRespondentEmail()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void shouldSendResponseEmailToRespondentResp() throws NotificationClientException {
+        RespondentSumType respondentSumType = new RespondentSumType();
+        respondentSumType.setRespondentEmail("test@resRep.com");
+
+        RespondentSumTypeItem respondentSumTypeItem = new RespondentSumTypeItem();
+        respondentSumTypeItem.setValue(respondentSumType);
+        respondentSumTypeItem.setId(String.valueOf(UUID.randomUUID()));
+
+        CaseData caseData = testData.getCaseData();
+        caseData.getRespondentCollection().add(respondentSumTypeItem);
+
+        notificationService.sendResponseEmailToRespondent(
+            testData.getCaseData(),
+            CLAIMANT,
+            "1",
+            TEST_RESPONDENT,
+            NOT_SET,
+            testData.getExpectedDetails().getId().toString(),
+            CHANGE_DETAILS_APPLICATION_TYPE
+        );
+
+        verify(notificationClient, times(1)).sendEmail(
+            any(),
+            eq("test@resRep.com"),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void shouldNotSendResponseWhenRespondentEmailDoesNotExist() throws NotificationClientException {
+        testData.getCaseData().getClaimantType().setClaimantEmailAddress("");
+        notificationService.sendResponseEmailToRespondent(
+            testData.getCaseData(),
+            CLAIMANT,
+            "1",
+            TEST_RESPONDENT,
+            NOT_SET,
+            testData.getExpectedDetails().getId().toString(),
+            CHANGE_DETAILS_APPLICATION_TYPE
+        );
+
+        verify(notificationClient, times(0)).sendEmail(
+            any(),
+            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void shouldNotSendResponseEmailToRespondentForTypeCApplication() throws NotificationClientException {
+        notificationService.sendResponseEmailToRespondent(
+            testData.getCaseData(),
+            CLAIMANT,
+            "1",
+            TEST_RESPONDENT,
+            NOT_SET,
+            testData.getExpectedDetails().getId().toString(),
+            WITNESS
         );
 
         verify(notificationClient, times(0)).sendEmail(
