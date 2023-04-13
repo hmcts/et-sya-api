@@ -1,80 +1,60 @@
-server:
-  port: 4550
+# GENERAL SPRING BOOT ACTUATOR CONFIG
+# Context path for Spring Boot Actuator endpoints
+  management.endpoints.web.base-path=/
+  management.endpoint.health.show-details=always
+  spring.application.name = et-cos
 
-management:
-  endpoint:
-    health:
-      show-details: "always"
-  endpoints:
-    web:
-      base-path: /
-      exposure:
-        include: health, info, prometheus
+  spring.datasource.url = jdbc:postgresql://${ET_COS_DB_HOST:localhost}:${ET_COS_DB_PORT:5432}/${ET_COS_DB_NAME:et_cos}${ET_COS_DB_CONN_OPTIONS:}
+  spring.datasource.username = ${ET_COS_DB_USER_NAME:et_cos}
+  spring.datasource.password = ${ET_COS_DB_PASSWORD:}
 
-springdoc:
-  packagesToScan: uk.gov.hmcts.reform.et.syaapi.controllers
+  spring.jpa.properties.hibernate.dialect = org.hibernate.dialect.PostgreSQLDialect
+  spring.jpa.hibernate.ddl-auto = none
+  spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation=true
 
-#If you use a database then uncomment below lines and update db properties accordingly
-spring:
-  config:
-    import: "optional:configtree:/mnt/secrets/et-sya-api/,optional:configtree:/mnt/secrets/et/"
-  application:
-    name: ET SYA API
-  main:
-    allow-bean-definition-overriding: true
-  servlet:
-    multipart:
-      max-file-size: 300MB
-      max-request-size: 300MB
+  server.port=8081
+  feign.httpclient.enabled = true
 
-azure:
-  application-insights:
-    instrumentation-key: ${AppInsightsInstrumentationKey:00000000-0000-0000-0000-000000000000}
+  tornado.url=${TORNADO_URL:http://localhost:8090/rs/render}
+  tornado.accessKey=${TORNADO_ACCESS_KEY:}
 
-idam:
-  api:
-    url: ${IDAM_API_BASEURL:http://localhost:5000}
-    jwksUrl: ${IDAM_JWKS_BASEURL:http://localhost:5000/o/jwks}
-  s2s-auth:
-    url: ${SERVICE_AUTH_PROVIDER_URL:http://localhost:4502}
-    secret: ${ET_SYA_S2S_SECRET:AAAAAAAAAAAAAAAA}
-    microservice: ${MICRO_SERVICE:et_sya_api}
-  client:
-    id: et-sya-api
-    secret: ${IDAM_CLIENT_SECRET:AAAAAAAAAAAAAAAA}
-    scope: openid profile roles
+azure.application-insights.instrumentation-key: ${APP_INSIGHTS_KEY:00000000-0000-0000-0000-000000000000}
 
-core_case_data:
-  api:
-    url: ${CASE_DATA_STORE_BASEURL:http://localhost:4452}
-  search:
-    page_size: ${CCD_SEARCH_PAGE_SIZE:100}
+spring.config.import: optional:configtree:/mnt/secrets/et-cos/,optional:configtree:/mnt/secrets/et/
 
-case_document_am:
-  url: ${CASE_DOCUMENT_AM_URL:http://localhost:4455}
-  max_retries: 3
+  ccd.client.timeout=60000
 
-acas:
-  api:
-    url: ${ACAS_BASE_URL:https://api-dev-acas-01.azure-api.net/ECCLDev}
-    key: ${ACAS_KEY:AAAAAAAAAAAAAAAAAAAA}
-    # This environment variable can be set in your local environment. Do not change this value.
+  ccd.data.store.api.url=${CCD_DATA_STORE_API_URL:http://ccd-data-store-api:4452}
 
-tornado:
-  api:
-    url: ${TORNADO_URL:http://localhost:8090/rs/render}
-    key: ${TORNADO_ACCESS_KEY:ignored_default_value}
+  document_management.url = ${DOCUMENT_MANAGEMENT_URL:http://dm-store:8080}
+  document_management.ccdCaseDocument.url = ${DOCUMENT_MANAGEMENT_URL:http://dm-store:8080}
+document_management.caseWorkerRole: ${DOCUMENT_MANAGEMENT_CASEWORKERROLE}
 
-notifications:
-  citizenPortalLink: ${CITIZEN_PORTAL_LINK:https://localhost:3001/citizen-hub/}
-  govNotifyApiKey: ${GOV_UK_NOTIFY_API_KEY:AAAAAAAAAAAAAAAAA}
-  sampleEmailTemplateId: "4ea3cf16-0cbb-4f27-8cfb-a084b126086e"
-  sampleSubmitCaseEmailTemplateId: "af0b26b7-17b6-4643-bbdc-e296d11e7b0c"
-  submitCaseEmailTemplateId: ${SUBMIT_CASE_EMAIL_TEMPLATE_ID:4f4b378e-238a-46ed-ae1c-26b8038192f0}
-  cySubmitCaseEmailTemplateId: ${CY_SUBMIT_CASE_EMAIL_TEMPLATE_ID:f61f7f2a-4825-491b-bc48-0299f1a8ba23}
+  idam.api.url = ${IDAM_API_URL:http://sidam-api:5000}
+  idam.api.url.jwkUrl = ${IDAM_API_JWK_URL:http://sidam-api:5000/jwks}
+
+  idam.s2s-auth.url = ${SERVICE_AUTH_PROVIDER_URL:http://service-auth-provider-api:8080}
+  idam.s2s-auth.totp_secret = ${ET_COS_S2S_SECRET:AAAAAAAAAAAAAAAC}
+  idam.s2s-auth.microservice = ${MICRO_SERVICE:ccd_gw}
+
+  ccd_gateway_base_url = ${CCD_GATEWAY_BASE_URL:http://127.0.0.1:3453}
+  case_document_am.url = ${CASE_DOCUMENT_AM_URL:http://ccd-case-document-am-api:4455}
+  feature.secure-doc-store.enabled = false
+
+  uk.gov.notify.api.key=${GOV_NOTIFY_API_KEY:test}
+  referral.template.id=${REFERRAL_TEMPLATE_ID:test}
+  et1Serving.template.id=${ET1SERVING_TEMPLATE_ID:test}
+  et1Serving.respondent.template.id=${ET1SERVING_RESPONDENT_TEMPLATE_ID:test}
+  rejected.template.id=${REJECTED_TEMPLATE_ID:test}
+  et3Notification.template.myhmcts.id=${ET3_NOTIFICATION_TEMPLATE_MYHMCTS_ID:test}
+  et3Notification.template.citizen.id=${ET3_NOTIFICATION_TEMPLATE_CITIZEN_ID:test}
   submitCaseDocUploadErrorEmailTemplateId: ${SUBMIT_CASE_DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID:3007a1e9-13b0-4bf9-9753-398ea91b8564}
   et1ServiceOwnerNotificationEmail: ${ET1_SERVICE_OWNER_NOTIFICATION_EMAIL:ignored_default_value}
   et1EcmDtsCoreTeamSlackNotificationEmail: ${ET1_ECM_DTS_CORE_TEAM_SLACK_NOTIFICATION_EMAIL:ignored_default_value}
-pdf:
-  english: "ET1_2222.pdf"
-  welsh: "CY_ET1_2222.pdf"
+  # QUEUES
+  queue.create-updates.send.connection-string = ${CREATE_UPDATES_QUEUE_SEND_CONNECTION_STRING:Endpoint=sb://ethos-servicebus-devs.servicebus.windows.net/;SharedAccessKeyName=SendSharedAccessKey;SharedAccessKey=BjhJCSyb1k/jurYGRGQxPnpsNGDv/Ds3PVmmm9xa9v0=;EntityPath=create-updates-gch}
+  queue.create-updates.queue-name = create-updates-gch
+
+  springdoc.packagesToScan=uk.gov.hmcts.ethos.replacement.docmosis.controllers
+  springdoc.pathsToMatch=/**
+  springdoc.pre-loading-enabled=true
