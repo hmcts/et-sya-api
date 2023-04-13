@@ -10,7 +10,7 @@ import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
-import uk.gov.hmcts.reform.et.syaapi.service.AssignCaseToLocalOfficeService;
+import uk.gov.hmcts.reform.et.syaapi.service.CaseOfficeService;
 import uk.gov.hmcts.reform.et.syaapi.service.PostcodeToOfficeService;
 
 import java.util.Optional;
@@ -24,7 +24,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_
 @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.LawOfDemeter"})
 class AssignCaseToLocalOfficeServiceTest {
     @InjectMocks
-    private AssignCaseToLocalOfficeService assignCaseToLocalOfficeService;
+    private CaseOfficeService assignCaseToLocalOfficeService;
     @Mock
     private PostcodeToOfficeService postcodeToOfficeService;
     private TestData testData;
