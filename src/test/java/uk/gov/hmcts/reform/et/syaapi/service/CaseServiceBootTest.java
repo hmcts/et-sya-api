@@ -20,7 +20,6 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -98,7 +97,7 @@ class CaseServiceBootTest {
             anyList()
         )).thenReturn(testData.getUploadDocumentResponse());
         when(notificationService.sendSubmitCaseConfirmationEmail(
-            eq(testData.getExpectedDetails()),
+            eq(testData.getCaseRequest()),
             eq(testData.getCaseData()),
             eq(testData.getUserInfo()),
             any())
@@ -107,7 +106,7 @@ class CaseServiceBootTest {
 
     @Test
     void theSubmitCaseProducesCaseDetails()
-        throws CaseDocumentException, AcasException, PdfServiceException, InvalidAcasNumbersException {
+        throws PdfServiceException {
         when(acasService.getAcasCertificatesByCaseData(testData.getCaseData())).thenReturn(
             new ArrayList<>()
         );
@@ -117,15 +116,5 @@ class CaseServiceBootTest {
         assertEquals(caseDetails.getJurisdiction(), testData.getExpectedDetails().getJurisdiction());
         assertEquals(caseDetails.getCaseTypeId(), testData.getExpectedDetails().getCaseTypeId());
         assertEquals(caseDetails.getState(), testData.getExpectedDetails().getState());
-    }
-
-    @Test
-    void caseSubmitsEvenIfAcasServiceFails()
-        throws AcasException, InvalidAcasNumbersException {
-        when(acasService.getAcasCertificatesByCaseData(testData.getCaseData())).thenThrow(
-            new AcasException("ACAS exception", new Exception())
-        );
-
-        assertDoesNotThrow(() -> caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, testData.getCaseRequest()));
     }
 }

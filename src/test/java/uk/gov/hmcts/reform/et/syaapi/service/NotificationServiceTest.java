@@ -3,87 +3,73 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import uk.gov.hmcts.et.common.model.ccd.Address;
-import uk.gov.hmcts.et.common.model.ccd.CaseData;
-import uk.gov.hmcts.et.common.model.ccd.types.ClaimantHearingPreference;
-import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
-import uk.gov.hmcts.et.common.model.ccd.types.ClaimantType;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
+import uk.gov.hmcts.reform.et.syaapi.service.util.ServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.utils.TestConstants;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.ENGLISH_LANGUAGE;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SUBMIT_CASE_PDF_FILE_RESPONSE;
+import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.WELSH_LANGUAGE;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class NotificationServiceTest {
-    private static final String TEST_TEMPLATE_API_KEY =
-        "mtd_test-002d2170-e381-4545-8251-5e87dab724e7-ac8ef473-1f28-4bfc-8906-9babd92dc5d8";
-
-    private static final String SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID = "af0b26b7-17b6-4643-bbdc-e296d11e7b0c";
-
-    private static final String REFERENCE_STRING = "TEST_EMAIL_ALERT";
-
-    private static final String TEST_EMAIL = "TEST@GMAIL.COM";
 
     @MockBean
     private NotificationService notificationService;
-
     private NotificationClient notificationClient;
     private NotificationsProperties notificationsProperties;
-
     private final ConcurrentHashMap<String, String> parameters = new ConcurrentHashMap<>();
-
-    private SendEmailResponse inputSendEmailResponse;
-
     private TestData testData;
 
     @BeforeEach
     void before() throws NotificationClientException {
         parameters.put("firstname", "test");
         parameters.put("references", "123456789");
-        inputSendEmailResponse = new SendEmailResponse("{\n"
-                   + "  \"id\": \"f30b2148-b1a6-4c0d-8a10-50109c96dc2c\",\n"
-                   + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
-                   + "  \"template\": {\n"
-                   + "    \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                   + "    \"version\": \"3\",\n"
-                   + "    \"uri\": \"TEST\"\n"
-                   + "  },\n"
-                   + "  \"content\": {\n"
-                   + "    \"body\": \"Dear test, Please see your detail as 123456789. Regards, ET Team.\",\n"
-                   + "    \"subject\": \"ET Test email created\",\n"
-                   + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
-                   + "  }\n"
-                   + "}\n");
         notificationClient = mock(NotificationClient.class);
         notificationsProperties = mock(NotificationsProperties.class);
         notificationService = new NotificationService(notificationClient, notificationsProperties);
         given(notificationClient.sendEmail(anyString(), anyString(), any(), anyString()))
-            .willReturn(inputSendEmailResponse);
-        given(notificationsProperties.getCySubmitCaseEmailTemplateId()).willReturn("1234_welsh");
+            .willReturn(TestConstants.INPUT_SEND_EMAIL_RESPONSE);
+        given(notificationsProperties.getCySubmitCaseEmailTemplateId())
+            .willReturn(TestConstants.WELSH_DUMMY_PDF_TEMPLATE_ID);
         given(notificationsProperties.getSubmitCaseEmailTemplateId())
-            .willReturn(SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID);
-        given(notificationsProperties.getCitizenPortalLink()).willReturn(REFERENCE_STRING);
+            .willReturn(TestConstants.SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID);
+        given(notificationsProperties.getCitizenPortalLink()).willReturn(TestConstants.REFERENCE_STRING);
         testData = new TestData();
     }
 
@@ -91,8 +77,7 @@ class NotificationServiceTest {
     @Test
     void shouldSendEmailByMockingResponse() {
         SendEmailResponse sendEmailResponse = mockSendEmailResponse();
-        assertThat(sendEmailResponse.getReference().isPresent()).isTrue();
-        assertThat(sendEmailResponse.getReference().get()).isEqualTo(REFERENCE_STRING);
+        assertThat(sendEmailResponse.getReference()).isPresent();
     }
 
     @SneakyThrows
@@ -100,7 +85,7 @@ class NotificationServiceTest {
     void shouldRetrieveTemplateIdCorrectly() {
         SendEmailResponse sendEmailResponse = mockSendEmailResponse();
         assertThat(sendEmailResponse.getTemplateId()).isEqualTo(
-            UUID.fromString("8835039a-3544-439b-a3da-882490d959eb"));
+            UUID.fromString(TestConstants.UUID_DUMMY_STRING));
     }
 
     @SneakyThrows
@@ -123,7 +108,8 @@ class NotificationServiceTest {
         given(notificationClient.sendEmail(anyString(), nullable(String.class), any(), anyString()))
             .willThrow(new NotificationClientException("email_address is a required property"));
         assertThatThrownBy(
-            () -> notificationService.sendEmail(TEST_TEMPLATE_API_KEY, null, parameters, REFERENCE_STRING))
+            () -> notificationService.sendEmail(TestConstants.TEST_TEMPLATE_API_KEY, null, parameters,
+                                                TestConstants.REFERENCE_STRING))
             .isInstanceOf(NotificationException.class)
             .hasMessageContaining("email_address is a required property");
     }
@@ -134,7 +120,8 @@ class NotificationServiceTest {
         given(notificationClient.sendEmail(nullable(String.class), anyString(), any(), anyString()))
             .willThrow(new NotificationClientException("template_id is a required property"));
         assertThatThrownBy(
-            () -> notificationService.sendEmail(null, TEST_EMAIL, parameters, REFERENCE_STRING))
+            () -> notificationService.sendEmail(null, TestConstants.TEST_EMAIL, parameters,
+                                                TestConstants.REFERENCE_STRING))
             .isInstanceOf(NotificationException.class)
             .hasMessageContaining("template_id is a required property");
     }
@@ -145,7 +132,8 @@ class NotificationServiceTest {
         given(notificationClient.sendEmail(anyString(), anyString(), any(), anyString()))
             .willThrow(new NotificationClientException("Template not found"));
         assertThatThrownBy(
-            () -> notificationService.sendEmail(TEST_TEMPLATE_API_KEY, TEST_EMAIL, parameters, REFERENCE_STRING))
+            () -> notificationService.sendEmail(TestConstants.TEST_TEMPLATE_API_KEY, TestConstants.TEST_EMAIL,
+                                                parameters, TestConstants.REFERENCE_STRING))
             .isInstanceOf(NotificationException.class)
             .hasMessageContaining("Template not found");
     }
@@ -154,139 +142,186 @@ class NotificationServiceTest {
     private SendEmailResponse mockSendEmailResponse() {
         notificationClient = mock(NotificationClient.class);
         notificationService = new NotificationService(notificationClient, notificationsProperties);
-        doReturn(inputSendEmailResponse).when(notificationClient).sendEmail(TEST_TEMPLATE_API_KEY,
-                                                                            TEST_EMAIL, parameters, REFERENCE_STRING
+        doReturn(TestConstants.INPUT_SEND_EMAIL_RESPONSE).when(notificationClient)
+            .sendEmail(TestConstants.TEST_TEMPLATE_API_KEY,
+                       TestConstants.TEST_EMAIL, parameters, TestConstants.REFERENCE_STRING
         );
-        return notificationService.sendEmail(TEST_TEMPLATE_API_KEY,
-                                             TEST_EMAIL, parameters, REFERENCE_STRING
+        return notificationService.sendEmail(TestConstants.TEST_TEMPLATE_API_KEY,
+                                             TestConstants.TEST_EMAIL, parameters, TestConstants.REFERENCE_STRING
         );
     }
 
-    @Test
-    void shouldSendSubmitCaseConfirmationEmailNull() {
+    @ParameterizedTest
+    @MethodSource("retrieveSubmitCaseConfirmationEmailPdfFilesArguments")
+    void shouldTestSubmitCaseConfirmationWithGivenPdfFilesArguments(List<PdfDecodedMultipartFile> pdfFiles,
+                                                                  String expectedValue) {
         NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
         testData.getCaseData().getClaimantHearingPreference().setContactLanguage(null);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
-            testData.getExpectedDetails(),
+            testData.getCaseRequest(),
             testData.getCaseData(),
             testData.getUserInfo(),
-            new byte[0]
+            pdfFiles
         );
-        assertThat(response.getBody()).isEqualTo("Dear test, Please see your detail as 123456789. Regards, ET Team.");
+        String actualValue = response == null ? TestConstants.EMPTY_RESPONSE : response.getBody();
+        assertThat(actualValue).isEqualTo(expectedValue);
     }
 
     @SneakyThrows
-    @Test
-    void shouldSendSubmitCaseConfirmationEmailInWelsh() {
-        inputSendEmailResponse = new SendEmailResponse("{\n"
-                                                           + "  \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                                                           + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
-                                                           + "  \"template\": {\n"
-                                                           + "    \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                                                           + "    \"version\": \"3\",\n"
-                                                           + "    \"uri\": \"TEST\"\n"
-                                                           + "  },\n"
-                                                           + "  \"content\": {\n"
-                                                           + "    \"body\": \"Please click here. https://www.gov.uk/log-in-register-hmrc-online-services/123456722/?lng=cy.\",\n"
-                                                           + "    \"subject\": \"ET Test email created\",\n"
-                                                           + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
-                                                           + "  }\n"
-                                                           + "}\n");
-        NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {"1234567890111213141516"})
+    void shouldSendSubmitCaseConfirmationEmailWithGivenCaseIdsEvenItIsEmpty(String caseId) {
         when(notificationClient.sendEmail(
-            eq("1234_welsh"),
-            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            anyString(),
+            anyString(),
             any(),
             eq(testData.getExpectedDetails().getId().toString())
-        )).thenReturn(inputSendEmailResponse);
-        testData.getCaseData().getClaimantHearingPreference().setContactLanguage(EtSyaConstants.WELSH_LANGUAGE);
+        )).thenReturn(TestConstants.SEND_EMAIL_RESPONSE_ENGLISH);
+        testData.getCaseRequest().setCaseId(caseId);
+        testData.getCaseData().getClaimantHearingPreference().setContactLanguage(null);
+        List<PdfDecodedMultipartFile> casePdfFiles = new ArrayList<>();
+        casePdfFiles.add(TestConstants.PDF_DECODED_MULTIPART_FILE1);
+        NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
-            testData.getExpectedDetails(),
+            testData.getCaseRequest(),
             testData.getCaseData(),
             testData.getUserInfo(),
-            new byte[2]
+            casePdfFiles
         );
-        assertThat(response.getBody()).isEqualTo(
-            "Please click here. https://www.gov.uk/log-in-register-hmrc-online-services/123456722/?lng=cy.");
+        assertThat(response.getBody()).isEqualTo(TestConstants.SEND_NOTIFICATION_NO_LANGUAGE_RESPONSE_BODY);
+    }
+
+    @SneakyThrows
+    @ParameterizedTest
+    @CsvSource(value = {"|" + TestConstants.SEND_NOTIFICATION_NO_LANGUAGE_RESPONSE_BODY,
+        "  |" + TestConstants.SEND_NOTIFICATION_NO_LANGUAGE_RESPONSE_BODY,
+        TestConstants.UUID_DUMMY_STRING + "|" + TestConstants.SEND_NOTIFICATION_NO_LANGUAGE_RESPONSE_BODY,
+        WELSH_LANGUAGE + "|" + TestConstants.SEND_NOTIFICATION_WELSH_RESPONSE_BODY,
+        ENGLISH_LANGUAGE + "|" + TestConstants.SEND_NOTIFICATION_ENGLISH_RESPONSE_BODY},
+        delimiter = '|')
+    void shouldSendSubmitCaseConfirmationEmailAccordingToSelectedLanguage(String selectedLanguage,
+                                                                          String expectedBody) {
+        when(notificationClient.sendEmail(
+            anyString(),
+            anyString(),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        )).thenReturn(
+            WELSH_LANGUAGE.equals(selectedLanguage) ? TestConstants.SEND_EMAIL_RESPONSE_WELSH
+                : ENGLISH_LANGUAGE.equals(selectedLanguage) ? TestConstants.SEND_EMAIL_RESPONSE_ENGLISH
+                : TestConstants.INPUT_SEND_EMAIL_RESPONSE);
+        testData.getCaseRequest().setCaseId(testData.getExpectedDetails().getId().toString());
+        testData.getCaseData().getClaimantHearingPreference().setContactLanguage(selectedLanguage);
+        List<PdfDecodedMultipartFile> casePdfFiles = new ArrayList<>();
+        casePdfFiles.add(TestConstants.PDF_DECODED_MULTIPART_FILE1);
+        NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
+        SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
+            testData.getCaseRequest(),
+            testData.getCaseData(),
+            testData.getUserInfo(),
+            casePdfFiles
+        );
+        assertThat(response.getBody()).isEqualTo(expectedBody);
     }
 
     @SneakyThrows
     @Test
-    void shouldSuccessfullySendDocUploadErrorEmail() {
-        inputSendEmailResponse = new SendEmailResponse("{\n"
-                                                           + "  \"id\": \"f30b2148-b1a6-4c0d-8a10-50109c96dc2c\",\n"
-                                                           + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
-                                                           + "  \"template\": {\n"
-                                                           + "    \"id\": \""
-                                                           + DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID
-                                                           + "\",\n"
-                                                           + "    \"version\": \"3\",\n"
-                                                           + "    \"uri\": \"TEST\"\n"
-                                                           + "  },\n"
-                                                           + "  \"content\": {\n"
-                                                           + "    \"body\": \"Dear test, "
-                                                           + "Please see your detail as 123456789. Regards, "
-                                                           + "ET Team.\",\n"
-                                                           + "    \"subject\": \"ET Test email created\",\n"
-                                                           + "    \"from_email\": \"" + TEST_EMAIL + "\"\n"
-                                                           + "  }\n"
-                                                           + "}\n");
-
-        when(notificationsProperties.getEt1ServiceOwnerNotificationEmail()).thenReturn(TEST_EMAIL);
-        when(notificationsProperties.getEt1EcmDtsCoreTeamSlackNotificationEmail()).thenReturn(TEST_EMAIL);
-        when(notificationsProperties.getSubmitCaseDocUploadErrorEmailTemplateId())
-            .thenReturn(DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID);
-        when(notificationClient.sendEmail(TEST_TEMPLATE_API_KEY,TEST_EMAIL, parameters, REFERENCE_STRING))
-            .thenReturn(inputSendEmailResponse);
-
-        CaseDetails caseDetails = CaseDetails.builder().build();
-        caseDetails.setId(1_231_231L);
-        CaseData caseData = new CaseData();
-        ClaimantIndType claimantIndType = new ClaimantIndType();
-        claimantIndType.setClaimantFirstNames("TestFName");
-        claimantIndType.setClaimantLastName("TestLName");
-        caseData.setClaimantIndType(claimantIndType);
-        ClaimantType claimantType = new ClaimantType();
-        claimantType.setClaimantAddressUK(new Address());
-        claimantType.setClaimantEmailAddress(TEST_EMAIL);
-        ClaimantHearingPreference hearingPreference = new ClaimantHearingPreference();
-        hearingPreference.setContactLanguage(EtSyaConstants.ENGLISH_LANGUAGE);
-        caseData.setClaimantHearingPreference(hearingPreference);
-        caseData.setClaimantType(claimantType);
-        caseData.getClaimantHearingPreference().setContactLanguage(EtSyaConstants.ENGLISH_LANGUAGE);
-        byte[] acasPdfData = new byte[2];
-        byte[] et1PdfData = new byte[2];
-
-        SendEmailResponse sendEmailResponse = notificationService.sendDocUploadErrorEmail(caseDetails,
-                                                                                          acasPdfData,
-                                                                                          et1PdfData);
-        assertThat(sendEmailResponse.getFromEmail().isPresent()).isTrue();
-        assertThat(sendEmailResponse.getFromEmail()).asString()
-            .isEqualTo("Optional[" + TEST_EMAIL + "]");
+    void shouldThrowExceptionWhenSubmitCaseConfirmationEmailNotSent() {
+        try (MockedStatic<ServiceUtil> mockedServiceUtil = Mockito.mockStatic(ServiceUtil.class)) {
+            when(notificationClient.sendEmail(
+                anyString(),
+                anyString(),
+                any(),
+                anyString()
+            )).thenThrow(NotificationClientException.class);
+            List<PdfDecodedMultipartFile> casePdfFiles = new ArrayList<>();
+            casePdfFiles.add(TestConstants.PDF_DECODED_MULTIPART_FILE1);
+            mockedServiceUtil.when(() -> ServiceUtil.hasPdfFile(casePdfFiles, 0)).thenReturn(true);
+            mockedServiceUtil.when(() -> ServiceUtil.findClaimantLanguage(testData.getCaseData()))
+                .thenReturn(ENGLISH_LANGUAGE);
+            mockedServiceUtil.when(() -> ServiceUtil.findClaimantFirstNameByCaseDataUserInfo(any(), any()))
+                .thenReturn(testData.getCaseData().getClaimantIndType().getClaimantFirstNames());
+            mockedServiceUtil.when(() -> ServiceUtil.findClaimantLastNameByCaseDataUserInfo(any(), any()))
+                .thenReturn(testData.getCaseData().getClaimantIndType().getClaimantLastName());
+            mockedServiceUtil.when(() -> ServiceUtil.findPdfFileBySelectedLanguage(any(), anyString()))
+                .thenReturn(TEST_SUBMIT_CASE_PDF_FILE_RESPONSE.getBytes());
+            NotificationService notificationService =
+                new NotificationService(notificationClient, notificationsProperties);
+            notificationService.sendSubmitCaseConfirmationEmail(
+                testData.getCaseRequest(),
+                testData.getCaseData(),
+                testData.getUserInfo(),
+                casePdfFiles
+            );
+            mockedServiceUtil.verify(
+                () -> ServiceUtil.logException(anyString(),
+                                               anyString(),
+                                               eq(null),
+                                               anyString(),
+                                               anyString()),
+                times(1)
+            );
+        }
     }
 
+    @SneakyThrows
+    @ParameterizedTest
+    @MethodSource("retrieveSendDocUploadErrorEmailPdfFilesArguments")
+    void shouldSuccessfullySendDocUploadErrorEmailWithGivenPdfFilesList(List<PdfDecodedMultipartFile> casePdfFiles,
+                                                                        List<PdfDecodedMultipartFile> acasCertificates,
+                                                                        UploadedDocumentType claimDescriptionDocument) {
+        when(notificationsProperties.getEt1ServiceOwnerNotificationEmail()).thenReturn(TestConstants.TEST_EMAIL);
+        when(notificationsProperties.getEt1EcmDtsCoreTeamSlackNotificationEmail()).thenReturn(TestConstants.TEST_EMAIL);
+        when(notificationsProperties.getSubmitCaseDocUploadErrorEmailTemplateId())
+            .thenReturn(TestConstants.DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID);
+        when(notificationClient.sendEmail(TestConstants.TEST_TEMPLATE_API_KEY, TestConstants.TEST_EMAIL, parameters,
+                                          TestConstants.REFERENCE_STRING))
+            .thenReturn(TestConstants.SEND_EMAIL_RESPONSE_DOC_UPLOAD_FAILURE);
 
+        CaseRequest caseRequest = CaseRequest.builder().build();
+        caseRequest.setCaseId("1_231_231");
+
+        SendEmailResponse sendEmailResponse = notificationService.sendDocUploadErrorEmail(caseRequest,
+                                                                                          casePdfFiles,
+                                                                                          acasCertificates,
+                                                                                          claimDescriptionDocument);
+        assertThat(sendEmailResponse.getFromEmail()).isPresent();
+        assertThat(sendEmailResponse.getFromEmail()).asString()
+            .isEqualTo("Optional[" + TestConstants.TEST_EMAIL + "]");
+    }
+
+    @SneakyThrows
     @Test
-    void shouldThrowNotificationExceptionWhenNotAbleToSendDocUploadErrorEmail()
-        throws NotificationClientException {
-        ConcurrentHashMap<String, String> testHashMap = new ConcurrentHashMap<>();
-        testHashMap.put("testKey", "testValue");
+    void shouldThrowNotificationExceptionWhenNotAbleToSendDocUploadErrorEmail() {
+        try (MockedStatic<ServiceUtil> mockedServiceUtil = Mockito.mockStatic(ServiceUtil.class)) {
+            when(notificationClient.sendEmail(any(), any(), any(), any())).thenThrow(new NotificationClientException(
+                new Exception("Error while trying to send doc upload error notification to service owner")));
+            when(notificationsProperties.getSubmitCaseDocUploadErrorEmailTemplateId()).thenReturn(null);
+            when(notificationsProperties.getEt1EcmDtsCoreTeamSlackNotificationEmail()).thenReturn(null);
+            mockedServiceUtil.when(() -> ServiceUtil.prepareUpload(any(), anyInt()))
+                .thenReturn(TestConstants.FILE_NOT_EXISTS);
+            UploadedDocumentType claimDescriptionDocument = new UploadedDocumentType();
+            notificationService.sendDocUploadErrorEmail(testData.getCaseRequest(),
+                                                            List.of(TestConstants.PDF_DECODED_MULTIPART_FILE1),
+                                                            List.of(TestConstants.PDF_DECODED_MULTIPART_FILE1),
+                                                            claimDescriptionDocument);
+            mockedServiceUtil.verify(
+                () -> ServiceUtil.logException(anyString(),
+                                               eq(null),
+                                               anyString(),
+                                               anyString(),
+                                               anyString()),
+                times(1)
+            );
+        }
+    }
 
-        when(notificationClient.sendEmail(any(), any(), any(), any()
-        )).thenThrow(new NotificationException(
-            new Exception("Error while trying to send doc upload error notification to service owner")));
-        when(notificationsProperties.getSubmitCaseDocUploadErrorEmailTemplateId()).thenReturn(null);
-        when(notificationsProperties.getEt1EcmDtsCoreTeamSlackNotificationEmail()).thenReturn(null);
+    private static Stream<Arguments> retrieveSubmitCaseConfirmationEmailPdfFilesArguments() {
+        return TestData.generateSubmitCaseConfirmationEmailPdfFilesArguments();
+    }
 
-        byte[] testEt1PdfByteArray = "test et1 Pdf String".getBytes();
-        byte[] testAcasPdfByteArray = "test Acas padf String".getBytes();
-
-        NotificationException notificationException = assertThrows(NotificationException.class, () ->
-            notificationService.sendDocUploadErrorEmail(testData.getExpectedDetails(),
-                                                        testEt1PdfByteArray,
-                                                        testAcasPdfByteArray));
-        assertThat(notificationException.getMessage())
-            .isEqualTo("java.lang.Exception: Error while trying to send doc upload"
-                           + " error notification to service owner");
+    private static Stream<Arguments> retrieveSendDocUploadErrorEmailPdfFilesArguments() {
+        return TestData.generateSendDocUploadErrorEmailPdfFilesArguments();
     }
 }

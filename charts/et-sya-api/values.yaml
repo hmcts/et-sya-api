@@ -37,6 +37,6 @@ java:
     TORNADO_URL: "https://docmosis.{{ .Values.global.environment }}.platform.hmcts.net/rs/render"
     CASE_DOCUMENT_AM_URL: "http://ccd-case-document-am-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     CITIZEN_PORTAL_LINK: "https://et-sya.{{ .Values.global.environment }}.platform.hmcts.net/citizen-hub/"
-    SUBMIT_CASE_EMAIL_TEMPLATE_ID: "4f4b378e-238a-46ed-ae1c-26b8038192f0"
+    SUBMIT_CASE_EMAIL_TEMPLATE_ID: "64533cdb-a00b-463d-a656-4fc0dfb1630e"
     CY_SUBMIT_CASE_EMAIL_TEMPLATE_ID: "970257cd-3464-4ec9-bbb8-45fd9128001c"
-    SUBMIT_CASE_DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID: "e0b72d86-5512-4d90-a51e-e97ff5ba703c"
+    SUBMIT_CASE_DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID: "0d7cd6f0-47c1-4ade-aac7-49e6023bac70"

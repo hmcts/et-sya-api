@@ -91,7 +91,7 @@ class CaseServiceTest {
     @Mock
     private NotificationService notificationService;
     @Mock
-    private AssignCaseToLocalOfficeService assignCaseToLocalOfficeService;
+    private CaseOfficeService assignCaseToLocalOfficeService;
     @Spy
     private NotificationsProperties notificationsProperties;
     @InjectMocks
@@ -357,19 +357,19 @@ class CaseServiceTest {
             testData.getCaseRequest()
         );
 
-        assertEquals(1, ((ArrayList)caseDetails.getData().get("documentCollection")).size());
+        assertEquals(1, ((ArrayList<?>)caseDetails.getData().get("documentCollection")).size());
         ArrayList docCollection = (ArrayList) caseDetails.getData().get("documentCollection");
 
         assertEquals("DocumentType(typeOfDocument="
-            + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=https://document.binary.url, documentFilen"
-            + "ame=filename, documentUrl=https://document.url), ownerDocument=null, creationDate=null, shortDescription=nu"
-            + "ll)", ((DocumentTypeItem) docCollection.get(0)).getValue().toString());
+            + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=https://document.binary.url, "
+            + "documentFilename=filename, documentUrl=https://document.url), ownerDocument=null, "
+            + "creationDate=null, shortDescription=null)",
+            ((DocumentTypeItem) docCollection.get(0)).getValue().toString());
 
     }
 
     @Test
-    void shouldSendErrorEmail() throws PdfServiceException, AcasException, InvalidAcasNumbersException,
-        CaseDocumentException {
+    void shouldSendErrorEmail() throws PdfServiceException, CaseDocumentException {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
             null,
@@ -421,8 +421,6 @@ class CaseServiceTest {
         when(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(any()))
             .thenReturn(testData.getCaseData());
 
-        when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(createDocumentTypeItem());
-
         when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any()))
             .thenThrow(new CaseDocumentException("Failed to upload documents"));
 
@@ -443,14 +441,15 @@ class CaseServiceTest {
                                         + "  }\n"
                                         + "}\n");
 
-        when(notificationService.sendDocUploadErrorEmail(any(), any(), any()))
+        when(notificationService.sendDocUploadErrorEmail(any(), any(), any(), any()))
             .thenReturn(sendEmailResponse);
         caseService.submitCase(
             TEST_SERVICE_AUTH_TOKEN,
             testData.getCaseRequest()
         );
 
-        verify(notificationService, times(1)).sendDocUploadErrorEmail(any(), any(), any());
+        verify(notificationService, times(1))
+            .sendDocUploadErrorEmail(any(), any(), any(), any());
 
     }
 
