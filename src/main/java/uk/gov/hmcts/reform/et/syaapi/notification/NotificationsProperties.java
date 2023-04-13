@@ -42,6 +42,18 @@ public class NotificationsProperties {
     @NotBlank
     private String exuiCaseDetailsLink;
 
+    @Value("${notifications.submitCaseDocUploadErrorEmailTemplateId}")
+    @NotBlank
+    private String submitCaseDocUploadErrorEmailTemplateId;
+
+    @Value("${notifications.et1EcmDtsCoreTeamSlackNotificationEmail}")
+    @NotBlank
+    private String et1EcmDtsCoreTeamSlackNotificationEmail;
+
+    @Value("${notifications.et1ServiceOwnerNotificationEmail}")
+    @NotBlank
+    private String et1ServiceOwnerNotificationEmail;
+
     @Value("${notifications.applicationAcknowledgementYes}")
     @NotBlank
     private String claimantTseEmailYesTemplateId;
@@ -81,5 +93,4 @@ public class NotificationsProperties {
     @Value("${notifications.respondentResponse}")
     @NotBlank
     private String respondentResponseTemplateId;
-
 }

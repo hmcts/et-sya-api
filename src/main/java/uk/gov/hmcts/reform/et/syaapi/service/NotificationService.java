@@ -2,21 +2,27 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
+import uk.gov.hmcts.reform.et.syaapi.service.util.ServiceUtil;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,34 +31,39 @@ import java.util.stream.Stream;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.apache.tika.utils.StringUtils.isBlank;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CASE_ID_NOT_FOUND;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.FILE_NOT_EXISTS;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ACAS_PDF1_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ACAS_PDF2_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ACAS_PDF3_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ACAS_PDF4_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ACAS_PDF5_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CASE_NUMBER_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CLAIM_DESCRIPTION_FILE_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ET1PDF_ENGLISH_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ET1PDF_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ET1PDF_WELSH_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_FIRSTNAME_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_LASTNAME_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_SERVICE_OWNER_NAME_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_SERVICE_OWNER_NAME_VALUE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM;
+import static uk.gov.service.notify.NotificationClient.prepareUpload;
+
 
 /**
  * Holds details for sending email to user(s) provided template been created beforehand.
  */
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@SuppressWarnings({"PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 public class NotificationService {
     public static final String HEARING_DATE = "hearingDate";
-    public static final String FIRST_NAME = "firstName";
-    public static final String LAST_NAME = "lastName";
-    public static final String CLAIMANT = "claimant";
-    public static final String RESPONDENT_NAMES = "respondentNames";
-    public static final String CASE_ID = "caseId";
-    public static final String SUBJECT_LINE = "subjectLine";
-    public static final String CASE_NUMBER = "caseNumber";
-    public static final String CUI_LINK = "citizenPortalLink";
-    public static final String EXUI_LINK = "exuiCaseDetailsLink";
-    public static final String SHORT_TEXT = "shortText";
-    public static final String A_OR_B_TEXT = "abText";
-    public static final String LINK_DOC = "linkToDocument";
-    public static final String DATE_PLUS7 = "datePlus7";
-    public static final String CONCAT2STRINGS = "%s%s";
-
     private final NotificationClient notificationClient;
     private final NotificationsProperties notificationsProperties;
     private final String[] typeA =
@@ -72,59 +83,121 @@ public class NotificationService {
      */
     public SendEmailResponse sendEmail(
         String templateId, String targetEmail, Map<String, String> parameters, String reference) {
-
         SendEmailResponse sendEmailResponse;
         try {
             sendEmailResponse = notificationClient.sendEmail(templateId, targetEmail, parameters, reference);
         } catch (NotificationClientException ne) {
-            log.error("Error while trying to sending notification to client", ne);
+            ServiceUtil.logException("Error while trying to sending notification to client",
+                                     ServiceUtil.getStringValueFromStringMap(parameters,
+                                                                             SEND_EMAIL_PARAMS_CASE_NUMBER_KEY),
+                                     ne.getMessage(),
+                                     this.getClass().getName(), "sendEmail");
             throw new NotificationException(ne);
         }
         return sendEmailResponse;
     }
 
     /**
-     * Format user and case data then send email.
+     * Prepares case submission confirmation email content from user and case data & sends email to the user.
      *
-     * @param caseDetails top level non-modifiable case details
-     * @param caseData    user provided data
-     * @param userInfo    user details from Idam
+     * @param caseRequest  top level non-modifiable case details
+     * @param caseData  user provided data
+     * @param userInfo   user details from Idam
+     * @param casePdfFiles  pdf files of the ET1 form according to selected language
      * @return Gov notify email format
      */
-    public SendEmailResponse sendSubmitCaseConfirmationEmail(CaseDetails caseDetails,
-                                                             CaseData caseData,
-                                                             UserInfo userInfo) {
+    public SendEmailResponse sendSubmitCaseConfirmationEmail(CaseRequest caseRequest, CaseData caseData,
+                                                             UserInfo userInfo,
+                                                             List<PdfDecodedMultipartFile> casePdfFiles) {
+        SendEmailResponse sendEmailResponse = null;
+        if (ServiceUtil.hasPdfFile(casePdfFiles, 0)) {
+            String firstName = ServiceUtil.findClaimantFirstNameByCaseDataUserInfo(caseData, userInfo);
+            String lastName = ServiceUtil.findClaimantLastNameByCaseDataUserInfo(caseData, userInfo);
+            String caseNumber = caseRequest.getCaseId() == null ? CASE_ID_NOT_FOUND : caseRequest.getCaseId();
+            String selectedLanguage = ServiceUtil.findClaimantLanguage(caseData);
+            String emailTemplateId = WELSH_LANGUAGE.equals(selectedLanguage)
+                ? notificationsProperties.getCySubmitCaseEmailTemplateId()
+                : notificationsProperties.getSubmitCaseEmailTemplateId();
+            String citizenPortalLink = WELSH_LANGUAGE.equals(selectedLanguage)
+                ? notificationsProperties.getCitizenPortalLink() + WELSH_LANGUAGE_PARAM
+                : notificationsProperties.getCitizenPortalLink() + "%s";
+            byte[] et1Pdf = ServiceUtil.findPdfFileBySelectedLanguage(casePdfFiles, selectedLanguage);
+            try {
+                Map<String, Object> parameters = new ConcurrentHashMap<>();
+                parameters.put(SEND_EMAIL_PARAMS_FIRSTNAME_KEY, firstName);
+                parameters.put(SEND_EMAIL_PARAMS_LASTNAME_KEY, lastName);
+                parameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
+                parameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, String.format(citizenPortalLink, caseNumber));
+                parameters.put(SEND_EMAIL_PARAMS_ET1PDF_LINK_KEY, prepareUpload(et1Pdf));
 
-        String firstName = isNullOrEmpty(caseData.getClaimantIndType().getClaimantFirstNames())
-            ? userInfo.getGivenName()
-            : caseData.getClaimantIndType().getClaimantFirstNames();
-        String lastName = isNullOrEmpty(caseData.getClaimantIndType().getClaimantLastName())
-            ? userInfo.getFamilyName()
-            : caseData.getClaimantIndType().getClaimantLastName();
-        String caseId = caseDetails.getId() == null ? "case id not found" : caseDetails.getId().toString();
-        String emailTemplateId = notificationsProperties.getSubmitCaseEmailTemplateId();
-        String citizenPortalLink = notificationsProperties.getCitizenPortalLink() + "%s";
-
-        if (caseData.getClaimantHearingPreference().getContactLanguage() != null
-            && WELSH_LANGUAGE.equals(caseData.getClaimantHearingPreference().getContactLanguage())) {
-            emailTemplateId = notificationsProperties.getCySubmitCaseEmailTemplateId();
-            citizenPortalLink = citizenPortalLink + WELSH_LANGUAGE_PARAM;
+                String claimantEmailAddress = caseData.getClaimantType().getClaimantEmailAddress();
+                sendEmailResponse = notificationClient.sendEmail(
+                    emailTemplateId,
+                    claimantEmailAddress,
+                    parameters,
+                    caseNumber
+                );
+            } catch (NotificationClientException ne) {
+                ServiceUtil.logException("Submit case confirmation email was not sent to client.",
+                                         caseData.getEthosCaseReference(), ne.getMessage(),
+                                         this.getClass().getName(), "sendSubmitCaseConfirmationEmail");
+            }
         }
+        return sendEmailResponse;
+    }
 
-        SendEmailResponse sendEmailResponse;
+    /**
+     * Prepared doc upload error alert email content from user and case data then sends email to the service.
+     *
+     * @param caseRequest  top level non-modifiable case details
+     * @param casePdfFiles  pdf copy of ET1 form content
+     * @param acasCertificates  pdf copy of Acas Certificates
+     * @return Gov notify email format
+     */
+    public SendEmailResponse sendDocUploadErrorEmail(CaseRequest caseRequest,
+                                                     List<PdfDecodedMultipartFile> casePdfFiles,
+                                                     List<PdfDecodedMultipartFile> acasCertificates,
+                                                     UploadedDocumentType claimDescriptionDocument) {
+        SendEmailResponse sendEmailResponse = null;
         try {
-            Map<String, String> parameters = new ConcurrentHashMap<>();
-            parameters.put(FIRST_NAME, firstName);
-            parameters.put(LAST_NAME, lastName);
-            parameters.put(CUI_LINK, String.format(citizenPortalLink, caseId));
+            String caseNumber = caseRequest.getCaseId() == null ? CASE_ID_NOT_FOUND : caseRequest.getCaseId();
+            Map<String, Object> parameters = new ConcurrentHashMap<>();
+            parameters.put(SEND_EMAIL_SERVICE_OWNER_NAME_KEY, SEND_EMAIL_SERVICE_OWNER_NAME_VALUE);
+            parameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
+            parameters.put(SEND_EMAIL_PARAMS_ET1PDF_ENGLISH_LINK_KEY, ServiceUtil.prepareUpload(casePdfFiles, 0));
+            parameters.put(SEND_EMAIL_PARAMS_ET1PDF_WELSH_LINK_KEY, ServiceUtil.prepareUpload(casePdfFiles, 1));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF1_LINK_KEY, ServiceUtil.prepareUpload(acasCertificates, 0));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF2_LINK_KEY, ServiceUtil.prepareUpload(acasCertificates, 1));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF3_LINK_KEY, ServiceUtil.prepareUpload(acasCertificates, 2));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF4_LINK_KEY, ServiceUtil.prepareUpload(acasCertificates, 3));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF5_LINK_KEY, ServiceUtil.prepareUpload(acasCertificates, 4));
+            parameters.put(SEND_EMAIL_PARAMS_CLAIM_DESCRIPTION_FILE_LINK_KEY,
+                           ObjectUtils.isNotEmpty(claimDescriptionDocument)
+                                && StringUtils.isNotBlank(claimDescriptionDocument.getDocumentUrl())
+                                ? claimDescriptionDocument.getDocumentUrl()
+                                : FILE_NOT_EXISTS);
+
+            String emailTemplateId = notificationsProperties.getSubmitCaseDocUploadErrorEmailTemplateId();
+
+            // Send an alert email to the service owner
             sendEmailResponse = notificationClient.sendEmail(
                 emailTemplateId,
-                caseData.getClaimantType().getClaimantEmailAddress(),
+                notificationsProperties.getEt1ServiceOwnerNotificationEmail(),
                 parameters,
-                caseId
+                caseNumber
+            );
+
+            // Send a copy alert email to ECM DTS core team
+            notificationClient.sendEmail(
+                emailTemplateId,
+                notificationsProperties.getEt1EcmDtsCoreTeamSlackNotificationEmail(),
+                parameters,
+                caseNumber
             );
         } catch (NotificationClientException ne) {
-            throw new NotificationException(ne);
+            ServiceUtil.logException("Case Documents Upload error - Failed to send document upload error message",
+                                     caseRequest.getCaseId(), ne.getMessage(),
+                                     this.getClass().getName(), "sendDocUploadErrorEmail");
         }
         return sendEmailResponse;
     }
@@ -163,10 +236,6 @@ public class NotificationService {
         String emailToClaimantTemplate = TYPE_C.equals(claimantApplication.getContactApplicationType())
             ? notificationsProperties.getClaimantTseEmailTypeCTemplateId() :
             getAndSetRule92EmailTemplate(claimantApplication, hearingDate, claimantParameters);
-        claimantParameters.put(
-            CUI_LINK,
-            String.format(CONCAT2STRINGS, notificationsProperties.getCitizenPortalLink(), caseId)
-        );
 
         try {
             claimantEmail = notificationClient.sendEmail(
@@ -214,9 +283,13 @@ public class NotificationService {
             caseId,
             caseNumber
         );
-        respondentParameters.put(HEARING_DATE, hearingDate);
-        respondentParameters.put(SHORT_TEXT, APP_TYPE_MAP.get(claimantApplication.getContactApplicationType()));
-        respondentParameters.put(DATE_PLUS7, LocalDate.now().plusDays(7).toString());
+        respondentParameters.put(
+            HEARING_DATE,
+            hearingDate
+        );
+        respondentParameters.put("shortText",
+                                 APP_TYPE_MAP.get(claimantApplication.getContactApplicationType()));
+        respondentParameters.put("datePlus7", LocalDate.now().plusDays(7).toString());
 
         String emailToRespondentTemplate;
         if (Stream.of(typeB).anyMatch(appType -> Objects.equals(
@@ -227,11 +300,7 @@ public class NotificationService {
         } else {
             emailToRespondentTemplate = notificationsProperties.getRespondentTseEmailTypeATemplateId();
         }
-        respondentParameters.put(LINK_DOC, Objects.requireNonNullElse(documentJson, ""));
-        respondentParameters.put(
-            EXUI_LINK,
-            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
-        );
+        respondentParameters.put("linkToDocument", Objects.requireNonNullElse(documentJson, ""));
 
         sendRespondentEmails(caseData, caseId, respondentParameters, emailToRespondentTemplate);
     }
@@ -267,10 +336,14 @@ public class NotificationService {
             caseNumber,
             subjectLine
         );
-        tribunalParameters.put(HEARING_DATE, hearingDate);
         tribunalParameters.put(
-            EXUI_LINK,
-            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
+            HEARING_DATE,
+            hearingDate
+        );
+
+        tribunalParameters.put(
+            "subjectLine",
+            subjectLine
         );
 
         String managingOffice = caseData.getManagingOffice();
@@ -322,11 +395,11 @@ public class NotificationService {
             subjectLine,
             applicationType
         );
-        tribunalParameters.put(HEARING_DATE, hearingDate);
         tribunalParameters.put(
-            EXUI_LINK,
-            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
+            HEARING_DATE,
+            hearingDate
         );
+
 
         String managingOffice = caseData.getManagingOffice();
         if (UNASSIGNED_OFFICE.equals(managingOffice) || isNullOrEmpty(managingOffice)) {
@@ -368,6 +441,7 @@ public class NotificationService {
         String applicationType,
         TseRespondType tseRespondType
     ) {
+
         if (TYPE_C.equals(applicationType)) {
             log.info("Type C application -  Claimant is only notified of "
                          + "Type A/B application responses, email not being sent");
@@ -380,6 +454,7 @@ public class NotificationService {
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
 
         String subjectLine = String.format("%s %s", caseNumber, applicationType);
+
         addCommonParameters(
             claimantParameters,
             claimant,
@@ -389,11 +464,15 @@ public class NotificationService {
             subjectLine,
             applicationType
         );
-        claimantParameters.put(HEARING_DATE, hearingDate);
         claimantParameters.put(
-            CUI_LINK,
-            String.format(CONCAT2STRINGS, notificationsProperties.getCitizenPortalLink(), caseId)
+            HEARING_DATE,
+            hearingDate
         );
+        claimantParameters.put(
+            "citizenPortalLink",
+            notificationsProperties.getCitizenPortalLink() + caseId
+        );
+
 
         String emailToClaimantTemplate = DONT_SEND_COPY.equals(tseRespondType.getCopyToOtherParty())
             ? notificationsProperties.getClaimantResponseNoTemplateId()
@@ -410,6 +489,7 @@ public class NotificationService {
             throw new NotificationException(ne);
         }
     }
+
 
     /**
      * Send acknowledgment email to the claimant when they are responding to
@@ -454,10 +534,7 @@ public class NotificationService {
             HEARING_DATE,
             hearingDate
         );
-        respondentParameters.put(
-            EXUI_LINK,
-            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
-        );
+
 
         String emailToRespondentTemplate = notificationsProperties.getRespondentResponseTemplateId();
 
@@ -494,22 +571,22 @@ public class NotificationService {
 
     private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
                                             String caseId, String caseNumber) {
-        parameters.put(CLAIMANT, claimant);
-        parameters.put(RESPONDENT_NAMES, respondentNames);
-        parameters.put(CASE_ID, caseId);
-        parameters.put(CASE_NUMBER, caseNumber);
+        parameters.put("claimant", claimant);
+        parameters.put("respondentNames", respondentNames);
+        parameters.put("caseId", caseId);
+        parameters.put("caseNumber", caseNumber);
     }
 
     private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
                                             String caseId, String caseNumber, String subjectLine) {
-        addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber);
-        parameters.put(SUBJECT_LINE, subjectLine);
+        addCommonParameters(parameters,claimant, respondentNames, caseId, caseNumber);
+        parameters.put("subjectLine", subjectLine);
     }
 
     private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
                                             String caseId, String caseNumber, String subjectLine, String shortText) {
-        addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber, subjectLine);
-        parameters.put(SHORT_TEXT, shortText);
+        addCommonParameters(parameters,claimant, respondentNames, caseId, caseNumber, subjectLine);
+        parameters.put("shortText", shortText);
     }
 
     private String getAndSetRule92EmailTemplate(ClaimantTse claimantApplication,
@@ -519,11 +596,11 @@ public class NotificationService {
         parameters.put(HEARING_DATE, hearingDate);
         String shortText = APP_TYPE_MAP.get(claimantApplication.getContactApplicationType());
         if (DONT_SEND_COPY.equals(claimantApplication.getCopyToOtherPartyYesOrNo())) {
-            parameters.put(SHORT_TEXT, shortText);
+            parameters.put("shortText", shortText);
             emailTemplate = notificationsProperties.getClaimantTseEmailNoTemplateId();
         } else {
             String abText = getCustomTextForAOrBApplication(claimantApplication, shortText);
-            parameters.put(A_OR_B_TEXT, abText);
+            parameters.put("abText", abText);
             emailTemplate = notificationsProperties.getClaimantTseEmailYesTemplateId();
         }
         return emailTemplate;
@@ -552,4 +629,5 @@ public class NotificationService {
         }
         return abText;
     }
+
 }

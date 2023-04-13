@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
@@ -10,6 +11,7 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.elasticsearch.common.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
@@ -20,6 +22,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.GenericTseApplication;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationException;
 import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationService;
+import uk.gov.hmcts.reform.et.syaapi.service.util.ServiceUtil;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.ByteArrayOutputStream;
@@ -74,8 +77,8 @@ public class PdfService {
         byte[] pdfDocumentBytes;
         try {
             pdfDocumentBytes = createPdf(caseData, pdfSource);
-        } catch (IOException ex) {
-            throw new PdfServiceException("Failed to convert to PDF", ex);
+        } catch (IOException ioe) {
+            throw new PdfServiceException("Failed to convert to PDF", ioe);
         }
         return pdfDocumentBytes;
     }
@@ -88,40 +91,56 @@ public class PdfService {
      * @return a byte array of the generated pdf file.
      * @throws IOException if there is an issue reading the pdf template
      */
-    protected byte[] createPdf(CaseData caseData, String pdfSource) throws IOException {
+    public byte[] createPdf(CaseData caseData, String pdfSource) throws IOException {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        InputStream stream = cl.getResourceAsStream(pdfSource);
-        try (PDDocument pdfDocument = Loader.loadPDF(
-            Objects.requireNonNull(stream))) {
-            PDDocumentCatalog pdDocumentCatalog = pdfDocument.getDocumentCatalog();
-            PDAcroForm pdfForm = pdDocumentCatalog.getAcroForm();
-            for (Map.Entry<String, Optional<String>> entry : this.pdfMapperService.mapHeadersToPdf(caseData)
-                .entrySet()) {
-                String entryKey = entry.getKey();
-                Optional<String> entryValue = entry.getValue();
-                if (entryValue.isPresent()) {
-                    try {
-                        PDField pdfField = pdfForm.getField(entryKey);
-                        pdfField.setValue(entryValue.get());
-                    } catch (Exception e) {
-                        log.error(e.getMessage(), e);
+        InputStream stream = ObjectUtils.isEmpty(cl) || StringUtils.isBlank(pdfSource) ? null
+            : cl.getResourceAsStream(pdfSource);
+        if (!ObjectUtils.isEmpty(stream)) {
+            try (PDDocument pdfDocument = Loader.loadPDF(
+                Objects.requireNonNull(stream))) {
+                PDDocumentCatalog pdDocumentCatalog = pdfDocument.getDocumentCatalog();
+                PDAcroForm pdfForm = pdDocumentCatalog.getAcroForm();
+                for (Map.Entry<String, Optional<String>> entry : this.pdfMapperService.mapHeadersToPdf(caseData)
+                    .entrySet()) {
+                    String entryKey = entry.getKey();
+                    Optional<String> entryValue = entry.getValue();
+                    if (entryValue.isPresent()) {
+                        try {
+                            PDField pdfField = pdfForm.getField(entryKey);
+                            pdfField.setValue(entryValue.get());
+                        } catch (Exception e) {
+                            ServiceUtil.logException("Error while parsing PDF file for entry key \""
+                                                         + entryKey
+                                                         + "\", entry value \""
+                                                         + getEntryValueFromOptionalString(entryValue)
+                                                         + "\"", caseData.getEthosCaseReference(), e.getMessage(),
+                                                            this.getClass().getName(), "createPdf");
+                        }
                     }
                 }
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                pdfDocument.save(byteArrayOutputStream);
+                return byteArrayOutputStream.toByteArray();
+            } finally {
+                safeClose(stream, caseData);
             }
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            pdfDocument.save(byteArrayOutputStream);
-            return byteArrayOutputStream.toByteArray();
-        } finally {
-            safeClose(stream);
         }
+        safeClose(stream, caseData);
+        return new byte[0];
     }
 
-    private static void safeClose(InputStream is) {
+    private String getEntryValueFromOptionalString(Optional<String> entryValue) {
+        return ObjectUtils.isEmpty(entryValue) || entryValue.isEmpty() ? "" : entryValue.get();
+    }
+
+    public static void safeClose(InputStream is, CaseData caseData) {
         if (is != null) {
             try {
                 is.close();
             } catch (IOException e) {
-                log.error(e.getMessage(), e);
+                ServiceUtil.logException("Input stream for the template PDF file was not closed: ",
+                                         caseData.getEthosCaseReference(), e.getMessage(),
+                                         "PDFServiceUtil", "safeClose");
             }
         }
     }
@@ -173,35 +192,55 @@ public class PdfService {
             + acasCertificate.getCertificateNumber();
     }
 
+
     /**
      * Converts case data to a pdf byte array wrapped in a {@link PdfDecodedMultipartFile} Object.
      *
      * @param caseData The case data to be converted into a pdf file wrapped in a {@link CaseData}
      * @param userInfo a {@link UserInfo} used username as a backup if no name in case
      * @return a list of {@link PdfDecodedMultipartFile} which contains the pdf values
-     * @throws PdfServiceException when convertCaseToPdf throws an exception
      */
     public List<PdfDecodedMultipartFile> convertCaseDataToPdfDecodedMultipartFile(CaseData caseData, UserInfo
-        userInfo)
-        throws PdfServiceException {
+        userInfo) {
         List<PdfDecodedMultipartFile> files = new ArrayList<>();
-        files.add(new PdfDecodedMultipartFile(
-            convertCaseToPdf(caseData, this.englishPdfTemplateSource),
-            createPdfDocumentNameFromCaseData(caseData, ENGLISH_LANGUAGE, userInfo),
-            PDF_FILE_TIKA_CONTENT_TYPE,
-            createPdfDocumentDescriptionFromCaseData(caseData)
-        ));
-
-        if (caseData.getClaimantHearingPreference().getContactLanguage() != null
-            && WELSH_LANGUAGE.equals(caseData.getClaimantHearingPreference().getContactLanguage())) {
+        try {
+            byte[] pdfData = convertCaseToPdf(caseData, this.englishPdfTemplateSource);
+            if (ObjectUtils.isEmpty(pdfData)) {
+                throw new PdfServiceException(
+                    "Failed to convert to PDF. English Template Not Found",
+                    new NullPointerException()
+                );
+            }
             files.add(new PdfDecodedMultipartFile(
-                convertCaseToPdf(caseData, this.welshPdfTemplateSource),
-                createPdfDocumentNameFromCaseData(caseData, WELSH_LANGUAGE, userInfo),
+                pdfData,
+                createPdfDocumentNameFromCaseData(caseData, ENGLISH_LANGUAGE, userInfo),
                 PDF_FILE_TIKA_CONTENT_TYPE,
                 createPdfDocumentDescriptionFromCaseData(caseData)
             ));
+        } catch (PdfServiceException e) {
+            ServiceUtil.logException("Case English PDF file could not be created for case: ",
+                                     caseData.getEthosCaseReference(), e.getMessage(),
+                                     this.getClass().getName(), "convertCaseDataToPdfDecodedMultipartFile");
         }
-
+        try {
+            if (WELSH_LANGUAGE.equals(ServiceUtil.findClaimantLanguage(caseData))) {
+                byte[] pdfData = convertCaseToPdf(caseData, this.welshPdfTemplateSource);
+                if (ObjectUtils.isEmpty(pdfData)) {
+                    throw new PdfServiceException("Failed to convert to PDF. Welsh Template Not Found",
+                                                  new NullPointerException());
+                }
+                files.add(new PdfDecodedMultipartFile(
+                    pdfData,
+                    createPdfDocumentNameFromCaseData(caseData, WELSH_LANGUAGE, userInfo),
+                    PDF_FILE_TIKA_CONTENT_TYPE,
+                    createPdfDocumentDescriptionFromCaseData(caseData)
+                ));
+            }
+        } catch (PdfServiceException e) {
+            ServiceUtil.logException("Case Welsh PDF file could not be created for case: ",
+                                        caseData.getEthosCaseReference(), e.getMessage(),
+                                        this.getClass().getName(), "convertCaseDataToPdfDecodedMultipartFile");
+        }
         return files;
     }
 
