@@ -48,6 +48,7 @@ import uk.gov.service.notify.SendEmailResponse;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -66,6 +67,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.ENGLANDWALES_CASE_TYPE_ID;
@@ -79,7 +81,7 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.USER_ID;
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"PMD.TooManyMethods","PMD.ExcessiveImports", "PMD.AvoidDuplicateLiterals"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.AvoidDuplicateLiterals"})
 class CaseServiceTest {
 
     @Mock
@@ -103,7 +105,7 @@ class CaseServiceTest {
     @Mock
     private NotificationService notificationService;
     @Mock
-    private AssignCaseToLocalOfficeService assignCaseToLocalOfficeService;
+    private CaseOfficeService assignCaseToLocalOfficeService;
     @Spy
     private NotificationsProperties notificationsProperties;
     @InjectMocks
@@ -115,6 +117,7 @@ class CaseServiceTest {
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private static final String TSE_PDF_DESCRIPTION = "Test description";
 
+    private static final String ALL_CASES_QUERY = "{\"query\":{\"match_all\": {}}}";
     private final PdfDecodedMultipartFile tsePdfMultipartFileMock = new PdfDecodedMultipartFile(
         TSE_PDF_BYTES,
         TSE_PDF_NAME,
@@ -146,22 +149,19 @@ class CaseServiceTest {
     @Test
     void shouldGetAllUserCases() {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
-            null,
-            USER_ID,
-            TEST_NAME,
-            testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
-            testData.getCaseData().getClaimantIndType().getClaimantLastName(),
-            null
-        ));
-        when(ccdApiClient.searchForCitizen(
+        when(ccdApiClient.searchCases(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
-            USER_ID,
-            testData.getExpectedDetails().getJurisdiction(),
             EtSyaConstants.SCOTLAND_CASE_TYPE,
-            Collections.emptyMap()
-        )).thenReturn(testData.getRequestCaseDataList());
+            ALL_CASES_QUERY
+        )).thenReturn(testData.requestCaseDataListSearchResult());
+
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.ENGLAND_CASE_TYPE,
+            ALL_CASES_QUERY
+        )).thenReturn(SearchResult.builder().build());
 
         List<CaseDetails> caseDetails = caseService.getAllUserCases(TEST_SERVICE_AUTH_TOKEN);
 
@@ -171,31 +171,20 @@ class CaseServiceTest {
     @Test
     void shouldGetAllUserCasesDifferentCaseType() {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
-            null,
-            USER_ID,
-            TEST_NAME,
-            testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
-            testData.getCaseData().getClaimantIndType().getClaimantLastName(),
-            null
-        ));
-        when(ccdApiClient.searchForCitizen(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            USER_ID,
-            testData.getExpectedDetails().getJurisdiction(),
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
-            Collections.emptyMap()
-        )).thenReturn(testData.getRequestCaseDataListScotland());
 
-        when(ccdApiClient.searchForCitizen(
+        when(ccdApiClient.searchCases(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
-            USER_ID,
-            testData.getExpectedDetails().getJurisdiction(),
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            ALL_CASES_QUERY
+        )).thenReturn(testData.getSearchResultRequestCaseDataListScotland());
+
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
             EtSyaConstants.ENGLAND_CASE_TYPE,
-            Collections.emptyMap()
-        )).thenReturn(testData.getRequestCaseDataListEngland());
+            ALL_CASES_QUERY
+        )).thenReturn(testData.getSearchResultRequestCaseDataListEngland());
 
         List<CaseDetails> caseDetails = caseService.getAllUserCases(TEST_SERVICE_AUTH_TOKEN);
 
@@ -228,7 +217,7 @@ class CaseServiceTest {
         when(ccdApiClient.submitForCitizen(
             eq(TEST_SERVICE_AUTH_TOKEN),
             eq(TEST_SERVICE_AUTH_TOKEN),
-             eq(USER_ID),
+            eq(USER_ID),
             eq(EtSyaConstants.JURISDICTION_ID),
             eq(EtSyaConstants.ENGLAND_CASE_TYPE),
             eq(true),
@@ -382,7 +371,7 @@ class CaseServiceTest {
                                         + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
                                         + "  }\n"
                                         + "}\n");
-        when(notificationService.sendSubmitCaseConfirmationEmail(any(), any(), any()))
+        when(notificationService.sendSubmitCaseConfirmationEmail(any(), any(), any(), any()))
             .thenReturn(sendEmailResponse);
 
         when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(createDocumentTypeItem("Other"));
@@ -392,14 +381,98 @@ class CaseServiceTest {
             testData.getCaseRequest()
         );
 
-        assertEquals(1, ((LinkedList<?>)caseDetails.getData().get("documentCollection")).size());
+        assertEquals(1, ((ArrayList<?>)caseDetails.getData().get("documentCollection")).size());
+        ArrayList docCollection = (ArrayList) caseDetails.getData().get("documentCollection");
 
-        LinkedList<?> docCollection = (LinkedList<?>) caseDetails.getData().get("documentCollection");
         assertEquals("DocumentType(typeOfDocument="
             + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=http://document.url/2333482f-1eb9-44f1"
                          + "-9b78-f5d8f0c74b15/binary, documentFilename=filename, documentUrl=http://document.binary"
                          + ".url/2333482f-1eb9-44f1-9b78-f5d8f0c74b15), ownerDocument=null, creationDate=null, "
                          + "shortDescription=null)", ((DocumentTypeItem) docCollection.get(0)).getValue().toString());
+    }
+
+    @Test
+    void shouldSendErrorEmail() throws PdfServiceException, CaseDocumentException {
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
+            USER_ID,
+            TEST_NAME,
+            testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
+            testData.getCaseData().getClaimantIndType().getClaimantLastName(),
+            null
+        ));
+
+        testData.getCaseRequest().setCaseId("1668421480426211");
+        when(ccdApiClient.submitEventForCitizen(
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(USER_ID),
+            eq(EtSyaConstants.JURISDICTION_ID),
+            eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
+            any(String.class),
+            eq(true),
+            any(CaseDataContent.class)
+        )).thenReturn(testData.getExpectedDetails());
+
+        when(ccdApiClient.startEventForCitizen(
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(USER_ID),
+            eq(EtSyaConstants.JURISDICTION_ID),
+            eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
+            any(String.class),
+            any(String.class)
+        )).thenReturn(testData.getStartEventResponse());
+
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            new PdfDecodedMultipartFile(
+                new byte[0],
+                "test",
+                "test",
+                "test"
+            );
+
+        when(pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(any(), any()))
+            .thenReturn(List.of(pdfDecodedMultipartFile));
+
+        when(pdfService.convertCaseDataToPdfDecodedMultipartFile(any(), any()))
+            .thenReturn(List.of(pdfDecodedMultipartFile));
+
+        when(acasService.getAcasCertificatesByCaseData(any())).thenReturn(List.of());
+
+        when(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(any()))
+            .thenReturn(testData.getCaseData());
+
+        when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any()))
+            .thenThrow(new CaseDocumentException("Failed to upload documents"));
+
+        SendEmailResponse sendEmailResponse
+            = new SendEmailResponse("{\n"
+                                        + "  \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
+                                        + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
+                                        + "  \"template\": {\n"
+                                        + "    \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
+                                        + "    \"version\": \"3\",\n"
+                                        + "    \"uri\": \"TEST\"\n"
+                                        + "  },\n"
+                                        + "  \"content\": {\n"
+                                        + "    \"body\": \"Dear test, Please see your detail as 123456789. Regards, "
+                                        + "ET Team.\",\n"
+                                        + "    \"subject\": \"ET Test email created\",\n"
+                                        + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
+                                        + "  }\n"
+                                        + "}\n");
+
+        when(notificationService.sendDocUploadErrorEmail(any(), any(), any(), any()))
+            .thenReturn(sendEmailResponse);
+        caseService.submitCase(
+            TEST_SERVICE_AUTH_TOKEN,
+            testData.getCaseRequest()
+        );
+
+        verify(notificationService, times(1))
+            .sendDocUploadErrorEmail(any(), any(), any(), any());
 
     }
 
@@ -616,14 +689,16 @@ class CaseServiceTest {
                 .build()
         );
 
-        verify(ccdApiClient).submitEventForCitizen(anyString(),
-                                                   anyString(),
-                                                   anyString(),
-                                                   anyString(),
-                                                   anyString(),
-                                                   anyString(),
-                                                   anyBoolean(),
-                                                   any());
+        verify(ccdApiClient).submitEventForCitizen(
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyBoolean(),
+            any()
+        );
     }
 
     @Test
