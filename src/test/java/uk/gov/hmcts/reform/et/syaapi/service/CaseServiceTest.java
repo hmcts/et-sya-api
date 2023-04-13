@@ -637,7 +637,7 @@ class CaseServiceTest {
         List<JurCodesTypeItem> expectedItems = mockJurCodesTypeItems();
         testData.getStartEventResponse().setEventId(SUBMIT_CASE_DRAFT);
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(testData.getCaseDataWithClaimTypes()
-                                                                                 .getCaseData());
+                                                                                  .getCaseData());
         caseData.setJurCodesCollection(expectedItems);
         caseData.setFeeGroupReference(CASE_ID);
 

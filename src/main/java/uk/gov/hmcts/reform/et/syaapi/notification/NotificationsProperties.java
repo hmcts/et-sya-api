@@ -90,5 +90,4 @@ public class NotificationsProperties {
     @Value("${notifications.respondentResponse}")
     @NotBlank
     private String respondentResponseTemplateId;
-
 }

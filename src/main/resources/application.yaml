@@ -85,7 +85,6 @@ notifications:
   claimantResponseYes: ${CLAIMANT_RESPONSE_YES:091abb61-0a21-4208-b3b6-22121e8682be}
   claimantResponseNo: ${CLAIMANT_RESPONSE_NO:0727a137-322f-458b-9941-ee8b6d3c11c2}
   respondentResponse: ${RESPONDENT_RESPONSE:63b0488f-134c-4bf2-8dea-40df4d158628}
-
 pdf:
   english: "ET1_2222.pdf"
   welsh: "CY_ET1_2222.pdf"
