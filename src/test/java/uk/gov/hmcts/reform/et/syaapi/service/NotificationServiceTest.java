@@ -407,8 +407,9 @@ class NotificationServiceTest {
         ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
     }
 
+    @SneakyThrows
     @Test
-    void shouldSendEmailToRespondentTypeB() throws NotificationClientException {
+    void shouldSendEmailToRespondentTypeB() {
         notificationService.sendAcknowledgementEmailToRespondents(
             testData.getCaseData(),
             CLAIMANT,
@@ -430,7 +431,7 @@ class NotificationServiceTest {
 
     @SneakyThrows
     @Test
-    void shouldSendEmailToRespondentTypeA() throws NotificationClientException {
+    void shouldSendEmailToRespondentTypeA() {
         testData.getClaimantApplication().setContactApplicationType("strike");
         notificationService.sendAcknowledgementEmailToRespondents(
             testData.getCaseData(),
@@ -451,8 +452,9 @@ class NotificationServiceTest {
         );
     }
 
+    @SneakyThrows
     @Test
-    void shouldNotSendEmailToRespondentTypeC() throws NotificationClientException {
+    void shouldNotSendEmailToRespondentTypeC() {
         testData.getClaimantApplication().setContactApplicationType(WITNESS);
         notificationService.sendAcknowledgementEmailToRespondents(
             testData.getCaseData(),
@@ -473,8 +475,9 @@ class NotificationServiceTest {
         );
     }
 
+    @SneakyThrows
     @Test
-    void shouldSendEmailToTribunalTypeAOrB() throws NotificationClientException {
+    void shouldSendEmailToTribunalTypeAOrB() {
         notificationService.sendAcknowledgementEmailToTribunal(
             testData.getCaseData(),
             CLAIMANT,
@@ -494,8 +497,9 @@ class NotificationServiceTest {
 
     }
 
+    @SneakyThrows
     @Test
-    void shouldSendEmailToTribunalTypeC() throws NotificationClientException {
+    void shouldSendEmailToTribunalTypeC() {
         testData.getClaimantApplication().setContactApplicationType(WITNESS);
         notificationService.sendAcknowledgementEmailToTribunal(
             testData.getCaseData(),
@@ -515,8 +519,9 @@ class NotificationServiceTest {
         );
     }
 
+    @SneakyThrows
     @Test
-    void shouldNotSendEmailToTribunalUnassignedManagingOffice() throws NotificationClientException {
+    void shouldNotSendEmailToTribunalUnassignedManagingOffice() {
         testData.getCaseData().setManagingOffice(UNASSIGNED_OFFICE);
         notificationService.sendAcknowledgementEmailToTribunal(
             testData.getCaseData(),
@@ -536,8 +541,9 @@ class NotificationServiceTest {
         );
     }
 
+    @SneakyThrows
     @Test
-    void shouldSendResponseEmailToTribunal() throws NotificationClientException {
+    void shouldSendResponseEmailToTribunal() {
         notificationService.sendResponseEmailToTribunal(
             testData.getCaseData(),
             CLAIMANT,
@@ -556,8 +562,9 @@ class NotificationServiceTest {
         );
     }
 
+    @SneakyThrows
     @Test
-    void shouldNotSendResponseEmailToTribunal() throws NotificationClientException {
+    void shouldNotSendResponseEmailToTribunal() {
         testData.getCaseData().setManagingOffice(UNASSIGNED_OFFICE);
         notificationService.sendResponseEmailToTribunal(
             testData.getCaseData(),
@@ -577,8 +584,9 @@ class NotificationServiceTest {
         );
     }
 
+    @SneakyThrows
     @Test
-    void shouldSendResponseEmailToClaimant() throws NotificationClientException {
+    void shouldSendResponseEmailToClaimant()  {
         notificationService.sendResponseEmailToClaimant(
             testData.getCaseData(),
             CLAIMANT,
@@ -598,8 +606,9 @@ class NotificationServiceTest {
         );
     }
 
+    @SneakyThrows
     @Test
-    void shouldNotSendResponseWhenClaimantEmailDoesNotExist() throws NotificationClientException {
+    void shouldNotSendResponseWhenClaimantEmailDoesNotExist() {
         testData.getCaseData().getClaimantType().setClaimantEmailAddress("");
         notificationService.sendResponseEmailToClaimant(
             testData.getCaseData(),
@@ -620,8 +629,9 @@ class NotificationServiceTest {
         );
     }
 
+    @SneakyThrows
     @Test
-    void shouldNotSendResponseEmailToClaimantForTypeCApplication() throws NotificationClientException {
+    void shouldNotSendResponseEmailToClaimantForTypeCApplication() {
         notificationService.sendResponseEmailToClaimant(
             testData.getCaseData(),
             CLAIMANT,
@@ -641,8 +651,9 @@ class NotificationServiceTest {
         );
     }
 
+    @SneakyThrows
     @Test
-    void shouldSendResponseEmailToRespondent() throws NotificationClientException {
+    void shouldSendResponseEmailToRespondent() {
         notificationService.sendResponseEmailToRespondent(
             testData.getCaseData(),
             CLAIMANT,
@@ -661,8 +672,9 @@ class NotificationServiceTest {
         );
     }
 
+    @SneakyThrows
     @Test
-    void shouldSendResponseEmailToRespondentResp() throws NotificationClientException {
+    void shouldSendResponseEmailToRespondentResp() {
         RespondentSumType respondentSumType = new RespondentSumType();
         respondentSumType.setRespondentEmail("test@resRep.com");
 
@@ -691,8 +703,9 @@ class NotificationServiceTest {
         );
     }
 
+    @SneakyThrows
     @Test
-    void shouldNotSendResponseWhenRespondentEmailDoesNotExist() throws NotificationClientException {
+    void shouldNotSendResponseWhenRespondentEmailDoesNotExist() {
         testData.getCaseData().getClaimantType().setClaimantEmailAddress("");
         notificationService.sendResponseEmailToRespondent(
             testData.getCaseData(),
@@ -712,8 +725,9 @@ class NotificationServiceTest {
         );
     }
 
+    @SneakyThrows
     @Test
-    void shouldNotSendResponseEmailToRespondentForTypeCApplication() throws NotificationClientException {
+    void shouldNotSendResponseEmailToRespondentForTypeCApplication() {
         notificationService.sendResponseEmailToRespondent(
             testData.getCaseData(),
             CLAIMANT,
@@ -731,6 +745,4 @@ class NotificationServiceTest {
             eq(testData.getExpectedDetails().getId().toString())
         );
     }
-
-
 }
