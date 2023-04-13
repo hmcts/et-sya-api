@@ -428,6 +428,7 @@ class NotificationServiceTest {
         );
     }
 
+    @SneakyThrows
     @Test
     void shouldSendEmailToRespondentTypeA() throws NotificationClientException {
         testData.getClaimantApplication().setContactApplicationType("strike");
