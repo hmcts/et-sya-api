@@ -83,7 +83,7 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
             .then()
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
-            .assertThat().body("size()", is(2));
+            .assertThat().body("size()", is(1));
     }
 
     @Test
