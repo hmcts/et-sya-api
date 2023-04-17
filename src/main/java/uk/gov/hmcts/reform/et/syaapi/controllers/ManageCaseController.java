@@ -20,7 +20,6 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.SendNotificationService;
@@ -221,26 +220,6 @@ public class ManageCaseController {
         return ok(finalCaseDetails);
     }
 
-    /**
-     * Updates SendNotification status.
-     *
-     * @param authorization jwt of the user
-     * @param request       the request object which contains sendNotification id and new status value passed
-     *                      from sya-frontend
-     * @return the new updated case wrapped in a {@link CaseDetails}
-     */
-    @PutMapping("/update-notification-state")
-    @Operation(summary = "Update notification state")
-    @ApiResponseGroup
-    public ResponseEntity<CaseDetails> updateSendNotificationState(
-        @RequestHeader(AUTHORIZATION) String authorization,
-        @NotNull @RequestBody SendNotificationStateUpdateRequest request
-    ) {
-        log.info("Received update sendNotification state request - caseTypeId: {} caseId: {}",
-                 request.getCaseTypeId(), request.getCaseId()
-        );
-        CaseDetails finalCaseDetails =  sendNotificationService.updateSendNotificationState(authorization, request);
-        return ok(finalCaseDetails);
-    }
+
 
 }
