@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.EqualsAndHashCode;
+import lombok.SneakyThrows;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
@@ -98,7 +99,7 @@ class CaseServiceTest {
     private CaseService caseService;
     private final TestData testData;
 
-    private static final String ALL_CASES_QUERY = "{\"query\":{\"match_all\": {}}}";
+    private static final String ALL_CASES_QUERY = "{\"size\":10000,\"query\":{\"match_all\": {}}}";
 
     CaseServiceTest() {
         testData = new TestData();
@@ -274,9 +275,9 @@ class CaseServiceTest {
         assertEquals(caseDetails, testData.getExpectedDetails());
     }
 
+    @SneakyThrows
     @Test
-    void shouldAddSupportingDocumentToDocumentCollection() throws CaseDocumentException, PdfServiceException,
-        AcasException, InvalidAcasNumbersException {
+    void shouldAddSupportingDocumentToDocumentCollection() {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
             null,
