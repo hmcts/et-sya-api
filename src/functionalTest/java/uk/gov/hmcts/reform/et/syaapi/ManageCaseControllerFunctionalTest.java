@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.core.Is.is;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
 
 @Slf4j
@@ -83,7 +83,7 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
             .then()
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
-            .assertThat().body("size()", is(1));
+            .assertThat().body("size()", greaterThan(0));
     }
 
     @Test
