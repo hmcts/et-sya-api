@@ -26,9 +26,6 @@ class SwaggerPublisherTest {
     @Autowired
     private transient MockMvc mockMvc;
 
-    @Autowired
-    private WebApplicationContext wac;
-
     @DisplayName("Generate swagger documentation")
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
