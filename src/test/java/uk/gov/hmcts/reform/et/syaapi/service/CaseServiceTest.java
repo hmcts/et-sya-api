@@ -108,7 +108,7 @@ class CaseServiceTest {
     private CaseService caseService;
     private final TestData testData;
 
-    private static final String ALL_CASES_QUERY = "{\"query\":{\"match_all\": {}}}";
+    private static final String ALL_CASES_QUERY = "{\"size\":10000,\"query\":{\"match_all\": {}}}";
 
     CaseServiceTest() {
         testData = new TestData();
