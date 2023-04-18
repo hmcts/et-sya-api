@@ -117,7 +117,7 @@ class CaseServiceTest {
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private static final String TSE_PDF_DESCRIPTION = "Test description";
 
-    private static final String ALL_CASES_QUERY = "{\"query\":{\"match_all\": {}}}";
+    private static final String ALL_CASES_QUERY = "{\"size\":10000,\"query\":{\"match_all\": {}}}";
     private final PdfDecodedMultipartFile tsePdfMultipartFileMock = new PdfDecodedMultipartFile(
         TSE_PDF_BYTES,
         TSE_PDF_NAME,
@@ -299,9 +299,9 @@ class CaseServiceTest {
         assertEquals(caseDetails, testData.getExpectedDetails());
     }
 
+    @SneakyThrows
     @Test
-    void shouldAddSupportingDocumentToDocumentCollection() throws CaseDocumentException, PdfServiceException,
-        AcasException, InvalidAcasNumbersException {
+    void shouldAddSupportingDocumentToDocumentCollection() {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
             null,
