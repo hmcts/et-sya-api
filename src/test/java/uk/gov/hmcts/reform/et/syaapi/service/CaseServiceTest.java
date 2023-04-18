@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.EqualsAndHashCode;
+import lombok.SneakyThrows;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.RangeQueryBuilder;
@@ -283,9 +284,9 @@ class CaseServiceTest {
         assertEquals(caseDetails, testData.getExpectedDetails());
     }
 
+    @SneakyThrows
     @Test
-    void shouldAddSupportingDocumentToDocumentCollection() throws CaseDocumentException, PdfServiceException,
-        AcasException, InvalidAcasNumbersException {
+    void shouldAddSupportingDocumentToDocumentCollection() {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
             null,
