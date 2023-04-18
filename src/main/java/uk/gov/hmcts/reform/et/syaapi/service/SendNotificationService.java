@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
@@ -63,7 +62,14 @@ public class SendNotificationService {
         );
     }
 
-    public CaseDetails addRequestSendNotification(String authorization, SendNotificationAddResponseRequest request) {
+    /**
+     * Adds a pseResponse to a notification
+     *
+     * @param authorization
+     * @param request
+     * @return
+     */
+    public CaseDetails addResponseSendNotification(String authorization, SendNotificationAddResponseRequest request) {
         StartEventResponse startEventResponse = caseService.startUpdate(
             authorization,
             request.getCaseId(),
@@ -76,7 +82,7 @@ public class SendNotificationService {
         var sendNotificationTypeItem =
             caseData.getSendNotificationCollection()
                 .stream()
-                .filter(notification -> Objects.equals(notification.getId(), request.getSendNotificationId()))
+                .filter(notification -> notification.getId().equals(request.getSendNotificationId()))
                 .findFirst();
         if (sendNotificationTypeItem.isEmpty()) {
             throw new IllegalArgumentException("SendNotification Id is incorrect");

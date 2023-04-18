@@ -68,7 +68,7 @@ public class SendNotificationController {
         log.info("Received response for case - caseTypeId: {} caseId: {}",
                  request.getCaseTypeId(), request.getCaseId()
         );
-        CaseDetails finalCaseDetails = sendNotificationService.addRequestSendNotification(authorization, request);
+        CaseDetails finalCaseDetails = sendNotificationService.addResponseSendNotification(authorization, request);
         return ok(finalCaseDetails);
     }
 

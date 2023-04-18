@@ -112,7 +112,7 @@ class SendNotificationServiceTest {
 
         when(caseDetailsConverter.caseDataContent(any(), any())).thenReturn(expectedEnrichedData);
 
-        sendNotificationService.addRequestSendNotification(MOCK_TOKEN, request);
+        sendNotificationService.addResponseSendNotification(MOCK_TOKEN, request);
 
         verify(caseService, times(1)).submitUpdate(
             MOCK_TOKEN, "11", expectedEnrichedData, "1234");
