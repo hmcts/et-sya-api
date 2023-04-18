@@ -107,6 +107,7 @@ public class PdfService {
                 safeClose(stream, caseData);
             }
         }
+        safeClose(stream, caseData);
         return new byte[0];
     }
 
