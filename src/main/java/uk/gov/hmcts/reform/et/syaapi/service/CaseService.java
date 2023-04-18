@@ -46,7 +46,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
@@ -115,7 +114,7 @@ public class CaseService {
             ENGLAND_CASE_TYPE,
             ALL_CASES_QUERY).getCases()).orElse(Collections.emptyList());
 
-        return Stream.of(scotlandCases, englandCases).flatMap(Collection::stream).collect(toList());
+        return Stream.of(scotlandCases, englandCases).flatMap(Collection::stream).toList();
     }
 
     /**
@@ -387,7 +386,7 @@ public class CaseService {
         return searchEnglandScotlandCases(authorisation, query)
             .stream()
             .map(CaseDetails::getId)
-            .collect(toList());
+            .toList();
     }
 
     /**
