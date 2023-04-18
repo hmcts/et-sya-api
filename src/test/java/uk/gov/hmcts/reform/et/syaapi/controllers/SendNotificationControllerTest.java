@@ -100,7 +100,6 @@ class SendNotificationControllerTest {
         // when
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
 
-        when(applicationService.submitApplication(any(), any())).thenReturn(expectedDetails);
         mockMvc.perform(
             put("/sendNotification/add-response-send-notification", CASE_ID)
                 .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)

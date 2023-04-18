@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.PseResponseTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationTypeItem;
@@ -17,13 +18,19 @@ import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
 
 @Service
 @RequiredArgsConstructor
 public class SendNotificationService {
 
     private final CaseService caseService;
+    private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
     private static final String VIEWED = "viewed";
 
@@ -64,14 +71,12 @@ public class SendNotificationService {
             CaseEvent.UPDATE_NOTIFICATION_RESPONSE
         );
 
-
-
         CaseData caseData = EmployeeObjectMapper
             .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
         var sendNotificationTypeItem =
             caseData.getSendNotificationCollection()
                 .stream()
-                .filter(notification -> notification.getId() == request.getSendNotificationId())
+                .filter(notification -> Objects.equals(notification.getId(), request.getSendNotificationId()))
                 .findFirst();
         if (sendNotificationTypeItem.isEmpty()) {
             throw new IllegalArgumentException("SendNotification Id is incorrect");
@@ -82,10 +87,23 @@ public class SendNotificationService {
         }
 
         PseResponseType pseResponseType = request.getPseResponseType();
+        if (request.getSupportingMaterialFile() != null) {
+            DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(
+                CLAIMANT_CORRESPONDENCE_DOCUMENT,
+                request.getSupportingMaterialFile()
+            );
+            var documentTypeItems = new ArrayList<DocumentTypeItem>();
+            documentTypeItems.add(documentTypeItem);
+            pseResponseType.setSupportingMaterial(documentTypeItems);
+            pseResponseType.setHasSupportingMaterial(YES);
+        } else {
+            pseResponseType.setHasSupportingMaterial(NO);
+        }
         PseResponseTypeItem pseResponseTypeItem =
             PseResponseTypeItem.builder().id(UUID.randomUUID().toString())
-                .value(pseResponseType)
-                .build();
+            .value(pseResponseType)
+            .build();
+
         pseRespondCollection.add(pseResponseTypeItem);
 
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);

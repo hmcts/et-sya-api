@@ -22,7 +22,6 @@ import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
-import uk.gov.hmcts.reform.et.syaapi.service.SendNotificationService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.service.notify.NotificationClientException;
 
@@ -43,7 +42,6 @@ public class ManageCaseController {
 
     private final CaseService caseService;
     private final ApplicationService applicationService;
-    private final SendNotificationService sendNotificationService;
 
     /**
      * Accepts parameter of type {@link CaseRequest} and returns the case specified in 'getCaseId'.

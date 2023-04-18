@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 
 @Data
 @Builder
@@ -17,7 +18,10 @@ public class SendNotificationAddResponseRequest {
     private String caseTypeId;
     @JsonProperty("send_notification_id")
     private String sendNotificationId;
+    @JsonProperty("supportingMaterialFile")
+    private UploadedDocumentType supportingMaterialFile;
     @JsonProperty("pseResponseType")
     private PseResponseType pseResponseType;
+
 
 }
