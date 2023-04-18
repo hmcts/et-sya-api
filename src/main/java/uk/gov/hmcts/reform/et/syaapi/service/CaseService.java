@@ -89,7 +89,7 @@ public class CaseService {
     private final PdfService pdfService;
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
     private final CaseOfficeService caseOfficeService;
-    private static final String ALL_CASES_QUERY = "{\"query\":{\"match_all\": {}}}";
+    private static final String ALL_CASES_QUERY = "{\"size\":10000,\"query\":{\"match_all\": {}}}";
 
     @Value("${caseWorkerUserName}")
     private transient String caseWorkerUserName;
