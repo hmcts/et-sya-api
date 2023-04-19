@@ -48,7 +48,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.NOTIFICATION_CONFIRMATION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SUBMIT_CASE_PDF_FILE_RESPONSE;
@@ -650,10 +652,32 @@ class NotificationServiceTest {
             TEST_RESPONDENT,
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
-            CHANGE_DETAILS_APPLICATION_TYPE
+            CHANGE_DETAILS_APPLICATION_TYPE,
+            YES
         );
 
         verify(notificationClient, times(1)).sendEmail(
+            any(),
+            eq(testData.getCaseData().getRespondentCollection().get(0).getValue().getRespondentEmail()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void shouldNotSendResponseEmailToRespondent() throws NotificationClientException {
+        notificationService.sendResponseEmailToRespondent(
+            testData.getCaseData(),
+            CLAIMANT,
+            "1",
+            TEST_RESPONDENT,
+            NOT_SET,
+            testData.getExpectedDetails().getId().toString(),
+            CHANGE_DETAILS_APPLICATION_TYPE,
+            NO
+        );
+
+        verify(notificationClient, times(0)).sendEmail(
             any(),
             eq(testData.getCaseData().getRespondentCollection().get(0).getValue().getRespondentEmail()),
             any(),
@@ -680,7 +704,8 @@ class NotificationServiceTest {
             TEST_RESPONDENT,
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
-            CHANGE_DETAILS_APPLICATION_TYPE
+            CHANGE_DETAILS_APPLICATION_TYPE,
+            YES
         );
 
         verify(notificationClient, times(1)).sendEmail(
@@ -701,7 +726,8 @@ class NotificationServiceTest {
             TEST_RESPONDENT,
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
-            CHANGE_DETAILS_APPLICATION_TYPE
+            CHANGE_DETAILS_APPLICATION_TYPE,
+            YES
         );
 
         verify(notificationClient, times(0)).sendEmail(
@@ -721,7 +747,8 @@ class NotificationServiceTest {
             TEST_RESPONDENT,
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
-            WITNESS
+            WITNESS,
+            YES
         );
 
         verify(notificationClient, times(0)).sendEmail(

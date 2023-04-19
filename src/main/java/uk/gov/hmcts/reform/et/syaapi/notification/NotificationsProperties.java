@@ -9,7 +9,6 @@ import javax.validation.constraints.NotBlank;
 /**
  * Holds gov-notify api key and templateId details.
  */
-
 @Validated
 @Data
 @SuppressWarnings("PMD.TooManyFields")
@@ -38,6 +37,10 @@ public class NotificationsProperties {
     @Value("${notifications.citizenPortalLink}")
     @NotBlank
     private String citizenPortalLink;
+
+    @Value("${notifications.exuiCaseDetailsLink}")
+    @NotBlank
+    private String exuiCaseDetailsLink;
 
     @Value("${notifications.submitCaseDocUploadErrorEmailTemplateId}")
     @NotBlank

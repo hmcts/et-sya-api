@@ -38,14 +38,21 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ACAS_PDF3_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ACAS_PDF4_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ACAS_PDF5_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CASE_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CASE_NUMBER_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CLAIM_DESCRIPTION_FILE_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_DATEPLUS7_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ET1PDF_ENGLISH_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ET1PDF_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ET1PDF_WELSH_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_EXUI_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_FIRSTNAME_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_HEARING_DATE_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_LASTNAME_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_LINK_DOC_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SHORTTEXT_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SUBJECTLINE_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_SERVICE_OWNER_NAME_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_SERVICE_OWNER_NAME_VALUE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
@@ -53,24 +60,23 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGU
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM;
 import static uk.gov.service.notify.NotificationClient.prepareUpload;
 
-
 /**
  * Holds details for sending email to user(s) provided template been created beforehand.
  */
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 public class NotificationService {
-    public static final String HEARING_DATE = "hearingDate";
     private final NotificationClient notificationClient;
     private final NotificationsProperties notificationsProperties;
+
     private final String[] typeA =
         {"strike", "amend", "non-compliance", "other", "postpone", "vary", "respondent", "publicity"};
     private final String[] typeB = {"withdraw", "change-details", "reconsider-decision", "reconsider-judgement"};
     private static final String TYPE_C = "witness";
     private static final String DONT_SEND_COPY = "No";
+    private static final String CONCAT2STRINGS = "%s%s";
 
     /**
      * Given a caseId, initialization of trigger event to start and submit update for case.
@@ -113,7 +119,7 @@ public class NotificationService {
         if (ServiceUtil.hasPdfFile(casePdfFiles, 0)) {
             String firstName = ServiceUtil.findClaimantFirstNameByCaseDataUserInfo(caseData, userInfo);
             String lastName = ServiceUtil.findClaimantLastNameByCaseDataUserInfo(caseData, userInfo);
-            String caseNumber = caseRequest.getCaseId() == null ? CASE_ID_NOT_FOUND : caseRequest.getCaseId();
+            String caseId = caseRequest.getCaseId() == null ? CASE_ID_NOT_FOUND : caseRequest.getCaseId();
             String selectedLanguage = ServiceUtil.findClaimantLanguage(caseData);
             String emailTemplateId = WELSH_LANGUAGE.equals(selectedLanguage)
                 ? notificationsProperties.getCySubmitCaseEmailTemplateId()
@@ -126,8 +132,8 @@ public class NotificationService {
                 Map<String, Object> parameters = new ConcurrentHashMap<>();
                 parameters.put(SEND_EMAIL_PARAMS_FIRSTNAME_KEY, firstName);
                 parameters.put(SEND_EMAIL_PARAMS_LASTNAME_KEY, lastName);
-                parameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
-                parameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, String.format(citizenPortalLink, caseNumber));
+                parameters.put(SEND_EMAIL_PARAMS_CASE_ID, caseId);
+                parameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, String.format(citizenPortalLink, caseId));
                 parameters.put(SEND_EMAIL_PARAMS_ET1PDF_LINK_KEY, prepareUpload(et1Pdf));
 
                 String claimantEmailAddress = caseData.getClaimantType().getClaimantEmailAddress();
@@ -135,7 +141,7 @@ public class NotificationService {
                     emailTemplateId,
                     claimantEmailAddress,
                     parameters,
-                    caseNumber
+                    caseId
                 );
             } catch (NotificationClientException ne) {
                 ServiceUtil.logException("Submit case confirmation email was not sent to client.",
@@ -236,6 +242,10 @@ public class NotificationService {
         String emailToClaimantTemplate = TYPE_C.equals(claimantApplication.getContactApplicationType())
             ? notificationsProperties.getClaimantTseEmailTypeCTemplateId() :
             getAndSetRule92EmailTemplate(claimantApplication, hearingDate, claimantParameters);
+        claimantParameters.put(
+            SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
+            String.format(CONCAT2STRINGS, notificationsProperties.getCitizenPortalLink(), caseId)
+        );
 
         try {
             claimantEmail = notificationClient.sendEmail(
@@ -284,12 +294,17 @@ public class NotificationService {
             caseNumber
         );
         respondentParameters.put(
-            HEARING_DATE,
+            SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
             hearingDate
         );
-        respondentParameters.put("shortText",
-                                 APP_TYPE_MAP.get(claimantApplication.getContactApplicationType()));
-        respondentParameters.put("datePlus7", LocalDate.now().plusDays(7).toString());
+        respondentParameters.put(
+            SEND_EMAIL_PARAMS_SHORTTEXT_KEY,
+            APP_TYPE_MAP.get(claimantApplication.getContactApplicationType())
+        );
+        respondentParameters.put(
+            SEND_EMAIL_PARAMS_DATEPLUS7_KEY,
+            LocalDate.now().plusDays(7).toString()
+        );
 
         String emailToRespondentTemplate;
         if (Stream.of(typeB).anyMatch(appType -> Objects.equals(
@@ -300,7 +315,14 @@ public class NotificationService {
         } else {
             emailToRespondentTemplate = notificationsProperties.getRespondentTseEmailTypeATemplateId();
         }
-        respondentParameters.put("linkToDocument", Objects.requireNonNullElse(documentJson, ""));
+        respondentParameters.put(
+            SEND_EMAIL_PARAMS_LINK_DOC_KEY,
+            Objects.requireNonNullElse(documentJson, "")
+        );
+        respondentParameters.put(
+            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
+        );
 
         sendRespondentEmails(caseData, caseId, respondentParameters, emailToRespondentTemplate);
     }
@@ -337,13 +359,12 @@ public class NotificationService {
             subjectLine
         );
         tribunalParameters.put(
-            HEARING_DATE,
+            SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
             hearingDate
         );
-
         tribunalParameters.put(
-            "subjectLine",
-            subjectLine
+            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
         );
 
         String managingOffice = caseData.getManagingOffice();
@@ -396,10 +417,13 @@ public class NotificationService {
             applicationType
         );
         tribunalParameters.put(
-            HEARING_DATE,
+            SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
             hearingDate
         );
-
+        tribunalParameters.put(
+            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
+        );
 
         String managingOffice = caseData.getManagingOffice();
         if (UNASSIGNED_OFFICE.equals(managingOffice) || isNullOrEmpty(managingOffice)) {
@@ -441,7 +465,6 @@ public class NotificationService {
         String applicationType,
         TseRespondType tseRespondType
     ) {
-
         if (TYPE_C.equals(applicationType)) {
             log.info("Type C application -  Claimant is only notified of "
                          + "Type A/B application responses, email not being sent");
@@ -465,14 +488,13 @@ public class NotificationService {
             applicationType
         );
         claimantParameters.put(
-            HEARING_DATE,
+            SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
             hearingDate
         );
         claimantParameters.put(
-            "citizenPortalLink",
-            notificationsProperties.getCitizenPortalLink() + caseId
+            SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
+            String.format(CONCAT2STRINGS, notificationsProperties.getCitizenPortalLink(), caseId)
         );
-
 
         String emailToClaimantTemplate = DONT_SEND_COPY.equals(tseRespondType.getCopyToOtherParty())
             ? notificationsProperties.getClaimantResponseNoTemplateId()
@@ -489,7 +511,6 @@ public class NotificationService {
             throw new NotificationException(ne);
         }
     }
-
 
     /**
      * Send acknowledgment email to the claimant when they are responding to
@@ -510,12 +531,12 @@ public class NotificationService {
         String respondentNames,
         String hearingDate,
         String caseId,
-        String applicationType
+        String applicationType,
+        String copyToOtherParty
     ) {
+        if (TYPE_C.equals(applicationType) || DONT_SEND_COPY.equals(copyToOtherParty)) {
+            log.info("Acknowledgement email not sent to respondents for this application type");
 
-        if (TYPE_C.equals(applicationType)) {
-            log.info("Type C application -  Claimant is only notified of "
-                         + "Type A/B application responses, email not being sent");
             return;
         }
         Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
@@ -531,10 +552,13 @@ public class NotificationService {
             applicationType
         );
         respondentParameters.put(
-            HEARING_DATE,
+            SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
             hearingDate
         );
-
+        respondentParameters.put(
+            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
+        );
 
         String emailToRespondentTemplate = notificationsProperties.getRespondentResponseTemplateId();
 
@@ -573,30 +597,30 @@ public class NotificationService {
                                             String caseId, String caseNumber) {
         parameters.put("claimant", claimant);
         parameters.put("respondentNames", respondentNames);
-        parameters.put("caseId", caseId);
-        parameters.put("caseNumber", caseNumber);
+        parameters.put(SEND_EMAIL_PARAMS_CASE_ID, caseId);
+        parameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
     }
 
     private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
                                             String caseId, String caseNumber, String subjectLine) {
-        addCommonParameters(parameters,claimant, respondentNames, caseId, caseNumber);
-        parameters.put("subjectLine", subjectLine);
+        addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber);
+        parameters.put(SEND_EMAIL_PARAMS_SUBJECTLINE_KEY, subjectLine);
     }
 
     private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
                                             String caseId, String caseNumber, String subjectLine, String shortText) {
-        addCommonParameters(parameters,claimant, respondentNames, caseId, caseNumber, subjectLine);
-        parameters.put("shortText", shortText);
+        addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber, subjectLine);
+        parameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
     }
 
     private String getAndSetRule92EmailTemplate(ClaimantTse claimantApplication,
                                                 String hearingDate,
                                                 Map<String, Object> parameters) {
         String emailTemplate;
-        parameters.put(HEARING_DATE, hearingDate);
+        parameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, hearingDate);
         String shortText = APP_TYPE_MAP.get(claimantApplication.getContactApplicationType());
         if (DONT_SEND_COPY.equals(claimantApplication.getCopyToOtherPartyYesOrNo())) {
-            parameters.put("shortText", shortText);
+            parameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
             emailTemplate = notificationsProperties.getClaimantTseEmailNoTemplateId();
         } else {
             String abText = getCustomTextForAOrBApplication(claimantApplication, shortText);
@@ -629,5 +653,4 @@ public class NotificationService {
         }
         return abText;
     }
-
 }
