@@ -63,11 +63,11 @@ public class SendNotificationService {
     }
 
     /**
-     * Adds a pseResponse to a notification
+     * Adds a pseResponse to a notification.
      *
-     * @param authorization
-     * @param request
-     * @return
+     * @param authorization - authorization
+     * @param request - request containing the response, and the notification details
+     * @return the associated {@link CaseDetails}
      */
     public CaseDetails addResponseSendNotification(String authorization, SendNotificationAddResponseRequest request) {
         StartEventResponse startEventResponse = caseService.startUpdate(
