@@ -1,11 +1,13 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.PseResponseTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
+import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationTypeItem;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -13,16 +15,20 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
+import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT;
 
 @Service
 @RequiredArgsConstructor
@@ -87,12 +93,18 @@ public class SendNotificationService {
         if (sendNotificationTypeItem.isEmpty()) {
             throw new IllegalArgumentException("SendNotification Id is incorrect");
         }
-        var pseRespondCollection = sendNotificationTypeItem.get().getValue().getRespondCollection();
-        if (pseRespondCollection == null) {
-            pseRespondCollection = new ArrayList<>();
+
+        SendNotificationType sendNotificationType = sendNotificationTypeItem.get().getValue();
+
+        var pseRespondCollection = sendNotificationType.getRespondCollection();
+        if (CollectionUtils.isEmpty(pseRespondCollection)) {
+            sendNotificationTypeItem.get().getValue().setRespondCollection(new ArrayList<>());
         }
 
         PseResponseType pseResponseType = request.getPseResponseType();
+        pseResponseType.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
+        pseResponseType.setFrom(CLAIMANT);
+
         if (request.getSupportingMaterialFile() != null) {
             DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(
                 CLAIMANT_CORRESPONDENCE_DOCUMENT,
@@ -105,12 +117,16 @@ public class SendNotificationService {
         } else {
             pseResponseType.setHasSupportingMaterial(NO);
         }
+
         PseResponseTypeItem pseResponseTypeItem =
             PseResponseTypeItem.builder().id(UUID.randomUUID().toString())
-            .value(pseResponseType)
-            .build();
+                .value(pseResponseType)
+                .build();
 
-        pseRespondCollection.add(pseResponseTypeItem);
+        sendNotificationType.getRespondCollection().add(pseResponseTypeItem);
+        sendNotificationType.setSendNotificationResponsesCount(String.valueOf(
+            sendNotificationType.getRespondCollection().size()));
+        sendNotificationType.setNotificationState(IN_PROGRESS);
 
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
         return caseService.submitUpdate(
