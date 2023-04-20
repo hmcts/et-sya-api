@@ -540,6 +540,7 @@ class NotificationServiceTest {
 
     @Test
     void shouldSendResponseEmailToTribunal() throws NotificationClientException {
+        testData.getCaseData().setTribunalCorrespondenceEmail("tribunal@test.com");
         notificationService.sendResponseEmailToTribunal(
             testData.getCaseData(),
             CLAIMANT,
@@ -763,8 +764,10 @@ class NotificationServiceTest {
     @Test
     void sendResponseNotificationEmailToTribunal() throws NotificationClientException {
         testData.getCaseData().setTribunalCorrespondenceEmail("tribunal@test.com");
-        notificationService.sendResponseNotificationEmailToTribunal(testData.getCaseData(),
-                                                                    testData.getExpectedDetails().getId().toString());
+        notificationService.sendResponseNotificationEmailToTribunal(
+            testData.getCaseData(),
+            testData.getExpectedDetails().getId().toString()
+        );
 
         verify(notificationClient, times(1)).sendEmail(
             any(),
@@ -775,15 +778,69 @@ class NotificationServiceTest {
     }
 
     @Test
-    void sendResponseNotificationEmailToTribunalMissingEmail() throws NotificationClientException {
+    void sendNotResponseNotificationEmailToTribunalMissingEmail() throws NotificationClientException {
         testData.getCaseData().setTribunalCorrespondenceEmail(null);
-        notificationService.sendResponseNotificationEmailToTribunal(testData.getCaseData(), "1");
+        notificationService.sendResponseNotificationEmailToTribunal(
+            testData.getCaseData(),
+            testData.getExpectedDetails().getId().toString()
+        );
 
         verify(notificationClient, times(0)).sendEmail(
             any(),
-            eq(testData.getCaseData().getTribunalCorrespondenceEmail()),
+            any(),
+            any(),
+            any()
+        );
+    }
+
+    @Test
+    void sendResponseNotificationEmailToRespondent() throws NotificationClientException {
+        notificationService.sendResponseNotificationEmailToRespondent(
+            testData.getCaseData(),
+            testData.getExpectedDetails().getId().toString(),
+            YES
+        );
+
+        verify(notificationClient, times(1)).sendEmail(
+            any(),
+            eq(testData.getCaseData().getRespondentCollection().get(0).getValue().getRespondentEmail()),
             any(),
             eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void sendNotResponseNotificationEmailToRespondentDoNotCopy() throws NotificationClientException {
+        notificationService.sendResponseNotificationEmailToRespondent(
+            testData.getCaseData(),
+            testData.getExpectedDetails().getId().toString(),
+            NO
+        );
+
+        verify(notificationClient, times(0)).sendEmail(
+            any(),
+            any(),
+            any(),
+            any()
+        );
+    }
+
+    @Test
+    void sendNotResponseNotificationEmailToRespondentMissingEmail() throws NotificationClientException {
+        for (RespondentSumTypeItem respondentSumTypeItem : testData.getCaseData().getRespondentCollection()) {
+            respondentSumTypeItem.getValue().setRespondentEmail(null);
+        }
+        notificationService.sendResponseNotificationEmailToRespondent(
+            testData.getCaseData(),
+            testData.getExpectedDetails().getId().toString(),
+            YES
+        );
+
+        verify(notificationClient, times(0)).sendEmail(
+            any(),
+            any(),
+            any(),
+            any()
         );
     }
 

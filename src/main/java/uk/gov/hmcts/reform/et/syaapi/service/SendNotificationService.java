@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
-import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
@@ -29,7 +28,6 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
-import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT;
 
 @Service
@@ -132,6 +130,11 @@ public class SendNotificationService {
         sendNotificationType.setNotificationState(IN_PROGRESS);
 
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
+        sendAddResponseSendNotificationEmails(
+            caseData,
+            request.getCaseId(),
+            request.getPseResponseType().getCopyToOtherParty()
+        );
         return caseService.submitUpdate(
             authorization,
             request.getCaseId(),
@@ -141,10 +144,12 @@ public class SendNotificationService {
     }
 
     private void sendAddResponseSendNotificationEmails(CaseData caseData,
-                                                       String caseId) {
+                                                       String caseId,
+                                                       String copyToOtherParty) {
 
 
         notificationService.sendResponseNotificationEmailToTribunal(caseData, caseId);
+        notificationService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty);
 
 
     }

@@ -583,22 +583,71 @@ public class NotificationService {
 
     }
 
+
+    public void sendResponseNotificationEmailToRespondent(
+        CaseData caseData,
+        String caseId,
+        String copyToOtherParty
+    ) {
+        if (DONT_SEND_COPY.equals(copyToOtherParty)) {
+            log.info("Acknowledgement email not sent to respondents");
+            return;
+        }
+
+        String claimant = String.format("%s %s",
+                                        caseData.getClaimantIndType().getClaimantFirstNames(),
+                                        caseData.getClaimantIndType().getClaimantLastName()
+        );
+        String caseNumber = caseData.getEthosCaseReference();
+        String respondentNames = getRespondentNames(caseData);
+        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
+
+        Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
+
+        String subjectLine = caseNumber;
+        addCommonParameters(
+            respondentParameters,
+            claimant,
+            respondentNames,
+            caseId,
+            caseNumber,
+            subjectLine
+        );
+        respondentParameters.put(
+            SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
+            hearingDate
+        );
+        respondentParameters.put(
+            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
+        );
+
+        sendRespondentEmails(caseData, caseId, respondentParameters, notificationsProperties.getRespondentResponseTemplateId());
+    }
+
     private void sendTribunalEmail(CaseData caseData, String caseId, Map<String, Object> tribunalParameters) {
         String managingOffice = caseData.getManagingOffice();
+        String tribunalEmail = caseData.getTribunalCorrespondenceEmail();
         if (UNASSIGNED_OFFICE.equals(managingOffice) || isNullOrEmpty(managingOffice)) {
             log.info("Could not send email as no office has been assigned");
-        } else {
-            try {
-                notificationClient.sendEmail(
-                    notificationsProperties.getTribunalResponseTemplateId(),
-                    caseData.getTribunalCorrespondenceEmail(),
-                    tribunalParameters,
-                    caseId
-                );
-            } catch (NotificationClientException ne) {
-                throw new NotificationException(ne);
-            }
+            return;
         }
+        if (isNullOrEmpty(tribunalEmail)) {
+            log.info("Could not send email. No email found");
+            return;
+        }
+
+        try {
+            notificationClient.sendEmail(
+                notificationsProperties.getTribunalResponseTemplateId(),
+                caseData.getTribunalCorrespondenceEmail(),
+                tribunalParameters,
+                caseId
+            );
+        } catch (NotificationClientException ne) {
+            throw new NotificationException(ne);
+        }
+
     }
 
     private void sendRespondentEmails(CaseData caseData, String caseId, Map<String, Object> respondentParameters,
