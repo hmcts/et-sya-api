@@ -58,6 +58,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 import static uk.gov.service.notify.NotificationClient.prepareUpload;
 
 /**
@@ -416,6 +417,7 @@ public class NotificationService {
             subjectLine,
             applicationType
         );
+
         tribunalParameters.put(
             SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
             hearingDate
@@ -425,21 +427,7 @@ public class NotificationService {
             String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
         );
 
-        String managingOffice = caseData.getManagingOffice();
-        if (UNASSIGNED_OFFICE.equals(managingOffice) || isNullOrEmpty(managingOffice)) {
-            log.info("Could not send email as no office has been assigned");
-        } else {
-            try {
-                notificationClient.sendEmail(
-                    notificationsProperties.getTribunalResponseTemplateId(),
-                    caseData.getTribunalCorrespondenceEmail(),
-                    tribunalParameters,
-                    caseId
-                );
-            } catch (NotificationClientException ne) {
-                throw new NotificationException(ne);
-            }
-        }
+        sendTribunalEmail(caseData, caseId, tribunalParameters);
     }
 
     /**
@@ -536,7 +524,6 @@ public class NotificationService {
     ) {
         if (TYPE_C.equals(applicationType) || DONT_SEND_COPY.equals(copyToOtherParty)) {
             log.info("Acknowledgement email not sent to respondents for this application type");
-
             return;
         }
         Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
@@ -563,6 +550,55 @@ public class NotificationService {
         String emailToRespondentTemplate = notificationsProperties.getRespondentResponseTemplateId();
 
         sendRespondentEmails(caseData, caseId, respondentParameters, emailToRespondentTemplate);
+    }
+
+    public void sendResponseNotificationEmailToTribunal(CaseData caseData,
+                                                        String caseId
+    )
+    {
+        String claimant = String.format("%s %s",
+            caseData.getClaimantIndType().getClaimantFirstNames(),
+            caseData.getClaimantIndType().getClaimantLastName()
+        );
+        String caseNumber = caseData.getEthosCaseReference();
+        String respondentNames = getRespondentNames(caseData);
+        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
+
+        String subjectLine = caseNumber;
+        Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
+        addCommonParameters(
+            tribunalParameters,
+            claimant,
+            respondentNames,
+            caseId,
+            caseNumber,
+            subjectLine
+        );
+        tribunalParameters.put(
+            SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
+            hearingDate
+        );
+
+        sendTribunalEmail(caseData, caseId, tribunalParameters);
+
+    }
+
+    private void sendTribunalEmail(CaseData caseData, String caseId, Map<String, Object> tribunalParameters) {
+        String managingOffice = caseData.getManagingOffice();
+        if (UNASSIGNED_OFFICE.equals(managingOffice) || isNullOrEmpty(managingOffice)) {
+            log.info("Could not send email as no office has been assigned");
+        } else {
+            try {
+                notificationClient.sendEmail(
+                    notificationsProperties.getTribunalResponseTemplateId(),
+                    caseData.getTribunalCorrespondenceEmail(),
+                    tribunalParameters,
+                    caseId
+                );
+            } catch (NotificationClientException ne) {
+                throw new NotificationException(ne);
+            }
+        }
     }
 
     private void sendRespondentEmails(CaseData caseData, String caseId, Map<String, Object> respondentParameters,

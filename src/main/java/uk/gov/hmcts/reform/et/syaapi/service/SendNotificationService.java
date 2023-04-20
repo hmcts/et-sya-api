@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
+import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
@@ -28,6 +29,7 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT;
 
 @Service
@@ -37,6 +39,7 @@ public class SendNotificationService {
     private final CaseService caseService;
     private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
+    private final NotificationService notificationService;
     private static final String VIEWED = "viewed";
 
     public CaseDetails updateSendNotificationState(String authorization, SendNotificationStateUpdateRequest request) {
@@ -135,6 +138,15 @@ public class SendNotificationService {
             content,
             request.getCaseTypeId()
         );
+    }
+
+    private void sendAddResponseSendNotificationEmails(CaseData caseData,
+                                                       String caseId) {
+
+
+        notificationService.sendResponseNotificationEmailToTribunal(caseData, caseId);
+
+
     }
 
 }
