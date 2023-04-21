@@ -83,7 +83,6 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
         RestAssured.given()
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
-            .body("{\"case_id\":\"" + caseId + "\"}")
             .get("/cases/user-cases")
             .then()
             .statusCode(HttpStatus.SC_OK)
