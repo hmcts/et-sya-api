@@ -564,6 +564,10 @@ public class NotificationService {
             SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
             hearingDate
         );
+        tribunalParameters.put(
+            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
+        );
         sendTribunalEmail(caseData, caseId, tribunalParameters);
 
     }
@@ -618,8 +622,8 @@ public class NotificationService {
             hearingDate
         );
         claimantParameters.put(
-            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
-            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
+            SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
+            String.format(CONCAT2STRINGS, notificationsProperties.getCitizenPortalLink(), caseId)
         );
 
         try {

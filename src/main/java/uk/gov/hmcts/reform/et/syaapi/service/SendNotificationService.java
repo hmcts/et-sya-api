@@ -143,7 +143,6 @@ public class SendNotificationService {
         );
     }
 
-<<<<<<< HEAD
     private void sendAddResponseSendNotificationEmails(CaseData caseData,
                                                        String caseId,
                                                        String copyToOtherParty) {
@@ -151,10 +150,9 @@ public class SendNotificationService {
 
         notificationService.sendResponseNotificationEmailToTribunal(caseData, caseId);
         notificationService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty);
+        notificationService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty);
 
 
     }
 
-=======
->>>>>>> Release-1.2
 }
