@@ -4,6 +4,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.http.Header;
 import io.restassured.path.json.JsonPath;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.MethodOrderer;
@@ -14,8 +15,9 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 
 @Slf4j
@@ -73,8 +75,10 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
             .assertThat().body("case_type_id", equalTo(CASE_TYPE));
     }
 
+    @SneakyThrows
     @Test
     void stage3GetAllCaseDetailsShouldReturnAllCaseDetails() {
+        SECONDS.sleep(1);
         RestAssured.given()
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
@@ -83,7 +87,7 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
             .then()
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
-            .assertThat().body("size()", greaterThan(0));
+            .assertThat().body("size()", is(2));
     }
 
     @Test
