@@ -12,11 +12,19 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.HubLinksStatuses;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
+import uk.gov.hmcts.reform.et.syaapi.service.SendNotificationService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
@@ -30,6 +38,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -45,6 +55,7 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SURNAME;
     controllers = {ManageCaseController.class}
 )
 @Import(ManageCaseController.class)
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 class ManageCaseControllerTest {
 
     private static final String CASE_ID = "1646225213651590";
@@ -67,6 +78,12 @@ class ManageCaseControllerTest {
     @MockBean
     private VerifyTokenService verifyTokenService;
 
+    @MockBean
+    private ApplicationService applicationService;
+
+    @MockBean
+    private SendNotificationService sendNotificationService;
+
     ManageCaseControllerTest() {
         // Default constructor
         expectedDetails = ResourceLoader.fromString(
@@ -88,7 +105,7 @@ class ManageCaseControllerTest {
 
         // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(caseService.getUserCase(TEST_SERVICE_AUTH_TOKEN, caseRequest))
+        when(caseService.getUserCase(TEST_SERVICE_AUTH_TOKEN, caseRequest.getCaseId()))
             .thenReturn(expectedDetails);
 
         // when
@@ -297,9 +314,11 @@ class ManageCaseControllerTest {
     @SneakyThrows
     @Test
     void shouldStartUpdateSubmittedCase() {
-        CaseRequest caseRequest = CaseRequest.builder()
+        HubLinksStatuses hubLinksStatuses = new HubLinksStatuses();
+        HubLinksStatusesRequest hubLinksStatusesRequest = HubLinksStatusesRequest.builder()
             .caseTypeId(CASE_TYPE)
-            .caseId("12")
+            .caseId(CASE_ID)
+            .hubLinksStatuses(hubLinksStatuses)
             .build();
 
         // given
@@ -313,6 +332,9 @@ class ManageCaseControllerTest {
             null
         ));
 
+        when(caseService.getUserCase(TEST_SERVICE_AUTH_TOKEN, CASE_ID))
+            .thenReturn(expectedDetails);
+
         when(caseService.triggerEvent(
             TEST_SERVICE_AUTH_TOKEN,
             CASE_ID,
@@ -321,12 +343,81 @@ class ManageCaseControllerTest {
             null
         )).thenReturn(expectedDetails);
 
+        expectedDetails.getData().put("hubLinksStatuses", hubLinksStatuses);
+
         // when
         mockMvc.perform(
-            put("/cases/update-case-submitted", CASE_ID)
+            put("/cases/update-hub-links-statuses", CASE_ID)
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ResourceLoader.toJson(hubLinksStatusesRequest))
+        ).andExpect(status().isOk());
+
+        verify(caseService, times(1)).getUserCase(
+            TEST_SERVICE_AUTH_TOKEN,
+            hubLinksStatusesRequest.getCaseId()
+        );
+
+        verify(caseService, times(1)).triggerEvent(
+            TEST_SERVICE_AUTH_TOKEN,
+            hubLinksStatusesRequest.getCaseId(),
+            CaseEvent.valueOf("UPDATE_CASE_SUBMITTED"),
+            hubLinksStatusesRequest.getCaseTypeId(),
+            expectedDetails.getData()
+        );
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldSubmitClaimantApplication() {
+        ClaimantTse claimantTse = new ClaimantTse();
+        ClaimantApplicationRequest claimantApplicationRequest = ClaimantApplicationRequest.builder()
+            .caseId(CASE_ID)
+            .caseTypeId(CASE_TYPE)
+            .claimantTse(claimantTse)
+            .build();
+
+        // when
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+
+        when(applicationService.submitApplication(any(), any())).thenReturn(expectedDetails);
+        mockMvc.perform(
+            put("/cases/submit-claimant-application", CASE_ID)
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ResourceLoader.toJson(claimantApplicationRequest))
+        ).andExpect(status().isOk());
+
+        verify(applicationService, times(1)).submitApplication(
+            TEST_SERVICE_AUTH_TOKEN,
+            claimantApplicationRequest
+        );
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldRespondToRespondentApplication() {
+        RespondToApplicationRequest caseRequest = RespondToApplicationRequest.builder()
+            .caseTypeId(CASE_TYPE)
+            .caseId(CASE_ID)
+            .applicationId("1234")
+            .response(new TseRespondType())
+            .build();
+
+        // when
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+
+        when(applicationService.submitApplication(any(), any())).thenReturn(expectedDetails);
+        mockMvc.perform(
+            put("/cases/respond-to-application", CASE_ID)
                 .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(ResourceLoader.toJson(caseRequest))
         ).andExpect(status().isOk());
+
+        verify(applicationService, times(1)).respondToApplication(
+            TEST_SERVICE_AUTH_TOKEN,
+            caseRequest
+        );
     }
 }

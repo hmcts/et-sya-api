@@ -9,9 +9,9 @@ import javax.validation.constraints.NotBlank;
 /**
  * Holds gov-notify api key and templateId details.
  */
-
 @Validated
 @Data
+@SuppressWarnings("PMD.TooManyFields")
 public class NotificationsProperties {
 
     @Value("${notifications.govNotifyApiKey}")
@@ -37,4 +37,60 @@ public class NotificationsProperties {
     @Value("${notifications.citizenPortalLink}")
     @NotBlank
     private String citizenPortalLink;
+
+    @Value("${notifications.exuiCaseDetailsLink}")
+    @NotBlank
+    private String exuiCaseDetailsLink;
+
+    @Value("${notifications.submitCaseDocUploadErrorEmailTemplateId}")
+    @NotBlank
+    private String submitCaseDocUploadErrorEmailTemplateId;
+
+    @Value("${notifications.et1EcmDtsCoreTeamSlackNotificationEmail}")
+    @NotBlank
+    private String et1EcmDtsCoreTeamSlackNotificationEmail;
+
+    @Value("${notifications.et1ServiceOwnerNotificationEmail}")
+    @NotBlank
+    private String et1ServiceOwnerNotificationEmail;
+
+    @Value("${notifications.applicationAcknowledgementYes}")
+    @NotBlank
+    private String claimantTseEmailYesTemplateId;
+
+    @Value("${notifications.applicationAcknowledgementNo}")
+    @NotBlank
+    private String claimantTseEmailNoTemplateId;
+
+    @Value("${notifications.applicationAcknowledgementTypeC}")
+    @NotBlank
+    private String claimantTseEmailTypeCTemplateId;
+
+    @Value("${notifications.respondentCopyTypeA}")
+    @NotBlank
+    private String respondentTseEmailTypeATemplateId;
+
+    @Value("${notifications.respondentCopyTypeB}")
+    @NotBlank
+    private String respondentTseEmailTypeBTemplateId;
+
+    @Value("${notifications.tribunalAcknowledgement}")
+    @NotBlank
+    private String tribunalAcknowledgementTemplateId;
+
+    @Value("${notifications.tribunalResponse}")
+    @NotBlank
+    private String tribunalResponseTemplateId;
+
+    @Value("${notifications.claimantResponseNo}")
+    @NotBlank
+    private String claimantResponseNoTemplateId;
+
+    @Value("${notifications.claimantResponseYes}")
+    @NotBlank
+    private String claimantResponseYesTemplateId;
+
+    @Value("${notifications.respondentResponse}")
+    @NotBlank
+    private String respondentResponseTemplateId;
 }

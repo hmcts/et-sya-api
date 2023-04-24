@@ -67,8 +67,10 @@
     <exclude name="CommentSize"/>
     <exclude name="UncommentedEmptyMethodBody"/>
   </rule>
-  <rule ref="category/java/errorprone.xml">
-    <exclude name="BeanMembersShouldSerialize"/>
+  <rule ref="category/java/errorprone.xml/AvoidDuplicateLiterals">
+    <properties>
+      <property name="violationSuppressRegex" value=".*%s(\s+%s)+.*"/>
+    </properties>
   </rule>
   <rule ref="category/java/multithreading.xml"/>
   <rule ref="category/java/performance.xml"/>

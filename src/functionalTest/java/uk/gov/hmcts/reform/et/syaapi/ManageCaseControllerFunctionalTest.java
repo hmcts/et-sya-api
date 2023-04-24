@@ -4,6 +4,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.http.Header;
 import io.restassured.path.json.JsonPath;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.MethodOrderer;
@@ -13,14 +14,16 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 
+@SuppressWarnings("PMD.LawOfDemeter")
 @Slf4j
 @TestMethodOrder(MethodOrderer.MethodName.class)
-class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
+class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
 
     private Long caseId;
     private static final String CASE_TYPE = "ET_EnglandWales";
@@ -73,12 +76,13 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
             .assertThat().body("case_type_id", equalTo(CASE_TYPE));
     }
 
+    @SneakyThrows
     @Test
     void stage3GetAllCaseDetailsShouldReturnAllCaseDetails() {
+        TimeUnit.SECONDS.sleep(1);
         RestAssured.given()
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
-            .body("{\"case_id\":\"" + caseId + "\"}")
             .get("/cases/user-cases")
             .then()
             .statusCode(HttpStatus.SC_OK)

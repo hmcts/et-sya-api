@@ -5,7 +5,10 @@ import org.apache.commons.lang3.StringUtils;
 import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.dwp.regex.PostCodeValidator;
 import uk.gov.hmcts.et.common.model.ccd.Address;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.Set;
 
@@ -64,8 +67,10 @@ public final class PdfMapperUtil {
 
         StringBuilder addressLineModified = new StringBuilder();
         for (String word : addressLineWords) {
-            addressLineModified.append(word.substring(0, 1).toUpperCase(Locale.UK))
-                .append(word.substring(1)).append(' ');
+            if (!StringUtils.isEmpty(word.trim())) {
+                addressLineModified.append(word.substring(0, 1).toUpperCase(Locale.UK))
+                    .append(word.substring(1)).append(' ');
+            }
         }
         return addressLineModified.toString().trim();
     }
@@ -134,15 +139,18 @@ public final class PdfMapperUtil {
      * @return formatted String value of Postcode
      */
     public static String formatUkPostcode(Address address) {
-
         if (isUkCountry(address.getCountry())) {
             try {
-                PostCodeValidator postCodeValidator = new PostCodeValidator(address.getPostCode());
+                if (StringUtils.isNotBlank(address.getPostCode())) {
+                    PostCodeValidator postCodeValidator = new PostCodeValidator(address.getPostCode());
 
-                String outward = postCodeValidator.returnOutwardCode().trim() + " ";
-                String inward = postCodeValidator.returnInwardCode().trim();
+                    String outward = postCodeValidator.returnOutwardCode().trim() + " ";
+                    String inward = postCodeValidator.returnInwardCode().trim();
 
-                return outward + inward;
+                    return outward + inward;
+                } else {
+                    return "";
+                }
             } catch (InvalidPostcodeException e) {
                 log.error("Exception occurred when formatting postcode " + address.getPostCode(), e);
                 return address.getPostCode();
@@ -150,5 +158,92 @@ public final class PdfMapperUtil {
         } else {
             return address.getPostCode();
         }
+    }
+
+    /**
+     * Formats date from YYYY/MM/DD to DD/MM/YYYY.
+     * @param dateToFormat String value of date to be formatted
+     * @return Formatted date
+     */
+    public static String formatDate(String dateToFormat) {
+        SimpleDateFormat parsingFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.UK);
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy", Locale.UK);
+        String formattedDateStringValue;
+        try {
+            formattedDateStringValue = dateToFormat == null ? "" :
+                formatter.format(parsingFormatter.parse(dateToFormat));
+        } catch (ParseException e) {
+            return dateToFormat;
+        }
+        return formattedDateStringValue;
+    }
+
+    /**
+     * Generates claimant compensation value according to given compensation text and amount.
+     * If claimant compensation text is null, blank or just ":" sets compensation text to blank string
+     * If claimant compensation amount is null, blank or just ":"  sets compensation amount to blank string
+     * If claimant compensation text exists adds text to claimant compensation
+     * If claimant compensation amount exists adds text to claimant compensation
+     * @param caseData uses claimantReqest, claimantCompensationText and claimantCompensationAmount
+     * @return claimantCompensation as a text field.
+     */
+    public static String generateClaimantCompensation(CaseData caseData) {
+
+        String claimantCompensation = "";
+
+        if (caseData != null && caseData.getClaimantRequests() != null) {
+            String claimantCompensationText =
+                StringUtils.stripToEmpty(caseData.getClaimantRequests().getClaimantCompensationText());
+
+            claimantCompensationText = ":".equals(claimantCompensationText) ? "" : claimantCompensationText;
+            String claimantCompensationAmount =
+                StringUtils.stripToEmpty(caseData.getClaimantRequests().getClaimantCompensationAmount())
+                    .replace(":", "");
+            claimantCompensationAmount = StringUtils.isBlank(claimantCompensationAmount) ? "" :
+                "Amount requested: £" + claimantCompensationAmount;
+
+            claimantCompensation =
+                StringUtils.isNotBlank(claimantCompensationText) ? claimantCompensationText : "";
+
+            claimantCompensation = addClaimantCompensationAmount(claimantCompensation, claimantCompensationAmount);
+
+            claimantCompensation = StringUtils.isBlank(claimantCompensation) ? "" :
+                "Compensation:\"" + claimantCompensation + "\"" + System.lineSeparator() + System.lineSeparator();
+        }
+        return claimantCompensation;
+    }
+
+    private static String addClaimantCompensationAmount(String claimantCompensation,
+                                                        String claimantCompensationAmount) {
+        String tmpClaimantCompensation;
+        if (StringUtils.isNotBlank(claimantCompensation) && StringUtils.isNotBlank(claimantCompensationAmount)) {
+            tmpClaimantCompensation = claimantCompensation + "\n" + claimantCompensationAmount;
+        } else {
+            if (StringUtils.isNotBlank(claimantCompensationAmount)) {
+                tmpClaimantCompensation = claimantCompensationAmount;
+            } else {
+                tmpClaimantCompensation = claimantCompensation;
+            }
+        }
+        return tmpClaimantCompensation;
+    }
+
+    /**
+     * Generates claimant tribunal recommendation value according to given claimant tribunal recommendation.
+     * If claimant tribunal recommendation value is null returns an empty string
+     * If claimant tribunal recommendation value exists returns this value by adding Tribunal recommendation prefix
+     * @param caseData uses claimantRequests claimantTribunalRecommendation
+     * @return claimantTribunalRecommendation not null value
+     */
+    public static String generateClaimantTribunalRecommendation(CaseData caseData) {
+        String claimantTribunalRecommendation = "";
+        if (caseData != null && caseData.getClaimantRequests() != null) {
+            claimantTribunalRecommendation =
+                StringUtils.stripToEmpty(caseData.getClaimantRequests().getClaimantTribunalRecommendation());
+            if (StringUtils.isNotBlank(claimantTribunalRecommendation)) {
+                claimantTribunalRecommendation = "Tribunal recommendation:\"" + claimantTribunalRecommendation + "\"";
+            }
+        }
+        return claimantTribunalRecommendation;
     }
 }

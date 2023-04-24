@@ -10,9 +10,20 @@ java:
           alias: ET_SYA_S2S_SECRET
         - name: Ocp-Apim-Subscription-Key
           alias: ACAS_KEY
+        - name: et-api-caseworker-user-name
+          alias: CASEWORKER_USER_NAME
+        - name: et-api-caseworker-password
+          alias: CASEWORKER_PASSWORD
+        - name: acas-idam-client-secret
+          alias: IDAM_CLIENT_SECRET
+        - name: et1-service-owner-notification-email
+          alias: ET1_SERVICE_OWNER_NOTIFICATION_EMAIL
+        - name: et1-ecm-dts-core-team-slack-notification-email
+          alias: ET1_ECM_DTS_CORE_TEAM_SLACK_NOTIFICATION_EMAIL
     et:
       secrets:
-        - AppInsightsInstrumentationKey
+        - name: AppInsightsInstrumentationKey
+          alias: APP_INSIGHTS_KEY
         - name: tornado-access-key
           alias: TORNADO_ACCESS_KEY
         - name: gov-notify-api-key
@@ -27,5 +38,17 @@ java:
     TORNADO_URL: "https://docmosis.{{ .Values.global.environment }}.platform.hmcts.net/rs/render"
     CASE_DOCUMENT_AM_URL: "http://ccd-case-document-am-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     CITIZEN_PORTAL_LINK: "https://et-sya.{{ .Values.global.environment }}.platform.hmcts.net/citizen-hub/"
-    SUBMIT_CASE_EMAIL_TEMPLATE_ID: "4f4b378e-238a-46ed-ae1c-26b8038192f0"
-    CY_SUBMIT_CASE_EMAIL_TEMPLATE_ID: "f61f7f2a-4825-491b-bc48-0299f1a8ba23"
+    EXUI_CASE_DETAILS_URL: "https://manage-case.{{ .Values.global.environment }}.platform.hmcts.net/cases/case-details/"
+    SUBMIT_CASE_EMAIL_TEMPLATE_ID: "64533cdb-a00b-463d-a656-4fc0dfb1630e"
+    CY_SUBMIT_CASE_EMAIL_TEMPLATE_ID: "970257cd-3464-4ec9-bbb8-45fd9128001c"
+    SUBMIT_CASE_DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID: "0d7cd6f0-47c1-4ade-aac7-49e6023bac70"
+    APPLICATION_ACKNOWLEDGEMENT_TYPE_C: "197c69b6-254c-4f8d-8909-e85549496d8b"
+    APPLICATION_ACKNOWLEDGEMENT_YES: "d5f319f1-229f-4dcb-9293-f164bb327601"
+    APPLICATION_ACKNOWLEDGEMENT_NO: "e6c8b8c4-e58b-4bae-a8ec-cca68bca0c4e"
+    RESPONDENT_COPY_A: "a2ffb9b3-8bf7-4e9a-aab8-08a6c5a82636"
+    RESPONDENT_COPY_B: "59ccc472-8f2e-43e4-b275-832f1c714eff"
+    TRIBUNAL_ACKNOWLEDGEMENT: "d82aa18a-1a3d-44af-91fa-565d178f5e0e"
+    TRIBUNAL_RESPONSE: "9da290ff-c7da-4897-80d2-114361271dfa"
+    CLAIMANT_RESPONSE_NO: "0727a137-322f-458b-9941-ee8b6d3c11c2"
+    CLAIMANT_RESPONSE_YES: "091abb61-0a21-4208-b3b6-22121e8682be"
+    RESPONDENT_RESPONSE: "63b0488f-134c-4bf2-8dea-40df4d158628"

@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.common.Strings;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -115,7 +116,8 @@ public class PdfMapperService {
         try {
             printFields.put(PdfMapperConstants.TRIBUNAL_OFFICE, ofNullable(caseData.getManagingOffice()));
             printFields.put(PdfMapperConstants.CASE_NUMBER, ofNullable(caseData.getEthosCaseReference()));
-            printFields.put(PdfMapperConstants.DATE_RECEIVED, ofNullable(caseData.getReceiptDate()));
+            printFields.put(PdfMapperConstants.DATE_RECEIVED,
+                            ofNullable(PdfMapperUtil.formatDate(caseData.getReceiptDate())));
             printFields.putAll(printHearingPreferences(caseData));
             printFields.putAll(printRespondentDetails(caseData));
             printFields.putAll(printMultipleClaimsDetails(caseData));
@@ -231,7 +233,7 @@ public class PdfMapperService {
     private Map<String, Optional<String>> printRespondentAcas(RespondentSumType respondent,
                                                               String questionPrefix) {
         Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
-        String acasYesNo = respondent.getRespondentAcasQuestion().isEmpty() ? NO :
+        String acasYesNo = Strings.isNullOrEmpty(respondent.getRespondentAcasQuestion()) ? NO :
             respondent.getRespondentAcasQuestion();
         if (YES.equals(acasYesNo)) {
             if (PREFIX_2_8.equals(questionPrefix)) {
@@ -256,21 +258,23 @@ public class PdfMapperService {
                 printFields.put(String.format(
                     PdfMapperConstants.QX_HAVE_ACAS_NO, questionPrefix), Optional.of(NO_LOWERCASE));
             }
-            switch (respondent.getRespondentAcasNo()) {
-                case "Unfair Dismissal":
-                    printFields.put(String.format(PdfMapperConstants.QX_ACAS_A1, questionPrefix), Optional.of(YES));
-                    break;
-                case "Another person":
-                    printFields.put(String.format(PdfMapperConstants.QX_ACAS_A2, questionPrefix), Optional.of(YES));
-                    break;
-                case "No Power":
-                    printFields.put(String.format(PdfMapperConstants.QX_ACAS_A3, questionPrefix), Optional.of(YES));
-                    break;
-                case "Employer already in touch":
-                    printFields.put(String.format(PdfMapperConstants.QX_ACAS_A4, questionPrefix), Optional.of(YES));
-                    break;
-                default:
-                    break;
+            if (!Strings.isNullOrEmpty(respondent.getRespondentAcasNo())) {
+                switch (respondent.getRespondentAcasNo()) {
+                    case "Unfair Dismissal":
+                        printFields.put(String.format(PdfMapperConstants.QX_ACAS_A1, questionPrefix), Optional.of(YES));
+                        break;
+                    case "Another person":
+                        printFields.put(String.format(PdfMapperConstants.QX_ACAS_A2, questionPrefix), Optional.of(YES));
+                        break;
+                    case "No Power":
+                        printFields.put(String.format(PdfMapperConstants.QX_ACAS_A3, questionPrefix), Optional.of(YES));
+                        break;
+                    case "Employer already in touch":
+                        printFields.put(String.format(PdfMapperConstants.QX_ACAS_A4, questionPrefix), Optional.of(YES));
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         return printFields;
@@ -308,7 +312,7 @@ public class PdfMapperService {
 
                 printFields.put(
                     PdfMapperConstants.Q5_EMPLOYMENT_START,
-                    ofNullable(claimantOtherType.getClaimantEmployedFrom())
+                    ofNullable(PdfMapperUtil.formatDate(claimantOtherType.getClaimantEmployedFrom()))
                 );
 
                 String stillWorking = NO_LONGER_WORKING.equals(claimantOtherType.getStillWorking()) ? NO :
@@ -318,7 +322,7 @@ public class PdfMapperService {
                     if (NOTICE.equals(claimantOtherType.getStillWorking())) {
                         printFields.put(
                             PdfMapperConstants.Q5_NOT_ENDED,
-                            ofNullable(claimantOtherType.getClaimantEmployedNoticePeriod())
+                            ofNullable(PdfMapperUtil.formatDate(claimantOtherType.getClaimantEmployedNoticePeriod()))
                         );
                     }
 
@@ -326,7 +330,7 @@ public class PdfMapperService {
                     printFields.put(PdfMapperConstants.Q5_CONTINUING_NO, Optional.of(NO_LOWERCASE));
                     printFields.put(
                         PdfMapperConstants.Q5_EMPLOYMENT_END,
-                        ofNullable(claimantOtherType.getClaimantEmployedTo())
+                        ofNullable(PdfMapperUtil.formatDate(claimantOtherType.getClaimantEmployedTo()))
                     );
                 }
 
@@ -355,7 +359,7 @@ public class PdfMapperService {
                 printFields.put(PdfMapperConstants.Q7_OTHER_JOB_YES, Optional.of(YES));
                 printFields.put(
                     PdfMapperConstants.Q7_START_WORK,
-                    ofNullable(newEmploymentType.getNewlyEmployedFrom())
+                    ofNullable(PdfMapperUtil.formatDate(newEmploymentType.getNewlyEmployedFrom()))
                 );
                 printFields.put(
                     PdfMapperConstants.Q7_EARNING,
@@ -447,7 +451,9 @@ public class PdfMapperService {
                 );
 
             } else {
-                printFields.put(PdfMapperConstants.Q6_PENSION_NO, Optional.of(YES));
+                if (NO.equals(pensionContributionYesNo)) {
+                    printFields.put(PdfMapperConstants.Q6_PENSION_NO, Optional.of(NO));
+                }
             }
         }
 
@@ -626,16 +632,12 @@ public class PdfMapperService {
                         break;
                 }
             }
-            String claimantCompensationText =
-                caseData.getClaimantRequests().getClaimantCompensationText() == null ? "" :
-                    caseData.getClaimantRequests().getClaimantCompensationText()
-                        + System.lineSeparator() + System.lineSeparator();
-            String claimantCompensationAmount =
-                caseData.getClaimantRequests().getClaimantCompensationAmount() == null ? "" :
-                    "£" + caseData.getClaimantRequests().getClaimantCompensationAmount();
+
+            String claimantCompensation = PdfMapperUtil.generateClaimantCompensation(caseData);
+            String claimantTribunalRecommendation = PdfMapperUtil.generateClaimantTribunalRecommendation(caseData);
             printFields.put(
                 PdfMapperConstants.Q9_WHAT_COMPENSATION_REMEDY_ARE_YOU_SEEKING,
-                Optional.of(claimantCompensationText + claimantCompensationAmount)
+                Optional.of(claimantCompensation + claimantTribunalRecommendation)
             );
         }
 

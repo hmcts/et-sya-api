@@ -4,11 +4,11 @@ provider "azurerm" {
 
 locals {
   tags = merge(var.common_tags,
-    map(
-      "environment", var.env,
-      "managedBy", var.team_name,
-      "Team Contact", var.team_contact,
-    )
+    tomap({
+      "environment" = var.env,
+      "managedBy" = var.team_name,
+      "Team Contact" = var.team_contact
+    })
   )
 
   api_mgmt_suffix = var.apim_suffix == "" ? var.env : var.apim_suffix
@@ -72,6 +72,33 @@ resource "azurerm_api_management_user" "et_api_management_user" {
   email               = "Peter.Moores@hmcts.net"
   first_name          = "Peter"
   last_name           = "Moores"
+}
+
+data "azurerm_key_vault" "et-msg-handler-vault" {
+  name = "et-msg-handler-${var.env}"
+  resource_group_name = "et-msg-handler-${var.env}"
+}
+
+data "azurerm_key_vault_secret" "et-api-caseworker-username" {
+  name         = "caseworker-user-name"
+  key_vault_id = data.azurerm_key_vault.et-msg-handler-vault.id
+}
+
+data "azurerm_key_vault_secret" "et-api-caseworker-password" {
+  name         = "caseworker-password"
+  key_vault_id = data.azurerm_key_vault.et-msg-handler-vault.id
+}
+
+resource "azurerm_key_vault_secret" "et-caseworker-user-name" {
+  key_vault_id = module.key-vault.key_vault_id
+  name         = "et-api-caseworker-user-name"
+  value        = data.azurerm_key_vault_secret.et-api-caseworker-username.value
+}
+
+resource "azurerm_key_vault_secret" "et-caseworker-password" {
+  key_vault_id = module.key-vault.key_vault_id
+  name         = "et-api-caseworker-password"
+  value        = data.azurerm_key_vault_secret.et-api-caseworker-password.value
 }
 
 provider "azurerm" {
