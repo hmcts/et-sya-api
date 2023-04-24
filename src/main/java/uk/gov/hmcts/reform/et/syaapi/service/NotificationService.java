@@ -554,8 +554,7 @@ public class NotificationService {
 
     public void sendResponseNotificationEmailToTribunal(CaseData caseData,
                                                         String caseId
-    )
-    {
+    ) {
 
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
         addCommonParameters(tribunalParameters, caseData, caseId);
@@ -596,7 +595,8 @@ public class NotificationService {
             String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
         );
 
-        sendRespondentEmails(caseData, caseId, respondentParameters, notificationsProperties.getRespondentResponseTemplateId());
+        sendRespondentEmails(caseData, caseId, respondentParameters,
+                             notificationsProperties.getRespondentResponseTemplateId());
     }
 
     public void sendResponseNotificationEmailToClaimant(
@@ -640,11 +640,12 @@ public class NotificationService {
 
     private void sendTribunalEmail(CaseData caseData, String caseId, Map<String, Object> tribunalParameters) {
         String managingOffice = caseData.getManagingOffice();
-        String tribunalEmail = caseData.getTribunalCorrespondenceEmail();
         if (UNASSIGNED_OFFICE.equals(managingOffice) || isNullOrEmpty(managingOffice)) {
             log.info("Could not send email as no office has been assigned");
             return;
         }
+
+        String tribunalEmail = caseData.getTribunalCorrespondenceEmail();
         if (isNullOrEmpty(tribunalEmail)) {
             log.info("Could not send email. No email found");
             return;
