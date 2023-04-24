@@ -14,8 +14,8 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -78,7 +78,7 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
     @SneakyThrows
     @Test
     void stage3GetAllCaseDetailsShouldReturnAllCaseDetails() {
-        TimeUnit.SECONDS.sleep(1);
+        SECONDS.sleep(1);
         RestAssured.given()
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
