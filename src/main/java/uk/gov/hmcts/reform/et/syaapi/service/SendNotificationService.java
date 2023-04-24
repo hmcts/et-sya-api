@@ -143,6 +143,7 @@ public class SendNotificationService {
         );
     }
 
+<<<<<<< HEAD
     private void sendAddResponseSendNotificationEmails(CaseData caseData,
                                                        String caseId,
                                                        String copyToOtherParty) {
@@ -154,4 +155,6 @@ public class SendNotificationService {
 
     }
 
+=======
+>>>>>>> Release-1.2
 }
