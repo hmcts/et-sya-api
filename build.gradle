@@ -253,7 +253,16 @@ dependencies {
   implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.7.5'
   
   implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
-  
+
+  // CVE-2023-20863
+  implementation group: 'org.springframework', name: 'spring-aop', version: '5.3.27'
+  implementation group: 'org.springframework', name: 'spring-beans', version: '5.3.27'
+  implementation group: 'org.springframework', name: 'spring-context', version: '5.3.27'
+  implementation group: 'org.springframework', name: 'spring-core', version: '5.3.27'
+  implementation group: 'org.springframework', name: 'spring-expression', version: '5.3.27'
+  implementation group: 'org.springframework', name: 'spring-jcl', version: '5.3.27'
+  implementation group: 'org.springframework', name: 'spring-webmvc', version: '5.3.27'
+
   compileOnly 'org.projectlombok:lombok'
   annotationProcessor group: 'org.projectlombok', name: 'lombok'
   testAnnotationProcessor group: 'org.projectlombok', name: 'lombok'
