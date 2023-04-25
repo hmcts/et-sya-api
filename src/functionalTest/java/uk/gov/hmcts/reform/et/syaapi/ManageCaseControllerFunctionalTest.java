@@ -14,12 +14,13 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 
+@SuppressWarnings("PMD.LawOfDemeter")
 @Slf4j
 @TestMethodOrder(MethodOrderer.MethodName.class)
 class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
@@ -78,11 +79,10 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
     @SneakyThrows
     @Test
     void stage3GetAllCaseDetailsShouldReturnAllCaseDetails() {
-        SECONDS.sleep(1);
+        TimeUnit.SECONDS.sleep(1);
         RestAssured.given()
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
-            .body("{\"case_id\":\"" + caseId + "\"}")
             .get("/cases/user-cases")
             .then()
             .statusCode(HttpStatus.SC_OK)
