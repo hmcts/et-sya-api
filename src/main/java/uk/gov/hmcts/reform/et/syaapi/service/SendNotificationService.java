@@ -37,6 +37,7 @@ public class SendNotificationService {
     private final CaseService caseService;
     private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
+    private final NotificationService notificationService;
     private static final String VIEWED = "viewed";
 
     public CaseDetails updateSendNotificationState(String authorization, SendNotificationStateUpdateRequest request) {
@@ -129,12 +130,29 @@ public class SendNotificationService {
         sendNotificationType.setNotificationState(IN_PROGRESS);
 
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
+        sendAddResponseSendNotificationEmails(
+            caseData,
+            request.getCaseId(),
+            request.getPseResponseType().getCopyToOtherParty()
+        );
         return caseService.submitUpdate(
             authorization,
             request.getCaseId(),
             content,
             request.getCaseTypeId()
         );
+    }
+
+    private void sendAddResponseSendNotificationEmails(CaseData caseData,
+                                                       String caseId,
+                                                       String copyToOtherParty) {
+
+
+        notificationService.sendResponseNotificationEmailToTribunal(caseData, caseId);
+        notificationService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty);
+        notificationService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty);
+
+
     }
 
 }

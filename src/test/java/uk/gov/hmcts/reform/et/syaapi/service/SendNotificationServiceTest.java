@@ -34,6 +34,8 @@ class SendNotificationServiceTest {
     private CaseService caseService;
     @Mock
     private CaseDetailsConverter caseDetailsConverter;
+    @Mock
+    private NotificationService notificationService;
     @InjectMocks
     private SendNotificationService sendNotificationService;
     private TestData testData;

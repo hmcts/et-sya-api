@@ -92,6 +92,8 @@ class NotificationServiceTest {
         given(notificationsProperties.getTribunalAcknowledgementTemplateId()).willReturn("Tribunal");
         given(notificationsProperties.getRespondentTseEmailTypeATemplateId()).willReturn("A");
         given(notificationsProperties.getRespondentTseEmailTypeBTemplateId()).willReturn("B");
+        given(notificationsProperties.getClaimantResponseYesTemplateId()).willReturn("claimantResponseYesTemplateId");
+        given(notificationsProperties.getClaimantResponseNoTemplateId()).willReturn("claimantResponseNoTemplateId");
         testData = new TestData();
     }
 
@@ -540,6 +542,7 @@ class NotificationServiceTest {
 
     @Test
     void shouldSendResponseEmailToTribunal() throws NotificationClientException {
+        testData.getCaseData().setTribunalCorrespondenceEmail("tribunal@test.com");
         notificationService.sendResponseEmailToTribunal(
             testData.getCaseData(),
             CLAIMANT,
@@ -756,6 +759,140 @@ class NotificationServiceTest {
             eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
             any(),
             eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
+
+
+    @Test
+    void sendResponseNotificationEmailToTribunal() throws NotificationClientException {
+        testData.getCaseData().setTribunalCorrespondenceEmail("tribunal@test.com");
+        notificationService.sendResponseNotificationEmailToTribunal(
+            testData.getCaseData(),
+            testData.getExpectedDetails().getId().toString()
+        );
+
+        verify(notificationClient, times(1)).sendEmail(
+            any(),
+            eq(testData.getCaseData().getTribunalCorrespondenceEmail()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void sendNotResponseNotificationEmailToTribunalMissingEmail() throws NotificationClientException {
+        testData.getCaseData().setTribunalCorrespondenceEmail(null);
+        notificationService.sendResponseNotificationEmailToTribunal(
+            testData.getCaseData(),
+            testData.getExpectedDetails().getId().toString()
+        );
+
+        verify(notificationClient, times(0)).sendEmail(
+            any(),
+            any(),
+            any(),
+            any()
+        );
+    }
+
+    @Test
+    void sendResponseNotificationEmailToRespondent() throws NotificationClientException {
+        notificationService.sendResponseNotificationEmailToRespondent(
+            testData.getCaseData(),
+            testData.getExpectedDetails().getId().toString(),
+            YES
+        );
+
+        verify(notificationClient, times(1)).sendEmail(
+            any(),
+            eq(testData.getCaseData().getRespondentCollection().get(0).getValue().getRespondentEmail()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void sendNotResponseNotificationEmailToRespondentDoNotCopy() throws NotificationClientException {
+        notificationService.sendResponseNotificationEmailToRespondent(
+            testData.getCaseData(),
+            testData.getExpectedDetails().getId().toString(),
+            NO
+        );
+
+        verify(notificationClient, times(0)).sendEmail(
+            any(),
+            any(),
+            any(),
+            any()
+        );
+    }
+
+    @Test
+    void sendNotResponseNotificationEmailToRespondentMissingEmail() throws NotificationClientException {
+        for (RespondentSumTypeItem respondentSumTypeItem : testData.getCaseData().getRespondentCollection()) {
+            respondentSumTypeItem.getValue().setRespondentEmail(null);
+        }
+        notificationService.sendResponseNotificationEmailToRespondent(
+            testData.getCaseData(),
+            testData.getExpectedDetails().getId().toString(),
+            YES
+        );
+
+        verify(notificationClient, times(0)).sendEmail(
+            any(),
+            any(),
+            any(),
+            any()
+        );
+    }
+
+
+    @Test
+    void sendResponseNotificationEmailToClaimant() throws NotificationClientException {
+        notificationService.sendResponseNotificationEmailToClaimant(
+            testData.getCaseData(),
+            testData.getExpectedDetails().getId().toString(),
+            YES
+        );
+
+        verify(notificationClient, times(1)).sendEmail(
+            eq("claimantResponseYesTemplateId"),
+            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void sendResponseNotificationEmailToClaimantDoNotCopy() throws NotificationClientException {
+        notificationService.sendResponseNotificationEmailToClaimant(
+            testData.getCaseData(),
+            testData.getExpectedDetails().getId().toString(),
+            NO
+        );
+
+        verify(notificationClient, times(1)).sendEmail(
+            eq("claimantResponseNoTemplateId"),
+            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void sendNotResponseNotificationEmailToClaimantMissingEmail() throws NotificationClientException {
+        testData.getCaseData().getClaimantType().setClaimantEmailAddress(null);
+        notificationService.sendResponseNotificationEmailToClaimant(
+            testData.getCaseData(),
+            testData.getExpectedDetails().getId().toString(),
+            YES
+        );
+
+        verify(notificationClient, times(0)).sendEmail(
+            any(),
+            any(),
+            any(),
+            any()
         );
     }
 
