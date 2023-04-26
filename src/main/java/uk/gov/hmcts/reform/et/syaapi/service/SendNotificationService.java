@@ -127,7 +127,7 @@ public class SendNotificationService {
         sendNotificationType.getRespondCollection().add(pseResponseTypeItem);
         sendNotificationType.setSendNotificationResponsesCount(String.valueOf(
             sendNotificationType.getRespondCollection().size()));
-        sendNotificationType.setNotificationState(IN_PROGRESS);
+        sendNotificationType.setNotificationState(VIEWED);
 
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
         sendAddResponseSendNotificationEmails(
