@@ -75,8 +75,10 @@ public final class TseApplicationHelper {
                 request.getSupportingMaterialFile()
             );
 
+            if (caseData.getDocumentCollection() == null) {
+                caseData.setDocumentCollection(new ArrayList<>());
+            }
             caseData.getDocumentCollection().add(documentTypeItem);
-
             responseToAdd.setSupportingMaterial(new ArrayList<>());
             responseToAdd.getSupportingMaterial().add(documentTypeItem);
         }
