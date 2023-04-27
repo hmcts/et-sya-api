@@ -545,6 +545,9 @@ public class CaseService {
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
         List<DocumentTypeItem> docList = caseData.getDocumentCollection();
 
+        if (docList == null) {
+            docList = new ArrayList<>();
+        }
         PdfDecodedMultipartFile pdfDecodedMultipartFile = pdfService.convertClaimantTseIntoMultipartFile(claimantTse);
         docList.add(caseDocumentService.createDocumentTypeItem(
             authorization,
