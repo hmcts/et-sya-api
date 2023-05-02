@@ -13,8 +13,8 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
-import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
-import uk.gov.hmcts.reform.et.syaapi.utils.TestConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.util.List;
@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.MULTIPLE_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MULTIPLE_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST;
 
 @Data
 @SuppressWarnings({"PMD.TooManyFields", "PMD.TooManyMethods"})
@@ -429,6 +429,78 @@ public final class TestData {
         searchResult.setCases(getRequestCaseDataListEngland());
         searchResult.setTotal(1);
         return searchResult;
+    }
+
+    public static Stream<Arguments> generatePutPersonalDetailsArguments() {
+        ClaimantIndType claimantIndTypeOtherTitleMaleNotNullDateOfBirth = new ClaimantIndType();
+        claimantIndTypeOtherTitleMaleNotNullDateOfBirth.setClaimantPreferredTitle("Other");
+        claimantIndTypeOtherTitleMaleNotNullDateOfBirth.setClaimantTitleOther("Other Title");
+        claimantIndTypeOtherTitleMaleNotNullDateOfBirth.setClaimantFirstNames("Michael");
+        claimantIndTypeOtherTitleMaleNotNullDateOfBirth.setClaimantLastName("Mercury");
+        claimantIndTypeOtherTitleMaleNotNullDateOfBirth.setClaimantDateOfBirth("1979-05-08");
+        claimantIndTypeOtherTitleMaleNotNullDateOfBirth.setClaimantSex("Male");
+
+        ClaimantIndType claimantIndTypeTitleMrMaleNotNullDateOfBirth = new ClaimantIndType();
+        claimantIndTypeTitleMrMaleNotNullDateOfBirth.setClaimantPreferredTitle("Mr");
+        claimantIndTypeTitleMrMaleNotNullDateOfBirth.setClaimantFirstNames("Michael");
+        claimantIndTypeTitleMrMaleNotNullDateOfBirth.setClaimantLastName("Mercury");
+        claimantIndTypeTitleMrMaleNotNullDateOfBirth.setClaimantDateOfBirth("1980-06-09");
+        claimantIndTypeTitleMrMaleNotNullDateOfBirth.setClaimantSex("Male");
+
+        ClaimantIndType claimantIndTypeTitleMsFemaleNotNullDateOfBirth = new ClaimantIndType();
+        claimantIndTypeTitleMsFemaleNotNullDateOfBirth.setClaimantPreferredTitle("Ms");
+        claimantIndTypeTitleMsFemaleNotNullDateOfBirth.setClaimantFirstNames("Elizabeth");
+        claimantIndTypeTitleMsFemaleNotNullDateOfBirth.setClaimantLastName("Taylor");
+        claimantIndTypeTitleMsFemaleNotNullDateOfBirth.setClaimantDateOfBirth("1981-07-10");
+        claimantIndTypeTitleMsFemaleNotNullDateOfBirth.setClaimantSex("Female");
+
+        ClaimantIndType claimantIndTypeTitleMrsFemaleNotNullDateOfBirth = new ClaimantIndType();
+        claimantIndTypeTitleMrsFemaleNotNullDateOfBirth.setClaimantPreferredTitle("Mrs");
+        claimantIndTypeTitleMrsFemaleNotNullDateOfBirth.setClaimantFirstNames("Taylor");
+        claimantIndTypeTitleMrsFemaleNotNullDateOfBirth.setClaimantLastName("Swift");
+        claimantIndTypeTitleMrsFemaleNotNullDateOfBirth.setClaimantDateOfBirth("1982-08-11");
+        claimantIndTypeTitleMrsFemaleNotNullDateOfBirth.setClaimantSex("Female");
+
+        ClaimantIndType claimantIndTypeTitleMissFemaleNotNullDateOfBirth = new ClaimantIndType();
+        claimantIndTypeTitleMissFemaleNotNullDateOfBirth.setClaimantPreferredTitle("Miss");
+        claimantIndTypeTitleMissFemaleNotNullDateOfBirth.setClaimantFirstNames("Taylor");
+        claimantIndTypeTitleMissFemaleNotNullDateOfBirth.setClaimantLastName("Swift");
+        claimantIndTypeTitleMissFemaleNotNullDateOfBirth.setClaimantDateOfBirth("1983-09-12");
+        claimantIndTypeTitleMissFemaleNotNullDateOfBirth.setClaimantSex("Female");
+
+        ClaimantIndType claimantIndTypeOtherTitleMaleNullDateOfBirth = new ClaimantIndType();
+        claimantIndTypeOtherTitleMaleNullDateOfBirth.setClaimantPreferredTitle("Other");
+        claimantIndTypeOtherTitleMaleNullDateOfBirth.setClaimantTitleOther("Other Title");
+        claimantIndTypeOtherTitleMaleNullDateOfBirth.setClaimantFirstNames("Michael");
+        claimantIndTypeOtherTitleMaleNullDateOfBirth.setClaimantLastName("Mercury");
+        claimantIndTypeOtherTitleMaleNullDateOfBirth.setClaimantDateOfBirth(null);
+        claimantIndTypeOtherTitleMaleNullDateOfBirth.setClaimantSex("Male");
+
+        ClaimantIndType claimantIndTypeOtherTitleMaleEmptyDateOfBirth = new ClaimantIndType();
+        claimantIndTypeOtherTitleMaleEmptyDateOfBirth.setClaimantPreferredTitle("Other");
+        claimantIndTypeOtherTitleMaleEmptyDateOfBirth.setClaimantTitleOther("Other Title");
+        claimantIndTypeOtherTitleMaleEmptyDateOfBirth.setClaimantFirstNames("Michael");
+        claimantIndTypeOtherTitleMaleEmptyDateOfBirth.setClaimantLastName("Mercury");
+        claimantIndTypeOtherTitleMaleEmptyDateOfBirth.setClaimantDateOfBirth(" ");
+        claimantIndTypeOtherTitleMaleEmptyDateOfBirth.setClaimantSex("Male");
+
+        ClaimantIndType claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth = new ClaimantIndType();
+        claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth.setClaimantPreferredTitle("Other");
+        claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth.setClaimantTitleOther("Other Title");
+        claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth.setClaimantFirstNames("Michael");
+        claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth.setClaimantLastName("Mercury");
+        claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth.setClaimantDateOfBirth("1984-10-13");
+        claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth.setClaimantSex("Prefer not to say");
+
+        return Stream.of(
+            Arguments.of(claimantIndTypeOtherTitleMaleNotNullDateOfBirth, "08", "05", "1979"),
+            Arguments.of(claimantIndTypeTitleMrMaleNotNullDateOfBirth, "09", "06", "1980"),
+            Arguments.of(claimantIndTypeTitleMsFemaleNotNullDateOfBirth, "10", "07", "1981"),
+            Arguments.of(claimantIndTypeTitleMrsFemaleNotNullDateOfBirth, "11", "08", "1982"),
+            Arguments.of(claimantIndTypeTitleMissFemaleNotNullDateOfBirth, "12", "09", "1983"),
+            Arguments.of(claimantIndTypeOtherTitleMaleNullDateOfBirth, "", "", ""),
+            Arguments.of(claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth, "13", "10", "1984")
+        );
     }
 
 }

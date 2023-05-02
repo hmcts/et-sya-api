@@ -22,8 +22,9 @@ import org.mockito.quality.Strictness;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
-import uk.gov.hmcts.reform.et.syaapi.service.util.ServiceUtil;
-import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.IOException;
@@ -176,13 +177,13 @@ class PdfServiceTest {
     @SneakyThrows
     @Test
     void shouldThrowExceptionWhenPdfTemplateIsNotValid() {
-        try (MockedStatic<ServiceUtil> mockedServiceUtil = Mockito.mockStatic(ServiceUtil.class)) {
-            mockedServiceUtil.when(() -> ServiceUtil.findClaimantLanguage(testData.getCaseData()))
+        try (MockedStatic<GenericServiceUtil> mockedServiceUtil = Mockito.mockStatic(GenericServiceUtil.class)) {
+            mockedServiceUtil.when(() -> GenericServiceUtil.findClaimantLanguage(testData.getCaseData()))
                 .thenReturn(ENGLISH_LANGUAGE);
             PdfService pdfService1 = new PdfService(new PdfMapperService());
             pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH_INVALID);
             mockedServiceUtil.verify(
-                () -> ServiceUtil.logException(anyString(), anyString(), anyString(), anyString(), anyString()),
+                () -> GenericServiceUtil.logException(anyString(), anyString(), anyString(), anyString(), anyString()),
                 atLeast(1)
             );
         }
@@ -258,14 +259,14 @@ class PdfServiceTest {
         PdfService pdfService1 = new PdfService(new PdfMapperService());
         pdfService1.welshPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH_NOT_EXISTS;
         pdfService1.englishPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH_NOT_EXISTS;
-        try (MockedStatic<ServiceUtil> mockedServiceUtil = Mockito.mockStatic(ServiceUtil.class)) {
-            mockedServiceUtil.when(() -> ServiceUtil.findClaimantLanguage(testData.getCaseData()))
+        try (MockedStatic<GenericServiceUtil> mockedServiceUtil = Mockito.mockStatic(GenericServiceUtil.class)) {
+            mockedServiceUtil.when(() -> GenericServiceUtil.findClaimantLanguage(testData.getCaseData()))
                 .thenReturn(WELSH_LANGUAGE);
             List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
                 pdfService1.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), null);
             assertThat(pdfDecodedMultipartFileList).isEmpty();
             mockedServiceUtil.verify(
-                () -> ServiceUtil.logException(anyString(), anyString(), anyString(), anyString(), anyString()),
+                () -> GenericServiceUtil.logException(anyString(), anyString(), anyString(), anyString(), anyString()),
                 times(2)
             );
         }
@@ -304,12 +305,12 @@ class PdfServiceTest {
     @SneakyThrows
     @Test
     void shouldThrowExceptionWhenInputStreamNotClosed() {
-        try (MockedStatic<ServiceUtil> mockedServiceUtil = Mockito.mockStatic(ServiceUtil.class)) {
+        try (MockedStatic<GenericServiceUtil> mockedServiceUtil = Mockito.mockStatic(GenericServiceUtil.class)) {
             InputStream is = Mockito.mock(InputStream.class);
             doThrow(new IOException("Test IOException")).when(is).close();
             PdfService.safeClose(is, testData.getCaseData());
             mockedServiceUtil.verify(
-                () -> ServiceUtil.logException(anyString(), anyString(), anyString(), anyString(), anyString()),
+                () -> GenericServiceUtil.logException(anyString(), anyString(), anyString(), anyString(), anyString()),
                 times(1)
             );
         }

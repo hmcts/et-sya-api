@@ -18,8 +18,8 @@ import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
-import uk.gov.hmcts.reform.et.syaapi.service.util.ServiceUtil;
-import uk.gov.hmcts.reform.et.syaapi.utils.TestConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
@@ -42,9 +42,9 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.ENGLISH_LANGUAGE;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SUBMIT_CASE_PDF_FILE_RESPONSE;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.WELSH_LANGUAGE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ENGLISH_LANGUAGE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SUBMIT_CASE_PDF_FILE_RESPONSE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WELSH_LANGUAGE;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class NotificationServiceTest {
@@ -228,7 +228,7 @@ class NotificationServiceTest {
     @SneakyThrows
     @Test
     void shouldThrowExceptionWhenSubmitCaseConfirmationEmailNotSent() {
-        try (MockedStatic<ServiceUtil> mockedServiceUtil = Mockito.mockStatic(ServiceUtil.class)) {
+        try (MockedStatic<GenericServiceUtil> mockedServiceUtil = Mockito.mockStatic(GenericServiceUtil.class)) {
             when(notificationClient.sendEmail(
                 anyString(),
                 anyString(),
@@ -237,14 +237,14 @@ class NotificationServiceTest {
             )).thenThrow(NotificationClientException.class);
             List<PdfDecodedMultipartFile> casePdfFiles = new ArrayList<>();
             casePdfFiles.add(TestConstants.PDF_DECODED_MULTIPART_FILE1);
-            mockedServiceUtil.when(() -> ServiceUtil.hasPdfFile(casePdfFiles, 0)).thenReturn(true);
-            mockedServiceUtil.when(() -> ServiceUtil.findClaimantLanguage(testData.getCaseData()))
+            mockedServiceUtil.when(() -> GenericServiceUtil.hasPdfFile(casePdfFiles, 0)).thenReturn(true);
+            mockedServiceUtil.when(() -> GenericServiceUtil.findClaimantLanguage(testData.getCaseData()))
                 .thenReturn(ENGLISH_LANGUAGE);
-            mockedServiceUtil.when(() -> ServiceUtil.findClaimantFirstNameByCaseDataUserInfo(any(), any()))
+            mockedServiceUtil.when(() -> GenericServiceUtil.findClaimantFirstNameByCaseDataUserInfo(any(), any()))
                 .thenReturn(testData.getCaseData().getClaimantIndType().getClaimantFirstNames());
-            mockedServiceUtil.when(() -> ServiceUtil.findClaimantLastNameByCaseDataUserInfo(any(), any()))
+            mockedServiceUtil.when(() -> GenericServiceUtil.findClaimantLastNameByCaseDataUserInfo(any(), any()))
                 .thenReturn(testData.getCaseData().getClaimantIndType().getClaimantLastName());
-            mockedServiceUtil.when(() -> ServiceUtil.findPdfFileBySelectedLanguage(any(), anyString()))
+            mockedServiceUtil.when(() -> GenericServiceUtil.findPdfFileBySelectedLanguage(any(), anyString()))
                 .thenReturn(TEST_SUBMIT_CASE_PDF_FILE_RESPONSE.getBytes());
             NotificationService notificationService =
                 new NotificationService(notificationClient, notificationsProperties);
@@ -255,11 +255,11 @@ class NotificationServiceTest {
                 casePdfFiles
             );
             mockedServiceUtil.verify(
-                () -> ServiceUtil.logException(anyString(),
-                                               anyString(),
-                                               eq(null),
-                                               anyString(),
-                                               anyString()),
+                () -> GenericServiceUtil.logException(anyString(),
+                                                      anyString(),
+                                                      eq(null),
+                                                      anyString(),
+                                                      anyString()),
                 times(1)
             );
         }
@@ -294,12 +294,12 @@ class NotificationServiceTest {
     @SneakyThrows
     @Test
     void shouldThrowNotificationExceptionWhenNotAbleToSendDocUploadErrorEmail() {
-        try (MockedStatic<ServiceUtil> mockedServiceUtil = Mockito.mockStatic(ServiceUtil.class)) {
+        try (MockedStatic<GenericServiceUtil> mockedServiceUtil = Mockito.mockStatic(GenericServiceUtil.class)) {
             when(notificationClient.sendEmail(any(), any(), any(), any())).thenThrow(new NotificationClientException(
                 new Exception("Error while trying to send doc upload error notification to service owner")));
             when(notificationsProperties.getSubmitCaseDocUploadErrorEmailTemplateId()).thenReturn(null);
             when(notificationsProperties.getEt1EcmDtsCoreTeamSlackNotificationEmail()).thenReturn(null);
-            mockedServiceUtil.when(() -> ServiceUtil.prepareUpload(any(), anyInt()))
+            mockedServiceUtil.when(() -> GenericServiceUtil.prepareUpload(any(), anyInt()))
                 .thenReturn(TestConstants.FILE_NOT_EXISTS);
             UploadedDocumentType claimDescriptionDocument = new UploadedDocumentType();
             notificationService.sendDocUploadErrorEmail(testData.getCaseRequest(),
@@ -307,11 +307,11 @@ class NotificationServiceTest {
                                                             List.of(TestConstants.PDF_DECODED_MULTIPART_FILE1),
                                                             claimDescriptionDocument);
             mockedServiceUtil.verify(
-                () -> ServiceUtil.logException(anyString(),
-                                               eq(null),
-                                               anyString(),
-                                               anyString(),
-                                               anyString()),
+                () -> GenericServiceUtil.logException(anyString(),
+                                                      eq(null),
+                                                      anyString(),
+                                                      anyString(),
+                                                      anyString()),
                 times(1)
             );
         }

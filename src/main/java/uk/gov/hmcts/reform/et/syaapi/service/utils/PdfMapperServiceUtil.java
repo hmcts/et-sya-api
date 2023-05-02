@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.et.syaapi.service.pdf;
+package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -12,6 +12,8 @@ import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.Set;
 
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
+
 /**
  *  This class is implemented as a utility for PDF Mapper class.
  *  All methods and variables are defined as static.
@@ -22,7 +24,7 @@ import java.util.Set;
  * @since 1.0
  */
 @Slf4j
-public final class PdfMapperUtil {
+public final class PdfMapperServiceUtil {
 
     private static final Set<String> UK_COUNTRY_NAMES = Set.of("ENGLAND",
                                                                "SCOTLAND",
@@ -37,7 +39,7 @@ public final class PdfMapperUtil {
                                                                "GREATBRITAIN",
                                                                "BRITAIN");
 
-    private PdfMapperUtil() {
+    private PdfMapperServiceUtil() {
 
     }
 
@@ -245,5 +247,9 @@ public final class PdfMapperUtil {
             }
         }
         return claimantTribunalRecommendation;
+    }
+
+    public static boolean isYes(String stringValue) {
+        return YES.toLowerCase().equals(StringUtils.isNotBlank(stringValue) ? stringValue.toLowerCase() : "");
     }
 }

@@ -1,9 +1,16 @@
-package uk.gov.hmcts.reform.et.syaapi.service.pdf;
+package uk.gov.hmcts.reform.et.syaapi.service.utils;
+
+import java.util.Map;
 
 /**
  * Defines the input labels within the template 'Employment tribunal claim form' (ver. ET1_0922) document as constants.
  */
 public final class PdfMapperConstants {
+
+    private PdfMapperConstants() {
+        // private due to being class of constants
+    }
+
     public static final String TRIBUNAL_OFFICE =        "tribunal office";
     public static final String CASE_NUMBER =            "case number";
     public static final String DATE_RECEIVED =          "date received";
@@ -161,8 +168,33 @@ public final class PdfMapperConstants {
         + " some or all of my claim";
     public static final String QX_ACAS_A4 =             ACAS_NO_CERT + " My employer has already been in touch with "
         + "Acas";
+    public static final String OTHER = "Other";
+    public static final String MR = "Mr";
+    public static final String MRS = "Mrs";
+    public static final String MISS = "Miss";
+    public static final String MS = "Ms";
+    public static final String OTHER_SPECIFY = "Other_Specify";
+    public static final Map<String, String> TITLES = Map.of(
+        MR, PdfMapperConstants.Q1_TITLE_MR,
+        MRS, PdfMapperConstants.Q1_TITLE_MRS,
+        MISS, PdfMapperConstants.Q1_TITLE_MISS,
+        MS, PdfMapperConstants.Q1_TITLE_MS,
+        OTHER, PdfMapperConstants.Q1_TITLE_OTHER,
+        OTHER_SPECIFY, PdfMapperConstants.Q1_TITLE_OTHER_SPECIFY
 
-    private PdfMapperConstants() {
-        // private due to being class of constants
-    }
+    );
+    public static final Map<String, String> TITLE_MAP = Map.of(
+        MR, "Mister",
+        MRS, "Missus",
+        MISS, "Miss",
+        MS, "Miz",
+        OTHER, "Miz"
+    );
+    public static final String PHONE_NUMBER_PREFIX = "1.6";
+    public static final String SEX_MALE = "Male";
+    public static final String SEX_FEMALE = "Female";
+    public static final String SEX_FEMALE_LOWERCASE = "Female";
+    public static final String SEX_PREFER_NOT_TO_SAY = "Prefer not to say";
+    public static final String SEX_PREFER_NOT_TO_SAY_LOWERCASE = "prefer not to say";
+
 }

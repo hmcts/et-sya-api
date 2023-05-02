@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
-import uk.gov.hmcts.reform.et.syaapi.service.util.ServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
@@ -68,11 +68,11 @@ public class NotificationService {
         try {
             sendEmailResponse = notificationClient.sendEmail(templateId, targetEmail, parameters, reference);
         } catch (NotificationClientException ne) {
-            ServiceUtil.logException("Error while trying to sending notification to client",
-                                     ServiceUtil.getStringValueFromStringMap(parameters,
-                                                                             SEND_EMAIL_PARAMS_CASE_NUMBER_KEY),
-                                     ne.getMessage(),
-                                     this.getClass().getName(), "sendEmail");
+            GenericServiceUtil.logException("Error while trying to sending notification to client",
+                                            GenericServiceUtil.getStringValueFromStringMap(parameters,
+                                                                                           SEND_EMAIL_PARAMS_CASE_NUMBER_KEY),
+                                            ne.getMessage(),
+                                            this.getClass().getName(), "sendEmail");
             throw new NotificationException(ne);
         }
         return sendEmailResponse;
@@ -91,18 +91,18 @@ public class NotificationService {
                                                              UserInfo userInfo,
                                                              List<PdfDecodedMultipartFile> casePdfFiles) {
         SendEmailResponse sendEmailResponse = null;
-        if (ServiceUtil.hasPdfFile(casePdfFiles, 0)) {
-            String firstName = ServiceUtil.findClaimantFirstNameByCaseDataUserInfo(caseData, userInfo);
-            String lastName = ServiceUtil.findClaimantLastNameByCaseDataUserInfo(caseData, userInfo);
+        if (GenericServiceUtil.hasPdfFile(casePdfFiles, 0)) {
+            String firstName = GenericServiceUtil.findClaimantFirstNameByCaseDataUserInfo(caseData, userInfo);
+            String lastName = GenericServiceUtil.findClaimantLastNameByCaseDataUserInfo(caseData, userInfo);
             String caseNumber = caseRequest.getCaseId() == null ? CASE_ID_NOT_FOUND : caseRequest.getCaseId();
-            String selectedLanguage = ServiceUtil.findClaimantLanguage(caseData);
+            String selectedLanguage = GenericServiceUtil.findClaimantLanguage(caseData);
             String emailTemplateId = WELSH_LANGUAGE.equals(selectedLanguage)
                 ? notificationsProperties.getCySubmitCaseEmailTemplateId()
                 : notificationsProperties.getSubmitCaseEmailTemplateId();
             String citizenPortalLink = WELSH_LANGUAGE.equals(selectedLanguage)
                 ? notificationsProperties.getCitizenPortalLink() + WELSH_LANGUAGE_PARAM
                 : notificationsProperties.getCitizenPortalLink() + "%s";
-            byte[] et1Pdf = ServiceUtil.findPdfFileBySelectedLanguage(casePdfFiles, selectedLanguage);
+            byte[] et1Pdf = GenericServiceUtil.findPdfFileBySelectedLanguage(casePdfFiles, selectedLanguage);
             try {
                 Map<String, Object> parameters = new ConcurrentHashMap<>();
                 parameters.put(SEND_EMAIL_PARAMS_FIRSTNAME_KEY, firstName);
@@ -119,9 +119,9 @@ public class NotificationService {
                     caseNumber
                 );
             } catch (NotificationClientException ne) {
-                ServiceUtil.logException("Submit case confirmation email was not sent to client.",
-                                         caseData.getEthosCaseReference(), ne.getMessage(),
-                                         this.getClass().getName(), "sendSubmitCaseConfirmationEmail");
+                GenericServiceUtil.logException("Submit case confirmation email was not sent to client.",
+                                                caseData.getEthosCaseReference(), ne.getMessage(),
+                                                this.getClass().getName(), "sendSubmitCaseConfirmationEmail");
             }
         }
         return sendEmailResponse;
@@ -145,13 +145,13 @@ public class NotificationService {
             Map<String, Object> parameters = new ConcurrentHashMap<>();
             parameters.put(SEND_EMAIL_SERVICE_OWNER_NAME_KEY, SEND_EMAIL_SERVICE_OWNER_NAME_VALUE);
             parameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
-            parameters.put(SEND_EMAIL_PARAMS_ET1PDF_ENGLISH_LINK_KEY, ServiceUtil.prepareUpload(casePdfFiles, 0));
-            parameters.put(SEND_EMAIL_PARAMS_ET1PDF_WELSH_LINK_KEY, ServiceUtil.prepareUpload(casePdfFiles, 1));
-            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF1_LINK_KEY, ServiceUtil.prepareUpload(acasCertificates, 0));
-            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF2_LINK_KEY, ServiceUtil.prepareUpload(acasCertificates, 1));
-            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF3_LINK_KEY, ServiceUtil.prepareUpload(acasCertificates, 2));
-            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF4_LINK_KEY, ServiceUtil.prepareUpload(acasCertificates, 3));
-            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF5_LINK_KEY, ServiceUtil.prepareUpload(acasCertificates, 4));
+            parameters.put(SEND_EMAIL_PARAMS_ET1PDF_ENGLISH_LINK_KEY, GenericServiceUtil.prepareUpload(casePdfFiles, 0));
+            parameters.put(SEND_EMAIL_PARAMS_ET1PDF_WELSH_LINK_KEY, GenericServiceUtil.prepareUpload(casePdfFiles, 1));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF1_LINK_KEY, GenericServiceUtil.prepareUpload(acasCertificates, 0));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF2_LINK_KEY, GenericServiceUtil.prepareUpload(acasCertificates, 1));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF3_LINK_KEY, GenericServiceUtil.prepareUpload(acasCertificates, 2));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF4_LINK_KEY, GenericServiceUtil.prepareUpload(acasCertificates, 3));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF5_LINK_KEY, GenericServiceUtil.prepareUpload(acasCertificates, 4));
             parameters.put(SEND_EMAIL_PARAMS_CLAIM_DESCRIPTION_FILE_LINK_KEY,
                            ObjectUtils.isNotEmpty(claimDescriptionDocument)
                                 && StringUtils.isNotBlank(claimDescriptionDocument.getDocumentUrl())
@@ -176,9 +176,9 @@ public class NotificationService {
                 caseNumber
             );
         } catch (NotificationClientException ne) {
-            ServiceUtil.logException("Case Documents Upload error - Failed to send document upload error message",
-                                     caseRequest.getCaseId(), ne.getMessage(),
-                                     this.getClass().getName(), "sendDocUploadErrorEmail");
+            GenericServiceUtil.logException("Case Documents Upload error - Failed to send document upload error message",
+                                            caseRequest.getCaseId(), ne.getMessage(),
+                                            this.getClass().getName(), "sendDocUploadErrorEmail");
         }
         return sendEmailResponse;
     }

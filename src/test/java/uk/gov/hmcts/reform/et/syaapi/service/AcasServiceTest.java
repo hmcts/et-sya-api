@@ -22,7 +22,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
-import uk.gov.hmcts.reform.et.syaapi.service.util.ServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -362,13 +362,13 @@ class AcasServiceTest {
     @Test
     void theGetAcasCertificatesByCaseDataThrowsAcasException() {
         RestTemplate tmpRestTemplate = Mockito.mock(RestTemplate.class);
-        try (MockedStatic<ServiceUtil> mockedServiceUtil = Mockito.mockStatic(ServiceUtil.class)) {
+        try (MockedStatic<GenericServiceUtil> mockedServiceUtil = Mockito.mockStatic(GenericServiceUtil.class)) {
             when(tmpRestTemplate
                      .exchange(anyString(), eq(HttpMethod.POST), any(), eq(new ParameterizedTypeReference<>() {})))
                 .thenThrow(new RestClientException("Test rest client exception"));
             acasService.getAcasCertificatesByCaseData(testData.getCaseData());
             mockedServiceUtil.verify(
-                () -> ServiceUtil.logException(anyString(), anyString(), anyString(), anyString(), anyString()),
+                () -> GenericServiceUtil.logException(anyString(), anyString(), anyString(), anyString(), anyString()),
                 times(1)
             );
         }
@@ -377,10 +377,10 @@ class AcasServiceTest {
     @Test
     void theGetAcasCertificatesByCaseDataThrowsInvalidAcasNumbersException() {
         testData.getCaseData().getRespondentCollection().get(0).getValue().setRespondentAcas(DUMMY_ACAS_NUMBER);
-        try (MockedStatic<ServiceUtil> mockedServiceUtil = Mockito.mockStatic(ServiceUtil.class)) {
+        try (MockedStatic<GenericServiceUtil> mockedServiceUtil = Mockito.mockStatic(GenericServiceUtil.class)) {
             acasService.getAcasCertificatesByCaseData(testData.getCaseData());
             mockedServiceUtil.verify(
-                () -> ServiceUtil.logException(anyString(), anyString(), anyString(), anyString(), anyString()),
+                () -> GenericServiceUtil.logException(anyString(), anyString(), anyString(), anyString(), anyString()),
                 times(1)
             );
         }

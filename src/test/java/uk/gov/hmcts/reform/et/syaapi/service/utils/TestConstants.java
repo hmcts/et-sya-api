@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.et.syaapi.utils;
+package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
 import org.json.JSONObject;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;

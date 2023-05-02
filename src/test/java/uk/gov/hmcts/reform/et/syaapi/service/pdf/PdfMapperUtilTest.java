@@ -11,15 +11,16 @@ import org.mockito.quality.Strictness;
 import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperServiceUtil;
 
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperUtil.formatDate;
-import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperUtil.formatUkPostcode;
-import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperUtil.generateClaimantCompensation;
-import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperUtil.generateClaimantTribunalRecommendation;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperServiceUtil.formatDate;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperServiceUtil.formatUkPostcode;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperServiceUtil.generateClaimantCompensation;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperServiceUtil.generateClaimantTribunalRecommendation;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -43,7 +44,7 @@ class PdfMapperUtilTest {
             + "Leeds,\n"
             + "England";
         // When
-        String actualAddressString = PdfMapperUtil.formatAddressForTextField(address);
+        String actualAddressString = PdfMapperServiceUtil.formatAddressForTextField(address);
         // Then
         assertThat(actualAddressString).isEqualTo(expectedAddressString);
     }
@@ -64,7 +65,7 @@ class PdfMapperUtilTest {
             + "Leeds,\n"
             + "England";
         // When
-        String actualAddressString = PdfMapperUtil.formatAddressForTextField(address);
+        String actualAddressString = PdfMapperServiceUtil.formatAddressForTextField(address);
         // Then
         assertThat(actualAddressString).isEqualTo(expectedAddressString);
     }
@@ -80,9 +81,9 @@ class PdfMapperUtilTest {
         address.setCountry(null);
         address.setPostTown(null);
         // When
-        String actualAddressString = PdfMapperUtil.formatAddressForTextField(address);
+        String actualAddressString = PdfMapperServiceUtil.formatAddressForTextField(address);
         // Then
-        assertDoesNotThrow(() -> PdfMapperUtil.formatAddressForTextField(address));
+        assertDoesNotThrow(() -> PdfMapperServiceUtil.formatAddressForTextField(address));
         assertThat(actualAddressString).isNull();
     }
 
@@ -97,9 +98,9 @@ class PdfMapperUtilTest {
         address.setCountry(ENGLAND);
         address.setPostTown(LEEDS);
         // When
-        String actualAddressString = PdfMapperUtil.formatAddressForTextField(address);
+        String actualAddressString = PdfMapperServiceUtil.formatAddressForTextField(address);
         // Then
-        assertDoesNotThrow(() -> PdfMapperUtil.formatAddressForTextField(address));
+        assertDoesNotThrow(() -> PdfMapperServiceUtil.formatAddressForTextField(address));
         assertThat(actualAddressString).isNull();
     }
 
@@ -114,9 +115,9 @@ class PdfMapperUtilTest {
         address.setCountry(ENGLAND);
         address.setPostTown("");
         // When
-        String actualAddressString = PdfMapperUtil.formatAddressForTextField(address);
+        String actualAddressString = PdfMapperServiceUtil.formatAddressForTextField(address);
         // Then
-        assertDoesNotThrow(() -> PdfMapperUtil.formatAddressForTextField(address));
+        assertDoesNotThrow(() -> PdfMapperServiceUtil.formatAddressForTextField(address));
         assertThat(actualAddressString).isNull();
     }
 
@@ -131,9 +132,9 @@ class PdfMapperUtilTest {
         address.setCountry("");
         address.setPostTown(LEEDS);
         // When
-        String actualAddressString = PdfMapperUtil.formatAddressForTextField(address);
+        String actualAddressString = PdfMapperServiceUtil.formatAddressForTextField(address);
         // Then
-        assertDoesNotThrow(() -> PdfMapperUtil.formatAddressForTextField(address));
+        assertDoesNotThrow(() -> PdfMapperServiceUtil.formatAddressForTextField(address));
         assertThat(actualAddressString).isNull();
     }
 
@@ -148,7 +149,7 @@ class PdfMapperUtilTest {
         address.setCountry(ENGLAND);
         address.setPostTown(LEEDS);
         // When
-        String actualAddressString = PdfMapperUtil.formatAddressForTextField(address);
+        String actualAddressString = PdfMapperServiceUtil.formatAddressForTextField(address);
         // Then
         assertThat(actualAddressString).isNotEmpty();
         assertThat(actualAddressString).doesNotContain(address.getPostCode());
