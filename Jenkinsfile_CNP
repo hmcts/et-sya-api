@@ -9,7 +9,7 @@ def component = "sya-api"
 def branchesToSync = ['perftest', 'demo', 'ithc']
 
 withPipeline(type, product, component) {
-  before('functionalTest:aat') {
+  afterSuccess('functionalTest:aat') {
       sh "./gradlew integration"
     }
   disableLegacyDeployment()
