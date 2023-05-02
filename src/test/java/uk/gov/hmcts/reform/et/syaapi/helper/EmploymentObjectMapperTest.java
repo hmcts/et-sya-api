@@ -32,7 +32,7 @@ class EmploymentObjectMapperTest {
     @Test
     void shouldGetEmployeeObjetMapper() {
         Et1CaseData et1CaseData = employmentObjectMapper.getEmploymentCaseData("{\"caseNotes\": \"TEST\"}");
-        assertThat("TEST".equalsIgnoreCase(et1CaseData.getCaseNotes())).isTrue();
+        assertThat(et1CaseData.getCaseNotes()).isEqualToIgnoringCase("TEST");
     }
 
     @Test

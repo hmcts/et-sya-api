@@ -343,14 +343,13 @@ class ManageCaseControllerTest {
 
         verify(caseService, times(1)).getUserCase(
             eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(hubLinksStatusesRequest.getCaseId())
+            (hubLinksStatusesRequest.getCaseId())
         );
 
         verify(caseService, times(1)).triggerEvent(
-            eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(hubLinksStatusesRequest.getCaseId()),
-            eq(CaseEvent.valueOf("UPDATE_CASE_SUBMITTED")),
-            eq(hubLinksStatusesRequest.getCaseTypeId()),
-            eq(expectedDetails.getData()));
+            eq(TEST_SERVICE_AUTH_TOKEN), (hubLinksStatusesRequest.getCaseId()),
+            (CaseEvent.valueOf("UPDATE_CASE_SUBMITTED")),
+            (hubLinksStatusesRequest.getCaseTypeId()),
+            (expectedDetails.getData()));
     }
 }

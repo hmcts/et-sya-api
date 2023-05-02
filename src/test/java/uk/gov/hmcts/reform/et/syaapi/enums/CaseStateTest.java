@@ -13,18 +13,18 @@ class CaseStateTest {
 
     @Test
     void shouldGetDraftStatetName() {
-        assertThat(DRAFT.equalsIgnoreCase(String.valueOf(CaseState.DRAFT))).isTrue();
+        assertThat(String.valueOf(CaseState.DRAFT)).isEqualToIgnoringCase(DRAFT);
     }
 
     @Test
     void shouldGetAwaitSubmissionName() {
-        assertThat(AWAITING_SUBMISSION_TO_HMCTS
-                       .equalsIgnoreCase(String.valueOf(CaseState.AWAITING_SUBMISSION_TO_HMCTS))).isTrue();
+        assertThat(String.valueOf(CaseState.AWAITING_SUBMISSION_TO_HMCTS)).isEqualToIgnoringCase(
+            AWAITING_SUBMISSION_TO_HMCTS);
     }
 
     @Test
     void shouldGetSubmitCaseStatetName() {
-        assertThat(SUBMITTED.equalsIgnoreCase(String.valueOf(CaseState.SUBMITTED))).isTrue();
+        assertThat(String.valueOf(CaseState.SUBMITTED)).isEqualToIgnoringCase(SUBMITTED);
     }
 
 }
