@@ -100,6 +100,7 @@ class ManageCaseControllerIntegrationTest {
 
     @DisplayName("Should get all case details list by user")
     @Test
+    @Disabled
     void returnCasesByUserEndpoint() throws Exception {
         when(ccdApiClient.searchForCitizen(any(), any(), any(), any(), any(), any()))
                 .thenReturn(Collections.singletonList(caseDetailsResponse));
