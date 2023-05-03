@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.controllers;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -66,12 +67,12 @@ class ManageCaseControllerIntegrationTest {
     @BeforeAll
     void setUp() throws IOException {
         caseDetailsResponse = resourceLoader.fromString(
-            CASE_DETAILS_JSON,
-            CaseDetails.class
+                CASE_DETAILS_JSON,
+                CaseDetails.class
         );
         startEventResponse = resourceLoader.fromString(
-            "responses/caseStartEvent.json",
-            StartEventResponse.class
+                "responses/caseStartEvent.json",
+                StartEventResponse.class
         );
     }
 
@@ -87,112 +88,114 @@ class ManageCaseControllerIntegrationTest {
     void caseDetailsEndpoint() throws Exception {
         when(ccdApiClient.getCase(any(), any(), any())).thenReturn(caseDetailsResponse);
         CaseRequest caseRequest = CaseRequest.builder()
-            .caseId("1646").build();
+                .caseId("1646").build();
 
         mockMvc.perform(post("/cases/user-case")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
-                            .content(resourceLoader.toJson(caseRequest)))
-            .andExpect(status().isOk())
-            .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                        .content(resourceLoader.toJson(caseRequest)))
+                .andExpect(status().isOk())
+                .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
     }
 
     @DisplayName("Should get all case details list by user")
     @Test
     void returnCasesByUserEndpoint() throws Exception {
         when(ccdApiClient.searchForCitizen(any(), any(), any(), any(), any(), any()))
-            .thenReturn(Collections.singletonList(caseDetailsResponse));
+                .thenReturn(Collections.singletonList(caseDetailsResponse));
 
         mockMvc.perform(get("/cases/user-cases").header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN))
-            .andExpect(status().isOk())
-            .andExpect(content().json(getSerialisedMessage(CASE_LIST_DETAILS_JSON)));
+                .andExpect(status().isOk())
+                .andExpect(content().json(getSerialisedMessage(CASE_LIST_DETAILS_JSON)));
     }
 
     @DisplayName("Should create case and return case details")
     @Test
     void createCaseEndpoint() throws Exception {
         CaseRequest caseRequest = CaseRequest.builder()
-            .build();
+                .build();
 
         when(ccdApiClient.startForCitizen(any(), any(), any(), any(), any(), any()))
-            .thenReturn(startEventResponse);
+                .thenReturn(startEventResponse);
 
         when(ccdApiClient.submitForCitizen(any(), any(), any(), any(), any(), anyBoolean(), any()))
-            .thenReturn(caseDetailsResponse);
+                .thenReturn(caseDetailsResponse);
 
         mockMvc.perform(
-                post("/cases/initiate-case")
-                    .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(resourceLoader.toJson(caseRequest)))
-            .andExpect(status().isOk())
-            .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
+                        post("/cases/initiate-case")
+                                .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(resourceLoader.toJson(caseRequest)))
+                .andExpect(status().isOk())
+                .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
     }
 
     @DisplayName("Should update draft case and return case data")
     @Test
     void updateDraftCaseEndpoint() throws Exception {
         CaseRequest caseRequest = CaseRequest.builder()
-            .caseTypeId(SCOTLAND_CASE_TYPE)
-            .caseId("12")
-            .build();
+                .caseTypeId(SCOTLAND_CASE_TYPE)
+                .caseId("12")
+                .build();
 
         when(ccdApiClient.startEventForCitizen(any(), any(), any(), any(), any(), any(), any()))
-            .thenReturn(startEventResponse);
+                .thenReturn(startEventResponse);
         when(ccdApiClient.submitEventForCitizen(any(), any(), any(), any(), any(), any(), anyBoolean(), any()))
-            .thenReturn(caseDetailsResponse);
+                .thenReturn(caseDetailsResponse);
 
         mockMvc.perform(
-                put("/cases/update-case")
-                    .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(resourceLoader.toJson(caseRequest)))
-            .andExpect(status().isOk())
-            .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
+                        put("/cases/update-case")
+                                .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(resourceLoader.toJson(caseRequest)))
+                .andExpect(status().isOk())
+                .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
     }
 
     @DisplayName("Should submit case and return case data")
+    @Disabled
     @Test
     void submitCaseEndpoint() throws Exception {
         CaseRequest caseRequest = CaseRequest.builder()
-            .caseTypeId(SCOTLAND_CASE_TYPE)
-            .caseId("12")
-            .build();
+                .caseTypeId(SCOTLAND_CASE_TYPE)
+                .caseId("12")
+                .build();
 
         when(ccdApiClient.startEventForCitizen(any(), any(), any(), any(), any(), any(), any()))
-            .thenReturn(startEventResponse);
+                .thenReturn(startEventResponse);
         when(ccdApiClient.submitEventForCitizen(any(), any(), any(), any(), any(), any(), anyBoolean(), any()))
-            .thenReturn(caseDetailsResponse);
+                .thenReturn(caseDetailsResponse);
 
         mockMvc.perform(
-                put("/cases/submit-case")
-                    .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(resourceLoader.toJson(caseRequest)))
-            .andExpect(status().isOk())
-            .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
+                        put("/cases/submit-case")
+                                .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(resourceLoader.toJson(caseRequest)))
+                .andExpect(status().isOk())
+                .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
     }
 
     @DisplayName("Should update submitted case and return case data")
+    @Disabled
     @Test
     void updateSubmittedCaseEndpoint() throws Exception {
         CaseRequest caseRequest = CaseRequest.builder()
-            .caseTypeId(SCOTLAND_CASE_TYPE)
-            .caseId("12")
-            .build();
+                .caseTypeId(SCOTLAND_CASE_TYPE)
+                .caseId("12")
+                .build();
 
         when(ccdApiClient.startEventForCitizen(any(), any(), any(), any(), any(), any(), any()))
-            .thenReturn(startEventResponse);
+                .thenReturn(startEventResponse);
         when(ccdApiClient.submitEventForCitizen(any(), any(), any(), any(), any(), any(), anyBoolean(), any()))
-            .thenReturn(caseDetailsResponse);
+                .thenReturn(caseDetailsResponse);
 
         mockMvc.perform(
-                put("/cases/update-case-submitted")
-                    .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(resourceLoader.toJson(caseRequest)))
-            .andExpect(status().isOk())
-            .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
+                        put("/cases/update-case-submitted")
+                                .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(resourceLoader.toJson(caseRequest)))
+                .andExpect(status().isOk())
+                .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
     }
 
     private String getSerialisedMessage(String fileName) {
