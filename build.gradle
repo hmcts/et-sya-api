@@ -243,13 +243,13 @@ dependencies {
   implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.31'
 
   implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.17.9'
-  implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.10'
+  implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.11'
   implementation 'org.json:json:20230227'
   implementation group: 'org.yaml', name: 'snakeyaml', version: '1.33'
 
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.73'
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '9.0.73'
-  implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.7.5'
+  implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.7.8'
 
   // CVE-2023-20863
   implementation group: 'org.springframework', name: 'spring-aop', version: '5.3.27'
