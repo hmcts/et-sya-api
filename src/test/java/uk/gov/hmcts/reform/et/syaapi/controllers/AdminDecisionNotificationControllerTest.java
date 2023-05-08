@@ -10,9 +10,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.AdminDecisionNotificationStateUpdateRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.AdminDecisionNotificationService;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
-import uk.gov.hmcts.reform.et.syaapi.service.SendNotificationService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 
@@ -24,9 +24,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 @WebMvcTest(
-    controllers = {SendNotificationController.class}
+    controllers = {AdminDecisionNotificationController.class}
 )
-@Import(SendNotificationController.class)
+@Import(AdminDecisionNotificationController.class)
 class AdminDecisionNotificationControllerTest {
 
     @MockBean
@@ -36,7 +36,7 @@ class AdminDecisionNotificationControllerTest {
     private ApplicationService applicationService;
 
     @MockBean
-    private SendNotificationService sendNotificationService;
+    private AdminDecisionNotificationService adminDecisionNotificationService;
 
     private static final String CASE_ID = "1646225213651590";
     private static final String CASE_TYPE = "ET_Scotland";
@@ -58,11 +58,11 @@ class AdminDecisionNotificationControllerTest {
     @SneakyThrows
     @Test
     void shouldUpdateSendNotificationState() {
-        SendNotificationStateUpdateRequest request = SendNotificationStateUpdateRequest.builder()
+        AdminDecisionNotificationStateUpdateRequest request = AdminDecisionNotificationStateUpdateRequest.builder()
             .caseTypeId(CASE_TYPE)
             .caseId(CASE_ID)
-            .sendNotificationId("1")
-            .notificationState("viewed")
+            .adminDecisionId("1")
+            .decisionState("viewed")
             .build();
 
         // when
@@ -70,13 +70,13 @@ class AdminDecisionNotificationControllerTest {
 
         when(applicationService.submitApplication(any(), any())).thenReturn(expectedDetails);
         mockMvc.perform(
-            put("/sendNotification/update-notification-state", CASE_ID)
+            put("/tseAdmin/update-admin-decision-state", CASE_ID)
                 .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(ResourceLoader.toJson(request))
         ).andExpect(status().isOk());
 
-        verify(sendNotificationService, times(1)).updateSendNotificationState(
+        verify(adminDecisionNotificationService, times(1)).updateAdminDecisionNotificationState(
             TEST_SERVICE_AUTH_TOKEN,
             request
         );
