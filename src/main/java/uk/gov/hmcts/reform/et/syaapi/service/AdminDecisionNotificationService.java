@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.TseAdminRecordDecisionTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationTypeItem;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
@@ -27,7 +26,8 @@ public class AdminDecisionNotificationService {
     private final CaseDetailsConverter caseDetailsConverter;
     private static final String VIEWED = "viewed";
 
-    public CaseDetails updateAdminDecisionNotificationState(String authorization, AdminDecisionNotificationStateUpdateRequest request) {
+    public CaseDetails updateAdminDecisionNotificationState(String authorization,
+                                                            AdminDecisionNotificationStateUpdateRequest request) {
         StartEventResponse startEventResponse = caseService.startUpdate(
             authorization,
             request.getCaseId(),
