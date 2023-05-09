@@ -4,13 +4,15 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.models.AdminDecisionNotificationStateUpdateRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.AdminDecisionNotificationService;
-import uk.gov.hmcts.reform.et.syaapi.service.SendNotificationService;
 
 import javax.validation.constraints.NotNull;
 
@@ -43,7 +45,8 @@ public class AdminDecisionNotificationController {
         log.info("Received update sendNotification state request - caseTypeId: {} caseId: {}",
                  request.getCaseTypeId(), request.getCaseId()
         );
-        CaseDetails finalCaseDetails = adminDecisionNotificationService.updateAdminDecisionNotificationState(authorization, request);
+        CaseDetails finalCaseDetails
+            = adminDecisionNotificationService.updateAdminDecisionNotificationState(authorization, request);
         return ok(finalCaseDetails);
     }
 
