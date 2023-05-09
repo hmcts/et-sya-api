@@ -5,7 +5,9 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.PseResponseTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationTypeItem;
@@ -110,7 +112,7 @@ public class SendNotificationService {
                 CLAIMANT_CORRESPONDENCE_DOCUMENT,
                 request.getSupportingMaterialFile()
             );
-            var documentTypeItems = new ArrayList<DocumentTypeItem>();
+            var documentTypeItems = new ArrayList<GenericTypeItem<DocumentType>>();
             documentTypeItems.add(documentTypeItem);
             pseResponseType.setSupportingMaterial(documentTypeItems);
             pseResponseType.setHasSupportingMaterial(YES);
