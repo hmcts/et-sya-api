@@ -1,9 +1,9 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
-import com.microsoft.applicationinsights.boot.dependencies.apachecommons.io.IOUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

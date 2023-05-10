@@ -22,8 +22,7 @@ java:
           alias: ET1_ECM_DTS_CORE_TEAM_SLACK_NOTIFICATION_EMAIL
     et:
       secrets:
-        - name: AppInsightsInstrumentationKey
-          alias: APP_INSIGHTS_KEY
+        - app-insights-connection-string
         - name: tornado-access-key
           alias: TORNADO_ACCESS_KEY
         - name: gov-notify-api-key
