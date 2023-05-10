@@ -1,0 +1,6 @@
+{
+  "connectionString": "${file:/mnt/secrets/et/app-insights-connection-string}",
+  "role": {
+    "name": "HMCTS et-sya-api"
+  }
+}

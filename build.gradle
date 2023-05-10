@@ -21,7 +21,7 @@ allprojects {
 
 java {
   toolchain {
-    languageVersion = JavaLanguageVersion.of(11)
+    languageVersion = JavaLanguageVersion.of(17)
   }
 }
 
@@ -223,8 +223,7 @@ dependencies {
 
   implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.7.0'
 
-  implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: reformLoggingVersion
-  implementation group: 'com.github.hmcts.java-logging', name: 'logging-appinsights', version: reformLoggingVersion
+  implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '5.1.9'
 
   implementation group: 'com.github.hmcts', name: 'et-data-model', version: '1.17.0'
   implementation group: 'com.github.hmcts', name: 'ccd-client', version: '4.9.2'
@@ -232,6 +231,7 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '4.1.0'
 
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '3.19.1-RELEASE'
+  implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.5'
 
   implementation 'org.apache.tika:tika-core:2.7.0'
 
