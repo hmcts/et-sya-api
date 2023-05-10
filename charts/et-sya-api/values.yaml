@@ -39,7 +39,6 @@ java:
     CASE_DOCUMENT_AM_URL: "http://ccd-case-document-am-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     CITIZEN_PORTAL_LINK: "https://et-sya.{{ .Values.global.environment }}.platform.hmcts.net/citizen-hub/"
     EXUI_CASE_DETAILS_URL: "https://manage-case.{{ .Values.global.environment }}.platform.hmcts.net/cases/case-details/"
-    SUBMIT_CASE_DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID: "0d7cd6f0-47c1-4ade-aac7-49e6023bac70"
     APPLICATION_ACKNOWLEDGEMENT_TYPE_C: "197c69b6-254c-4f8d-8909-e85549496d8b"
     APPLICATION_ACKNOWLEDGEMENT_YES: "d5f319f1-229f-4dcb-9293-f164bb327601"
     APPLICATION_ACKNOWLEDGEMENT_NO: "e6c8b8c4-e58b-4bae-a8ec-cca68bca0c4e"

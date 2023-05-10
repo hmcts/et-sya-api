@@ -18,14 +18,6 @@ public class NotificationsProperties {
     @NotBlank
     private String govNotifyApiKey;
 
-    @Value("${notifications.sampleEmailTemplateId}")
-    @NotBlank
-    private String sampleEmailTemplateId;
-
-    @Value("${notifications.sampleSubmitCaseEmailTemplateId}")
-    @NotBlank
-    private String sampleSubmitCaseEmailTemplateId;
-
     @Value("${notifications.submitCaseEmailTemplateId}")
     @NotBlank
     private String submitCaseEmailTemplateId;
