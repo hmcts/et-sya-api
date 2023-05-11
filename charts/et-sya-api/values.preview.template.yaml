@@ -23,4 +23,4 @@ java:
       secrets:
         - AppInsightsInstrumentationKey
         - name: gov-notify-api-key
-          alias: GOV_UK_NOTIFY_API_KEY
+          alias: GOV_NOTIFY_API_KEY
