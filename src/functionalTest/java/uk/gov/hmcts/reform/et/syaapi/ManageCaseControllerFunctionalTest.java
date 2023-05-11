@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 
 @SuppressWarnings("PMD.LawOfDemeter")
@@ -79,7 +79,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
     @SneakyThrows
     @Test
     void stage3GetAllCaseDetailsShouldReturnAllCaseDetails() {
-        TimeUnit.SECONDS.sleep(1);
+        TimeUnit.SECONDS.sleep(2);
         RestAssured.given()
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
