@@ -26,7 +26,7 @@ java:
         - name: tornado-access-key
           alias: TORNADO_ACCESS_KEY
         - name: gov-notify-api-key
-          alias: GOV_UK_NOTIFY_API_KEY
+          alias: GOV_NOTIFY_API_KEY
   environment:
     IDAM_API_BASEURL: "https://idam-api.{{ .Values.global.environment }}.platform.hmcts.net"
     IDAM_JWKS_BASEURL: "https://idam-api.{{ .Values.global.environment }}.platform.hmcts.net/o/jwks"
