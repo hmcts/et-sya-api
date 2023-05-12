@@ -16,7 +16,7 @@ public final class EtSyaConstants {
     public static final String ENGLISH_LANGUAGE = "English";
     public static final String FILE_NOT_EXISTS = "File does not exist!...";
     public static final String JURISDICTION_ID = "EMPLOYMENT";
-    public static final String OTHER_TYPE_OF_DOCUMENT = "Other";
+    public static final String ET1_ATTACHMENT = "ET1 Attachment";
     public static final String REMOTE_REPO = "https://github.com/hmcts/et-sya-api";
     public static final String RESOURCE_NOT_FOUND = "Resource not found for case id %s, reason: %s";
     public static final String SEND_EMAIL_PARAMS_ACAS_PDF1_LINK_KEY = "link_to_acas_cert_pdf_file_1";
