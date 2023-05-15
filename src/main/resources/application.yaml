@@ -90,6 +90,7 @@ notifications:
     tribunalResponse: ${TSE_TRIBUNAL_RESPONSE:9da290ff-c7da-4897-80d2-114361271dfa}
     respondentResponse: ${TSE_RESPONDENT_RESPONSE:63b0488f-134c-4bf2-8dea-40df4d158628}
 
+  # todo - fix where pse is used - half are meant to be tse.
   pse:
     claimantResponseYes: ${CLAIMANT_RESPONSE_YES:5898b330-674c-48c8-87e1-ee07ab2910ee}
     claimantResponseNo: ${CLAIMANT_RESPONSE_NO:9e0d4c80-4b60-4d29-94ff-7af9b010ae50}
