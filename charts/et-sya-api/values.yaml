@@ -38,7 +38,3 @@ java:
     CASE_DOCUMENT_AM_URL: "http://ccd-case-document-am-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     CITIZEN_PORTAL_LINK: "https://et-sya.{{ .Values.global.environment }}.platform.hmcts.net/citizen-hub/"
     EXUI_CASE_DETAILS_URL: "https://manage-case.{{ .Values.global.environment }}.platform.hmcts.net/cases/case-details/"
-    CLAIMANT_RESPONSE_YES: "091abb61-0a21-4208-b3b6-22121e8682be"
-    CLAIMANT_RESPONSE_NO: "0727a137-322f-458b-9941-ee8b6d3c11c2"
-    TRIBUNAL_RESPONSE: "9da290ff-c7da-4897-80d2-114361271dfa"
-    RESPONDENT_RESPONSE: "63b0488f-134c-4bf2-8dea-40df4d158628"
