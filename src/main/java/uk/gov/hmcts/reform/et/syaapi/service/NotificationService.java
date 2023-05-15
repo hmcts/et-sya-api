@@ -430,7 +430,9 @@ public class NotificationService {
             String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
         );
 
-        sendTribunalEmail(caseData, caseId, tribunalParameters);
+        sendTribunalEmail(caseData, caseId, tribunalParameters,
+                          notificationsProperties.getTseTribunalResponseTemplateId()
+        );
     }
 
     /**
@@ -488,8 +490,8 @@ public class NotificationService {
         );
 
         String emailToClaimantTemplate = DONT_SEND_COPY.equals(tseRespondType.getCopyToOtherParty())
-            ? notificationsProperties.getPseClaimantResponseNoTemplateId()
-            : notificationsProperties.getPseClaimantResponseYesTemplateId();
+            ? notificationsProperties.getTseClaimantResponseNoTemplateId()
+            : notificationsProperties.getTseClaimantResponseYesTemplateId();
 
         try {
             notificationClient.sendEmail(
@@ -555,23 +557,26 @@ public class NotificationService {
         sendRespondentEmails(caseData, caseId, respondentParameters, emailToRespondentTemplate);
     }
 
-    public void sendResponseNotificationEmailToTribunal(CaseData caseData,
-                                                        String caseId
-    ) {
-
+    public void sendResponseNotificationEmailToTribunal(CaseData caseData, String caseId) {
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
         addCommonParameters(tribunalParameters, caseData, caseId);
-        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET);
+
         tribunalParameters.put(
             SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
-            hearingDate
+            NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET)
         );
+
         tribunalParameters.put(
             SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
             String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
         );
-        sendTribunalEmail(caseData, caseId, tribunalParameters);
 
+        sendTribunalEmail(
+            caseData,
+            caseId,
+            tribunalParameters,
+            notificationsProperties.getPseTribunalResponseTemplateId()
+        );
     }
 
     public void sendResponseNotificationEmailToRespondent(
@@ -640,7 +645,10 @@ public class NotificationService {
         }
     }
 
-    private void sendTribunalEmail(CaseData caseData, String caseId, Map<String, Object> tribunalParameters) {
+    private void sendTribunalEmail(CaseData caseData,
+                                   String caseId,
+                                   Map<String, Object> tribunalParameters,
+                                   String templateId) {
         String managingOffice = caseData.getManagingOffice();
         if (UNASSIGNED_OFFICE.equals(managingOffice) || isNullOrEmpty(managingOffice)) {
             log.info("Could not send email as no office has been assigned");
@@ -655,7 +663,7 @@ public class NotificationService {
 
         try {
             notificationClient.sendEmail(
-                notificationsProperties.getPseTribunalResponseTemplateId(),
+                templateId,
                 caseData.getTribunalCorrespondenceEmail(),
                 tribunalParameters,
                 caseId
@@ -663,7 +671,6 @@ public class NotificationService {
         } catch (NotificationClientException ne) {
             throw new NotificationException(ne);
         }
-
     }
 
     private void sendRespondentEmails(CaseData caseData, String caseId, Map<String, Object> respondentParameters,

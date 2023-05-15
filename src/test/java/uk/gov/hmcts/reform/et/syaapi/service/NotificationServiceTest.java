@@ -91,6 +91,7 @@ class NotificationServiceTest {
         given(notificationsProperties.getTribunalAcknowledgementTemplateId()).willReturn("Tribunal");
         given(notificationsProperties.getRespondentTseEmailTypeATemplateId()).willReturn("A");
         given(notificationsProperties.getRespondentTseEmailTypeBTemplateId()).willReturn("B");
+        // todo add pse / tse?
         given(notificationsProperties.getPseClaimantResponseYesTemplateId())
             .willReturn("claimantResponseYesTemplateId");
         given(notificationsProperties.getPseClaimantResponseNoTemplateId())

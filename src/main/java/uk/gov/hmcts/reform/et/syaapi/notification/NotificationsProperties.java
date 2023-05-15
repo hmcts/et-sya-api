@@ -70,6 +70,7 @@ public class NotificationsProperties {
     @NotBlank
     private String tribunalAcknowledgementTemplateId;
 
+    // TSE
     @Value("${notifications.tse.claimantResponseYes}")
     @NotBlank
     private String tseClaimantResponseYesTemplateId;
@@ -86,6 +87,7 @@ public class NotificationsProperties {
     @NotBlank
     private String tseRespondentResponseTemplateId;
 
+    // PSE
     @Value("${notifications.pse.claimantResponseYes}")
     @NotBlank
     private String pseClaimantResponseYesTemplateId;
