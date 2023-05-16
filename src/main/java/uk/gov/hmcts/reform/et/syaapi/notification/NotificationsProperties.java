@@ -70,19 +70,37 @@ public class NotificationsProperties {
     @NotBlank
     private String tribunalAcknowledgementTemplateId;
 
-    @Value("${notifications.tribunalResponse}")
+    // TSE
+    @Value("${notifications.tse.claimantResponseYes}")
     @NotBlank
-    private String tribunalResponseTemplateId;
+    private String tseClaimantResponseYesTemplateId;
 
-    @Value("${notifications.claimantResponseNo}")
+    @Value("${notifications.tse.claimantResponseNo}")
     @NotBlank
-    private String claimantResponseNoTemplateId;
+    private String tseClaimantResponseNoTemplateId;
 
-    @Value("${notifications.claimantResponseYes}")
+    @Value("${notifications.tse.tribunalResponse}")
     @NotBlank
-    private String claimantResponseYesTemplateId;
+    private String tseTribunalResponseTemplateId;
 
-    @Value("${notifications.respondentResponse}")
+    @Value("${notifications.tse.respondentResponse}")
     @NotBlank
-    private String respondentResponseTemplateId;
+    private String tseRespondentResponseTemplateId;
+
+    // PSE
+    @Value("${notifications.pse.claimantResponseYes}")
+    @NotBlank
+    private String pseClaimantResponseYesTemplateId;
+
+    @Value("${notifications.pse.claimantResponseNo}")
+    @NotBlank
+    private String pseClaimantResponseNoTemplateId;
+
+    @Value("${notifications.pse.tribunalResponse}")
+    @NotBlank
+    private String pseTribunalResponseTemplateId;
+
+    @Value("${notifications.pse.respondentResponse}")
+    @NotBlank
+    private String pseRespondentResponseTemplateId;
 }

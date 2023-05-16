@@ -7,7 +7,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
-import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
@@ -69,6 +68,7 @@ import static uk.gov.service.notify.NotificationClient.prepareUpload;
 @RequiredArgsConstructor
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 public class NotificationService {
+    public static final String NOT_SET = "Not set";
     private final NotificationClient notificationClient;
     private final NotificationsProperties notificationsProperties;
 
@@ -429,7 +429,12 @@ public class NotificationService {
             String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
         );
 
-        sendTribunalEmail(caseData, caseId, tribunalParameters);
+        sendTribunalEmail(
+            caseData,
+            caseId,
+            tribunalParameters,
+            notificationsProperties.getTseTribunalResponseTemplateId()
+        );
     }
 
     /**
@@ -443,7 +448,7 @@ public class NotificationService {
      * @param hearingDate     date of the nearest hearing
      * @param caseId          16 digit case id
      * @param applicationType type of application
-     * @param tseRespondType  the claimant's response to the application
+     * @param copyToOtherParty  whether to notify other party
      */
     public void sendResponseEmailToClaimant(
         CaseData caseData,
@@ -453,7 +458,7 @@ public class NotificationService {
         String hearingDate,
         String caseId,
         String applicationType,
-        TseRespondType tseRespondType
+        String copyToOtherParty
     ) {
         if (TYPE_C.equals(applicationType)) {
             log.info("Type C application -  Claimant is only notified of "
@@ -486,9 +491,9 @@ public class NotificationService {
             String.format(CONCAT2STRINGS, notificationsProperties.getCitizenPortalLink(), caseId)
         );
 
-        String emailToClaimantTemplate = DONT_SEND_COPY.equals(tseRespondType.getCopyToOtherParty())
-            ? notificationsProperties.getClaimantResponseNoTemplateId()
-            : notificationsProperties.getClaimantResponseYesTemplateId();
+        String emailToClaimantTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
+            ? notificationsProperties.getTseClaimantResponseNoTemplateId()
+            : notificationsProperties.getTseClaimantResponseYesTemplateId();
 
         try {
             notificationClient.sendEmail(
@@ -549,30 +554,32 @@ public class NotificationService {
             String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
         );
 
-        String emailToRespondentTemplate = notificationsProperties.getRespondentResponseTemplateId();
+        String emailToRespondentTemplate = notificationsProperties.getTseRespondentResponseTemplateId();
 
         sendRespondentEmails(caseData, caseId, respondentParameters, emailToRespondentTemplate);
     }
 
-    public void sendResponseNotificationEmailToTribunal(CaseData caseData,
-                                                        String caseId
-    ) {
-
+    public void sendResponseNotificationEmailToTribunal(CaseData caseData, String caseId) {
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
         addCommonParameters(tribunalParameters, caseData, caseId);
-        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
+
         tribunalParameters.put(
             SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
-            hearingDate
+            NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET)
         );
+
         tribunalParameters.put(
             SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
             String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
         );
-        sendTribunalEmail(caseData, caseId, tribunalParameters);
 
+        sendTribunalEmail(
+            caseData,
+            caseId,
+            tribunalParameters,
+            notificationsProperties.getPseTribunalResponseTemplateId()
+        );
     }
-
 
     public void sendResponseNotificationEmailToRespondent(
         CaseData caseData,
@@ -587,7 +594,7 @@ public class NotificationService {
 
         Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
         addCommonParameters(respondentParameters, caseData, caseId);
-        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
+        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET);
         respondentParameters.put(
             SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
             hearingDate
@@ -598,7 +605,7 @@ public class NotificationService {
         );
 
         sendRespondentEmails(caseData, caseId, respondentParameters,
-                             notificationsProperties.getRespondentResponseTemplateId());
+                             notificationsProperties.getPseRespondentResponseTemplateId());
     }
 
     public void sendResponseNotificationEmailToClaimant(
@@ -613,12 +620,12 @@ public class NotificationService {
         }
 
         String emailToClaimantTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
-            ? notificationsProperties.getClaimantResponseNoTemplateId()
-            : notificationsProperties.getClaimantResponseYesTemplateId();
+            ? notificationsProperties.getPseClaimantResponseNoTemplateId()
+            : notificationsProperties.getPseClaimantResponseYesTemplateId();
 
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
         addCommonParameters(claimantParameters, caseData, caseId);
-        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
+        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET);
         claimantParameters.put(
             SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
             hearingDate
@@ -640,7 +647,10 @@ public class NotificationService {
         }
     }
 
-    private void sendTribunalEmail(CaseData caseData, String caseId, Map<String, Object> tribunalParameters) {
+    private void sendTribunalEmail(CaseData caseData,
+                                   String caseId,
+                                   Map<String, Object> tribunalParameters,
+                                   String templateId) {
         String managingOffice = caseData.getManagingOffice();
         if (UNASSIGNED_OFFICE.equals(managingOffice) || isNullOrEmpty(managingOffice)) {
             log.info("Could not send email as no office has been assigned");
@@ -655,7 +665,7 @@ public class NotificationService {
 
         try {
             notificationClient.sendEmail(
-                notificationsProperties.getTribunalResponseTemplateId(),
+                templateId,
                 caseData.getTribunalCorrespondenceEmail(),
                 tribunalParameters,
                 caseId
@@ -663,7 +673,6 @@ public class NotificationService {
         } catch (NotificationClientException ne) {
             throw new NotificationException(ne);
         }
-
     }
 
     private void sendRespondentEmails(CaseData caseData, String caseId, Map<String, Object> respondentParameters,
@@ -714,7 +723,7 @@ public class NotificationService {
         parameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
     }
 
-    private static void addCommonParameters(Map<String, Object> parameters,CaseData caseData, String caseId) {
+    private static void addCommonParameters(Map<String, Object> parameters, CaseData caseData, String caseId) {
         String claimant = String.format("%s %s",
                                         caseData.getClaimantIndType().getClaimantFirstNames(),
                                         caseData.getClaimantIndType().getClaimantLastName()
@@ -722,10 +731,7 @@ public class NotificationService {
         String caseNumber = caseData.getEthosCaseReference();
         String respondentNames = getRespondentNames(caseData);
 
-        String subjectLine = caseNumber;
-        addCommonParameters(parameters, claimant, respondentNames,  caseId, caseNumber, subjectLine);
-
-
+        addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber, caseNumber);
     }
 
     private String getAndSetRule92EmailTemplate(ClaimantTse claimantApplication,

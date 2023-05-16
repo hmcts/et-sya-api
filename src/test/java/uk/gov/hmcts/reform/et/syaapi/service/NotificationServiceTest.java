@@ -15,7 +15,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
-import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
@@ -56,7 +55,6 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.NOTIFICATION_CON
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SUBMIT_CASE_PDF_FILE_RESPONSE;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.WELSH_LANGUAGE;
 
-
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 class NotificationServiceTest {
     public static final String CLAIMANT = "Michael Jackson";
@@ -92,8 +90,11 @@ class NotificationServiceTest {
         given(notificationsProperties.getTribunalAcknowledgementTemplateId()).willReturn("Tribunal");
         given(notificationsProperties.getRespondentTseEmailTypeATemplateId()).willReturn("A");
         given(notificationsProperties.getRespondentTseEmailTypeBTemplateId()).willReturn("B");
-        given(notificationsProperties.getClaimantResponseYesTemplateId()).willReturn("claimantResponseYesTemplateId");
-        given(notificationsProperties.getClaimantResponseNoTemplateId()).willReturn("claimantResponseNoTemplateId");
+        // todo add pse / tse?
+        given(notificationsProperties.getPseClaimantResponseYesTemplateId())
+            .willReturn("claimantResponseYesTemplateId");
+        given(notificationsProperties.getPseClaimantResponseNoTemplateId())
+            .willReturn("claimantResponseNoTemplateId");
         testData = new TestData();
     }
 
@@ -137,7 +138,6 @@ class NotificationServiceTest {
             .isInstanceOf(NotificationException.class)
             .hasMessageContaining("email_address is a required property");
     }
-
 
     @Test
     void ifTemplateIdIsNullWillThrowNotificationException() throws NotificationClientException {
@@ -434,7 +434,7 @@ class NotificationServiceTest {
 
     @SneakyThrows
     @Test
-    void shouldSendEmailToRespondentTypeA() throws NotificationClientException {
+    void shouldSendEmailToRespondentTypeA() {
         testData.getClaimantApplication().setContactApplicationType("strike");
         notificationService.sendAcknowledgementEmailToRespondents(
             testData.getCaseData(),
@@ -592,7 +592,7 @@ class NotificationServiceTest {
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
             CHANGE_DETAILS_APPLICATION_TYPE,
-            new TseRespondType()
+            "No"
         );
 
         verify(notificationClient, times(1)).sendEmail(
@@ -614,7 +614,7 @@ class NotificationServiceTest {
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
             CHANGE_DETAILS_APPLICATION_TYPE,
-            new TseRespondType()
+            "No"
         );
 
         verify(notificationClient, times(0)).sendEmail(
@@ -635,7 +635,7 @@ class NotificationServiceTest {
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
             WITNESS,
-            new TseRespondType()
+            "No"
         );
 
         verify(notificationClient, times(0)).sendEmail(
@@ -762,7 +762,6 @@ class NotificationServiceTest {
         );
     }
 
-
     @Test
     void sendResponseNotificationEmailToTribunal() throws NotificationClientException {
         testData.getCaseData().setTribunalCorrespondenceEmail("tribunal@test.com");
@@ -846,7 +845,6 @@ class NotificationServiceTest {
         );
     }
 
-
     @Test
     void sendResponseNotificationEmailToClaimant() throws NotificationClientException {
         notificationService.sendResponseNotificationEmailToClaimant(
@@ -895,6 +893,4 @@ class NotificationServiceTest {
             any()
         );
     }
-
-
 }
