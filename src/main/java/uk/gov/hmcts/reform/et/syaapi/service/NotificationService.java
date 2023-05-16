@@ -7,7 +7,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
-import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
@@ -430,8 +429,11 @@ public class NotificationService {
             String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
         );
 
-        sendTribunalEmail(caseData, caseId, tribunalParameters,
-                          notificationsProperties.getTseTribunalResponseTemplateId()
+        sendTribunalEmail(
+            caseData,
+            caseId,
+            tribunalParameters,
+            notificationsProperties.getTseTribunalResponseTemplateId()
         );
     }
 
@@ -446,7 +448,7 @@ public class NotificationService {
      * @param hearingDate     date of the nearest hearing
      * @param caseId          16 digit case id
      * @param applicationType type of application
-     * @param tseRespondType  the claimant's response to the application
+     * @param copyToOtherParty  whether to notify other party
      */
     public void sendResponseEmailToClaimant(
         CaseData caseData,
@@ -456,7 +458,7 @@ public class NotificationService {
         String hearingDate,
         String caseId,
         String applicationType,
-        TseRespondType tseRespondType
+        String copyToOtherParty
     ) {
         if (TYPE_C.equals(applicationType)) {
             log.info("Type C application -  Claimant is only notified of "
@@ -489,7 +491,7 @@ public class NotificationService {
             String.format(CONCAT2STRINGS, notificationsProperties.getCitizenPortalLink(), caseId)
         );
 
-        String emailToClaimantTemplate = DONT_SEND_COPY.equals(tseRespondType.getCopyToOtherParty())
+        String emailToClaimantTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
             ? notificationsProperties.getTseClaimantResponseNoTemplateId()
             : notificationsProperties.getTseClaimantResponseYesTemplateId();
 
@@ -552,7 +554,7 @@ public class NotificationService {
             String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
         );
 
-        String emailToRespondentTemplate = notificationsProperties.getPseRespondentResponseTemplateId();
+        String emailToRespondentTemplate = notificationsProperties.getTseRespondentResponseTemplateId();
 
         sendRespondentEmails(caseData, caseId, respondentParameters, emailToRespondentTemplate);
     }

@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
-
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -272,7 +271,7 @@ class ApplicationServiceTest {
     }
 
     @Test
-    void shouldSendResponseEmailsToClaimantWithCorrectParameters() throws NotificationClientException {
+    void shouldSendResponseEmailsToClaimantWithCorrectParameters() {
         RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
         when(caseService.startUpdate(
             TEST_SERVICE_AUTH_TOKEN,
@@ -294,7 +293,7 @@ class ApplicationServiceTest {
             eq(NOT_SET),
             eq("12345"),
             eq("Amend details"),
-            any()
+            eq("No")
         );
     }
 

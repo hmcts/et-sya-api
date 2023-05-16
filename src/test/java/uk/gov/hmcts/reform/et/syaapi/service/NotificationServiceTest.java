@@ -15,7 +15,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
-import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
@@ -593,7 +592,7 @@ class NotificationServiceTest {
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
             CHANGE_DETAILS_APPLICATION_TYPE,
-            new TseRespondType()
+            "No"
         );
 
         verify(notificationClient, times(1)).sendEmail(
@@ -615,7 +614,7 @@ class NotificationServiceTest {
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
             CHANGE_DETAILS_APPLICATION_TYPE,
-            new TseRespondType()
+            "No"
         );
 
         verify(notificationClient, times(0)).sendEmail(
@@ -636,7 +635,7 @@ class NotificationServiceTest {
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
             WITNESS,
-            new TseRespondType()
+            "No"
         );
 
         verify(notificationClient, times(0)).sendEmail(

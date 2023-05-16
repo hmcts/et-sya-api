@@ -9,6 +9,7 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -26,7 +27,6 @@ import uk.gov.service.notify.NotificationClientException;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
@@ -199,13 +199,15 @@ public class ApplicationService {
     private void sendResponseToApplicationEmails(GenericTseApplicationType application,
                                                  CaseData caseData,
                                                  String caseId,
-                                                    RespondToApplicationRequest respondToApplicationRequest) {
-        String claimant = caseData.getClaimantIndType().getClaimantFirstNames() + " "
-            + caseData.getClaimantIndType().getClaimantLastName();
+                                                 RespondToApplicationRequest respondToApplicationRequest) {
+        ClaimantIndType claimantIndType = caseData.getClaimantIndType();
+        String claimant = claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName();
 
         String caseNumber = caseData.getEthosCaseReference();
         String respondentNames = getRespondentNames(caseData);
         String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
+        String type = application.getType();
+        String copyToOtherParty = respondToApplicationRequest.getResponse().getCopyToOtherParty();
 
         notificationService.sendResponseEmailToTribunal(
             caseData,
@@ -214,7 +216,7 @@ public class ApplicationService {
             respondentNames,
             hearingDate,
             caseId,
-            application.getType()
+            type
         );
 
         notificationService.sendResponseEmailToClaimant(
@@ -224,8 +226,8 @@ public class ApplicationService {
             respondentNames,
             hearingDate,
             caseId,
-            application.getType(),
-            respondToApplicationRequest.getResponse()
+            type,
+            copyToOtherParty
         );
 
         notificationService.sendResponseEmailToRespondent(
@@ -235,8 +237,8 @@ public class ApplicationService {
             respondentNames,
             hearingDate,
             caseId,
-            application.getType(),
-            respondToApplicationRequest.getResponse().getCopyToOtherParty()
+            type,
+            copyToOtherParty
         );
     }
 
@@ -245,27 +247,30 @@ public class ApplicationService {
 
         List<DocumentTypeItem> tseFiles = caseData.getDocumentCollection().stream()
             .filter(n -> TSE_FILENAME.equals(n.getValue().getUploadedDocument().getDocumentFilename()))
-            .collect(Collectors.toList());
-        if (!tseFiles.isEmpty()) {
-            String documentUrl = tseFiles.get(tseFiles.size() - 1)
-                .getValue().getUploadedDocument().getDocumentUrl();
-            String docId = documentUrl.substring(documentUrl.lastIndexOf('/') + 1);
-            UUID doc = UUID.fromString(docId);
+            .toList();
 
-            log.info("Downloading pdf of TSE application");
-            ByteArrayResource downloadDocument = caseDocumentService.downloadDocument(
-                authorization,
-                doc
-            ).getBody();
-            if (downloadDocument != null) {
-                return NotificationClient.prepareUpload(
-                    downloadDocument.getByteArray(),
-                    false,
-                    true,
-                    WEEKS_78
-                );
-            }
+        if (tseFiles.isEmpty()) {
+            return null;
         }
-        return null;
+
+        String documentUrl = tseFiles.get(tseFiles.size() - 1).getValue().getUploadedDocument().getDocumentUrl();
+        String docId = documentUrl.substring(documentUrl.lastIndexOf('/') + 1);
+
+        log.info("Downloading pdf of TSE application");
+        ByteArrayResource downloadDocument = caseDocumentService.downloadDocument(
+            authorization,
+            UUID.fromString(docId)
+        ).getBody();
+
+        if (downloadDocument == null) {
+            return null;
+        }
+
+        return NotificationClient.prepareUpload(
+            downloadDocument.getByteArray(),
+            false,
+            true,
+            WEEKS_78
+        );
     }
 }
