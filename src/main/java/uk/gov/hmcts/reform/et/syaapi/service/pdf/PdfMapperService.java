@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.et.syaapi.constants.ClaimTypesConstants;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -114,7 +115,8 @@ public class PdfMapperService {
             ofNullable(caseData.getEt1VettingAdditionalInformationTextArea())
         );
         try {
-            printFields.put(PdfMapperConstants.TRIBUNAL_OFFICE, ofNullable(caseData.getManagingOffice()));
+            printFields.put(PdfMapperConstants.TRIBUNAL_OFFICE,
+                            Optional.of(Objects.toString(caseData.getManagingOffice(), "")));
             printFields.put(PdfMapperConstants.CASE_NUMBER, ofNullable(caseData.getEthosCaseReference()));
             printFields.put(PdfMapperConstants.DATE_RECEIVED,
                             ofNullable(PdfMapperUtil.formatDate(caseData.getReceiptDate())));
