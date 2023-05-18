@@ -79,7 +79,7 @@ class ManageCaseControllerFunctionalTest extends BaseFunctionalTest {
     @SneakyThrows
     @Test
     void stage3GetAllCaseDetailsShouldReturnAllCaseDetails() {
-        TimeUnit.SECONDS.sleep(1);
+        TimeUnit.SECONDS.sleep(2);
         RestAssured.given()
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))

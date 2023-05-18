@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentMap;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 
 /**
  * Maps Case Data attributes to fields within the PDF template.
@@ -112,6 +113,11 @@ public class PdfMapperService {
                         ofNullable(PdfMapperServiceUtil.formatDate(caseData.getReceiptDate())));
         printFields.putAll(PdfMapperHearingPreferencesUtil.printHearingPreferences(caseData));
         try {
+            printFields.put(PdfMapperConstants.TRIBUNAL_OFFICE, Optional.of(printTribunalOffice(caseData)));
+            printFields.put(PdfMapperConstants.CASE_NUMBER, ofNullable(caseData.getEthosCaseReference()));
+            printFields.put(PdfMapperConstants.DATE_RECEIVED,
+                            ofNullable(PdfMapperUtil.formatDate(caseData.getReceiptDate())));
+            printFields.putAll(printHearingPreferences(caseData));
             printFields.putAll(printRespondentDetails(caseData));
             printFields.putAll(printMultipleClaimsDetails(caseData));
             printFields.putAll(printEmploymentDetails(caseData));
@@ -123,12 +129,25 @@ public class PdfMapperService {
         }
         return printFields;
     }
+    private String printTribunalOffice(CaseData caseData) {
+        return UNASSIGNED_OFFICE.equals(caseData.getManagingOffice())
+            ? ""
+            : caseData.getManagingOffice();
+    }
 
-    private void putClaimDescription(CaseData caseData, ConcurrentMap<String, Optional<String>> printFields) {
-        if (!ObjectUtils.isEmpty(caseData.getClaimantRequests())
-            && !ObjectUtils.isEmpty(caseData.getClaimantRequests().getClaimDescription())) {
-            printFields.put(PdfMapperConstants.Q8_CLAIM_DESCRIPTION,
-                            ofNullable(caseData.getClaimantRequests().getClaimDescription()));
+    private Map<String, Optional<String>> printHearingPreferences(CaseData caseData) {
+        ConcurrentHashMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
+        if (caseData.getClaimantHearingPreference() != null) {
+            if (caseData.getClaimantHearingPreference().getReasonableAdjustments() != null
+                && YES.equals(caseData.getClaimantHearingPreference().getReasonableAdjustments())) {
+                printFields.put(PdfMapperConstants.Q12_DISABILITY_YES, Optional.of(YES));
+            } else {
+                printFields.put(PdfMapperConstants.Q12_DISABILITY_NO, Optional.of(NO_LOWERCASE));
+            }
+            printFields.put(
+                PdfMapperConstants.Q12_DISABILITY_DETAILS,
+                ofNullable(caseData.getClaimantHearingPreference().getReasonableAdjustmentsDetail())
+            );
         }
     }
 
