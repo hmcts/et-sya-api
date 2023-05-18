@@ -46,14 +46,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ATTACHMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.OTHER_TYPE_OF_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.INITIATE_CASE_DRAFT;
@@ -79,7 +78,7 @@ public class CaseService {
     private final PdfService pdfService;
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
     private final CaseOfficeService caseOfficeService;
-    private static final String ALL_CASES_QUERY = "{\"query\":{\"match_all\": {}}}";
+    private static final String ALL_CASES_QUERY = "{\"size\":10000,\"query\":{\"match_all\": {}}}";
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
@@ -115,7 +114,7 @@ public class CaseService {
             ENGLAND_CASE_TYPE,
             ALL_CASES_QUERY).getCases()).orElse(Collections.emptyList());
 
-        return Stream.of(scotlandCases, englandCases).flatMap(Collection::stream).collect(toList());
+        return Stream.of(scotlandCases, englandCases).flatMap(Collection::stream).toList();
     }
 
     /**
@@ -240,7 +239,7 @@ public class CaseService {
             if (!ObjectUtils.isEmpty(caseData.getClaimantRequests())
                 && !ObjectUtils.isEmpty(caseData.getClaimantRequests().getClaimDescriptionDocument())) {
                 documentList.add(caseDocumentService.createDocumentTypeItem(
-                    OTHER_TYPE_OF_DOCUMENT,
+                    ET1_ATTACHMENT,
                     caseData.getClaimantRequests().getClaimDescriptionDocument()
                 ));
             }
@@ -387,7 +386,7 @@ public class CaseService {
         return searchEnglandScotlandCases(authorisation, query)
             .stream()
             .map(CaseDetails::getId)
-            .collect(toList());
+            .toList();
     }
 
     /**
