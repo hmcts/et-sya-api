@@ -93,22 +93,12 @@ public class PdfMapperService {
         if (caseData == null) {
             return printFields;
         }
+        putGenericFields(caseData, printFields);
         PdfMapperPersonalDetailsUtil.putPersonalDetails(caseData, printFields);
         PdfMapperClaimDescriptionUtil.putClaimDescription(caseData, printFields);
         PdfMapperRepresentativeUtil.putRepresentative(caseData, printFields);
-
-        printFields.put(PdfMapperConstants.Q15_ADDITIONAL_INFORMATION,
-                        ofNullable(caseData.getEt1VettingAdditionalInformationTextArea()));
-        printFields.put(PdfMapperConstants.TRIBUNAL_OFFICE, ofNullable(caseData.getManagingOffice()));
-        printFields.put(PdfMapperConstants.CASE_NUMBER, ofNullable(caseData.getEthosCaseReference()));
-        printFields.put(PdfMapperConstants.DATE_RECEIVED,
-                        ofNullable(PdfMapperServiceUtil.formatDate(caseData.getReceiptDate())));
         PdfMapperHearingPreferencesUtil.putHearingPreferences(caseData, printFields);
         try {
-            printFields.put(PdfMapperConstants.TRIBUNAL_OFFICE, Optional.of(printTribunalOffice(caseData)));
-            printFields.put(PdfMapperConstants.CASE_NUMBER, ofNullable(caseData.getEthosCaseReference()));
-            printFields.put(PdfMapperConstants.DATE_RECEIVED,
-                            ofNullable(PdfMapperServiceUtil.formatDate(caseData.getReceiptDate())));
             printFields.putAll(printRespondentDetails(caseData));
             printFields.putAll(printMultipleClaimsDetails(caseData));
             printFields.putAll(printEmploymentDetails(caseData));
@@ -119,6 +109,15 @@ public class PdfMapperService {
             log.error("Exception occurred in PDF MAPPER \n" + e.getMessage(), e);
         }
         return printFields;
+    }
+
+    private static void putGenericFields(CaseData caseData, ConcurrentMap<String, Optional<String>> printFields) {
+        printFields.put(PdfMapperConstants.Q15_ADDITIONAL_INFORMATION,
+                        ofNullable(caseData.getEt1VettingAdditionalInformationTextArea()));
+        printFields.put(PdfMapperConstants.TRIBUNAL_OFFICE, ofNullable(caseData.getManagingOffice()));
+        printFields.put(PdfMapperConstants.CASE_NUMBER, ofNullable(caseData.getEthosCaseReference()));
+        printFields.put(PdfMapperConstants.DATE_RECEIVED,
+                        ofNullable(PdfMapperServiceUtil.formatDate(caseData.getReceiptDate())));
     }
 
     private String printTribunalOffice(CaseData caseData) {

@@ -9,6 +9,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantRequestType;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantType;
+import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
@@ -24,6 +25,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.EMAIL;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.FAX;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.FEMALE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MALE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MERCURY;
@@ -32,6 +35,8 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MULTIPLE
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.OTHER;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.OTHER_TITLE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.POST;
+
 
 @Data
 @SuppressWarnings({"PMD.TooManyFields", "PMD.TooManyMethods"})
@@ -584,6 +589,97 @@ public final class TestData {
             Arguments.of(claimantRequestClaimDescriptionEmpty, null),
             Arguments.of(claimantRequestClaimDescriptionBlank, null),
             Arguments.of(claimantRequestClaimDescriptionFilled, "Test Claim Description")
+        );
+    }
+
+    public static Stream<Arguments> generateRepresentativeClaimantTypes() {
+        Address representativeAddress = new Address();
+        representativeAddress.setAddressLine1("AddressLine1");
+        representativeAddress.setAddressLine2("AddressLine2");
+        representativeAddress.setAddressLine3("AddressLine3");
+        representativeAddress.setPostTown("PostTown");
+        representativeAddress.setCounty("County");
+        representativeAddress.setCountry("Country");
+        representativeAddress.setPostCode("SW1A 1AA");
+
+        RepresentedTypeC representativeClaimantTypeAllFilled = new RepresentedTypeC();
+        representativeClaimantTypeAllFilled.setRepresentativeAddress(representativeAddress);
+        representativeClaimantTypeAllFilled.setNameOfRepresentative(MICHAEL + " " + MERCURY);
+        representativeClaimantTypeAllFilled.setRepresentativeReference("Test Reference");
+        representativeClaimantTypeAllFilled.setNameOfOrganisation("Test Organisation");
+        representativeClaimantTypeAllFilled.setRepresentativePhoneNumber("03123456789");
+        representativeClaimantTypeAllFilled.setRepresentativeMobileNumber("07444518903");
+        representativeClaimantTypeAllFilled.setRepresentativeEmailAddress("test@gmail.com");
+        representativeClaimantTypeAllFilled.setRepresentativePreference(EMAIL);
+
+        RepresentedTypeC representativeClaimantTypeAddressNull = new RepresentedTypeC();
+        representativeClaimantTypeAddressNull.setRepresentativeAddress(null);
+        representativeClaimantTypeAddressNull.setNameOfRepresentative(MICHAEL + " " + MERCURY);
+        representativeClaimantTypeAddressNull.setRepresentativeReference("Test Reference");
+        representativeClaimantTypeAddressNull.setNameOfOrganisation("Test Organisation");
+        representativeClaimantTypeAddressNull.setRepresentativePhoneNumber("03123456789");
+        representativeClaimantTypeAddressNull.setRepresentativeMobileNumber("07444518903");
+        representativeClaimantTypeAddressNull.setRepresentativeEmailAddress("test@gmail.com");
+        representativeClaimantTypeAddressNull.setRepresentativePreference(EMAIL);
+
+        RepresentedTypeC representativeClaimantPreferenceNull = new RepresentedTypeC();
+        representativeClaimantPreferenceNull.setRepresentativeAddress(representativeAddress);
+        representativeClaimantPreferenceNull.setNameOfRepresentative(MICHAEL + " " + MERCURY);
+        representativeClaimantPreferenceNull.setRepresentativeReference("Test Reference");
+        representativeClaimantPreferenceNull.setRepresentativePreference(null);
+        representativeClaimantPreferenceNull.setNameOfOrganisation("Test Organisation");
+        representativeClaimantPreferenceNull.setRepresentativePhoneNumber("03123456789");
+        representativeClaimantPreferenceNull.setRepresentativeMobileNumber("07444518903");
+        representativeClaimantPreferenceNull.setRepresentativeEmailAddress("test@gmail.com");
+
+        RepresentedTypeC representativeClaimantPreferenceEmpty = new RepresentedTypeC();
+        representativeClaimantPreferenceEmpty.setRepresentativeAddress(representativeAddress);
+        representativeClaimantPreferenceEmpty.setNameOfRepresentative(MICHAEL + " " + MERCURY);
+        representativeClaimantPreferenceEmpty.setRepresentativeReference("Test Reference");
+        representativeClaimantPreferenceEmpty.setRepresentativePreference("");
+        representativeClaimantPreferenceEmpty.setNameOfOrganisation("Test Organisation");
+        representativeClaimantPreferenceEmpty.setRepresentativePhoneNumber("03123456789");
+        representativeClaimantPreferenceEmpty.setRepresentativeMobileNumber("07444518903");
+        representativeClaimantPreferenceEmpty.setRepresentativeEmailAddress("test@gmail.com");
+
+        RepresentedTypeC representativeClaimantPreferenceBlank = new RepresentedTypeC();
+        representativeClaimantPreferenceBlank.setRepresentativeAddress(representativeAddress);
+        representativeClaimantPreferenceBlank.setNameOfRepresentative(MICHAEL + " " + MERCURY);
+        representativeClaimantPreferenceBlank.setRepresentativeReference("Test Reference");
+        representativeClaimantPreferenceBlank.setRepresentativePreference("     ");
+        representativeClaimantPreferenceBlank.setNameOfOrganisation("Test Organisation");
+        representativeClaimantPreferenceBlank.setRepresentativePhoneNumber("03123456789");
+        representativeClaimantPreferenceBlank.setRepresentativeMobileNumber("07444518903");
+        representativeClaimantPreferenceBlank.setRepresentativeEmailAddress("test@gmail.com");
+
+        RepresentedTypeC representativeClaimantTypePreferenceFax = new RepresentedTypeC();
+        representativeClaimantTypePreferenceFax.setRepresentativeAddress(representativeAddress);
+        representativeClaimantTypePreferenceFax.setNameOfRepresentative(MICHAEL + " " + MERCURY);
+        representativeClaimantTypePreferenceFax.setRepresentativeReference("Test Reference");
+        representativeClaimantTypePreferenceFax.setNameOfOrganisation("Test Organisation");
+        representativeClaimantTypePreferenceFax.setRepresentativePhoneNumber("03123456789");
+        representativeClaimantTypePreferenceFax.setRepresentativeMobileNumber("07444518903");
+        representativeClaimantTypePreferenceFax.setRepresentativeEmailAddress("test@gmail.com");
+        representativeClaimantTypePreferenceFax.setRepresentativePreference(FAX);
+
+        RepresentedTypeC representativeClaimantTypePreferencePost = new RepresentedTypeC();
+        representativeClaimantTypePreferencePost.setRepresentativeAddress(representativeAddress);
+        representativeClaimantTypePreferencePost.setNameOfRepresentative(MICHAEL + " " + MERCURY);
+        representativeClaimantTypePreferencePost.setRepresentativeReference("Test Reference");
+        representativeClaimantTypePreferencePost.setNameOfOrganisation("Test Organisation");
+        representativeClaimantTypePreferencePost.setRepresentativePhoneNumber("03123456789");
+        representativeClaimantTypePreferencePost.setRepresentativeMobileNumber("07444518903");
+        representativeClaimantTypePreferencePost.setRepresentativeEmailAddress("test@gmail.com");
+        representativeClaimantTypePreferencePost.setRepresentativePreference(POST);
+
+        return Stream.of(
+            Arguments.of(representativeClaimantTypeAllFilled),
+            Arguments.of(representativeClaimantTypeAddressNull),
+            Arguments.of(representativeClaimantPreferenceNull),
+            Arguments.of(representativeClaimantPreferenceEmpty),
+            Arguments.of(representativeClaimantPreferenceBlank),
+            Arguments.of(representativeClaimantTypePreferenceFax),
+            Arguments.of(representativeClaimantTypePreferencePost)
         );
     }
 }
