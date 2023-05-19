@@ -40,7 +40,7 @@ public final class PdfMapperServiceUtil {
                                                                "BRITAIN");
 
     private PdfMapperServiceUtil() {
-
+        // Utility classes should not have a public or default constructor.
     }
 
     /**
@@ -250,6 +250,6 @@ public final class PdfMapperServiceUtil {
     }
 
     public static boolean isYes(String stringValue) {
-        return YES.toLowerCase().equals(StringUtils.isNotBlank(stringValue) ? stringValue.toLowerCase() : "");
+        return YES.equalsIgnoreCase(stringValue);
     }
 }

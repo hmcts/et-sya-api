@@ -70,7 +70,7 @@ public class NotificationService {
         } catch (NotificationClientException ne) {
             GenericServiceUtil.logException("Error while trying to sending notification to client",
                                             GenericServiceUtil.getStringValueFromStringMap(parameters,
-                                                                                           SEND_EMAIL_PARAMS_CASE_NUMBER_KEY),
+                                                                                   SEND_EMAIL_PARAMS_CASE_NUMBER_KEY),
                                             ne.getMessage(),
                                             this.getClass().getName(), "sendEmail");
             throw new NotificationException(ne);
@@ -145,7 +145,8 @@ public class NotificationService {
             Map<String, Object> parameters = new ConcurrentHashMap<>();
             parameters.put(SEND_EMAIL_SERVICE_OWNER_NAME_KEY, SEND_EMAIL_SERVICE_OWNER_NAME_VALUE);
             parameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
-            parameters.put(SEND_EMAIL_PARAMS_ET1PDF_ENGLISH_LINK_KEY, GenericServiceUtil.prepareUpload(casePdfFiles, 0));
+            parameters.put(SEND_EMAIL_PARAMS_ET1PDF_ENGLISH_LINK_KEY, GenericServiceUtil
+                .prepareUpload(casePdfFiles, 0));
             parameters.put(SEND_EMAIL_PARAMS_ET1PDF_WELSH_LINK_KEY, GenericServiceUtil.prepareUpload(casePdfFiles, 1));
             parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF1_LINK_KEY, GenericServiceUtil.prepareUpload(acasCertificates, 0));
             parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF2_LINK_KEY, GenericServiceUtil.prepareUpload(acasCertificates, 1));
@@ -176,7 +177,8 @@ public class NotificationService {
                 caseNumber
             );
         } catch (NotificationClientException ne) {
-            GenericServiceUtil.logException("Case Documents Upload error - Failed to send document upload error message",
+            GenericServiceUtil
+                .logException("Case Documents Upload error - Failed to send document upload error message",
                                             caseRequest.getCaseId(), ne.getMessage(),
                                             this.getClass().getName(), "sendDocUploadErrorEmail");
         }

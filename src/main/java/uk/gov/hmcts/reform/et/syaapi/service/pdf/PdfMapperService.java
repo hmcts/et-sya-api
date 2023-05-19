@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.common.Strings;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
@@ -12,6 +11,7 @@ import uk.gov.hmcts.et.common.model.ccd.types.NewEmploymentType;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.et.syaapi.constants.ClaimTypesConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperClaimDescriptionUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperHearingPreferencesUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperPersonalDetailsUtil;
@@ -97,7 +97,7 @@ public class PdfMapperService {
             return printFields;
         }
         PdfMapperPersonalDetailsUtil.putPersonalDetails(caseData, printFields);
-        putClaimDescription(caseData, printFields);
+        PdfMapperClaimDescriptionUtil.putClaimDescription(caseData, printFields);
         try {
             if (caseData.getRepresentativeClaimantType() != null) {
                 printFields.putAll(printRepresentative(caseData.getRepresentativeClaimantType()));
@@ -116,7 +116,7 @@ public class PdfMapperService {
             printFields.put(PdfMapperConstants.TRIBUNAL_OFFICE, Optional.of(printTribunalOffice(caseData)));
             printFields.put(PdfMapperConstants.CASE_NUMBER, ofNullable(caseData.getEthosCaseReference()));
             printFields.put(PdfMapperConstants.DATE_RECEIVED,
-                            ofNullable(PdfMapperUtil.formatDate(caseData.getReceiptDate())));
+                            ofNullable(PdfMapperServiceUtil.formatDate(caseData.getReceiptDate())));
             printFields.putAll(printHearingPreferences(caseData));
             printFields.putAll(printRespondentDetails(caseData));
             printFields.putAll(printMultipleClaimsDetails(caseData));
@@ -129,6 +129,7 @@ public class PdfMapperService {
         }
         return printFields;
     }
+
     private String printTribunalOffice(CaseData caseData) {
         return UNASSIGNED_OFFICE.equals(caseData.getManagingOffice())
             ? ""
@@ -149,6 +150,7 @@ public class PdfMapperService {
                 ofNullable(caseData.getClaimantHearingPreference().getReasonableAdjustmentsDetail())
             );
         }
+        return printFields;
     }
 
     private Map<String, Optional<String>> printRespondentDetails(CaseData caseData) {
@@ -291,7 +293,8 @@ public class PdfMapperService {
                     if (NOTICE.equals(claimantOtherType.getStillWorking())) {
                         printFields.put(
                             PdfMapperConstants.Q5_NOT_ENDED,
-                            ofNullable(PdfMapperServiceUtil.formatDate(claimantOtherType.getClaimantEmployedNoticePeriod()))
+                            ofNullable(PdfMapperServiceUtil.formatDate(
+                                claimantOtherType.getClaimantEmployedNoticePeriod()))
                         );
                     }
 
@@ -602,7 +605,8 @@ public class PdfMapperService {
             }
 
             String claimantCompensation = PdfMapperServiceUtil.generateClaimantCompensation(caseData);
-            String claimantTribunalRecommendation = PdfMapperServiceUtil.generateClaimantTribunalRecommendation(caseData);
+            String claimantTribunalRecommendation = PdfMapperServiceUtil
+                .generateClaimantTribunalRecommendation(caseData);
             printFields.put(
                 PdfMapperConstants.Q9_WHAT_COMPENSATION_REMEDY_ARE_YOU_SEEKING,
                 Optional.of(claimantCompensation + claimantTribunalRecommendation)

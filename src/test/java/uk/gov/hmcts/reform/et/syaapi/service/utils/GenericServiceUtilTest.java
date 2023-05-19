@@ -73,7 +73,8 @@ class GenericServiceUtilTest {
     @MethodSource("retrievePdfFileListForTestingFindPdfFileBySelectedLanguage")
     void theFindPdfFileBySelectedLanguage(List<PdfDecodedMultipartFile> pdfFileList, String selectedLanguage,
                                           byte[] expectedValue) {
-        assertThat(GenericServiceUtil.findPdfFileBySelectedLanguage(pdfFileList, selectedLanguage)).isEqualTo(expectedValue);
+        assertThat(GenericServiceUtil.findPdfFileBySelectedLanguage(pdfFileList, selectedLanguage))
+            .isEqualTo(expectedValue);
     }
 
     private static Stream<Arguments> retrieveCaseDataArgumentsForTheTestFindClaimantLanguage() {

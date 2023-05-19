@@ -151,6 +151,18 @@ public final class TestConstants {
                                                + "4OS4gUmVnYXJkcywgRVQgVGVhbS4=\","
                                                + "\"confirm_email_before_download\":null,\"retention_period\""
                                                + ":null,\"is_csv\":false}");
+    public static final String CLAIMANT_PHONE_NUMBER_FIELD_NAME = "1.6 phone number";
+    public static final String CLAIMANT_MOBILE_NUMBER_FIELD_NAME = "1.7 mobile number";
+    public static final String CLAIMANT_EMAIL_FIELD_NAME = "1.9 email";
+    public static final String CLAIMANT_CONTACT_EMAIL_FIELD_NAME = "1.8 How should we contact you - Email";
+    public static final String CLAIMANT_CONTACT_POST_FIELD_NAME = "1.8 How should we contact you - Post";
+    public static final String OTHER = "Other";
+    public static final String OTHER_TITLE = "Other Title";
+    public static final String MICHAEL = "Michael";
+    public static final String MERCURY = "Mercury";
+    public static final String MALE = "Male";
+    public static final String FEMALE = "Female";
+
 
     private TestConstants() {
 

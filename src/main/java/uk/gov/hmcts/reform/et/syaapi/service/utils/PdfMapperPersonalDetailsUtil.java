@@ -25,8 +25,8 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.SEX
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.SEX_MALE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.SEX_PREFER_NOT_TO_SAY;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.SEX_PREFER_NOT_TO_SAY_LOWERCASE;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.TITLE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.TITLES;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.TITLE_MAP;
 
 /**
  * Mapper for personal details on the case data to the ET1 Pdf form.
@@ -34,7 +34,7 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.TIT
 public final class PdfMapperPersonalDetailsUtil {
 
     private PdfMapperPersonalDetailsUtil() {
-        // Final class
+        // Utility classes should not have a public or default constructor.
     }
 
     public static void putPersonalDetails(CaseData caseData, ConcurrentMap<String, Optional<String>> printFields) {
@@ -108,11 +108,17 @@ public final class PdfMapperPersonalDetailsUtil {
 
         if (StringUtils.isNotBlank(claimantSex)) {
             switch (claimantSex) {
-                case SEX_MALE -> sexFields.put(PdfMapperConstants.Q1_SEX_MALE, Optional.of(YES));
-                case SEX_FEMALE -> sexFields.put(PdfMapperConstants.Q1_SEX_FEMALE, Optional.of(SEX_FEMALE_LOWERCASE));
-                case SEX_PREFER_NOT_TO_SAY ->
-                    sexFields.put(PdfMapperConstants.Q1_SEX_PREFER_NOT_TO_SAY, Optional.of(SEX_PREFER_NOT_TO_SAY_LOWERCASE));
-                default -> throw new IllegalStateException("Can't have this as the claimant's sex: " + claimantSex);
+                case SEX_MALE:
+                    sexFields.put(PdfMapperConstants.Q1_SEX_MALE, Optional.of(YES));
+                    break;
+                case SEX_FEMALE:
+                    sexFields.put(PdfMapperConstants.Q1_SEX_FEMALE, Optional.of(SEX_FEMALE_LOWERCASE));
+                    break;
+                case SEX_PREFER_NOT_TO_SAY:
+                    sexFields.put(PdfMapperConstants.Q1_SEX_PREFER_NOT_TO_SAY,
+                                  Optional.of(SEX_PREFER_NOT_TO_SAY_LOWERCASE));
+                    break;
+                default: throw new IllegalStateException("Can't have this as the claimant's sex: " + claimantSex);
             }
         }
         return sexFields;
@@ -125,7 +131,7 @@ public final class PdfMapperPersonalDetailsUtil {
         }
 
         Address claimantAddressUK = claimantType.getClaimantAddressUK();
-        if (claimantAddressUK != null) {
+        if (!ObjectUtils.isEmpty(claimantAddressUK)) {
             printFields.put(PdfMapperConstants.Q1_6_CLAIMANT_ADDRESS,
                             ofNullable(PdfMapperServiceUtil.formatAddressForTextField(claimantAddressUK)));
             printFields.put(PdfMapperConstants.Q1_6_CLAIMANT_POSTCODE,

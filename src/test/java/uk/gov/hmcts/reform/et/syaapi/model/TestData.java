@@ -7,6 +7,8 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
+import uk.gov.hmcts.et.common.model.ccd.types.ClaimantRequestType;
+import uk.gov.hmcts.et.common.model.ccd.types.ClaimantType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
@@ -22,8 +24,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.FEMALE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MALE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MERCURY;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MICHAEL;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MULTIPLE_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.OTHER;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.OTHER_TITLE;
 
 @Data
 @SuppressWarnings({"PMD.TooManyFields", "PMD.TooManyMethods"})
@@ -431,64 +439,64 @@ public final class TestData {
         return searchResult;
     }
 
-    public static Stream<Arguments> generatePutPersonalDetailsArguments() {
+    public static Stream<Arguments> generateClaimantIndTypeArguments() {
         ClaimantIndType claimantIndTypeOtherTitleMaleNotNullDateOfBirth = new ClaimantIndType();
-        claimantIndTypeOtherTitleMaleNotNullDateOfBirth.setClaimantPreferredTitle("Other");
-        claimantIndTypeOtherTitleMaleNotNullDateOfBirth.setClaimantTitleOther("Other Title");
-        claimantIndTypeOtherTitleMaleNotNullDateOfBirth.setClaimantFirstNames("Michael");
-        claimantIndTypeOtherTitleMaleNotNullDateOfBirth.setClaimantLastName("Mercury");
+        claimantIndTypeOtherTitleMaleNotNullDateOfBirth.setClaimantPreferredTitle(OTHER);
+        claimantIndTypeOtherTitleMaleNotNullDateOfBirth.setClaimantTitleOther(OTHER_TITLE);
+        claimantIndTypeOtherTitleMaleNotNullDateOfBirth.setClaimantFirstNames(MICHAEL);
+        claimantIndTypeOtherTitleMaleNotNullDateOfBirth.setClaimantLastName(MERCURY);
         claimantIndTypeOtherTitleMaleNotNullDateOfBirth.setClaimantDateOfBirth("1979-05-08");
-        claimantIndTypeOtherTitleMaleNotNullDateOfBirth.setClaimantSex("Male");
+        claimantIndTypeOtherTitleMaleNotNullDateOfBirth.setClaimantSex(MALE);
 
         ClaimantIndType claimantIndTypeTitleMrMaleNotNullDateOfBirth = new ClaimantIndType();
         claimantIndTypeTitleMrMaleNotNullDateOfBirth.setClaimantPreferredTitle("Mr");
-        claimantIndTypeTitleMrMaleNotNullDateOfBirth.setClaimantFirstNames("Michael");
-        claimantIndTypeTitleMrMaleNotNullDateOfBirth.setClaimantLastName("Mercury");
+        claimantIndTypeTitleMrMaleNotNullDateOfBirth.setClaimantFirstNames(MICHAEL);
+        claimantIndTypeTitleMrMaleNotNullDateOfBirth.setClaimantLastName(MERCURY);
         claimantIndTypeTitleMrMaleNotNullDateOfBirth.setClaimantDateOfBirth("1980-06-09");
-        claimantIndTypeTitleMrMaleNotNullDateOfBirth.setClaimantSex("Male");
+        claimantIndTypeTitleMrMaleNotNullDateOfBirth.setClaimantSex(MALE);
 
         ClaimantIndType claimantIndTypeTitleMsFemaleNotNullDateOfBirth = new ClaimantIndType();
         claimantIndTypeTitleMsFemaleNotNullDateOfBirth.setClaimantPreferredTitle("Ms");
         claimantIndTypeTitleMsFemaleNotNullDateOfBirth.setClaimantFirstNames("Elizabeth");
         claimantIndTypeTitleMsFemaleNotNullDateOfBirth.setClaimantLastName("Taylor");
         claimantIndTypeTitleMsFemaleNotNullDateOfBirth.setClaimantDateOfBirth("1981-07-10");
-        claimantIndTypeTitleMsFemaleNotNullDateOfBirth.setClaimantSex("Female");
+        claimantIndTypeTitleMsFemaleNotNullDateOfBirth.setClaimantSex(FEMALE);
 
         ClaimantIndType claimantIndTypeTitleMrsFemaleNotNullDateOfBirth = new ClaimantIndType();
         claimantIndTypeTitleMrsFemaleNotNullDateOfBirth.setClaimantPreferredTitle("Mrs");
         claimantIndTypeTitleMrsFemaleNotNullDateOfBirth.setClaimantFirstNames("Taylor");
         claimantIndTypeTitleMrsFemaleNotNullDateOfBirth.setClaimantLastName("Swift");
         claimantIndTypeTitleMrsFemaleNotNullDateOfBirth.setClaimantDateOfBirth("1982-08-11");
-        claimantIndTypeTitleMrsFemaleNotNullDateOfBirth.setClaimantSex("Female");
+        claimantIndTypeTitleMrsFemaleNotNullDateOfBirth.setClaimantSex(FEMALE);
 
         ClaimantIndType claimantIndTypeTitleMissFemaleNotNullDateOfBirth = new ClaimantIndType();
         claimantIndTypeTitleMissFemaleNotNullDateOfBirth.setClaimantPreferredTitle("Miss");
         claimantIndTypeTitleMissFemaleNotNullDateOfBirth.setClaimantFirstNames("Taylor");
         claimantIndTypeTitleMissFemaleNotNullDateOfBirth.setClaimantLastName("Swift");
         claimantIndTypeTitleMissFemaleNotNullDateOfBirth.setClaimantDateOfBirth("1983-09-12");
-        claimantIndTypeTitleMissFemaleNotNullDateOfBirth.setClaimantSex("Female");
+        claimantIndTypeTitleMissFemaleNotNullDateOfBirth.setClaimantSex(FEMALE);
 
         ClaimantIndType claimantIndTypeOtherTitleMaleNullDateOfBirth = new ClaimantIndType();
-        claimantIndTypeOtherTitleMaleNullDateOfBirth.setClaimantPreferredTitle("Other");
-        claimantIndTypeOtherTitleMaleNullDateOfBirth.setClaimantTitleOther("Other Title");
-        claimantIndTypeOtherTitleMaleNullDateOfBirth.setClaimantFirstNames("Michael");
-        claimantIndTypeOtherTitleMaleNullDateOfBirth.setClaimantLastName("Mercury");
+        claimantIndTypeOtherTitleMaleNullDateOfBirth.setClaimantPreferredTitle(OTHER);
+        claimantIndTypeOtherTitleMaleNullDateOfBirth.setClaimantTitleOther(OTHER_TITLE);
+        claimantIndTypeOtherTitleMaleNullDateOfBirth.setClaimantFirstNames(MICHAEL);
+        claimantIndTypeOtherTitleMaleNullDateOfBirth.setClaimantLastName(MERCURY);
         claimantIndTypeOtherTitleMaleNullDateOfBirth.setClaimantDateOfBirth(null);
-        claimantIndTypeOtherTitleMaleNullDateOfBirth.setClaimantSex("Male");
+        claimantIndTypeOtherTitleMaleNullDateOfBirth.setClaimantSex(MALE);
 
         ClaimantIndType claimantIndTypeOtherTitleMaleEmptyDateOfBirth = new ClaimantIndType();
-        claimantIndTypeOtherTitleMaleEmptyDateOfBirth.setClaimantPreferredTitle("Other");
-        claimantIndTypeOtherTitleMaleEmptyDateOfBirth.setClaimantTitleOther("Other Title");
-        claimantIndTypeOtherTitleMaleEmptyDateOfBirth.setClaimantFirstNames("Michael");
-        claimantIndTypeOtherTitleMaleEmptyDateOfBirth.setClaimantLastName("Mercury");
+        claimantIndTypeOtherTitleMaleEmptyDateOfBirth.setClaimantPreferredTitle(OTHER);
+        claimantIndTypeOtherTitleMaleEmptyDateOfBirth.setClaimantTitleOther(OTHER_TITLE);
+        claimantIndTypeOtherTitleMaleEmptyDateOfBirth.setClaimantFirstNames(MICHAEL);
+        claimantIndTypeOtherTitleMaleEmptyDateOfBirth.setClaimantLastName(MERCURY);
         claimantIndTypeOtherTitleMaleEmptyDateOfBirth.setClaimantDateOfBirth(" ");
-        claimantIndTypeOtherTitleMaleEmptyDateOfBirth.setClaimantSex("Male");
+        claimantIndTypeOtherTitleMaleEmptyDateOfBirth.setClaimantSex(MALE);
 
         ClaimantIndType claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth = new ClaimantIndType();
-        claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth.setClaimantPreferredTitle("Other");
-        claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth.setClaimantTitleOther("Other Title");
-        claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth.setClaimantFirstNames("Michael");
-        claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth.setClaimantLastName("Mercury");
+        claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth.setClaimantPreferredTitle(OTHER);
+        claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth.setClaimantTitleOther(OTHER_TITLE);
+        claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth.setClaimantFirstNames(MICHAEL);
+        claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth.setClaimantLastName(MERCURY);
         claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth.setClaimantDateOfBirth("1984-10-13");
         claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth.setClaimantSex("Prefer not to say");
 
@@ -503,4 +511,79 @@ public final class TestData {
         );
     }
 
+    public static Stream<Arguments> generateClaimantTypeArguments() {
+
+        ClaimantType claimantTypePhoneNumber = new ClaimantType();
+        claimantTypePhoneNumber.setClaimantPhoneNumber("07444444444");
+
+        ClaimantType claimantTypeMobileNumber = new ClaimantType();
+        claimantTypeMobileNumber.setClaimantPhoneNumber("07444444555");
+
+        ClaimantType claimantTypeEmail = new ClaimantType();
+        claimantTypeEmail.setClaimantEmailAddress("mehmet@tdmehmet.com");
+
+        ClaimantType claimantTypeContactPreferenceEmail = new ClaimantType();
+        claimantTypeContactPreferenceEmail.setClaimantContactPreference("Email");
+
+        ClaimantType claimantTypeContactPreferencePost = new ClaimantType();
+        claimantTypeContactPreferencePost.setClaimantContactPreference("Post");
+
+        Address claimantAddressUK = new Address();
+        claimantAddressUK.setAddressLine1("AddressLine1");
+        claimantAddressUK.setAddressLine2("AddressLine2");
+        claimantAddressUK.setAddressLine3("AddressLine3");
+        claimantAddressUK.setPostTown("PostTown");
+        claimantAddressUK.setCounty("County");
+        claimantAddressUK.setCountry("Country");
+        claimantAddressUK.setPostCode("SW1A 1AA");
+        ClaimantType claimantTypeAddressUK = new ClaimantType();
+        claimantTypeAddressUK.setClaimantAddressUK(claimantAddressUK);
+
+        ClaimantType claimantTypeAll = new ClaimantType();
+        claimantTypeAll.setClaimantPhoneNumber("07444444444");
+        claimantTypeAll.setClaimantPhoneNumber("07444444555");
+        claimantTypeAll.setClaimantEmailAddress("mehmet@tdmehmet.com");
+        claimantTypeAll.setClaimantContactPreference("Email");
+        claimantTypeAll.setClaimantContactPreference("Post");
+        claimantTypeAll.setClaimantAddressUK(claimantAddressUK);
+
+        ClaimantType claimantTypeBlank = new ClaimantType();
+
+        return Stream.of(
+            Arguments.of(claimantTypeBlank),
+            Arguments.of(claimantTypePhoneNumber),
+            Arguments.of(claimantTypeMobileNumber),
+            Arguments.of(claimantTypeEmail),
+            Arguments.of(claimantTypeContactPreferenceEmail),
+            Arguments.of(claimantTypeContactPreferencePost),
+            Arguments.of(claimantTypeAddressUK),
+            Arguments.of(claimantTypeAll)
+        );
+    }
+
+    public static Stream<Arguments> generateClaimantRequests() {
+
+        ClaimantRequestType claimantRequestClaimDescriptionNull = new ClaimantRequestType();
+        claimantRequestClaimDescriptionNull.setClaimDescription(null);
+
+        ClaimantRequestType claimantRequestClaimDescriptionEmpty = new ClaimantRequestType();
+        claimantRequestClaimDescriptionEmpty.setClaimDescription("");
+
+        ClaimantRequestType claimantRequestClaimDescriptionBlank = new ClaimantRequestType();
+        claimantRequestClaimDescriptionBlank.setClaimDescription("   ");
+
+        ClaimantRequestType claimantRequestClaimDescriptionFilled = new ClaimantRequestType();
+        claimantRequestClaimDescriptionFilled.setClaimDescription("Test Claim Description");
+
+        ClaimantRequestType claimantRequestEmpty = new ClaimantRequestType();
+
+        return Stream.of(
+            Arguments.of(null, null),
+            Arguments.of(claimantRequestEmpty, null),
+            Arguments.of(claimantRequestClaimDescriptionNull, null),
+            Arguments.of(claimantRequestClaimDescriptionEmpty, null),
+            Arguments.of(claimantRequestClaimDescriptionBlank, null),
+            Arguments.of(claimantRequestClaimDescriptionFilled, "Test Claim Description")
+        );
+    }
 }

@@ -20,7 +20,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGU
 public final class GenericServiceUtil {
 
     private GenericServiceUtil() {
-
+        // Utility classes should not have a public or default constructor.
     }
 
     public static String findClaimantLanguage(CaseData caseData) {

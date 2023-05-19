@@ -16,8 +16,11 @@ public final class PdfMapperHearingPreferencesUtil {
 
     private static final String NO_LOWERCASE = "no";
 
-    public static ConcurrentMap<String, Optional<String>>
-    printHearingPreferences(CaseData caseData) {
+    private PdfMapperHearingPreferencesUtil() {
+        // Utility classes should not have a public or default constructor.
+    }
+
+    public static ConcurrentMap<String, Optional<String>> printHearingPreferences(CaseData caseData) {
         ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         try {
             PdfMapperHearingPreferencesUtil.setClaimantReasonableAdjustments(caseData, printFields);
@@ -34,8 +37,8 @@ public final class PdfMapperHearingPreferencesUtil {
 
     private static void setClaimantReasonableAdjustments(CaseData caseData,
                                                         ConcurrentMap<String, Optional<String>> printFields) {
-        if (!ObjectUtils.isEmpty(caseData.getClaimantHearingPreference()) &&
-            !ObjectUtils.isEmpty(caseData.getClaimantHearingPreference().getReasonableAdjustments())) {
+        if (!ObjectUtils.isEmpty(caseData.getClaimantHearingPreference())
+            && !ObjectUtils.isEmpty(caseData.getClaimantHearingPreference().getReasonableAdjustments())) {
             if (PdfMapperServiceUtil.isYes(caseData.getClaimantHearingPreference().getReasonableAdjustments())) {
                 printFields.put(PdfMapperConstants.Q12_DISABILITY_YES, Optional.of(YES));
             } else {
@@ -50,36 +53,25 @@ public final class PdfMapperHearingPreferencesUtil {
 
     private static void setClaimantHearingPreferences(CaseData caseData,
                                                 ConcurrentMap<String, Optional<String>> printFields) {
-
-        if(!setClaimantHearingPreferencesNoneWhenNothingSelected(caseData, printFields)) {
+        if (checkIfHearingPreferencesNoHearingsOrNothingSelected(caseData)) {
+            setClaimantHearingPreferencesNoneWhenNothingSelected(caseData, printFields);
+        } else {
             setClaimantHearingPreferencesWhenVideoPhoneSelected(caseData, printFields);
         }
-
     }
 
-    private static boolean
-        setClaimantHearingPreferencesNoneWhenNothingSelected(CaseData caseData,
-                                                             ConcurrentMap<String, Optional<String>> printFields) {
-
-        if (checkIfHearingPreferencesNoHearingsOrNothingSelected(caseData)) {
-            printFields.put(
-                PdfMapperConstants.I_CAN_TAKE_PART_IN_NO_HEARINGS,
-                Optional.of(YES)
-            );
-            printFields.put(
-                PdfMapperConstants.I_CAN_TAKE_PART_IN_NO_HEARINGS_EXPLAIN,
-                ofNullable(caseData.getClaimantHearingPreference().getHearingAssistance())
-            );
-            return true;
-        }
-        return false;
+    private static void setClaimantHearingPreferencesNoneWhenNothingSelected(
+        CaseData caseData, ConcurrentMap<String, Optional<String>> printFields) {
+        printFields.put(PdfMapperConstants.I_CAN_TAKE_PART_IN_NO_HEARINGS, Optional.of(YES));
+        printFields.put(PdfMapperConstants.I_CAN_TAKE_PART_IN_NO_HEARINGS_EXPLAIN,
+                        ofNullable(caseData.getClaimantHearingPreference().getHearingAssistance()));
     }
 
     private static boolean checkIfHearingPreferencesNoHearingsOrNothingSelected(CaseData caseData) {
-        return (ObjectUtils.isEmpty(caseData.getClaimantHearingPreference())
-            || ObjectUtils.isEmpty(caseData.getClaimantHearingPreference().getHearingPreferences()))
-            || (!caseData.getClaimantHearingPreference().getHearingPreferences().contains("Video")
-            && !caseData.getClaimantHearingPreference().getHearingPreferences().contains("Phone"));
+        return ObjectUtils.isEmpty(caseData.getClaimantHearingPreference())
+            || ObjectUtils.isEmpty(caseData.getClaimantHearingPreference().getHearingPreferences())
+            || !caseData.getClaimantHearingPreference().getHearingPreferences().contains("Video")
+            && !caseData.getClaimantHearingPreference().getHearingPreferences().contains("Phone");
     }
 
     private static void
