@@ -14,7 +14,7 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.EMA
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.FAX;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.POST;
 
-public class PdfMapperRepresentativeUtil {
+public final class PdfMapperRepresentativeUtil {
 
     private PdfMapperRepresentativeUtil() {
         // Utility classes should not have a public or default constructor.
