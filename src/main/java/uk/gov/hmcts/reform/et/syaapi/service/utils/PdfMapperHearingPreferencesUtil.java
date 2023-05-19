@@ -5,7 +5,6 @@ import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static java.util.Optional.ofNullable;
@@ -20,8 +19,7 @@ public final class PdfMapperHearingPreferencesUtil {
         // Utility classes should not have a public or default constructor.
     }
 
-    public static ConcurrentMap<String, Optional<String>> printHearingPreferences(CaseData caseData) {
-        ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
+    public static void putHearingPreferences(CaseData caseData, ConcurrentMap<String, Optional<String>> printFields) {
         try {
             PdfMapperHearingPreferencesUtil.setClaimantReasonableAdjustments(caseData, printFields);
             PdfMapperHearingPreferencesUtil.setClaimantHearingPreferences(caseData, printFields);
@@ -32,7 +30,6 @@ public final class PdfMapperHearingPreferencesUtil {
                                             "PdfMapperHearingPreferencesUtil",
                                             "printHearingPreferences");
         }
-        return printFields;
     }
 
     private static void setClaimantReasonableAdjustments(CaseData caseData,
@@ -49,6 +46,7 @@ public final class PdfMapperHearingPreferencesUtil {
                 ofNullable(caseData.getClaimantHearingPreference().getReasonableAdjustmentsDetail())
             );
         }
+
     }
 
     private static void setClaimantHearingPreferences(CaseData caseData,

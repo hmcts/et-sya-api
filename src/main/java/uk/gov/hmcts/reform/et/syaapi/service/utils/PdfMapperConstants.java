@@ -193,6 +193,10 @@ public final class PdfMapperConstants {
         OTHER, "Miz"
     );
 
+    public static final String EMAIL = "Email";
+    public static final String POST = "Post";
+    public static final String FAX = "Fax";
+
     private PdfMapperConstants() {
         // private due to being class of constants
     }

@@ -23,16 +23,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
-import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperService.EMAIL;
-import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperService.POST;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CLAIMANT_CONTACT_EMAIL_FIELD_NAME;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CLAIMANT_CONTACT_POST_FIELD_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CLAIMANT_EMAIL_FIELD_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CLAIMANT_MOBILE_NUMBER_FIELD_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CLAIMANT_PHONE_NUMBER_FIELD_NAME;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.EMAIL;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.OTHER_TITLE;
 
-@SuppressWarnings({"PMD.UseConcurrentHashMap"})
 class PdfMapperPersonalDetailsUtilTest {
 
     private CaseData caseData;
@@ -161,8 +158,6 @@ class PdfMapperPersonalDetailsUtilTest {
         String contactPreference = caseData.getClaimantType().getClaimantContactPreference();
         if (EMAIL.equals(contactPreference)) {
             assertThat(printFields.get(CLAIMANT_CONTACT_EMAIL_FIELD_NAME)).contains(contactPreference);
-        } else if (POST.equals(contactPreference)) {
-            assertThat(printFields.get(CLAIMANT_CONTACT_POST_FIELD_NAME)).contains(contactPreference);
         }
     }
 

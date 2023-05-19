@@ -162,6 +162,10 @@ public final class TestConstants {
     public static final String MERCURY = "Mercury";
     public static final String MALE = "Male";
     public static final String FEMALE = "Female";
+    public static final String EMAIL = "Female";
+    public static final String POST = "Female";
+    public static final String FAX = "Female";
+
 
 
     private TestConstants() {

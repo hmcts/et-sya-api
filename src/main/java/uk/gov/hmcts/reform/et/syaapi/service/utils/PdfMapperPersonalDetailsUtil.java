@@ -15,11 +15,11 @@ import java.util.concurrent.ConcurrentMap;
 
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
-import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperService.EMAIL;
-import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperService.POST;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.EMAIL;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.OTHER;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.OTHER_SPECIFY;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PHONE_NUMBER_PREFIX;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.POST;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.SEX_FEMALE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.SEX_FEMALE_LOWERCASE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.SEX_MALE;

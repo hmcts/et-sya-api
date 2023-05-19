@@ -8,16 +8,15 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantOtherType;
 import uk.gov.hmcts.et.common.model.ccd.types.NewEmploymentType;
-import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.et.syaapi.constants.ClaimTypesConstants;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperClaimDescriptionUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperHearingPreferencesUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperPersonalDetailsUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperRepresentativeUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperServiceUtil;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -69,15 +68,13 @@ public class PdfMapperService {
     // This constant is defined because of the error in the pdf template file
     // The field for pay before tax options checked value in the pdf template
     // for annually apy before tax was monthly
-    public static final String EMAIL = "Email";
-    public static final String POST = "Post";
+
     private static final String ANNUALLY = "annually";
     private static final String WEEKLY = "Weekly";
     private static final String MONTHLY = "Monthly";
     private static final String MONTHS = "Months";
     private static final String WEEKS = "Weeks";
     private static final String ANNUAL = "Annual";
-    private static final String FAX = "Fax";
     private static final String YES_LOWERCASE = "yes";
     private static final String NO_LOWERCASE = "no";
 
@@ -98,26 +95,20 @@ public class PdfMapperService {
         }
         PdfMapperPersonalDetailsUtil.putPersonalDetails(caseData, printFields);
         PdfMapperClaimDescriptionUtil.putClaimDescription(caseData, printFields);
-        try {
-            if (caseData.getRepresentativeClaimantType() != null) {
-                printFields.putAll(printRepresentative(caseData.getRepresentativeClaimantType()));
-            }
-        } catch (Exception e) {
-            log.error("Exception occurred in PDF MAPPER while setting representative details \n" + e.getMessage(), e);
-        }
+        PdfMapperRepresentativeUtil.putRepresentative(caseData, printFields);
+
         printFields.put(PdfMapperConstants.Q15_ADDITIONAL_INFORMATION,
                         ofNullable(caseData.getEt1VettingAdditionalInformationTextArea()));
         printFields.put(PdfMapperConstants.TRIBUNAL_OFFICE, ofNullable(caseData.getManagingOffice()));
         printFields.put(PdfMapperConstants.CASE_NUMBER, ofNullable(caseData.getEthosCaseReference()));
         printFields.put(PdfMapperConstants.DATE_RECEIVED,
                         ofNullable(PdfMapperServiceUtil.formatDate(caseData.getReceiptDate())));
-        printFields.putAll(PdfMapperHearingPreferencesUtil.printHearingPreferences(caseData));
+        PdfMapperHearingPreferencesUtil.putHearingPreferences(caseData, printFields);
         try {
             printFields.put(PdfMapperConstants.TRIBUNAL_OFFICE, Optional.of(printTribunalOffice(caseData)));
             printFields.put(PdfMapperConstants.CASE_NUMBER, ofNullable(caseData.getEthosCaseReference()));
             printFields.put(PdfMapperConstants.DATE_RECEIVED,
                             ofNullable(PdfMapperServiceUtil.formatDate(caseData.getReceiptDate())));
-            printFields.putAll(printHearingPreferences(caseData));
             printFields.putAll(printRespondentDetails(caseData));
             printFields.putAll(printMultipleClaimsDetails(caseData));
             printFields.putAll(printEmploymentDetails(caseData));
@@ -134,23 +125,6 @@ public class PdfMapperService {
         return UNASSIGNED_OFFICE.equals(caseData.getManagingOffice())
             ? ""
             : caseData.getManagingOffice();
-    }
-
-    private Map<String, Optional<String>> printHearingPreferences(CaseData caseData) {
-        ConcurrentHashMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
-        if (caseData.getClaimantHearingPreference() != null) {
-            if (caseData.getClaimantHearingPreference().getReasonableAdjustments() != null
-                && YES.equals(caseData.getClaimantHearingPreference().getReasonableAdjustments())) {
-                printFields.put(PdfMapperConstants.Q12_DISABILITY_YES, Optional.of(YES));
-            } else {
-                printFields.put(PdfMapperConstants.Q12_DISABILITY_NO, Optional.of(NO_LOWERCASE));
-            }
-            printFields.put(
-                PdfMapperConstants.Q12_DISABILITY_DETAILS,
-                ofNullable(caseData.getClaimantHearingPreference().getReasonableAdjustmentsDetail())
-            );
-        }
-        return printFields;
     }
 
     private Map<String, Optional<String>> printRespondentDetails(CaseData caseData) {
@@ -636,62 +610,6 @@ public class PdfMapperService {
         return printFields;
     }
 
-    private Map<String, Optional<String>> printRepresentative(RepresentedTypeC representativeClaimantType) {
-        if (representativeClaimantType != null) {
-            Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
-            printFields.put(
-                PdfMapperConstants.Q11_REP_NAME,
-                ofNullable(representativeClaimantType.getNameOfRepresentative())
-            );
-            printFields.put(
-                PdfMapperConstants.Q11_REP_ORG,
-                ofNullable(representativeClaimantType.getNameOfOrganisation())
-            );
-            printFields.put(PdfMapperConstants.Q11_REP_NUMBER, Optional.of(""));
-
-            Address repAddress = representativeClaimantType.getRepresentativeAddress();
-            if (repAddress != null) {
-                printFields.put(
-                    PdfMapperConstants.Q11_3_REPRESENTATIVE_ADDRESS,
-                    ofNullable(PdfMapperServiceUtil.formatAddressForTextField(repAddress))
-                );
-                printFields.put(
-                    PdfMapperConstants.Q11_3_REPRESENTATIVE_POSTCODE,
-                    ofNullable(PdfMapperServiceUtil.formatUkPostcode(repAddress))
-                );
-            }
-
-            printFields.put(
-                PdfMapperConstants.Q11_PHONE_NUMBER,
-                ofNullable(representativeClaimantType.getRepresentativePhoneNumber())
-            );
-            printFields.put(
-                PdfMapperConstants.Q11_MOBILE_NUMBER,
-                ofNullable(representativeClaimantType.getRepresentativeMobileNumber())
-            );
-            printFields.put(
-                PdfMapperConstants.Q11_EMAIL,
-                ofNullable(representativeClaimantType.getRepresentativeEmailAddress())
-            );
-            printFields.put(
-                PdfMapperConstants.Q11_REFERENCE,
-                ofNullable(representativeClaimantType.getRepresentativeReference())
-            );
-            if (representativeClaimantType.getRepresentativePreference() != null) {
-                String representativePreference = representativeClaimantType.getRepresentativePreference();
-                if (EMAIL.equals(representativePreference)) {
-                    printFields.put(PdfMapperConstants.Q11_CONTACT_EMAIL, Optional.of(EMAIL));
-                } else if ("Post".equals(representativePreference)) {
-                    printFields.put(PdfMapperConstants.Q11_CONTACT_POST, Optional.of(POST));
-                } else {
-                    printFields.put(PdfMapperConstants.Q11_CONTACT_POST, Optional.of(FAX));
-                }
-            }
-
-            return printFields;
-        }
-        return new HashMap<>();
-    }
 
 
 }
