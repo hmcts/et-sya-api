@@ -152,17 +152,17 @@
   </suppress>
   <suppress>
     <notes><![CDATA[
-   file name: snakeyaml-1.33.jar
+   file name: json-20220924.jar
    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
-    <cve>CVE-2022-3064</cve>
+    <packageUrl regex="true">^pkg:maven/org\.json/json@.*$</packageUrl>
+    <cpe>cpe:/a:json-java_project:json-java</cpe>
   </suppress>
   <suppress>
     <notes><![CDATA[
-   file name: snakeyaml-1.33.jar
+   file name: jackson-core-2.14.2.jar
    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
-    <cpe>cpe:/a:yaml_project:yaml</cpe>
+    <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-core@.*$</packageUrl>
+    <cve>CVE-2022-45688</cve>
   </suppress>
   <suppress>
    <notes><![CDATA[
