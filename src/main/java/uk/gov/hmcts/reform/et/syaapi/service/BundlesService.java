@@ -9,6 +9,8 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantBundlesRequest;
 
+import java.util.ArrayList;
+
 @RequiredArgsConstructor
 @Service
 @Slf4j
@@ -28,6 +30,8 @@ public class BundlesService {
             String caseTypeId = request.getCaseTypeId();
             CaseDetails caseDetails = caseService.getUserCase(authorization, request.getCaseId());
             HearingBundleType claimantBundles = request.getClaimantBundles();
+            log.info("claimant bundle to add is " + claimantBundles.toString());
+
             caseDetails.getData().put("claimantBundles", claimantBundles);
 
             UploadedDocumentType hearingDoc = claimantBundles.getUploadFile();
@@ -39,7 +43,7 @@ public class BundlesService {
             CaseDetails finalCaseDetails = caseService.triggerEvent(
                 authorization,
                 request.getCaseId(),
-                CaseEvent.UPDATE_CASE_SUBMITTED, // Find out the correct event
+                CaseEvent.SUBMIT_CLAIMANT_BUNDLES,
                 caseTypeId,
                 caseDetails.getData()
             );
