@@ -145,24 +145,38 @@ public final class PdfMapperRespondentUtil {
                             Optional.of(NO_LOWERCASE));
             if (!Strings.isNullOrEmpty(respondent.getRespondentAcasNo())) {
                 switch (respondent.getRespondentAcasNo()) {
-                    case "Unfair Dismissal" ->
-                        printFields.put(acasCertificatePdfModel.getNoAcasReasonUnfairDismissalFieldName(),
-                        Optional.of(YES)
-                    );
-                    case "Another person" ->
-                        printFields.put(acasCertificatePdfModel.getNoAcasReasonAnotherPersonFieldName(),
-                        Optional.of(YES)
-                    );
-                    case "No Power" ->
-                        printFields.put(acasCertificatePdfModel.getNoAcasReasonNoPowerToConciliateFieldName(),
-                        Optional.of(YES)
-                    );
-                    case "Employer already in touch" ->
-                        printFields.put(acasCertificatePdfModel.getNoAcasReasonEmployerContactedFieldName(),
-                        Optional.of(YES)
-                    );
-                    default -> throw new PdfServiceException("Invalid No ACAS Certificate Reason Selected!...",
+                    case "Unfair Dismissal": {
+                        printFields.put(
+                            acasCertificatePdfModel.getNoAcasReasonUnfairDismissalFieldName(),
+                            Optional.of(YES)
+                        );
+                        break;
+                    }
+                    case "Another person": {
+                        printFields.put(
+                            acasCertificatePdfModel.getNoAcasReasonAnotherPersonFieldName(),
+                            Optional.of(YES)
+                        );
+                        break;
+                    }
+                    case "No Power": {
+                        printFields.put(
+                            acasCertificatePdfModel.getNoAcasReasonNoPowerToConciliateFieldName(),
+                            Optional.of(YES)
+                        );
+                        break;
+                    }
+                    case "Employer already in touch": {
+                        printFields.put(
+                            acasCertificatePdfModel.getNoAcasReasonEmployerContactedFieldName(),
+                            Optional.of(YES)
+                        );
+                        break;
+                    }
+                    default: {
+                        throw new PdfServiceException("Invalid No ACAS Certificate Reason Selected!...",
                                                              new Exception("Error while creating PDF document!..."));
+                    }
                 }
             }
         }
