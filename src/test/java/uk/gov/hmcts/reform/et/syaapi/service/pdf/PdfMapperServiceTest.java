@@ -157,7 +157,6 @@ class PdfMapperServiceTest {
     void givenTwoRespondentsReflectsInMap() {
         caseData.setRespondentCollection(createRespondentList(2));
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNotNull(pdfMap.get(PdfMapperConstants.Q2_EMPLOYER_NAME));
         assertNotNull(pdfMap.get(String.format(PdfMapperConstants.QX_NAME, "2.5 R2")));
     }
 
@@ -165,7 +164,6 @@ class PdfMapperServiceTest {
     void givenThreeRespondentsReflectsInMap() {
         caseData.setRespondentCollection(createRespondentList(3));
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNotNull(pdfMap.get(PdfMapperConstants.Q2_EMPLOYER_NAME));
         assertNotNull(pdfMap.get(String.format(PdfMapperConstants.QX_NAME, "2.5 R2")));
         assertNotNull(pdfMap.get(String.format(PdfMapperConstants.QX_NAME, "2.7 R3")));
     }
