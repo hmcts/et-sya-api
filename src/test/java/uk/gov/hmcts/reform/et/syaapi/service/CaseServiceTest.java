@@ -356,21 +356,22 @@ class CaseServiceTest {
         when(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(any()))
             .thenReturn(testData.getCaseData());
         SendEmailResponse sendEmailResponse
-            = new SendEmailResponse("{\n"
-                                        + "  \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                                        + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
-                                        + "  \"template\": {\n"
-                                        + "    \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                                        + "    \"version\": \"3\",\n"
-                                        + "    \"uri\": \"TEST\"\n"
-                                        + "  },\n"
-                                        + "  \"content\": {\n"
-                                        + "    \"body\": \"Dear test, Please see your detail as 123456789. Regards, "
-                                        + "ET Team.\",\n"
-                                        + "    \"subject\": \"ET Test email created\",\n"
-                                        + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
-                                        + "  }\n"
-                                        + "}\n");
+            = new SendEmailResponse("""
+                                        {
+                                          "id": "8835039a-3544-439b-a3da-882490d959eb",
+                                          "reference": "TEST_EMAIL_ALERT",
+                                          "template": {
+                                            "id": "8835039a-3544-439b-a3da-882490d959eb",
+                                            "version": "3",
+                                            "uri": "TEST"
+                                          },
+                                          "content": {
+                                            "body": "Dear test, Please see your detail as 123456789. Regards, ET Team.",
+                                            "subject": "ET Test email created",
+                                            "from_email": "TEST@GMAIL.COM"
+                                          }
+                                        }
+                                        """);
         when(notificationService.sendSubmitCaseConfirmationEmail(any(), any(), any(), any()))
             .thenReturn(sendEmailResponse);
 
@@ -382,7 +383,7 @@ class CaseServiceTest {
         );
 
         assertEquals(1, ((ArrayList<?>)caseDetails.getData().get("documentCollection")).size());
-        ArrayList docCollection = (ArrayList) caseDetails.getData().get("documentCollection");
+        List<?> docCollection = (List<?>) caseDetails.getData().get("documentCollection");
 
         assertEquals("DocumentType(typeOfDocument="
             + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=http://document.url/2333482f-1eb9-44f1"
@@ -448,21 +449,22 @@ class CaseServiceTest {
             .thenThrow(new CaseDocumentException("Failed to upload documents"));
 
         SendEmailResponse sendEmailResponse
-            = new SendEmailResponse("{\n"
-                                        + "  \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                                        + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
-                                        + "  \"template\": {\n"
-                                        + "    \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                                        + "    \"version\": \"3\",\n"
-                                        + "    \"uri\": \"TEST\"\n"
-                                        + "  },\n"
-                                        + "  \"content\": {\n"
-                                        + "    \"body\": \"Dear test, Please see your detail as 123456789. Regards, "
-                                        + "ET Team.\",\n"
-                                        + "    \"subject\": \"ET Test email created\",\n"
-                                        + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
-                                        + "  }\n"
-                                        + "}\n");
+            = new SendEmailResponse("""
+                                        {
+                                          "id": "8835039a-3544-439b-a3da-882490d959eb",
+                                          "reference": "TEST_EMAIL_ALERT",
+                                          "template": {
+                                            "id": "8835039a-3544-439b-a3da-882490d959eb",
+                                            "version": "3",
+                                            "uri": "TEST"
+                                          },
+                                          "content": {
+                                            "body": "Dear test, Please see your detail as 123456789. Regards, ET Team.",
+                                            "subject": "ET Test email created",
+                                            "from_email": "TEST@GMAIL.COM"
+                                          }
+                                        }
+                                        """);
 
         when(notificationService.sendDocUploadErrorEmail(any(), any(), any(), any()))
             .thenReturn(sendEmailResponse);
@@ -591,8 +593,9 @@ class CaseServiceTest {
         )).thenReturn(scotlandSearchResult);
 
         List<CaseDetails> caseDetailsList = caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, caseIds);
-        assertThat(caseDetailsList).hasSize(3);
-        assertThat(caseDetailsList).isEqualTo(testData.getExpectedCaseDataListCombined());
+        assertThat(caseDetailsList)
+            .hasSize(3)
+            .isEqualTo(testData.getExpectedCaseDataListCombined());
     }
 
     @Test
@@ -703,7 +706,7 @@ class CaseServiceTest {
 
     @Test
     void shouldInvokeClaimantTsePdf()
-        throws DocumentGenerationException, CaseDocumentException {
+        throws DocumentGenerationException {
         when(pdfService.convertClaimantTseIntoMultipartFile(any())).thenReturn(
             tsePdfMultipartFileMock);
 
