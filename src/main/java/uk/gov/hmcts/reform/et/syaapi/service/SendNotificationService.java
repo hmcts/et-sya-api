@@ -61,7 +61,6 @@ public class SendNotificationService {
         }
 
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
-
         return caseService.submitUpdate(
             authorization,
             request.getCaseId(),
@@ -152,7 +151,7 @@ public class SendNotificationService {
         notificationService.sendResponseNotificationEmailToTribunal(caseData, caseId);
         notificationService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty);
         notificationService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty);
-
+        notificationService.sendBundlesEmailToRespondent(caseData, caseId);
 
     }
 

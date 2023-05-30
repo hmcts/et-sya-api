@@ -240,6 +240,8 @@ public class ApplicationService {
             type,
             copyToOtherParty
         );
+
+        notificationService.sendBundlesEmailToRespondent(caseData, caseId);
     }
 
     private JSONObject getDocumentDownload(String authorization, CaseData caseData)

@@ -7,11 +7,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
+import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.util.ServiceUtil;
@@ -428,7 +431,6 @@ public class NotificationService {
             SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
             String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
         );
-
         sendTribunalEmail(
             caseData,
             caseId,
@@ -555,7 +557,6 @@ public class NotificationService {
         );
 
         String emailToRespondentTemplate = notificationsProperties.getTseRespondentResponseTemplateId();
-
         sendRespondentEmails(caseData, caseId, respondentParameters, emailToRespondentTemplate);
     }
 
@@ -572,7 +573,6 @@ public class NotificationService {
             SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
             String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
         );
-
         sendTribunalEmail(
             caseData,
             caseId,
@@ -603,9 +603,9 @@ public class NotificationService {
             SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
             String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
         );
-
         sendRespondentEmails(caseData, caseId, respondentParameters,
                              notificationsProperties.getPseRespondentResponseTemplateId());
+
     }
 
     public void sendResponseNotificationEmailToClaimant(
@@ -662,7 +662,6 @@ public class NotificationService {
             log.info("Could not send email. No email found");
             return;
         }
-
         try {
             notificationClient.sendEmail(
                 templateId,
@@ -701,6 +700,65 @@ public class NotificationService {
                     }
                 }
             });
+    }
+
+    public void sendBundlesEmailToRespondent(CaseData caseData,
+                                                 String caseId) {
+        ClaimantIndType claimantIndType = caseData.getClaimantIndType();
+        String claimant = claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName();
+        String caseNumber = caseData.getEthosCaseReference();
+        String respondentNames = getRespondentNames(caseData);
+        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET);
+
+        sendClaimantSubmittedBundleNotificationEmailToRespondent(
+            caseData,
+            claimant,
+            caseNumber,
+            respondentNames,
+            hearingDate,
+            caseId
+        );
+    }
+
+    private void sendClaimantSubmittedBundleNotificationEmailToRespondent(
+        CaseData caseData,
+        String claimant,
+        String caseNumber,
+        String respondentNames,
+        String hearingDate,
+        String caseId
+    ) {
+        Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
+
+        addCommonParameters(
+            respondentParameters,
+            claimant,
+            respondentNames,
+            caseId,
+            caseNumber
+        );
+        respondentParameters.put(
+            SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
+            hearingDate
+        );
+        respondentParameters.put(
+            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
+        );
+
+        String emailToRespondentTemplate
+            = notificationsProperties.getBundlesClaimantSubmittedRespondentNotificationTemplateId();
+
+        try {
+            notificationClient.sendEmail(
+                emailToRespondentTemplate,
+                caseData.getTribunalCorrespondenceEmail(),
+                respondentParameters,
+                caseId
+            );
+        } catch (NotificationClientException ne) {
+            throw new NotificationException(ne);
+        }
     }
 
     private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
