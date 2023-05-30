@@ -115,7 +115,6 @@ public final class TestData {
         CaseDocument.class
     );
 
-
     private final List<CaseDetails> requestCaseDataListEnglandAcas = ResourceLoader.fromStringToList(
         "responses/caseDetailsEnglandAcasDocs.json",
         CaseDetails.class
@@ -162,12 +161,6 @@ public final class TestData {
         );
         return new SendEmailResponse(sendEmailResponseStringVal);
     }
-
-
-    private final List<CaseDetails> requestCaseDataListEnglandAcas = ResourceLoader.fromStringToList(
-        "responses/caseDetailsEnglandAcasDocs.json",
-        CaseDetails.class
-    );
 
     public Map<String, Object> getCaseRequestCaseDataMap() {
         Map<String, Object> requestCaseData = new ConcurrentHashMap<>();
@@ -463,7 +456,6 @@ public final class TestData {
                          MULTIPLE_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST.get(0).getBytes())
         );
     }
-
 
     public static Stream<Arguments> generateSendDocUploadErrorEmailPdfFilesArguments() {
         return Stream.of(
