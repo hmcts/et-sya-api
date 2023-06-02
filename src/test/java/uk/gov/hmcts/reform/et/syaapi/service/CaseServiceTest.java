@@ -85,7 +85,7 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.USER_ID;
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.AvoidDuplicateLiterals"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.AvoidDuplicateLiterals", "PMD.TooManyFields"})
 class CaseServiceTest {
 
     @Mock
@@ -381,7 +381,7 @@ class CaseServiceTest {
 
     @SneakyThrows
     @Test
-    void submitCase_shouldAddSupportingDocumentToDocumentCollection() {
+    void submitCaseShouldAddSupportingDocumentToDocumentCollection() {
         when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any()))
             .thenReturn(new LinkedList<>());
 
@@ -403,7 +403,7 @@ class CaseServiceTest {
     }
 
     @Test
-    void submitCase_shouldSendErrorEmail() throws PdfServiceException, CaseDocumentException {
+    void submitCaseShouldSendErrorEmail() throws PdfServiceException, CaseDocumentException {
         when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any()))
             .thenThrow(new CaseDocumentException("Failed to upload documents"));
 
@@ -421,7 +421,7 @@ class CaseServiceTest {
 
     @SneakyThrows
     @Test
-    void submitCase_shouldSetEt1OnlineSubmission() {
+    void submitCaseShouldSetEt1OnlineSubmission() {
         CaseDetails caseDetails = caseService.submitCase(
             TEST_SERVICE_AUTH_TOKEN,
             testData.getCaseRequest()
