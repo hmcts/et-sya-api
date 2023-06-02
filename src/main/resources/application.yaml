@@ -96,11 +96,13 @@ notifications:
     tribunalResponse: ${TRIBUNAL_RESPONSE:bdbfcc4c-713e-4355-b2f3-39f999964c9b}
     respondentResponse: ${RESPONDENT_RESPONSE:9ea43b1d-7029-48ea-a0bd-b9fc4c3c8b66}
 
+
 pdf:
   english: "ET1_2222.pdf"
   welsh: "CY_ET1_2222.pdf"
   contact_tribunal_template: "EM-TRB-EGW-ENG-00068.docx"
   claimant_response_template: "EM-TRB-EGW-ENG-00069.docx"
+
 
 caseWorkerUserName: ${CASEWORKER_USER_NAME:user_name}
 caseWorkerPassword: ${CASEWORKER_PASSWORD:password}

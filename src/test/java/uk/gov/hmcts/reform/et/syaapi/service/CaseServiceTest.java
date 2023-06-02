@@ -384,6 +384,7 @@ class CaseServiceTest {
     void submitCase_shouldAddSupportingDocumentToDocumentCollection() {
         when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any()))
             .thenReturn(new LinkedList<>());
+
         when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(createDocumentTypeItem("Other"));
 
         CaseDetails caseDetails = caseService.submitCase(
@@ -392,7 +393,7 @@ class CaseServiceTest {
         );
 
         assertEquals(1, ((ArrayList<?>)caseDetails.getData().get("documentCollection")).size());
-        ArrayList docCollection = (ArrayList) caseDetails.getData().get("documentCollection");
+        List<?> docCollection = (List<?>) caseDetails.getData().get("documentCollection");
 
         assertEquals("DocumentType(typeOfDocument="
             + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=http://document.url/2333482f-1eb9-44f1"
@@ -405,6 +406,7 @@ class CaseServiceTest {
     void submitCase_shouldSendErrorEmail() throws PdfServiceException, CaseDocumentException {
         when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any()))
             .thenThrow(new CaseDocumentException("Failed to upload documents"));
+
         when(notificationService.sendDocUploadErrorEmail(any(), any(), any(), any()))
             .thenReturn(sendEmailResponse);
 
@@ -543,8 +545,9 @@ class CaseServiceTest {
         )).thenReturn(scotlandSearchResult);
 
         List<CaseDetails> caseDetailsList = caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, caseIds);
-        assertThat(caseDetailsList).hasSize(3);
-        assertThat(caseDetailsList).isEqualTo(testData.getExpectedCaseDataListCombined());
+        assertThat(caseDetailsList)
+            .hasSize(3)
+            .isEqualTo(testData.getExpectedCaseDataListCombined());
     }
 
     @Test
@@ -655,7 +658,7 @@ class CaseServiceTest {
 
     @Test
     void shouldInvokeClaimantTsePdf()
-        throws DocumentGenerationException, CaseDocumentException {
+        throws DocumentGenerationException {
         when(pdfService.convertClaimantTseIntoMultipartFile(any())).thenReturn(
             tsePdfMultipartFileMock);
 
