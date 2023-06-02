@@ -21,6 +21,10 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_Q2_4_1_CLAIMANT_WORK_ADDRESS;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_Q2_4_2_CLAIMANT_WORK_POSTCODE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_Q2_5_MULTIPLE_RESPONDENTS;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_ANOTHER_PERSON;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_EMPLOYER_ALREADY_IN_TOUCH;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_NO_POWER;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_UNFAIR_DISMISSAL;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.YES;
 
 public final class PdfMapperRespondentUtil {
@@ -145,28 +149,28 @@ public final class PdfMapperRespondentUtil {
                             Optional.of(NO_LOWERCASE));
             if (!Strings.isNullOrEmpty(respondent.getRespondentAcasNo())) {
                 switch (respondent.getRespondentAcasNo()) {
-                    case "Unfair Dismissal": {
+                    case PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_UNFAIR_DISMISSAL: {
                         printFields.put(
                             acasCertificatePdfModel.getNoAcasReasonUnfairDismissalFieldName(),
                             Optional.of(YES)
                         );
                         break;
                     }
-                    case "Another person": {
+                    case PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_ANOTHER_PERSON: {
                         printFields.put(
                             acasCertificatePdfModel.getNoAcasReasonAnotherPersonFieldName(),
                             Optional.of(YES)
                         );
                         break;
                     }
-                    case "No Power": {
+                    case PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_NO_POWER: {
                         printFields.put(
                             acasCertificatePdfModel.getNoAcasReasonNoPowerToConciliateFieldName(),
                             Optional.of(YES)
                         );
                         break;
                     }
-                    case "Employer already in touch": {
+                    case PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_EMPLOYER_ALREADY_IN_TOUCH: {
                         printFields.put(
                             acasCertificatePdfModel.getNoAcasReasonEmployerContactedFieldName(),
                             Optional.of(YES)

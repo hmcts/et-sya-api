@@ -290,6 +290,12 @@ public final class PdfMapperConstants {
     ///////////////////////////////////// END OF FIFTH RESPONDENT FIELD NAMES //////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    public static final String PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_UNFAIR_DISMISSAL = "Unfair Dismissal";
+    public static final String PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_ANOTHER_PERSON = "Another person";
+    public static final String PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_NO_POWER = "No Power";
+    public static final String PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_EMPLOYER_ALREADY_IN_TOUCH =
+        "Employer already in touch";
+
     public static final int PDF_TEMPLATE_MULTIPLE_RESPONDENTS_MIN_NUMBER = 2;
     public static final String QX_PHONE_NUMBER = "%s phone number";
     public static final String QX_ACAS_NUMBER = "%s please give the Acas early conciliation certificate number";

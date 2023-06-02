@@ -53,6 +53,38 @@ public final class TestConstants {
     public static final String FILE_NOT_EXISTS = "File does not exist!...";
     public static final String WELSH_LANGUAGE = "Welsh";
     public static final String ENGLISH_LANGUAGE = "English";
+    public static final String ADDRESS_LINE_1 = "AddressLine1";
+    public static final String ADDRESS_LINE_2 = "AddressLine2";
+    public static final String ADDRESS_LINE_3 = "AddressLine3";
+    public static final String POST_TOWN = "PostTown";
+    public static final String COUNTY = "County";
+    public static final String COUNTRY = "Country";
+    public static final String POSTCODE = "SW1A 1AA";
+    public static final String REPRESENTATIVE_NAME = "Michael Mercury";
+    public static final String REPRESENTATIVE_REFERENCE = "Test Reference";
+    public static final String REPRESENTATIVE_ORGANISATION = "Test Organisation";
+    public static final String REPRESENTATIVE_PHONE_NUMBER = "03123456789";
+    public static final String REPRESENTATIVE_MOBILE_NUMBER = "07444518903";
+    public static final String REPRESENTATIVE_EMAIL = "test@gmail.com";
+    public static final String EMPTY_STRING = "";
+    public static final String BLANK_STRING = "   ";
+    public static final String NULL_STRING = null;
+    public static final String CLAIMANT_IND_TYPE_NULL = "null";
+    public static final String CLAIMANT_IND_TYPE_EMPTY = "empty";
+    public static final String CLAIMANT_IND_TYPE_FILLED = "filled";
+    public static final String TEST_NAMES = "Test Names";
+    public static final String INVALID_LANGUAGE = "Invalid Language";
+    public static final boolean TRUE = true;
+    public static final boolean FALSE = false;
+    public static final String CLAIM_DESCRIPTION = "Test Claim Description";
+    public static final String MR = "Mr";
+    public static final String MS = "Ms";
+    public static final String MRS = "Mrs";
+    public static final String MISS = "Miss";
+    public static final String ELIZABETH = "Elizabeth";
+    public static final String TAYLOR = "Taylor";
+    public static final String SWIFT = "Swift";
+    public static final String PREFER_NOT_TO_SAY = "Prefer not to say";
     public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
     public static final PdfDecodedMultipartFile PDF_DECODED_MULTIPART_FILE_NULL = new PdfDecodedMultipartFile(
         null,
@@ -165,8 +197,6 @@ public final class TestConstants {
     public static final String EMAIL = "Email";
     public static final String POST = "Post";
     public static final String FAX = "Fax";
-
-
 
     private TestConstants() {
 

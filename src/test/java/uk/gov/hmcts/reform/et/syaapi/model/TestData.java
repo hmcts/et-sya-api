@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.TestUtil;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.util.List;
@@ -25,27 +26,54 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ADDRESS_LINE_1;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ADDRESS_LINE_2;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ADDRESS_LINE_3;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.BLANK_STRING;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CLAIMANT_IND_TYPE_EMPTY;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CLAIMANT_IND_TYPE_FILLED;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CLAIMANT_IND_TYPE_NULL;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CLAIM_DESCRIPTION;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.COUNTRY;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.COUNTY;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ELIZABETH;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.EMAIL;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.EMPTY_STRING;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.FALSE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.FAX;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.FEMALE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.INVALID_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MALE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MERCURY;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MICHAEL;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MISS;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MR;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MRS;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MS;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MULTIPLE_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NULL_STRING;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.OTHER;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.OTHER_TITLE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.POST;
-
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.POSTCODE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.POST_TOWN;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.PREFER_NOT_TO_SAY;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.REPRESENTATIVE_EMAIL;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.REPRESENTATIVE_MOBILE_NUMBER;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.REPRESENTATIVE_NAME;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.REPRESENTATIVE_ORGANISATION;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.REPRESENTATIVE_PHONE_NUMBER;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.REPRESENTATIVE_REFERENCE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.SWIFT;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TAYLOR;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_NAMES;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TRUE;
 
 @Data
 @SuppressWarnings({"PMD.TooManyFields", "PMD.TooManyMethods"})
 public final class TestData {
 
-    private final Et1CaseData et1CaseData = ResourceLoader.fromString(
-        "requests/caseData.json",
-        Et1CaseData.class
-    );
     private final CaseData caseData = ResourceLoader.fromString(
         "requests/caseData.json",
         CaseData.class
@@ -110,6 +138,7 @@ public final class TestData {
     );
 
     public Map<String, Object> getCaseRequestCaseDataMap() {
+        Et1CaseData et1CaseData = ResourceLoader.fromString("requests/caseData.json", Et1CaseData.class);
         Map<String, Object> requestCaseData = new ConcurrentHashMap<>();
         requestCaseData.put("typesOfClaim", et1CaseData.getTypesOfClaim());
         requestCaseData.put("caseType", et1CaseData.getEcmCaseType());
@@ -140,93 +169,39 @@ public final class TestData {
     }
 
     public static Stream<Arguments> postcodeAddressArguments() {
-
-        Address address1 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
-        address1.setPostCode("A1      1AA");
-
-        Address address2 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
-        address2.setPostCode("A22AA");
-
-        Address address3 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
-        address3.setPostCode("A 3  3 A  A");
-
-        Address address4 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
-        address4.setPostCode("NG44JF");
-
-        Address address5 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
-        address5.setPostCode("NG5      5JF");
-
-        Address address6 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
-        address6.setPostCode("N  G 6      6  J F");
-
-        Address address7 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
-        address7.setPostCode("HU107NA");
-
-        Address address8 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
-        address8.setPostCode("HU10      8NA");
-
-        Address address9 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
-        address9.setPostCode("H U 1 0 9 N A");
-
-        Address address10 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
-        address10.setCountry("Turkey");
-        address10.setPostCode("34730");
-
-        Address address11 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
-        address11.setCountry("United kingdom");
-        address11.setPostCode("AB111AB");
-
-        Address address12 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
-        address12.setCountry(null);
-        address12.setPostCode("AB121AB");
-
-        Address address13 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
-        address13.setCountry("");
-        address13.setPostCode("AB131AB");
-
-        Address address14 = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
-        address14.setPostCode("");
-
         return Stream.of(
-            Arguments.of("A1 1AA", address1),
-            Arguments.of("A2 2AA", address2),
-            Arguments.of("A3 3AA", address3),
-            Arguments.of("NG4 4JF", address4),
-            Arguments.of("NG5 5JF", address5),
-            Arguments.of("NG6 6JF", address6),
-            Arguments.of("HU10 7NA", address7),
-            Arguments.of("HU10 8NA", address8),
-            Arguments.of("HU10 9NA", address9),
-            Arguments.of("34730", address10),
-            Arguments.of("AB11 1AB", address11),
-            Arguments.of("AB12 1AB", address12),
-            Arguments.of("AB13 1AB", address13),
-            Arguments.of("", address14)
+            Arguments.of("A1 1AA", TestUtil.generateTestAddressByPostcodeCountry("A1      1AA", NULL_STRING)),
+            Arguments.of("A2 2AA", TestUtil.generateTestAddressByPostcodeCountry("A22AA", NULL_STRING)),
+            Arguments.of("A3 3AA", TestUtil.generateTestAddressByPostcodeCountry("A 3  3 A  A", NULL_STRING)),
+            Arguments.of("NG4 4JF", TestUtil.generateTestAddressByPostcodeCountry("NG44JF", NULL_STRING)),
+            Arguments.of("NG5 5JF", TestUtil.generateTestAddressByPostcodeCountry("NG5      5JF", NULL_STRING)),
+            Arguments.of("NG6 6JF", TestUtil.generateTestAddressByPostcodeCountry("N  G 6      6  J F", NULL_STRING)),
+            Arguments.of("HU10 7NA", TestUtil.generateTestAddressByPostcodeCountry("HU107NA", NULL_STRING)),
+            Arguments.of("HU10 8NA", TestUtil.generateTestAddressByPostcodeCountry("HU10      8NA", NULL_STRING)),
+            Arguments.of("HU10 9NA", TestUtil.generateTestAddressByPostcodeCountry("H U 1 0 9 N A", NULL_STRING)),
+            Arguments.of("34730", TestUtil.generateTestAddressByPostcodeCountry("34730", "Turkey")),
+            Arguments.of("AB11 1AB", TestUtil.generateTestAddressByPostcodeCountry("AB111AB", "United kingdom")),
+            Arguments.of("AB12 1AB", TestUtil.generateTestAddressByPostcodeCountry("AB121AB", NULL_STRING)),
+            Arguments.of("AB13 1AB", TestUtil.generateTestAddressByPostcodeCountry("AB131AB", EMPTY_STRING)),
+            Arguments.of(EMPTY_STRING,
+                         TestUtil.generateTestAddressByPostcodeCountry(EMPTY_STRING, NULL_STRING))
         );
     }
 
     public static Stream<Arguments> compensationArguments() {
 
-        CaseData caseData1 = new TestData().getCaseData();
-        caseData1.getClaimantRequests().setClaimantCompensationText("Test Compensation");
-        caseData1.getClaimantRequests().setClaimantCompensationAmount("");
-        caseData1.getClaimantRequests().setClaimantTribunalRecommendation("");
-
-        CaseData caseData2 = new TestData().getCaseData();
-        caseData2.getClaimantRequests().setClaimantCompensationText("Test Compensation");
-        caseData2.getClaimantRequests().setClaimantCompensationAmount("2000");
-        caseData2.getClaimantRequests().setClaimantTribunalRecommendation("");
-
-        CaseData caseData3 = new TestData().getCaseData();
-        caseData3.getClaimantRequests().setClaimantCompensationText(null);
-        caseData3.getClaimantRequests().setClaimantCompensationAmount("2000");
-        caseData3.getClaimantRequests().setClaimantTribunalRecommendation("");
-
-        CaseData caseData4 = new TestData().getCaseData();
-        caseData4.getClaimantRequests().setClaimantCompensationAmount("");
-        caseData4.getClaimantRequests().setClaimantTribunalRecommendation("");
-        caseData4.getClaimantRequests().setClaimantCompensationText(":");
-
+        CaseData caseData1 = TestUtil.generateTestCaseDataByClaimantCompensation("Test Compensation",
+                                                                                 "",
+                                                                                 "");
+        CaseData caseData2 = TestUtil.generateTestCaseDataByClaimantCompensation("Test Compensation",
+                                                                                 "2000",
+                                                                                 "");
+        CaseData caseData3 = TestUtil.generateTestCaseDataByClaimantCompensation(null,
+                                                                                 "2000",
+                                                                                 "");
+        CaseData caseData4 = TestUtil.generateTestCaseDataByClaimantCompensation("",
+                                                                                 "",
+                                                                                 ":");
         CaseData caseData5 = new TestData().getCaseData();
         caseData5.setClaimantRequests(null);
 
@@ -257,24 +232,18 @@ public final class TestData {
     }
 
     public static Stream<Arguments> generateCaseDataArgumentsForTheTestFindClaimantLanguage() {
-        CaseData caseDataNullClaimantHearingPreferences = new TestData().getCaseData();
-        caseDataNullClaimantHearingPreferences.setClaimantHearingPreference(null);
-
-        CaseData caseDataNullContactLanguage = new TestData().getCaseData();
-        caseDataNullContactLanguage.getClaimantHearingPreference().setContactLanguage(null);
-
-        CaseData caseDataEmptyContactLanguage = new TestData().getCaseData();
-        caseDataEmptyContactLanguage.getClaimantHearingPreference().setContactLanguage("");
-
-        CaseData caseDataInvalidContactLanguage = new TestData().getCaseData();
-        caseDataInvalidContactLanguage.getClaimantHearingPreference().setContactLanguage("invalid language");
-
-        CaseData caseDataWelshContactLanguage = new TestData().getCaseData();
-        caseDataWelshContactLanguage.getClaimantHearingPreference().setContactLanguage(TestConstants.WELSH_LANGUAGE);
-
-        CaseData caseDataEnglishContactLanguage = new TestData().getCaseData();
-        caseDataEnglishContactLanguage.getClaimantHearingPreference()
-            .setContactLanguage(TestConstants.ENGLISH_LANGUAGE);
+        CaseData caseDataNullClaimantHearingPreferences = TestUtil
+            .generateTestCaseDataByClaimantHearingPreferenceContactLanguage(TRUE, NULL_STRING);
+        CaseData caseDataNullContactLanguage = TestUtil
+            .generateTestCaseDataByClaimantHearingPreferenceContactLanguage(FALSE, NULL_STRING);
+        CaseData caseDataEmptyContactLanguage = TestUtil
+            .generateTestCaseDataByClaimantHearingPreferenceContactLanguage(FALSE, EMPTY_STRING);
+        CaseData caseDataInvalidContactLanguage = TestUtil
+            .generateTestCaseDataByClaimantHearingPreferenceContactLanguage(FALSE, INVALID_LANGUAGE);
+        CaseData caseDataWelshContactLanguage = TestUtil
+            .generateTestCaseDataByClaimantHearingPreferenceContactLanguage(FALSE, TestConstants.WELSH_LANGUAGE);
+        CaseData caseDataEnglishContactLanguage = TestUtil
+            .generateTestCaseDataByClaimantHearingPreferenceContactLanguage(FALSE, TestConstants.ENGLISH_LANGUAGE);
 
         return Stream.of(
             Arguments.of(caseDataNullClaimantHearingPreferences, TestConstants.ENGLISH_LANGUAGE),
@@ -288,19 +257,16 @@ public final class TestData {
 
     public static Stream<Arguments> generateCaseDataUserInfoArgumentsForTestingFirstNames() {
 
-        CaseData caseDataNullClaimantIndType = new TestData().getCaseData();
-        caseDataNullClaimantIndType.setClaimantIndType(null);
-
-        CaseData caseDataEmptyClaimantIndType = new TestData().getCaseData();
-        caseDataEmptyClaimantIndType.setClaimantIndType(new ClaimantIndType());
-
-        CaseData caseDataNullClaimantFirstNames = new TestData().getCaseData();
-        caseDataNullClaimantFirstNames.getClaimantIndType().setClaimantFirstNames(null);
-
-        CaseData caseDataEmptyClaimantFirstNames = new TestData().getCaseData();
-        caseDataEmptyClaimantFirstNames.getClaimantIndType().setClaimantFirstNames("");
-
-        CaseData caseDataNotEmptyClaimantFirstNames = new TestData().getCaseData();
+        CaseData caseDataNullClaimantIndType =
+            TestUtil.generateTestCaseDataByFirstNames(CLAIMANT_IND_TYPE_NULL, EMPTY_STRING);
+        CaseData caseDataEmptyClaimantIndType =
+            TestUtil.generateTestCaseDataByFirstNames(CLAIMANT_IND_TYPE_EMPTY, EMPTY_STRING);
+        CaseData caseDataNullClaimantFirstNames =
+            TestUtil.generateTestCaseDataByFirstNames(CLAIMANT_IND_TYPE_FILLED, NULL_STRING);
+        CaseData caseDataEmptyClaimantFirstNames =
+            TestUtil.generateTestCaseDataByFirstNames(CLAIMANT_IND_TYPE_FILLED, EMPTY_STRING);
+        CaseData caseDataNotEmptyClaimantFirstNames =
+            TestUtil.generateTestCaseDataByFirstNames(CLAIMANT_IND_TYPE_FILLED, TEST_NAMES);
 
         TestData tmpTestData = new TestData();
 
@@ -327,10 +293,10 @@ public final class TestData {
         caseDataEmptyClaimantIndType.setClaimantIndType(new ClaimantIndType());
 
         CaseData caseDataNullClaimantFirstNames = new TestData().getCaseData();
-        caseDataNullClaimantFirstNames.getClaimantIndType().setClaimantLastName(null);
+        caseDataNullClaimantFirstNames.getClaimantIndType().setClaimantLastName(NULL_STRING);
 
         CaseData caseDataEmptyClaimantFirstNames = new TestData().getCaseData();
-        caseDataEmptyClaimantFirstNames.getClaimantIndType().setClaimantLastName("");
+        caseDataEmptyClaimantFirstNames.getClaimantIndType().setClaimantLastName(EMPTY_STRING);
 
         CaseData caseDataNotEmptyClaimantFirstNames = new TestData().getCaseData();
 
@@ -445,65 +411,42 @@ public final class TestData {
     }
 
     public static Stream<Arguments> generateClaimantIndTypeArguments() {
-        ClaimantIndType claimantIndTypeOtherTitleMaleNotNullDateOfBirth = new ClaimantIndType();
-        claimantIndTypeOtherTitleMaleNotNullDateOfBirth.setClaimantPreferredTitle(OTHER);
-        claimantIndTypeOtherTitleMaleNotNullDateOfBirth.setClaimantTitleOther(OTHER_TITLE);
-        claimantIndTypeOtherTitleMaleNotNullDateOfBirth.setClaimantFirstNames(MICHAEL);
-        claimantIndTypeOtherTitleMaleNotNullDateOfBirth.setClaimantLastName(MERCURY);
-        claimantIndTypeOtherTitleMaleNotNullDateOfBirth.setClaimantDateOfBirth("1979-05-08");
-        claimantIndTypeOtherTitleMaleNotNullDateOfBirth.setClaimantSex(MALE);
+        ClaimantIndType claimantIndTypeOtherTitleMaleNotNullDateOfBirth = TestUtil.generateClaimantIndType(
+            OTHER, OTHER_TITLE, MICHAEL, MERCURY, "1979-05-08", MALE
+        );
 
-        ClaimantIndType claimantIndTypeTitleMrMaleNotNullDateOfBirth = new ClaimantIndType();
-        claimantIndTypeTitleMrMaleNotNullDateOfBirth.setClaimantPreferredTitle("Mr");
-        claimantIndTypeTitleMrMaleNotNullDateOfBirth.setClaimantFirstNames(MICHAEL);
-        claimantIndTypeTitleMrMaleNotNullDateOfBirth.setClaimantLastName(MERCURY);
-        claimantIndTypeTitleMrMaleNotNullDateOfBirth.setClaimantDateOfBirth("1980-06-09");
-        claimantIndTypeTitleMrMaleNotNullDateOfBirth.setClaimantSex(MALE);
+        ClaimantIndType claimantIndTypeTitleMrMaleNotNullDateOfBirth = TestUtil.generateClaimantIndType(
+            MR, NULL_STRING, MICHAEL, MERCURY, "1980-06-09", MALE
+        );
 
-        ClaimantIndType claimantIndTypeTitleMsFemaleNotNullDateOfBirth = new ClaimantIndType();
-        claimantIndTypeTitleMsFemaleNotNullDateOfBirth.setClaimantPreferredTitle("Ms");
-        claimantIndTypeTitleMsFemaleNotNullDateOfBirth.setClaimantFirstNames("Elizabeth");
-        claimantIndTypeTitleMsFemaleNotNullDateOfBirth.setClaimantLastName("Taylor");
-        claimantIndTypeTitleMsFemaleNotNullDateOfBirth.setClaimantDateOfBirth("1981-07-10");
-        claimantIndTypeTitleMsFemaleNotNullDateOfBirth.setClaimantSex(FEMALE);
 
-        ClaimantIndType claimantIndTypeTitleMrsFemaleNotNullDateOfBirth = new ClaimantIndType();
-        claimantIndTypeTitleMrsFemaleNotNullDateOfBirth.setClaimantPreferredTitle("Mrs");
-        claimantIndTypeTitleMrsFemaleNotNullDateOfBirth.setClaimantFirstNames("Taylor");
-        claimantIndTypeTitleMrsFemaleNotNullDateOfBirth.setClaimantLastName("Swift");
-        claimantIndTypeTitleMrsFemaleNotNullDateOfBirth.setClaimantDateOfBirth("1982-08-11");
-        claimantIndTypeTitleMrsFemaleNotNullDateOfBirth.setClaimantSex(FEMALE);
+        ClaimantIndType claimantIndTypeTitleMsFemaleNotNullDateOfBirth = TestUtil.generateClaimantIndType(
+            MS, NULL_STRING, ELIZABETH, TAYLOR, "1981-07-10", FEMALE
+        );
 
-        ClaimantIndType claimantIndTypeTitleMissFemaleNotNullDateOfBirth = new ClaimantIndType();
-        claimantIndTypeTitleMissFemaleNotNullDateOfBirth.setClaimantPreferredTitle("Miss");
-        claimantIndTypeTitleMissFemaleNotNullDateOfBirth.setClaimantFirstNames("Taylor");
-        claimantIndTypeTitleMissFemaleNotNullDateOfBirth.setClaimantLastName("Swift");
-        claimantIndTypeTitleMissFemaleNotNullDateOfBirth.setClaimantDateOfBirth("1983-09-12");
-        claimantIndTypeTitleMissFemaleNotNullDateOfBirth.setClaimantSex(FEMALE);
+        ClaimantIndType claimantIndTypeTitleMrsFemaleNotNullDateOfBirth = TestUtil.generateClaimantIndType(
+            MRS, NULL_STRING, TAYLOR, SWIFT, "1982-08-11", FEMALE
+        );
 
-        ClaimantIndType claimantIndTypeOtherTitleMaleNullDateOfBirth = new ClaimantIndType();
-        claimantIndTypeOtherTitleMaleNullDateOfBirth.setClaimantPreferredTitle(OTHER);
-        claimantIndTypeOtherTitleMaleNullDateOfBirth.setClaimantTitleOther(OTHER_TITLE);
-        claimantIndTypeOtherTitleMaleNullDateOfBirth.setClaimantFirstNames(MICHAEL);
-        claimantIndTypeOtherTitleMaleNullDateOfBirth.setClaimantLastName(MERCURY);
-        claimantIndTypeOtherTitleMaleNullDateOfBirth.setClaimantDateOfBirth(null);
-        claimantIndTypeOtherTitleMaleNullDateOfBirth.setClaimantSex(MALE);
+        ClaimantIndType claimantIndTypeTitleMissFemaleNotNullDateOfBirth = TestUtil.generateClaimantIndType(
+            MISS, NULL_STRING, TAYLOR, SWIFT, "1983-09-12", FEMALE
+        );
 
-        ClaimantIndType claimantIndTypeOtherTitleMaleEmptyDateOfBirth = new ClaimantIndType();
-        claimantIndTypeOtherTitleMaleEmptyDateOfBirth.setClaimantPreferredTitle(OTHER);
-        claimantIndTypeOtherTitleMaleEmptyDateOfBirth.setClaimantTitleOther(OTHER_TITLE);
-        claimantIndTypeOtherTitleMaleEmptyDateOfBirth.setClaimantFirstNames(MICHAEL);
-        claimantIndTypeOtherTitleMaleEmptyDateOfBirth.setClaimantLastName(MERCURY);
-        claimantIndTypeOtherTitleMaleEmptyDateOfBirth.setClaimantDateOfBirth(" ");
-        claimantIndTypeOtherTitleMaleEmptyDateOfBirth.setClaimantSex(MALE);
+        ClaimantIndType claimantIndTypeOtherTitleMaleNullDateOfBirth = TestUtil.generateClaimantIndType(
+            OTHER, OTHER_TITLE, MICHAEL, MERCURY, NULL_STRING, MALE
+        );
 
-        ClaimantIndType claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth = new ClaimantIndType();
-        claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth.setClaimantPreferredTitle(OTHER);
-        claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth.setClaimantTitleOther(OTHER_TITLE);
-        claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth.setClaimantFirstNames(MICHAEL);
-        claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth.setClaimantLastName(MERCURY);
-        claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth.setClaimantDateOfBirth("1984-10-13");
-        claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth.setClaimantSex("Prefer not to say");
+        ClaimantIndType claimantIndTypeOtherTitleMaleEmptyDateOfBirth = TestUtil.generateClaimantIndType(
+            OTHER, OTHER_TITLE, MICHAEL, MERCURY, EMPTY_STRING, MALE
+        );
+        ClaimantIndType claimantIndTypeOtherTitleMaleBlankDateOfBirth = TestUtil.generateClaimantIndType(
+            OTHER, OTHER_TITLE, MICHAEL, MERCURY, BLANK_STRING, MALE
+        );
+
+
+        ClaimantIndType claimantIndTypeOtherTitlePreferNotToSay = TestUtil.generateClaimantIndType(
+            OTHER, OTHER_TITLE, MICHAEL, MERCURY, BLANK_STRING, PREFER_NOT_TO_SAY
+        );
 
         return Stream.of(
             Arguments.of(claimantIndTypeOtherTitleMaleNotNullDateOfBirth, "08", "05", "1979"),
@@ -512,7 +455,9 @@ public final class TestData {
             Arguments.of(claimantIndTypeTitleMrsFemaleNotNullDateOfBirth, "11", "08", "1982"),
             Arguments.of(claimantIndTypeTitleMissFemaleNotNullDateOfBirth, "12", "09", "1983"),
             Arguments.of(claimantIndTypeOtherTitleMaleNullDateOfBirth, "", "", ""),
-            Arguments.of(claimantIndTypeOtherTitlePreferNotToSayEmptyDateOfBirth, "13", "10", "1984")
+            Arguments.of(claimantIndTypeOtherTitleMaleEmptyDateOfBirth, "", "", ""),
+            Arguments.of(claimantIndTypeOtherTitleMaleBlankDateOfBirth, "", "", ""),
+            Arguments.of(claimantIndTypeOtherTitlePreferNotToSay, "", "", "")
         );
     }
 
@@ -520,30 +465,19 @@ public final class TestData {
 
         ClaimantType claimantTypePhoneNumber = new ClaimantType();
         claimantTypePhoneNumber.setClaimantPhoneNumber("07444444444");
-
         ClaimantType claimantTypeMobileNumber = new ClaimantType();
         claimantTypeMobileNumber.setClaimantPhoneNumber("07444444555");
-
         ClaimantType claimantTypeEmail = new ClaimantType();
         claimantTypeEmail.setClaimantEmailAddress("mehmet@tdmehmet.com");
-
         ClaimantType claimantTypeContactPreferenceEmail = new ClaimantType();
         claimantTypeContactPreferenceEmail.setClaimantContactPreference("Email");
-
         ClaimantType claimantTypeContactPreferencePost = new ClaimantType();
         claimantTypeContactPreferencePost.setClaimantContactPreference("Post");
-
-        Address claimantAddressUK = new Address();
-        claimantAddressUK.setAddressLine1("AddressLine1");
-        claimantAddressUK.setAddressLine2("AddressLine2");
-        claimantAddressUK.setAddressLine3("AddressLine3");
-        claimantAddressUK.setPostTown("PostTown");
-        claimantAddressUK.setCounty("County");
-        claimantAddressUK.setCountry("Country");
-        claimantAddressUK.setPostCode("SW1A 1AA");
+        Address claimantAddressUK = TestUtil.generateAddressByAddressFields(ADDRESS_LINE_1, ADDRESS_LINE_2,
+                                                                            ADDRESS_LINE_3, POST_TOWN, COUNTY,
+                                                                            COUNTRY, POSTCODE);
         ClaimantType claimantTypeAddressUK = new ClaimantType();
         claimantTypeAddressUK.setClaimantAddressUK(claimantAddressUK);
-
         ClaimantType claimantTypeAll = new ClaimantType();
         claimantTypeAll.setClaimantPhoneNumber("07444444444");
         claimantTypeAll.setClaimantPhoneNumber("07444444555");
@@ -551,9 +485,7 @@ public final class TestData {
         claimantTypeAll.setClaimantContactPreference("Email");
         claimantTypeAll.setClaimantContactPreference("Post");
         claimantTypeAll.setClaimantAddressUK(claimantAddressUK);
-
         ClaimantType claimantTypeBlank = new ClaimantType();
-
         return Stream.of(
             Arguments.of(claimantTypeBlank),
             Arguments.of(claimantTypePhoneNumber),
@@ -570,16 +502,12 @@ public final class TestData {
 
         ClaimantRequestType claimantRequestClaimDescriptionNull = new ClaimantRequestType();
         claimantRequestClaimDescriptionNull.setClaimDescription(null);
-
         ClaimantRequestType claimantRequestClaimDescriptionEmpty = new ClaimantRequestType();
-        claimantRequestClaimDescriptionEmpty.setClaimDescription("");
-
+        claimantRequestClaimDescriptionEmpty.setClaimDescription(EMPTY_STRING);
         ClaimantRequestType claimantRequestClaimDescriptionBlank = new ClaimantRequestType();
-        claimantRequestClaimDescriptionBlank.setClaimDescription("   ");
-
+        claimantRequestClaimDescriptionBlank.setClaimDescription(BLANK_STRING);
         ClaimantRequestType claimantRequestClaimDescriptionFilled = new ClaimantRequestType();
-        claimantRequestClaimDescriptionFilled.setClaimDescription("Test Claim Description");
-
+        claimantRequestClaimDescriptionFilled.setClaimDescription(CLAIM_DESCRIPTION);
         ClaimantRequestType claimantRequestEmpty = new ClaimantRequestType();
 
         return Stream.of(
@@ -588,89 +516,42 @@ public final class TestData {
             Arguments.of(claimantRequestClaimDescriptionNull, null),
             Arguments.of(claimantRequestClaimDescriptionEmpty, null),
             Arguments.of(claimantRequestClaimDescriptionBlank, null),
-            Arguments.of(claimantRequestClaimDescriptionFilled, "Test Claim Description")
+            Arguments.of(claimantRequestClaimDescriptionFilled, CLAIM_DESCRIPTION)
         );
     }
 
     public static Stream<Arguments> generateRepresentativeClaimantTypes() {
-        Address representativeAddress = new Address();
-        representativeAddress.setAddressLine1("AddressLine1");
-        representativeAddress.setAddressLine2("AddressLine2");
-        representativeAddress.setAddressLine3("AddressLine3");
-        representativeAddress.setPostTown("PostTown");
-        representativeAddress.setCounty("County");
-        representativeAddress.setCountry("Country");
-        representativeAddress.setPostCode("SW1A 1AA");
-
-        RepresentedTypeC representativeClaimantTypeAllFilled = new RepresentedTypeC();
-        representativeClaimantTypeAllFilled.setRepresentativeAddress(representativeAddress);
-        representativeClaimantTypeAllFilled.setNameOfRepresentative(MICHAEL + " " + MERCURY);
-        representativeClaimantTypeAllFilled.setRepresentativeReference("Test Reference");
-        representativeClaimantTypeAllFilled.setNameOfOrganisation("Test Organisation");
-        representativeClaimantTypeAllFilled.setRepresentativePhoneNumber("03123456789");
-        representativeClaimantTypeAllFilled.setRepresentativeMobileNumber("07444518903");
-        representativeClaimantTypeAllFilled.setRepresentativeEmailAddress("test@gmail.com");
-        representativeClaimantTypeAllFilled.setRepresentativePreference(EMAIL);
-
-        RepresentedTypeC representativeClaimantTypeAddressNull = new RepresentedTypeC();
-        representativeClaimantTypeAddressNull.setRepresentativeAddress(null);
-        representativeClaimantTypeAddressNull.setNameOfRepresentative(MICHAEL + " " + MERCURY);
-        representativeClaimantTypeAddressNull.setRepresentativeReference("Test Reference");
-        representativeClaimantTypeAddressNull.setNameOfOrganisation("Test Organisation");
-        representativeClaimantTypeAddressNull.setRepresentativePhoneNumber("03123456789");
-        representativeClaimantTypeAddressNull.setRepresentativeMobileNumber("07444518903");
-        representativeClaimantTypeAddressNull.setRepresentativeEmailAddress("test@gmail.com");
-        representativeClaimantTypeAddressNull.setRepresentativePreference(EMAIL);
-
-        RepresentedTypeC representativeClaimantPreferenceNull = new RepresentedTypeC();
-        representativeClaimantPreferenceNull.setRepresentativeAddress(representativeAddress);
-        representativeClaimantPreferenceNull.setNameOfRepresentative(MICHAEL + " " + MERCURY);
-        representativeClaimantPreferenceNull.setRepresentativeReference("Test Reference");
-        representativeClaimantPreferenceNull.setRepresentativePreference(null);
-        representativeClaimantPreferenceNull.setNameOfOrganisation("Test Organisation");
-        representativeClaimantPreferenceNull.setRepresentativePhoneNumber("03123456789");
-        representativeClaimantPreferenceNull.setRepresentativeMobileNumber("07444518903");
-        representativeClaimantPreferenceNull.setRepresentativeEmailAddress("test@gmail.com");
-
-        RepresentedTypeC representativeClaimantPreferenceEmpty = new RepresentedTypeC();
-        representativeClaimantPreferenceEmpty.setRepresentativeAddress(representativeAddress);
-        representativeClaimantPreferenceEmpty.setNameOfRepresentative(MICHAEL + " " + MERCURY);
-        representativeClaimantPreferenceEmpty.setRepresentativeReference("Test Reference");
-        representativeClaimantPreferenceEmpty.setRepresentativePreference("");
-        representativeClaimantPreferenceEmpty.setNameOfOrganisation("Test Organisation");
-        representativeClaimantPreferenceEmpty.setRepresentativePhoneNumber("03123456789");
-        representativeClaimantPreferenceEmpty.setRepresentativeMobileNumber("07444518903");
-        representativeClaimantPreferenceEmpty.setRepresentativeEmailAddress("test@gmail.com");
-
-        RepresentedTypeC representativeClaimantPreferenceBlank = new RepresentedTypeC();
-        representativeClaimantPreferenceBlank.setRepresentativeAddress(representativeAddress);
-        representativeClaimantPreferenceBlank.setNameOfRepresentative(MICHAEL + " " + MERCURY);
-        representativeClaimantPreferenceBlank.setRepresentativeReference("Test Reference");
-        representativeClaimantPreferenceBlank.setRepresentativePreference("     ");
-        representativeClaimantPreferenceBlank.setNameOfOrganisation("Test Organisation");
-        representativeClaimantPreferenceBlank.setRepresentativePhoneNumber("03123456789");
-        representativeClaimantPreferenceBlank.setRepresentativeMobileNumber("07444518903");
-        representativeClaimantPreferenceBlank.setRepresentativeEmailAddress("test@gmail.com");
-
-        RepresentedTypeC representativeClaimantTypePreferenceFax = new RepresentedTypeC();
-        representativeClaimantTypePreferenceFax.setRepresentativeAddress(representativeAddress);
-        representativeClaimantTypePreferenceFax.setNameOfRepresentative(MICHAEL + " " + MERCURY);
-        representativeClaimantTypePreferenceFax.setRepresentativeReference("Test Reference");
-        representativeClaimantTypePreferenceFax.setNameOfOrganisation("Test Organisation");
-        representativeClaimantTypePreferenceFax.setRepresentativePhoneNumber("03123456789");
-        representativeClaimantTypePreferenceFax.setRepresentativeMobileNumber("07444518903");
-        representativeClaimantTypePreferenceFax.setRepresentativeEmailAddress("test@gmail.com");
-        representativeClaimantTypePreferenceFax.setRepresentativePreference(FAX);
-
-        RepresentedTypeC representativeClaimantTypePreferencePost = new RepresentedTypeC();
-        representativeClaimantTypePreferencePost.setRepresentativeAddress(representativeAddress);
-        representativeClaimantTypePreferencePost.setNameOfRepresentative(MICHAEL + " " + MERCURY);
-        representativeClaimantTypePreferencePost.setRepresentativeReference("Test Reference");
-        representativeClaimantTypePreferencePost.setNameOfOrganisation("Test Organisation");
-        representativeClaimantTypePreferencePost.setRepresentativePhoneNumber("03123456789");
-        representativeClaimantTypePreferencePost.setRepresentativeMobileNumber("07444518903");
-        representativeClaimantTypePreferencePost.setRepresentativeEmailAddress("test@gmail.com");
-        representativeClaimantTypePreferencePost.setRepresentativePreference(POST);
+        Address representativeAddress = TestUtil.generateAddressByAddressFields(ADDRESS_LINE_1, ADDRESS_LINE_2,
+                                                                                ADDRESS_LINE_3, POST_TOWN, COUNTY,
+                                                                                COUNTRY, POSTCODE);
+        RepresentedTypeC representativeClaimantTypeAllFilled = TestUtil.generateRepresentativeClaimantType(
+            representativeAddress, REPRESENTATIVE_NAME, REPRESENTATIVE_REFERENCE, REPRESENTATIVE_ORGANISATION,
+            REPRESENTATIVE_PHONE_NUMBER, REPRESENTATIVE_MOBILE_NUMBER, REPRESENTATIVE_EMAIL, EMAIL
+        );
+        RepresentedTypeC representativeClaimantTypeAddressNull = TestUtil.generateRepresentativeClaimantType(
+            null, REPRESENTATIVE_NAME, REPRESENTATIVE_REFERENCE, REPRESENTATIVE_ORGANISATION,
+            REPRESENTATIVE_PHONE_NUMBER, REPRESENTATIVE_MOBILE_NUMBER, REPRESENTATIVE_EMAIL, EMAIL
+        );
+        RepresentedTypeC representativeClaimantPreferenceNull = TestUtil.generateRepresentativeClaimantType(
+            representativeAddress, REPRESENTATIVE_NAME, REPRESENTATIVE_REFERENCE, REPRESENTATIVE_ORGANISATION,
+            REPRESENTATIVE_PHONE_NUMBER, REPRESENTATIVE_MOBILE_NUMBER, REPRESENTATIVE_EMAIL, NULL_STRING
+        );
+        RepresentedTypeC representativeClaimantPreferenceEmpty = TestUtil.generateRepresentativeClaimantType(
+            representativeAddress, REPRESENTATIVE_NAME, REPRESENTATIVE_REFERENCE, REPRESENTATIVE_ORGANISATION,
+            REPRESENTATIVE_PHONE_NUMBER, REPRESENTATIVE_MOBILE_NUMBER, REPRESENTATIVE_EMAIL, EMPTY_STRING
+        );
+        RepresentedTypeC representativeClaimantPreferenceBlank = TestUtil.generateRepresentativeClaimantType(
+            representativeAddress, REPRESENTATIVE_NAME, REPRESENTATIVE_REFERENCE, REPRESENTATIVE_ORGANISATION,
+            REPRESENTATIVE_PHONE_NUMBER, REPRESENTATIVE_MOBILE_NUMBER, REPRESENTATIVE_EMAIL, BLANK_STRING
+        );
+        RepresentedTypeC representativeClaimantTypePreferenceFax = TestUtil.generateRepresentativeClaimantType(
+            representativeAddress, REPRESENTATIVE_NAME, REPRESENTATIVE_REFERENCE, REPRESENTATIVE_ORGANISATION,
+            REPRESENTATIVE_PHONE_NUMBER, REPRESENTATIVE_MOBILE_NUMBER, REPRESENTATIVE_EMAIL, FAX
+        );
+        RepresentedTypeC representativeClaimantTypePreferencePost = TestUtil.generateRepresentativeClaimantType(
+            representativeAddress, REPRESENTATIVE_NAME, REPRESENTATIVE_REFERENCE, REPRESENTATIVE_ORGANISATION,
+            REPRESENTATIVE_PHONE_NUMBER, REPRESENTATIVE_MOBILE_NUMBER, REPRESENTATIVE_EMAIL, POST
+        );
 
         return Stream.of(
             Arguments.of(representativeClaimantTypeAllFilled),
