@@ -28,7 +28,7 @@ public final class TseApplicationHelper {
 
     public static final DateTimeFormatter NEW_DATE_PATTERN = DateTimeFormatter.ofPattern("d MMMM yyyy");
     public static final String CLAIMANT = "Claimant";
-    public static final String IN_PROGRESS = "inProgress";
+    public static final String WAITING_FOR_TRIBUNAL = "waitingForTheTribunal";
 
     public static String formatCurrentDate(LocalDate date) {
         return date.format(NEW_DATE_PATTERN);
@@ -88,6 +88,6 @@ public final class TseApplicationHelper {
                                                    .value(responseToAdd).build());
         appToModify.setResponsesCount(
             String.valueOf(appToModify.getRespondCollection().size()));
-        appToModify.setApplicationState(IN_PROGRESS);
+        appToModify.setApplicationState(WAITING_FOR_TRIBUNAL);
     }
 }

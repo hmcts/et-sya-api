@@ -217,7 +217,4 @@ public class ManageCaseController {
 
         return ok(finalCaseDetails);
     }
-
-
-
 }
