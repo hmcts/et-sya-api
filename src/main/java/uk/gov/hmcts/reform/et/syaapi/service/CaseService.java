@@ -13,7 +13,6 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -510,7 +509,7 @@ public class CaseService {
         SearchResult searchResult = ccdApiClient.searchCases(authorisation, authTokenGenerator.generate(),
                                                              caseTypeId, query
         );
-        if (searchResult != null && !CollectionUtils.isEmpty(searchResult.getCases())) {
+        if (searchResult != null && !isEmpty(searchResult.getCases())) {
             caseDetailsList.addAll(searchResult.getCases());
         }
         return caseDetailsList;
