@@ -13,7 +13,6 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -57,9 +56,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
+import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ACAS_VISIBLE_DOCS;
@@ -445,7 +444,7 @@ public class CaseService {
                                                 d.getValue().getTypeOfDocument(),
                                                 ""
                                             )))
-                                            .collect(toList()));
+                                            .toList());
 
             if (caseData.getClaimantRequests() != null
                 && caseData.getClaimantRequests().getClaimDescriptionDocument() != null) {
@@ -514,7 +513,7 @@ public class CaseService {
         SearchResult searchResult = ccdApiClient.searchCases(authorisation, authTokenGenerator.generate(),
                                                              caseTypeId, query
         );
-        if (searchResult != null && !CollectionUtils.isEmpty(searchResult.getCases())) {
+        if (searchResult != null && !isEmpty(searchResult.getCases())) {
             caseDetailsList.addAll(searchResult.getCases());
         }
         return caseDetailsList;
@@ -579,6 +578,9 @@ public class CaseService {
             multipartResponsePdf
         );
 
+        if (isEmpty(caseData.getDocumentCollection())) {
+            caseData.setDocumentCollection(new ArrayList<>());
+        }
         var docCollection = caseData.getDocumentCollection();
         docCollection.add(responsePdf);
     }
