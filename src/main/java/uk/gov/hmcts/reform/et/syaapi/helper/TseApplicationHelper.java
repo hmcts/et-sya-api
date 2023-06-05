@@ -37,15 +37,15 @@ public final class TseApplicationHelper {
     /**
      * Finds the application by ID.
      *
-     * @param request - request from the claimant
      * @param applications - list of all applications attached to the case
+     * @param applicationId - id of application we're trying to find
      * @return the {@link GenericTseApplicationTypeItem} to be updated
      */
     public static GenericTseApplicationTypeItem getSelectedApplication(
-        RespondToApplicationRequest request,
-        List<GenericTseApplicationTypeItem> applications) {
+        List<GenericTseApplicationTypeItem> applications,
+        String applicationId) {
         return applications.stream()
-            .filter(a -> a.getId().equals(request.getApplicationId()))
+            .filter(a -> a.getId().equals(applicationId))
             .findAny()
             .orElse(null);
     }
