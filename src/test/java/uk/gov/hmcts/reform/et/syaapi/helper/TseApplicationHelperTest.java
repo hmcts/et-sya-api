@@ -21,14 +21,14 @@ class TseApplicationHelperTest {
 
     @Nested
     class GetSelectedApplication {
-        private final String id = "testId";
+        private static final String ID = "testId";
 
         @Test
         void correctApplicationWhenExists() {
-            GenericTseApplicationTypeItem expected = GenericTseApplicationTypeItem.builder().id(id).build();
+            GenericTseApplicationTypeItem expected = GenericTseApplicationTypeItem.builder().id(ID).build();
             List<GenericTseApplicationTypeItem> applications = List.of(expected);
 
-            GenericTseApplicationTypeItem actual = TseApplicationHelper.getSelectedApplication(applications, id);
+            GenericTseApplicationTypeItem actual = TseApplicationHelper.getSelectedApplication(applications, ID);
 
             assertThat(actual).isEqualTo(expected);
         }
@@ -36,7 +36,7 @@ class TseApplicationHelperTest {
         @Test
         void nullWhenDoesNotExist() {
             String wrongId = "wrongId";
-            GenericTseApplicationTypeItem expected = GenericTseApplicationTypeItem.builder().id(id).build();
+            GenericTseApplicationTypeItem expected = GenericTseApplicationTypeItem.builder().id(ID).build();
             List<GenericTseApplicationTypeItem> applications = List.of(expected);
 
             GenericTseApplicationTypeItem actual = TseApplicationHelper.getSelectedApplication(applications, wrongId);

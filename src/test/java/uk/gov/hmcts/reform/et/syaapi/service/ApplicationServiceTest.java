@@ -27,7 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
-@SuppressWarnings({"PMD.SingularField"})
+@SuppressWarnings({"PMD.SingularField", "PMD.TooManyMethods"})
 class ApplicationServiceTest {
 
     public static final String RESPONDENT_LIST =
