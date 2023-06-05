@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.helper;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -22,38 +21,42 @@ class TseApplicationHelperTest {
 
     @Nested
     class GetSelectedApplication {
+        private final String id = "testId";
+
         @Test
-        void getSelectedApplicationWhenExists() {
-            String id = "testId";
+        void correctApplicationWhenExists() {
             GenericTseApplicationTypeItem expected = GenericTseApplicationTypeItem.builder().id(id).build();
             List<GenericTseApplicationTypeItem> applications = List.of(expected);
+
             GenericTseApplicationTypeItem actual = TseApplicationHelper.getSelectedApplication(applications, id);
+
             assertThat(actual).isEqualTo(expected);
         }
 
         @Test
-        void getNullWhenSelectedApplicationDoesNotExist() {
-            String id = "testId";
+        void nullWhenDoesNotExist() {
             String wrongId = "wrongId";
             GenericTseApplicationTypeItem expected = GenericTseApplicationTypeItem.builder().id(id).build();
             List<GenericTseApplicationTypeItem> applications = List.of(expected);
+
             GenericTseApplicationTypeItem actual = TseApplicationHelper.getSelectedApplication(applications, wrongId);
+
             assertThat(actual).isNull();
         }
     }
 
-    @Test
-    @DisplayName("given resp app, "
-        + "when setting claimant response "
-        + "then status is waitingForTheTribunal")
-    void respAppStatusAfterClaimantResponse() {
-        RespondToApplicationRequest request = data.getRespondToApplicationRequest();
-        GenericTseApplicationType app = GenericTseApplicationType.builder().build();
-        CaseData caseData = data.getCaseData();
-        CaseDocumentService service = mock(CaseDocumentService.class);
+    @Nested
+    class SetRespondentApplicationWithResponse {
+        @Test
+        void applicationStatusWaitingForTheTribunal() {
+            RespondToApplicationRequest request = data.getRespondToApplicationRequest();
+            GenericTseApplicationType app = GenericTseApplicationType.builder().build();
+            CaseData caseData = data.getCaseData();
+            CaseDocumentService service = mock(CaseDocumentService.class);
 
-        TseApplicationHelper.setRespondentApplicationWithResponse(request, app, caseData, service);
+            TseApplicationHelper.setRespondentApplicationWithResponse(request, app, caseData, service);
 
-        Assertions.assertEquals("waitingForTheTribunal", app.getApplicationState());
+            Assertions.assertEquals("waitingForTheTribunal", app.getApplicationState());
+        }
     }
 }
