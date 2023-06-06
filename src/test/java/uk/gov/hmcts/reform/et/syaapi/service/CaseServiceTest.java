@@ -7,7 +7,9 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -72,6 +74,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.ENGLANDWALES_CASE_TYPE_ID;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ONLINE_SUBMISSION;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.CASE_ID;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.SUBMIT_CASE_DRAFT;
@@ -81,7 +85,7 @@ import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.USER_ID;
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.AvoidDuplicateLiterals"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.AvoidDuplicateLiterals", "PMD.TooManyFields"})
 class CaseServiceTest {
 
     @Mock
@@ -110,6 +114,7 @@ class CaseServiceTest {
     private NotificationsProperties notificationsProperties;
     @InjectMocks
     private CaseService caseService;
+    private SendEmailResponse sendEmailResponse;
     private final TestData testData;
     public static final String TEST = "test";
     private static final byte[] TSE_PDF_BYTES = TEST.getBytes();
@@ -127,6 +132,81 @@ class CaseServiceTest {
 
     CaseServiceTest() {
         testData = new TestData();
+    }
+
+    @BeforeEach
+    void setUpForSubmitCaseTests(TestInfo testInfo) throws CaseDocumentException {
+        if (!testInfo.getDisplayName().startsWith("submitCase")) {
+            return;
+        }
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
+            USER_ID,
+            TEST_NAME,
+            testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
+            testData.getCaseData().getClaimantIndType().getClaimantLastName(),
+            null
+        ));
+
+        testData.getCaseRequest().setCaseId("1668421480426211");
+        when(ccdApiClient.submitEventForCitizen(
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(USER_ID),
+            eq(EtSyaConstants.JURISDICTION_ID),
+            eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
+            any(String.class),
+            eq(true),
+            any(CaseDataContent.class)
+        )).thenReturn(testData.getExpectedDetails());
+
+        when(ccdApiClient.startEventForCitizen(
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(USER_ID),
+            eq(EtSyaConstants.JURISDICTION_ID),
+            eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
+            any(String.class),
+            any(String.class)
+        )).thenReturn(testData.getStartEventResponse());
+
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            new PdfDecodedMultipartFile(
+                new byte[0],
+                TEST,
+                TEST,
+                TEST
+            );
+
+        when(pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(any(), any()))
+            .thenReturn(List.of(pdfDecodedMultipartFile));
+
+        when(pdfService.convertCaseDataToPdfDecodedMultipartFile(any(), any()))
+            .thenReturn(List.of(pdfDecodedMultipartFile));
+
+        when(acasService.getAcasCertificatesByCaseData(any())).thenReturn(List.of());
+
+        when(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(any()))
+            .thenReturn(testData.getCaseData());
+        sendEmailResponse
+            = new SendEmailResponse("{\n"
+                                        + "  \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
+                                        + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
+                                        + "  \"template\": {\n"
+                                        + "    \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
+                                        + "    \"version\": \"3\",\n"
+                                        + "    \"uri\": \"TEST\"\n"
+                                        + "  },\n"
+                                        + "  \"content\": {\n"
+                                        + "    \"body\": \"Dear test, Please see your detail as 123456789. Regards, "
+                                        + "ET Team.\",\n"
+                                        + "    \"subject\": \"ET Test email created\",\n"
+                                        + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
+                                        + "  }\n"
+                                        + "}\n");
+        when(notificationService.sendSubmitCaseConfirmationEmail(any(), any(), any(), any()))
+            .thenReturn(sendEmailResponse);
     }
 
     @Test
@@ -301,79 +381,9 @@ class CaseServiceTest {
 
     @SneakyThrows
     @Test
-    void shouldAddSupportingDocumentToDocumentCollection() {
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
-            null,
-            USER_ID,
-            TEST_NAME,
-            testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
-            testData.getCaseData().getClaimantIndType().getClaimantLastName(),
-            null
-        ));
-
-        testData.getCaseRequest().setCaseId("1668421480426211");
-        when(ccdApiClient.submitEventForCitizen(
-            eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(USER_ID),
-            eq(EtSyaConstants.JURISDICTION_ID),
-            eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
-            any(String.class),
-            eq(true),
-            any(CaseDataContent.class)
-        )).thenReturn(testData.getExpectedDetails());
-
-        when(ccdApiClient.startEventForCitizen(
-            eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(USER_ID),
-            eq(EtSyaConstants.JURISDICTION_ID),
-            eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
-            any(String.class),
-            any(String.class)
-        )).thenReturn(testData.getStartEventResponse());
-
-        PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            new PdfDecodedMultipartFile(
-                new byte[0],
-                TEST,
-                TEST,
-                TEST
-            );
-
-        when(pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(any(), any()))
-            .thenReturn(List.of(pdfDecodedMultipartFile));
-
-        when(pdfService.convertCaseDataToPdfDecodedMultipartFile(any(), any()))
-            .thenReturn(List.of(pdfDecodedMultipartFile));
-
-        when(acasService.getAcasCertificatesByCaseData(any())).thenReturn(List.of());
-
+    void submitCaseShouldAddSupportingDocumentToDocumentCollection() {
         when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any()))
             .thenReturn(new LinkedList<>());
-
-        when(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(any()))
-            .thenReturn(testData.getCaseData());
-        SendEmailResponse sendEmailResponse
-            = new SendEmailResponse("""
-                                        {
-                                          "id": "8835039a-3544-439b-a3da-882490d959eb",
-                                          "reference": "TEST_EMAIL_ALERT",
-                                          "template": {
-                                            "id": "8835039a-3544-439b-a3da-882490d959eb",
-                                            "version": "3",
-                                            "uri": "TEST"
-                                          },
-                                          "content": {
-                                            "body": "Dear test, Please see your detail as 123456789. Regards, ET Team.",
-                                            "subject": "ET Test email created",
-                                            "from_email": "TEST@GMAIL.COM"
-                                          }
-                                        }
-                                        """);
-        when(notificationService.sendSubmitCaseConfirmationEmail(any(), any(), any(), any()))
-            .thenReturn(sendEmailResponse);
 
         when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(createDocumentTypeItem("Other"));
 
@@ -393,81 +403,13 @@ class CaseServiceTest {
     }
 
     @Test
-    void shouldSendErrorEmail() throws PdfServiceException, CaseDocumentException {
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
-            null,
-            USER_ID,
-            TEST_NAME,
-            testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
-            testData.getCaseData().getClaimantIndType().getClaimantLastName(),
-            null
-        ));
-
-        testData.getCaseRequest().setCaseId("1668421480426211");
-        when(ccdApiClient.submitEventForCitizen(
-            eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(USER_ID),
-            eq(EtSyaConstants.JURISDICTION_ID),
-            eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
-            any(String.class),
-            eq(true),
-            any(CaseDataContent.class)
-        )).thenReturn(testData.getExpectedDetails());
-
-        when(ccdApiClient.startEventForCitizen(
-            eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(USER_ID),
-            eq(EtSyaConstants.JURISDICTION_ID),
-            eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
-            any(String.class),
-            any(String.class)
-        )).thenReturn(testData.getStartEventResponse());
-
-        PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            new PdfDecodedMultipartFile(
-                new byte[0],
-                "test",
-                "test",
-                "test"
-            );
-
-        when(pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(any(), any()))
-            .thenReturn(List.of(pdfDecodedMultipartFile));
-
-        when(pdfService.convertCaseDataToPdfDecodedMultipartFile(any(), any()))
-            .thenReturn(List.of(pdfDecodedMultipartFile));
-
-        when(acasService.getAcasCertificatesByCaseData(any())).thenReturn(List.of());
-
-        when(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(any()))
-            .thenReturn(testData.getCaseData());
-
+    void submitCaseShouldSendErrorEmail() throws PdfServiceException, CaseDocumentException {
         when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any()))
             .thenThrow(new CaseDocumentException("Failed to upload documents"));
 
-        SendEmailResponse sendEmailResponse
-            = new SendEmailResponse("""
-                                        {
-                                          "id": "8835039a-3544-439b-a3da-882490d959eb",
-                                          "reference": "TEST_EMAIL_ALERT",
-                                          "template": {
-                                            "id": "8835039a-3544-439b-a3da-882490d959eb",
-                                            "version": "3",
-                                            "uri": "TEST"
-                                          },
-                                          "content": {
-                                            "body": "Dear test, Please see your detail as 123456789. Regards, ET Team.",
-                                            "subject": "ET Test email created",
-                                            "from_email": "TEST@GMAIL.COM"
-                                          }
-                                        }
-                                        """);
-
         when(notificationService.sendDocUploadErrorEmail(any(), any(), any(), any()))
             .thenReturn(sendEmailResponse);
+
         caseService.submitCase(
             TEST_SERVICE_AUTH_TOKEN,
             testData.getCaseRequest()
@@ -475,7 +417,17 @@ class CaseServiceTest {
 
         verify(notificationService, times(1))
             .sendDocUploadErrorEmail(any(), any(), any(), any());
+    }
 
+    @SneakyThrows
+    @Test
+    void submitCaseShouldSetEt1OnlineSubmission() {
+        CaseDetails caseDetails = caseService.submitCase(
+            TEST_SERVICE_AUTH_TOKEN,
+            testData.getCaseRequest()
+        );
+
+        assertEquals(YES, caseDetails.getData().get(ET1_ONLINE_SUBMISSION));
     }
 
     private DocumentTypeItem createDocumentTypeItem(String typeOfDocument) {

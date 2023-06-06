@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.ViewAnApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
@@ -218,6 +219,26 @@ public class ManageCaseController {
         return ok(finalCaseDetails);
     }
 
+    /**
+     * Mark respondent application as viewed.
+     *
+     * @param authorization jwt of the user
+     * @param request       the request object which contains the appId
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    @PutMapping("/view-an-application")
+    @Operation(summary = "Mark application as viewed")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> viewAnApplication(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody ViewAnApplicationRequest request
+    ) {
+        log.info("Received view an application request - caseTypeId: {} caseId: {}",
+                 request.getCaseTypeId(), request.getCaseId()
+        );
 
+        CaseDetails finalCaseDetails = applicationService.markApplicationAsViewed(authorization, request);
 
+        return ok(finalCaseDetails);
+    }
 }

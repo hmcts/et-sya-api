@@ -22,9 +22,9 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.ViewAnApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
-import uk.gov.hmcts.reform.et.syaapi.service.SendNotificationService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
@@ -80,9 +80,6 @@ class ManageCaseControllerTest {
 
     @MockBean
     private ApplicationService applicationService;
-
-    @MockBean
-    private SendNotificationService sendNotificationService;
 
     ManageCaseControllerTest() {
         // Default constructor
@@ -416,6 +413,32 @@ class ManageCaseControllerTest {
         ).andExpect(status().isOk());
 
         verify(applicationService, times(1)).respondToApplication(
+            TEST_SERVICE_AUTH_TOKEN,
+            caseRequest
+        );
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldViewAnApplication() {
+        ViewAnApplicationRequest caseRequest = ViewAnApplicationRequest.builder()
+            .caseTypeId(CASE_TYPE)
+            .caseId(CASE_ID)
+            .applicationId("1234")
+            .build();
+
+        // when
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+
+        when(applicationService.submitApplication(any(), any())).thenReturn(expectedDetails);
+        mockMvc.perform(
+            put("/cases/view-an-application", CASE_ID)
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ResourceLoader.toJson(caseRequest))
+        ).andExpect(status().isOk());
+
+        verify(applicationService, times(1)).markApplicationAsViewed(
             TEST_SERVICE_AUTH_TOKEN,
             caseRequest
         );

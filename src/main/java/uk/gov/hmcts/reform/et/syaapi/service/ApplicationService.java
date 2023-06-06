@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.ViewAnApplicationRequest;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 
@@ -36,6 +37,7 @@ import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespon
 @Slf4j
 public class ApplicationService {
     private static final String TSE_FILENAME = "Contact the tribunal.pdf";
+    public static final String VIEWED = "viewed";
     private final CaseService caseService;
     private final NotificationService notificationService;
     private final CaseDocumentService caseDocumentService;
@@ -104,33 +106,69 @@ public class ApplicationService {
             .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
 
         GenericTseApplicationTypeItem appToModify = TseApplicationHelper.getSelectedApplication(
-            request,
-            caseData.getGenericTseApplicationCollection()
+            caseData.getGenericTseApplicationCollection(), request.getApplicationId()
         );
-        if (appToModify != null) {
-            TseApplicationHelper.setRespondentApplicationWithResponse(
-                request,
-                appToModify.getValue(),
-                caseData,
-                caseDocumentService
-            );
-
-            createPdfOfResponse(authorization, request, caseData, appToModify.getValue());
-
-            CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
-            CaseDetails caseDetails = caseService.submitUpdate(
-                authorization,
-                request.getCaseId(),
-                content,
-                request.getCaseTypeId()
-            );
-
-            sendResponseToApplicationEmails(appToModify.getValue(), caseData, request.getCaseId(), request);
-
-            return caseDetails;
-        } else {
+        if (appToModify == null) {
             throw new IllegalArgumentException("Application id provided is incorrect");
         }
+
+        TseApplicationHelper.setRespondentApplicationWithResponse(
+            request,
+            appToModify.getValue(),
+            caseData,
+            caseDocumentService
+        );
+
+        createPdfOfResponse(authorization, request, caseData, appToModify.getValue());
+
+        CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
+        CaseDetails caseDetails = caseService.submitUpdate(
+            authorization,
+            request.getCaseId(),
+            content,
+            request.getCaseTypeId()
+        );
+
+        sendResponseToApplicationEmails(appToModify.getValue(), caseData, request.getCaseId(), request);
+
+        return caseDetails;
+    }
+
+    /**
+     * Update application state of Respondent's TSE app to be 'viewed'.
+     *
+     * @param authorization - authorization
+     * @param request - request with application's id
+     * @return the associated {@link CaseDetails} for the ID provided in request
+     */
+    public CaseDetails markApplicationAsViewed(String authorization, ViewAnApplicationRequest request) {
+        StartEventResponse startEventResponse = caseService.startUpdate(
+            authorization,
+            request.getCaseId(),
+            request.getCaseTypeId(),
+            CaseEvent.CLAIMANT_TSE_RESPOND
+        );
+
+        CaseData caseData = EmployeeObjectMapper
+            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
+
+        GenericTseApplicationTypeItem appToModify = TseApplicationHelper.getSelectedApplication(
+            caseData.getGenericTseApplicationCollection(),
+            request.getApplicationId()
+        );
+
+        if (appToModify == null) {
+            throw new IllegalArgumentException("Application id provided is incorrect");
+        }
+
+        appToModify.getValue().setApplicationState(VIEWED);
+
+        return caseService.submitUpdate(
+            authorization,
+            request.getCaseId(),
+            caseDetailsConverter.caseDataContent(startEventResponse, caseData),
+            request.getCaseTypeId()
+        );
     }
 
     private void createPdfOfResponse(String authorization,
