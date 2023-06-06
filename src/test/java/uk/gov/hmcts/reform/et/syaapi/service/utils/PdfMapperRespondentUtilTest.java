@@ -6,9 +6,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
-import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -29,14 +28,14 @@ class PdfMapperRespondentUtilTest {
     @ParameterizedTest
     @NullSource
     @MethodSource("retrieveRespondentSumTypes")
-    void putRespondent(List<RespondentSumTypeItem> respondentList) {
-        caseData.setRespondentCollection(respondentList);
+    void putRespondent(CaseData respondentCaseData) {
+
         ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
-        PdfMapperRespondentUtil.putRespondents(caseData, printFields);
+        PdfMapperRespondentUtil.putRespondents(respondentCaseData, printFields);
         assertThat(caseData.getRespondentCollection()).isNull();
     }
 
     private static Stream<Arguments> retrieveRespondentSumTypes() {
-        return null;
+        return TestData.generateRespondentSumTypeItems();
     }
 }

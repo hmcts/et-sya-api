@@ -563,4 +563,13 @@ public final class TestData {
             Arguments.of(representativeClaimantTypePreferencePost)
         );
     }
+
+    public static Stream<Arguments> generateRespondentSumTypeItems() {
+
+        CaseData caseData = TestUtil.generateCaseDataForRespondent("1", "Yes",
+                                                                   null, "1",
+                                                                   "Test Name", null, "Yes",
+                                                                   "R123456/78/90", "R123456/78/90");
+        return Stream.of(Arguments.of(caseData));
+    }
 }

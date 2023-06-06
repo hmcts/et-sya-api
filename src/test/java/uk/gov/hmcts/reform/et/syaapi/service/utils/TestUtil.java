@@ -2,8 +2,11 @@ package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
 import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
+import uk.gov.hmcts.et.common.model.ccd.types.ClaimantWorkAddressType;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
+import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 
 public final class TestUtil {
 
@@ -112,5 +115,32 @@ public final class TestUtil {
         claimantIndType.setClaimantDateOfBirth(dateOfBirth);
         claimantIndType.setClaimantSex(sex);
         return claimantIndType;
+    }
+
+    public static CaseData generateCaseDataForRespondent(String ethosCaseReference,
+                                                         String claimantWorkAddressQuestion,
+                                                         Address claimantWorkAddress,
+                                                         String respondentSumTypeItemId,
+                                                         String name,
+                                                         Address respondentAddress,
+                                                         String respondentAcasQuestion,
+                                                         String acasNumber,
+                                                         String respondentAcasNo) {
+        CaseData caseData = new CaseData();
+        caseData.setEthosCaseReference(ethosCaseReference);
+        caseData.setClaimantWorkAddressQuestion(claimantWorkAddressQuestion);
+        ClaimantWorkAddressType claimantWorkAddressType = new ClaimantWorkAddressType();
+        claimantWorkAddressType.setClaimantWorkAddress(claimantWorkAddress);
+        caseData.setClaimantWorkAddress(claimantWorkAddressType);
+        RespondentSumTypeItem respondentSumTypeItem = new RespondentSumTypeItem();
+        respondentSumTypeItem.setId(respondentSumTypeItemId);
+        RespondentSumType respondentSumType = new RespondentSumType();
+        respondentSumType.setRespondentName(name);
+        respondentSumType.setRespondentAddress(respondentAddress);
+        respondentSumType.setRespondentAcasQuestion(respondentAcasQuestion);
+        respondentSumType.setRespondentAcas(acasNumber);
+        respondentSumType.setRespondentAcasNo(respondentAcasNo);
+        respondentSumTypeItem.setValue(respondentSumType);
+        return caseData;
     }
 }
