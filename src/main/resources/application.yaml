@@ -36,7 +36,7 @@ idam:
     url: ${IDAM_API_BASEURL:http://localhost:5000}
     jwksUrl: ${IDAM_JWKS_BASEURL:http://localhost:5000/o/jwks}
   s2s-auth:
-    url: ${SERVICE_AUTH_PROVIDER_URL:http://localhost:4502}
+    url: ${SERVICE_AUTH_PROVIDER_URL:http://localhost:8489}
     secret: ${ET_SYA_S2S_SECRET:AAAAAAAAAAAAAAAA}
     microservice: ${MICRO_SERVICE:et_sya_api}
   client:
