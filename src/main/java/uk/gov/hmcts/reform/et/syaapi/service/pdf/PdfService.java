@@ -38,7 +38,6 @@ import java.util.Optional;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 
 /**
  * Uses {@link PdfMapperService} to convert a given case into a Pdf Document.

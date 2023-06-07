@@ -120,6 +120,7 @@ public class ApplicationService {
         );
 
         createPdfOfResponse(authorization, request, caseData, appToModify.getValue());
+
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
         CaseDetails caseDetails = caseService.submitUpdate(
             authorization,
