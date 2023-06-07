@@ -238,7 +238,7 @@ class ApplicationServiceTest {
             testRequest
         );
 
-        verify(caseService, times(0)).createResponsePdf(
+        verify(caseService, times(1)).createResponsePdf(
             eq(TEST_SERVICE_AUTH_TOKEN),
             any(),
             eq(testRequest),
@@ -246,32 +246,6 @@ class ApplicationServiceTest {
         );
 
         verify(caseDetailsConverter, times(1)).caseDataContent(
-            any(),
-            any()
-        );
-    }
-
-    @Test
-    void shouldNotSubmitResponseWhenNoResponseTextOrUploadFile() {
-        RespondToApplicationRequest testRequest = testData.getRespondToApplicationNoUploadRequest();
-        testRequest.getResponse().setResponse(null);
-
-        when(caseService.startUpdate(
-            TEST_SERVICE_AUTH_TOKEN,
-            testRequest.getCaseId(),
-            testRequest.getCaseTypeId(),
-            CaseEvent.CLAIMANT_TSE_RESPOND
-        )).thenReturn(testData.getUpdateCaseEventResponse());
-
-        assertThrows(
-            IllegalArgumentException.class,
-            () -> applicationService.respondToApplication(
-                TEST_SERVICE_AUTH_TOKEN,
-                testRequest
-            )
-        );
-
-        verify(caseDetailsConverter, times(0)).caseDataContent(
             any(),
             any()
         );

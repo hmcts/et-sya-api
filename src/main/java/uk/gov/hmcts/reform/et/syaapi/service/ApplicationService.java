@@ -112,11 +112,6 @@ public class ApplicationService {
             throw new IllegalArgumentException("Application id provided is incorrect");
         }
 
-        boolean hasIncludedFile = request.getResponse().getSupportingMaterial() != null;
-        if (!hasIncludedFile && request.getResponse().getResponse() == null) {
-            throw new IllegalArgumentException("SupportingMaterialFile or "
-                                                   + "response text required for response to application");
-        }
         TseApplicationHelper.setRespondentApplicationWithResponse(
             request,
             appToModify.getValue(),
@@ -124,9 +119,7 @@ public class ApplicationService {
             caseDocumentService
         );
 
-        if (hasIncludedFile) {
-            createPdfOfResponse(authorization, request, caseData, appToModify.getValue());
-        }
+        createPdfOfResponse(authorization, request, caseData, appToModify.getValue());
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
         CaseDetails caseDetails = caseService.submitUpdate(
             authorization,

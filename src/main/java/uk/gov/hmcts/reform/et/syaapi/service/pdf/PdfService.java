@@ -314,7 +314,7 @@ public class PdfService {
     private byte[] convertClaimantResponseToPdf(RespondToApplicationRequest request)
         throws DocumentGenerationException {
         TseRespondType claimantResponse = request.getResponse();
-        String fileName = YES.equals(claimantResponse.getHasSupportingMaterial())
+        String fileName = claimantResponse.getSupportingMaterial() != null
             ? request.getSupportingMaterialFile().getDocumentFilename() : null;
         ClaimantResponseCya claimantResponseCya = ClaimantResponseCya.builder()
             .response(claimantResponse.getResponse())
