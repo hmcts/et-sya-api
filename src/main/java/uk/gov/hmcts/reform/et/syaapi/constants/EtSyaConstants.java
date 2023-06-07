@@ -53,6 +53,8 @@ public final class EtSyaConstants {
     public static final String WELSH_LANGUAGE = "Welsh";
     public static final String WELSH_LANGUAGE_PARAM = "/?lng=cy";
 
+    public static final String ET1_ONLINE_SUBMISSION = "et1OnlineSubmission";
+
     public static final List<String> ACAS_VISIBLE_DOCS = List.of("ET1", "ACAS Certificate", "Notice of a claim",
                                                                  "ET3", CLAIMANT_CORRESPONDENCE_DOCUMENT,
                                                                  "Respondent correspondence", "Notice of Hearing",
