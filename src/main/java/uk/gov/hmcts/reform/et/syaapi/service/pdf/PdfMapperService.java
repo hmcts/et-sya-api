@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 
 /**
  * Maps Case Data attributes to fields within the PDF template.
@@ -114,7 +115,7 @@ public class PdfMapperService {
             ofNullable(caseData.getEt1VettingAdditionalInformationTextArea())
         );
         try {
-            printFields.put(PdfMapperConstants.TRIBUNAL_OFFICE, ofNullable(caseData.getManagingOffice()));
+            printFields.put(PdfMapperConstants.TRIBUNAL_OFFICE, Optional.of(printTribunalOffice(caseData)));
             printFields.put(PdfMapperConstants.CASE_NUMBER, ofNullable(caseData.getEthosCaseReference()));
             printFields.put(PdfMapperConstants.DATE_RECEIVED,
                             ofNullable(PdfMapperUtil.formatDate(caseData.getReceiptDate())));
@@ -129,6 +130,12 @@ public class PdfMapperService {
             log.error("Exception occurred in PDF MAPPER \n" + e.getMessage(), e);
         }
         return printFields;
+    }
+
+    private String printTribunalOffice(CaseData caseData) {
+        return UNASSIGNED_OFFICE.equals(caseData.getManagingOffice())
+            ? ""
+            : caseData.getManagingOffice();
     }
 
     private Map<String, Optional<String>> printHearingPreferences(CaseData caseData) {
