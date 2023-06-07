@@ -101,17 +101,21 @@ public class ApplicationService {
             request.getCaseTypeId(),
             CaseEvent.CLAIMANT_TSE_RESPOND
         );
+
         CaseData caseData = EmployeeObjectMapper
             .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
+
         GenericTseApplicationTypeItem appToModify = TseApplicationHelper.getSelectedApplication(
             caseData.getGenericTseApplicationCollection(), request.getApplicationId()
         );
         if (appToModify == null) {
             throw new IllegalArgumentException("Application id provided is incorrect");
         }
+
         boolean hasIncludedFile = request.getResponse().getSupportingMaterial() != null;
-        if(!hasIncludedFile && request.getResponse().getResponse() == null){
-            throw new IllegalArgumentException("Either supportingMaterialFile or a response text not provided for response to application");
+        if (!hasIncludedFile && request.getResponse().getResponse() == null) {
+            throw new IllegalArgumentException("SupportingMaterialFile or "
+                                                   + "response text required for response to application");
         }
         TseApplicationHelper.setRespondentApplicationWithResponse(
             request,
@@ -120,7 +124,7 @@ public class ApplicationService {
             caseDocumentService
         );
 
-        if (hasIncludedFile){
+        if (hasIncludedFile) {
             createPdfOfResponse(authorization, request, caseData, appToModify.getValue());
         }
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
@@ -130,6 +134,7 @@ public class ApplicationService {
             content,
             request.getCaseTypeId()
         );
+
         sendResponseToApplicationEmails(appToModify.getValue(), caseData, request.getCaseId(), request);
 
         return caseDetails;

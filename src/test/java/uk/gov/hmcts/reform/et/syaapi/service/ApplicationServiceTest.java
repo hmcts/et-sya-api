@@ -221,7 +221,8 @@ class ApplicationServiceTest {
     }
 
     @Test
-    void shouldSubmitResponseToApplicationWhenOptionalFileNotProvided() throws CaseDocumentException, DocumentGenerationException {
+    void shouldSubmitResponseToApplicationWhenOptionalFileNotProvided()
+        throws CaseDocumentException, DocumentGenerationException {
         RespondToApplicationRequest testRequest = testData.getRespondToApplicationNoUploadRequest();
         testRequest.getResponse().setCopyToOtherParty("Yes");
 
@@ -275,7 +276,8 @@ class ApplicationServiceTest {
             any()
         );
     }
-@Test
+
+    @Test
     void shouldNotSubmitResponseToApplication() {
         RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
         testRequest.setApplicationId("12");
