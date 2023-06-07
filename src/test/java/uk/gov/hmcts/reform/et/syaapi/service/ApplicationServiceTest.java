@@ -221,6 +221,61 @@ class ApplicationServiceTest {
     }
 
     @Test
+    void shouldSubmitResponseToApplicationWhenOptionalFileNotProvided() throws CaseDocumentException, DocumentGenerationException {
+        RespondToApplicationRequest testRequest = testData.getRespondToApplicationNoUploadRequest();
+        testRequest.getResponse().setCopyToOtherParty("Yes");
+
+        when(caseService.startUpdate(
+            TEST_SERVICE_AUTH_TOKEN,
+            testRequest.getCaseId(),
+            testRequest.getCaseTypeId(),
+            CaseEvent.CLAIMANT_TSE_RESPOND
+        )).thenReturn(testData.getUpdateCaseEventResponse());
+
+        applicationService.respondToApplication(
+            TEST_SERVICE_AUTH_TOKEN,
+            testRequest
+        );
+
+        verify(caseService, times(0)).createResponsePdf(
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            any(),
+            eq(testRequest),
+            any()
+        );
+
+        verify(caseDetailsConverter, times(1)).caseDataContent(
+            any(),
+            any()
+        );
+    }
+
+    @Test
+    void shouldNotSubmitResponseWhenNoResponseTextOrUploadFile() {
+        RespondToApplicationRequest testRequest = testData.getRespondToApplicationNoUploadRequest();
+        testRequest.getResponse().setResponse(null);
+
+        when(caseService.startUpdate(
+            TEST_SERVICE_AUTH_TOKEN,
+            testRequest.getCaseId(),
+            testRequest.getCaseTypeId(),
+            CaseEvent.CLAIMANT_TSE_RESPOND
+        )).thenReturn(testData.getUpdateCaseEventResponse());
+
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> applicationService.respondToApplication(
+                TEST_SERVICE_AUTH_TOKEN,
+                testRequest
+            )
+        );
+
+        verify(caseDetailsConverter, times(0)).caseDataContent(
+            any(),
+            any()
+        );
+    }
+@Test
     void shouldNotSubmitResponseToApplication() {
         RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
         testRequest.setApplicationId("12");
