@@ -119,19 +119,23 @@ public final class TestUtil {
 
     public static CaseData generateCaseDataForRespondent(String ethosCaseReference,
                                                          String claimantWorkAddressQuestion,
-                                                         Address claimantWorkAddress,
-                                                         String respondentSumTypeItemId,
-                                                         String name,
-                                                         Address respondentAddress,
-                                                         String respondentAcasQuestion,
-                                                         String acasNumber,
-                                                         String respondentAcasNo) {
+                                                         Address claimantWorkAddress) {
         CaseData caseData = new CaseData();
         caseData.setEthosCaseReference(ethosCaseReference);
         caseData.setClaimantWorkAddressQuestion(claimantWorkAddressQuestion);
         ClaimantWorkAddressType claimantWorkAddressType = new ClaimantWorkAddressType();
         claimantWorkAddressType.setClaimantWorkAddress(claimantWorkAddress);
         caseData.setClaimantWorkAddress(claimantWorkAddressType);
+
+        return caseData;
+    }
+
+    public static RespondentSumTypeItem generateRespondentSumTypeItem(String respondentSumTypeItemId,
+                                                              String name,
+                                                              Address respondentAddress,
+                                                              String respondentAcasQuestion,
+                                                              String acasNumber,
+                                                              String respondentAcasNo) {
         RespondentSumTypeItem respondentSumTypeItem = new RespondentSumTypeItem();
         respondentSumTypeItem.setId(respondentSumTypeItemId);
         RespondentSumType respondentSumType = new RespondentSumType();
@@ -141,6 +145,6 @@ public final class TestUtil {
         respondentSumType.setRespondentAcas(acasNumber);
         respondentSumType.setRespondentAcasNo(respondentAcasNo);
         respondentSumTypeItem.setValue(respondentSumType);
-        return caseData;
+        return respondentSumTypeItem;
     }
 }

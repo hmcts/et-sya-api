@@ -6,6 +6,7 @@ import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantRequestType;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantType;
@@ -21,11 +22,16 @@ import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.TestUtil;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_ANOTHER_PERSON;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_EMPLOYER_ALREADY_IN_TOUCH;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_NO_POWER;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_UNFAIR_DISMISSAL;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ADDRESS_LINE_1;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ADDRESS_LINE_2;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ADDRESS_LINE_3;
@@ -51,8 +57,15 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MR;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MRS;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MS;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MULTIPLE_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NULL_ADDRESS;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NULL_STRING;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NUMERIC_FIVE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NUMERIC_FOUR;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NUMERIC_ONE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NUMERIC_THREE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NUMERIC_TWO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.OTHER;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.OTHER_TITLE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.POST;
@@ -67,8 +80,18 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.REPRESEN
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.REPRESENTATIVE_REFERENCE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.SWIFT;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TAYLOR;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_ACAS;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_COMPANY_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_NAMES;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TRUE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_ADDRESS_LINE_1;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_ADDRESS_LINE_2;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_ADDRESS_LINE_3;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_COUNTRY;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_COUNTY;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_POSTCODE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_POST_TOWN;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.YES;
 
 @Data
 @SuppressWarnings({"PMD.TooManyFields", "PMD.TooManyMethods"})
@@ -565,11 +588,53 @@ public final class TestData {
     }
 
     public static Stream<Arguments> generateRespondentSumTypeItems() {
+        Address respondentAddress = TestUtil.generateAddressByAddressFields(ADDRESS_LINE_1, ADDRESS_LINE_2,
+                                                                            ADDRESS_LINE_3, POST_TOWN, COUNTY,
+                                                                            COUNTRY, POSTCODE);
+        ////// CASE DATA 1
+        CaseData caseData1 = TestUtil.generateCaseDataForRespondent(NUMERIC_ONE, YES, NULL_ADDRESS);
+        RespondentSumTypeItem respondentSumTypeItem = TestUtil.generateRespondentSumTypeItem(NUMERIC_ONE,
+            TEST_COMPANY_NAME, respondentAddress, YES, TEST_ACAS, PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_UNFAIR_DISMISSAL);
+        List<RespondentSumTypeItem> respondentCollection = new ArrayList<>();
+        respondentCollection.add(respondentSumTypeItem);
+        caseData1.setRespondentCollection(respondentCollection);
+        ////// CASE DATA 2
+        RespondentSumTypeItem respondentSumTypeItem2 = TestUtil.generateRespondentSumTypeItem(NUMERIC_TWO,
+            TEST_COMPANY_NAME, respondentAddress, YES, TEST_ACAS, PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_ANOTHER_PERSON);
+        RespondentSumTypeItem respondentSumTypeItem3 = TestUtil.generateRespondentSumTypeItem(NUMERIC_THREE,
+            TEST_COMPANY_NAME, respondentAddress, NO, TEST_ACAS, PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_NO_POWER);
+        RespondentSumTypeItem respondentSumTypeItem4 = TestUtil.generateRespondentSumTypeItem(NUMERIC_FOUR,
+            TEST_COMPANY_NAME, respondentAddress, NO, TEST_ACAS, PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_UNFAIR_DISMISSAL);
+        RespondentSumTypeItem respondentSumTypeItem5 = TestUtil.generateRespondentSumTypeItem(NUMERIC_FIVE,
+            TEST_COMPANY_NAME, respondentAddress, NO, TEST_ACAS, PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_ANOTHER_PERSON);
+        List<RespondentSumTypeItem> respondentCollection2 = new ArrayList<>();
+        respondentCollection2.add(respondentSumTypeItem);
+        respondentCollection2.add(respondentSumTypeItem2);
+        respondentCollection2.add(respondentSumTypeItem3);
+        respondentCollection2.add(respondentSumTypeItem4);
+        respondentCollection2.add(respondentSumTypeItem5);
+        Address workAddress = TestUtil.generateAddressByAddressFields(WORK_ADDRESS_LINE_1, WORK_ADDRESS_LINE_2,
+                                                                      WORK_ADDRESS_LINE_3, WORK_POST_TOWN, WORK_COUNTY,
+                                                                      WORK_COUNTRY, WORK_POSTCODE);
+        CaseData caseData2 = TestUtil.generateCaseDataForRespondent(NUMERIC_TWO, NO, workAddress);
+        caseData2.setRespondentCollection(respondentCollection2);
+        ////// CASE DATA 3
+        CaseData caseData3 = TestUtil.generateCaseDataForRespondent(NUMERIC_THREE, YES, NULL_ADDRESS);
+        RespondentSumTypeItem respondentSumTypeItem6 = TestUtil.generateRespondentSumTypeItem(NUMERIC_TWO,
+            TEST_COMPANY_NAME, respondentAddress, YES, TEST_ACAS,
+            PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_EMPLOYER_ALREADY_IN_TOUCH);
 
-        CaseData caseData = TestUtil.generateCaseDataForRespondent("1", "Yes",
-                                                                   null, "1",
-                                                                   "Test Name", null, "Yes",
-                                                                   "R123456/78/90", "R123456/78/90");
-        return Stream.of(Arguments.of(caseData));
+        List<RespondentSumTypeItem> respondentCollection3 = new ArrayList<>();
+        respondentCollection3.add(respondentSumTypeItem);
+        respondentCollection3.add(respondentSumTypeItem6);
+        caseData3.setRespondentCollection(respondentCollection3);
+
+        ////// CASE DATA 4
+        CaseData caseData4 = TestUtil.generateCaseDataForRespondent(NUMERIC_FOUR, YES, NULL_ADDRESS);
+
+        return Stream.of(Arguments.of(caseData1),
+                         Arguments.of(caseData2),
+                         Arguments.of(caseData3),
+                         Arguments.of(caseData4));
     }
 }

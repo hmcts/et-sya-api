@@ -321,6 +321,11 @@ public final class PdfMapperConstants {
     public static final String SEX_FEMALE_LOWERCASE = "Female";
     public static final String SEX_PREFER_NOT_TO_SAY = "Prefer not to say";
     public static final String SEX_PREFER_NOT_TO_SAY_LOWERCASE = "prefer not to say";
+    public static final String INVALID_NO_ACAS_REASON = "Invalid No ACAS Certificate Reason Selected!...";
+    public static final String PDF_CREATION_ERROR = "Error while creating PDF document!...";
+    public static final int NUMERIC_THREE_INT_VALUE = 3;
+    public static final int NUMERIC_FOUR_INT_VALUE = 4;
+    public static final int MAX_NUMBER_OF_RESPONDENTS = 5;
     public static final Map<String, String> TITLES = Map.of(
         MR, PdfMapperConstants.Q1_TITLE_MR,
         MRS, PdfMapperConstants.Q1_TITLE_MRS,

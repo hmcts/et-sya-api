@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
 import org.json.JSONObject;
+import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.service.notify.SendEmailResponse;
@@ -59,6 +60,20 @@ public final class TestConstants {
     public static final String POST_TOWN = "PostTown";
     public static final String COUNTY = "County";
     public static final String COUNTRY = "Country";
+    public static final String WORK_ADDRESS_LINE_1 = "WorkAddressLine1";
+    public static final String WORK_ADDRESS_LINE_2 = "WorkAddressLine2";
+    public static final String WORK_ADDRESS_LINE_3 = "WorkAddressLine3";
+    public static final String WORK_POST_TOWN = "WorkPostTown";
+    public static final String WORK_COUNTY = "WorkCounty";
+    public static final String WORK_COUNTRY = "WorkCountry";
+    public static final String WORK_POSTCODE = "SL6 2DE";
+    public static final String TEST_COMPANY_NAME = "Test Company Name";
+    public static final String NUMERIC_ONE = "1";
+    public static final String NUMERIC_TWO = "2";
+    public static final String NUMERIC_THREE = "3";
+    public static final String NUMERIC_FOUR = "4";
+    public static final String NUMERIC_FIVE = "5";
+    public static final String NUMERIC_SIX = "6";
     public static final String POSTCODE = "SW1A 1AA";
     public static final String REPRESENTATIVE_NAME = "Michael Mercury";
     public static final String REPRESENTATIVE_REFERENCE = "Test Reference";
@@ -69,6 +84,8 @@ public final class TestConstants {
     public static final String EMPTY_STRING = "";
     public static final String BLANK_STRING = "   ";
     public static final String NULL_STRING = null;
+    public static final Address NULL_ADDRESS = null;
+    public static final String TEST_ACAS = "R123456/78/90";
     public static final String CLAIMANT_IND_TYPE_NULL = "null";
     public static final String CLAIMANT_IND_TYPE_EMPTY = "empty";
     public static final String CLAIMANT_IND_TYPE_FILLED = "filled";
@@ -85,6 +102,8 @@ public final class TestConstants {
     public static final String TAYLOR = "Taylor";
     public static final String SWIFT = "Swift";
     public static final String PREFER_NOT_TO_SAY = "Prefer not to say";
+    public static final String YES = "Yes";
+    public static final String NO = "No";
     public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
     public static final PdfDecodedMultipartFile PDF_DECODED_MULTIPART_FILE_NULL = new PdfDecodedMultipartFile(
         null,
