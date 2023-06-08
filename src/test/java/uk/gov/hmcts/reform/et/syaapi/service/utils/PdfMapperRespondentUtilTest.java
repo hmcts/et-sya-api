@@ -56,7 +56,7 @@ class PdfMapperRespondentUtilTest {
 
     @ParameterizedTest
     @NullSource
-    @MethodSource("retrieveRespondentSumTypes")
+    @MethodSource("retrieveCaseDataSamplesWithRespondentSumTypes")
     void putRespondent(CaseData respondentCaseData) {
         ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         PdfMapperRespondentUtil.putRespondents(respondentCaseData, printFields);
@@ -215,7 +215,7 @@ class PdfMapperRespondentUtilTest {
         }
     }
 
-    private static Stream<Arguments> retrieveRespondentSumTypes() {
-        return TestData.generateRespondentSumTypeItems();
+    private static Stream<Arguments> retrieveCaseDataSamplesWithRespondentSumTypes() {
+        return TestData.generateCaseDataSamplesWithRespondentSumTypeItems();
     }
 }

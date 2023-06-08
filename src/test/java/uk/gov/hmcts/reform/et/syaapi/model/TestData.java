@@ -587,7 +587,7 @@ public final class TestData {
         );
     }
 
-    public static Stream<Arguments> generateRespondentSumTypeItems() {
+    public static Stream<Arguments> generateCaseDataSamplesWithRespondentSumTypeItems() {
         Address respondentAddress = TestUtil.generateAddressByAddressFields(ADDRESS_LINE_1, ADDRESS_LINE_2,
                                                                             ADDRESS_LINE_3, POST_TOWN, COUNTY,
                                                                             COUNTRY, POSTCODE);

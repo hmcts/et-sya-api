@@ -21,8 +21,8 @@ public final class PdfMapperHearingPreferencesUtil {
 
     public static void putHearingPreferences(CaseData caseData, ConcurrentMap<String, Optional<String>> printFields) {
         try {
-            PdfMapperHearingPreferencesUtil.setClaimantReasonableAdjustments(caseData, printFields);
-            PdfMapperHearingPreferencesUtil.setClaimantHearingPreferences(caseData, printFields);
+            setClaimantReasonableAdjustments(caseData, printFields);
+            setClaimantHearingPreferences(caseData, printFields);
         } catch (Exception e) {
             GenericServiceUtil.logException("An error occured while printing hearing preferences to pdf file",
                                             caseData.getEthosCaseReference(),
@@ -34,7 +34,8 @@ public final class PdfMapperHearingPreferencesUtil {
 
     private static void setClaimantReasonableAdjustments(CaseData caseData,
                                                         ConcurrentMap<String, Optional<String>> printFields) {
-        if (!ObjectUtils.isEmpty(caseData.getClaimantHearingPreference())
+        if (!ObjectUtils.isEmpty(caseData)
+            && !ObjectUtils.isEmpty(caseData.getClaimantHearingPreference())
             && !ObjectUtils.isEmpty(caseData.getClaimantHearingPreference().getReasonableAdjustments())) {
             if (PdfMapperServiceUtil.isYes(caseData.getClaimantHearingPreference().getReasonableAdjustments())) {
                 printFields.put(PdfMapperConstants.Q12_DISABILITY_YES, Optional.of(YES));
