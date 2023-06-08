@@ -45,9 +45,11 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.COUNTY;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ELIZABETH;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.EMAIL;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.EMPTY_STRING;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.EMPTY_STRING_ARRAY;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.FALSE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.FAX;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.FEMALE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.HEARING_ASSISTANCE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.INVALID_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MALE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MERCURY;
@@ -64,14 +66,17 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NULL_STR
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NUMERIC_FIVE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NUMERIC_FOUR;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NUMERIC_ONE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NUMERIC_SIX;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NUMERIC_THREE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NUMERIC_TWO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.OTHER;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.OTHER_TITLE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.PHONE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.POST;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.POSTCODE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.POST_TOWN;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.PREFER_NOT_TO_SAY;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.REASONABLE_ADJUSTMENT_DETAILS;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.REPRESENTATIVE_EMAIL;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.REPRESENTATIVE_MOBILE_NUMBER;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.REPRESENTATIVE_NAME;
@@ -84,6 +89,7 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_ACA
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_COMPANY_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_NAMES;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TRUE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.VIDEO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_ADDRESS_LINE_1;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_ADDRESS_LINE_2;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_ADDRESS_LINE_3;
@@ -636,5 +642,59 @@ public final class TestData {
                          Arguments.of(caseData2),
                          Arguments.of(caseData3),
                          Arguments.of(caseData4));
+    }
+
+    public static Stream<Arguments> generateCaseDataSamplesWithHearingPreferences() {
+        // Empty Reasonable Adjustments
+        CaseData caseDataEmptyReasonableAdjustment = new CaseData();
+        caseDataEmptyReasonableAdjustment.setClaimantHearingPreference(
+            TestUtil.generateClaimantHearingPreference(TRUE, NULL_STRING, NULL_STRING,
+                                                       EMPTY_STRING_ARRAY, HEARING_ASSISTANCE));
+        caseDataEmptyReasonableAdjustment.setEthosCaseReference(NUMERIC_ONE);
+        // Yes Reasonable Adjustments
+        CaseData caseDataYesReasonableAdjustments = new CaseData();
+        caseDataYesReasonableAdjustments.setClaimantHearingPreference(
+            TestUtil.generateClaimantHearingPreference(FALSE, YES, REASONABLE_ADJUSTMENT_DETAILS,
+                                                       EMPTY_STRING_ARRAY, HEARING_ASSISTANCE));
+        caseDataYesReasonableAdjustments.setEthosCaseReference(NUMERIC_TWO);
+        // No Reasonable Adjustments
+        CaseData caseDataNoReasonableAdjustments = new CaseData();
+        caseDataNoReasonableAdjustments.setClaimantHearingPreference(
+            TestUtil.generateClaimantHearingPreference(FALSE, NO, NULL_STRING,
+                                                       EMPTY_STRING_ARRAY, HEARING_ASSISTANCE));
+        caseDataNoReasonableAdjustments.setEthosCaseReference(NUMERIC_THREE);
+        // No Hearing Preference Selected
+        CaseData caseDataNoHearingPreferenceSelected = new CaseData();
+        caseDataNoHearingPreferenceSelected.setClaimantHearingPreference(
+            TestUtil.generateClaimantHearingPreference(FALSE, YES,
+                                                       REASONABLE_ADJUSTMENT_DETAILS, EMPTY_STRING_ARRAY,
+                                                       HEARING_ASSISTANCE
+            ));
+        caseDataNoHearingPreferenceSelected.setEthosCaseReference(NUMERIC_FOUR);
+        // No Hearing Preference Selected
+        CaseData caseDataHearingPreferenceVideoPhoneSelected = new CaseData();
+        caseDataHearingPreferenceVideoPhoneSelected.setClaimantHearingPreference(
+            TestUtil.generateClaimantHearingPreference(FALSE, YES,
+                                                       REASONABLE_ADJUSTMENT_DETAILS, new String[]{VIDEO, PHONE},
+                                                       HEARING_ASSISTANCE
+            ));
+        caseDataHearingPreferenceVideoPhoneSelected.setEthosCaseReference(NUMERIC_FIVE);
+        // Invalid Hearing Preference Selected
+        CaseData caseDataInvalidHearingPreferenceSelected = new CaseData();
+        caseDataInvalidHearingPreferenceSelected.setClaimantHearingPreference(
+            TestUtil.generateClaimantHearingPreference(FALSE, YES,
+                                                       REASONABLE_ADJUSTMENT_DETAILS, new String[]{"Dummy", "String"},
+                                                       HEARING_ASSISTANCE
+            ));
+        caseDataHearingPreferenceVideoPhoneSelected.setEthosCaseReference(NUMERIC_SIX);
+        // Empty Hearing Preferences
+        CaseData caseDataClaimantHearingPreferencesEmpty = new CaseData();
+        return Stream.of(Arguments.of(caseDataClaimantHearingPreferencesEmpty),
+                         Arguments.of(caseDataEmptyReasonableAdjustment),
+                         Arguments.of(caseDataYesReasonableAdjustments),
+                         Arguments.of(caseDataNoReasonableAdjustments),
+                         Arguments.of(caseDataInvalidHearingPreferenceSelected),
+                         Arguments.of(caseDataHearingPreferenceVideoPhoneSelected),
+                         Arguments.of(caseDataNoHearingPreferenceSelected));
     }
 }

@@ -3,10 +3,13 @@ package uk.gov.hmcts.reform.et.syaapi.service.utils;
 import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.ClaimantHearingPreference;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantWorkAddressType;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
+
+import java.util.List;
 
 public final class TestUtil {
 
@@ -146,5 +149,21 @@ public final class TestUtil {
         respondentSumType.setRespondentAcasNo(respondentAcasNo);
         respondentSumTypeItem.setValue(respondentSumType);
         return respondentSumTypeItem;
+    }
+
+    public static ClaimantHearingPreference generateClaimantHearingPreference(boolean isEmptyReasonableAdjustment,
+                                                                              String reasonableAdjustment,
+                                                                              String reasonableAdjustmentDetails,
+                                                                              String[] hearingPreferences,
+                                                                              String hearingAssistance) {
+        ClaimantHearingPreference claimantHearingPreference = new ClaimantHearingPreference();
+        if (isEmptyReasonableAdjustment) {
+            return claimantHearingPreference;
+        }
+        claimantHearingPreference.setReasonableAdjustments(reasonableAdjustment);
+        claimantHearingPreference.setReasonableAdjustmentsDetail(reasonableAdjustmentDetails);
+        claimantHearingPreference.setHearingPreferences(List.of(hearingPreferences));
+        claimantHearingPreference.setHearingAssistance(hearingAssistance);
+        return claimantHearingPreference;
     }
 }

@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 
@@ -9,11 +10,12 @@ import java.util.concurrent.ConcurrentMap;
 
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.NO_LOWERCASE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PHONE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.VIDEO;
 
 @Slf4j
 public final class PdfMapperHearingPreferencesUtil {
-
-    private static final String NO_LOWERCASE = "no";
 
     private PdfMapperHearingPreferencesUtil() {
         // Utility classes should not have a public or default constructor.
@@ -21,8 +23,10 @@ public final class PdfMapperHearingPreferencesUtil {
 
     public static void putHearingPreferences(CaseData caseData, ConcurrentMap<String, Optional<String>> printFields) {
         try {
-            setClaimantReasonableAdjustments(caseData, printFields);
-            setClaimantHearingPreferences(caseData, printFields);
+            if (!ObjectUtils.isEmpty(caseData)) {
+                setClaimantReasonableAdjustments(caseData, printFields);
+                setClaimantHearingPreferences(caseData, printFields);
+            }
         } catch (Exception e) {
             GenericServiceUtil.logException("An error occured while printing hearing preferences to pdf file",
                                             caseData.getEthosCaseReference(),
@@ -36,7 +40,7 @@ public final class PdfMapperHearingPreferencesUtil {
                                                         ConcurrentMap<String, Optional<String>> printFields) {
         if (!ObjectUtils.isEmpty(caseData)
             && !ObjectUtils.isEmpty(caseData.getClaimantHearingPreference())
-            && !ObjectUtils.isEmpty(caseData.getClaimantHearingPreference().getReasonableAdjustments())) {
+            && !StringUtils.isEmpty(caseData.getClaimantHearingPreference().getReasonableAdjustments())) {
             if (PdfMapperServiceUtil.isYes(caseData.getClaimantHearingPreference().getReasonableAdjustments())) {
                 printFields.put(PdfMapperConstants.Q12_DISABILITY_YES, Optional.of(YES));
             } else {
@@ -62,35 +66,41 @@ public final class PdfMapperHearingPreferencesUtil {
     private static void setClaimantHearingPreferencesNoneWhenNothingSelected(
         CaseData caseData, ConcurrentMap<String, Optional<String>> printFields) {
         printFields.put(PdfMapperConstants.I_CAN_TAKE_PART_IN_NO_HEARINGS, Optional.of(YES));
-        printFields.put(PdfMapperConstants.I_CAN_TAKE_PART_IN_NO_HEARINGS_EXPLAIN,
-                        ofNullable(caseData.getClaimantHearingPreference().getHearingAssistance()));
+        if (!ObjectUtils.isEmpty(caseData.getClaimantHearingPreference())
+            && StringUtils.isNotBlank(caseData.getClaimantHearingPreference().getHearingAssistance())) {
+            printFields.put(
+                PdfMapperConstants.I_CAN_TAKE_PART_IN_NO_HEARINGS_EXPLAIN,
+                ofNullable(caseData.getClaimantHearingPreference().getHearingAssistance())
+            );
+        }
     }
 
     private static boolean checkIfHearingPreferencesNoHearingsOrNothingSelected(CaseData caseData) {
-        return ObjectUtils.isEmpty(caseData.getClaimantHearingPreference())
+        return ObjectUtils.isEmpty(caseData)
+            || ObjectUtils.isEmpty(caseData.getClaimantHearingPreference())
             || ObjectUtils.isEmpty(caseData.getClaimantHearingPreference().getHearingPreferences())
-            || !caseData.getClaimantHearingPreference().getHearingPreferences().contains("Video")
-            && !caseData.getClaimantHearingPreference().getHearingPreferences().contains("Phone");
+            || !caseData.getClaimantHearingPreference().getHearingPreferences().contains(VIDEO)
+            && !caseData.getClaimantHearingPreference().getHearingPreferences().contains(PHONE);
     }
 
     private static void
         setClaimantHearingPreferencesWhenVideoPhoneSelected(CaseData caseData,
                                                             ConcurrentMap<String, Optional<String>> printFields) {
-        if (!ObjectUtils.isEmpty(caseData.getClaimantHearingPreference())
-            && !ObjectUtils.isEmpty(caseData.getClaimantHearingPreference().getHearingPreferences())
-            && caseData.getClaimantHearingPreference().getHearingPreferences().contains("Video")) {
-            printFields.put(
-                PdfMapperConstants.I_CAN_TAKE_PART_IN_VIDEO_HEARINGS,
-                Optional.of(YES)
-            );
-        }
-        if (!ObjectUtils.isEmpty(caseData.getClaimantHearingPreference())
-            && !ObjectUtils.isEmpty(caseData.getClaimantHearingPreference().getHearingPreferences())
-            && caseData.getClaimantHearingPreference().getHearingPreferences().contains("Phone")) {
-            printFields.put(
-                PdfMapperConstants.I_CAN_TAKE_PART_IN_PHONE_HEARINGS,
-                Optional.of(YES)
-            );
+        if (!ObjectUtils.isEmpty(caseData)
+            && !ObjectUtils.isEmpty(caseData.getClaimantHearingPreference())
+            && !ObjectUtils.isEmpty(caseData.getClaimantHearingPreference().getHearingPreferences())) {
+            if (caseData.getClaimantHearingPreference().getHearingPreferences().contains(VIDEO)) {
+                printFields.put(
+                    PdfMapperConstants.I_CAN_TAKE_PART_IN_VIDEO_HEARINGS,
+                    Optional.of(YES)
+                );
+            }
+            if (caseData.getClaimantHearingPreference().getHearingPreferences().contains(PHONE)) {
+                printFields.put(
+                    PdfMapperConstants.I_CAN_TAKE_PART_IN_PHONE_HEARINGS,
+                    Optional.of(YES)
+                );
+            }
         }
     }
 
