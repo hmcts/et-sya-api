@@ -19,10 +19,10 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.ViewAnApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
@@ -420,11 +420,12 @@ class ManageCaseControllerTest {
 
     @SneakyThrows
     @Test
-    void shouldViewAnApplication() {
-        ViewAnApplicationRequest caseRequest = ViewAnApplicationRequest.builder()
+    void shouldChangeApplicationStatus() {
+        ChangeApplicationStatusRequest caseRequest = ChangeApplicationStatusRequest.builder()
             .caseTypeId(CASE_TYPE)
             .caseId(CASE_ID)
             .applicationId("1234")
+            .newStatus("viewed")
             .build();
 
         // when
@@ -432,13 +433,13 @@ class ManageCaseControllerTest {
 
         when(applicationService.submitApplication(any(), any())).thenReturn(expectedDetails);
         mockMvc.perform(
-            put("/cases/view-an-application", CASE_ID)
+            put("/cases/change-application-status", CASE_ID)
                 .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(ResourceLoader.toJson(caseRequest))
         ).andExpect(status().isOk());
 
-        verify(applicationService, times(1)).markApplicationAsViewed(
+        verify(applicationService, times(1)).changeApplicationStatus(
             TEST_SERVICE_AUTH_TOKEN,
             caseRequest
         );
