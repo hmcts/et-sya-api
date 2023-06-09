@@ -38,8 +38,7 @@ public final class PdfMapperHearingPreferencesUtil {
 
     private static void setClaimantReasonableAdjustments(CaseData caseData,
                                                         ConcurrentMap<String, Optional<String>> printFields) {
-        if (!ObjectUtils.isEmpty(caseData)
-            && !ObjectUtils.isEmpty(caseData.getClaimantHearingPreference())
+        if (!ObjectUtils.isEmpty(caseData.getClaimantHearingPreference())
             && !StringUtils.isEmpty(caseData.getClaimantHearingPreference().getReasonableAdjustments())) {
             if (PdfMapperServiceUtil.isYes(caseData.getClaimantHearingPreference().getReasonableAdjustments())) {
                 printFields.put(PdfMapperConstants.Q12_DISABILITY_YES, Optional.of(YES));
@@ -76,8 +75,7 @@ public final class PdfMapperHearingPreferencesUtil {
     }
 
     private static boolean checkIfHearingPreferencesNoHearingsOrNothingSelected(CaseData caseData) {
-        return ObjectUtils.isEmpty(caseData)
-            || ObjectUtils.isEmpty(caseData.getClaimantHearingPreference())
+        return ObjectUtils.isEmpty(caseData.getClaimantHearingPreference())
             || ObjectUtils.isEmpty(caseData.getClaimantHearingPreference().getHearingPreferences())
             || !caseData.getClaimantHearingPreference().getHearingPreferences().contains(VIDEO)
             && !caseData.getClaimantHearingPreference().getHearingPreferences().contains(PHONE);
@@ -86,8 +84,7 @@ public final class PdfMapperHearingPreferencesUtil {
     private static void
         setClaimantHearingPreferencesWhenVideoPhoneSelected(CaseData caseData,
                                                             ConcurrentMap<String, Optional<String>> printFields) {
-        if (!ObjectUtils.isEmpty(caseData)
-            && !ObjectUtils.isEmpty(caseData.getClaimantHearingPreference())
+        if (!ObjectUtils.isEmpty(caseData.getClaimantHearingPreference())
             && !ObjectUtils.isEmpty(caseData.getClaimantHearingPreference().getHearingPreferences())) {
             if (caseData.getClaimantHearingPreference().getHearingPreferences().contains(VIDEO)) {
                 printFields.put(
