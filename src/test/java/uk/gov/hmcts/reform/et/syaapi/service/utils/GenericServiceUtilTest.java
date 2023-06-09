@@ -16,7 +16,6 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SuppressWarnings({"PMD.TooManyMethods"})
 class GenericServiceUtilTest {
 
     @ParameterizedTest
