@@ -12,7 +12,7 @@ import org.mockito.Mockito;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantType;
-import uk.gov.hmcts.reform.et.syaapi.model.TestData;
+import uk.gov.hmcts.reform.et.syaapi.model.PdfMapperTestData;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,7 +22,18 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
-import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.MISS;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.MR;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.MRS;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.MS;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.OTHER;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.OTHER_SPECIFY;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.SEX_FEMALE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.SEX_MALE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.SEX_PREFER_NOT_TO_SAY;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.TITLES;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.TITLE_MAP;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CLAIMANT_CONTACT_EMAIL_FIELD_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CLAIMANT_EMAIL_FIELD_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CLAIMANT_MOBILE_NUMBER_FIELD_NAME;
@@ -69,12 +80,12 @@ class PdfMapperPersonalDetailsUtilTest {
         ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
 
         PdfMapperPersonalDetailsUtil.putPersonalDetails(caseData, printFields);
-        assertThat(printFields.get(PdfMapperConstants.TITLES.get(PdfMapperConstants.MR))).isNull();
-        assertThat(printFields.get(PdfMapperConstants.TITLES.get(PdfMapperConstants.MRS))).isNull();
-        assertThat(printFields.get(PdfMapperConstants.TITLES.get(PdfMapperConstants.MISS))).isNull();
-        assertThat(printFields.get(PdfMapperConstants.TITLES.get(PdfMapperConstants.MS))).isNull();
-        assertThat(printFields.get(PdfMapperConstants.TITLES.get(PdfMapperConstants.OTHER))).isNull();
-        assertThat(printFields.get(PdfMapperConstants.TITLES.get(PdfMapperConstants.OTHER_SPECIFY))).isNull();
+        assertThat(printFields.get(TITLES.get(MR))).isNull();
+        assertThat(printFields.get(TITLES.get(MRS))).isNull();
+        assertThat(printFields.get(TITLES.get(MISS))).isNull();
+        assertThat(printFields.get(TITLES.get(MS))).isNull();
+        assertThat(printFields.get(TITLES.get(OTHER))).isNull();
+        assertThat(printFields.get(TITLES.get(OTHER_SPECIFY))).isNull();
 
     }
 
@@ -86,13 +97,13 @@ class PdfMapperPersonalDetailsUtilTest {
         caseData.setClaimantIndType(claimantIndType);
         PdfMapperPersonalDetailsUtil.putPersonalDetails(caseData, printFields);
         if (StringUtils.isNotBlank(caseData.getClaimantIndType().getClaimantPreferredTitle())) {
-            assertThat(printFields.get(PdfMapperConstants.TITLES.get(
-                caseData.getClaimantIndType().getClaimantPreferredTitle()))).contains(PdfMapperConstants.TITLE_MAP.get(
+            assertThat(printFields.get(TITLES.get(
+                caseData.getClaimantIndType().getClaimantPreferredTitle()))).contains(TITLE_MAP.get(
                     caseData.getClaimantIndType().getClaimantPreferredTitle()));
         }
-        if (PdfMapperConstants.OTHER.equals(caseData.getClaimantIndType().getClaimantPreferredTitle())) {
-            assertThat(printFields.get(PdfMapperConstants.TITLES.get(
-                PdfMapperConstants.OTHER_SPECIFY))).contains(OTHER_TITLE);
+        if (OTHER.equals(caseData.getClaimantIndType().getClaimantPreferredTitle())) {
+            assertThat(printFields.get(TITLES.get(
+                OTHER_SPECIFY))).contains(OTHER_TITLE);
         }
         assertThat(printFields.get(PdfMapperConstants.Q1_FIRST_NAME))
             .contains(caseData.getClaimantIndType().getClaimantFirstNames());
@@ -103,14 +114,14 @@ class PdfMapperPersonalDetailsUtilTest {
             assertThat(printFields.get(PdfMapperConstants.Q1_DOB_MONTH)).contains(dobMonth);
             assertThat(printFields.get(PdfMapperConstants.Q1_DOB_YEAR)).contains(dobYear);
         }
-        if (PdfMapperConstants.SEX_MALE.equals(caseData.getClaimantIndType().getClaimantSex())) {
+        if (SEX_MALE.equals(caseData.getClaimantIndType().getClaimantSex())) {
             assertThat(printFields.get(PdfMapperConstants.Q1_SEX_MALE)).contains(YES);
         }
-        if (PdfMapperConstants.SEX_FEMALE.equals(caseData.getClaimantIndType().getClaimantSex())) {
+        if (SEX_FEMALE.equals(caseData.getClaimantIndType().getClaimantSex())) {
             assertThat(printFields.get(PdfMapperConstants.Q1_SEX_FEMALE)).contains(
                 PdfMapperConstants.SEX_FEMALE_LOWERCASE);
         }
-        if (PdfMapperConstants.SEX_PREFER_NOT_TO_SAY.equals(caseData.getClaimantIndType().getClaimantSex())) {
+        if (SEX_PREFER_NOT_TO_SAY.equals(caseData.getClaimantIndType().getClaimantSex())) {
             assertThat(printFields.get(PdfMapperConstants.Q1_SEX_PREFER_NOT_TO_SAY))
                 .contains(PdfMapperConstants.SEX_PREFER_NOT_TO_SAY_LOWERCASE);
         }
@@ -162,10 +173,10 @@ class PdfMapperPersonalDetailsUtilTest {
     }
 
     private static Stream<Arguments> retrieveClaimantIndTypeArguments() {
-        return TestData.generateClaimantIndTypeArguments();
+        return PdfMapperTestData.generateClaimantIndTypeArguments();
     }
 
     private static Stream<Arguments> retrieveClaimantTypeArguments() {
-        return TestData.generateClaimantTypeArguments();
+        return PdfMapperTestData.generateClaimantTypeArguments();
     }
 }

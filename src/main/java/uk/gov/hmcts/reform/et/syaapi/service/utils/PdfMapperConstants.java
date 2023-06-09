@@ -318,7 +318,7 @@ public final class PdfMapperConstants {
     public static final String PHONE_NUMBER_PREFIX = "1.6";
     public static final String SEX_MALE = "Male";
     public static final String SEX_FEMALE = "Female";
-    public static final String SEX_FEMALE_LOWERCASE = "Female";
+    public static final String SEX_FEMALE_LOWERCASE = "female";
     public static final String SEX_PREFER_NOT_TO_SAY = "Prefer not to say";
     public static final String SEX_PREFER_NOT_TO_SAY_LOWERCASE = "prefer not to say";
     public static final String INVALID_NO_ACAS_REASON = "Invalid No ACAS Certificate Reason Selected!...";
@@ -328,6 +328,14 @@ public final class PdfMapperConstants {
     public static final int MAX_NUMBER_OF_RESPONDENTS = 5;
     public static final String VIDEO = "Video";
     public static final String PHONE = "Phone";
+    public static final String NO_LONGER_WORKING = "No longer working";
+    public static final String NOTICE = "Notice";
+    public static final String ANNUALLY = "annually";
+    public static final String WEEKLY = "Weekly";
+    public static final String MONTHLY = "Monthly";
+    public static final String MONTHS = "Months";
+    public static final String WEEKS = "Weeks";
+    public static final String ANNUAL = "Annual";
     public static final Map<String, String> TITLES = Map.of(
         MR, PdfMapperConstants.Q1_TITLE_MR,
         MRS, PdfMapperConstants.Q1_TITLE_MRS,

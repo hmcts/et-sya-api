@@ -6,7 +6,7 @@ import org.mockito.Mock;
 import org.springframework.context.annotation.Import;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
-import uk.gov.hmcts.reform.et.syaapi.model.TestData;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 
 import java.util.Map;
 
@@ -21,12 +21,12 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TYPE_OF_
 class EmploymentObjectMapperTest {
     @Mock
     private EmployeeObjectMapper employmentObjectMapper;
-    private TestData testData;
+    private CaseTestData caseTestData;
 
     @BeforeEach
     void beforeEach() {
         employmentObjectMapper = new EmployeeObjectMapper();
-        testData = new TestData();
+        caseTestData = new CaseTestData();
     }
 
     @Test
@@ -43,7 +43,7 @@ class EmploymentObjectMapperTest {
 
     @Test
     void shouldMapCaseRequestToCaseData() {
-        Map<String, Object> requestCaseData = testData.getCaseRequestCaseDataMap();
+        Map<String, Object> requestCaseData = caseTestData.getCaseRequestCaseDataMap();
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(requestCaseData);
         assertThat(caseData.getTypesOfClaim().get(0)).isEqualTo(TYPE_OF_CLAIM_DISCRIMINATION);
         assertThat(caseData.getTypesOfClaim().get(1)).isEqualTo(TYPE_OF_CLAIM_BREACH_OF_CONTRACT);

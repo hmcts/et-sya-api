@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -342,12 +341,12 @@ class ManageCaseControllerTest {
         ).andExpect(status().isOk());
 
         verify(caseService, times(1)).getUserCase(
-            eq(TEST_SERVICE_AUTH_TOKEN),
+            TEST_SERVICE_AUTH_TOKEN,
             hubLinksStatusesRequest.getCaseId()
         );
 
         verify(caseService, times(1)).triggerEvent(
-            eq(TEST_SERVICE_AUTH_TOKEN), (hubLinksStatusesRequest.getCaseId()),
+            TEST_SERVICE_AUTH_TOKEN, hubLinksStatusesRequest.getCaseId(),
             CaseEvent.valueOf("UPDATE_CASE_SUBMITTED"),
             hubLinksStatusesRequest.getCaseTypeId(),
             expectedDetails.getData());

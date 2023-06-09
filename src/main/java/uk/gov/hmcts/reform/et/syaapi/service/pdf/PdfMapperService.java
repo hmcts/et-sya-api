@@ -4,11 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
-import uk.gov.hmcts.et.common.model.ccd.types.ClaimantOtherType;
-import uk.gov.hmcts.et.common.model.ccd.types.NewEmploymentType;
 import uk.gov.hmcts.reform.et.syaapi.constants.ClaimTypesConstants;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperClaimDescriptionUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperEmploymentUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperHearingPreferencesUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperPersonalDetailsUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperRepresentativeUtil;
@@ -38,17 +37,7 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
     "PMD.AvoidDeeplyNestedIfStmts"})
 public class PdfMapperService {
 
-    private static final String ANNUALLY = "annually";
-    private static final String WEEKLY = "Weekly";
-    private static final String MONTHLY = "Monthly";
-    private static final String MONTHS = "Months";
-    private static final String WEEKS = "Weeks";
-    private static final String ANNUAL = "Annual";
     private static final String YES_LOWERCASE = "yes";
-    private static final String NO_LOWERCASE = "no";
-
-    private static final String NO_LONGER_WORKING = "No longer working";
-    private static final String NOTICE = "Notice";
 
     /**
      * Maps the parameters within case data to the inputs of the PDF Template.
@@ -69,8 +58,8 @@ public class PdfMapperService {
         PdfMapperHearingPreferencesUtil.putHearingPreferences(caseData, printFields);
         PdfMapperRespondentUtil.putRespondents(caseData, printFields);
         putMultipleClaimsDetails(caseData, printFields);
+        PdfMapperEmploymentUtil.putEmploymentDetails(caseData, printFields);
         try {
-            printFields.putAll(printEmploymentDetails(caseData));
             printFields.putAll(printTypeAndDetailsOfClaim(caseData));
             printFields.putAll(printCompensation(caseData));
             printFields.putAll(printWhistleBlowing(caseData));
@@ -99,167 +88,6 @@ public class PdfMapperService {
         }
     }
 
-    private Map<String, Optional<String>> printEmploymentDetails(CaseData caseData) {
-        Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
-        ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
-        if (claimantOtherType != null) {
-            if (YES.equals(claimantOtherType.getPastEmployer())) {
-                printFields.put(PdfMapperConstants.Q4_EMPLOYED_BY_YES, Optional.of(YES));
-
-                printFields.put(
-                    PdfMapperConstants.Q5_EMPLOYMENT_START,
-                    ofNullable(PdfMapperServiceUtil.formatDate(claimantOtherType.getClaimantEmployedFrom()))
-                );
-
-                String stillWorking = NO_LONGER_WORKING.equals(claimantOtherType.getStillWorking()) ? NO :
-                    YES;
-                if (YES.equals(stillWorking)) {
-                    printFields.put(PdfMapperConstants.Q5_CONTINUING_YES, Optional.of(stillWorking));
-                    if (NOTICE.equals(claimantOtherType.getStillWorking())) {
-                        printFields.put(
-                            PdfMapperConstants.Q5_NOT_ENDED,
-                            ofNullable(PdfMapperServiceUtil.formatDate(
-                                claimantOtherType.getClaimantEmployedNoticePeriod()))
-                        );
-                    }
-
-                } else {
-                    printFields.put(PdfMapperConstants.Q5_CONTINUING_NO, Optional.of(NO_LOWERCASE));
-                    printFields.put(
-                        PdfMapperConstants.Q5_EMPLOYMENT_END,
-                        ofNullable(PdfMapperServiceUtil.formatDate(claimantOtherType.getClaimantEmployedTo()))
-                    );
-                }
-
-                printFields.put(
-                    PdfMapperConstants.Q5_DESCRIPTION,
-                    ofNullable(claimantOtherType.getClaimantOccupation())
-                );
-                printFields.putAll(printRemuneration(claimantOtherType));
-
-                if (caseData.getNewEmploymentType() != null) {
-                    printNewEmploymentFields(caseData, printFields);
-                }
-
-            } else if (NO.equals(claimantOtherType.getPastEmployer())) {
-                printFields.put(
-                    PdfMapperConstants.Q4_EMPLOYED_BY_NO, Optional.of(YES));
-            }
-        }
-        return printFields;
-    }
-
-    private void printNewEmploymentFields(CaseData caseData, Map<String, Optional<String>> printFields) {
-        NewEmploymentType newEmploymentType = caseData.getNewEmploymentType();
-        if (newEmploymentType.getNewJob() != null) {
-            if (YES.equals(newEmploymentType.getNewJob())) {
-                printFields.put(PdfMapperConstants.Q7_OTHER_JOB_YES, Optional.of(YES));
-                printFields.put(
-                    PdfMapperConstants.Q7_START_WORK,
-                    ofNullable(PdfMapperServiceUtil.formatDate(newEmploymentType.getNewlyEmployedFrom()))
-                );
-                printFields.put(
-                    PdfMapperConstants.Q7_EARNING,
-                    ofNullable(newEmploymentType.getNewPayBeforeTax())
-                );
-                printJobPayInterval(printFields, newEmploymentType);
-            } else if (NO.equals(newEmploymentType.getNewJob())) {
-                printFields.put(PdfMapperConstants.Q7_OTHER_JOB_NO, Optional.of(NO));
-            }
-        }
-    }
-
-    private void printJobPayInterval(Map<String, Optional<String>> printFields, NewEmploymentType newEmploymentType) {
-        if (WEEKS.equals(newEmploymentType.getNewJobPayInterval())) {
-            printFields.put(PdfMapperConstants.Q7_EARNING_WEEKLY, Optional.of(WEEKLY));
-        } else if (MONTHS.equals(newEmploymentType.getNewJobPayInterval())) {
-            printFields.put(PdfMapperConstants.Q7_EARNING_MONTHLY, Optional.of(MONTHLY));
-        } else if (ANNUAL.equals(newEmploymentType.getNewJobPayInterval())) {
-            printFields.put(PdfMapperConstants.Q7_EARNING_ANNUAL, Optional.of(ANNUALLY));
-        }
-    }
-
-    private Map<String, Optional<String>> printRemuneration(ClaimantOtherType claimantOtherType) {
-        Map<String, Optional<String>> printFields = new ConcurrentHashMap<>();
-        printFields.put(
-            PdfMapperConstants.Q6_HOURS,
-            ofNullable(claimantOtherType.getClaimantAverageWeeklyHours())
-        );
-        printFields.put(
-            PdfMapperConstants.Q6_GROSS_PAY,
-            ofNullable(claimantOtherType.getClaimantPayBeforeTax())
-        );
-        printFields.put(PdfMapperConstants.Q6_NET_PAY, ofNullable(claimantOtherType.getClaimantPayAfterTax()));
-        if (claimantOtherType.getClaimantPayCycle() != null) {
-            switch (claimantOtherType.getClaimantPayCycle()) {
-                case WEEKS:
-                    printFields.put(PdfMapperConstants.Q6_GROSS_PAY_WEEKLY, Optional.of(WEEKLY));
-                    printFields.put(PdfMapperConstants.Q6_NET_PAY_WEEKLY, Optional.of(WEEKLY));
-                    break;
-                case MONTHS:
-                    printFields.put(PdfMapperConstants.Q6_GROSS_PAY_MONTHLY, Optional.of(MONTHLY));
-                    printFields.put(PdfMapperConstants.Q6_NET_PAY_MONTHLY, Optional.of(MONTHLY));
-                    break;
-                case ANNUAL:
-                    printFields.put(PdfMapperConstants.Q6_GROSS_PAY_ANNUAL, Optional.of(ANNUALLY));
-                    printFields.put(PdfMapperConstants.Q6_NET_PAY_ANNUAL, Optional.of(ANNUALLY));
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        // Section 6.3
-        if (claimantOtherType.getClaimantNoticePeriod() != null
-            && NO_LONGER_WORKING.equals(claimantOtherType.getStillWorking())) {
-            if (YES.equals(claimantOtherType.getClaimantNoticePeriod())) {
-                printFields.put(
-                    PdfMapperConstants.Q6_PAID_NOTICE_YES, Optional.of(YES)
-                );
-                String noticeUnit = claimantOtherType.getClaimantNoticePeriodUnit();
-                if (WEEKS.equals(noticeUnit)) {
-                    printFields.put(
-                        PdfMapperConstants.Q6_NOTICE_WEEKS,
-                        ofNullable(claimantOtherType.getClaimantNoticePeriodDuration())
-                    );
-                } else if (MONTHS.equals(noticeUnit)) {
-                    printFields.put(
-                        PdfMapperConstants.Q6_NOTICE_MONTHS,
-                        ofNullable(claimantOtherType.getClaimantNoticePeriodDuration())
-                    );
-                }
-            } else if (NO.equals(claimantOtherType.getClaimantNoticePeriod())) {
-                printFields.put(PdfMapperConstants.Q6_PAID_NOTICE_NO, Optional.of(NO));
-            }
-        }
-
-        // Section 6.4
-        if (claimantOtherType.getClaimantPensionContribution() != null) {
-            String pensionContributionYesNo = claimantOtherType.getClaimantPensionContribution().isEmpty() ? NO :
-                claimantOtherType.getClaimantPensionContribution();
-            if (YES.equals(pensionContributionYesNo)) {
-                printFields.put(
-                    PdfMapperConstants.Q6_PENSION_YES,
-                    ofNullable(claimantOtherType.getClaimantPensionContribution())
-                );
-                printFields.put(
-                    PdfMapperConstants.Q6_PENSION_WEEKLY,
-                    ofNullable(claimantOtherType.getClaimantPensionWeeklyContribution())
-                );
-
-            } else {
-                if (NO.equals(pensionContributionYesNo)) {
-                    printFields.put(PdfMapperConstants.Q6_PENSION_NO, Optional.of(NO));
-                }
-            }
-        }
-
-        printFields.put(
-            PdfMapperConstants.Q6_OTHER_BENEFITS,
-            ofNullable(claimantOtherType.getClaimantBenefitsDetail())
-        );
-        return printFields;
-    }
 
     private Map<String, Optional<String>> printTypeAndDetailsOfClaim(CaseData caseData) {
         return new ConcurrentHashMap<>(retrieveTypeOfClaimsPrintFields(caseData));

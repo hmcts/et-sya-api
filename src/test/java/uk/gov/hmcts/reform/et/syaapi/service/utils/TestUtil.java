@@ -11,6 +11,8 @@ import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 
 import java.util.List;
 
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_CASE_DATA_JSON_FILE;
+
 public final class TestUtil {
 
     private TestUtil() {
@@ -19,7 +21,7 @@ public final class TestUtil {
     }
 
     public static Address generateTestAddressByPostcodeCountry(String postCode, String country) {
-        CaseData caseData = ResourceLoader.fromString("requests/caseData.json", CaseData.class);
+        CaseData caseData = ResourceLoader.fromString(TEST_CASE_DATA_JSON_FILE, CaseData.class);
         if (postCode != null) {
             caseData.getClaimantType().getClaimantAddressUK().setPostCode(postCode);
         }
@@ -32,7 +34,7 @@ public final class TestUtil {
     public static CaseData generateTestCaseDataByClaimantCompensation(String claimantCompensationText,
                                                                   String claimantCompensationAmount,
                                                                   String claimantTribunalRecommendation) {
-        CaseData caseData = ResourceLoader.fromString("requests/caseData.json", CaseData.class);
+        CaseData caseData = ResourceLoader.fromString(TEST_CASE_DATA_JSON_FILE, CaseData.class);
         caseData.getClaimantRequests().setClaimantCompensationText(claimantCompensationText);
         caseData.getClaimantRequests().setClaimantCompensationAmount(claimantCompensationAmount);
         caseData.getClaimantRequests().setClaimantTribunalRecommendation(claimantTribunalRecommendation);
@@ -42,7 +44,7 @@ public final class TestUtil {
     public static CaseData generateTestCaseDataByClaimantHearingPreferenceContactLanguage(
         boolean isClaimantHearingPreferenceEmpty,
         String contactLanguage) {
-        CaseData caseData = ResourceLoader.fromString("requests/caseData.json", CaseData.class);
+        CaseData caseData = ResourceLoader.fromString(TEST_CASE_DATA_JSON_FILE, CaseData.class);
         if (isClaimantHearingPreferenceEmpty) {
             caseData.setClaimantHearingPreference(null);
         } else {
@@ -54,7 +56,7 @@ public final class TestUtil {
     public static CaseData generateTestCaseDataByFirstNames(
         String claimantIndTypeEmptyOrNull,
         String firstNames) {
-        CaseData caseData = ResourceLoader.fromString("requests/caseData.json", CaseData.class);
+        CaseData caseData = ResourceLoader.fromString(TEST_CASE_DATA_JSON_FILE, CaseData.class);
         if ("null".equals(claimantIndTypeEmptyOrNull)) {
             caseData.setClaimantIndType(null);
         } else if ("empty".equals(claimantIndTypeEmptyOrNull)) {

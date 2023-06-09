@@ -20,7 +20,7 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.client.ResponseCreator;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import uk.gov.hmcts.reform.et.syaapi.model.TestData;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 
@@ -72,11 +72,11 @@ class AcasServiceTest {
     public static final String DUMMY_ACAS_NUMBER = "dummy acas number";
     private AcasService acasService;
     private RestTemplate restTemplate;
-    private TestData testData;
+    private CaseTestData caseTestData;
 
     @BeforeEach
     void setup() {
-        testData = new TestData();
+        caseTestData = new CaseTestData();
         restTemplate = new RestTemplate();
         acasService = new AcasService(restTemplate, ACAS_DEV_API_URL, ACAS_API_KEY);
     }
@@ -305,28 +305,28 @@ class AcasServiceTest {
                                                     withStatus(HttpStatus.OK)
                                                         .contentType(MediaType.APPLICATION_JSON)
                                                         .body(FIVE_CERTS_JSON)));
-        List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(testData.getCaseData());
+        List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(caseTestData.getCaseData());
         assertThat(acasCertificates).hasSize(5);
     }
 
     @Test
     void theGetAcasCertificatesByCaseDataDoesNotProduceAcasCertificatesWhenNullRespondentCollection() {
-        testData.getCaseData().setRespondentCollection(null);
-        List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(testData.getCaseData());
+        caseTestData.getCaseData().setRespondentCollection(null);
+        List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(caseTestData.getCaseData());
         assertThat(acasCertificates).isEmpty();
     }
 
     @Test
     void theGetAcasCertificatesByCaseDataDoesNotProduceAcasCertificatesWhenEmptyRespondentCollection() {
-        testData.getCaseData().setRespondentCollection(new ArrayList<>());
-        List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(testData.getCaseData());
+        caseTestData.getCaseData().setRespondentCollection(new ArrayList<>());
+        List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(caseTestData.getCaseData());
         assertThat(acasCertificates).isEmpty();
     }
 
     @Test
     void theGetAcasCertificatesByCaseDataDoesNotProduceAcasCertificatesWhenNullRespondentSumTypeItem() {
-        testData.getCaseData().getRespondentCollection().get(0).setValue(null);
-        testData.getCaseData().getRespondentCollection().get(1).setValue(null);
+        caseTestData.getCaseData().getRespondentCollection().get(0).setValue(null);
+        caseTestData.getCaseData().getRespondentCollection().get(1).setValue(null);
         JSONObject expectedBody = new JSONObject();
         expectedBody.put("certificateNumbers", List.of(R600227_21_77, R600227_21_77, R600227_21_77));
 
@@ -340,14 +340,14 @@ class AcasServiceTest {
                                                     withStatus(HttpStatus.OK)
                                                         .contentType(MediaType.APPLICATION_JSON)
                                                         .body(THREE_CERTS_JSON)));
-        List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(testData.getCaseData());
+        List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(caseTestData.getCaseData());
 
         assertThat(acasCertificates).hasSize(3);
     }
 
     @Test
     void theGetAcasCertificatesByCaseDataDoesNotProduceAcasCertificatesWhenEmptyRespondentSumTypeItem() {
-        testData.getCaseData().getRespondentCollection().get(0).getValue().setRespondentAcas("");
+        caseTestData.getCaseData().getRespondentCollection().get(0).getValue().setRespondentAcas("");
         getMockServer().expect(ExpectedCount.times(2), requestTo(ACAS_DEV_API_URL))
             .andExpect(method(HttpMethod.POST))
             .andRespond(new DelegateResponseCreator(withStatus(HttpStatus.UNAUTHORIZED),
@@ -355,7 +355,7 @@ class AcasServiceTest {
                                                         .contentType(MediaType.APPLICATION_JSON)
                                                         .body(FOUR_CERTS_JSON)));
 
-        List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(testData.getCaseData());
+        List<AcasCertificate> acasCertificates = acasService.getAcasCertificatesByCaseData(caseTestData.getCaseData());
         assertThat(acasCertificates).hasSize(4);
     }
 
@@ -366,7 +366,7 @@ class AcasServiceTest {
             when(tmpRestTemplate
                      .exchange(anyString(), eq(HttpMethod.POST), any(), eq(new ParameterizedTypeReference<>() {})))
                 .thenThrow(new RestClientException("Test rest client exception"));
-            acasService.getAcasCertificatesByCaseData(testData.getCaseData());
+            acasService.getAcasCertificatesByCaseData(caseTestData.getCaseData());
             mockedServiceUtil.verify(
                 () -> GenericServiceUtil.logException(anyString(), anyString(), anyString(), anyString(), anyString()),
                 times(1)
@@ -376,9 +376,9 @@ class AcasServiceTest {
 
     @Test
     void theGetAcasCertificatesByCaseDataThrowsInvalidAcasNumbersException() {
-        testData.getCaseData().getRespondentCollection().get(0).getValue().setRespondentAcas(DUMMY_ACAS_NUMBER);
+        caseTestData.getCaseData().getRespondentCollection().get(0).getValue().setRespondentAcas(DUMMY_ACAS_NUMBER);
         try (MockedStatic<GenericServiceUtil> mockedServiceUtil = Mockito.mockStatic(GenericServiceUtil.class)) {
-            acasService.getAcasCertificatesByCaseData(testData.getCaseData());
+            acasService.getAcasCertificatesByCaseData(caseTestData.getCaseData());
             mockedServiceUtil.verify(
                 () -> GenericServiceUtil.logException(anyString(), anyString(), anyString(), anyString(), anyString()),
                 times(1)

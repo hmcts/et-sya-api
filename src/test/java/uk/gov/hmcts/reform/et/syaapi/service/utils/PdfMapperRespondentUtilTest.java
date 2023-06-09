@@ -15,7 +15,7 @@ import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
-import uk.gov.hmcts.reform.et.syaapi.model.TestData;
+import uk.gov.hmcts.reform.et.syaapi.model.PdfMapperTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificatePdfFieldModel;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondentPdfFieldModel;
 
@@ -29,28 +29,23 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.NO_LOWERCASE;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_Q2_4_1_CLAIMANT_WORK_ADDRESS;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_Q2_4_2_CLAIMANT_WORK_POSTCODE;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_ANOTHER_PERSON;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_EMPLOYER_ALREADY_IN_TOUCH;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_NO_POWER;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_UNFAIR_DISMISSAL;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ADDRESS_LINE_1;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ADDRESS_LINE_2;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ADDRESS_LINE_3;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.COUNTRY;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.COUNTY;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.INTEGER_NUMERIC_FIVE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.INTEGER_NUMERIC_FOUR;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.INTEGER_NUMERIC_THREE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.INTEGER_NUMERIC_TWO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NULL_ADDRESS;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NULL_STRING;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NUMERIC_ONE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.POSTCODE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.POST_TOWN;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.STRING_NUMERIC_ONE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_COMPANY_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.YES;
-
-
 
 class PdfMapperRespondentUtilTest {
 
@@ -60,8 +55,10 @@ class PdfMapperRespondentUtilTest {
     void putRespondent(CaseData respondentCaseData) {
         ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         PdfMapperRespondentUtil.putRespondents(respondentCaseData, printFields);
-        if (!ObjectUtils.isEmpty(respondentCaseData)
-            && !CollectionUtils.isEmpty(respondentCaseData.getRespondentCollection())) {
+        if (ObjectUtils.isEmpty(respondentCaseData)
+            || CollectionUtils.isEmpty(respondentCaseData.getRespondentCollection())) {
+            checkClaimantWorkAddress(printFields, respondentCaseData);
+        } else {
             RespondentPdfFieldModel firstRespondentPdfFieldModel =
                 PdfTemplateRespondentFieldNamesEnum.FIRST_RESPONDENT.respondentPdfFieldModel;
             RespondentSumType firstRespondent = respondentCaseData.getRespondentCollection().get(0).getValue();
@@ -70,7 +67,7 @@ class PdfMapperRespondentUtilTest {
             checkAcasCertificate(printFields,
                                  firstRespondent,
                                  firstRespondentPdfFieldModel.respondentAcasCertificatePdfFieldModel());
-            if (respondentCaseData.getRespondentCollection().size() >= 2) {
+            if (respondentCaseData.getRespondentCollection().size() >= INTEGER_NUMERIC_TWO) {
                 RespondentPdfFieldModel secondRespondentPdfFieldModel =
                     PdfTemplateRespondentFieldNamesEnum.SECOND_RESPONDENT.respondentPdfFieldModel;
                 RespondentSumType secondRespondent = respondentCaseData.getRespondentCollection().get(1).getValue();
@@ -79,7 +76,7 @@ class PdfMapperRespondentUtilTest {
                                      secondRespondent,
                                      secondRespondentPdfFieldModel.respondentAcasCertificatePdfFieldModel());
             }
-            if (respondentCaseData.getRespondentCollection().size() >= 3) {
+            if (respondentCaseData.getRespondentCollection().size() >= INTEGER_NUMERIC_THREE) {
                 RespondentPdfFieldModel thirdRespondentPdfFieldModel =
                     PdfTemplateRespondentFieldNamesEnum.THIRD_RESPONDENT.respondentPdfFieldModel;
                 RespondentSumType thirdRespondent = respondentCaseData.getRespondentCollection().get(2).getValue();
@@ -88,7 +85,7 @@ class PdfMapperRespondentUtilTest {
                                      thirdRespondent,
                                      thirdRespondentPdfFieldModel.respondentAcasCertificatePdfFieldModel());
             }
-            if (respondentCaseData.getRespondentCollection().size() >= 4) {
+            if (respondentCaseData.getRespondentCollection().size() >= INTEGER_NUMERIC_FOUR) {
                 RespondentPdfFieldModel forthRespondentPdfFieldModel =
                     PdfTemplateRespondentFieldNamesEnum.FORTH_RESPONDENT.respondentPdfFieldModel;
                 RespondentSumType forthRespondent = respondentCaseData.getRespondentCollection().get(3).getValue();
@@ -97,7 +94,7 @@ class PdfMapperRespondentUtilTest {
                                      forthRespondent,
                                      forthRespondentPdfFieldModel.respondentAcasCertificatePdfFieldModel());
             }
-            if (respondentCaseData.getRespondentCollection().size() >= 5) {
+            if (respondentCaseData.getRespondentCollection().size() >= INTEGER_NUMERIC_FIVE) {
                 RespondentPdfFieldModel fifthRespondentPdfFieldModel =
                     PdfTemplateRespondentFieldNamesEnum.FIFTH_RESPONDENT.respondentPdfFieldModel;
                 RespondentSumType fifthRespondent = respondentCaseData.getRespondentCollection().get(4).getValue();
@@ -106,8 +103,6 @@ class PdfMapperRespondentUtilTest {
                                      fifthRespondent,
                                      fifthRespondentPdfFieldModel.respondentAcasCertificatePdfFieldModel());
             }
-        } else {
-            checkClaimantWorkAddress(printFields, respondentCaseData);
         }
     }
 
@@ -118,9 +113,9 @@ class PdfMapperRespondentUtilTest {
                                                                                 ADDRESS_LINE_3, POST_TOWN, COUNTY,
                                                                                 COUNTRY, POSTCODE);
             CaseData respondentCaseData =
-                TestUtil.generateCaseDataForRespondent(NUMERIC_ONE, YES, NULL_ADDRESS);
+                TestUtil.generateCaseDataForRespondent(STRING_NUMERIC_ONE, YES, NULL_ADDRESS);
             RespondentSumTypeItem respondentSumTypeItem =
-                TestUtil.generateRespondentSumTypeItem(NUMERIC_ONE, TEST_COMPANY_NAME,
+                TestUtil.generateRespondentSumTypeItem(STRING_NUMERIC_ONE, TEST_COMPANY_NAME,
                                                        respondentAddress,
                                                        NO,
                                                        NULL_STRING,
@@ -144,8 +139,8 @@ class PdfMapperRespondentUtilTest {
             && NO.equals(caseData.getClaimantWorkAddressQuestion())
             && !ObjectUtils.isEmpty(caseData.getClaimantWorkAddress())) {
             checkAddress(printFields, caseData.getClaimantWorkAddress().getClaimantWorkAddress(),
-                         PDF_TEMPLATE_Q2_4_1_CLAIMANT_WORK_ADDRESS,
-                         PDF_TEMPLATE_Q2_4_2_CLAIMANT_WORK_POSTCODE);
+                         PdfMapperConstants.PDF_TEMPLATE_Q2_4_1_CLAIMANT_WORK_ADDRESS,
+                         PdfMapperConstants.PDF_TEMPLATE_Q2_4_2_CLAIMANT_WORK_POSTCODE);
         }
     }
 
@@ -182,28 +177,28 @@ class PdfMapperRespondentUtilTest {
                 .contains(respondent.getRespondentAcas());
         } else {
             assertThat(printFields.get(acasCertificatePdfFieldModel.getAcasCertificateCheckNoFieldName()))
-                .contains(NO_LOWERCASE);
+                .contains(PdfMapperConstants.NO_LOWERCASE);
             if (!Strings.isNullOrEmpty(respondent.getRespondentAcasNo())) {
                 switch (respondent.getRespondentAcasNo()) {
-                    case PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_UNFAIR_DISMISSAL: {
+                    case PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_UNFAIR_DISMISSAL: {
                         assertThat(printFields.get(
                             acasCertificatePdfFieldModel.getNoAcasReasonUnfairDismissalFieldName()))
                             .contains(YES);
                         break;
                     }
-                    case PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_ANOTHER_PERSON: {
+                    case PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_ANOTHER_PERSON: {
                         assertThat(printFields.get(
                             acasCertificatePdfFieldModel.getNoAcasReasonAnotherPersonFieldName()))
                             .contains(YES);
                         break;
                     }
-                    case PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_NO_POWER: {
+                    case PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_NO_POWER: {
                         assertThat(printFields.get(
                             acasCertificatePdfFieldModel.getNoAcasReasonNoPowerToConciliateFieldName()))
                             .contains(YES);
                         break;
                     }
-                    case PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_EMPLOYER_ALREADY_IN_TOUCH: {
+                    case PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_EMPLOYER_ALREADY_IN_TOUCH: {
                         assertThat(printFields.get(
                             acasCertificatePdfFieldModel.getNoAcasReasonEmployerContactedFieldName()))
                             .contains(YES);
@@ -216,6 +211,6 @@ class PdfMapperRespondentUtilTest {
     }
 
     private static Stream<Arguments> retrieveCaseDataSamplesWithRespondentSumTypes() {
-        return TestData.generateCaseDataSamplesWithRespondentSumTypeItems();
+        return PdfMapperTestData.generateCaseDataSamplesWithRespondentSumTypeItems();
     }
 }

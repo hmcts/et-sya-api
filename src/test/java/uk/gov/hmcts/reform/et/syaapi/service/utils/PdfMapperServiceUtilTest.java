@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 
 import java.util.stream.Stream;
@@ -36,7 +37,7 @@ class PdfMapperServiceUtilTest {
     @Test
     void theFormatAddressForTextFieldWhenAddressLine1PostTownPostCodeCountryExists() {
         // Given
-        Address address = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        Address address = new CaseTestData().getCaseData().getClaimantType().getClaimantAddressUK();
 
         String expectedAddressString = """
             Co-operative Retail Services Ltd, 11, Merrion Way,
@@ -51,7 +52,7 @@ class PdfMapperServiceUtilTest {
     @Test
     void theFormatAddressForTextFieldWhenAllFieldsExist() {
         // Given
-        Address address = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        Address address = new CaseTestData().getCaseData().getClaimantType().getClaimantAddressUK();
         address.setAddressLine1(ADDRESS_LINE1);
         address.setAddressLine2(ADDRESS_LINE2);
         address.setAddressLine3(ADDRESS_LINE3);
@@ -73,7 +74,7 @@ class PdfMapperServiceUtilTest {
     @Test
     void theFormatAddressForTextFieldWhenAllFieldsAreEmpty() {
         // Given
-        Address address = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        Address address = new CaseTestData().getCaseData().getClaimantType().getClaimantAddressUK();
         address.setAddressLine1(null);
         address.setAddressLine2(null);
         address.setAddressLine3(null);
@@ -90,7 +91,7 @@ class PdfMapperServiceUtilTest {
     @Test
     void theFormatAddressForTextFieldWhenAddressLine1IsEmpty() {
         // Given
-        Address address = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        Address address = new CaseTestData().getCaseData().getClaimantType().getClaimantAddressUK();
         address.setAddressLine1("");
         address.setAddressLine2(ADDRESS_LINE2);
         address.setAddressLine3(ADDRESS_LINE3);
@@ -107,7 +108,7 @@ class PdfMapperServiceUtilTest {
     @Test
     void theFormatAddressForTextFieldWhenPostTownIsEmpty() {
         // Given
-        Address address = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        Address address = new CaseTestData().getCaseData().getClaimantType().getClaimantAddressUK();
         address.setAddressLine1(ADDRESS_LINE1);
         address.setAddressLine2(ADDRESS_LINE2);
         address.setAddressLine3(ADDRESS_LINE3);
@@ -124,7 +125,7 @@ class PdfMapperServiceUtilTest {
     @Test
     void theFormatAddressForTextFieldWhenCountryIsEmpty() {
         // Given
-        Address address = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        Address address = new CaseTestData().getCaseData().getClaimantType().getClaimantAddressUK();
         address.setAddressLine1(ADDRESS_LINE1);
         address.setAddressLine2(ADDRESS_LINE2);
         address.setAddressLine3(ADDRESS_LINE3);
@@ -141,7 +142,7 @@ class PdfMapperServiceUtilTest {
     @Test
     void theFormatAddressForTextFieldReturnValueNotIncludesPostcode() {
         // Given
-        Address address = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        Address address = new CaseTestData().getCaseData().getClaimantType().getClaimantAddressUK();
         address.setAddressLine1(ADDRESS_LINE1);
         address.setAddressLine2(ADDRESS_LINE2);
         address.setAddressLine3(ADDRESS_LINE3);
@@ -156,7 +157,7 @@ class PdfMapperServiceUtilTest {
 
     @Test
     void formatUkPostcodeNull() {
-        Address address = new TestData().getCaseData().getClaimantType().getClaimantAddressUK();
+        Address address = new CaseTestData().getCaseData().getClaimantType().getClaimantAddressUK();
         address.setPostCode(null);
         assertThat(PdfMapperServiceUtil.formatUkPostcode(address)).isEmpty();
     }
@@ -197,14 +198,14 @@ class PdfMapperServiceUtilTest {
 
     @Test
     void theGenerateClaimantClaimantRequestsNull() {
-        CaseData caseData = new TestData().getCaseData();
+        CaseData caseData = new CaseTestData().getCaseData();
         caseData.setClaimantRequests(null);
         assertThat(generateClaimantTribunalRecommendation(caseData)).isEmpty();
     }
 
     @Test
     void theGenerateClaimantClaimantTribunalRecommendationNull() {
-        CaseData caseData = new TestData().getCaseData();
+        CaseData caseData = new CaseTestData().getCaseData();
         caseData.getClaimantRequests().setClaimantTribunalRecommendation(null);
         assertThat(generateClaimantTribunalRecommendation(caseData)).isEmpty();
     }

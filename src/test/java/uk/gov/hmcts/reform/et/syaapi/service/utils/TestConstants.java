@@ -68,12 +68,18 @@ public final class TestConstants {
     public static final String WORK_COUNTRY = "WorkCountry";
     public static final String WORK_POSTCODE = "SL6 2DE";
     public static final String TEST_COMPANY_NAME = "Test Company Name";
-    public static final String NUMERIC_ONE = "1";
-    public static final String NUMERIC_TWO = "2";
-    public static final String NUMERIC_THREE = "3";
-    public static final String NUMERIC_FOUR = "4";
-    public static final String NUMERIC_FIVE = "5";
-    public static final String NUMERIC_SIX = "6";
+    public static final int INTEGER_NUMERIC_ONE = 1;
+    public static final int INTEGER_NUMERIC_TWO = 2;
+    public static final int INTEGER_NUMERIC_THREE = 3;
+    public static final int INTEGER_NUMERIC_FOUR = 4;
+    public static final int INTEGER_NUMERIC_FIVE = 5;
+    public static final int INTEGER_NUMERIC_SIX = 6;
+    public static final String STRING_NUMERIC_ONE = "1";
+    public static final String STRING_NUMERIC_TWO = "2";
+    public static final String STRING_NUMERIC_THREE = "3";
+    public static final String STRING_NUMERIC_FOUR = "4";
+    public static final String STRING_NUMERIC_FIVE = "5";
+    public static final String STRING_NUMERIC_SIX = "6";
     public static final String POSTCODE = "SW1A 1AA";
     public static final String REPRESENTATIVE_NAME = "Michael Mercury";
     public static final String REPRESENTATIVE_REFERENCE = "Test Reference";
@@ -110,6 +116,7 @@ public final class TestConstants {
     public static final String HEARING_ASSISTANCE = "Hearing Assistance";
     public static final String VIDEO = "Video";
     public static final String PHONE = "Phone";
+    public static final String TEST_CASE_DATA_JSON_FILE = "requests/caseData.json";
     public static final PdfDecodedMultipartFile PDF_DECODED_MULTIPART_FILE_NULL = new PdfDecodedMultipartFile(
         null,
         TestConstants.TEST_PDF_FILE_ORIGINAL_NAME,

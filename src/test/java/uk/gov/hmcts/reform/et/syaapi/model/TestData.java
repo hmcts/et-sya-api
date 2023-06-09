@@ -2,218 +2,54 @@ package uk.gov.hmcts.reform.et.syaapi.model;
 
 import lombok.Data;
 import org.junit.jupiter.params.provider.Arguments;
-import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
-import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
-import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
-import uk.gov.hmcts.et.common.model.ccd.types.ClaimantRequestType;
-import uk.gov.hmcts.et.common.model.ccd.types.ClaimantType;
-import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.ccd.client.model.Event;
-import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
-import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
-import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.TestUtil;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_ANOTHER_PERSON;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_EMPLOYER_ALREADY_IN_TOUCH;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_NO_POWER;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_UNFAIR_DISMISSAL;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ADDRESS_LINE_1;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ADDRESS_LINE_2;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ADDRESS_LINE_3;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.BLANK_STRING;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CLAIMANT_IND_TYPE_EMPTY;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CLAIMANT_IND_TYPE_FILLED;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CLAIMANT_IND_TYPE_NULL;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CLAIM_DESCRIPTION;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.COUNTRY;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.COUNTY;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ELIZABETH;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.EMAIL;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.EMPTY_STRING;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.EMPTY_STRING_ARRAY;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.FALSE;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.FAX;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.FEMALE;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.HEARING_ASSISTANCE;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.INVALID_LANGUAGE;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MALE;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MERCURY;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MICHAEL;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MISS;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MR;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MRS;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MS;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MULTIPLE_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NULL_ADDRESS;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NULL_STRING;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NUMERIC_FIVE;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NUMERIC_FOUR;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NUMERIC_ONE;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NUMERIC_SIX;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NUMERIC_THREE;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NUMERIC_TWO;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.OTHER;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.OTHER_TITLE;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.PHONE;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.POST;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.POSTCODE;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.POST_TOWN;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.PREFER_NOT_TO_SAY;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.REASONABLE_ADJUSTMENT_DETAILS;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.REPRESENTATIVE_EMAIL;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.REPRESENTATIVE_MOBILE_NUMBER;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.REPRESENTATIVE_NAME;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.REPRESENTATIVE_ORGANISATION;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.REPRESENTATIVE_PHONE_NUMBER;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.REPRESENTATIVE_REFERENCE;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.SWIFT;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TAYLOR;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_ACAS;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_COMPANY_NAME;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_NAMES;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TRUE;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.VIDEO;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_ADDRESS_LINE_1;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_ADDRESS_LINE_2;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_ADDRESS_LINE_3;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_COUNTRY;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_COUNTY;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_POSTCODE;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_POST_TOWN;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.YES;
 
 @Data
-@SuppressWarnings({"PMD.TooManyFields", "PMD.TooManyMethods"})
 public final class TestData {
-
-    private final CaseData caseData = ResourceLoader.fromString(
-        "requests/caseData.json",
-        CaseData.class
-    );
-    private final CaseDetails expectedDetails = ResourceLoader.fromString(
-        "responses/caseDetails.json",
-        CaseDetails.class
-    );
-    private final List<CaseDetails> requestCaseDataListEngland = ResourceLoader.fromStringToList(
-        "responses/caseDetailsEngland.json",
-        CaseDetails.class
-    );
-    private final List<CaseDetails> requestCaseDataListScotland = ResourceLoader.fromStringToList(
-        "responses/caseDetailsScotland.json",
-        CaseDetails.class
-    );
-    private final List<CaseDetails> expectedCaseDataListCombined = ResourceLoader.fromStringToList(
-        "responses/caseDetailsCombined.json",
-        CaseDetails.class
-    );
-    private final StartEventResponse startEventResponse = ResourceLoader.fromString(
-        "responses/startEventResponse.json",
-        StartEventResponse.class
-    );
-    private final List<CaseDetails> requestCaseDataList = ResourceLoader.fromStringToList(
-        "responses/caseDetailsList.json",
-        CaseDetails.class
-    );
     private final CaseDataContent submitCaseDataContent = ResourceLoader.fromString(
         "requests/submitCaseDataContent.json",
         CaseDataContent.class
     );
-    private final List<DocumentTypeItem> uploadDocumentResponse = ResourceLoader.fromStringToList(
-        "responses/documentTypeItemList.json",
-        DocumentTypeItem.class
-    );
-    private final CaseRequest caseRequest = ResourceLoader.fromString(
-        "requests/caseRequest.json",
-        CaseRequest.class
-    );
-    private final CaseRequest caseDataWithClaimTypes = ResourceLoader.fromString(
-        "requests/caseDataWithClaimTypes.json",
-        CaseRequest.class
-    );
-    private final CaseRequest caseRequestWithoutManagingAddress = ResourceLoader.fromString(
-        "requests/caseDataWithoutManagingAddress.json",
-        CaseRequest.class
-    );
-    private final CaseRequest emptyCaseRequest = ResourceLoader.fromString(
-        "requests/noManagingOfficeAndRespondentsAddressCaseRequest.json",
-        CaseRequest.class
-    );
-
-    private final CaseRequest englandWalesRequest = ResourceLoader.fromString(
-        "requests/caseRequestEnglandWales.json",
-        CaseRequest.class
-    );
-
-    private final UserInfo userInfo = ResourceLoader.fromString(
-        "responses/userInfo.json",
-        UserInfo.class
-    );
-
-    public Map<String, Object> getCaseRequestCaseDataMap() {
-        Et1CaseData et1CaseData = ResourceLoader.fromString("requests/caseData.json", Et1CaseData.class);
-        Map<String, Object> requestCaseData = new ConcurrentHashMap<>();
-        requestCaseData.put("typesOfClaim", et1CaseData.getTypesOfClaim());
-        requestCaseData.put("caseType", et1CaseData.getEcmCaseType());
-        requestCaseData.put("caseSource", et1CaseData.getCaseSource());
-        requestCaseData.put("claimantRepresentedQuestion", et1CaseData.getClaimantRepresentedQuestion());
-        requestCaseData.put("jurCodesCollection", et1CaseData.getJurCodesCollection());
-        requestCaseData.put("claimantIndType", et1CaseData.getClaimantIndType());
-        requestCaseData.put("claimantType", et1CaseData.getClaimantType());
-        requestCaseData.put("representativeClaimantType", et1CaseData.getRepresentativeClaimantType());
-        requestCaseData.put("claimantOtherType", et1CaseData.getClaimantOtherType());
-        requestCaseData.put("respondentCollection", et1CaseData.getRespondentCollection());
-        requestCaseData.put("claimantWorkAddress", et1CaseData.getClaimantWorkAddress());
-        requestCaseData.put("caseNotes", et1CaseData.getCaseNotes());
-        requestCaseData.put("managingOffice", et1CaseData.getManagingOffice());
-        requestCaseData.put("newEmploymentType", et1CaseData.getNewEmploymentType());
-        requestCaseData.put("claimantRequests", et1CaseData.getClaimantRequests());
-        requestCaseData.put("claimantHearingPreference", et1CaseData.getClaimantHearingPreference());
-        requestCaseData.put("claimantTaskListChecks", et1CaseData.getClaimantTaskListChecks());
-        return requestCaseData;
-    }
-
-    public CaseDataContent getUpdateCaseDataContent() {
-        return CaseDataContent.builder()
-            .event(Event.builder().id(TestConstants.UPDATE_CASE_DRAFT).build())
-            .eventToken(getStartEventResponse().getToken())
-            .data(getCaseRequestCaseDataMap())
-            .build();
-    }
 
     public static Stream<Arguments> postcodeAddressArguments() {
         return Stream.of(
-            Arguments.of("A1 1AA", TestUtil.generateTestAddressByPostcodeCountry("A1      1AA", NULL_STRING)),
-            Arguments.of("A2 2AA", TestUtil.generateTestAddressByPostcodeCountry("A22AA", NULL_STRING)),
-            Arguments.of("A3 3AA", TestUtil.generateTestAddressByPostcodeCountry("A 3  3 A  A", NULL_STRING)),
-            Arguments.of("NG4 4JF", TestUtil.generateTestAddressByPostcodeCountry("NG44JF", NULL_STRING)),
-            Arguments.of("NG5 5JF", TestUtil.generateTestAddressByPostcodeCountry("NG5      5JF", NULL_STRING)),
-            Arguments.of("NG6 6JF", TestUtil.generateTestAddressByPostcodeCountry("N  G 6      6  J F", NULL_STRING)),
-            Arguments.of("HU10 7NA", TestUtil.generateTestAddressByPostcodeCountry("HU107NA", NULL_STRING)),
-            Arguments.of("HU10 8NA", TestUtil.generateTestAddressByPostcodeCountry("HU10      8NA", NULL_STRING)),
-            Arguments.of("HU10 9NA", TestUtil.generateTestAddressByPostcodeCountry("H U 1 0 9 N A", NULL_STRING)),
+            Arguments.of("A1 1AA", TestUtil.generateTestAddressByPostcodeCountry("A1      1AA",
+                                                                                 TestConstants.NULL_STRING)),
+            Arguments.of("A2 2AA", TestUtil.generateTestAddressByPostcodeCountry("A22AA",
+                                                                                 TestConstants.NULL_STRING)),
+            Arguments.of("A3 3AA", TestUtil.generateTestAddressByPostcodeCountry("A 3  3 A  A",
+                                                                                 TestConstants.NULL_STRING)),
+            Arguments.of("NG4 4JF", TestUtil.generateTestAddressByPostcodeCountry("NG44JF",
+                                                                                  TestConstants.NULL_STRING)),
+            Arguments.of("NG5 5JF", TestUtil.generateTestAddressByPostcodeCountry("NG5      5JF",
+                                                                                  TestConstants.NULL_STRING)),
+            Arguments.of("NG6 6JF", TestUtil.generateTestAddressByPostcodeCountry("N  G 6      6  J F",
+                                                                                  TestConstants.NULL_STRING)),
+            Arguments.of("HU10 7NA", TestUtil.generateTestAddressByPostcodeCountry("HU107NA",
+                                                                                   TestConstants.NULL_STRING)),
+            Arguments.of("HU10 8NA", TestUtil.generateTestAddressByPostcodeCountry("HU10      8NA",
+                                                                                   TestConstants.NULL_STRING)),
+            Arguments.of("HU10 9NA", TestUtil.generateTestAddressByPostcodeCountry("H U 1 0 9 N A",
+                                                                                   TestConstants.NULL_STRING)),
             Arguments.of("34730", TestUtil.generateTestAddressByPostcodeCountry("34730", "Turkey")),
             Arguments.of("AB11 1AB", TestUtil.generateTestAddressByPostcodeCountry("AB111AB", "United kingdom")),
-            Arguments.of("AB12 1AB", TestUtil.generateTestAddressByPostcodeCountry("AB121AB", NULL_STRING)),
-            Arguments.of("AB13 1AB", TestUtil.generateTestAddressByPostcodeCountry("AB131AB", EMPTY_STRING)),
-            Arguments.of(EMPTY_STRING,
-                         TestUtil.generateTestAddressByPostcodeCountry(EMPTY_STRING, NULL_STRING))
+            Arguments.of("AB12 1AB", TestUtil.generateTestAddressByPostcodeCountry("AB121AB",
+                                                                                   TestConstants.NULL_STRING)),
+            Arguments.of("AB13 1AB", TestUtil.generateTestAddressByPostcodeCountry("AB131AB",
+                                                                                   TestConstants.EMPTY_STRING)),
+            Arguments.of(TestConstants.EMPTY_STRING,
+                         TestUtil.generateTestAddressByPostcodeCountry(TestConstants.EMPTY_STRING,
+                                                                       TestConstants.NULL_STRING))
         );
     }
 
@@ -231,7 +67,7 @@ public final class TestData {
         CaseData caseData4 = TestUtil.generateTestCaseDataByClaimantCompensation("",
                                                                                  "",
                                                                                  ":");
-        CaseData caseData5 = new TestData().getCaseData();
+        CaseData caseData5 = new CaseTestData().getCaseData();
         caseData5.setClaimantRequests(null);
 
         return Stream.of(
@@ -262,17 +98,22 @@ public final class TestData {
 
     public static Stream<Arguments> generateCaseDataArgumentsForTheTestFindClaimantLanguage() {
         CaseData caseDataNullClaimantHearingPreferences = TestUtil
-            .generateTestCaseDataByClaimantHearingPreferenceContactLanguage(TRUE, NULL_STRING);
+            .generateTestCaseDataByClaimantHearingPreferenceContactLanguage(TRUE, TestConstants.NULL_STRING);
         CaseData caseDataNullContactLanguage = TestUtil
-            .generateTestCaseDataByClaimantHearingPreferenceContactLanguage(FALSE, NULL_STRING);
+            .generateTestCaseDataByClaimantHearingPreferenceContactLanguage(TestConstants.FALSE,
+                                                                            TestConstants.NULL_STRING);
         CaseData caseDataEmptyContactLanguage = TestUtil
-            .generateTestCaseDataByClaimantHearingPreferenceContactLanguage(FALSE, EMPTY_STRING);
+            .generateTestCaseDataByClaimantHearingPreferenceContactLanguage(TestConstants.FALSE,
+                                                                            TestConstants.EMPTY_STRING);
         CaseData caseDataInvalidContactLanguage = TestUtil
-            .generateTestCaseDataByClaimantHearingPreferenceContactLanguage(FALSE, INVALID_LANGUAGE);
+            .generateTestCaseDataByClaimantHearingPreferenceContactLanguage(TestConstants.FALSE,
+                                                                            TestConstants.INVALID_LANGUAGE);
         CaseData caseDataWelshContactLanguage = TestUtil
-            .generateTestCaseDataByClaimantHearingPreferenceContactLanguage(FALSE, TestConstants.WELSH_LANGUAGE);
+            .generateTestCaseDataByClaimantHearingPreferenceContactLanguage(TestConstants.FALSE,
+                                                                            TestConstants.WELSH_LANGUAGE);
         CaseData caseDataEnglishContactLanguage = TestUtil
-            .generateTestCaseDataByClaimantHearingPreferenceContactLanguage(FALSE, TestConstants.ENGLISH_LANGUAGE);
+            .generateTestCaseDataByClaimantHearingPreferenceContactLanguage(TestConstants.FALSE,
+                                                                            TestConstants.ENGLISH_LANGUAGE);
 
         return Stream.of(
             Arguments.of(caseDataNullClaimantHearingPreferences, TestConstants.ENGLISH_LANGUAGE),
@@ -284,66 +125,6 @@ public final class TestData {
         );
     }
 
-    public static Stream<Arguments> generateCaseDataUserInfoArgumentsForTestingFirstNames() {
-
-        CaseData caseDataNullClaimantIndType =
-            TestUtil.generateTestCaseDataByFirstNames(CLAIMANT_IND_TYPE_NULL, EMPTY_STRING);
-        CaseData caseDataEmptyClaimantIndType =
-            TestUtil.generateTestCaseDataByFirstNames(CLAIMANT_IND_TYPE_EMPTY, EMPTY_STRING);
-        CaseData caseDataNullClaimantFirstNames =
-            TestUtil.generateTestCaseDataByFirstNames(CLAIMANT_IND_TYPE_FILLED, NULL_STRING);
-        CaseData caseDataEmptyClaimantFirstNames =
-            TestUtil.generateTestCaseDataByFirstNames(CLAIMANT_IND_TYPE_FILLED, EMPTY_STRING);
-        CaseData caseDataNotEmptyClaimantFirstNames =
-            TestUtil.generateTestCaseDataByFirstNames(CLAIMANT_IND_TYPE_FILLED, TEST_NAMES);
-
-        TestData tmpTestData = new TestData();
-
-        return Stream.of(
-            Arguments.of(caseDataNullClaimantIndType, tmpTestData.getUserInfo(),
-                         tmpTestData.getUserInfo().getGivenName()),
-            Arguments.of(caseDataEmptyClaimantIndType, tmpTestData.getUserInfo(),
-                         tmpTestData.getUserInfo().getGivenName()),
-            Arguments.of(caseDataNullClaimantFirstNames, tmpTestData.getUserInfo(),
-                         tmpTestData.getUserInfo().getGivenName()),
-            Arguments.of(caseDataEmptyClaimantFirstNames, tmpTestData.getUserInfo(),
-                         tmpTestData.getUserInfo().getGivenName()),
-            Arguments.of(caseDataNotEmptyClaimantFirstNames, tmpTestData.getUserInfo(),
-                         tmpTestData.getCaseData().getClaimantIndType().getClaimantFirstNames())
-        );
-    }
-
-    public static Stream<Arguments> generateCaseDataUserInfoArgumentsForTestingLastName() {
-
-        CaseData caseDataNullClaimantIndType = new TestData().getCaseData();
-        caseDataNullClaimantIndType.setClaimantIndType(null);
-
-        CaseData caseDataEmptyClaimantIndType = new TestData().getCaseData();
-        caseDataEmptyClaimantIndType.setClaimantIndType(new ClaimantIndType());
-
-        CaseData caseDataNullClaimantFirstNames = new TestData().getCaseData();
-        caseDataNullClaimantFirstNames.getClaimantIndType().setClaimantLastName(NULL_STRING);
-
-        CaseData caseDataEmptyClaimantFirstNames = new TestData().getCaseData();
-        caseDataEmptyClaimantFirstNames.getClaimantIndType().setClaimantLastName(EMPTY_STRING);
-
-        CaseData caseDataNotEmptyClaimantFirstNames = new TestData().getCaseData();
-
-        TestData tmpTestData = new TestData();
-
-        return Stream.of(
-            Arguments.of(caseDataNullClaimantIndType, tmpTestData.getUserInfo(),
-                         tmpTestData.getUserInfo().getFamilyName()),
-            Arguments.of(caseDataEmptyClaimantIndType, tmpTestData.getUserInfo(),
-                         tmpTestData.getUserInfo().getFamilyName()),
-            Arguments.of(caseDataNullClaimantFirstNames, tmpTestData.getUserInfo(),
-                         tmpTestData.getUserInfo().getFamilyName()),
-            Arguments.of(caseDataEmptyClaimantFirstNames, tmpTestData.getUserInfo(),
-                         tmpTestData.getUserInfo().getFamilyName()),
-            Arguments.of(caseDataNotEmptyClaimantFirstNames, tmpTestData.getUserInfo(),
-                         tmpTestData.getCaseData().getClaimantIndType().getClaimantLastName())
-        );
-    }
 
     public static Stream<Arguments> generatePdfFileListForTestingHasPdfFileByGivenIndex() {
         return Stream.of(
@@ -416,285 +197,5 @@ public final class TestData {
                          NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
                          TestConstants.NOT_EMPTY_UPLOADED_DOCUMENT_TYPE_FILE)
         );
-    }
-
-    public SearchResult requestCaseDataListSearchResult() {
-        SearchResult searchResult = SearchResult.builder().build();
-        searchResult.setCases(getRequestCaseDataList());
-        searchResult.setTotal(2);
-        return searchResult;
-    }
-
-    public SearchResult getSearchResultRequestCaseDataListScotland() {
-        SearchResult searchResult = SearchResult.builder().build();
-        searchResult.setCases(getRequestCaseDataListScotland());
-        searchResult.setTotal(2);
-        return searchResult;
-    }
-
-    public SearchResult getSearchResultRequestCaseDataListEngland() {
-        SearchResult searchResult = SearchResult.builder().build();
-        searchResult.setCases(getRequestCaseDataListEngland());
-        searchResult.setTotal(1);
-        return searchResult;
-    }
-
-    public static Stream<Arguments> generateClaimantIndTypeArguments() {
-        ClaimantIndType claimantIndTypeOtherTitleMaleNotNullDateOfBirth = TestUtil.generateClaimantIndType(
-            OTHER, OTHER_TITLE, MICHAEL, MERCURY, "1979-05-08", MALE
-        );
-
-        ClaimantIndType claimantIndTypeTitleMrMaleNotNullDateOfBirth = TestUtil.generateClaimantIndType(
-            MR, NULL_STRING, MICHAEL, MERCURY, "1980-06-09", MALE
-        );
-
-
-        ClaimantIndType claimantIndTypeTitleMsFemaleNotNullDateOfBirth = TestUtil.generateClaimantIndType(
-            MS, NULL_STRING, ELIZABETH, TAYLOR, "1981-07-10", FEMALE
-        );
-
-        ClaimantIndType claimantIndTypeTitleMrsFemaleNotNullDateOfBirth = TestUtil.generateClaimantIndType(
-            MRS, NULL_STRING, TAYLOR, SWIFT, "1982-08-11", FEMALE
-        );
-
-        ClaimantIndType claimantIndTypeTitleMissFemaleNotNullDateOfBirth = TestUtil.generateClaimantIndType(
-            MISS, NULL_STRING, TAYLOR, SWIFT, "1983-09-12", FEMALE
-        );
-
-        ClaimantIndType claimantIndTypeOtherTitleMaleNullDateOfBirth = TestUtil.generateClaimantIndType(
-            OTHER, OTHER_TITLE, MICHAEL, MERCURY, NULL_STRING, MALE
-        );
-
-        ClaimantIndType claimantIndTypeOtherTitleMaleEmptyDateOfBirth = TestUtil.generateClaimantIndType(
-            OTHER, OTHER_TITLE, MICHAEL, MERCURY, EMPTY_STRING, MALE
-        );
-        ClaimantIndType claimantIndTypeOtherTitleMaleBlankDateOfBirth = TestUtil.generateClaimantIndType(
-            OTHER, OTHER_TITLE, MICHAEL, MERCURY, BLANK_STRING, MALE
-        );
-
-
-        ClaimantIndType claimantIndTypeOtherTitlePreferNotToSay = TestUtil.generateClaimantIndType(
-            OTHER, OTHER_TITLE, MICHAEL, MERCURY, BLANK_STRING, PREFER_NOT_TO_SAY
-        );
-
-        return Stream.of(
-            Arguments.of(claimantIndTypeOtherTitleMaleNotNullDateOfBirth, "08", "05", "1979"),
-            Arguments.of(claimantIndTypeTitleMrMaleNotNullDateOfBirth, "09", "06", "1980"),
-            Arguments.of(claimantIndTypeTitleMsFemaleNotNullDateOfBirth, "10", "07", "1981"),
-            Arguments.of(claimantIndTypeTitleMrsFemaleNotNullDateOfBirth, "11", "08", "1982"),
-            Arguments.of(claimantIndTypeTitleMissFemaleNotNullDateOfBirth, "12", "09", "1983"),
-            Arguments.of(claimantIndTypeOtherTitleMaleNullDateOfBirth, "", "", ""),
-            Arguments.of(claimantIndTypeOtherTitleMaleEmptyDateOfBirth, "", "", ""),
-            Arguments.of(claimantIndTypeOtherTitleMaleBlankDateOfBirth, "", "", ""),
-            Arguments.of(claimantIndTypeOtherTitlePreferNotToSay, "", "", "")
-        );
-    }
-
-    public static Stream<Arguments> generateClaimantTypeArguments() {
-
-        ClaimantType claimantTypePhoneNumber = new ClaimantType();
-        claimantTypePhoneNumber.setClaimantPhoneNumber("07444444444");
-        ClaimantType claimantTypeMobileNumber = new ClaimantType();
-        claimantTypeMobileNumber.setClaimantPhoneNumber("07444444555");
-        ClaimantType claimantTypeEmail = new ClaimantType();
-        claimantTypeEmail.setClaimantEmailAddress("mehmet@tdmehmet.com");
-        ClaimantType claimantTypeContactPreferenceEmail = new ClaimantType();
-        claimantTypeContactPreferenceEmail.setClaimantContactPreference("Email");
-        ClaimantType claimantTypeContactPreferencePost = new ClaimantType();
-        claimantTypeContactPreferencePost.setClaimantContactPreference("Post");
-        Address claimantAddressUK = TestUtil.generateAddressByAddressFields(ADDRESS_LINE_1, ADDRESS_LINE_2,
-                                                                            ADDRESS_LINE_3, POST_TOWN, COUNTY,
-                                                                            COUNTRY, POSTCODE);
-        ClaimantType claimantTypeAddressUK = new ClaimantType();
-        claimantTypeAddressUK.setClaimantAddressUK(claimantAddressUK);
-        ClaimantType claimantTypeAll = new ClaimantType();
-        claimantTypeAll.setClaimantPhoneNumber("07444444444");
-        claimantTypeAll.setClaimantPhoneNumber("07444444555");
-        claimantTypeAll.setClaimantEmailAddress("mehmet@tdmehmet.com");
-        claimantTypeAll.setClaimantContactPreference("Email");
-        claimantTypeAll.setClaimantContactPreference("Post");
-        claimantTypeAll.setClaimantAddressUK(claimantAddressUK);
-        ClaimantType claimantTypeBlank = new ClaimantType();
-        return Stream.of(
-            Arguments.of(claimantTypeBlank),
-            Arguments.of(claimantTypePhoneNumber),
-            Arguments.of(claimantTypeMobileNumber),
-            Arguments.of(claimantTypeEmail),
-            Arguments.of(claimantTypeContactPreferenceEmail),
-            Arguments.of(claimantTypeContactPreferencePost),
-            Arguments.of(claimantTypeAddressUK),
-            Arguments.of(claimantTypeAll)
-        );
-    }
-
-    public static Stream<Arguments> generateClaimantRequests() {
-
-        ClaimantRequestType claimantRequestClaimDescriptionNull = new ClaimantRequestType();
-        claimantRequestClaimDescriptionNull.setClaimDescription(null);
-        ClaimantRequestType claimantRequestClaimDescriptionEmpty = new ClaimantRequestType();
-        claimantRequestClaimDescriptionEmpty.setClaimDescription(EMPTY_STRING);
-        ClaimantRequestType claimantRequestClaimDescriptionBlank = new ClaimantRequestType();
-        claimantRequestClaimDescriptionBlank.setClaimDescription(BLANK_STRING);
-        ClaimantRequestType claimantRequestClaimDescriptionFilled = new ClaimantRequestType();
-        claimantRequestClaimDescriptionFilled.setClaimDescription(CLAIM_DESCRIPTION);
-        ClaimantRequestType claimantRequestEmpty = new ClaimantRequestType();
-
-        return Stream.of(
-            Arguments.of(null, null),
-            Arguments.of(claimantRequestEmpty, null),
-            Arguments.of(claimantRequestClaimDescriptionNull, null),
-            Arguments.of(claimantRequestClaimDescriptionEmpty, null),
-            Arguments.of(claimantRequestClaimDescriptionBlank, null),
-            Arguments.of(claimantRequestClaimDescriptionFilled, CLAIM_DESCRIPTION)
-        );
-    }
-
-    public static Stream<Arguments> generateRepresentativeClaimantTypes() {
-        Address representativeAddress = TestUtil.generateAddressByAddressFields(ADDRESS_LINE_1, ADDRESS_LINE_2,
-                                                                                ADDRESS_LINE_3, POST_TOWN, COUNTY,
-                                                                                COUNTRY, POSTCODE);
-        RepresentedTypeC representativeClaimantTypeAllFilled = TestUtil.generateRepresentativeClaimantType(
-            representativeAddress, REPRESENTATIVE_NAME, REPRESENTATIVE_REFERENCE, REPRESENTATIVE_ORGANISATION,
-            REPRESENTATIVE_PHONE_NUMBER, REPRESENTATIVE_MOBILE_NUMBER, REPRESENTATIVE_EMAIL, EMAIL
-        );
-        RepresentedTypeC representativeClaimantTypeAddressNull = TestUtil.generateRepresentativeClaimantType(
-            null, REPRESENTATIVE_NAME, REPRESENTATIVE_REFERENCE, REPRESENTATIVE_ORGANISATION,
-            REPRESENTATIVE_PHONE_NUMBER, REPRESENTATIVE_MOBILE_NUMBER, REPRESENTATIVE_EMAIL, EMAIL
-        );
-        RepresentedTypeC representativeClaimantPreferenceNull = TestUtil.generateRepresentativeClaimantType(
-            representativeAddress, REPRESENTATIVE_NAME, REPRESENTATIVE_REFERENCE, REPRESENTATIVE_ORGANISATION,
-            REPRESENTATIVE_PHONE_NUMBER, REPRESENTATIVE_MOBILE_NUMBER, REPRESENTATIVE_EMAIL, NULL_STRING
-        );
-        RepresentedTypeC representativeClaimantPreferenceEmpty = TestUtil.generateRepresentativeClaimantType(
-            representativeAddress, REPRESENTATIVE_NAME, REPRESENTATIVE_REFERENCE, REPRESENTATIVE_ORGANISATION,
-            REPRESENTATIVE_PHONE_NUMBER, REPRESENTATIVE_MOBILE_NUMBER, REPRESENTATIVE_EMAIL, EMPTY_STRING
-        );
-        RepresentedTypeC representativeClaimantPreferenceBlank = TestUtil.generateRepresentativeClaimantType(
-            representativeAddress, REPRESENTATIVE_NAME, REPRESENTATIVE_REFERENCE, REPRESENTATIVE_ORGANISATION,
-            REPRESENTATIVE_PHONE_NUMBER, REPRESENTATIVE_MOBILE_NUMBER, REPRESENTATIVE_EMAIL, BLANK_STRING
-        );
-        RepresentedTypeC representativeClaimantTypePreferenceFax = TestUtil.generateRepresentativeClaimantType(
-            representativeAddress, REPRESENTATIVE_NAME, REPRESENTATIVE_REFERENCE, REPRESENTATIVE_ORGANISATION,
-            REPRESENTATIVE_PHONE_NUMBER, REPRESENTATIVE_MOBILE_NUMBER, REPRESENTATIVE_EMAIL, FAX
-        );
-        RepresentedTypeC representativeClaimantTypePreferencePost = TestUtil.generateRepresentativeClaimantType(
-            representativeAddress, REPRESENTATIVE_NAME, REPRESENTATIVE_REFERENCE, REPRESENTATIVE_ORGANISATION,
-            REPRESENTATIVE_PHONE_NUMBER, REPRESENTATIVE_MOBILE_NUMBER, REPRESENTATIVE_EMAIL, POST
-        );
-
-        return Stream.of(
-            Arguments.of(representativeClaimantTypeAllFilled),
-            Arguments.of(representativeClaimantTypeAddressNull),
-            Arguments.of(representativeClaimantPreferenceNull),
-            Arguments.of(representativeClaimantPreferenceEmpty),
-            Arguments.of(representativeClaimantPreferenceBlank),
-            Arguments.of(representativeClaimantTypePreferenceFax),
-            Arguments.of(representativeClaimantTypePreferencePost)
-        );
-    }
-
-    public static Stream<Arguments> generateCaseDataSamplesWithRespondentSumTypeItems() {
-        Address respondentAddress = TestUtil.generateAddressByAddressFields(ADDRESS_LINE_1, ADDRESS_LINE_2,
-                                                                            ADDRESS_LINE_3, POST_TOWN, COUNTY,
-                                                                            COUNTRY, POSTCODE);
-        ////// CASE DATA 1
-        CaseData caseData1 = TestUtil.generateCaseDataForRespondent(NUMERIC_ONE, YES, NULL_ADDRESS);
-        RespondentSumTypeItem respondentSumTypeItem = TestUtil.generateRespondentSumTypeItem(NUMERIC_ONE,
-            TEST_COMPANY_NAME, respondentAddress, YES, TEST_ACAS, PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_UNFAIR_DISMISSAL);
-        List<RespondentSumTypeItem> respondentCollection = new ArrayList<>();
-        respondentCollection.add(respondentSumTypeItem);
-        caseData1.setRespondentCollection(respondentCollection);
-        ////// CASE DATA 2
-        RespondentSumTypeItem respondentSumTypeItem2 = TestUtil.generateRespondentSumTypeItem(NUMERIC_TWO,
-            TEST_COMPANY_NAME, respondentAddress, YES, TEST_ACAS, PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_ANOTHER_PERSON);
-        RespondentSumTypeItem respondentSumTypeItem3 = TestUtil.generateRespondentSumTypeItem(NUMERIC_THREE,
-            TEST_COMPANY_NAME, respondentAddress, NO, TEST_ACAS, PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_NO_POWER);
-        RespondentSumTypeItem respondentSumTypeItem4 = TestUtil.generateRespondentSumTypeItem(NUMERIC_FOUR,
-            TEST_COMPANY_NAME, respondentAddress, NO, TEST_ACAS, PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_UNFAIR_DISMISSAL);
-        RespondentSumTypeItem respondentSumTypeItem5 = TestUtil.generateRespondentSumTypeItem(NUMERIC_FIVE,
-            TEST_COMPANY_NAME, respondentAddress, NO, TEST_ACAS, PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_ANOTHER_PERSON);
-        List<RespondentSumTypeItem> respondentCollection2 = new ArrayList<>();
-        respondentCollection2.add(respondentSumTypeItem);
-        respondentCollection2.add(respondentSumTypeItem2);
-        respondentCollection2.add(respondentSumTypeItem3);
-        respondentCollection2.add(respondentSumTypeItem4);
-        respondentCollection2.add(respondentSumTypeItem5);
-        Address workAddress = TestUtil.generateAddressByAddressFields(WORK_ADDRESS_LINE_1, WORK_ADDRESS_LINE_2,
-                                                                      WORK_ADDRESS_LINE_3, WORK_POST_TOWN, WORK_COUNTY,
-                                                                      WORK_COUNTRY, WORK_POSTCODE);
-        CaseData caseData2 = TestUtil.generateCaseDataForRespondent(NUMERIC_TWO, NO, workAddress);
-        caseData2.setRespondentCollection(respondentCollection2);
-        ////// CASE DATA 3
-        CaseData caseData3 = TestUtil.generateCaseDataForRespondent(NUMERIC_THREE, YES, NULL_ADDRESS);
-        RespondentSumTypeItem respondentSumTypeItem6 = TestUtil.generateRespondentSumTypeItem(NUMERIC_TWO,
-            TEST_COMPANY_NAME, respondentAddress, YES, TEST_ACAS,
-            PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_EMPLOYER_ALREADY_IN_TOUCH);
-
-        List<RespondentSumTypeItem> respondentCollection3 = new ArrayList<>();
-        respondentCollection3.add(respondentSumTypeItem);
-        respondentCollection3.add(respondentSumTypeItem6);
-        caseData3.setRespondentCollection(respondentCollection3);
-
-        ////// CASE DATA 4
-        CaseData caseData4 = TestUtil.generateCaseDataForRespondent(NUMERIC_FOUR, YES, NULL_ADDRESS);
-
-        return Stream.of(Arguments.of(caseData1),
-                         Arguments.of(caseData2),
-                         Arguments.of(caseData3),
-                         Arguments.of(caseData4));
-    }
-
-    public static Stream<Arguments> generateCaseDataSamplesWithHearingPreferences() {
-        // Empty Reasonable Adjustments
-        CaseData caseDataEmptyReasonableAdjustment = new CaseData();
-        caseDataEmptyReasonableAdjustment.setClaimantHearingPreference(
-            TestUtil.generateClaimantHearingPreference(TRUE, NULL_STRING, NULL_STRING,
-                                                       EMPTY_STRING_ARRAY, HEARING_ASSISTANCE));
-        caseDataEmptyReasonableAdjustment.setEthosCaseReference(NUMERIC_ONE);
-        // Yes Reasonable Adjustments
-        CaseData caseDataYesReasonableAdjustments = new CaseData();
-        caseDataYesReasonableAdjustments.setClaimantHearingPreference(
-            TestUtil.generateClaimantHearingPreference(FALSE, YES, REASONABLE_ADJUSTMENT_DETAILS,
-                                                       EMPTY_STRING_ARRAY, HEARING_ASSISTANCE));
-        caseDataYesReasonableAdjustments.setEthosCaseReference(NUMERIC_TWO);
-        // No Reasonable Adjustments
-        CaseData caseDataNoReasonableAdjustments = new CaseData();
-        caseDataNoReasonableAdjustments.setClaimantHearingPreference(
-            TestUtil.generateClaimantHearingPreference(FALSE, NO, NULL_STRING,
-                                                       EMPTY_STRING_ARRAY, HEARING_ASSISTANCE));
-        caseDataNoReasonableAdjustments.setEthosCaseReference(NUMERIC_THREE);
-        // No Hearing Preference Selected
-        CaseData caseDataNoHearingPreferenceSelected = new CaseData();
-        caseDataNoHearingPreferenceSelected.setClaimantHearingPreference(
-            TestUtil.generateClaimantHearingPreference(FALSE, YES,
-                                                       REASONABLE_ADJUSTMENT_DETAILS, EMPTY_STRING_ARRAY,
-                                                       HEARING_ASSISTANCE
-            ));
-        caseDataNoHearingPreferenceSelected.setEthosCaseReference(NUMERIC_FOUR);
-        // No Hearing Preference Selected
-        CaseData caseDataHearingPreferenceVideoPhoneSelected = new CaseData();
-        caseDataHearingPreferenceVideoPhoneSelected.setClaimantHearingPreference(
-            TestUtil.generateClaimantHearingPreference(FALSE, YES,
-                                                       REASONABLE_ADJUSTMENT_DETAILS, new String[]{VIDEO, PHONE},
-                                                       HEARING_ASSISTANCE
-            ));
-        caseDataHearingPreferenceVideoPhoneSelected.setEthosCaseReference(NUMERIC_FIVE);
-        // Invalid Hearing Preference Selected
-        CaseData caseDataInvalidHearingPreferenceSelected = new CaseData();
-        caseDataInvalidHearingPreferenceSelected.setClaimantHearingPreference(
-            TestUtil.generateClaimantHearingPreference(FALSE, YES,
-                                                       REASONABLE_ADJUSTMENT_DETAILS, new String[]{"Dummy", "String"},
-                                                       HEARING_ASSISTANCE
-            ));
-        caseDataHearingPreferenceVideoPhoneSelected.setEthosCaseReference(NUMERIC_SIX);
-        // Empty Hearing Preferences
-        CaseData caseDataClaimantHearingPreferencesEmpty = new CaseData();
-        return Stream.of(Arguments.of(caseDataClaimantHearingPreferencesEmpty),
-                         Arguments.of(caseDataEmptyReasonableAdjustment),
-                         Arguments.of(caseDataYesReasonableAdjustments),
-                         Arguments.of(caseDataNoReasonableAdjustments),
-                         Arguments.of(caseDataInvalidHearingPreferenceSelected),
-                         Arguments.of(caseDataHearingPreferenceVideoPhoneSelected),
-                         Arguments.of(caseDataNoHearingPreferenceSelected));
     }
 }

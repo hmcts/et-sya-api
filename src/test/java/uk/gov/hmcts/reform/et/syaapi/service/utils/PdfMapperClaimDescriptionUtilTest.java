@@ -7,7 +7,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantRequestType;
-import uk.gov.hmcts.reform.et.syaapi.model.TestData;
+import uk.gov.hmcts.reform.et.syaapi.model.PdfMapperTestData;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,7 +40,7 @@ class PdfMapperClaimDescriptionUtilTest {
     }
 
     private static Stream<Arguments> retrieveClaimantRequests() {
-        return TestData.generateClaimantRequests();
+        return PdfMapperTestData.generateClaimantRequests();
     }
 
 }

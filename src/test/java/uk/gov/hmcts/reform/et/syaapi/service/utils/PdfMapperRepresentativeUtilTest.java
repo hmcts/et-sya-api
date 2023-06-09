@@ -9,7 +9,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
-import uk.gov.hmcts.reform.et.syaapi.model.TestData;
+import uk.gov.hmcts.reform.et.syaapi.model.PdfMapperTestData;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -90,6 +90,6 @@ class PdfMapperRepresentativeUtilTest {
     }
 
     private static Stream<Arguments> retrieveRepresentativeClaimantTypes() {
-        return TestData.generateRepresentativeClaimantTypes();
+        return PdfMapperTestData.generateRepresentativeClaimantTypes();
     }
 }

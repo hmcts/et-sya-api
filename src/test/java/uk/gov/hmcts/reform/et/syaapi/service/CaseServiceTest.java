@@ -29,7 +29,7 @@ import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.constants.JurisdictionCodesConstants;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
-import uk.gov.hmcts.reform.et.syaapi.model.TestData;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
@@ -97,12 +97,12 @@ class CaseServiceTest {
     private NotificationsProperties notificationsProperties;
     @InjectMocks
     private CaseService caseService;
-    private final TestData testData;
+    private final CaseTestData caseTestData;
 
     private static final String ALL_CASES_QUERY = "{\"size\":10000,\"query\":{\"match_all\": {}}}";
 
     CaseServiceTest() {
-        testData = new TestData();
+        caseTestData = new CaseTestData();
     }
 
     @Test
@@ -111,15 +111,15 @@ class CaseServiceTest {
         when(ccdApiClient.getCase(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
-            testData.getCaseRequest().getCaseId()
-        )).thenReturn(testData.getExpectedDetails());
+            caseTestData.getCaseRequest().getCaseId()
+        )).thenReturn(caseTestData.getExpectedDetails());
 
         CaseRequest caseRequest = CaseRequest.builder()
-            .caseId(testData.getCaseRequest().getCaseId()).build();
+            .caseId(caseTestData.getCaseRequest().getCaseId()).build();
 
         CaseDetails caseDetails = caseService.getUserCase(TEST_SERVICE_AUTH_TOKEN, caseRequest.getCaseId());
 
-        assertEquals(testData.getExpectedDetails(), caseDetails);
+        assertEquals(caseTestData.getExpectedDetails(), caseDetails);
     }
 
     @Test
@@ -130,7 +130,7 @@ class CaseServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             EtSyaConstants.SCOTLAND_CASE_TYPE,
             ALL_CASES_QUERY
-        )).thenReturn(testData.requestCaseDataListSearchResult());
+        )).thenReturn(caseTestData.requestCaseDataListSearchResult());
 
         when(ccdApiClient.searchCases(
             TEST_SERVICE_AUTH_TOKEN,
@@ -141,7 +141,7 @@ class CaseServiceTest {
 
         List<CaseDetails> caseDetails = caseService.getAllUserCases(TEST_SERVICE_AUTH_TOKEN);
 
-        assertEquals(testData.getRequestCaseDataList(), caseDetails);
+        assertEquals(caseTestData.getRequestCaseDataList(), caseDetails);
     }
 
     @Test
@@ -153,18 +153,18 @@ class CaseServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             EtSyaConstants.SCOTLAND_CASE_TYPE,
             ALL_CASES_QUERY
-        )).thenReturn(testData.getSearchResultRequestCaseDataListScotland());
+        )).thenReturn(caseTestData.getSearchResultRequestCaseDataListScotland());
 
         when(ccdApiClient.searchCases(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
             EtSyaConstants.ENGLAND_CASE_TYPE,
             ALL_CASES_QUERY
-        )).thenReturn(testData.getSearchResultRequestCaseDataListEngland());
+        )).thenReturn(caseTestData.getSearchResultRequestCaseDataListEngland());
 
         List<CaseDetails> caseDetails = caseService.getAllUserCases(TEST_SERVICE_AUTH_TOKEN);
 
-        assertThat(testData.getExpectedCaseDataListCombined())
+        assertThat(caseTestData.getExpectedCaseDataListCombined())
             .hasSize(caseDetails.size()).hasSameElementsAs(caseDetails);
     }
 
@@ -176,8 +176,8 @@ class CaseServiceTest {
             null,
             USER_ID,
             TEST_NAME,
-            testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
-            testData.getCaseData().getClaimantIndType().getClaimantLastName(),
+            caseTestData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
+            caseTestData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
         ));
         when(ccdApiClient.startForCitizen(
@@ -188,7 +188,7 @@ class CaseServiceTest {
             EtSyaConstants.ENGLAND_CASE_TYPE,
             EtSyaConstants.DRAFT_EVENT_TYPE
         )).thenReturn(
-            testData.getStartEventResponse());
+            caseTestData.getStartEventResponse());
 
         when(ccdApiClient.submitForCitizen(
             eq(TEST_SERVICE_AUTH_TOKEN),
@@ -198,16 +198,16 @@ class CaseServiceTest {
             eq(EtSyaConstants.ENGLAND_CASE_TYPE),
             eq(true),
             any(CaseDataContent.class)
-        )).thenReturn(testData.getExpectedDetails());
+        )).thenReturn(caseTestData.getExpectedDetails());
 
-        CaseRequest caseRequest = testData.getCaseRequest();
+        CaseRequest caseRequest = caseTestData.getCaseRequest();
 
         CaseDetails caseDetails = caseService.createCase(
             TEST_SERVICE_AUTH_TOKEN,
             caseRequest
         );
 
-        assertEquals(testData.getExpectedDetails(), caseDetails);
+        assertEquals(caseTestData.getExpectedDetails(), caseDetails);
     }
 
     @Test
@@ -217,8 +217,8 @@ class CaseServiceTest {
             null,
             USER_ID,
             TEST_NAME,
-            testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
-            testData.getCaseData().getClaimantIndType().getClaimantLastName(),
+            caseTestData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
+            caseTestData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
         ));
 
@@ -228,14 +228,14 @@ class CaseServiceTest {
             USER_ID,
             EtSyaConstants.JURISDICTION_ID,
             EtSyaConstants.SCOTLAND_CASE_TYPE,
-            testData.getCaseRequest().getCaseId(),
+            caseTestData.getCaseRequest().getCaseId(),
             String.valueOf(UPDATE_CASE_DRAFT)
         )).thenReturn(
-            testData.getStartEventResponse());
+            caseTestData.getStartEventResponse());
 
         StartEventResponse eventResponse = caseService.startUpdate(
             TEST_SERVICE_AUTH_TOKEN,
-            testData.getCaseRequest().getCaseId(),
+            caseTestData.getCaseRequest().getCaseId(),
             EtSyaConstants.SCOTLAND_CASE_TYPE,
             UPDATE_CASE_DRAFT
         );
@@ -250,8 +250,8 @@ class CaseServiceTest {
             null,
             USER_ID,
             TEST_NAME,
-            testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
-            testData.getCaseData().getClaimantIndType().getClaimantLastName(),
+            caseTestData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
+            caseTestData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
         ));
         when(ccdApiClient.submitEventForCitizen(
@@ -260,19 +260,19 @@ class CaseServiceTest {
             USER_ID,
             EtSyaConstants.JURISDICTION_ID,
             EtSyaConstants.SCOTLAND_CASE_TYPE,
-            testData.getCaseRequest().getCaseId(),
+            caseTestData.getCaseRequest().getCaseId(),
             true,
-            testData.getUpdateCaseDataContent()
-        )).thenReturn(testData.getExpectedDetails());
+            caseTestData.getUpdateCaseDataContent()
+        )).thenReturn(caseTestData.getExpectedDetails());
 
         CaseDetails caseDetails = caseService.submitUpdate(
             TEST_SERVICE_AUTH_TOKEN,
-            testData.getCaseRequest().getCaseId(),
-            testData.getUpdateCaseDataContent(),
+            caseTestData.getCaseRequest().getCaseId(),
+            caseTestData.getUpdateCaseDataContent(),
             EtSyaConstants.SCOTLAND_CASE_TYPE
         );
 
-        assertEquals(caseDetails, testData.getExpectedDetails());
+        assertEquals(caseDetails, caseTestData.getExpectedDetails());
     }
 
     @SneakyThrows
@@ -283,12 +283,12 @@ class CaseServiceTest {
             null,
             USER_ID,
             TEST_NAME,
-            testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
-            testData.getCaseData().getClaimantIndType().getClaimantLastName(),
+            caseTestData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
+            caseTestData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
         ));
 
-        testData.getCaseRequest().setCaseId("1668421480426211");
+        caseTestData.getCaseRequest().setCaseId("1668421480426211");
         when(ccdApiClient.submitEventForCitizen(
             eq(TEST_SERVICE_AUTH_TOKEN),
             eq(TEST_SERVICE_AUTH_TOKEN),
@@ -298,7 +298,7 @@ class CaseServiceTest {
             any(String.class),
             eq(true),
             any(CaseDataContent.class)
-        )).thenReturn(testData.getExpectedDetails());
+        )).thenReturn(caseTestData.getExpectedDetails());
 
         when(ccdApiClient.startEventForCitizen(
             eq(TEST_SERVICE_AUTH_TOKEN),
@@ -308,7 +308,7 @@ class CaseServiceTest {
             eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
             any(String.class),
             any(String.class)
-        )).thenReturn(testData.getStartEventResponse());
+        )).thenReturn(caseTestData.getStartEventResponse());
 
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             new PdfDecodedMultipartFile(
@@ -330,7 +330,7 @@ class CaseServiceTest {
             .thenReturn(new LinkedList<>());
 
         when(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(any()))
-            .thenReturn(testData.getCaseData());
+            .thenReturn(caseTestData.getCaseData());
 
         SendEmailResponse sendEmailResponse
             = new SendEmailResponse("{\n"
@@ -355,7 +355,7 @@ class CaseServiceTest {
 
         CaseDetails caseDetails = caseService.submitCase(
             TEST_SERVICE_AUTH_TOKEN,
-            testData.getCaseRequest()
+            caseTestData.getCaseRequest()
         );
 
         assertEquals(1, ((ArrayList<?>)caseDetails.getData().get("documentCollection")).size());
@@ -376,12 +376,12 @@ class CaseServiceTest {
             null,
             USER_ID,
             TEST_NAME,
-            testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
-            testData.getCaseData().getClaimantIndType().getClaimantLastName(),
+            caseTestData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
+            caseTestData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
         ));
 
-        testData.getCaseRequest().setCaseId("1668421480426211");
+        caseTestData.getCaseRequest().setCaseId("1668421480426211");
         when(ccdApiClient.submitEventForCitizen(
             eq(TEST_SERVICE_AUTH_TOKEN),
             eq(TEST_SERVICE_AUTH_TOKEN),
@@ -391,7 +391,7 @@ class CaseServiceTest {
             any(String.class),
             eq(true),
             any(CaseDataContent.class)
-        )).thenReturn(testData.getExpectedDetails());
+        )).thenReturn(caseTestData.getExpectedDetails());
 
         when(ccdApiClient.startEventForCitizen(
             eq(TEST_SERVICE_AUTH_TOKEN),
@@ -401,7 +401,7 @@ class CaseServiceTest {
             eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
             any(String.class),
             any(String.class)
-        )).thenReturn(testData.getStartEventResponse());
+        )).thenReturn(caseTestData.getStartEventResponse());
 
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             new PdfDecodedMultipartFile(
@@ -420,7 +420,7 @@ class CaseServiceTest {
         when(acasService.getAcasCertificatesByCaseData(any())).thenReturn(List.of());
 
         when(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(any()))
-            .thenReturn(testData.getCaseData());
+            .thenReturn(caseTestData.getCaseData());
 
         when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any()))
             .thenThrow(new CaseDocumentException("Failed to upload documents"));
@@ -446,7 +446,7 @@ class CaseServiceTest {
             .thenReturn(sendEmailResponse);
         caseService.submitCase(
             TEST_SERVICE_AUTH_TOKEN,
-            testData.getCaseRequest()
+            caseTestData.getCaseRequest()
         );
 
         verify(notificationService, times(1))
@@ -477,11 +477,11 @@ class CaseServiceTest {
 
         SearchResult englandWalesSearchResult = SearchResult.builder()
             .total(1)
-            .cases(testData.getRequestCaseDataListEngland())
+            .cases(caseTestData.getRequestCaseDataListEngland())
             .build();
         SearchResult scotlandSearchResult = SearchResult.builder()
             .total(2)
-            .cases(testData.getRequestCaseDataListScotland())
+            .cases(caseTestData.getRequestCaseDataListScotland())
             .build();
 
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
@@ -549,11 +549,11 @@ class CaseServiceTest {
         List<String> caseIds = List.of("1646225213651598", "1646225213651533", "1646225213651512");
         SearchResult englandWalesSearchResult = SearchResult.builder()
             .total(1)
-            .cases(testData.getRequestCaseDataListEngland())
+            .cases(caseTestData.getRequestCaseDataListEngland())
             .build();
         SearchResult scotlandSearchResult = SearchResult.builder()
             .total(2)
-            .cases(testData.getRequestCaseDataListScotland())
+            .cases(caseTestData.getRequestCaseDataListScotland())
             .build();
 
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
@@ -571,7 +571,7 @@ class CaseServiceTest {
         List<CaseDetails> caseDetailsList = caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, caseIds);
         assertThat(caseDetailsList)
             .hasSize(3)
-            .isEqualTo(testData.getExpectedCaseDataListCombined());
+            .isEqualTo(caseTestData.getExpectedCaseDataListCombined());
     }
 
     @Test
@@ -614,15 +614,15 @@ class CaseServiceTest {
     @Test
     void shouldInvokeCaseEnrichmentWithJurCodesInSubmitEvent() {
         List<JurCodesTypeItem> expectedItems = mockJurCodesTypeItems();
-        testData.getStartEventResponse().setEventId(SUBMIT_CASE_DRAFT);
-        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(testData.getCaseDataWithClaimTypes()
+        caseTestData.getStartEventResponse().setEventId(SUBMIT_CASE_DRAFT);
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseTestData.getCaseDataWithClaimTypes()
                                                                                   .getCaseData());
         caseData.setJurCodesCollection(expectedItems);
         caseData.setFeeGroupReference(CASE_ID);
 
         CaseDataContent expectedEnrichedData = CaseDataContent.builder()
             .event(Event.builder().id(SUBMIT_CASE_DRAFT).build())
-            .eventToken(testData.getStartEventResponse().getToken())
+            .eventToken(caseTestData.getStartEventResponse().getToken())
             .data(caseData)
             .build();
 
@@ -644,7 +644,7 @@ class CaseServiceTest {
             EtSyaConstants.ENGLAND_CASE_TYPE,
             CASE_ID,
             SUBMIT_CASE_DRAFT
-        )).thenReturn(testData.getStartEventResponse());
+        )).thenReturn(caseTestData.getStartEventResponse());
 
         lenient().when(ccdApiClient.submitEventForCitizen(
             TEST_SERVICE_AUTH_TOKEN,
@@ -655,7 +655,7 @@ class CaseServiceTest {
             CASE_ID,
             true,
             expectedEnrichedData
-        )).thenReturn(testData.getExpectedDetails());
+        )).thenReturn(caseTestData.getExpectedDetails());
 
         when(jurisdictionCodesMapper.mapToJurCodes(any())).thenReturn(expectedItems);
 

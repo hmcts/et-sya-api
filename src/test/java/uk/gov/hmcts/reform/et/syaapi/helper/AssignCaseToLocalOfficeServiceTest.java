@@ -8,7 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
-import uk.gov.hmcts.reform.et.syaapi.model.TestData;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseOfficeService;
 import uk.gov.hmcts.reform.et.syaapi.service.PostcodeToOfficeService;
@@ -27,16 +27,16 @@ class AssignCaseToLocalOfficeServiceTest {
     private CaseOfficeService assignCaseToLocalOfficeService;
     @Mock
     private PostcodeToOfficeService postcodeToOfficeService;
-    private TestData testData;
+    private CaseTestData caseTestData;
 
     @BeforeEach
     void beforeEach() {
-        testData = new TestData();
+        caseTestData = new CaseTestData();
     }
 
     @Test
     void shouldAssignManagingAddressFromClaimantWorkAddress() throws InvalidPostcodeException {
-        CaseRequest request = testData.getCaseRequest();
+        CaseRequest request = caseTestData.getCaseRequest();
         when(postcodeToOfficeService.getTribunalOfficeFromPostcode(any())).thenReturn(Optional.of(
             TribunalOffice.GLASGOW
         ));
@@ -47,7 +47,7 @@ class AssignCaseToLocalOfficeServiceTest {
 
     @Test
     void shouldReturnAssignedForWrongPostcode() throws InvalidPostcodeException {
-        CaseRequest request = testData.getCaseRequest();
+        CaseRequest request = caseTestData.getCaseRequest();
         when(postcodeToOfficeService.getTribunalOfficeFromPostcode(any()))
             .thenThrow(new InvalidPostcodeException(""));
         assertThat(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(
@@ -56,7 +56,7 @@ class AssignCaseToLocalOfficeServiceTest {
 
     @Test
     void shouldReturnAssignedForEmptyOffice() throws InvalidPostcodeException {
-        CaseRequest request = testData.getCaseRequest();
+        CaseRequest request = caseTestData.getCaseRequest();
         when(postcodeToOfficeService.getTribunalOfficeFromPostcode(any()))
             .thenReturn(Optional.empty());
         assertThat(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(
@@ -65,7 +65,7 @@ class AssignCaseToLocalOfficeServiceTest {
 
     @Test
     void shouldAssignUnassignedToManagingAddressIfNoManagingAddressAndNoRespondentsAddressesArePresent() {
-        CaseRequest request = testData.getEmptyCaseRequest();
+        CaseRequest request = caseTestData.getEmptyCaseRequest();
         assertThat(
             assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(request).getManagingOffice())
             .isEqualTo(UNASSIGNED_OFFICE);
@@ -73,7 +73,7 @@ class AssignCaseToLocalOfficeServiceTest {
 
     @Test
     void shouldAssignManagingAddressFromOneOfRespondentAddress() throws InvalidPostcodeException {
-        CaseRequest request = testData.getCaseRequestWithoutManagingAddress();
+        CaseRequest request = caseTestData.getCaseRequestWithoutManagingAddress();
         when(postcodeToOfficeService.getTribunalOfficeFromPostcode(any())).thenReturn(Optional.of(
             TribunalOffice.GLASGOW
         ));
@@ -84,7 +84,7 @@ class AssignCaseToLocalOfficeServiceTest {
 
     @Test
     void shouldAssignUnassignedIfCaseTypeIdIsScotlandAndPostCodeFromEnglandArea() throws InvalidPostcodeException {
-        CaseRequest request = testData.getCaseRequestWithoutManagingAddress();
+        CaseRequest request = caseTestData.getCaseRequestWithoutManagingAddress();
 
         when(postcodeToOfficeService.getTribunalOfficeFromPostcode(any())).thenReturn(Optional.of(
             TribunalOffice.LEEDS
@@ -97,7 +97,7 @@ class AssignCaseToLocalOfficeServiceTest {
 
     @Test
     void shouldAssignUnassignedIfCaseTypeIdIsEnglandAndPostCodeFromScotlandArea() throws InvalidPostcodeException {
-        CaseRequest request = testData.getEnglandWalesRequest();
+        CaseRequest request = caseTestData.getEnglandWalesRequest();
 
         when(postcodeToOfficeService.getTribunalOfficeFromPostcode(any())).thenReturn(Optional.of(
             TribunalOffice.EDINBURGH
@@ -110,7 +110,7 @@ class AssignCaseToLocalOfficeServiceTest {
 
     @Test
     void shouldAssignAnyScottlandOfficeToGlasgowByDefault() throws InvalidPostcodeException {
-        CaseRequest request = testData.getCaseRequestWithoutManagingAddress();
+        CaseRequest request = caseTestData.getCaseRequestWithoutManagingAddress();
 
         when(postcodeToOfficeService.getTribunalOfficeFromPostcode(any())).thenReturn(Optional.of(
             TribunalOffice.DUNDEE
