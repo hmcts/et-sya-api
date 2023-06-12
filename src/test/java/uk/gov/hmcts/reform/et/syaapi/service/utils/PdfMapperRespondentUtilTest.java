@@ -4,7 +4,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.Strings;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.MockedStatic;
@@ -15,7 +14,6 @@ import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
-import uk.gov.hmcts.reform.et.syaapi.model.PdfMapperTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificatePdfFieldModel;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondentPdfFieldModel;
 
@@ -24,7 +22,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -209,9 +206,5 @@ class PdfMapperRespondentUtilTest {
                 }
             }
         }
-    }
-
-    private static Stream<Arguments> retrieveCaseDataSamplesWithRespondentSumTypes() {
-        return PdfMapperTestData.generateCaseDataSamplesWithRespondentSumTypeItems();
     }
 }

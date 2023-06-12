@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.et.syaapi.service.utils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -12,9 +11,6 @@ import org.mockito.quality.Strictness;
 import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
-import uk.gov.hmcts.reform.et.syaapi.model.TestData;
-
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -180,6 +176,7 @@ class PdfMapperServiceUtilTest {
     void isYes(String inputDate, boolean expected) {
         assertThat(PdfMapperServiceUtil.isYes(inputDate)).isEqualTo(expected);
     }
+
     @ParameterizedTest
     @MethodSource("uk.gov.hmcts.reform.et.syaapi.model.TestData#compensationArguments")
     void theGenerateClaimantCompensation(CaseData caseData, String expectedValue) {
