@@ -30,7 +30,8 @@ class PdfMapperRepresentativeUtilTest {
 
     @ParameterizedTest
     @NullSource
-    @MethodSource("uk.gov.hmcts.reform.et.syaapi.model.PdfMapperTestData#generateRepresentativeClaimantTypes")
+    @MethodSource("uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperTestDataProvider#"
+        + "generateRepresentativeClaimantTypes")
     void putRepresentative(RepresentedTypeC representativeClaimantType) {
         ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         caseData.setRepresentativeClaimantType(representativeClaimantType);

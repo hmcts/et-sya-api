@@ -14,6 +14,7 @@ import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
+import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificatePdfFieldModel;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondentPdfFieldModel;
 
@@ -49,7 +50,7 @@ class PdfMapperRespondentUtilTest {
     @ParameterizedTest
     @NullSource
     @MethodSource(
-        "uk.gov.hmcts.reform.et.syaapi.model.PdfMapperTestData#generateCaseDataSamplesWithRespondentSumTypeItems")
+        "uk.gov.hmcts.reform.et.syaapi.model.TestData#generateCaseDataSamplesWithRespondentSumTypeItems")
     void putRespondent(CaseData respondentCaseData) {
         ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         PdfMapperRespondentUtil.putRespondents(respondentCaseData, printFields);
@@ -107,13 +108,15 @@ class PdfMapperRespondentUtilTest {
     @Test
     void putRespondentLogsPdfServiceExceptionWhenWrongNoAcasReasonSelected() {
         try (MockedStatic<GenericServiceUtil> mockedServiceUtil = Mockito.mockStatic(GenericServiceUtil.class)) {
-            Address respondentAddress = TestUtil.generateAddressByAddressFields(ADDRESS_LINE_1, ADDRESS_LINE_2,
-                                                                                ADDRESS_LINE_3, POST_TOWN, COUNTY,
-                                                                                COUNTRY, POSTCODE);
+            Address respondentAddress = TestDataProvider.generateAddressByAddressFields(ADDRESS_LINE_1,
+                                                                                        ADDRESS_LINE_2,
+                                                                                        ADDRESS_LINE_3,
+                                                                                        POST_TOWN, COUNTY,
+                                                                                        COUNTRY, POSTCODE);
             CaseData respondentCaseData =
-                TestUtil.generateCaseDataForRespondent(STRING_NUMERIC_ONE, YES, NULL_ADDRESS);
+                TestDataProvider.generateCaseDataForRespondent(STRING_NUMERIC_ONE, YES, NULL_ADDRESS);
             RespondentSumTypeItem respondentSumTypeItem =
-                TestUtil.generateRespondentSumTypeItem(STRING_NUMERIC_ONE, TEST_COMPANY_NAME,
+                TestData.generateRespondentSumTypeItem(STRING_NUMERIC_ONE, TEST_COMPANY_NAME,
                                                        respondentAddress,
                                                        NO,
                                                        NULL_STRING,

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
+import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantOtherType;
 import uk.gov.hmcts.et.common.model.ccd.types.NewEmploymentType;
@@ -25,9 +26,8 @@ public final class PdfMapperEmploymentUtil {
     }
 
     public static void putEmploymentDetails(CaseData caseData, ConcurrentMap<String, Optional<String>> printFields) {
-        if (caseData != null && caseData.getClaimantOtherType() != null) {
+        if (!ObjectUtils.isEmpty(caseData) && !ObjectUtils.isEmpty(caseData.getClaimantOtherType())) {
             try {
-
                 ClaimantOtherType claimantOtherType = caseData.getClaimantOtherType();
                 if (YES.equals(claimantOtherType.getPastEmployer())) {
                     putPastEmploymentDetails(caseData, printFields);

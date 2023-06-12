@@ -24,7 +24,7 @@ class PdfMapperClaimDescriptionUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("uk.gov.hmcts.reform.et.syaapi.model.PdfMapperTestData#generateClaimantRequests")
+    @MethodSource("uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperTestDataProvider#generateClaimantRequests")
     void putClaimDescription(ClaimantRequestType claimantRequests, String expectedResult) {
         ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         caseData.setClaimantRequests(claimantRequests);

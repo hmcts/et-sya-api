@@ -117,6 +117,20 @@ public final class TestConstants {
     public static final String VIDEO = "Video";
     public static final String PHONE = "Phone";
     public static final String TEST_CASE_DATA_JSON_FILE = "requests/caseData.json";
+    public static final String WEEKS = "Weeks";
+    public static final String MONTHS = "Months";
+    public static final String ANNUAL = "Annual";
+    public static final String CLAIMANT_EMPLOYED_FROM = "2020-01-01";
+    public static final String CLAIMANT_EMPLOYED_TO = "2022-01-01";
+    public static final String TEST_NEW_COMPANY = "Test New Company";
+    public static final String CLAIMANT_OCCUPATION = "IT Manager";
+    public static final String AVERAGE_WEEKLY_HOURS = "37.5";
+    public static final String CLAIMANT_PAY_BEFORE_TAX = "45000";
+    public static final String CLAIMANT_PAY_AFTER_TAX = "40000";
+    public static final String CLAIMANT_PENSION_WEEKLY_CONTRIBUTION = "50";
+    public static final String CLAIMANT_BENEFITS_DETAIL = "Car";
+    public static final String NEW_PAY_BEFORE_TAX = "60000";
+    public static final String NO_LONGER_WORKING = "No longer working";
     public static final PdfDecodedMultipartFile PDF_DECODED_MULTIPART_FILE_NULL = new PdfDecodedMultipartFile(
         null,
         TestConstants.TEST_PDF_FILE_ORIGINAL_NAME,

@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.TestUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.TestDataProvider;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.util.List;
@@ -115,18 +115,19 @@ public final class CaseTestData {
     public static Stream<Arguments> generateCaseDataUserInfoArgumentsForTestingFirstNames() {
 
         CaseData caseDataNullClaimantIndType =
-            TestUtil.generateTestCaseDataByFirstNames(TestConstants.CLAIMANT_IND_TYPE_NULL, TestConstants.EMPTY_STRING);
+            TestDataProvider.generateTestCaseDataByFirstNames(TestConstants.CLAIMANT_IND_TYPE_NULL,
+                                                              TestConstants.EMPTY_STRING);
         CaseData caseDataEmptyClaimantIndType =
-            TestUtil.generateTestCaseDataByFirstNames(TestConstants.CLAIMANT_IND_TYPE_EMPTY,
-                                                      TestConstants.EMPTY_STRING);
+            TestDataProvider.generateTestCaseDataByFirstNames(TestConstants.CLAIMANT_IND_TYPE_EMPTY,
+                                                              TestConstants.EMPTY_STRING);
         CaseData caseDataNullClaimantFirstNames =
-            TestUtil.generateTestCaseDataByFirstNames(TestConstants.CLAIMANT_IND_TYPE_FILLED,
-                                                      TestConstants.NULL_STRING);
+            TestDataProvider.generateTestCaseDataByFirstNames(TestConstants.CLAIMANT_IND_TYPE_FILLED,
+                                                              TestConstants.NULL_STRING);
         CaseData caseDataEmptyClaimantFirstNames =
-            TestUtil.generateTestCaseDataByFirstNames(TestConstants.CLAIMANT_IND_TYPE_FILLED,
-                                                      TestConstants.EMPTY_STRING);
+            TestDataProvider.generateTestCaseDataByFirstNames(TestConstants.CLAIMANT_IND_TYPE_FILLED,
+                                                              TestConstants.EMPTY_STRING);
         CaseData caseDataNotEmptyClaimantFirstNames =
-            TestUtil.generateTestCaseDataByFirstNames(TestConstants.CLAIMANT_IND_TYPE_FILLED, MICHAEL);
+            TestDataProvider.generateTestCaseDataByFirstNames(TestConstants.CLAIMANT_IND_TYPE_FILLED, MICHAEL);
 
         CaseTestData tmpCaseTestData = new CaseTestData();
 
