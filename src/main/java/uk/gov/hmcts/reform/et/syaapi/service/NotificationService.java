@@ -69,10 +69,10 @@ public class NotificationService {
             sendEmailResponse = notificationClient.sendEmail(templateId, targetEmail, parameters, reference);
         } catch (NotificationClientException ne) {
             GenericServiceUtil.logException("Error while trying to sending notification to client",
-                                            GenericServiceUtil.getStringValueFromStringMap(parameters,
-                                                                                   SEND_EMAIL_PARAMS_CASE_NUMBER_KEY),
-                                            ne.getMessage(),
-                                            this.getClass().getName(), "sendEmail");
+                                     GenericServiceUtil.getStringValueFromStringMap(parameters,
+                                                                             SEND_EMAIL_PARAMS_CASE_NUMBER_KEY),
+                                     ne.getMessage(),
+                                     this.getClass().getName(), "sendEmail");
             throw new NotificationException(ne);
         }
         return sendEmailResponse;
@@ -96,12 +96,14 @@ public class NotificationService {
             String lastName = GenericServiceUtil.findClaimantLastNameByCaseDataUserInfo(caseData, userInfo);
             String caseNumber = caseRequest.getCaseId() == null ? CASE_ID_NOT_FOUND : caseRequest.getCaseId();
             String selectedLanguage = GenericServiceUtil.findClaimantLanguage(caseData);
-            String emailTemplateId = WELSH_LANGUAGE.equals(selectedLanguage)
+
+            boolean isWelsh = WELSH_LANGUAGE.equals(selectedLanguage);
+            String emailTemplateId = isWelsh
                 ? notificationsProperties.getCySubmitCaseEmailTemplateId()
                 : notificationsProperties.getSubmitCaseEmailTemplateId();
-            String citizenPortalLink = WELSH_LANGUAGE.equals(selectedLanguage)
-                ? notificationsProperties.getCitizenPortalLink() + WELSH_LANGUAGE_PARAM
-                : notificationsProperties.getCitizenPortalLink() + "%s";
+            String citizenPortalLink = notificationsProperties.getCitizenPortalLink() + "%s"
+                + (isWelsh ? WELSH_LANGUAGE_PARAM : "");
+
             byte[] et1Pdf = GenericServiceUtil.findPdfFileBySelectedLanguage(casePdfFiles, selectedLanguage);
             try {
                 Map<String, Object> parameters = new ConcurrentHashMap<>();
@@ -120,8 +122,8 @@ public class NotificationService {
                 );
             } catch (NotificationClientException ne) {
                 GenericServiceUtil.logException("Submit case confirmation email was not sent to client.",
-                                                caseData.getEthosCaseReference(), ne.getMessage(),
-                                                this.getClass().getName(), "sendSubmitCaseConfirmationEmail");
+                                         caseData.getEthosCaseReference(), ne.getMessage(),
+                                         this.getClass().getName(), "sendSubmitCaseConfirmationEmail");
             }
         }
         return sendEmailResponse;
@@ -145,14 +147,20 @@ public class NotificationService {
             Map<String, Object> parameters = new ConcurrentHashMap<>();
             parameters.put(SEND_EMAIL_SERVICE_OWNER_NAME_KEY, SEND_EMAIL_SERVICE_OWNER_NAME_VALUE);
             parameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
-            parameters.put(SEND_EMAIL_PARAMS_ET1PDF_ENGLISH_LINK_KEY, GenericServiceUtil
-                .prepareUpload(casePdfFiles, 0));
-            parameters.put(SEND_EMAIL_PARAMS_ET1PDF_WELSH_LINK_KEY, GenericServiceUtil.prepareUpload(casePdfFiles, 1));
-            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF1_LINK_KEY, GenericServiceUtil.prepareUpload(acasCertificates, 0));
-            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF2_LINK_KEY, GenericServiceUtil.prepareUpload(acasCertificates, 1));
-            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF3_LINK_KEY, GenericServiceUtil.prepareUpload(acasCertificates, 2));
-            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF4_LINK_KEY, GenericServiceUtil.prepareUpload(acasCertificates, 3));
-            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF5_LINK_KEY, GenericServiceUtil.prepareUpload(acasCertificates, 4));
+            parameters.put(SEND_EMAIL_PARAMS_ET1PDF_ENGLISH_LINK_KEY,
+                           GenericServiceUtil.prepareUpload(casePdfFiles, 0));
+            parameters.put(SEND_EMAIL_PARAMS_ET1PDF_WELSH_LINK_KEY,
+                           GenericServiceUtil.prepareUpload(casePdfFiles, 1));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF1_LINK_KEY,
+                           GenericServiceUtil.prepareUpload(acasCertificates, 0));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF2_LINK_KEY,
+                           GenericServiceUtil.prepareUpload(acasCertificates, 1));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF3_LINK_KEY,
+                           GenericServiceUtil.prepareUpload(acasCertificates, 2));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF4_LINK_KEY,
+                           GenericServiceUtil.prepareUpload(acasCertificates, 3));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF5_LINK_KEY,
+                           GenericServiceUtil.prepareUpload(acasCertificates, 4));
             parameters.put(SEND_EMAIL_PARAMS_CLAIM_DESCRIPTION_FILE_LINK_KEY,
                            ObjectUtils.isNotEmpty(claimDescriptionDocument)
                                 && StringUtils.isNotBlank(claimDescriptionDocument.getDocumentUrl())
@@ -177,10 +185,10 @@ public class NotificationService {
                 caseNumber
             );
         } catch (NotificationClientException ne) {
-            GenericServiceUtil
-                .logException("Case Documents Upload error - Failed to send document upload error message",
-                                            caseRequest.getCaseId(), ne.getMessage(),
-                                            this.getClass().getName(), "sendDocUploadErrorEmail");
+            GenericServiceUtil.logException(
+                "Case Documents Upload error - Failed to send document upload error message",
+                caseRequest.getCaseId(), ne.getMessage(),
+                this.getClass().getName(), "sendDocUploadErrorEmail");
         }
         return sendEmailResponse;
     }

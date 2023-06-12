@@ -68,13 +68,15 @@ tornado:
 notifications:
   citizenPortalLink: ${CITIZEN_PORTAL_LINK:https://localhost:3001/citizen-hub/}
   govNotifyApiKey: ${GOV_NOTIFY_API_KEY:AAAAAAAAAAAAAAAAA}
-  sampleEmailTemplateId: "4ea3cf16-0cbb-4f27-8cfb-a084b126086e"
-  sampleSubmitCaseEmailTemplateId: "af0b26b7-17b6-4643-bbdc-e296d11e7b0c"
-  submitCaseEmailTemplateId: ${SUBMIT_CASE_EMAIL_TEMPLATE_ID:4f4b378e-238a-46ed-ae1c-26b8038192f0}
-  cySubmitCaseEmailTemplateId: ${CY_SUBMIT_CASE_EMAIL_TEMPLATE_ID:f61f7f2a-4825-491b-bc48-0299f1a8ba23}
-  submitCaseDocUploadErrorEmailTemplateId: ${SUBMIT_CASE_DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID:3007a1e9-13b0-4bf9-9753-398ea91b8564}
-  et1ServiceOwnerNotificationEmail: ${ET1_SERVICE_OWNER_NOTIFICATION_EMAIL:ignored_default_value}
-  et1EcmDtsCoreTeamSlackNotificationEmail: ${ET1_ECM_DTS_CORE_TEAM_SLACK_NOTIFICATION_EMAIL:ignored_default_value}
+  submitCaseEmailTemplateId: ${SUBMIT_CASE_EMAIL_TEMPLATE_ID:a4045b26-3914-4c13-a06e-6fb64a99ee2f}
+  cySubmitCaseEmailTemplateId: ${CY_SUBMIT_CASE_EMAIL_TEMPLATE_ID:17ff79da-3bbf-4c82-ab44-48038c792d23}
+  submitCaseDocUploadErrorEmailTemplateId: ${SUBMIT_CASE_DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID:10a82e6a-5020-4756-9512-eb391b8c46e3}
+  et1ServiceOwnerNotificationEmail: ${ET1_SERVICE_OWNER_NOTIFICATION_EMAIL:test-et1-service@email.com}
+  et1EcmDtsCoreTeamSlackNotificationEmail: ${ET1_ECM_DTS_CORE_TEAM_SLACK_NOTIFICATION_EMAIL:test-et1-dts@email.com}
+
 pdf:
   english: "ET1_2222.pdf"
   welsh: "CY_ET1_2222.pdf"
+
+caseWorkerUserName: ${CASEWORKER_USER_NAME:user_name}
+caseWorkerPassword: ${CASEWORKER_PASSWORD:password}

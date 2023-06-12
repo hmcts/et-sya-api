@@ -569,9 +569,8 @@ class CaseServiceTest {
         )).thenReturn(scotlandSearchResult);
 
         List<CaseDetails> caseDetailsList = caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, caseIds);
-        assertThat(caseDetailsList)
-            .hasSize(3)
-            .isEqualTo(caseTestData.getExpectedCaseDataListCombined());
+        assertThat(caseDetailsList).hasSize(3);
+        assertThat(caseDetailsList).isEqualTo(caseTestData.getExpectedCaseDataListCombined());
     }
 
     @Test

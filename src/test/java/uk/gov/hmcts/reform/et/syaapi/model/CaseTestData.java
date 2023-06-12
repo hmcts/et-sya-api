@@ -84,6 +84,10 @@ public final class CaseTestData {
         "responses/userInfo.json",
         UserInfo.class
     );
+    private final List<CaseDetails> requestCaseDataListEnglandAcas = ResourceLoader.fromStringToList(
+        "responses/caseDetailsEnglandAcasDocs.json",
+        CaseDetails.class
+    );
 
     public Map<String, Object> getCaseRequestCaseDataMap() {
         Et1CaseData et1CaseData = ResourceLoader.fromString("requests/caseData.json", Et1CaseData.class);
