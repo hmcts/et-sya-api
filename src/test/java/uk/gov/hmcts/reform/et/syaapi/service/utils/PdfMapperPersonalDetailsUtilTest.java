@@ -90,7 +90,7 @@ class PdfMapperPersonalDetailsUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("retrieveClaimantIndTypeArguments")
+    @MethodSource("uk.gov.hmcts.reform.et.syaapi.model.PdfMapperTestData#generateClaimantIndTypeArguments")
     void putClaimantIndTypeValues(ClaimantIndType claimantIndType,
                                                       String dobDay, String dobMonth, String dobYear) {
         ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
@@ -149,7 +149,7 @@ class PdfMapperPersonalDetailsUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("retrieveClaimantTypeArguments")
+    @MethodSource("uk.gov.hmcts.reform.et.syaapi.model.PdfMapperTestData#generateClaimantTypeArguments")
     void putClaimantTypeValues(ClaimantType claimantType) {
         ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         caseData.setClaimantType(claimantType);
@@ -170,13 +170,5 @@ class PdfMapperPersonalDetailsUtilTest {
         if (EMAIL.equals(contactPreference)) {
             assertThat(printFields.get(CLAIMANT_CONTACT_EMAIL_FIELD_NAME)).contains(contactPreference);
         }
-    }
-
-    private static Stream<Arguments> retrieveClaimantIndTypeArguments() {
-        return PdfMapperTestData.generateClaimantIndTypeArguments();
-    }
-
-    private static Stream<Arguments> retrieveClaimantTypeArguments() {
-        return PdfMapperTestData.generateClaimantTypeArguments();
     }
 }

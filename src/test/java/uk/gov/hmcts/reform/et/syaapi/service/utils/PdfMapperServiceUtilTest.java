@@ -163,7 +163,7 @@ class PdfMapperServiceUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("postcodeAddressArguments")
+    @MethodSource("uk.gov.hmcts.reform.et.syaapi.model.TestData#postcodeAddressArguments")
     void formatUkPostcode(String expectedPostCode, Address address) {
         assertThat(PdfMapperServiceUtil.formatUkPostcode(address)).isEqualTo(expectedPostCode);
     }
@@ -180,13 +180,8 @@ class PdfMapperServiceUtilTest {
     void isYes(String inputDate, boolean expected) {
         assertThat(PdfMapperServiceUtil.isYes(inputDate)).isEqualTo(expected);
     }
-
-    private static Stream<Arguments> postcodeAddressArguments() {
-        return TestData.postcodeAddressArguments();
-    }
-
     @ParameterizedTest
-    @MethodSource("compensationArguments")
+    @MethodSource("uk.gov.hmcts.reform.et.syaapi.model.TestData#compensationArguments")
     void theGenerateClaimantCompensation(CaseData caseData, String expectedValue) {
         assertThat(generateClaimantCompensation(caseData)).isEqualTo(expectedValue);
     }
@@ -208,9 +203,5 @@ class PdfMapperServiceUtilTest {
         CaseData caseData = new CaseTestData().getCaseData();
         caseData.getClaimantRequests().setClaimantTribunalRecommendation(null);
         assertThat(generateClaimantTribunalRecommendation(caseData)).isEmpty();
-    }
-
-    private static Stream<Arguments> compensationArguments() {
-        return TestData.compensationArguments();
     }
 }

@@ -27,7 +27,7 @@ class PdfMapperClaimDescriptionUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("retrieveClaimantRequests")
+    @MethodSource("uk.gov.hmcts.reform.et.syaapi.model.PdfMapperTestData#generateClaimantRequests")
     void putClaimDescription(ClaimantRequestType claimantRequests, String expectedResult) {
         ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         caseData.setClaimantRequests(claimantRequests);
@@ -38,9 +38,4 @@ class PdfMapperClaimDescriptionUtilTest {
             assertThat(printFields.get(PdfMapperConstants.Q8_CLAIM_DESCRIPTION)).contains(expectedResult);
         }
     }
-
-    private static Stream<Arguments> retrieveClaimantRequests() {
-        return PdfMapperTestData.generateClaimantRequests();
-    }
-
 }

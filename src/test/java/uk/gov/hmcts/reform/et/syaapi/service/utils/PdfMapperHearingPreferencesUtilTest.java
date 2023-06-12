@@ -24,7 +24,7 @@ class PdfMapperHearingPreferencesUtilTest {
 
     @ParameterizedTest
     @NullSource
-    @MethodSource("retrieveCaseDataSamplesWithHearingPreferences")
+    @MethodSource("uk.gov.hmcts.reform.et.syaapi.model.PdfMapperTestData#generateCaseDataSamplesWithHearingPreferences")
     void putHearingPreferences(CaseData caseData) {
         ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         PdfMapperHearingPreferencesUtil.putHearingPreferences(caseData, printFields);
@@ -89,10 +89,5 @@ class PdfMapperHearingPreferencesUtilTest {
         if (caseData.getClaimantHearingPreference().getHearingPreferences().contains(PHONE)) {
             assertThat(printFields.get(PdfMapperConstants.I_CAN_TAKE_PART_IN_PHONE_HEARINGS)).contains(YES);
         }
-    }
-
-
-    private static Stream<Arguments> retrieveCaseDataSamplesWithHearingPreferences() {
-        return PdfMapperTestData.generateCaseDataSamplesWithHearingPreferences();
     }
 }

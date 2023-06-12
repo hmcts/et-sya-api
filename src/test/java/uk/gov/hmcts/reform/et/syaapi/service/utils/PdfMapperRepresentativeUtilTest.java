@@ -33,7 +33,7 @@ class PdfMapperRepresentativeUtilTest {
 
     @ParameterizedTest
     @NullSource
-    @MethodSource("retrieveRepresentativeClaimantTypes")
+    @MethodSource("uk.gov.hmcts.reform.et.syaapi.model.PdfMapperTestData#generateRepresentativeClaimantTypes")
     void putRepresentative(RepresentedTypeC representativeClaimantType) {
         ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         caseData.setRepresentativeClaimantType(representativeClaimantType);
@@ -87,9 +87,5 @@ class PdfMapperRepresentativeUtilTest {
             assertThat(printFields.get(PdfMapperConstants.Q11_3_REPRESENTATIVE_POSTCODE)).isNull();
             assertThat(printFields.get(PdfMapperConstants.Q11_CONTACT_EMAIL)).isNull();
         }
-    }
-
-    private static Stream<Arguments> retrieveRepresentativeClaimantTypes() {
-        return PdfMapperTestData.generateRepresentativeClaimantTypes();
     }
 }
