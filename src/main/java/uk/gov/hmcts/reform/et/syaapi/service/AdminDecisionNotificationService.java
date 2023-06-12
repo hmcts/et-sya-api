@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.AdminDecisionNotificationStateUpdate
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 import static java.util.stream.Collectors.toList;
 
@@ -39,9 +40,16 @@ public class AdminDecisionNotificationService {
             .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
 
         List<TseAdminRecordDecisionTypeItem> notifications = caseData.getGenericTseApplicationCollection().stream()
-            .map(tse -> tse.getValue().getAdminDecision())
+            .map(tse -> {
+                if (tse != null && tse.getValue() != null) {
+                    return tse.getValue().getAdminDecision();
+                } else {
+                    return null;
+                }
+            })
+            .filter(Objects::nonNull)
             .flatMap(Collection::stream)
-            .collect(toList());
+            .toList();
 
         for (TseAdminRecordDecisionTypeItem item : notifications) {
             if (item.getId().equals(request.getAdminDecisionId())) {
