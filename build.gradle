@@ -242,7 +242,7 @@ dependencies {
   implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.31'
 
   implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.17.9'
-  implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.11'
+  implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.12'
   implementation 'org.json:json:20230227'
   implementation group: 'org.yaml', name: 'snakeyaml', version: '1.33'
 
