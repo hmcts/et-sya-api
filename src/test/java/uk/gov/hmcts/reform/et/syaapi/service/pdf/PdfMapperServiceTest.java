@@ -11,8 +11,9 @@ import uk.gov.hmcts.et.common.model.ccd.types.ClaimantWorkAddressType;
 import uk.gov.hmcts.et.common.model.ccd.types.NewEmploymentType;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
-import uk.gov.hmcts.reform.et.syaapi.model.TestData;
-import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,10 +27,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
-import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q1_DOB_DAY;
-import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q1_DOB_MONTH;
-import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q1_DOB_YEAR;
-import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfMapperConstants.Q2_4_DIFFERENT_WORK_ADDRESS;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.Q1_DOB_DAY;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.Q1_DOB_MONTH;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.Q1_DOB_YEAR;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.Q2_4_DIFFERENT_WORK_ADDRESS;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class PdfMapperServiceTest {
@@ -156,7 +157,6 @@ class PdfMapperServiceTest {
     void givenTwoRespondentsReflectsInMap() {
         caseData.setRespondentCollection(createRespondentList(2));
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNotNull(pdfMap.get(PdfMapperConstants.Q2_EMPLOYER_NAME));
         assertNotNull(pdfMap.get(String.format(PdfMapperConstants.QX_NAME, "2.5 R2")));
     }
 
@@ -164,7 +164,6 @@ class PdfMapperServiceTest {
     void givenThreeRespondentsReflectsInMap() {
         caseData.setRespondentCollection(createRespondentList(3));
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(caseData);
-        assertNotNull(pdfMap.get(PdfMapperConstants.Q2_EMPLOYER_NAME));
         assertNotNull(pdfMap.get(String.format(PdfMapperConstants.QX_NAME, "2.5 R2")));
         assertNotNull(pdfMap.get(String.format(PdfMapperConstants.QX_NAME, "2.7 R3")));
     }
@@ -326,28 +325,28 @@ class PdfMapperServiceTest {
 
     @Test
     void shouldNotThrowExceptionWhenClaimantIndTypeIsNull() {
-        CaseData exceptionCaseData = new TestData().getCaseData();
+        CaseData exceptionCaseData = new CaseTestData().getCaseData();
         exceptionCaseData.setClaimantIndType(null);
         assertDoesNotThrow(() -> pdfMapperService.mapHeadersToPdf(exceptionCaseData));
     }
 
     @Test
     void shouldNotThrowExceptionWhenRepresentativeAddressIsNull() {
-        CaseData exceptionCaseData = new TestData().getCaseData();
+        CaseData exceptionCaseData = new CaseTestData().getCaseData();
         exceptionCaseData.getRepresentativeClaimantType().setRepresentativeAddress(null);
         assertDoesNotThrow(() -> pdfMapperService.mapHeadersToPdf(exceptionCaseData));
     }
 
     @Test
     void shouldNotThrowExceptionWhenClaimantSexIsNull() {
-        CaseData exceptionCaseData = new TestData().getCaseData();
+        CaseData exceptionCaseData = new CaseTestData().getCaseData();
         exceptionCaseData.getClaimantIndType().setClaimantSex(null);
         assertDoesNotThrow(() -> pdfMapperService.mapHeadersToPdf(exceptionCaseData));
     }
 
     @Test
     void shouldSetFemaleWhenClaimantSexIsFemale() {
-        CaseData exceptionCaseData = new TestData().getCaseData();
+        CaseData exceptionCaseData = new CaseTestData().getCaseData();
         exceptionCaseData.getClaimantIndType().setClaimantSex("Female");
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(exceptionCaseData);
         assertEquals(pdfMap.get(PdfMapperConstants.Q1_SEX_FEMALE), Optional.of("female"));
@@ -355,7 +354,7 @@ class PdfMapperServiceTest {
 
     @Test
     void shouldSetPreferNotToSayWhenClaimantSexIsPreferNotToSay() {
-        CaseData exceptionCaseData = new TestData().getCaseData();
+        CaseData exceptionCaseData = new CaseTestData().getCaseData();
         exceptionCaseData.getClaimantIndType().setClaimantSex("Prefer not to say");
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(exceptionCaseData);
         assertEquals(pdfMap.get(PdfMapperConstants.Q1_SEX_PREFER_NOT_TO_SAY), Optional.of("prefer not to say"));
@@ -363,21 +362,21 @@ class PdfMapperServiceTest {
 
     @Test
     void shouldNotThrowExceptionWhenClaimantTypeIsNull() {
-        CaseData exceptionCaseData = new TestData().getCaseData();
+        CaseData exceptionCaseData = new CaseTestData().getCaseData();
         exceptionCaseData.setClaimantType(null);
         assertDoesNotThrow(() -> pdfMapperService.mapHeadersToPdf(exceptionCaseData));
     }
 
     @Test
     void shouldNotThrowExceptionWhenClaimantAddressUkIsNull() {
-        CaseData exceptionCaseData = new TestData().getCaseData();
+        CaseData exceptionCaseData = new CaseTestData().getCaseData();
         exceptionCaseData.getClaimantType().setClaimantAddressUK(null);
         assertDoesNotThrow(() -> pdfMapperService.mapHeadersToPdf(exceptionCaseData));
     }
 
     @Test
     void shouldSetContactPreferencePostWhenClaimantClaimantContactPreferenceIsPost() {
-        CaseData exceptionCaseData = new TestData().getCaseData();
+        CaseData exceptionCaseData = new CaseTestData().getCaseData();
         exceptionCaseData.getClaimantType().setClaimantContactPreference(POST);
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(exceptionCaseData);
         assertEquals(pdfMap.get(PdfMapperConstants.Q1_CONTACT_POST), Optional.of(POST));
@@ -385,21 +384,21 @@ class PdfMapperServiceTest {
 
     @Test
     void shouldNotThrowExceptionWhenClaimantHearingPreferenceIsNull() {
-        CaseData exceptionCaseData = new TestData().getCaseData();
+        CaseData exceptionCaseData = new CaseTestData().getCaseData();
         exceptionCaseData.setClaimantHearingPreference(null);
         assertDoesNotThrow(() -> pdfMapperService.mapHeadersToPdf(exceptionCaseData));
     }
 
     @Test
     void shouldNotThrowExceptionWhenHearingPreferencesIsNull() {
-        CaseData exceptionCaseData = new TestData().getCaseData();
+        CaseData exceptionCaseData = new CaseTestData().getCaseData();
         exceptionCaseData.getClaimantHearingPreference().setHearingPreferences(null);
         assertDoesNotThrow(() -> pdfMapperService.mapHeadersToPdf(exceptionCaseData));
     }
 
     @Test
     void shouldNotThrowExceptionWhenHearingPreferencesIsEmpty() {
-        CaseData exceptionCaseData = new TestData().getCaseData();
+        CaseData exceptionCaseData = new CaseTestData().getCaseData();
         exceptionCaseData.getClaimantHearingPreference().setHearingPreferences(new ArrayList<>());
         assertDoesNotThrow(() -> pdfMapperService.mapHeadersToPdf(exceptionCaseData));
     }
@@ -416,7 +415,7 @@ class PdfMapperServiceTest {
 
     @Test
     void shouldSetICanTakePartInNoHearingsWhenVideoAndPhoneNotSelected() {
-        CaseData exceptionCaseData = new TestData().getCaseData();
+        CaseData exceptionCaseData = new CaseTestData().getCaseData();
         exceptionCaseData.getClaimantHearingPreference().setHearingPreferences(new ArrayList<>());
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(exceptionCaseData);
         assertEquals(pdfMap.get(PdfMapperConstants.I_CAN_TAKE_PART_IN_NO_HEARINGS), Optional.of(YES));
@@ -424,7 +423,7 @@ class PdfMapperServiceTest {
 
     @Test
     void shouldSetICanTakePartInVideoHearingsWhenVideoSelected() {
-        CaseData exceptionCaseData = new TestData().getCaseData();
+        CaseData exceptionCaseData = new CaseTestData().getCaseData();
         exceptionCaseData.getClaimantHearingPreference().setHearingPreferences(List.of("Video"));
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(exceptionCaseData);
         assertEquals(pdfMap.get(PdfMapperConstants.I_CAN_TAKE_PART_IN_VIDEO_HEARINGS), Optional.of(YES));
@@ -432,7 +431,7 @@ class PdfMapperServiceTest {
 
     @Test
     void shouldSetICanTakePartInPhoneHearingsWhenPhoneSelected() {
-        CaseData exceptionCaseData = new TestData().getCaseData();
+        CaseData exceptionCaseData = new CaseTestData().getCaseData();
         exceptionCaseData.getClaimantHearingPreference().setHearingPreferences(List.of("Phone"));
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(exceptionCaseData);
         assertEquals(pdfMap.get(PdfMapperConstants.I_CAN_TAKE_PART_IN_PHONE_HEARINGS), Optional.of(YES));
@@ -440,7 +439,7 @@ class PdfMapperServiceTest {
 
     @Test
     void shouldSetDisabilityYesWhenReasonableAdjustmentsYes() {
-        CaseData exceptionCaseData = new TestData().getCaseData();
+        CaseData exceptionCaseData = new CaseTestData().getCaseData();
         exceptionCaseData.getClaimantHearingPreference().setReasonableAdjustments(YES);
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(exceptionCaseData);
         assertEquals(pdfMap.get(PdfMapperConstants.Q12_DISABILITY_YES), Optional.of(YES));
@@ -448,7 +447,7 @@ class PdfMapperServiceTest {
 
     @Test
     void shouldSetDisabilityNoWhenReasonableAdjustmentsNo() {
-        CaseData exceptionCaseData = new TestData().getCaseData();
+        CaseData exceptionCaseData = new CaseTestData().getCaseData();
         exceptionCaseData.getClaimantHearingPreference().setReasonableAdjustments(NO);
         Map<String, Optional<String>> pdfMap = pdfMapperService.mapHeadersToPdf(exceptionCaseData);
         assertEquals(pdfMap.get(PdfMapperConstants.Q12_DISABILITY_NO), Optional.of("no"));

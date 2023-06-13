@@ -1,6 +1,7 @@
-package uk.gov.hmcts.reform.et.syaapi.utils;
+package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
 import org.json.JSONObject;
+import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.service.notify.SendEmailResponse;
@@ -53,7 +54,83 @@ public final class TestConstants {
     public static final String FILE_NOT_EXISTS = "File does not exist!...";
     public static final String WELSH_LANGUAGE = "Welsh";
     public static final String ENGLISH_LANGUAGE = "English";
+    public static final String ADDRESS_LINE_1 = "AddressLine1";
+    public static final String ADDRESS_LINE_2 = "AddressLine2";
+    public static final String ADDRESS_LINE_3 = "AddressLine3";
+    public static final String POST_TOWN = "PostTown";
+    public static final String COUNTY = "County";
+    public static final String COUNTRY = "Country";
+    public static final String WORK_ADDRESS_LINE_1 = "WorkAddressLine1";
+    public static final String WORK_ADDRESS_LINE_2 = "WorkAddressLine2";
+    public static final String WORK_ADDRESS_LINE_3 = "WorkAddressLine3";
+    public static final String WORK_POST_TOWN = "WorkPostTown";
+    public static final String WORK_COUNTY = "WorkCounty";
+    public static final String WORK_COUNTRY = "WorkCountry";
+    public static final String WORK_POSTCODE = "SL6 2DE";
+    public static final String TEST_COMPANY_NAME = "Test Company Name";
+    public static final int INTEGER_NUMERIC_ONE = 1;
+    public static final int INTEGER_NUMERIC_TWO = 2;
+    public static final int INTEGER_NUMERIC_THREE = 3;
+    public static final int INTEGER_NUMERIC_FOUR = 4;
+    public static final int INTEGER_NUMERIC_FIVE = 5;
+    public static final int INTEGER_NUMERIC_SIX = 6;
+    public static final String STRING_NUMERIC_ONE = "1";
+    public static final String STRING_NUMERIC_TWO = "2";
+    public static final String STRING_NUMERIC_THREE = "3";
+    public static final String STRING_NUMERIC_FOUR = "4";
+    public static final String STRING_NUMERIC_FIVE = "5";
+    public static final String STRING_NUMERIC_SIX = "6";
+    public static final String POSTCODE = "SW1A 1AA";
+    public static final String REPRESENTATIVE_NAME = "Michael Mercury";
+    public static final String REPRESENTATIVE_REFERENCE = "Test Reference";
+    public static final String REPRESENTATIVE_ORGANISATION = "Test Organisation";
+    public static final String REPRESENTATIVE_PHONE_NUMBER = "03123456789";
+    public static final String REPRESENTATIVE_MOBILE_NUMBER = "07444518903";
+    public static final String REPRESENTATIVE_EMAIL = "test@gmail.com";
+    public static final String EMPTY_STRING = "";
+    public static final String BLANK_STRING = "   ";
+    public static final String NULL_STRING = null;
+    public static final Address NULL_ADDRESS = null;
+    public static final String TEST_ACAS = "R123456/78/90";
+    public static final String CLAIMANT_IND_TYPE_NULL = "null";
+    public static final String CLAIMANT_IND_TYPE_EMPTY = "empty";
+    public static final String CLAIMANT_IND_TYPE_FILLED = "filled";
+    public static final String TEST_NAMES = "Test Names";
+    public static final String INVALID_LANGUAGE = "Invalid Language";
+    public static final boolean TRUE = true;
+    public static final boolean FALSE = false;
+    public static final String CLAIM_DESCRIPTION = "Test Claim Description";
+    public static final String MR = "Mr";
+    public static final String MS = "Ms";
+    public static final String MRS = "Mrs";
+    public static final String MISS = "Miss";
+    public static final String ELIZABETH = "Elizabeth";
+    public static final String TAYLOR = "Taylor";
+    public static final String SWIFT = "Swift";
+    public static final String PREFER_NOT_TO_SAY = "Prefer not to say";
+    public static final String YES = "Yes";
+    public static final String NO = "No";
+    public static final String REASONABLE_ADJUSTMENT_DETAILS = "Wheelchair, Walking-Stick";
     public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
+    public static final String[] EMPTY_STRING_ARRAY = new String[0];
+    public static final String HEARING_ASSISTANCE = "Hearing Assistance";
+    public static final String VIDEO = "Video";
+    public static final String PHONE = "Phone";
+    public static final String TEST_CASE_DATA_JSON_FILE = "requests/caseData.json";
+    public static final String WEEKS = "Weeks";
+    public static final String MONTHS = "Months";
+    public static final String ANNUAL = "Annual";
+    public static final String CLAIMANT_EMPLOYED_FROM = "2020-01-01";
+    public static final String CLAIMANT_EMPLOYED_TO = "2022-01-01";
+    public static final String TEST_NEW_COMPANY = "Test New Company";
+    public static final String CLAIMANT_OCCUPATION = "IT Manager";
+    public static final String AVERAGE_WEEKLY_HOURS = "37.5";
+    public static final String CLAIMANT_PAY_BEFORE_TAX = "45000";
+    public static final String CLAIMANT_PAY_AFTER_TAX = "40000";
+    public static final String CLAIMANT_PENSION_WEEKLY_CONTRIBUTION = "50";
+    public static final String CLAIMANT_BENEFITS_DETAIL = "Car";
+    public static final String NEW_PAY_BEFORE_TAX = "60000";
+    public static final String NO_LONGER_WORKING = "No longer working";
     public static final PdfDecodedMultipartFile PDF_DECODED_MULTIPART_FILE_NULL = new PdfDecodedMultipartFile(
         null,
         TestConstants.TEST_PDF_FILE_ORIGINAL_NAME,
@@ -151,6 +228,20 @@ public final class TestConstants {
                                                + "4OS4gUmVnYXJkcywgRVQgVGVhbS4=\","
                                                + "\"confirm_email_before_download\":null,\"retention_period\""
                                                + ":null,\"is_csv\":false}");
+    public static final String CLAIMANT_PHONE_NUMBER_FIELD_NAME = "1.6 phone number";
+    public static final String CLAIMANT_MOBILE_NUMBER_FIELD_NAME = "1.7 mobile number";
+    public static final String CLAIMANT_EMAIL_FIELD_NAME = "1.9 email";
+    public static final String CLAIMANT_CONTACT_EMAIL_FIELD_NAME = "1.8 How should we contact you - Email";
+    public static final String CLAIMANT_CONTACT_POST_FIELD_NAME = "1.8 How should we contact you - Post";
+    public static final String OTHER = "Other";
+    public static final String OTHER_TITLE = "Other Title";
+    public static final String MICHAEL = "Michael";
+    public static final String MERCURY = "Mercury";
+    public static final String MALE = "Male";
+    public static final String FEMALE = "Female";
+    public static final String EMAIL = "Email";
+    public static final String POST = "Post";
+    public static final String FAX = "Fax";
 
     private TestConstants() {
 

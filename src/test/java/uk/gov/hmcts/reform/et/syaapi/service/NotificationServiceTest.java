@@ -14,12 +14,13 @@ import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
-import uk.gov.hmcts.reform.et.syaapi.service.util.ServiceUtil;
-import uk.gov.hmcts.reform.et.syaapi.utils.TestConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
@@ -42,9 +43,9 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.ENGLISH_LANGUAGE;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SUBMIT_CASE_PDF_FILE_RESPONSE;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.WELSH_LANGUAGE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ENGLISH_LANGUAGE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SUBMIT_CASE_PDF_FILE_RESPONSE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WELSH_LANGUAGE;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class NotificationServiceTest {
@@ -54,7 +55,7 @@ class NotificationServiceTest {
     private NotificationClient notificationClient;
     private NotificationsProperties notificationsProperties;
     private final ConcurrentHashMap<String, String> parameters = new ConcurrentHashMap<>();
-    private TestData testData;
+    private CaseTestData caseTestData;
 
     @BeforeEach
     void before() throws NotificationClientException {
@@ -70,7 +71,7 @@ class NotificationServiceTest {
         given(notificationsProperties.getSubmitCaseEmailTemplateId())
             .willReturn(TestConstants.SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID);
         given(notificationsProperties.getCitizenPortalLink()).willReturn(TestConstants.REFERENCE_STRING);
-        testData = new TestData();
+        caseTestData = new CaseTestData();
     }
 
     @SneakyThrows
@@ -156,11 +157,11 @@ class NotificationServiceTest {
     void shouldTestSubmitCaseConfirmationWithGivenPdfFilesArguments(List<PdfDecodedMultipartFile> pdfFiles,
                                                                   String expectedValue) {
         NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
-        testData.getCaseData().getClaimantHearingPreference().setContactLanguage(null);
+        caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(null);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
-            testData.getCaseRequest(),
-            testData.getCaseData(),
-            testData.getUserInfo(),
+            caseTestData.getCaseRequest(),
+            caseTestData.getCaseData(),
+            caseTestData.getUserInfo(),
             pdfFiles
         );
         String actualValue = response == null ? TestConstants.EMPTY_RESPONSE : response.getBody();
@@ -176,17 +177,17 @@ class NotificationServiceTest {
             anyString(),
             anyString(),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         )).thenReturn(TestConstants.SEND_EMAIL_RESPONSE_ENGLISH);
-        testData.getCaseRequest().setCaseId(caseId);
-        testData.getCaseData().getClaimantHearingPreference().setContactLanguage(null);
+        caseTestData.getCaseRequest().setCaseId(caseId);
+        caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(null);
         List<PdfDecodedMultipartFile> casePdfFiles = new ArrayList<>();
         casePdfFiles.add(TestConstants.PDF_DECODED_MULTIPART_FILE1);
         NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
-            testData.getCaseRequest(),
-            testData.getCaseData(),
-            testData.getUserInfo(),
+            caseTestData.getCaseRequest(),
+            caseTestData.getCaseData(),
+            caseTestData.getUserInfo(),
             casePdfFiles
         );
         assertThat(response.getBody()).isEqualTo(TestConstants.SEND_NOTIFICATION_NO_LANGUAGE_RESPONSE_BODY);
@@ -206,20 +207,20 @@ class NotificationServiceTest {
             anyString(),
             anyString(),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         )).thenReturn(
             WELSH_LANGUAGE.equals(selectedLanguage) ? TestConstants.SEND_EMAIL_RESPONSE_WELSH
                 : ENGLISH_LANGUAGE.equals(selectedLanguage) ? TestConstants.SEND_EMAIL_RESPONSE_ENGLISH
                 : TestConstants.INPUT_SEND_EMAIL_RESPONSE);
-        testData.getCaseRequest().setCaseId(testData.getExpectedDetails().getId().toString());
-        testData.getCaseData().getClaimantHearingPreference().setContactLanguage(selectedLanguage);
+        caseTestData.getCaseRequest().setCaseId(caseTestData.getExpectedDetails().getId().toString());
+        caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(selectedLanguage);
         List<PdfDecodedMultipartFile> casePdfFiles = new ArrayList<>();
         casePdfFiles.add(TestConstants.PDF_DECODED_MULTIPART_FILE1);
         NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
-            testData.getCaseRequest(),
-            testData.getCaseData(),
-            testData.getUserInfo(),
+            caseTestData.getCaseRequest(),
+            caseTestData.getCaseData(),
+            caseTestData.getUserInfo(),
             casePdfFiles
         );
         assertThat(response.getBody()).isEqualTo(expectedBody);
@@ -228,7 +229,7 @@ class NotificationServiceTest {
     @SneakyThrows
     @Test
     void shouldThrowExceptionWhenSubmitCaseConfirmationEmailNotSent() {
-        try (MockedStatic<ServiceUtil> mockedServiceUtil = Mockito.mockStatic(ServiceUtil.class)) {
+        try (MockedStatic<GenericServiceUtil> mockedServiceUtil = Mockito.mockStatic(GenericServiceUtil.class)) {
             when(notificationClient.sendEmail(
                 anyString(),
                 anyString(),
@@ -237,29 +238,29 @@ class NotificationServiceTest {
             )).thenThrow(NotificationClientException.class);
             List<PdfDecodedMultipartFile> casePdfFiles = new ArrayList<>();
             casePdfFiles.add(TestConstants.PDF_DECODED_MULTIPART_FILE1);
-            mockedServiceUtil.when(() -> ServiceUtil.hasPdfFile(casePdfFiles, 0)).thenReturn(true);
-            mockedServiceUtil.when(() -> ServiceUtil.findClaimantLanguage(testData.getCaseData()))
+            mockedServiceUtil.when(() -> GenericServiceUtil.hasPdfFile(casePdfFiles, 0)).thenReturn(true);
+            mockedServiceUtil.when(() -> GenericServiceUtil.findClaimantLanguage(caseTestData.getCaseData()))
                 .thenReturn(ENGLISH_LANGUAGE);
-            mockedServiceUtil.when(() -> ServiceUtil.findClaimantFirstNameByCaseDataUserInfo(any(), any()))
-                .thenReturn(testData.getCaseData().getClaimantIndType().getClaimantFirstNames());
-            mockedServiceUtil.when(() -> ServiceUtil.findClaimantLastNameByCaseDataUserInfo(any(), any()))
-                .thenReturn(testData.getCaseData().getClaimantIndType().getClaimantLastName());
-            mockedServiceUtil.when(() -> ServiceUtil.findPdfFileBySelectedLanguage(any(), anyString()))
+            mockedServiceUtil.when(() -> GenericServiceUtil.findClaimantFirstNameByCaseDataUserInfo(any(), any()))
+                .thenReturn(caseTestData.getCaseData().getClaimantIndType().getClaimantFirstNames());
+            mockedServiceUtil.when(() -> GenericServiceUtil.findClaimantLastNameByCaseDataUserInfo(any(), any()))
+                .thenReturn(caseTestData.getCaseData().getClaimantIndType().getClaimantLastName());
+            mockedServiceUtil.when(() -> GenericServiceUtil.findPdfFileBySelectedLanguage(any(), anyString()))
                 .thenReturn(TEST_SUBMIT_CASE_PDF_FILE_RESPONSE.getBytes());
             NotificationService notificationService =
                 new NotificationService(notificationClient, notificationsProperties);
             notificationService.sendSubmitCaseConfirmationEmail(
-                testData.getCaseRequest(),
-                testData.getCaseData(),
-                testData.getUserInfo(),
+                caseTestData.getCaseRequest(),
+                caseTestData.getCaseData(),
+                caseTestData.getUserInfo(),
                 casePdfFiles
             );
             mockedServiceUtil.verify(
-                () -> ServiceUtil.logException(anyString(),
-                                               anyString(),
-                                               eq(null),
-                                               anyString(),
-                                               anyString()),
+                () -> GenericServiceUtil.logException(anyString(),
+                                                      anyString(),
+                                                      eq(null),
+                                                      anyString(),
+                                                      anyString()),
                 times(1)
             );
         }
@@ -294,24 +295,25 @@ class NotificationServiceTest {
     @SneakyThrows
     @Test
     void shouldThrowNotificationExceptionWhenNotAbleToSendDocUploadErrorEmail() {
-        try (MockedStatic<ServiceUtil> mockedServiceUtil = Mockito.mockStatic(ServiceUtil.class)) {
+        try (MockedStatic<GenericServiceUtil> mockedServiceUtil = Mockito.mockStatic(GenericServiceUtil.class)) {
             when(notificationClient.sendEmail(any(), any(), any(), any())).thenThrow(new NotificationClientException(
                 new Exception("Error while trying to send doc upload error notification to service owner")));
             when(notificationsProperties.getSubmitCaseDocUploadErrorEmailTemplateId()).thenReturn(null);
             when(notificationsProperties.getEt1EcmDtsCoreTeamSlackNotificationEmail()).thenReturn(null);
-            mockedServiceUtil.when(() -> ServiceUtil.prepareUpload(any(), anyInt()))
+            mockedServiceUtil.when(() -> GenericServiceUtil.prepareUpload(any(), anyInt()))
                 .thenReturn(TestConstants.FILE_NOT_EXISTS);
             UploadedDocumentType claimDescriptionDocument = new UploadedDocumentType();
-            notificationService.sendDocUploadErrorEmail(testData.getCaseRequest(),
-                                                            List.of(TestConstants.PDF_DECODED_MULTIPART_FILE1),
-                                                            List.of(TestConstants.PDF_DECODED_MULTIPART_FILE1),
-                                                            claimDescriptionDocument);
+            notificationService.sendDocUploadErrorEmail(
+                caseTestData.getCaseRequest(),
+                List.of(TestConstants.PDF_DECODED_MULTIPART_FILE1),
+                List.of(TestConstants.PDF_DECODED_MULTIPART_FILE1),
+                claimDescriptionDocument);
             mockedServiceUtil.verify(
-                () -> ServiceUtil.logException(anyString(),
-                                               eq(null),
-                                               anyString(),
-                                               anyString(),
-                                               anyString()),
+                () -> GenericServiceUtil.logException(anyString(),
+                                                      eq(null),
+                                                      anyString(),
+                                                      anyString(),
+                                                      anyString()),
                 times(1)
             );
         }

@@ -37,7 +37,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
-import uk.gov.hmcts.reform.et.syaapi.service.util.ServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
@@ -264,9 +264,9 @@ public class CaseService {
             // Send upload error alert email to shared inbox
             notificationService.sendDocUploadErrorEmail(caseRequest, casePdfFiles, acasCertificates,
                                                         caseData.getClaimantRequests().getClaimDescriptionDocument());
-            ServiceUtil.logException("Case Documents Upload error - Failed to complete case documents upload",
-                                     caseData.getEthosCaseReference(), cde.getMessage(),
-                                     this.getClass().getName(), "submitCase");
+            GenericServiceUtil.logException("Case Documents Upload error - Failed to complete case documents upload",
+                                            caseData.getEthosCaseReference(), cde.getMessage(),
+                                            this.getClass().getName(), "submitCase");
         }
         return documentList;
     }
