@@ -145,20 +145,6 @@
   </suppress>
   <suppress>
     <notes><![CDATA[
-   file name: jackson-core-2.14.2.jar
-   ]]></notes>
-    <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-core@.*$</packageUrl>
-    <cve>CVE-2022-45688</cve>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: snakeyaml-1.33.jar
-   ]]></notes>
-   <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
-   <cve>CVE-2022-1471</cve>
-</suppress>
-  <suppress>
-    <notes><![CDATA[
    file name: spring-aop-5.3.23.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-aop@.*$</packageUrl>
@@ -198,7 +184,6 @@
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-jcl@.*$</packageUrl>
    file name: spring-webmvc-5.3.23.jar
-   ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-webmvc@.*$</packageUrl>
     <cve>CVE-2023-20861</cve>
   </suppress>
@@ -208,7 +193,6 @@
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-webmvc@.*$</packageUrl>
    file name: spring-expression-5.3.23.jar
-   ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-expression@.*$</packageUrl>
     <cve>CVE-2023-20861</cve>
   </suppress>
@@ -218,4 +202,5 @@
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-expression@.*$</packageUrl>
     <cve>CVE-2023-20861</cve>
+  </suppress>
 </suppressions>
