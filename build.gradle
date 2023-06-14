@@ -244,7 +244,7 @@ dependencies {
   implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.17.9'
   implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.12'
   implementation 'org.json:json:20230227'
-  implementation group: 'org.yaml', name: 'snakeyaml', version: '1.33'
+  implementation group: 'org.yaml', name: 'snakeyaml', version: '2.0'
 
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.75'
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '9.0.75'
