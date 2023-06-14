@@ -1,15 +1,18 @@
-package uk.gov.hmcts.reform.et.syaapi.service.pdf;
+package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.dwp.regex.PostCodeValidator;
 import uk.gov.hmcts.et.common.model.ccd.Address;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.Set;
+
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 
 /**
  *  This class is implemented as a utility for PDF Mapper class.
@@ -21,7 +24,7 @@ import java.util.Set;
  * @since 1.0
  */
 @Slf4j
-public final class PdfMapperUtil {
+public final class PdfMapperServiceUtil {
 
     private static final Set<String> UK_COUNTRY_NAMES = Set.of("ENGLAND",
                                                                "SCOTLAND",
@@ -36,8 +39,8 @@ public final class PdfMapperUtil {
                                                                "GREATBRITAIN",
                                                                "BRITAIN");
 
-    private PdfMapperUtil() {
-
+    private PdfMapperServiceUtil() {
+        // Utility classes should not have a public or default constructor.
     }
 
     /**
@@ -169,10 +172,84 @@ public final class PdfMapperUtil {
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy", Locale.UK);
         String formattedDateStringValue;
         try {
-            formattedDateStringValue = formatter.format(parsingFormatter.parse(dateToFormat));
+            formattedDateStringValue = dateToFormat == null ? "" :
+                formatter.format(parsingFormatter.parse(dateToFormat));
         } catch (ParseException e) {
             return dateToFormat;
         }
         return formattedDateStringValue;
+    }
+
+    /**
+     * Generates claimant compensation value according to given compensation text and amount.
+     * If claimant compensation text is null, blank or just ":" sets compensation text to blank string
+     * If claimant compensation amount is null, blank or just ":"  sets compensation amount to blank string
+     * If claimant compensation text exists adds text to claimant compensation
+     * If claimant compensation amount exists adds text to claimant compensation
+     * @param caseData uses claimantReqest, claimantCompensationText and claimantCompensationAmount
+     * @return claimantCompensation as a text field.
+     */
+    public static String generateClaimantCompensation(CaseData caseData) {
+
+        String claimantCompensation = "";
+
+        if (caseData != null && caseData.getClaimantRequests() != null) {
+            String claimantCompensationText =
+                StringUtils.stripToEmpty(caseData.getClaimantRequests().getClaimantCompensationText());
+
+            claimantCompensationText = ":".equals(claimantCompensationText) ? "" : claimantCompensationText;
+            String claimantCompensationAmount =
+                StringUtils.stripToEmpty(caseData.getClaimantRequests().getClaimantCompensationAmount())
+                    .replace(":", "");
+            claimantCompensationAmount = StringUtils.isBlank(claimantCompensationAmount) ? "" :
+                "Amount requested: £" + claimantCompensationAmount;
+
+            claimantCompensation =
+                StringUtils.isNotBlank(claimantCompensationText) ? claimantCompensationText : "";
+
+            claimantCompensation = addClaimantCompensationAmount(claimantCompensation, claimantCompensationAmount);
+
+            claimantCompensation = StringUtils.isBlank(claimantCompensation) ? "" :
+                "Compensation:\"" + claimantCompensation + "\"" + System.lineSeparator() + System.lineSeparator();
+        }
+        return claimantCompensation;
+    }
+
+    private static String addClaimantCompensationAmount(String claimantCompensation,
+                                                        String claimantCompensationAmount) {
+        String tmpClaimantCompensation;
+        if (StringUtils.isNotBlank(claimantCompensation) && StringUtils.isNotBlank(claimantCompensationAmount)) {
+            tmpClaimantCompensation = claimantCompensation + "\n" + claimantCompensationAmount;
+        } else {
+            if (StringUtils.isNotBlank(claimantCompensationAmount)) {
+                tmpClaimantCompensation = claimantCompensationAmount;
+            } else {
+                tmpClaimantCompensation = claimantCompensation;
+            }
+        }
+        return tmpClaimantCompensation;
+    }
+
+    /**
+     * Generates claimant tribunal recommendation value according to given claimant tribunal recommendation.
+     * If claimant tribunal recommendation value is null returns an empty string
+     * If claimant tribunal recommendation value exists returns this value by adding Tribunal recommendation prefix
+     * @param caseData uses claimantRequests claimantTribunalRecommendation
+     * @return claimantTribunalRecommendation not null value
+     */
+    public static String generateClaimantTribunalRecommendation(CaseData caseData) {
+        String claimantTribunalRecommendation = "";
+        if (caseData != null && caseData.getClaimantRequests() != null) {
+            claimantTribunalRecommendation =
+                StringUtils.stripToEmpty(caseData.getClaimantRequests().getClaimantTribunalRecommendation());
+            if (StringUtils.isNotBlank(claimantTribunalRecommendation)) {
+                claimantTribunalRecommendation = "Tribunal recommendation:\"" + claimantTribunalRecommendation + "\"";
+            }
+        }
+        return claimantTribunalRecommendation;
+    }
+
+    public static boolean isYes(String stringValue) {
+        return YES.equalsIgnoreCase(stringValue);
     }
 }

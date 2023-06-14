@@ -18,14 +18,6 @@ public class NotificationsProperties {
     @NotBlank
     private String govNotifyApiKey;
 
-    @Value("${notifications.sampleEmailTemplateId}")
-    @NotBlank
-    private String sampleEmailTemplateId;
-
-    @Value("${notifications.sampleSubmitCaseEmailTemplateId}")
-    @NotBlank
-    private String sampleSubmitCaseEmailTemplateId;
-
     @Value("${notifications.submitCaseEmailTemplateId}")
     @NotBlank
     private String submitCaseEmailTemplateId;
@@ -37,4 +29,16 @@ public class NotificationsProperties {
     @Value("${notifications.citizenPortalLink}")
     @NotBlank
     private String citizenPortalLink;
+
+    @Value("${notifications.submitCaseDocUploadErrorEmailTemplateId}")
+    @NotBlank
+    private String submitCaseDocUploadErrorEmailTemplateId;
+
+    @Value("${notifications.et1EcmDtsCoreTeamSlackNotificationEmail}")
+    @NotBlank
+    private String et1EcmDtsCoreTeamSlackNotificationEmail;
+
+    @Value("${notifications.et1ServiceOwnerNotificationEmail}")
+    @NotBlank
+    private String et1ServiceOwnerNotificationEmail;
 }

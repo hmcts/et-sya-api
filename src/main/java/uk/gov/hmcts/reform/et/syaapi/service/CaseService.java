@@ -4,13 +4,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MultiValuedMap;
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
@@ -27,10 +31,13 @@ import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
@@ -42,16 +49,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ACAS_VISIBLE_DOCS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ATTACHMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.OTHER_TYPE_OF_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.INITIATE_CASE_DRAFT;
@@ -64,7 +76,7 @@ import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTE
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@SuppressWarnings({"PMD.ExcessiveImports"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 public class CaseService {
 
     private final AuthTokenGenerator authTokenGenerator;
@@ -76,8 +88,13 @@ public class CaseService {
     private final NotificationService notificationService;
     private final PdfService pdfService;
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
-    private final AssignCaseToLocalOfficeService assignCaseToLocalOfficeService;
-    private static final String ALL_CASES_QUERY = "{\"query\":{\"match_all\": {}}}";
+    private final CaseOfficeService caseOfficeService;
+    private static final String ALL_CASES_QUERY = "{\"size\":10000,\"query\":{\"match_all\": {}}}";
+
+    @Value("${caseWorkerUserName}")
+    private transient String caseWorkerUserName;
+    @Value("${caseWorkerPassword}")
+    private transient String caseWorkerPassword;
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
@@ -113,7 +130,7 @@ public class CaseService {
             ENGLAND_CASE_TYPE,
             ALL_CASES_QUERY).getCases()).orElse(Collections.emptyList());
 
-        return Stream.of(scotlandCases, englandCases).flatMap(Collection::stream).collect(toList());
+        return Stream.of(scotlandCases, englandCases).flatMap(Collection::stream).toList();
     }
 
     /**
@@ -170,8 +187,9 @@ public class CaseService {
 
     /**
      * Will accept a {@link CaseRequest} trigger an event to update a give case in ET.
+     *
      * @param authorization jwt of the user
-     * @param caseRequest case to be updated
+     * @param caseRequest   case to be updated
      * @return the newly updated case wrapped in a {@link CaseDetails} object.
      */
     public CaseDetails updateCase(String authorization,
@@ -190,46 +208,76 @@ public class CaseService {
      * @return the associated {@link CaseData} if the case is submitted
      */
     public CaseDetails submitCase(String authorization, CaseRequest caseRequest)
-        throws PdfServiceException, CaseDocumentException {
-        CaseData caseData = assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
+        throws PdfServiceException {
+        // Assigning local office to case data
+        CaseData caseData = caseOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
+        // Getting user info from IDAM
+        UserInfo userInfo = idamClient.getUserInfo(authorization);
+        // Submitting the case to CCD, receiving caseDetails and setting ethosCaseReference,
+        // receiptDate, feeGroupReference with the received details.
         CaseDetails caseDetails = triggerEventForSubmitCase(authorization, caseRequest);
+        setCaseDataWithSubmittedCaseDetails(caseDetails, caseData);
+        // Create case pdf file(s). If the user selected language is Welsh, we also create Welsh pdf file
+        // and add it to our pdf files list
+        List<PdfDecodedMultipartFile> casePdfFiles =
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData, userInfo);
+        // Submit e-mail to the user with attached ET1 pdf file according to selected contact language
+        // (Welsh or English)
+        notificationService.sendSubmitCaseConfirmationEmail(caseRequest, caseData, userInfo, casePdfFiles);
+        // Creating acas certificates for each respondent
+        List<PdfDecodedMultipartFile> acasCertificates =
+            pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
+                caseData, acasService.getAcasCertificatesByCaseData(caseData));
+        // Uploading all documents to document store
+        List<DocumentTypeItem> documentList = uploadAllDocuments(authorization, caseRequest, caseData, casePdfFiles,
+                                                                 acasCertificates);
+        // Setting caliamantPCqId and documentCollection to case details
+        caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
+        caseDetails.getData().put("documentCollection", documentList);
+        // Updating case with ClaimantPcqId and Document collection
+        triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
+                     caseDetails.getData()
+        );
+
+        return caseDetails;
+    }
+
+    private List<DocumentTypeItem> uploadAllDocuments(String authorization,
+                                                      CaseRequest caseRequest,
+                                                      CaseData caseData,
+                                                      List<PdfDecodedMultipartFile> casePdfFiles,
+                                                      List<PdfDecodedMultipartFile> acasCertificates) {
+        List<DocumentTypeItem> documentList = new ArrayList<>();
+        try {
+            documentList.addAll(caseDocumentService
+                                    .uploadAllDocuments(authorization, caseRequest.getCaseTypeId(),
+                                                        casePdfFiles, acasCertificates));
+
+            if (!ObjectUtils.isEmpty(caseData.getClaimantRequests())
+                && !ObjectUtils.isEmpty(caseData.getClaimantRequests().getClaimDescriptionDocument())) {
+                documentList.add(caseDocumentService.createDocumentTypeItem(
+                    ET1_ATTACHMENT,
+                    caseData.getClaimantRequests().getClaimDescriptionDocument()
+                ));
+            }
+        } catch (CaseDocumentException cde) {
+            // Send upload error alert email to shared inbox
+            notificationService.sendDocUploadErrorEmail(caseRequest, casePdfFiles, acasCertificates,
+                                                        caseData.getClaimantRequests().getClaimDescriptionDocument());
+            GenericServiceUtil.logException("Case Documents Upload error - Failed to complete case documents upload",
+                                            caseData.getEthosCaseReference(), cde.getMessage(),
+                                            this.getClass().getName(), "submitCase");
+        }
+        return documentList;
+    }
+
+    private static void setCaseDataWithSubmittedCaseDetails(CaseDetails caseDetails, CaseData caseData) {
         caseData.setEthosCaseReference(caseDetails.getData().get("ethosCaseReference") == null ? "" :
                                            caseDetails.getData().get("ethosCaseReference").toString());
         caseData.setReceiptDate(caseDetails.getData().get("receiptDate") == null ? "" :
                                     caseDetails.getData().get("receiptDate").toString());
         caseData.setFeeGroupReference(caseDetails.getData().get("feeGroupReference") == null ? "" :
                                           caseDetails.getData().get("feeGroupReference").toString());
-        List<PdfDecodedMultipartFile> acasCertificates = null;
-        try {
-            acasCertificates = pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
-                caseData, acasService.getAcasCertificatesByCaseData(caseData));
-        } catch (AcasException e) {
-            log.error("Failed to connect to ACAS service", e);
-        } catch (InvalidAcasNumbersException e) {
-            log.error("Invalid ACAS numbers", e);
-        }
-
-        UserInfo userInfo = idamClient.getUserInfo(authorization);
-        List<PdfDecodedMultipartFile> casePdfFiles =
-            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData, userInfo);
-        List<DocumentTypeItem> documentList = caseDocumentService
-            .uploadAllDocuments(authorization, caseRequest.getCaseTypeId(), casePdfFiles, acasCertificates);
-
-        if (caseData.getClaimantRequests().getClaimDescriptionDocument() != null) {
-            documentList.add(caseDocumentService.createDocumentTypeItem(
-                OTHER_TYPE_OF_DOCUMENT,
-                caseData.getClaimantRequests().getClaimDescriptionDocument()
-            ));
-        }
-
-        caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
-        caseDetails.getData().put("documentCollection", documentList);
-
-        triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
-                     caseDetails.getData()
-        );
-        notificationService.sendSubmitCaseConfirmationEmail(caseDetails, caseData, userInfo);
-        return caseDetails;
     }
 
     /**
@@ -248,6 +296,10 @@ public class CaseService {
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
         CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseData);
+
+        if (SUBMIT_CASE_DRAFT == eventName) {
+            enrichCaseDataWithJurisdictionCodes(caseData1);
+        }
 
         return submitUpdate(
             authorization,
@@ -351,7 +403,65 @@ public class CaseService {
         return searchEnglandScotlandCases(authorisation, query)
             .stream()
             .map(CaseDetails::getId)
-            .collect(toList());
+            .toList();
+    }
+
+    /**
+     * Given a caseId, return a list of document IDs which are visible to ACAS.
+     *
+     * @param caseId 16 digit CCD id
+     * @return a MultiValuedMap containing a list of document ids and timestamps
+     */
+    public MultiValuedMap<String, CaseDocumentAcasResponse> retrieveAcasDocuments(String caseId) {
+        BoolQueryBuilder boolQueryBuilder = boolQuery()
+            .filter(new TermsQueryBuilder("reference.keyword", caseId));
+        String query = new SearchSourceBuilder()
+            .size(MAX_ES_SIZE)
+            .query(boolQueryBuilder)
+            .toString();
+        return getDocumentUuids(query);
+    }
+
+    private MultiValuedMap<String, CaseDocumentAcasResponse> getDocumentUuids(String query) {
+        String authorisation = idamClient.getAccessToken(caseWorkerUserName, caseWorkerPassword);
+        List<CaseData> caseDataList = searchAndReturnCaseDataList(authorisation, query);
+
+        List<DocumentTypeItem> documentTypeItemList = new ArrayList<>();
+
+        for (CaseData caseData : caseDataList) {
+            documentTypeItemList.addAll(caseData.getDocumentCollection().stream()
+                                            .filter(d -> ACAS_VISIBLE_DOCS.contains(defaultIfEmpty(
+                                                d.getValue().getTypeOfDocument(),
+                                                ""
+                                            )))
+                                            .collect(toList()));
+
+            if (caseData.getClaimantRequests() != null
+                && caseData.getClaimantRequests().getClaimDescriptionDocument() != null) {
+                documentTypeItemList.add(caseDocumentService.createDocumentTypeItem("ET1 Attachment",
+                                                    caseData.getClaimantRequests().getClaimDescriptionDocument()
+                ));
+            }
+        }
+
+        MultiValuedMap<String, CaseDocumentAcasResponse> documentIds = new ArrayListValuedHashMap<>();
+        Pattern pattern = Pattern.compile(".{36}$");
+
+        for (DocumentTypeItem documentTypeItem : documentTypeItemList) {
+            Matcher matcher = pattern.matcher(documentTypeItem.getValue().getUploadedDocument().getDocumentUrl());
+            if (matcher.find()) {
+                CaseDocument caseDocument = caseDocumentService.getDocumentDetails(
+                    authorisation, UUID.fromString(matcher.group())).getBody();
+                if (caseDocument != null) {
+                    CaseDocumentAcasResponse caseDocumentAcasResponse = CaseDocumentAcasResponse.builder()
+                        .documentId(matcher.group())
+                        .modifiedOn(caseDocument.getModifiedOn())
+                        .build();
+                    documentIds.put(documentTypeItem.getValue().getTypeOfDocument(), caseDocumentAcasResponse);
+                }
+            }
+        }
+        return documentIds;
     }
 
     /**
@@ -370,6 +480,15 @@ public class CaseService {
             .toString();
 
         return searchEnglandScotlandCases(authorisation, query);
+    }
+
+    private List<CaseData> searchAndReturnCaseDataList(String authorisation, String query) {
+        List<CaseDetails> searchResults = searchEnglandScotlandCases(authorisation, query);
+        List<CaseData> caseDataList = new ArrayList<>();
+        for (CaseDetails caseDetails : searchResults) {
+            caseDataList.add(EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData()));
+        }
+        return caseDataList;
     }
 
     private List<CaseDetails> searchEnglandScotlandCases(String authorisation, String query) {

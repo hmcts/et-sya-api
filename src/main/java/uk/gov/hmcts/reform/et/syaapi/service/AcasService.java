@@ -15,6 +15,7 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificateRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -145,18 +146,28 @@ public class AcasService {
      * @throws AcasException if a problem occurs obtaining the certificates.
      * @throws InvalidAcasNumbersException if any of the acas numbers provided are invalid.
      */
-    public List<AcasCertificate> getAcasCertificatesByCaseData(CaseData caseData)
-        throws AcasException, InvalidAcasNumbersException {
-        List<String> acasCertificateNumbers = new ArrayList<>();
-        if (caseData.getRespondentCollection() != null && !caseData.getRespondentCollection().isEmpty()) {
-            for (RespondentSumTypeItem respondentSumTypeItem : caseData.getRespondentCollection()) {
-                if (respondentSumTypeItem.getValue() != null
-                    && !StringUtils.isEmpty(respondentSumTypeItem.getValue().getRespondentAcas())) {
-                    acasCertificateNumbers.add(respondentSumTypeItem.getValue().getRespondentAcas());
+    public List<AcasCertificate> getAcasCertificatesByCaseData(CaseData caseData) {
+        List<AcasCertificate> acasCertificates = new ArrayList<>();
+        try {
+            List<String> acasCertificateNumbers = new ArrayList<>();
+            if (caseData.getRespondentCollection() != null && !caseData.getRespondentCollection().isEmpty()) {
+                for (RespondentSumTypeItem respondentSumTypeItem : caseData.getRespondentCollection()) {
+                    if (respondentSumTypeItem.getValue() != null
+                        && !StringUtils.isEmpty(respondentSumTypeItem.getValue().getRespondentAcas())) {
+                        acasCertificateNumbers.add(respondentSumTypeItem.getValue().getRespondentAcas());
+                    }
                 }
             }
+            acasCertificates = getCertificates(acasCertificateNumbers.toArray(new String[0]));
+        } catch (AcasException e) {
+            GenericServiceUtil.logException("Failed to connect to ACAS service.",
+                                            caseData.getEthosCaseReference(), e.getMessage(),
+                                            this.getClass().getName(), "getAcasCertificatesByCaseData");
+        } catch (InvalidAcasNumbersException e) {
+            GenericServiceUtil.logException("Invalid ACAS numbers.",
+                                            caseData.getEthosCaseReference(), e.getMessage(),
+                                            this.getClass().getName(), "getAcasCertificatesByCaseData");
         }
-        return getCertificates(acasCertificateNumbers.toArray(new String[0]));
+        return acasCertificates;
     }
-
 }

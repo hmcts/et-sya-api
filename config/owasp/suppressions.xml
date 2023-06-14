@@ -97,13 +97,6 @@
   </suppress>
   <suppress>
     <notes><![CDATA[
-   file name: snakeyaml-1.31.jar
-   ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
-    <vulnerabilityName>CVE-2022-38752</vulnerabilityName>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
    file name: spring-web-5.3.22.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-web@.*$</packageUrl>
@@ -120,13 +113,6 @@
     file name: commons-codec-1.15.jar
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/commons-codec/commons-codec@.*$</packageUrl>
-    <cve>CVE-2021-37533</cve>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
-    file name: commons-fileupload-1.4.jar
-    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/commons-fileupload/commons-fileupload@.*$</packageUrl>
     <cve>CVE-2021-37533</cve>
   </suppress>
   <suppress>
@@ -152,18 +138,25 @@
   </suppress>
   <suppress>
     <notes><![CDATA[
-   file name: snakeyaml-1.33.jar
+   file name: json-20220924.jar
    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
-    <cve>CVE-2022-3064</cve>
+    <packageUrl regex="true">^pkg:maven/org\.json/json@.*$</packageUrl>
+    <cpe>cpe:/a:json-java_project:json-java</cpe>
   </suppress>
   <suppress>
     <notes><![CDATA[
+   file name: jackson-core-2.14.2.jar
+   ]]></notes>
+    <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-core@.*$</packageUrl>
+    <cve>CVE-2022-45688</cve>
+  </suppress>
+  <suppress>
+   <notes><![CDATA[
    file name: snakeyaml-1.33.jar
    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
-    <cpe>cpe:/a:yaml_project:yaml</cpe>
-  </suppress>
+   <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
+   <cve>CVE-2022-1471</cve>
+</suppress>
   <suppress>
     <notes><![CDATA[
    file name: spring-aop-5.3.23.jar
@@ -201,9 +194,22 @@
   </suppress>
   <suppress>
     <notes><![CDATA[
+   file name: spring-jcl-5.3.23.jar
+   ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-jcl@.*$</packageUrl>
    file name: spring-webmvc-5.3.23.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-webmvc@.*$</packageUrl>
+    <cve>CVE-2023-20861</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+   file name: spring-webmvc-5.3.23.jar
+   ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-webmvc@.*$</packageUrl>
+   file name: spring-expression-5.3.23.jar
+   ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-expression@.*$</packageUrl>
     <cve>CVE-2023-20861</cve>
   </suppress>
   <suppress>
