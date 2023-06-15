@@ -123,4 +123,24 @@
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-expression@.*$</packageUrl>
     <cve>CVE-2023-20861</cve>
   </suppress>
+  <suppress>
+   <notes>spring-security-crypto-5.7.8.jar - No newer version under 5.x exists since 15-06-23</notes>
+   <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring\-security\-crypto@.*$</packageUrl>
+   <vulnerabilityName>CVE-2020-5408</vulnerabilityName>
+</suppress>
+<suppress>
+   <notes>guava-31.1-jre.jar - No newer version under 31.x exists since 15-06-23</notes>
+   <packageUrl regex="true">^pkg:maven/com\.google\.guava/guava@.*$</packageUrl>
+   <vulnerabilityName>CVE-2023-2976</vulnerabilityName>
+</suppress>
+<suppress>
+   <notes>guava-31.1-jre.jar - No newer version under 31.x exists since 15-06-23</notes>
+   <sha1>60458f877d055d0c9114d9e1a2efb737b4bc282c</sha1>
+   <vulnerabilityName>CVE-2020-8908</vulnerabilityName>
+</suppress>
+<suppress>
+   <notes>spring-web-5.3.27.jar - No newer version under 5.x exists since 15-06-23</notes>
+   <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-web@.*$</packageUrl>
+   <vulnerabilityName>CVE-2016-1000027</vulnerabilityName>
+</suppress>
 </suppressions>

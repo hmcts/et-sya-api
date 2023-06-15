@@ -136,6 +136,11 @@ public final class TestData {
         RespondToApplicationRequest.class
     );
 
+    private final RespondToApplicationRequest respondToApplicationNoUploadRequest = ResourceLoader.fromString(
+        "requests/respondToApplicationNoUpload.json",
+        RespondToApplicationRequest.class
+    );
+
     private final ViewAnApplicationRequest viewAnApplicationRequest = ResourceLoader.fromString(
         "requests/viewAnApplication.json",
         ViewAnApplicationRequest.class
