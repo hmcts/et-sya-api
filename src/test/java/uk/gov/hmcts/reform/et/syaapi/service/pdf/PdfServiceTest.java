@@ -20,10 +20,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.test.util.ReflectionTestUtils;
-import uk.gov.hmcts.reform.et.syaapi.model.TestData;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
-import uk.gov.hmcts.reform.et.syaapi.service.util.ServiceUtil;
-import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.IOException;
@@ -61,7 +62,7 @@ class PdfServiceTest {
         PdfMapperConstants.DATE_RECEIVED, Optional.of("")
     );
 
-    private TestData testData;
+    private CaseTestData caseTestData;
 
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME = "englishPdfTemplateSource";
     private static final String PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH = "ET1_1122.pdf";
@@ -84,7 +85,7 @@ class PdfServiceTest {
 
     @BeforeEach
     void beforeEach() {
-        testData = new TestData();
+        caseTestData = new CaseTestData();
         ReflectionTestUtils.setField(
             pdfService,
             PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME,
@@ -100,9 +101,10 @@ class PdfServiceTest {
     @SneakyThrows
     @Test
     void givenPdfValuesProducesAPdfDocument() {
-        when(pdfMapperService.mapHeadersToPdf(testData.getCaseData())).thenReturn(PDF_VALUES);
-        byte[] pdfBytes = pdfService.convertCaseToPdf(testData.getCaseData(),
-                                                      PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH
+        when(pdfMapperService.mapHeadersToPdf(caseTestData.getCaseData())).thenReturn(PDF_VALUES);
+        byte[] pdfBytes = pdfService.convertCaseToPdf(
+            caseTestData.getCaseData(),
+            PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH
         );
         try (PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
             Map<String, Optional<String>> actualPdfValues = processPdf(actualPdf);
@@ -113,9 +115,10 @@ class PdfServiceTest {
     @SneakyThrows
     @Test
     void givenNullValuesProducesDocumentWithoutGivenValues() {
-        when(pdfMapperService.mapHeadersToPdf(testData.getCaseData())).thenReturn(PDF_VALUES_WITH_NULL);
-        byte[] pdfBytes = pdfService.convertCaseToPdf(testData.getCaseData(),
-                                                      PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH
+        when(pdfMapperService.mapHeadersToPdf(caseTestData.getCaseData())).thenReturn(PDF_VALUES_WITH_NULL);
+        byte[] pdfBytes = pdfService.convertCaseToPdf(
+            caseTestData.getCaseData(),
+            PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH
         );
         try (PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
             Map<String, Optional<String>> actualPdfValues = processPdf(actualPdf);
@@ -151,7 +154,7 @@ class PdfServiceTest {
     void shouldCreateEnglishPdfFile() {
         PdfService pdfService1 = new PdfService(new PdfMapperService());
         pdfService1.englishPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH;
-        byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH);
+        byte[] pdfData = pdfService1.createPdf(caseTestData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH);
         assertThat(pdfData).isNotEmpty();
         assertThat(new Tika().detect(pdfData)).isEqualTo(PDF_FILE_TIKA_CONTENT_TYPE);
     }
@@ -160,7 +163,7 @@ class PdfServiceTest {
     @Test
     void shouldNotCreateEnglishPdfFileWhenEnglishPdfTemplateIsNull() {
         PdfService pdfService1 = new PdfService(new PdfMapperService());
-        byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), null);
+        byte[] pdfData = pdfService1.createPdf(caseTestData.getCaseData(), null);
         assertThat(pdfData).isEmpty();
     }
 
@@ -169,20 +172,20 @@ class PdfServiceTest {
     void shouldNotCreateEnglishPdfFileWhenEnglishPdfTemplateNotExists() {
         PdfService pdfService1 = new PdfService(new PdfMapperService());
         pdfService1.englishPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH_NOT_EXISTS;
-        byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), null);
+        byte[] pdfData = pdfService1.createPdf(caseTestData.getCaseData(), null);
         assertThat(pdfData).isEmpty();
     }
 
     @SneakyThrows
     @Test
     void shouldThrowExceptionWhenPdfTemplateIsNotValid() {
-        try (MockedStatic<ServiceUtil> mockedServiceUtil = Mockito.mockStatic(ServiceUtil.class)) {
-            mockedServiceUtil.when(() -> ServiceUtil.findClaimantLanguage(testData.getCaseData()))
+        try (MockedStatic<GenericServiceUtil> mockedServiceUtil = Mockito.mockStatic(GenericServiceUtil.class)) {
+            mockedServiceUtil.when(() -> GenericServiceUtil.findClaimantLanguage(caseTestData.getCaseData()))
                 .thenReturn(ENGLISH_LANGUAGE);
             PdfService pdfService1 = new PdfService(new PdfMapperService());
-            pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH_INVALID);
+            pdfService1.createPdf(caseTestData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH_INVALID);
             mockedServiceUtil.verify(
-                () -> ServiceUtil.logException(anyString(), anyString(), anyString(), anyString(), anyString()),
+                () -> GenericServiceUtil.logException(anyString(), anyString(), anyString(), anyString(), anyString()),
                 atLeast(1)
             );
         }
@@ -191,10 +194,10 @@ class PdfServiceTest {
     @SneakyThrows
     @Test
     void shouldCreateWelshPdfFile() {
-        testData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
+        caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
         PdfService pdfService1 = new PdfService(new PdfMapperService());
         pdfService1.welshPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH;
-        byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH);
+        byte[] pdfData = pdfService1.createPdf(caseTestData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH);
         assertThat(pdfData).isNotEmpty();
         assertThat(new Tika().detect(pdfData)).isEqualTo(PDF_FILE_TIKA_CONTENT_TYPE);
     }
@@ -202,70 +205,71 @@ class PdfServiceTest {
     @SneakyThrows
     @Test
     void shouldNotCreateWelshPdfFileWhenWelshPdfTemplateIsNull() {
-        testData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
+        caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
         PdfService pdfService1 = new PdfService(new PdfMapperService());
-        byte[] pdfData = pdfService1.createPdf(testData.getCaseData(), null);
+        byte[] pdfData = pdfService1.createPdf(caseTestData.getCaseData(), null);
         assertThat(pdfData).isEmpty();
     }
 
     @SneakyThrows
     @Test
     void shouldNotCreateWelshPdfFileWhenWelshPdfTemplateNotExists() {
-        testData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
+        caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
         PdfService pdfService1 = new PdfService(new PdfMapperService());
         pdfService1.welshPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH_NOT_EXISTS;
-        byte[] pdfData = pdfService1.createPdf(testData.getCaseData(),
-                                               PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH_NOT_EXISTS);
+        byte[] pdfData = pdfService1.createPdf(
+            caseTestData.getCaseData(),
+            PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH_NOT_EXISTS);
         assertThat(pdfData).isEmpty();
     }
 
     @Test
     void shouldCreatePdfDecodedMultipartFileListFromCaseDataWhenUserInfoIsNull() {
         List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
-            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), null);
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseTestData.getCaseData(), null);
         assertThat(pdfDecodedMultipartFileList).hasSize(1);
     }
 
     @Test
     void shouldCreatePdfDecodedMultipartFileListWhenUserInfoIsNotNull() {
-        testData.getCaseData().getClaimantIndType().setClaimantFirstNames(null);
-        testData.getCaseData().getClaimantIndType().setClaimantLastName(null);
-        UserInfo userInfo = testData.getUserInfo();
+        caseTestData.getCaseData().getClaimantIndType().setClaimantFirstNames(null);
+        caseTestData.getCaseData().getClaimantIndType().setClaimantLastName(null);
+        UserInfo userInfo = caseTestData.getUserInfo();
         List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
-            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), userInfo);
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseTestData.getCaseData(), userInfo);
         assertThat(pdfDecodedMultipartFileList).hasSize(1);
     }
 
     @Test
     void shouldCreateOnlyEnglishPdfDecodedMultipartFileListWhenUserContactLanguageIsEnglish() {
-        testData.getCaseData().getClaimantHearingPreference().setContactLanguage(null);
+        caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(null);
         List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
-            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), null);
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseTestData.getCaseData(), null);
         assertThat(pdfDecodedMultipartFileList).hasSize(1);
     }
 
     @Test
     void shouldCreateEnglishAndWelshPdfDecodedMultipartFileFromCaseDataWhenUserContactLanguageIsWelsh() {
-        testData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
+        caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
         List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
-            pdfService.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), null);
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseTestData.getCaseData(), null);
         assertThat(pdfDecodedMultipartFileList).hasSize(2);
     }
 
     @Test
     void shouldNotCreatePdfDecodedMultipartFileFromCaseDataWhenBothWelshAndEnglishTemplateSourcesNotExist() {
-        testData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
+        caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
         PdfService pdfService1 = new PdfService(new PdfMapperService());
         pdfService1.welshPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH_NOT_EXISTS;
         pdfService1.englishPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH_NOT_EXISTS;
-        try (MockedStatic<ServiceUtil> mockedServiceUtil = Mockito.mockStatic(ServiceUtil.class)) {
-            mockedServiceUtil.when(() -> ServiceUtil.findClaimantLanguage(testData.getCaseData()))
+        try (MockedStatic<GenericServiceUtil> mockedServiceUtil = Mockito.mockStatic(GenericServiceUtil.class)) {
+            mockedServiceUtil.when(() -> GenericServiceUtil.findClaimantLanguage(caseTestData.getCaseData()))
                 .thenReturn(WELSH_LANGUAGE);
             List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
-                pdfService1.convertCaseDataToPdfDecodedMultipartFile(testData.getCaseData(), null);
+                pdfService1.convertCaseDataToPdfDecodedMultipartFile(caseTestData.getCaseData(), null);
             assertThat(pdfDecodedMultipartFileList).isEmpty();
             mockedServiceUtil.verify(
-                () -> ServiceUtil.logException(anyString(), anyString(), anyString(), anyString(), anyString()),
+                () -> GenericServiceUtil.logException(anyString(), anyString(), anyString(), anyString(), anyString()),
                 times(2)
             );
         }
@@ -276,7 +280,7 @@ class PdfServiceTest {
         List<AcasCertificate> acasCertificates = new ArrayList<>();
         acasCertificates.add(acasCertificate);
         List<PdfDecodedMultipartFile> pdfDecodedMultipartFiles =
-            pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(testData.getCaseData(), acasCertificates);
+            pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(caseTestData.getCaseData(), acasCertificates);
         assertThat(pdfDecodedMultipartFiles).hasSize(1);
     }
 
@@ -287,7 +291,7 @@ class PdfServiceTest {
         acasCert.setCertificateDocument("not found");
         acasCertificates.add(acasCert);
         List<PdfDecodedMultipartFile> pdfDecodedMultipartFiles =
-            pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(testData.getCaseData(), acasCertificates);
+            pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(caseTestData.getCaseData(), acasCertificates);
         assertThat(pdfDecodedMultipartFiles).isEmpty();
     }
 
@@ -296,7 +300,7 @@ class PdfServiceTest {
         try (MockedStatic<Loader> mockedLoader = Mockito.mockStatic(Loader.class)) {
             mockedLoader.when(() -> Loader.loadPDF(any(InputStream.class))).thenThrow(new IOException());
             PdfServiceException thrown = assertThrows(PdfServiceException.class, () ->
-                pdfService.convertCaseToPdf(testData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH));
+                pdfService.convertCaseToPdf(caseTestData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH));
             assertEquals("Failed to convert to PDF", thrown.getMessage());
         }
     }
@@ -304,12 +308,12 @@ class PdfServiceTest {
     @SneakyThrows
     @Test
     void shouldThrowExceptionWhenInputStreamNotClosed() {
-        try (MockedStatic<ServiceUtil> mockedServiceUtil = Mockito.mockStatic(ServiceUtil.class)) {
+        try (MockedStatic<GenericServiceUtil> mockedServiceUtil = Mockito.mockStatic(GenericServiceUtil.class)) {
             InputStream is = Mockito.mock(InputStream.class);
             doThrow(new IOException("Test IOException")).when(is).close();
-            PdfService.safeClose(is, testData.getCaseData());
+            PdfService.safeClose(is, caseTestData.getCaseData());
             mockedServiceUtil.verify(
-                () -> ServiceUtil.logException(anyString(), anyString(), anyString(), anyString(), anyString()),
+                () -> GenericServiceUtil.logException(anyString(), anyString(), anyString(), anyString(), anyString()),
                 times(1)
             );
         }

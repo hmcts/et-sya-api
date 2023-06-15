@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
-import uk.gov.hmcts.reform.et.syaapi.service.util.ServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.ByteArrayOutputStream;
@@ -91,7 +91,7 @@ public class PdfService {
                             PDField pdfField = pdfForm.getField(entryKey);
                             pdfField.setValue(entryValue.get());
                         } catch (Exception e) {
-                            ServiceUtil.logException("Error while parsing PDF file for entry key \""
+                            GenericServiceUtil.logException("Error while parsing PDF file for entry key \""
                                                          + entryKey
                                                          + "\", entry value \""
                                                          + getEntryValueFromOptionalString(entryValue)
@@ -120,9 +120,9 @@ public class PdfService {
             try {
                 is.close();
             } catch (IOException e) {
-                ServiceUtil.logException("Input stream for the template PDF file was not closed: ",
-                                         caseData.getEthosCaseReference(), e.getMessage(),
-                                         "PDFServiceUtil", "safeClose");
+                GenericServiceUtil.logException("Input stream for the template PDF file was not closed: ",
+                                                caseData.getEthosCaseReference(), e.getMessage(),
+                                                "PDFServiceUtil", "safeClose");
             }
         }
     }
@@ -200,12 +200,12 @@ public class PdfService {
                 createPdfDocumentDescriptionFromCaseData(caseData)
             ));
         } catch (PdfServiceException e) {
-            ServiceUtil.logException("Case English PDF file could not be created for case: ",
-                                     caseData.getEthosCaseReference(), e.getMessage(),
-                                     this.getClass().getName(), "convertCaseDataToPdfDecodedMultipartFile");
+            GenericServiceUtil.logException("Case English PDF file could not be created for case: ",
+                                            caseData.getEthosCaseReference(), e.getMessage(),
+                                            this.getClass().getName(), "convertCaseDataToPdfDecodedMultipartFile");
         }
         try {
-            if (WELSH_LANGUAGE.equals(ServiceUtil.findClaimantLanguage(caseData))) {
+            if (WELSH_LANGUAGE.equals(GenericServiceUtil.findClaimantLanguage(caseData))) {
                 byte[] pdfData = convertCaseToPdf(caseData, this.welshPdfTemplateSource);
                 if (ObjectUtils.isEmpty(pdfData)) {
                     throw new PdfServiceException("Failed to convert to PDF. Welsh Template Not Found",
@@ -219,9 +219,9 @@ public class PdfService {
                 ));
             }
         } catch (PdfServiceException e) {
-            ServiceUtil.logException("Case Welsh PDF file could not be created for case: ",
-                                        caseData.getEthosCaseReference(), e.getMessage(),
-                                        this.getClass().getName(), "convertCaseDataToPdfDecodedMultipartFile");
+            GenericServiceUtil.logException("Case Welsh PDF file could not be created for case: ",
+                                            caseData.getEthosCaseReference(), e.getMessage(),
+                                            this.getClass().getName(), "convertCaseDataToPdfDecodedMultipartFile");
         }
         return files;
     }

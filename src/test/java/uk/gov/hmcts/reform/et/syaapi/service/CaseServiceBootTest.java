@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
-import uk.gov.hmcts.reform.et.syaapi.model.TestData;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.idam.client.IdamApi;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
@@ -25,8 +25,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.USER_ID;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.USER_ID;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -47,27 +47,27 @@ class CaseServiceBootTest {
     private NotificationService notificationService;
     @MockBean
     private AcasService acasService;
-    private TestData testData;
+    private CaseTestData caseTestData;
 
     @BeforeEach
     void beforeEach() throws CaseDocumentException {
-        testData = new TestData();
+        caseTestData = new CaseTestData();
 
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(idamApi.retrieveUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
             null,
             USER_ID,
             "name",
-            testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
-            testData.getCaseData().getClaimantIndType().getClaimantLastName(),
+            caseTestData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
+            caseTestData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
         ));
         when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
             null,
             USER_ID,
             "name",
-            testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
-            testData.getCaseData().getClaimantIndType().getClaimantLastName(),
+            caseTestData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
+            caseTestData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
         ));
         when(ccdApiClient.startEventForCitizen(
@@ -75,31 +75,31 @@ class CaseServiceBootTest {
             eq(TEST_SERVICE_AUTH_TOKEN),
             eq(USER_ID),
             eq(EtSyaConstants.JURISDICTION_ID),
-            eq(testData.getCaseRequest().getCaseTypeId()),
-            eq(testData.getCaseRequest().getCaseId()),
+            eq(caseTestData.getCaseRequest().getCaseTypeId()),
+            eq(caseTestData.getCaseRequest().getCaseId()),
             any()
         )).thenReturn(
-            testData.getStartEventResponse());
+            caseTestData.getStartEventResponse());
         when(ccdApiClient.submitEventForCitizen(
             eq(TEST_SERVICE_AUTH_TOKEN),
             eq(TEST_SERVICE_AUTH_TOKEN),
             eq(USER_ID),
             eq(EtSyaConstants.JURISDICTION_ID),
-            eq(testData.getCaseRequest().getCaseTypeId()),
-            eq(testData.getCaseRequest().getCaseId()),
+            eq(caseTestData.getCaseRequest().getCaseTypeId()),
+            eq(caseTestData.getCaseRequest().getCaseId()),
             eq(true),
             any(CaseDataContent.class)
-        )).thenReturn(testData.getExpectedDetails());
+        )).thenReturn(caseTestData.getExpectedDetails());
         when(caseDocumentService.uploadAllDocuments(
             eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(testData.getCaseRequest().getCaseTypeId()),
+            eq(caseTestData.getCaseRequest().getCaseTypeId()),
             anyList(),
             anyList()
-        )).thenReturn(testData.getUploadDocumentResponse());
+        )).thenReturn(caseTestData.getUploadDocumentResponse());
         when(notificationService.sendSubmitCaseConfirmationEmail(
-            eq(testData.getCaseRequest()),
-            eq(testData.getCaseData()),
-            eq(testData.getUserInfo()),
+            eq(caseTestData.getCaseRequest()),
+            eq(caseTestData.getCaseData()),
+            eq(caseTestData.getUserInfo()),
             any())
         ).thenReturn(null);
     }
@@ -107,14 +107,14 @@ class CaseServiceBootTest {
     @Test
     void theSubmitCaseProducesCaseDetails()
         throws PdfServiceException {
-        when(acasService.getAcasCertificatesByCaseData(testData.getCaseData())).thenReturn(
+        when(acasService.getAcasCertificatesByCaseData(caseTestData.getCaseData())).thenReturn(
             new ArrayList<>()
         );
 
-        CaseDetails caseDetails = caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, testData.getCaseRequest());
-        assertEquals(caseDetails.getId(), testData.getExpectedDetails().getId());
-        assertEquals(caseDetails.getJurisdiction(), testData.getExpectedDetails().getJurisdiction());
-        assertEquals(caseDetails.getCaseTypeId(), testData.getExpectedDetails().getCaseTypeId());
-        assertEquals(caseDetails.getState(), testData.getExpectedDetails().getState());
+        CaseDetails caseDetails = caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseTestData.getCaseRequest());
+        assertEquals(caseDetails.getId(), caseTestData.getExpectedDetails().getId());
+        assertEquals(caseDetails.getJurisdiction(), caseTestData.getExpectedDetails().getJurisdiction());
+        assertEquals(caseDetails.getCaseTypeId(), caseTestData.getExpectedDetails().getCaseTypeId());
+        assertEquals(caseDetails.getState(), caseTestData.getExpectedDetails().getState());
     }
 }
