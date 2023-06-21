@@ -12,8 +12,8 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
+import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.ViewAnApplicationRequest;
 import uk.gov.service.notify.NotificationClientException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -331,7 +331,7 @@ class ApplicationServiceTest {
 
     @Test
     void shouldMarkApplicationAsViewed() {
-        ViewAnApplicationRequest testRequest = testData.getViewAnApplicationRequest();
+        ChangeApplicationStatusRequest testRequest = testData.getChangeApplicationStatusRequest();
 
         when(caseService.startUpdate(
             TEST_SERVICE_AUTH_TOKEN,
@@ -340,7 +340,7 @@ class ApplicationServiceTest {
             CaseEvent.CLAIMANT_TSE_RESPOND
         )).thenReturn(testData.getUpdateCaseEventResponse());
 
-        applicationService.markApplicationAsViewed(TEST_SERVICE_AUTH_TOKEN, testRequest);
+        applicationService.changeApplicationStatus(TEST_SERVICE_AUTH_TOKEN, testRequest);
 
         ArgumentCaptor<CaseData> argumentCaptor = ArgumentCaptor.forClass(CaseData.class);
         verify(caseDetailsConverter).caseDataContent(any(), argumentCaptor.capture());

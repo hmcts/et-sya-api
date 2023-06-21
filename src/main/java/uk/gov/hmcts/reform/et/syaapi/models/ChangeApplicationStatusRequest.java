@@ -8,12 +8,13 @@ import lombok.extern.jackson.Jacksonized;
 @Data
 @Builder
 @Jacksonized
-public class ViewAnApplicationRequest {
-
+public class ChangeApplicationStatusRequest {
     @JsonProperty("case_id")
     private String caseId;
     @JsonProperty("case_type_id")
     private String caseTypeId;
-    @JsonProperty("applicationId")
+    @JsonProperty("application_id")
     private String applicationId;
+    @JsonProperty("new_status")
+    private String newStatus;
 }
