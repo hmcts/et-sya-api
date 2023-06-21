@@ -23,7 +23,6 @@ import java.util.concurrent.ConcurrentMap;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 
 /**
  * Maps Case Data attributes to fields within the PDF template.
@@ -74,6 +73,7 @@ public class PdfMapperService {
         printFields.put(PdfMapperConstants.Q15_ADDITIONAL_INFORMATION,
                         ofNullable(caseData.getEt1VettingAdditionalInformationTextArea()));
         printFields.put(PdfMapperConstants.TRIBUNAL_OFFICE, ofNullable(printTribunalOffice(caseData)));
+
         printFields.put(PdfMapperConstants.CASE_NUMBER, ofNullable(caseData.getEthosCaseReference()));
         printFields.put(PdfMapperConstants.DATE_RECEIVED,
                         ofNullable(PdfMapperServiceUtil.formatDate(caseData.getReceiptDate())));
@@ -84,6 +84,7 @@ public class PdfMapperService {
             ? ""
             : caseData.getManagingOffice();
     }
+
 
     private static void putMultipleClaimsDetails(
         CaseData caseData,

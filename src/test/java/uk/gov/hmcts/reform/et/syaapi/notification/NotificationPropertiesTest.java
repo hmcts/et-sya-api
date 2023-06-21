@@ -12,5 +12,6 @@ class NotificationPropertiesTest {
         NotificationsProperties notificationsProperties = new NotificationsProperties();
         notificationsProperties.setGovNotifyApiKey(TEST_STRING);
         assertThat(TEST_STRING).isEqualTo(notificationsProperties.getGovNotifyApiKey());
+
     }
 }
