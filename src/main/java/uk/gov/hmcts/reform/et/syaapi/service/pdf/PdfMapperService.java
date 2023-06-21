@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentMap;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 
 /**
  * Maps Case Data attributes to fields within the PDF template.
