@@ -29,6 +29,7 @@ import uk.gov.service.notify.NotificationClientException;
 import java.util.List;
 import java.util.UUID;
 
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 
@@ -113,14 +114,18 @@ public class ApplicationService {
             throw new IllegalArgumentException("Application id provided is incorrect");
         }
 
+        GenericTseApplicationType appType = appToModify.getValue();
+
+        updateApplicationState(appType);
+
         TseApplicationHelper.setRespondentApplicationWithResponse(
             request,
-            appToModify.getValue(),
+            appType,
             caseData,
             caseDocumentService
         );
 
-        createPdfOfResponse(authorization, request, caseData, appToModify.getValue());
+        createPdfOfResponse(authorization, request, caseData, appType);
 
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
         CaseDetails caseDetails = caseService.submitUpdate(
@@ -130,9 +135,15 @@ public class ApplicationService {
             request.getCaseTypeId()
         );
 
-        sendResponseToApplicationEmails(appToModify.getValue(), caseData, request.getCaseId(), request);
+        sendResponseToApplicationEmails(appType, caseData, request.getCaseId(), request);
 
         return caseDetails;
+    }
+
+    static void updateApplicationState(GenericTseApplicationType appType) {
+        if (appType.getRespondentResponseRequired().equals(YES)) {
+            appType.setApplicationState(IN_PROGRESS);
+        }
     }
 
     /**

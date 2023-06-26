@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -9,6 +10,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
@@ -25,6 +27,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.et.syaapi.service.ApplicationService.updateApplicationState;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 @SuppressWarnings({"PMD.SingularField", "PMD.TooManyMethods"})
@@ -348,5 +351,28 @@ class ApplicationServiceTest {
         String actualState
             = argumentCaptor.getValue().getGenericTseApplicationCollection().get(0).getValue().getApplicationState();
         assertThat(actualState).isEqualTo("viewed");
+    }
+
+    @Nested
+    class UpdateApplicationState {
+        @Test
+        void inProgressWhenResponseWasRequired() {
+            GenericTseApplicationType application = GenericTseApplicationType.builder()
+                .respondentResponseRequired("Yes").applicationState("initialState").build();
+
+            updateApplicationState(application);
+
+            assertThat(application.getApplicationState()).isEqualTo("inProgress");
+        }
+
+        @Test
+        void noChangeWhenResponseNotRequired() {
+            GenericTseApplicationType application = GenericTseApplicationType.builder()
+                .respondentResponseRequired("No").applicationState("initialState").build();
+
+            updateApplicationState(application);
+
+            assertThat(application.getApplicationState()).isEqualTo("initialState");
+        }
     }
 }
