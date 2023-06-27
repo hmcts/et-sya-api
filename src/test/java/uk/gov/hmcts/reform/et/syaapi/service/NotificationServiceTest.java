@@ -550,7 +550,8 @@ class NotificationServiceTest {
             TEST_RESPONDENT,
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
-            CHANGE_DETAILS_APPLICATION_TYPE
+            CHANGE_DETAILS_APPLICATION_TYPE,
+            false
         );
 
         verify(notificationClient, times(1)).sendEmail(
@@ -571,7 +572,8 @@ class NotificationServiceTest {
             TEST_RESPONDENT,
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
-            CHANGE_DETAILS_APPLICATION_TYPE
+            CHANGE_DETAILS_APPLICATION_TYPE,
+            false
         );
 
         verify(notificationClient, times(0)).sendEmail(
@@ -592,7 +594,8 @@ class NotificationServiceTest {
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
             CHANGE_DETAILS_APPLICATION_TYPE,
-            "No"
+            "No",
+            false
         );
 
         verify(notificationClient, times(1)).sendEmail(
@@ -614,7 +617,8 @@ class NotificationServiceTest {
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
             CHANGE_DETAILS_APPLICATION_TYPE,
-            "No"
+            "No",
+            false
         );
 
         verify(notificationClient, times(0)).sendEmail(
@@ -635,7 +639,8 @@ class NotificationServiceTest {
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
             WITNESS,
-            "No"
+            "No",
+            false
         );
 
         verify(notificationClient, times(0)).sendEmail(

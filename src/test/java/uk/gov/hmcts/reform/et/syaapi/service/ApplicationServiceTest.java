@@ -325,7 +325,8 @@ class ApplicationServiceTest {
             eq(NOT_SET),
             eq("12345"),
             eq("Amend details"),
-            eq("No")
+            eq("No"),
+            eq(false)
         );
     }
 
