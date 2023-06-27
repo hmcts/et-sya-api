@@ -146,7 +146,7 @@ public class ApplicationService {
      * response as no longer required.
      */
     static void respondToRequestForInfo(GenericTseApplicationType appType) {
-        if (appType.getClaimantResponseRequired().equals(YES)) {
+        if (YES.equals(appType.getClaimantResponseRequired())) {
             appType.setApplicationState(IN_PROGRESS);
             appType.setClaimantResponseRequired(NO);
         }

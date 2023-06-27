@@ -376,5 +376,16 @@ class ApplicationServiceTest {
             assertThat(application.getApplicationState()).isEqualTo("initialState");
             assertThat(application.getClaimantResponseRequired()).isEqualTo("No");
         }
+
+        @Test
+        void noChangeWhenResponseRequiredIsNull() {
+            GenericTseApplicationType application = GenericTseApplicationType.builder()
+                .applicationState("initialState").build();
+
+            respondToRequestForInfo(application);
+
+            assertThat(application.getApplicationState()).isEqualTo("initialState");
+            assertThat(application.getClaimantResponseRequired()).isNull();
+        }
     }
 }
