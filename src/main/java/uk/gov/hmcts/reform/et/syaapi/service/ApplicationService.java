@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 
@@ -116,7 +117,7 @@ public class ApplicationService {
 
         GenericTseApplicationType appType = appToModify.getValue();
 
-        updateApplicationState(appType);
+        respondToRequestForInfo(appType);
 
         TseApplicationHelper.setRespondentApplicationWithResponse(
             request,
@@ -140,9 +141,14 @@ public class ApplicationService {
         return caseDetails;
     }
 
-    static void updateApplicationState(GenericTseApplicationType appType) {
-        if (appType.getRespondentResponseRequired().equals(YES)) {
+    /**
+     * If claimant is replying to a request for info from the tribunal, update app state to inProgress and mark
+     * response as no longer required.
+     */
+    static void respondToRequestForInfo(GenericTseApplicationType appType) {
+        if (appType.getClaimantResponseRequired().equals(YES)) {
             appType.setApplicationState(IN_PROGRESS);
+            appType.setClaimantResponseRequired(NO);
         }
     }
 

@@ -27,7 +27,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.et.syaapi.service.ApplicationService.updateApplicationState;
+import static uk.gov.hmcts.reform.et.syaapi.service.ApplicationService.respondToRequestForInfo;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 @SuppressWarnings({"PMD.SingularField", "PMD.TooManyMethods"})
@@ -358,21 +358,23 @@ class ApplicationServiceTest {
         @Test
         void inProgressWhenResponseWasRequired() {
             GenericTseApplicationType application = GenericTseApplicationType.builder()
-                .respondentResponseRequired("Yes").applicationState("initialState").build();
+                .claimantResponseRequired("Yes").applicationState("initialState").build();
 
-            updateApplicationState(application);
+            respondToRequestForInfo(application);
 
             assertThat(application.getApplicationState()).isEqualTo("inProgress");
+            assertThat(application.getClaimantResponseRequired()).isEqualTo("No");
         }
 
         @Test
         void noChangeWhenResponseNotRequired() {
             GenericTseApplicationType application = GenericTseApplicationType.builder()
-                .respondentResponseRequired("No").applicationState("initialState").build();
+                .claimantResponseRequired("No").applicationState("initialState").build();
 
-            updateApplicationState(application);
+            respondToRequestForInfo(application);
 
             assertThat(application.getApplicationState()).isEqualTo("initialState");
+            assertThat(application.getClaimantResponseRequired()).isEqualTo("No");
         }
     }
 }
