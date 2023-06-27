@@ -39,6 +39,8 @@ class ApplicationServiceTest {
     public static final String CASE_REF = "123456/2022";
     public static final String CLAIMANT = "Michael Jackson";
     public static final String CASE_ID = "1646225213651590";
+    public static final String INITIAL_STATE = "initialState";
+
     @MockBean
     private CaseService caseService;
     @MockBean
@@ -358,7 +360,7 @@ class ApplicationServiceTest {
         @Test
         void inProgressWhenResponseWasRequired() {
             GenericTseApplicationType application = GenericTseApplicationType.builder()
-                .claimantResponseRequired("Yes").applicationState("initialState").build();
+                .claimantResponseRequired("Yes").applicationState(INITIAL_STATE).build();
 
             respondToRequestForInfo(application);
 
@@ -369,22 +371,22 @@ class ApplicationServiceTest {
         @Test
         void noChangeWhenResponseNotRequired() {
             GenericTseApplicationType application = GenericTseApplicationType.builder()
-                .claimantResponseRequired("No").applicationState("initialState").build();
+                .claimantResponseRequired("No").applicationState(INITIAL_STATE).build();
 
             respondToRequestForInfo(application);
 
-            assertThat(application.getApplicationState()).isEqualTo("initialState");
+            assertThat(application.getApplicationState()).isEqualTo(INITIAL_STATE);
             assertThat(application.getClaimantResponseRequired()).isEqualTo("No");
         }
 
         @Test
         void noChangeWhenResponseRequiredIsNull() {
             GenericTseApplicationType application = GenericTseApplicationType.builder()
-                .applicationState("initialState").build();
+                .applicationState(INITIAL_STATE).build();
 
             respondToRequestForInfo(application);
 
-            assertThat(application.getApplicationState()).isEqualTo("initialState");
+            assertThat(application.getApplicationState()).isEqualTo(INITIAL_STATE);
             assertThat(application.getClaimantResponseRequired()).isNull();
         }
     }
