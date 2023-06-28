@@ -4,6 +4,9 @@ import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ByteArrayResource;
@@ -17,6 +20,8 @@ import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.service.notify.NotificationClientException;
+
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -357,37 +362,25 @@ class ApplicationServiceTest {
 
     @Nested
     class UpdateApplicationState {
-        @Test
-        void inProgressWhenResponseWasRequired() {
+        @ParameterizedTest
+        @MethodSource
+        void testNewStateAndResponseRequired(String claimantResponseRequired, String expectedApplicationState,
+                                    String expectedClaimantResponseRequired) {
             GenericTseApplicationType application = GenericTseApplicationType.builder()
-                .claimantResponseRequired("Yes").applicationState(INITIAL_STATE).build();
+                .claimantResponseRequired(claimantResponseRequired).applicationState(INITIAL_STATE).build();
 
             respondToRequestForInfo(application);
 
-            assertThat(application.getApplicationState()).isEqualTo("inProgress");
-            assertThat(application.getClaimantResponseRequired()).isEqualTo("No");
+            assertThat(application.getApplicationState()).isEqualTo(expectedApplicationState);
+            assertThat(application.getClaimantResponseRequired()).isEqualTo(expectedClaimantResponseRequired);
         }
 
-        @Test
-        void noChangeWhenResponseNotRequired() {
-            GenericTseApplicationType application = GenericTseApplicationType.builder()
-                .claimantResponseRequired("No").applicationState(INITIAL_STATE).build();
-
-            respondToRequestForInfo(application);
-
-            assertThat(application.getApplicationState()).isEqualTo(INITIAL_STATE);
-            assertThat(application.getClaimantResponseRequired()).isEqualTo("No");
-        }
-
-        @Test
-        void noChangeWhenResponseRequiredIsNull() {
-            GenericTseApplicationType application = GenericTseApplicationType.builder()
-                .applicationState(INITIAL_STATE).build();
-
-            respondToRequestForInfo(application);
-
-            assertThat(application.getApplicationState()).isEqualTo(INITIAL_STATE);
-            assertThat(application.getClaimantResponseRequired()).isNull();
+        private static Stream<Arguments> testNewStateAndResponseRequired() {
+            return Stream.of(
+                Arguments.of("Yes", "inProgress", "No"),
+                Arguments.of("No", INITIAL_STATE, "No"),
+                Arguments.of(null, INITIAL_STATE, null)
+            );
         }
     }
 }
