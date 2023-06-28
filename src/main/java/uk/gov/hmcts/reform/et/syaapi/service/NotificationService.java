@@ -563,6 +563,32 @@ public class NotificationService {
         sendRespondentEmails(caseData, caseId, respondentParameters, emailToRespondentTemplate);
     }
 
+    /**
+     * Email respondent when claimant responds to a request for info from the tribunal on a TSE application.
+     *
+     * @param caseData        existing case details
+     * @param caseNumber      ethos case reference
+     * @param caseId          16 digit case id
+     */
+    void sendReplyEmailToRespondent(
+        CaseData caseData,
+        String caseNumber,
+        String caseId,
+        String copyToOtherParty
+    ) {
+        if (DONT_SEND_COPY.equals(copyToOtherParty)) {
+            log.info("Answered no for Rule 92, not sending email to respondents");
+            return;
+        }
+
+        Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
+        respondentParameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
+
+        String emailToRespondentTemplate = notificationsProperties.getTseReplyToTribunalToRespondentTemplateId();
+
+        sendRespondentEmails(caseData, caseId, respondentParameters, emailToRespondentTemplate);
+    }
+
     void sendResponseNotificationEmailToTribunal(CaseData caseData, String caseId) {
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
         addCommonParameters(tribunalParameters, caseData, caseId);

@@ -89,6 +89,8 @@ notifications:
     claimantResponseNo: ${TSE_CLAIMANT_RESPONSE_NO:0727a137-322f-458b-9941-ee8b6d3c11c2}
     tribunalResponse: ${TSE_TRIBUNAL_RESPONSE:9da290ff-c7da-4897-80d2-114361271dfa}
     respondentResponse: ${TSE_RESPONDENT_RESPONSE:63b0488f-134c-4bf2-8dea-40df4d158628}
+    reply-to-tribunal:
+      to-respondent: ${TSE_TO_RESPONDENT_CLAIMANT_REPLIED_TO_REQUEST:19e056f1-fc1e-413e-a465-48fd99b88da2}
 
   pse:
     claimantResponseYes: ${CLAIMANT_RESPONSE_YES:5898b330-674c-48c8-87e1-ee07ab2910ee}

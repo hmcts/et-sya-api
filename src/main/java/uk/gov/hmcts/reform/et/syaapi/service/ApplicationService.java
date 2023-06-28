@@ -146,10 +146,14 @@ public class ApplicationService {
      * response as no longer required.
      */
     static void respondToRequestForInfo(GenericTseApplicationType appType) {
-        if (YES.equals(appType.getClaimantResponseRequired())) {
+        if (isResponseRequired(appType)) {
             appType.setApplicationState(IN_PROGRESS);
             appType.setClaimantResponseRequired(NO);
         }
+    }
+
+    private static boolean isResponseRequired(GenericTseApplicationType appType) {
+        return YES.equals(appType.getClaimantResponseRequired());
     }
 
     /**
@@ -238,8 +242,7 @@ public class ApplicationService {
             respondentNames,
             hearingDate,
             caseId,
-            documentJson,
-            claimantTse
+            documentJson, claimantTse
         );
 
         notificationService.sendAcknowledgementEmailToTribunal(
@@ -287,16 +290,25 @@ public class ApplicationService {
             copyToOtherParty
         );
 
-        notificationService.sendResponseEmailToRespondent(
-            caseData,
-            claimant,
-            caseNumber,
-            respondentNames,
-            hearingDate,
-            caseId,
-            type,
-            copyToOtherParty
-        );
+        if (isResponseRequired(application)) {
+            notificationService.sendReplyEmailToRespondent(
+                caseData,
+                caseNumber,
+                caseId,
+                copyToOtherParty
+            );
+        } else {
+            notificationService.sendResponseEmailToRespondent(
+                caseData,
+                claimant,
+                caseNumber,
+                respondentNames,
+                hearingDate,
+                caseId,
+                type,
+                copyToOtherParty
+            );
+        }
     }
 
     private JSONObject getDocumentDownload(String authorization, CaseData caseData)
