@@ -6,7 +6,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
+import uk.gov.hmcts.reform.et.syaapi.models.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.util.List;

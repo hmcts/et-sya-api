@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
+import uk.gov.hmcts.reform.et.syaapi.exception.PdfServiceException;
 
 import java.util.List;
 import javax.validation.constraints.NotNull;

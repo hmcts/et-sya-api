@@ -1,4 +1,6 @@
-package uk.gov.hmcts.reform.et.syaapi.service.pdf;
+package uk.gov.hmcts.reform.et.syaapi.exception;
+
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 
 /**
  * Is thrown when an exception occurs whiles converting case data in pdf in {@link PdfService}.

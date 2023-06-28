@@ -10,7 +10,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificatePdfFieldModel;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondentPdfFieldModel;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
+import uk.gov.hmcts.reform.et.syaapi.exception.PdfServiceException;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;

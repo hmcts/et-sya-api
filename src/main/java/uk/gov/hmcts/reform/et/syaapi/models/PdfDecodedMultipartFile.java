@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.et.syaapi.service.pdf;
+package uk.gov.hmcts.reform.et.syaapi.models;
 
 import org.springframework.web.multipart.MultipartFile;
 
