@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import org.json.JSONException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -8,14 +9,20 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
+import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
+import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
@@ -29,10 +36,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.et.syaapi.service.ApplicationService.respondToRequestForInfo;
 import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 @SuppressWarnings({"PMD.SingularField", "PMD.TooManyMethods"})
@@ -360,8 +367,21 @@ class ApplicationServiceTest {
         assertThat(actualState).isEqualTo("viewed");
     }
 
+    // todo move all related tests here and add remove common setup
     @Nested
-    class UpdateApplicationState {
+    class RespondToApplicationReplyToTribunal {
+        private MockedStatic<TseApplicationHelper> mockStatic;
+
+        @BeforeEach
+        void setUp() {
+            mockStatic = mockStatic(TseApplicationHelper.class);
+        }
+
+        @AfterEach
+        void afterEach() {
+            mockStatic.close();
+        }
+
         @ParameterizedTest
         @MethodSource
         void testNewStateAndResponseRequired(String claimantResponseRequired, String expectedApplicationState,
@@ -369,7 +389,18 @@ class ApplicationServiceTest {
             GenericTseApplicationType application = GenericTseApplicationType.builder()
                 .claimantResponseRequired(claimantResponseRequired).applicationState(INITIAL_STATE).build();
 
-            respondToRequestForInfo(application);
+            mockStatic.when(() -> TseApplicationHelper.getSelectedApplication(any(), any()))
+                .thenReturn(GenericTseApplicationTypeItem.builder().value(application).build());
+
+            RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
+            when(caseService.startUpdate(
+                TEST_SERVICE_AUTH_TOKEN,
+                testRequest.getCaseId(),
+                testRequest.getCaseTypeId(),
+                CaseEvent.CLAIMANT_TSE_RESPOND
+            )).thenReturn(testData.getUpdateCaseEventResponse());
+
+            applicationService.respondToApplication(TEST_SERVICE_AUTH_TOKEN, testRequest);
 
             assertThat(application.getApplicationState()).isEqualTo(expectedApplicationState);
             assertThat(application.getClaimantResponseRequired()).isEqualTo(expectedClaimantResponseRequired);

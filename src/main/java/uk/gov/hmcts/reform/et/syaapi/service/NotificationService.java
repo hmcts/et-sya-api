@@ -511,6 +511,7 @@ public class NotificationService {
         }
     }
 
+    // todo clean these
     /**
      * Send acknowledgment email to the respondent when they are responding to
      * an application (type A/B) made by the Respondent.

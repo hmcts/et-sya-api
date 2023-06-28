@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -644,6 +645,53 @@ class NotificationServiceTest {
             any(),
             eq(testData.getExpectedDetails().getId().toString())
         );
+    }
+
+    @Nested
+    class SendReplyEmailToRespondent {
+        CaseData caseData;
+
+        @BeforeEach
+        void setUp() {
+            caseData = testData.getCaseData();
+            RespondentSumTypeItem respondent = new RespondentSumTypeItem();
+            respondent.setValue(RespondentSumType.builder().respondentEmail("email").build());
+            caseData.setRespondentCollection(List.of(respondent));
+        }
+
+        @Test
+        void givenRule92Yes_sendEmailToRespondent() throws NotificationClientException {
+            notificationService.sendReplyEmailToRespondent(
+                caseData,
+                "1",
+                testData.getExpectedDetails().getId().toString(),
+                "Yes"
+            );
+
+            verify(notificationClient, times(1)).sendEmail(
+                any(),
+                eq("email"),
+                any(),
+                eq(testData.getExpectedDetails().getId().toString())
+            );
+        }
+
+        @Test
+        void givenRule92No_doNotSendEmailToRespondent() throws NotificationClientException {
+            notificationService.sendReplyEmailToRespondent(
+                caseData,
+                "1",
+                testData.getExpectedDetails().getId().toString(),
+                "No"
+            );
+
+            verify(notificationClient, times(0)).sendEmail(
+                any(),
+                eq("email"),
+                any(),
+                eq(testData.getExpectedDetails().getId().toString())
+            );
+        }
     }
 
     @Test

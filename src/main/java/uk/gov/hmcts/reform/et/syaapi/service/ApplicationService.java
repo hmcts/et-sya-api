@@ -12,7 +12,6 @@ import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
@@ -98,10 +97,14 @@ public class ApplicationService {
      * @return the associated {@link CaseDetails} for the ID provided in request
      */
     public CaseDetails respondToApplication(String authorization, RespondToApplicationRequest request) {
+        String caseId = request.getCaseId();
+        String caseTypeId = request.getCaseTypeId();
+        String copyToOtherParty = request.getResponse().getCopyToOtherParty();
+
         StartEventResponse startEventResponse = caseService.startUpdate(
             authorization,
-            request.getCaseId(),
-            request.getCaseTypeId(),
+            caseId,
+            caseTypeId,
             CaseEvent.CLAIMANT_TSE_RESPOND
         );
 
@@ -111,49 +114,32 @@ public class ApplicationService {
         GenericTseApplicationTypeItem appToModify = TseApplicationHelper.getSelectedApplication(
             caseData.getGenericTseApplicationCollection(), request.getApplicationId()
         );
+
         if (appToModify == null) {
             throw new IllegalArgumentException("Application id provided is incorrect");
         }
 
         GenericTseApplicationType appType = appToModify.getValue();
-
-        respondToRequestForInfo(appType);
-
-        TseApplicationHelper.setRespondentApplicationWithResponse(
-            request,
-            appType,
-            caseData,
-            caseDocumentService
-        );
-
-        createPdfOfResponse(authorization, request, caseData, appType);
-
-        CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
-        CaseDetails caseDetails = caseService.submitUpdate(
-            authorization,
-            request.getCaseId(),
-            content,
-            request.getCaseTypeId()
-        );
-
-        sendResponseToApplicationEmails(appType, caseData, request.getCaseId(), request);
-
-        return caseDetails;
-    }
-
-    /**
-     * If claimant is replying to a request for info from the tribunal, update app state to inProgress and mark
-     * response as no longer required.
-     */
-    static void respondToRequestForInfo(GenericTseApplicationType appType) {
-        if (isResponseRequired(appType)) {
+        if (YES.equals(appType.getClaimantResponseRequired())) {
             appType.setApplicationState(IN_PROGRESS);
             appType.setClaimantResponseRequired(NO);
-        }
-    }
 
-    private static boolean isResponseRequired(GenericTseApplicationType appType) {
-        return YES.equals(appType.getClaimantResponseRequired());
+            notificationService.sendReplyEmailToRespondent(
+                caseData,
+                caseData.getEthosCaseReference(),
+                caseId,
+                copyToOtherParty
+            );
+        } else {
+            sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty);
+        }
+
+        TseApplicationHelper.setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService);
+
+        createAndAddPdfOfResponse(authorization, request, caseData, appType);
+
+        return caseService.submitUpdate(
+            authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
     }
 
     /**
@@ -193,10 +179,12 @@ public class ApplicationService {
         );
     }
 
-    private void createPdfOfResponse(String authorization,
-                                     RespondToApplicationRequest request,
-                                     CaseData caseData,
-                                     GenericTseApplicationType application) {
+    private void createAndAddPdfOfResponse(
+        String authorization,
+        RespondToApplicationRequest request,
+        CaseData caseData,
+        GenericTseApplicationType application
+    ) {
         if (YES.equals(request.getResponse().getCopyToOtherParty())) {
             try {
                 log.info("Uploading pdf of claimant response to application");
@@ -256,10 +244,12 @@ public class ApplicationService {
         );
     }
 
-    private void sendResponseToApplicationEmails(GenericTseApplicationType application,
-                                                 CaseData caseData,
-                                                 String caseId,
-                                                 RespondToApplicationRequest respondToApplicationRequest) {
+    private void sendResponseToApplicationEmails(
+        GenericTseApplicationType application,
+        CaseData caseData,
+        String caseId,
+        String copyToOtherParty
+    ) {
         ClaimantIndType claimantIndType = caseData.getClaimantIndType();
         String claimant = claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName();
 
@@ -267,7 +257,6 @@ public class ApplicationService {
         String respondentNames = getRespondentNames(caseData);
         String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
         String type = application.getType();
-        String copyToOtherParty = respondToApplicationRequest.getResponse().getCopyToOtherParty();
 
         notificationService.sendResponseEmailToTribunal(
             caseData,
@@ -290,25 +279,16 @@ public class ApplicationService {
             copyToOtherParty
         );
 
-        if (isResponseRequired(application)) {
-            notificationService.sendReplyEmailToRespondent(
-                caseData,
-                caseNumber,
-                caseId,
-                copyToOtherParty
-            );
-        } else {
-            notificationService.sendResponseEmailToRespondent(
-                caseData,
-                claimant,
-                caseNumber,
-                respondentNames,
-                hearingDate,
-                caseId,
-                type,
-                copyToOtherParty
-            );
-        }
+        notificationService.sendResponseEmailToRespondent(
+            caseData,
+            claimant,
+            caseNumber,
+            respondentNames,
+            hearingDate,
+            caseId,
+            type,
+            copyToOtherParty
+        );
     }
 
     private JSONObject getDocumentDownload(String authorization, CaseData caseData)
