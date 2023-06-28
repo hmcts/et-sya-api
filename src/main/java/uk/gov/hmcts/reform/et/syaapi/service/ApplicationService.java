@@ -219,6 +219,7 @@ public class ApplicationService {
         String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
         String caseId = finalCaseDetails.getId().toString();
 
+        ClaimantTse claimantTse = request.getClaimantTse();
         notificationService.sendAcknowledgementEmailToClaimant(
             caseData,
             claimant,
@@ -226,7 +227,7 @@ public class ApplicationService {
             respondentNames,
             hearingDate,
             caseId,
-            request.getClaimantTse()
+            claimantTse
         );
         JSONObject documentJson = getDocumentDownload(authorization, caseData);
 
@@ -238,7 +239,7 @@ public class ApplicationService {
             hearingDate,
             caseId,
             documentJson,
-            request.getClaimantTse()
+            claimantTse
         );
 
         notificationService.sendAcknowledgementEmailToTribunal(
@@ -248,7 +249,7 @@ public class ApplicationService {
             respondentNames,
             hearingDate,
             caseId,
-            request.getClaimantTse()
+            claimantTse.getContactApplicationType()
         );
     }
 

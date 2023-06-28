@@ -486,7 +486,7 @@ class NotificationServiceTest {
             TEST_RESPONDENT,
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
-            testData.getClaimantApplication()
+            testData.getClaimantApplication().getContactApplicationType()
         );
 
         verify(notificationClient, times(1)).sendEmail(
@@ -508,7 +508,7 @@ class NotificationServiceTest {
             TEST_RESPONDENT,
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
-            testData.getClaimantApplication()
+            testData.getClaimantApplication().getContactApplicationType()
         );
 
         verify(notificationClient, times(1)).sendEmail(
@@ -529,7 +529,7 @@ class NotificationServiceTest {
             TEST_RESPONDENT,
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
-            testData.getClaimantApplication()
+            testData.getClaimantApplication().getContactApplicationType()
         );
 
         verify(notificationClient, times(0)).sendEmail(

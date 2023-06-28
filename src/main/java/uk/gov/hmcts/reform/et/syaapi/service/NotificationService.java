@@ -69,6 +69,9 @@ import static uk.gov.service.notify.NotificationClient.prepareUpload;
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 public class NotificationService {
     public static final String NOT_SET = "Not set";
+
+    private static final String TWO_STRINGS_PATTERN = "%s %s";
+
     private final NotificationClient notificationClient;
     private final NotificationsProperties notificationsProperties;
 
@@ -339,6 +342,7 @@ public class NotificationService {
      * @param respondentNames concatenated respondent names
      * @param hearingDate     date of the nearest hearing
      * @param caseId          16 digit case id
+     * @param contactApplicationType
      */
     public void sendAcknowledgementEmailToTribunal(CaseData caseData,
                                                    String claimant,
@@ -346,13 +350,13 @@ public class NotificationService {
                                                    String respondentNames,
                                                    String hearingDate,
                                                    String caseId,
-                                                   ClaimantTse claimantApplication
+                                                   String contactApplicationType
     ) {
 
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
 
         String subjectLine =
-            String.format("%s %s", caseNumber, APP_TYPE_MAP.get(claimantApplication.getContactApplicationType()));
+            String.format(TWO_STRINGS_PATTERN, caseNumber, APP_TYPE_MAP.get(contactApplicationType));
         addCommonParameters(
             tribunalParameters,
             claimant,
@@ -407,7 +411,7 @@ public class NotificationService {
         String caseId,
         String applicationType
     ) {
-        String subjectLine = String.format("%s %s", caseNumber, applicationType);
+        String subjectLine = String.format(TWO_STRINGS_PATTERN, caseNumber, applicationType);
 
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
         addCommonParameters(
@@ -471,7 +475,7 @@ public class NotificationService {
         }
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
 
-        String subjectLine = String.format("%s %s", caseNumber, applicationType);
+        String subjectLine = String.format(TWO_STRINGS_PATTERN, caseNumber, applicationType);
 
         addCommonParameters(
             claimantParameters,
@@ -508,7 +512,7 @@ public class NotificationService {
     }
 
     /**
-     * Send acknowledgment email to the claimant when they are responding to
+     * Send acknowledgment email to the respondent when they are responding to
      * an application (type A/B) made by the Respondent.
      *
      * @param caseData        existing case details
@@ -535,7 +539,7 @@ public class NotificationService {
         }
         Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
 
-        String subjectLine = String.format("%s %s", caseNumber, applicationType);
+        String subjectLine = String.format(TWO_STRINGS_PATTERN, caseNumber, applicationType);
         addCommonParameters(
             respondentParameters,
             claimant,
@@ -724,9 +728,10 @@ public class NotificationService {
     }
 
     private static void addCommonParameters(Map<String, Object> parameters, CaseData caseData, String caseId) {
-        String claimant = String.format("%s %s",
-                                        caseData.getClaimantIndType().getClaimantFirstNames(),
-                                        caseData.getClaimantIndType().getClaimantLastName()
+        String claimant = String.format(
+            TWO_STRINGS_PATTERN,
+            caseData.getClaimantIndType().getClaimantFirstNames(),
+            caseData.getClaimantIndType().getClaimantLastName()
         );
         String caseNumber = caseData.getEthosCaseReference();
         String respondentNames = getRespondentNames(caseData);
