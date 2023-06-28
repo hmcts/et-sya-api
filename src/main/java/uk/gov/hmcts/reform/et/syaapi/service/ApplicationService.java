@@ -20,15 +20,17 @@ import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
+import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.ViewAnApplicationRequest;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 
 import java.util.List;
 import java.util.UUID;
 
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 
@@ -36,13 +38,14 @@ import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespon
 @Service
 @Slf4j
 public class ApplicationService {
+    public static final String WEEKS_78 = "78 weeks";
+
     private static final String TSE_FILENAME = "Contact the tribunal.pdf";
-    public static final String VIEWED = "viewed";
+
     private final CaseService caseService;
     private final NotificationService notificationService;
     private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
-    public static final String WEEKS_78 = "78 weeks";
 
     /**
      * Submit Claimant Application to Tell Something Else.
@@ -112,14 +115,18 @@ public class ApplicationService {
             throw new IllegalArgumentException("Application id provided is incorrect");
         }
 
+        GenericTseApplicationType appType = appToModify.getValue();
+
+        respondToRequestForInfo(appType);
+
         TseApplicationHelper.setRespondentApplicationWithResponse(
             request,
-            appToModify.getValue(),
+            appType,
             caseData,
             caseDocumentService
         );
 
-        createPdfOfResponse(authorization, request, caseData, appToModify.getValue());
+        createPdfOfResponse(authorization, request, caseData, appType);
 
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
         CaseDetails caseDetails = caseService.submitUpdate(
@@ -128,10 +135,21 @@ public class ApplicationService {
             content,
             request.getCaseTypeId()
         );
-        sendResponseToApplicationEmails(appToModify.getValue(), caseData, request.getCaseId(), request,
-                                        request.getIsRespondingToRequestOrOrder());
+
+        sendResponseToApplicationEmails(appType, caseData, request.getCaseId(), request);
 
         return caseDetails;
+    }
+
+    /**
+     * If claimant is replying to a request for info from the tribunal, update app state to inProgress and mark
+     * response as no longer required.
+     */
+    static void respondToRequestForInfo(GenericTseApplicationType appType) {
+        if (YES.equals(appType.getClaimantResponseRequired())) {
+            appType.setApplicationState(IN_PROGRESS);
+            appType.setClaimantResponseRequired(NO);
+        }
     }
 
     /**
@@ -141,7 +159,7 @@ public class ApplicationService {
      * @param request - request with application's id
      * @return the associated {@link CaseDetails} for the ID provided in request
      */
-    public CaseDetails markApplicationAsViewed(String authorization, ViewAnApplicationRequest request) {
+    public CaseDetails changeApplicationStatus(String authorization, ChangeApplicationStatusRequest request) {
         StartEventResponse startEventResponse = caseService.startUpdate(
             authorization,
             request.getCaseId(),
@@ -161,7 +179,7 @@ public class ApplicationService {
             throw new IllegalArgumentException("Application id provided is incorrect");
         }
 
-        appToModify.getValue().setApplicationState(VIEWED);
+        appToModify.getValue().setApplicationState(request.getNewStatus());
 
         return caseService.submitUpdate(
             authorization,

@@ -17,10 +17,10 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.ViewAnApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
@@ -220,24 +220,24 @@ public class ManageCaseController {
     }
 
     /**
-     * Mark respondent application as viewed.
+     * Change application status.
      *
      * @param authorization jwt of the user
-     * @param request       the request object which contains the appId
+     * @param request       the request object which contains the appId and new status
      * @return the new updated case wrapped in a {@link CaseDetails}
      */
-    @PutMapping("/view-an-application")
-    @Operation(summary = "Mark application as viewed")
+    @PutMapping("/change-application-status")
+    @Operation(summary = "Change application status")
     @ApiResponseGroup
-    public ResponseEntity<CaseDetails> viewAnApplication(
+    public ResponseEntity<CaseDetails> changeApplicationStatus(
         @RequestHeader(AUTHORIZATION) String authorization,
-        @NotNull @RequestBody ViewAnApplicationRequest request
+        @NotNull @RequestBody ChangeApplicationStatusRequest request
     ) {
-        log.info("Received view an application request - caseTypeId: {} caseId: {}",
+        log.info("Received a change application status request - caseTypeId: {} caseId: {}",
                  request.getCaseTypeId(), request.getCaseId()
         );
 
-        CaseDetails finalCaseDetails = applicationService.markApplicationAsViewed(authorization, request);
+        CaseDetails finalCaseDetails = applicationService.changeApplicationStatus(authorization, request);
 
         return ok(finalCaseDetails);
     }

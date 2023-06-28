@@ -15,11 +15,11 @@ import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.ViewAnApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.utils.ResourceUtil;
 import uk.gov.hmcts.reform.et.syaapi.utils.TestConstants;
@@ -141,9 +141,9 @@ public final class TestData {
         RespondToApplicationRequest.class
     );
 
-    private final ViewAnApplicationRequest viewAnApplicationRequest = ResourceLoader.fromString(
+    private final ChangeApplicationStatusRequest changeApplicationStatusRequest = ResourceLoader.fromString(
         "requests/viewAnApplication.json",
-        ViewAnApplicationRequest.class
+        ChangeApplicationStatusRequest.class
     );
 
     private final StartEventResponse updateCaseEventResponse = ResourceLoader.fromString(
