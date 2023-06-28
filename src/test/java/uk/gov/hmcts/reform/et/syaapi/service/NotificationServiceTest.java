@@ -660,7 +660,7 @@ class NotificationServiceTest {
         }
 
         @Test
-        void givenRule92Yes_sendEmailToRespondent() throws NotificationClientException {
+        void givenRule92YesSendEmailToRespondent() throws NotificationClientException {
             notificationService.sendReplyEmailToRespondent(
                 caseData,
                 "1",
@@ -677,7 +677,7 @@ class NotificationServiceTest {
         }
 
         @Test
-        void givenRule92No_doNotSendEmailToRespondent() throws NotificationClientException {
+        void givenRule92NoDoNotSendEmailToRespondent() throws NotificationClientException {
             notificationService.sendReplyEmailToRespondent(
                 caseData,
                 "1",

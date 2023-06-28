@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import org.json.JSONException;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -183,167 +182,6 @@ class ApplicationServiceTest {
     }
 
     @Test
-    void shouldSubmitResponseToApplication() {
-        RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
-
-        when(caseService.startUpdate(
-            TEST_SERVICE_AUTH_TOKEN,
-            testRequest.getCaseId(),
-            testRequest.getCaseTypeId(),
-            CaseEvent.CLAIMANT_TSE_RESPOND
-        )).thenReturn(testData.getUpdateCaseEventResponse());
-
-        applicationService.respondToApplication(
-            TEST_SERVICE_AUTH_TOKEN,
-            testRequest
-        );
-
-        verify(caseDetailsConverter, times(1)).caseDataContent(
-            any(),
-            any()
-        );
-    }
-
-    @Test
-    void shouldSubmitResponseToApplicationAndSendCopy() throws CaseDocumentException, DocumentGenerationException {
-        RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
-        testRequest.getResponse().setCopyToOtherParty("Yes");
-
-        when(caseService.startUpdate(
-            TEST_SERVICE_AUTH_TOKEN,
-            testRequest.getCaseId(),
-            testRequest.getCaseTypeId(),
-            CaseEvent.CLAIMANT_TSE_RESPOND
-        )).thenReturn(testData.getUpdateCaseEventResponse());
-
-        applicationService.respondToApplication(
-            TEST_SERVICE_AUTH_TOKEN,
-            testRequest
-        );
-
-        verify(caseService, times(1)).createResponsePdf(
-            eq(TEST_SERVICE_AUTH_TOKEN),
-            any(),
-            eq(testRequest),
-            any()
-        );
-
-        verify(caseDetailsConverter, times(1)).caseDataContent(
-            any(),
-            any()
-        );
-    }
-
-    @Test
-    void shouldSubmitResponseToApplicationWhenOptionalFileNotProvided()
-        throws CaseDocumentException, DocumentGenerationException {
-        RespondToApplicationRequest testRequest = testData.getRespondToApplicationNoUploadRequest();
-        testRequest.getResponse().setCopyToOtherParty("Yes");
-
-        when(caseService.startUpdate(
-            TEST_SERVICE_AUTH_TOKEN,
-            testRequest.getCaseId(),
-            testRequest.getCaseTypeId(),
-            CaseEvent.CLAIMANT_TSE_RESPOND
-        )).thenReturn(testData.getUpdateCaseEventResponse());
-
-        applicationService.respondToApplication(
-            TEST_SERVICE_AUTH_TOKEN,
-            testRequest
-        );
-
-        verify(caseService, times(1)).createResponsePdf(
-            eq(TEST_SERVICE_AUTH_TOKEN),
-            any(),
-            eq(testRequest),
-            any()
-        );
-
-        verify(caseDetailsConverter, times(1)).caseDataContent(
-            any(),
-            any()
-        );
-    }
-
-    @Test
-    void shouldNotSubmitResponseToApplication() {
-        RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
-        testRequest.setApplicationId("12");
-        when(caseService.startUpdate(
-            TEST_SERVICE_AUTH_TOKEN,
-            testRequest.getCaseId(),
-            testRequest.getCaseTypeId(),
-            CaseEvent.CLAIMANT_TSE_RESPOND
-        )).thenReturn(testData.getUpdateCaseEventResponse());
-
-        assertThrows(
-            IllegalArgumentException.class,
-            () -> applicationService.respondToApplication(
-                TEST_SERVICE_AUTH_TOKEN,
-                testRequest
-            )
-        );
-
-        verify(caseDetailsConverter, times(0)).caseDataContent(
-            any(),
-            any()
-        );
-    }
-
-    @Test
-    void shouldThrowErrorWhenSavingApplication() {
-        RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
-        when(caseService.startUpdate(
-            TEST_SERVICE_AUTH_TOKEN,
-            testRequest.getCaseId(),
-            testRequest.getCaseTypeId(),
-            CaseEvent.CLAIMANT_TSE_RESPOND
-        )).thenReturn(testData.getUpdateCaseEventResponse());
-
-        when(caseService.submitUpdate(
-            eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(testRequest.getCaseId()),
-            any(),
-            any()
-        )).thenThrow(new JSONException("Could not save response"));
-
-        assertThrows(
-            JSONException.class,
-            () -> applicationService.respondToApplication(
-                TEST_SERVICE_AUTH_TOKEN,
-                testRequest
-            )
-        );
-    }
-
-    @Test
-    void shouldSendResponseEmailsToClaimantWithCorrectParameters() {
-        RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
-        when(caseService.startUpdate(
-            TEST_SERVICE_AUTH_TOKEN,
-            testRequest.getCaseId(),
-            testRequest.getCaseTypeId(),
-            CaseEvent.CLAIMANT_TSE_RESPOND
-        )).thenReturn(testData.getUpdateCaseEventResponse());
-
-        applicationService.respondToApplication(
-            TEST_SERVICE_AUTH_TOKEN,
-            testRequest
-        );
-
-        verify(notificationService, times(1)).sendResponseEmailToClaimant(
-            any(),
-            eq(CLAIMANT),
-            eq(CASE_ID),
-            eq(""),
-            eq(NOT_SET),
-            eq("12345"),
-            eq("Amend details"),
-            eq("No")
-        );
-    }
-
-    @Test
     void shouldMarkApplicationAsViewed() {
         ChangeApplicationStatusRequest testRequest = testData.getChangeApplicationStatusRequest();
 
@@ -364,25 +202,175 @@ class ApplicationServiceTest {
         assertThat(actualState).isEqualTo("viewed");
     }
 
-    // todo move all related tests here and add remove common setup
     @Nested
     class RespondToApplicationReplyToTribunal {
-        private MockedStatic<TseApplicationHelper> mockStatic;
+        @Test
+        void shouldSubmitResponseToApplication() {
+            RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
 
-        @BeforeEach
-        void setUp() {
-            mockStatic = mockStatic(TseApplicationHelper.class);
+            when(caseService.startUpdate(
+                TEST_SERVICE_AUTH_TOKEN,
+                testRequest.getCaseId(),
+                testRequest.getCaseTypeId(),
+                CaseEvent.CLAIMANT_TSE_RESPOND
+            )).thenReturn(testData.getUpdateCaseEventResponse());
+
+            applicationService.respondToApplication(
+                TEST_SERVICE_AUTH_TOKEN,
+                testRequest
+            );
+
+            verify(caseDetailsConverter, times(1)).caseDataContent(
+                any(),
+                any()
+            );
         }
 
-        @AfterEach
-        void afterEach() {
-            mockStatic.close();
+        @Test
+        void shouldSubmitResponseToApplicationAndSendCopy() throws CaseDocumentException, DocumentGenerationException {
+            RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
+            testRequest.getResponse().setCopyToOtherParty("Yes");
+
+            when(caseService.startUpdate(
+                TEST_SERVICE_AUTH_TOKEN,
+                testRequest.getCaseId(),
+                testRequest.getCaseTypeId(),
+                CaseEvent.CLAIMANT_TSE_RESPOND
+            )).thenReturn(testData.getUpdateCaseEventResponse());
+
+            applicationService.respondToApplication(
+                TEST_SERVICE_AUTH_TOKEN,
+                testRequest
+            );
+
+            verify(caseService, times(1)).createResponsePdf(
+                eq(TEST_SERVICE_AUTH_TOKEN),
+                any(),
+                eq(testRequest),
+                any()
+            );
+
+            verify(caseDetailsConverter, times(1)).caseDataContent(
+                any(),
+                any()
+            );
+        }
+
+        @Test
+        void shouldSubmitResponseToApplicationWhenOptionalFileNotProvided()
+            throws CaseDocumentException, DocumentGenerationException {
+            RespondToApplicationRequest testRequest = testData.getRespondToApplicationNoUploadRequest();
+            testRequest.getResponse().setCopyToOtherParty("Yes");
+
+            when(caseService.startUpdate(
+                TEST_SERVICE_AUTH_TOKEN,
+                testRequest.getCaseId(),
+                testRequest.getCaseTypeId(),
+                CaseEvent.CLAIMANT_TSE_RESPOND
+            )).thenReturn(testData.getUpdateCaseEventResponse());
+
+            applicationService.respondToApplication(
+                TEST_SERVICE_AUTH_TOKEN,
+                testRequest
+            );
+
+            verify(caseService, times(1)).createResponsePdf(
+                eq(TEST_SERVICE_AUTH_TOKEN),
+                any(),
+                eq(testRequest),
+                any()
+            );
+
+            verify(caseDetailsConverter, times(1)).caseDataContent(
+                any(),
+                any()
+            );
+        }
+
+        @Test
+        void shouldNotSubmitResponseToApplication() {
+            RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
+            testRequest.setApplicationId("12");
+            when(caseService.startUpdate(
+                TEST_SERVICE_AUTH_TOKEN,
+                testRequest.getCaseId(),
+                testRequest.getCaseTypeId(),
+                CaseEvent.CLAIMANT_TSE_RESPOND
+            )).thenReturn(testData.getUpdateCaseEventResponse());
+
+            assertThrows(
+                IllegalArgumentException.class,
+                () -> applicationService.respondToApplication(
+                    TEST_SERVICE_AUTH_TOKEN,
+                    testRequest
+                )
+            );
+
+            verify(caseDetailsConverter, times(0)).caseDataContent(
+                any(),
+                any()
+            );
+        }
+
+        @Test
+        void shouldThrowErrorWhenSavingApplication() {
+            RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
+            when(caseService.startUpdate(
+                TEST_SERVICE_AUTH_TOKEN,
+                testRequest.getCaseId(),
+                testRequest.getCaseTypeId(),
+                CaseEvent.CLAIMANT_TSE_RESPOND
+            )).thenReturn(testData.getUpdateCaseEventResponse());
+
+            when(caseService.submitUpdate(
+                eq(TEST_SERVICE_AUTH_TOKEN),
+                eq(testRequest.getCaseId()),
+                any(),
+                any()
+            )).thenThrow(new JSONException("Could not save response"));
+
+            assertThrows(
+                JSONException.class,
+                () -> applicationService.respondToApplication(
+                    TEST_SERVICE_AUTH_TOKEN,
+                    testRequest
+                )
+            );
+        }
+
+        @Test
+        void shouldSendResponseEmailsToClaimantWithCorrectParameters() {
+            RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
+            when(caseService.startUpdate(
+                TEST_SERVICE_AUTH_TOKEN,
+                testRequest.getCaseId(),
+                testRequest.getCaseTypeId(),
+                CaseEvent.CLAIMANT_TSE_RESPOND
+            )).thenReturn(testData.getUpdateCaseEventResponse());
+
+            applicationService.respondToApplication(
+                TEST_SERVICE_AUTH_TOKEN,
+                testRequest
+            );
+
+            verify(notificationService, times(1)).sendResponseEmailToClaimant(
+                any(),
+                eq(CLAIMANT),
+                eq(CASE_ID),
+                eq(""),
+                eq(NOT_SET),
+                eq("12345"),
+                eq("Amend details"),
+                eq("No")
+            );
         }
 
         @ParameterizedTest
         @MethodSource
         void testNewStateAndResponseRequired(String claimantResponseRequired, String expectedApplicationState,
                                     String expectedClaimantResponseRequired) {
+            MockedStatic<TseApplicationHelper> mockStatic = mockStatic(TseApplicationHelper.class);
+
             GenericTseApplicationType application = GenericTseApplicationType.builder()
                 .claimantResponseRequired(claimantResponseRequired).applicationState(INITIAL_STATE).build();
 
@@ -401,6 +389,8 @@ class ApplicationServiceTest {
 
             assertThat(application.getApplicationState()).isEqualTo(expectedApplicationState);
             assertThat(application.getClaimantResponseRequired()).isEqualTo(expectedClaimantResponseRequired);
+
+            mockStatic.close();
         }
 
         private static Stream<Arguments> testNewStateAndResponseRequired() {
