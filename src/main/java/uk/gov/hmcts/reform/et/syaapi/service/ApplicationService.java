@@ -99,7 +99,6 @@ public class ApplicationService {
     public CaseDetails respondToApplication(String authorization, RespondToApplicationRequest request) {
         String caseId = request.getCaseId();
         String caseTypeId = request.getCaseTypeId();
-        String copyToOtherParty = request.getResponse().getCopyToOtherParty();
 
         StartEventResponse startEventResponse = caseService.startUpdate(
             authorization,
@@ -119,6 +118,7 @@ public class ApplicationService {
             throw new IllegalArgumentException("Application id provided is incorrect");
         }
 
+        String copyToOtherParty = request.getResponse().getCopyToOtherParty();
         GenericTseApplicationType appType = appToModify.getValue();
         if (YES.equals(appType.getClaimantResponseRequired())) {
             appType.setApplicationState(IN_PROGRESS);
