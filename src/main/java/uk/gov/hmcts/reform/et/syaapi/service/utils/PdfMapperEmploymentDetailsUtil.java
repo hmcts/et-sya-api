@@ -19,9 +19,9 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.WEE
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.YES;
 
 
-public final class PdfMapperEmploymentUtil {
+public final class PdfMapperEmploymentDetailsUtil {
 
-    private PdfMapperEmploymentUtil() {
+    private PdfMapperEmploymentDetailsUtil() {
         // Utility classes should not have a public or default constructor.
     }
 

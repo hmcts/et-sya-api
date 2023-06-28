@@ -30,7 +30,7 @@ class PdfMapperEmploymentDetailsUtilTest {
     @MethodSource("uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperTestDataProvider#generateClaimantOtherTypes")
     void putEmploymentDetails(CaseData caseData) {
         ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
-        PdfMapperEmploymentUtil.putEmploymentDetails(caseData, printFields);
+        PdfMapperEmploymentDetailsUtil.putEmploymentDetails(caseData, printFields);
         if (ObjectUtils.isEmpty(caseData) || ObjectUtils.isEmpty(caseData.getClaimantOtherType())) {
             assertThat(printFields.get(PdfMapperConstants.Q4_EMPLOYED_BY_NO)).isNull();
             assertThat(printFields.get(PdfMapperConstants.Q4_EMPLOYED_BY_YES)).isNull();

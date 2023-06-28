@@ -7,7 +7,7 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.et.syaapi.constants.ClaimTypesConstants;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperClaimDescriptionUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperEmploymentUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperEmploymentDetailsUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperHearingPreferencesUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperPersonalDetailsUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperRepresentativeUtil;
@@ -59,7 +59,7 @@ public class PdfMapperService {
         PdfMapperHearingPreferencesUtil.putHearingPreferences(caseData, printFields);
         PdfMapperRespondentUtil.putRespondents(caseData, printFields);
         putMultipleClaimsDetails(caseData, printFields);
-        PdfMapperEmploymentUtil.putEmploymentDetails(caseData, printFields);
+        PdfMapperEmploymentDetailsUtil.putEmploymentDetails(caseData, printFields);
         try {
             printFields.putAll(printTypeAndDetailsOfClaim(caseData));
             printFields.putAll(printCompensation(caseData));
