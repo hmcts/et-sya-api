@@ -67,8 +67,8 @@ import static uk.gov.service.notify.NotificationClient.prepareUpload;
 @Slf4j
 @RequiredArgsConstructor
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
-public class NotificationService {
-    public static final String NOT_SET = "Not set";
+class NotificationService {
+    static final String NOT_SET = "Not set";
 
     private static final String TWO_STRINGS_PATTERN = "%s %s";
 
@@ -91,7 +91,7 @@ public class NotificationService {
      * @param reference   - reference string for email template
      * @return response from notification api
      */
-    public SendEmailResponse sendEmail(
+    SendEmailResponse sendEmail(
         String templateId, String targetEmail, Map<String, String> parameters, String reference) {
         SendEmailResponse sendEmailResponse;
         try {
@@ -116,7 +116,7 @@ public class NotificationService {
      * @param casePdfFiles  pdf files of the ET1 form according to selected language
      * @return Gov notify email format
      */
-    public SendEmailResponse sendSubmitCaseConfirmationEmail(CaseRequest caseRequest, CaseData caseData,
+    SendEmailResponse sendSubmitCaseConfirmationEmail(CaseRequest caseRequest, CaseData caseData,
                                                              UserInfo userInfo,
                                                              List<PdfDecodedMultipartFile> casePdfFiles) {
         SendEmailResponse sendEmailResponse = null;
@@ -166,7 +166,7 @@ public class NotificationService {
      * @param acasCertificates  pdf copy of Acas Certificates
      * @return Gov notify email format
      */
-    public SendEmailResponse sendDocUploadErrorEmail(CaseRequest caseRequest,
+    SendEmailResponse sendDocUploadErrorEmail(CaseRequest caseRequest,
                                                      List<PdfDecodedMultipartFile> casePdfFiles,
                                                      List<PdfDecodedMultipartFile> acasCertificates,
                                                      UploadedDocumentType claimDescriptionDocument) {
@@ -226,7 +226,7 @@ public class NotificationService {
      * @param claimantApplication application request data
      * @return Gov notify email format
      */
-    public SendEmailResponse sendAcknowledgementEmailToClaimant(CaseData caseData,
+    SendEmailResponse sendAcknowledgementEmailToClaimant(CaseData caseData,
                                                                 String claimant,
                                                                 String caseNumber,
                                                                 String respondentNames,
@@ -277,7 +277,7 @@ public class NotificationService {
      * @param caseId              16 digit case id
      * @param claimantApplication application request data
      */
-    public void sendAcknowledgementEmailToRespondents(CaseData caseData,
+    void sendAcknowledgementEmailToRespondents(CaseData caseData,
                                                       String claimant,
                                                       String caseNumber,
                                                       String respondentNames,
@@ -342,21 +342,21 @@ public class NotificationService {
      * @param respondentNames concatenated respondent names
      * @param hearingDate     date of the nearest hearing
      * @param caseId          16 digit case id
-     * @param contactApplicationType
+     * @param applicationType type of application
      */
-    public void sendAcknowledgementEmailToTribunal(CaseData caseData,
+    void sendAcknowledgementEmailToTribunal(CaseData caseData,
                                                    String claimant,
                                                    String caseNumber,
                                                    String respondentNames,
                                                    String hearingDate,
                                                    String caseId,
-                                                   String contactApplicationType
+                                                   String applicationType
     ) {
 
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
 
         String subjectLine =
-            String.format(TWO_STRINGS_PATTERN, caseNumber, APP_TYPE_MAP.get(contactApplicationType));
+            String.format(TWO_STRINGS_PATTERN, caseNumber, APP_TYPE_MAP.get(applicationType));
         addCommonParameters(
             tribunalParameters,
             claimant,
@@ -402,7 +402,7 @@ public class NotificationService {
      * @param caseId          16 digit case id
      * @param applicationType type of application
      */
-    public void sendResponseEmailToTribunal(
+    void sendResponseEmailToTribunal(
         CaseData caseData,
         String claimant,
         String caseNumber,
@@ -454,7 +454,7 @@ public class NotificationService {
      * @param applicationType type of application
      * @param copyToOtherParty  whether to notify other party
      */
-    public void sendResponseEmailToClaimant(
+    void sendResponseEmailToClaimant(
         CaseData caseData,
         String claimant,
         String caseNumber,
@@ -523,7 +523,7 @@ public class NotificationService {
      * @param caseId          16 digit case id
      * @param applicationType type of application
      */
-    public void sendResponseEmailToRespondent(
+    void sendResponseEmailToRespondent(
         CaseData caseData,
         String claimant,
         String caseNumber,
@@ -563,7 +563,7 @@ public class NotificationService {
         sendRespondentEmails(caseData, caseId, respondentParameters, emailToRespondentTemplate);
     }
 
-    public void sendResponseNotificationEmailToTribunal(CaseData caseData, String caseId) {
+    void sendResponseNotificationEmailToTribunal(CaseData caseData, String caseId) {
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
         addCommonParameters(tribunalParameters, caseData, caseId);
 
@@ -585,7 +585,7 @@ public class NotificationService {
         );
     }
 
-    public void sendResponseNotificationEmailToRespondent(
+    void sendResponseNotificationEmailToRespondent(
         CaseData caseData,
         String caseId,
         String copyToOtherParty
@@ -612,7 +612,7 @@ public class NotificationService {
                              notificationsProperties.getPseRespondentResponseTemplateId());
     }
 
-    public void sendResponseNotificationEmailToClaimant(
+    void sendResponseNotificationEmailToClaimant(
         CaseData caseData,
         String caseId,
         String copyToOtherParty
