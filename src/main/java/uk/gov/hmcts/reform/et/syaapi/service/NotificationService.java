@@ -67,7 +67,7 @@ import static uk.gov.service.notify.NotificationClient.prepareUpload;
 @Slf4j
 @RequiredArgsConstructor
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
-class NotificationService {
+public class NotificationService {
     static final String NOT_SET = "Not set";
 
     private static final String TWO_STRINGS_PATTERN = "%s %s";
