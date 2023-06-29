@@ -83,6 +83,18 @@ public class NotificationsProperties {
     @NotBlank
     private String tseTribunalResponseTemplateId;
 
+    @Value("${notifications.tse.tribunalResponseToRequest}")
+    @NotBlank
+    private String tseTribunalResponseToRequestTemplateId;
+
+    @Value("${notifications.tse.claimantResponseToRequestYes}")
+    @NotBlank
+    private String tseClaimantResponseToRequestYesTemplateId;
+
+    @Value("${notifications.tse.claimantResponseToRequestNo}")
+    @NotBlank
+    private String tseClaimantResponseToRequestNoTemplateId;
+
     @Value("${notifications.tse.respondentResponse}")
     @NotBlank
     private String tseRespondentResponseTemplateId;

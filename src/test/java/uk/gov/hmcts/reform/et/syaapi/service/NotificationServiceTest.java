@@ -95,6 +95,13 @@ class NotificationServiceTest {
             .willReturn("claimantResponseYesTemplateId");
         given(notificationsProperties.getPseClaimantResponseNoTemplateId())
             .willReturn("claimantResponseNoTemplateId");
+
+        given(notificationsProperties.getTseTribunalResponseToRequestTemplateId())
+            .willReturn("tseTribunalResponseToRequestTemplateId");
+        given(notificationsProperties.getTseClaimantResponseToRequestYesTemplateId())
+            .willReturn("tseClaimantResponseToRequestYesTemplateId");
+        given(notificationsProperties.getTseClaimantResponseToRequestNoTemplateId())
+            .willReturn("tseClaimantResponseToRequestNoTemplateId");
         testData = new TestData();
     }
 
@@ -550,7 +557,8 @@ class NotificationServiceTest {
             TEST_RESPONDENT,
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
-            CHANGE_DETAILS_APPLICATION_TYPE
+            CHANGE_DETAILS_APPLICATION_TYPE,
+            false
         );
 
         verify(notificationClient, times(1)).sendEmail(
@@ -571,7 +579,8 @@ class NotificationServiceTest {
             TEST_RESPONDENT,
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
-            CHANGE_DETAILS_APPLICATION_TYPE
+            CHANGE_DETAILS_APPLICATION_TYPE,
+            false
         );
 
         verify(notificationClient, times(0)).sendEmail(
@@ -592,7 +601,8 @@ class NotificationServiceTest {
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
             CHANGE_DETAILS_APPLICATION_TYPE,
-            "No"
+            "No",
+            false
         );
 
         verify(notificationClient, times(1)).sendEmail(
@@ -614,7 +624,8 @@ class NotificationServiceTest {
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
             CHANGE_DETAILS_APPLICATION_TYPE,
-            "No"
+            "No",
+            false
         );
 
         verify(notificationClient, times(0)).sendEmail(
@@ -635,7 +646,8 @@ class NotificationServiceTest {
             NOT_SET,
             testData.getExpectedDetails().getId().toString(),
             WITNESS,
-            "No"
+            "No",
+            false
         );
 
         verify(notificationClient, times(0)).sendEmail(
@@ -891,6 +903,59 @@ class NotificationServiceTest {
             any(),
             any(),
             any()
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("responseToRequestArguments")
+    void sendResponseToRequestNotificationEmailToClaimant(String yesOrNo, String template)
+        throws NotificationClientException {
+        notificationService.sendResponseEmailToClaimant(
+            testData.getCaseData(),
+            CLAIMANT,
+            "1",
+            TEST_RESPONDENT,
+            NOT_SET,
+            testData.getExpectedDetails().getId().toString(),
+            CHANGE_DETAILS_APPLICATION_TYPE,
+            yesOrNo,
+            true
+        );
+
+        verify(notificationClient, times(1)).sendEmail(
+            eq(template),
+            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void shouldSendResponseToRequestEmailToTribunal() throws NotificationClientException {
+        testData.getCaseData().setTribunalCorrespondenceEmail("tribunal@test.com");
+        notificationService.sendResponseEmailToTribunal(
+            testData.getCaseData(),
+            CLAIMANT,
+            "1",
+            TEST_RESPONDENT,
+            NOT_SET,
+            testData.getExpectedDetails().getId().toString(),
+            CHANGE_DETAILS_APPLICATION_TYPE,
+            true
+        );
+
+        verify(notificationClient, times(1)).sendEmail(
+            eq("tseTribunalResponseToRequestTemplateId"),
+            eq(testData.getCaseData().getTribunalCorrespondenceEmail()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    private static Stream<Arguments> responseToRequestArguments() {
+        return Stream.of(
+            Arguments.of("Yes", "tseClaimantResponseToRequestYesTemplateId"),
+            Arguments.of("No", "tseClaimantResponseToRequestNoTemplateId")
         );
     }
 }

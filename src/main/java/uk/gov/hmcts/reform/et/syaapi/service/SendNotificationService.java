@@ -84,7 +84,6 @@ public class SendNotificationService {
             request.getCaseTypeId(),
             CaseEvent.UPDATE_NOTIFICATION_RESPONSE
         );
-
         CaseData caseData = EmployeeObjectMapper
             .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
         var sendNotificationTypeItem =

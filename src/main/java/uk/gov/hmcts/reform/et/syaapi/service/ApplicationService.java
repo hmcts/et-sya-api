@@ -136,7 +136,8 @@ public class ApplicationService {
             request.getCaseTypeId()
         );
 
-        sendResponseToApplicationEmails(appType, caseData, request.getCaseId(), request);
+        sendResponseToApplicationEmails(appType, caseData, request.getCaseId(),
+                                        request, request.getIsRespondingToRequestOrOrder());
 
         return caseDetails;
     }
@@ -255,7 +256,9 @@ public class ApplicationService {
     private void sendResponseToApplicationEmails(GenericTseApplicationType application,
                                                  CaseData caseData,
                                                  String caseId,
-                                                 RespondToApplicationRequest respondToApplicationRequest) {
+                                                 RespondToApplicationRequest respondToApplicationRequest,
+                                                 Boolean isRespondingToRequestOrOrder
+                                                 ) {
         ClaimantIndType claimantIndType = caseData.getClaimantIndType();
         String claimant = claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName();
 
@@ -272,7 +275,8 @@ public class ApplicationService {
             respondentNames,
             hearingDate,
             caseId,
-            type
+            type,
+            isRespondingToRequestOrOrder
         );
 
         notificationService.sendResponseEmailToClaimant(
@@ -283,7 +287,8 @@ public class ApplicationService {
             hearingDate,
             caseId,
             type,
-            copyToOtherParty
+            copyToOtherParty,
+            isRespondingToRequestOrOrder
         );
 
         notificationService.sendResponseEmailToRespondent(
