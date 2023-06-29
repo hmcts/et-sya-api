@@ -7,6 +7,7 @@
     "document_filename" : "filename",
     "document_url" : "https://document.url"
   },
+  "isRespondingToRequestOrOrder": false,
   "response": {
     "response": "Need help",
     "hasSupportingMaterial": "Yes",

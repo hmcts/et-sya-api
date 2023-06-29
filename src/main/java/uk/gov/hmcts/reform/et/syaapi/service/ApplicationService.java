@@ -121,6 +121,7 @@ public class ApplicationService {
 
         String copyToOtherParty = request.getResponse().getCopyToOtherParty();
         GenericTseApplicationType appType = appToModify.getValue();
+
         if (YES.equals(appType.getClaimantResponseRequired())) {
             appType.setApplicationState(IN_PROGRESS);
             appType.setClaimantResponseRequired(NO);
@@ -132,7 +133,8 @@ public class ApplicationService {
                 copyToOtherParty
             );
         } else {
-            sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty);
+            sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty,
+                                            request.getIsRespondingToRequestOrOrder());
         }
 
         TseApplicationHelper.setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService);
@@ -230,7 +232,8 @@ public class ApplicationService {
         GenericTseApplicationType application,
         CaseData caseData,
         String caseId,
-        String copyToOtherParty
+        String copyToOtherParty,
+        Boolean isRespondingToRequestOrOrder
     ) {
         ClaimantIndType claimantIndType = caseData.getClaimantIndType();
 
@@ -244,8 +247,8 @@ public class ApplicationService {
         );
         String type = application.getType();
 
-        notificationService.sendResponseEmailToTribunal(details, type);
-        notificationService.sendResponseEmailToClaimant(details, type, copyToOtherParty);
+        notificationService.sendResponseEmailToTribunal(details, type, isRespondingToRequestOrOrder);
+        notificationService.sendResponseEmailToClaimant(details, type, copyToOtherParty, isRespondingToRequestOrOrder);
         notificationService.sendResponseEmailToRespondent(details, type, copyToOtherParty);
     }
 

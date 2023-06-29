@@ -339,7 +339,8 @@ class ApplicationServiceTest {
             verify(notificationService, times(1)).sendResponseEmailToClaimant(
                 argument.capture(),
                 eq("Amend details"),
-                eq("No")
+                eq("No"),
+                eq(false)
             );
 
             CoreEmailDetails coreEmailDetails = argument.getValue();

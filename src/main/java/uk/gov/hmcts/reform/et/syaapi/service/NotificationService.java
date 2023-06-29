@@ -379,8 +379,10 @@ public class NotificationService {
      *
      * @param details core details of the email
      * @param applicationType type of application
+     * @param isRespondingToRequestOrOrder indicates whether the reply is to a tribunal order or not
      */
-    void sendResponseEmailToTribunal(CoreEmailDetails details, String applicationType) {
+    void sendResponseEmailToTribunal(CoreEmailDetails details, String applicationType,
+                                     Boolean isRespondingToRequestOrOrder) {
         String subjectLine = String.format(TWO_STRINGS_PATTERN, details.caseNumber, applicationType);
 
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
@@ -403,11 +405,15 @@ public class NotificationService {
             String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), details.caseId)
         );
 
+        String emailTemplate = isRespondingToRequestOrOrder
+            ? notificationsProperties.getTseTribunalResponseToRequestTemplateId()
+            : notificationsProperties.getTseTribunalResponseTemplateId();
+
         sendTribunalEmail(
             details.caseData,
             details.caseId,
             tribunalParameters,
-            notificationsProperties.getTseTribunalResponseTemplateId()
+            emailTemplate
         );
     }
 
@@ -418,8 +424,10 @@ public class NotificationService {
      * @param details core details of the email
      * @param applicationType type of application
      * @param copyToOtherParty  whether to notify other party
+     * @param isRespondingToRequestOrOrder indicates whether the reply is to a tribunal order or not
      */
-    void sendResponseEmailToClaimant(CoreEmailDetails details, String applicationType, String copyToOtherParty) {
+    void sendResponseEmailToClaimant(CoreEmailDetails details, String applicationType, String copyToOtherParty,
+                                     Boolean isRespondingToRequestOrOrder) {
         if (TYPE_C.equals(applicationType)) {
             log.info("Type C application -  Claimant is only notified of "
                          + "Type A/B application responses, email not being sent");
@@ -452,9 +460,16 @@ public class NotificationService {
             String.format(CONCAT2STRINGS, notificationsProperties.getCitizenPortalLink(), details.caseId)
         );
 
-        String emailToClaimantTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
-            ? notificationsProperties.getTseClaimantResponseNoTemplateId()
-            : notificationsProperties.getTseClaimantResponseYesTemplateId();
+        String emailToClaimantTemplate;
+        if (isRespondingToRequestOrOrder) {
+            emailToClaimantTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
+                ? notificationsProperties.getTseClaimantResponseToRequestNoTemplateId()
+                : notificationsProperties.getTseClaimantResponseToRequestYesTemplateId();
+        } else {
+            emailToClaimantTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
+                ? notificationsProperties.getTseClaimantResponseNoTemplateId()
+                : notificationsProperties.getTseClaimantResponseYesTemplateId();
+        }
 
         try {
             notificationClient.sendEmail(
