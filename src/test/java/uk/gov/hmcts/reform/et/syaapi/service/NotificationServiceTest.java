@@ -90,7 +90,7 @@ class NotificationServiceTest {
             .willReturn(TestConstants.SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID);
         given(notificationsProperties.getCitizenPortalLink()).willReturn(TestConstants.REFERENCE_STRING);
         given(notificationsProperties.getClaimantTseEmailNoTemplateId()).willReturn("No");
-        given(notificationsProperties.getClaimantTseEmailYesTemplateId()).willReturn("Yes");
+        given(notificationsProperties.getClaimantTseEmailYesTemplateId()).willReturn(YES);
         given(notificationsProperties.getClaimantTseEmailTypeCTemplateId()).willReturn("C");
         given(notificationsProperties.getTribunalAcknowledgementTemplateId()).willReturn("Tribunal");
         given(notificationsProperties.getRespondentTseEmailTypeATemplateId()).willReturn("A");
@@ -378,7 +378,7 @@ class NotificationServiceTest {
         @Test
         void shouldSendCopyYesEmail() throws NotificationClientException, IOException {
             when(notificationClient.sendEmail(
-                eq("Yes"),
+                eq(YES),
                 eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
                 any(),
                 eq(testData.getExpectedDetails().getId().toString())
@@ -701,7 +701,7 @@ class NotificationServiceTest {
 
         private static Stream<Arguments> responseToRequestArguments() {
             return Stream.of(
-                Arguments.of("Yes", "tseClaimantResponseToRequestYesTemplateId"),
+                Arguments.of(YES, "tseClaimantResponseToRequestYesTemplateId"),
                 Arguments.of("No", "tseClaimantResponseToRequestNoTemplateId")
             );
         }
@@ -725,7 +725,7 @@ class NotificationServiceTest {
                 caseData,
                 "1",
                 testData.getExpectedDetails().getId().toString(),
-                "Yes"
+                YES
             );
 
             verify(notificationClient, times(1)).sendEmail(
