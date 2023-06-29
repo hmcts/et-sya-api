@@ -9,20 +9,6 @@
     <cve>CVE-2018-1258</cve>
   </suppress>
   <suppress>
-   <notes><![CDATA[
-   file name: json-20220924.jar
-   ]]></notes>
-   <packageUrl regex="true">^pkg:maven/org\.json/json@.*$</packageUrl>
-   <cve>CVE-2022-45688</cve>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: jackson-core-2.13.4.jar
-   ]]></notes>
-   <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-core@.*$</packageUrl>
-   <cve>CVE-2022-45688</cve>
-  </suppress>
-  <suppress>
     <notes><![CDATA[
         CVE is a json vulnerability for Node projects. False positive reported at https://github.com/jeremylong/DependencyCheck/issues/2794
     ]]></notes>
@@ -34,22 +20,12 @@
     <cve>CVE-2021-29425</cve>
   </suppress>
   <suppress>
-    <notes>Suppresses snakeyaml-1.30.jar </notes>
-    <cve>CVE-2022-38749</cve>
-    <cve>CVE-2022-38751</cve>
-    <cve>CVE-2022-38750</cve>
-  </suppress>
-  <suppress>
     <notes>Suppresses spring-web-5.3.22.jar</notes>
     <cve>CVE-2016-1000027</cve>
   </suppress>
   <suppress>
     <notes>Suppresses spring-security-crypto-5.7.5.jar vulnerabilities</notes>
     <cve>CVE-2020-5408</cve>
-  </suppress>
-  <suppress>
-    <notes>Suppresses snakeyaml-1.30.jar vulnerabilities</notes>
-    <cve>CVE-2022-25857</cve>
   </suppress>
   <suppress>
     <notes>Suppresses tomcat embedded version tomcat-embed-core-9.0.56.jar vulnerabilities</notes>
@@ -104,13 +80,6 @@
   </suppress>
   <suppress>
     <notes><![CDATA[
-   file name: snakeyaml-1.30.jar
-   ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
-    <cve>CVE-2022-38749</cve>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
    file name: spring-web-5.3.22.jar
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-web@.*$</packageUrl>
@@ -157,20 +126,6 @@
     <packageUrl regex="true">^pkg:maven/org\.json/json@.*$</packageUrl>
     <cpe>cpe:/a:json-java_project:json-java</cpe>
   </suppress>
-  <suppress>
-    <notes><![CDATA[
-   file name: jackson-core-2.14.2.jar
-   ]]></notes>
-    <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-core@.*$</packageUrl>
-    <cve>CVE-2022-45688</cve>
-  </suppress>
-  <suppress>
-   <notes><![CDATA[
-   file name: snakeyaml-1.33.jar
-   ]]></notes>
-   <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
-   <cve>CVE-2022-1471</cve>
-</suppress>
   <suppress>
     <notes><![CDATA[
    file name: spring-aop-5.3.23.jar
@@ -220,4 +175,11 @@
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-expression@.*$</packageUrl>
     <cve>CVE-2023-20861</cve>
   </suppress>
+  <suppress>
+   <notes><![CDATA[
+   file name: jackson-databind-2.14.2.jar
+   ]]></notes>
+   <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
+   <cpe>cpe:/a:fasterxml:jackson-databind</cpe>
+</suppress>
 </suppressions>
