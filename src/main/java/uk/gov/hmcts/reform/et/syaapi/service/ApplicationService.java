@@ -137,7 +137,7 @@ public class ApplicationService {
         );
 
         sendResponseToApplicationEmails(appType, caseData, request.getCaseId(),
-                                        request, request.getIsRespondingToRequestOrOrder());
+                                        request, request.isRespondingToRequestOrOrder());
 
         return caseDetails;
     }
@@ -257,7 +257,7 @@ public class ApplicationService {
                                                  CaseData caseData,
                                                  String caseId,
                                                  RespondToApplicationRequest respondToApplicationRequest,
-                                                 Boolean isRespondingToRequestOrOrder
+                                                 boolean isRespondingToRequestOrOrder
                                                  ) {
         ClaimantIndType claimantIndType = caseData.getClaimantIndType();
         String claimant = claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName();
