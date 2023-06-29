@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.NotificationService.CoreEmailDetails;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 
@@ -200,48 +201,29 @@ public class ApplicationService {
         }
     }
 
-    private void sendAcknowledgementEmails(String authorization,
-                                           ClaimantApplicationRequest request,
-                                           CaseDetails finalCaseDetails) throws NotificationClientException {
+    private void sendAcknowledgementEmails(
+        String authorization,
+        ClaimantApplicationRequest request,
+        CaseDetails finalCaseDetails
+    ) throws NotificationClientException {
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(finalCaseDetails.getData());
-        String claimant = caseData.getClaimantIndType().getClaimantFirstNames() + " "
-            + caseData.getClaimantIndType().getClaimantLastName();
-        String caseNumber = caseData.getEthosCaseReference();
-        String respondentNames = getRespondentNames(caseData);
-        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
-        String caseId = finalCaseDetails.getId().toString();
+        ClaimantIndType claimantIndType = caseData.getClaimantIndType();
+
+        CoreEmailDetails details = new CoreEmailDetails(
+            caseData,
+            claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName(),
+            caseData.getEthosCaseReference(),
+            getRespondentNames(caseData),
+            NotificationsHelper.getNearestHearingToReferral(caseData, "Not set"),
+            finalCaseDetails.getId().toString()
+        );
 
         ClaimantTse claimantTse = request.getClaimantTse();
-        notificationService.sendAcknowledgementEmailToClaimant(
-            caseData,
-            claimant,
-            caseNumber,
-            respondentNames,
-            hearingDate,
-            caseId,
-            claimantTse
-        );
         JSONObject documentJson = getDocumentDownload(authorization, caseData);
 
-        notificationService.sendAcknowledgementEmailToRespondents(
-            caseData,
-            claimant,
-            caseNumber,
-            respondentNames,
-            hearingDate,
-            caseId,
-            documentJson, claimantTse
-        );
-
-        notificationService.sendAcknowledgementEmailToTribunal(
-            caseData,
-            claimant,
-            caseNumber,
-            respondentNames,
-            hearingDate,
-            caseId,
-            claimantTse.getContactApplicationType()
-        );
+        notificationService.sendAcknowledgementEmailToClaimant(details, claimantTse);
+        notificationService.sendAcknowledgementEmailToRespondents(details, documentJson, claimantTse);
+        notificationService.sendAcknowledgementEmailToTribunal(details, claimantTse.getContactApplicationType());
     }
 
     private void sendResponseToApplicationEmails(
@@ -251,49 +233,23 @@ public class ApplicationService {
         String copyToOtherParty
     ) {
         ClaimantIndType claimantIndType = caseData.getClaimantIndType();
-        String claimant = claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName();
 
-        String caseNumber = caseData.getEthosCaseReference();
-        String respondentNames = getRespondentNames(caseData);
-        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
+        CoreEmailDetails details = new CoreEmailDetails(
+            caseData,
+            claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName(),
+            caseData.getEthosCaseReference(),
+            getRespondentNames(caseData),
+            NotificationsHelper.getNearestHearingToReferral(caseData, "Not set"),
+            caseId
+        );
         String type = application.getType();
 
-        notificationService.sendResponseEmailToTribunal(
-            caseData,
-            claimant,
-            caseNumber,
-            respondentNames,
-            hearingDate,
-            caseId,
-            type
-        );
-
-        notificationService.sendResponseEmailToClaimant(
-            caseData,
-            claimant,
-            caseNumber,
-            respondentNames,
-            hearingDate,
-            caseId,
-            type,
-            copyToOtherParty
-        );
-
-        notificationService.sendResponseEmailToRespondent(
-            caseData,
-            claimant,
-            caseNumber,
-            respondentNames,
-            hearingDate,
-            caseId,
-            type,
-            copyToOtherParty
-        );
+        notificationService.sendResponseEmailToTribunal(details, type);
+        notificationService.sendResponseEmailToClaimant(details, type, copyToOtherParty);
+        notificationService.sendResponseEmailToRespondent(details, type, copyToOtherParty);
     }
 
-    private JSONObject getDocumentDownload(String authorization, CaseData caseData)
-        throws NotificationClientException {
-
+    private JSONObject getDocumentDownload(String authorization, CaseData caseData) throws NotificationClientException {
         List<DocumentTypeItem> tseFiles = caseData.getDocumentCollection().stream()
             .filter(n -> TSE_FILENAME.equals(n.getValue().getUploadedDocument().getDocumentFilename()))
             .toList();

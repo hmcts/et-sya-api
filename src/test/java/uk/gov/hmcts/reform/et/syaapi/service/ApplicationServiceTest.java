@@ -17,12 +17,14 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
+import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.NotificationService.CoreEmailDetails;
 import uk.gov.service.notify.NotificationClientException;
 
 import java.util.stream.Stream;
@@ -105,81 +107,89 @@ class ApplicationServiceTest {
 
     @Test
     void shouldSendClaimantEmailWithCorrectParameters() throws NotificationClientException {
-        applicationService.submitApplication(
-            TEST_SERVICE_AUTH_TOKEN,
-            testData.getClaimantApplicationRequest()
-        );
+        applicationService.submitApplication(TEST_SERVICE_AUTH_TOKEN, testData.getClaimantApplicationRequest());
+
+        ArgumentCaptor<CoreEmailDetails> argument = ArgumentCaptor.forClass(CoreEmailDetails.class);
         verify(notificationService, times(1)).sendAcknowledgementEmailToClaimant(
-            any(),
-            eq(CLAIMANT),
-            eq(CASE_REF),
-            eq(RESPONDENT_LIST),
-            eq(NOT_SET),
-            eq(CASE_ID),
+            argument.capture(),
             any()
         );
+
+        CoreEmailDetails coreEmailDetails = argument.getValue();
+        assertThat(coreEmailDetails.caseData()).isNotNull();
+        assertThat(coreEmailDetails.claimant()).isEqualTo(CLAIMANT);
+        assertThat(coreEmailDetails.caseNumber()).isEqualTo(CASE_REF);
+        assertThat(coreEmailDetails.respondentNames()).isEqualTo(RESPONDENT_LIST);
+        assertThat(coreEmailDetails.hearingDate()).isEqualTo(NOT_SET);
+        assertThat(coreEmailDetails.caseId()).isEqualTo(CASE_ID);
     }
 
-    @Test
-    void shouldSendRespondentEmailWithCorrectParameters() throws NotificationClientException {
-        byte[] bytes = "Sample".getBytes();
-        ResponseEntity<ByteArrayResource> responseEntity =
-            new ResponseEntity<>(new ByteArrayResource(bytes), HttpStatus.OK);
+    @Nested
+    class SubmitApplication {
+        @Test
+        void shouldSendRespondentEmailWithCorrectParameters() throws NotificationClientException {
+            byte[] bytes = "Sample".getBytes();
+            ResponseEntity<ByteArrayResource> responseEntity =
+                new ResponseEntity<>(new ByteArrayResource(bytes), HttpStatus.OK);
 
-        when(caseDocumentService.downloadDocument(eq(TEST_SERVICE_AUTH_TOKEN), any())).thenReturn(responseEntity);
+            when(caseDocumentService.downloadDocument(eq(TEST_SERVICE_AUTH_TOKEN), any())).thenReturn(responseEntity);
 
-        applicationService.submitApplication(
-            TEST_SERVICE_AUTH_TOKEN,
-            testData.getClaimantApplicationRequest()
-        );
+            applicationService.submitApplication(TEST_SERVICE_AUTH_TOKEN, testData.getClaimantApplicationRequest());
 
-        verify(notificationService, times(1)).sendAcknowledgementEmailToRespondents(
-            any(),
-            eq(CLAIMANT),
-            eq(CASE_REF),
-            eq(RESPONDENT_LIST),
-            eq(NOT_SET),
-            eq(CASE_ID),
-            any(),
-            any()
-        );
-    }
+            ArgumentCaptor<CoreEmailDetails> argument = ArgumentCaptor.forClass(CoreEmailDetails.class);
+            verify(notificationService, times(1)).sendAcknowledgementEmailToRespondents(
+                argument.capture(),
+                any(),
+                any()
+            );
 
-    @Test
-    void shouldSendRespondentEmailWithNoSupportingDocument() throws NotificationClientException {
-        applicationService.submitApplication(
-            TEST_SERVICE_AUTH_TOKEN,
-            testData.getClaimantApplicationRequest()
-        );
+            CoreEmailDetails coreEmailDetails = argument.getValue();
+            assertThat(coreEmailDetails.caseData()).isNotNull();
+            assertThat(coreEmailDetails.claimant()).isEqualTo(CLAIMANT);
+            assertThat(coreEmailDetails.caseNumber()).isEqualTo(CASE_REF);
+            assertThat(coreEmailDetails.respondentNames()).isEqualTo(RESPONDENT_LIST);
+            assertThat(coreEmailDetails.hearingDate()).isEqualTo(NOT_SET);
+            assertThat(coreEmailDetails.caseId()).isEqualTo(CASE_ID);
+        }
 
-        verify(notificationService, times(1)).sendAcknowledgementEmailToRespondents(
-            any(),
-            eq(CLAIMANT),
-            eq(CASE_REF),
-            eq(RESPONDENT_LIST),
-            eq(NOT_SET),
-            eq(CASE_ID),
-            eq(null),
-            any()
-        );
+        @Test
+        void shouldSendRespondentEmailWithNoSupportingDocument() throws NotificationClientException {
+            applicationService.submitApplication(TEST_SERVICE_AUTH_TOKEN, testData.getClaimantApplicationRequest());
+
+            ArgumentCaptor<CoreEmailDetails> argument = ArgumentCaptor.forClass(CoreEmailDetails.class);
+            verify(notificationService, times(1)).sendAcknowledgementEmailToRespondents(
+                argument.capture(),
+                eq(null),
+                any()
+            );
+
+            CoreEmailDetails coreEmailDetails = argument.getValue();
+            assertThat(coreEmailDetails.caseData()).isNotNull();
+            assertThat(coreEmailDetails.claimant()).isEqualTo(CLAIMANT);
+            assertThat(coreEmailDetails.caseNumber()).isEqualTo(CASE_REF);
+            assertThat(coreEmailDetails.respondentNames()).isEqualTo(RESPONDENT_LIST);
+            assertThat(coreEmailDetails.hearingDate()).isEqualTo(NOT_SET);
+            assertThat(coreEmailDetails.caseId()).isEqualTo(CASE_ID);
+        }
     }
 
     @Test
     void shouldSendTribunalEmailWithCorrectParameters() throws NotificationClientException {
-        applicationService.submitApplication(
-            TEST_SERVICE_AUTH_TOKEN,
-            testData.getClaimantApplicationRequest()
-        );
+        applicationService.submitApplication(TEST_SERVICE_AUTH_TOKEN, testData.getClaimantApplicationRequest());
 
+        ArgumentCaptor<CoreEmailDetails> argument = ArgumentCaptor.forClass(CoreEmailDetails.class);
         verify(notificationService, times(1)).sendAcknowledgementEmailToTribunal(
-            any(),
-            eq(CLAIMANT),
-            eq(CASE_REF),
-            eq(RESPONDENT_LIST),
-            eq(NOT_SET),
-            eq(CASE_ID),
+            argument.capture(),
             any()
         );
+
+        CoreEmailDetails coreEmailDetails = argument.getValue();
+        assertThat(coreEmailDetails.caseData()).isNotNull();
+        assertThat(coreEmailDetails.claimant()).isEqualTo(CLAIMANT);
+        assertThat(coreEmailDetails.caseNumber()).isEqualTo(CASE_REF);
+        assertThat(coreEmailDetails.respondentNames()).isEqualTo(RESPONDENT_LIST);
+        assertThat(coreEmailDetails.hearingDate()).isEqualTo(NOT_SET);
+        assertThat(coreEmailDetails.caseId()).isEqualTo(CASE_ID);
     }
 
     @Test
@@ -206,16 +216,18 @@ class ApplicationServiceTest {
     @Nested
     class RespondToApplicationReplyToTribunal {
         RespondToApplicationRequest testRequest;
+        StartEventResponse updateCaseEventResponse;
 
         @BeforeEach
         void setUp() {
             testRequest = testData.getRespondToApplicationRequest();
+            updateCaseEventResponse = testData.getUpdateCaseEventResponse();
             when(caseService.startUpdate(
                 TEST_SERVICE_AUTH_TOKEN,
                 testRequest.getCaseId(),
                 testRequest.getCaseTypeId(),
                 CaseEvent.CLAIMANT_TSE_RESPOND
-            )).thenReturn(testData.getUpdateCaseEventResponse());
+            )).thenReturn(updateCaseEventResponse);
         }
 
         @Test
@@ -323,16 +335,20 @@ class ApplicationServiceTest {
                 testRequest
             );
 
+            ArgumentCaptor<CoreEmailDetails> argument = ArgumentCaptor.forClass(CoreEmailDetails.class);
             verify(notificationService, times(1)).sendResponseEmailToClaimant(
-                any(),
-                eq(CLAIMANT),
-                eq(CASE_ID),
-                eq(""),
-                eq(NOT_SET),
-                eq("12345"),
+                argument.capture(),
                 eq("Amend details"),
                 eq("No")
             );
+
+            CoreEmailDetails coreEmailDetails = argument.getValue();
+            assertThat(coreEmailDetails.caseData()).isNotNull();
+            assertThat(coreEmailDetails.claimant()).isEqualTo(CLAIMANT);
+            assertThat(coreEmailDetails.caseNumber()).isEqualTo(CASE_ID); // says case_id but is case ethos number
+            assertThat(coreEmailDetails.respondentNames()).isEmpty();
+            assertThat(coreEmailDetails.hearingDate()).isEqualTo(NOT_SET);
+            assertThat(coreEmailDetails.caseId()).isEqualTo("12345");
         }
 
         @ParameterizedTest
