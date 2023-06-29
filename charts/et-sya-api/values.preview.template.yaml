@@ -24,3 +24,29 @@ java:
         - AppInsightsInstrumentationKey
         - name: gov-notify-api-key
           alias: GOV_NOTIFY_API_KEY
+et-sya:
+  nodejs:
+    imagePullPolicy: Always
+    image: hmctspublic.azurecr.io/et/sya:latest # or pr
+    releaseNameOverride: ${SERVICE_NAME}-et-sya
+    ingressHost: et-sya-${SERVICE_FQDN}
+    keyVaults:
+      et:
+        resourceGroup: et
+        secrets:
+          - AppInsightsInstrumentationKey
+          - idam-secret
+          - redis-access-key
+          - os-places-token
+          - pcq-token-key
+    environment:
+      IDAM_WEB_URL: https://idam-web-public.aat.platform.hmcts.net/login
+      IDAM_API_URL: https://idam-api.aat.platform.hmcts.net/o/token
+      REDIS_HOST: et-sya-session-storage-aat.redis.cache.windows.net
+      ET_SYA_API_HOST: http://{{ .Release.Name }}-et-sya-api
+      PCQ_ENABLED: true
+
+idam-pr:
+  redirect_uris:
+    ET Citizen Submit Your Appeal:
+      - https://et-sya-${SERVICE_FQDN}/oauth2/callback
