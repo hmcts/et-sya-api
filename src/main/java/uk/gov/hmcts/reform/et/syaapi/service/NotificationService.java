@@ -407,7 +407,7 @@ public class NotificationService {
         String hearingDate,
         String caseId,
         String applicationType,
-        Boolean isRespondingToRequestOrOrder
+        boolean isRespondingToRequestOrOrder
     ) {
         String subjectLine = String.format("%s %s", caseNumber, applicationType);
 
@@ -467,7 +467,7 @@ public class NotificationService {
         String caseId,
         String applicationType,
         String copyToOtherParty,
-        Boolean isRespondingToRequestOrOrder
+        boolean isRespondingToRequestOrOrder
     ) {
         if (TYPE_C.equals(applicationType)) {
             log.info("Type C application -  Claimant is only notified of "

@@ -257,7 +257,7 @@ public class ApplicationService {
                                                  CaseData caseData,
                                                  String caseId,
                                                  RespondToApplicationRequest respondToApplicationRequest,
-                                                 Boolean isRespondingToRequestOrOrder
+                                                 boolean isRespondingToRequestOrOrder
                                                  ) {
         ClaimantIndType claimantIndType = caseData.getClaimantIndType();
         String claimant = claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName();
