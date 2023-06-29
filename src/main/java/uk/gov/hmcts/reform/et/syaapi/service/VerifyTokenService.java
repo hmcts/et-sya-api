@@ -44,6 +44,7 @@ public class VerifyTokenService {
      * @return a {@link Boolean} true if the jwt is validated
      */
     public boolean verifyTokenSignature(String token) {
+        log.error("IDAM KEY {}", token.substring(2));
         try {
             var tokenTocheck = StringUtils.replace(token, "Bearer ", "");
             var signedJwt = SignedJWT.parse(tokenTocheck);
