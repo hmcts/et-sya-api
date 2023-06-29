@@ -95,6 +95,13 @@ class NotificationServiceTest {
             .willReturn("claimantResponseYesTemplateId");
         given(notificationsProperties.getPseClaimantResponseNoTemplateId())
             .willReturn("claimantResponseNoTemplateId");
+
+        given(notificationsProperties.getTseTribunalResponseToRequestTemplateId())
+            .willReturn("tseTribunalResponseToRequestTemplateId");
+        given(notificationsProperties.getTseClaimantResponseToRequestYesTemplateId())
+            .willReturn("tseClaimantResponseToRequestYesTemplateId");
+        given(notificationsProperties.getTseClaimantResponseToRequestNoTemplateId())
+            .willReturn("tseClaimantResponseToRequestNoTemplateId");
         testData = new TestData();
     }
 
@@ -896,6 +903,73 @@ class NotificationServiceTest {
             any(),
             any(),
             any()
+        );
+    }
+
+    @Test
+    void sendResponseToRequestYesNotificationEmailToClaimant() throws NotificationClientException {
+
+        notificationService.sendResponseEmailToClaimant(
+            testData.getCaseData(),
+            CLAIMANT,
+            "1",
+            TEST_RESPONDENT,
+            NOT_SET,
+            testData.getExpectedDetails().getId().toString(),
+            CHANGE_DETAILS_APPLICATION_TYPE,
+            "Yes",
+            true
+        );
+
+        verify(notificationClient, times(1)).sendEmail(
+            eq("tseClaimantResponseToRequestYesTemplateId"),
+            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void sendResponseToRequestNoNotificationEmailToClaimant() throws NotificationClientException {
+        notificationService.sendResponseEmailToClaimant(
+            testData.getCaseData(),
+            CLAIMANT,
+            "1",
+            TEST_RESPONDENT,
+            NOT_SET,
+            testData.getExpectedDetails().getId().toString(),
+            CHANGE_DETAILS_APPLICATION_TYPE,
+            "No",
+            true
+        );
+
+        verify(notificationClient, times(1)).sendEmail(
+            eq("tseClaimantResponseToRequestNoTemplateId"),
+            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void shouldSendResponseToRequestEmailToTribunal() throws NotificationClientException {
+        testData.getCaseData().setTribunalCorrespondenceEmail("tribunal@test.com");
+        notificationService.sendResponseEmailToTribunal(
+            testData.getCaseData(),
+            CLAIMANT,
+            "1",
+            TEST_RESPONDENT,
+            NOT_SET,
+            testData.getExpectedDetails().getId().toString(),
+            CHANGE_DETAILS_APPLICATION_TYPE,
+            true
+        );
+
+        verify(notificationClient, times(1)).sendEmail(
+            eq("tseTribunalResponseToRequestTemplateId"),
+            eq(testData.getCaseData().getTribunalCorrespondenceEmail()),
+            any(),
+            eq(testData.getExpectedDetails().getId().toString())
         );
     }
 }
