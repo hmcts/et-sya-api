@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.et.syaapi.utils;
+package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;

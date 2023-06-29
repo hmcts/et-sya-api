@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.et.syaapi.service.util;
+package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -17,10 +17,10 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.FILE_NOT_EX
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 
 @Slf4j
-public final class ServiceUtil {
+public final class GenericServiceUtil {
 
-    private ServiceUtil() {
-
+    private GenericServiceUtil() {
+        // Utility classes should not have a public or default constructor.
     }
 
     public static String findClaimantLanguage(CaseData caseData) {

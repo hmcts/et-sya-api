@@ -15,7 +15,7 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificateRequest;
-import uk.gov.hmcts.reform.et.syaapi.service.util.ServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -160,13 +160,13 @@ public class AcasService {
             }
             acasCertificates = getCertificates(acasCertificateNumbers.toArray(new String[0]));
         } catch (AcasException e) {
-            ServiceUtil.logException("Failed to connect to ACAS service.",
-                                     caseData.getEthosCaseReference(), e.getMessage(),
-                                     this.getClass().getName(), "getAcasCertificatesByCaseData");
+            GenericServiceUtil.logException("Failed to connect to ACAS service.",
+                                            caseData.getEthosCaseReference(), e.getMessage(),
+                                            this.getClass().getName(), "getAcasCertificatesByCaseData");
         } catch (InvalidAcasNumbersException e) {
-            ServiceUtil.logException("Invalid ACAS numbers.",
-                                     caseData.getEthosCaseReference(), e.getMessage(),
-                                     this.getClass().getName(), "getAcasCertificatesByCaseData");
+            GenericServiceUtil.logException("Invalid ACAS numbers.",
+                                            caseData.getEthosCaseReference(), e.getMessage(),
+                                            this.getClass().getName(), "getAcasCertificatesByCaseData");
         }
         return acasCertificates;
     }
