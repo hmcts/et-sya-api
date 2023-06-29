@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
@@ -204,17 +205,21 @@ class ApplicationServiceTest {
 
     @Nested
     class RespondToApplicationReplyToTribunal {
-        @Test
-        void shouldSubmitResponseToApplication() {
-            RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
+        RespondToApplicationRequest testRequest;
 
+        @BeforeEach
+        void setUp() {
+            testRequest = testData.getRespondToApplicationRequest();
             when(caseService.startUpdate(
                 TEST_SERVICE_AUTH_TOKEN,
                 testRequest.getCaseId(),
                 testRequest.getCaseTypeId(),
                 CaseEvent.CLAIMANT_TSE_RESPOND
             )).thenReturn(testData.getUpdateCaseEventResponse());
+        }
 
+        @Test
+        void shouldSubmitResponseToApplication() {
             applicationService.respondToApplication(
                 TEST_SERVICE_AUTH_TOKEN,
                 testRequest
@@ -228,15 +233,7 @@ class ApplicationServiceTest {
 
         @Test
         void shouldSubmitResponseToApplicationAndSendCopy() throws CaseDocumentException, DocumentGenerationException {
-            RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
             testRequest.getResponse().setCopyToOtherParty("Yes");
-
-            when(caseService.startUpdate(
-                TEST_SERVICE_AUTH_TOKEN,
-                testRequest.getCaseId(),
-                testRequest.getCaseTypeId(),
-                CaseEvent.CLAIMANT_TSE_RESPOND
-            )).thenReturn(testData.getUpdateCaseEventResponse());
 
             applicationService.respondToApplication(
                 TEST_SERVICE_AUTH_TOKEN,
@@ -259,15 +256,11 @@ class ApplicationServiceTest {
         @Test
         void shouldSubmitResponseToApplicationWhenOptionalFileNotProvided()
             throws CaseDocumentException, DocumentGenerationException {
-            RespondToApplicationRequest testRequest = testData.getRespondToApplicationNoUploadRequest();
-            testRequest.getResponse().setCopyToOtherParty("Yes");
-
-            when(caseService.startUpdate(
-                TEST_SERVICE_AUTH_TOKEN,
-                testRequest.getCaseId(),
-                testRequest.getCaseTypeId(),
-                CaseEvent.CLAIMANT_TSE_RESPOND
-            )).thenReturn(testData.getUpdateCaseEventResponse());
+            testRequest.setSupportingMaterialFile(null);
+            TseRespondType response = testRequest.getResponse();
+            response.setSupportingMaterial(null);
+            response.setCopyToOtherParty("Yes");
+            response.setCopyNoGiveDetails(null);
 
             applicationService.respondToApplication(
                 TEST_SERVICE_AUTH_TOKEN,
@@ -289,14 +282,7 @@ class ApplicationServiceTest {
 
         @Test
         void shouldNotSubmitResponseToApplication() {
-            RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
             testRequest.setApplicationId("12");
-            when(caseService.startUpdate(
-                TEST_SERVICE_AUTH_TOKEN,
-                testRequest.getCaseId(),
-                testRequest.getCaseTypeId(),
-                CaseEvent.CLAIMANT_TSE_RESPOND
-            )).thenReturn(testData.getUpdateCaseEventResponse());
 
             assertThrows(
                 IllegalArgumentException.class,
@@ -314,14 +300,6 @@ class ApplicationServiceTest {
 
         @Test
         void shouldThrowErrorWhenSavingApplication() {
-            RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
-            when(caseService.startUpdate(
-                TEST_SERVICE_AUTH_TOKEN,
-                testRequest.getCaseId(),
-                testRequest.getCaseTypeId(),
-                CaseEvent.CLAIMANT_TSE_RESPOND
-            )).thenReturn(testData.getUpdateCaseEventResponse());
-
             when(caseService.submitUpdate(
                 eq(TEST_SERVICE_AUTH_TOKEN),
                 eq(testRequest.getCaseId()),
@@ -340,14 +318,6 @@ class ApplicationServiceTest {
 
         @Test
         void shouldSendResponseEmailsToClaimantWithCorrectParameters() {
-            RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
-            when(caseService.startUpdate(
-                TEST_SERVICE_AUTH_TOKEN,
-                testRequest.getCaseId(),
-                testRequest.getCaseTypeId(),
-                CaseEvent.CLAIMANT_TSE_RESPOND
-            )).thenReturn(testData.getUpdateCaseEventResponse());
-
             applicationService.respondToApplication(
                 TEST_SERVICE_AUTH_TOKEN,
                 testRequest
@@ -376,14 +346,6 @@ class ApplicationServiceTest {
 
             mockStatic.when(() -> TseApplicationHelper.getSelectedApplication(any(), any()))
                 .thenReturn(GenericTseApplicationTypeItem.builder().value(application).build());
-
-            RespondToApplicationRequest testRequest = testData.getRespondToApplicationRequest();
-            when(caseService.startUpdate(
-                TEST_SERVICE_AUTH_TOKEN,
-                testRequest.getCaseId(),
-                testRequest.getCaseTypeId(),
-                CaseEvent.CLAIMANT_TSE_RESPOND
-            )).thenReturn(testData.getUpdateCaseEventResponse());
 
             applicationService.respondToApplication(TEST_SERVICE_AUTH_TOKEN, testRequest);
 
