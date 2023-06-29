@@ -406,6 +406,7 @@ public class NotificationService {
      * @param hearingDate     date of the nearest hearing
      * @param caseId          16 digit case id
      * @param applicationType type of application
+     * @param isRespondingToRequestOrOrder indicates whether the reply is to a tribunal order or not
      */
     public void sendResponseEmailToTribunal(
         CaseData caseData,
@@ -414,7 +415,8 @@ public class NotificationService {
         String respondentNames,
         String hearingDate,
         String caseId,
-        String applicationType
+        String applicationType,
+        Boolean isRespondingToRequestOrOrder
     ) {
         String subjectLine = String.format("%s %s", caseNumber, applicationType);
 
@@ -438,12 +440,17 @@ public class NotificationService {
             String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
         );
 
+        String emailTemplate = isRespondingToRequestOrOrder
+            ? notificationsProperties.getTseTribunalResponseToRequestTemplateId()
+            : notificationsProperties.getTseTribunalResponseTemplateId();
+
         sendTribunalEmail(
             caseData,
             caseId,
             tribunalParameters,
-            notificationsProperties.getTseTribunalResponseTemplateId()
+            emailTemplate
         );
+
     }
 
     /**
@@ -458,6 +465,7 @@ public class NotificationService {
      * @param caseId          16 digit case id
      * @param applicationType type of application
      * @param copyToOtherParty  whether to notify other party
+     * @param isRespondingToRequestOrOrder indicates whether the reply is to a tribunal order or not
      */
     public void sendResponseEmailToClaimant(
         CaseData caseData,
@@ -467,7 +475,8 @@ public class NotificationService {
         String hearingDate,
         String caseId,
         String applicationType,
-        String copyToOtherParty
+        String copyToOtherParty,
+        Boolean isRespondingToRequestOrOrder
     ) {
         if (TYPE_C.equals(applicationType)) {
             log.info("Type C application -  Claimant is only notified of "
@@ -500,9 +509,16 @@ public class NotificationService {
             String.format(CONCAT2STRINGS, notificationsProperties.getCitizenPortalLink(), caseId)
         );
 
-        String emailToClaimantTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
-            ? notificationsProperties.getTseClaimantResponseNoTemplateId()
-            : notificationsProperties.getTseClaimantResponseYesTemplateId();
+        String emailToClaimantTemplate;
+        if (isRespondingToRequestOrOrder) {
+            emailToClaimantTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
+                ? notificationsProperties.getTseClaimantResponseToRequestNoTemplateId()
+                : notificationsProperties.getTseClaimantResponseToRequestYesTemplateId();
+        } else {
+            emailToClaimantTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
+                ? notificationsProperties.getTseClaimantResponseNoTemplateId()
+                : notificationsProperties.getTseClaimantResponseYesTemplateId();
+        }
 
         try {
             notificationClient.sendEmail(
