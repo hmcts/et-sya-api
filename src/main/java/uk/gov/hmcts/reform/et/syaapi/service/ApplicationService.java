@@ -134,7 +134,7 @@ public class ApplicationService {
             );
         } else {
             sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty,
-                                            request.getIsRespondingToRequestOrOrder());
+                                            request.isRespondingToRequestOrOrder());
         }
 
         TseApplicationHelper.setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService);

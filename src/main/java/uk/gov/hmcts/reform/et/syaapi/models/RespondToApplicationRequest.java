@@ -23,5 +23,5 @@ public class RespondToApplicationRequest {
     @JsonProperty("response")
     private TseRespondType response;
     @JsonProperty("isRespondingToRequestOrOrder")
-    private Boolean isRespondingToRequestOrOrder;
+    private boolean isRespondingToRequestOrOrder;
 }

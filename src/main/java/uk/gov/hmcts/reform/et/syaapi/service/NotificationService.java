@@ -382,7 +382,7 @@ public class NotificationService {
      * @param isRespondingToRequestOrOrder indicates whether the reply is to a tribunal order or not
      */
     void sendResponseEmailToTribunal(CoreEmailDetails details, String applicationType,
-                                     Boolean isRespondingToRequestOrOrder) {
+                                     boolean isRespondingToRequestOrOrder) {
         String subjectLine = String.format(TWO_STRINGS_PATTERN, details.caseNumber, applicationType);
 
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
@@ -427,7 +427,7 @@ public class NotificationService {
      * @param isRespondingToRequestOrOrder indicates whether the reply is to a tribunal order or not
      */
     void sendResponseEmailToClaimant(CoreEmailDetails details, String applicationType, String copyToOtherParty,
-                                     Boolean isRespondingToRequestOrOrder) {
+                                     boolean isRespondingToRequestOrOrder) {
         if (TYPE_C.equals(applicationType)) {
             log.info("Type C application -  Claimant is only notified of "
                          + "Type A/B application responses, email not being sent");
