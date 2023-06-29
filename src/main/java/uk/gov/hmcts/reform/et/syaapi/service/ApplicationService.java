@@ -137,7 +137,7 @@ public class ApplicationService {
         );
 
         sendResponseToApplicationEmails(appType, caseData, request.getCaseId(),
-                                        request, request.getIsRespondingToRequestOrOrder());
+                                        request, request.isRespondingToRequestOrOrder());
 
         return caseDetails;
     }
