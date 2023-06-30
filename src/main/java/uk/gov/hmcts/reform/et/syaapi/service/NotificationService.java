@@ -360,17 +360,18 @@ public class NotificationService {
         String managingOffice = details.caseData.getManagingOffice();
         if (managingOffice.equals(UNASSIGNED_OFFICE) || isNullOrEmpty(managingOffice)) {
             log.info("Could not send email as no office has been assigned");
-        } else {
-            try {
-                notificationClient.sendEmail(
-                    notificationsProperties.getTribunalAcknowledgementTemplateId(),
-                    details.caseData.getTribunalCorrespondenceEmail(),
-                    tribunalParameters,
-                    details.caseId
-                );
-            } catch (NotificationClientException ne) {
-                throw new NotificationException(ne);
-            }
+            return;
+        }
+
+        try {
+            notificationClient.sendEmail(
+                notificationsProperties.getTribunalAcknowledgementTemplateId(),
+                details.caseData.getTribunalCorrespondenceEmail(),
+                tribunalParameters,
+                details.caseId
+            );
+        } catch (NotificationClientException ne) {
+            throw new NotificationException(ne);
         }
     }
 
