@@ -17,7 +17,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
-import uk.gov.hmcts.reform.et.syaapi.model.TestData;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
@@ -53,10 +53,7 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WELSH_LA
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.ENGLISH_LANGUAGE;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.NOTIFICATION_CONFIRMATION_ID;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SUBMIT_CASE_PDF_FILE_RESPONSE;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.WELSH_LANGUAGE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOTIFICATION_CONFIRMATION_ID;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 class NotificationServiceTest {
@@ -71,7 +68,7 @@ class NotificationServiceTest {
     private NotificationClient notificationClient;
     private NotificationsProperties notificationsProperties;
     private final ConcurrentHashMap<String, String> parameters = new ConcurrentHashMap<>();
-    private CaseTestData caseTestData;
+    private static CaseTestData caseTestData;
 
     @BeforeEach
     void before() throws NotificationClientException {
@@ -353,257 +350,257 @@ class NotificationServiceTest {
     }
 
     private static Stream<Arguments> retrieveSubmitCaseConfirmationEmailPdfFilesArguments() {
-        return TestData.generateSubmitCaseConfirmationEmailPdfFilesArguments();
+        return CaseTestData.generateSubmitCaseConfirmationEmailPdfFilesArguments();
     }
 
     private static Stream<Arguments> retrieveSendDocUploadErrorEmailPdfFilesArguments() {
-        return TestData.generateSendDocUploadErrorEmailPdfFilesArguments();
+        return CaseTestData.generateSendDocUploadErrorEmailPdfFilesArguments();
     }
 
     @Test
     void shouldSendCopyYesEmail() throws NotificationClientException, IOException {
         when(notificationClient.sendEmail(
             eq("Yes"),
-            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
-        )).thenReturn(testData.getSendEmailResponse());
+            eq(caseTestData.getExpectedDetails().getId().toString())
+        )).thenReturn(caseTestData.getSendEmailResponse());
 
         assertThat(notificationService.sendAcknowledgementEmailToClaimant(
-            testData.getCaseData(),
+            caseTestData.getCaseData(),
             CLAIMANT,
             "1",
             TEST_RESPONDENT,
             NOT_SET,
-            testData.getExpectedDetails().getId().toString(),
-            testData.getClaimantApplication()
+            caseTestData.getExpectedDetails().getId().toString(),
+            caseTestData.getClaimantApplication()
         ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
     }
 
     @Test
     void shouldSendCopyNoEmail() throws NotificationClientException, IOException {
-        testData.getClaimantApplication().setCopyToOtherPartyYesOrNo("No");
+        caseTestData.getClaimantApplication().setCopyToOtherPartyYesOrNo("No");
         when(notificationClient.sendEmail(
             eq("No"),
-            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
-        )).thenReturn(testData.getSendEmailResponse());
+            eq(caseTestData.getExpectedDetails().getId().toString())
+        )).thenReturn(caseTestData.getSendEmailResponse());
 
         assertThat(notificationService.sendAcknowledgementEmailToClaimant(
-            testData.getCaseData(),
+            caseTestData.getCaseData(),
             CLAIMANT,
             "1",
             TEST_RESPONDENT,
             NOT_SET,
-            testData.getExpectedDetails().getId().toString(),
-            testData.getClaimantApplication()
+            caseTestData.getExpectedDetails().getId().toString(),
+            caseTestData.getClaimantApplication()
         ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
     }
 
     @Test
     void shouldSendTypeCEmail() throws NotificationClientException, IOException {
-        testData.getClaimantApplication().setContactApplicationType(WITNESS);
+        caseTestData.getClaimantApplication().setContactApplicationType(WITNESS);
         when(notificationClient.sendEmail(
             eq("C"),
-            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
-        )).thenReturn(testData.getSendEmailResponse());
+            eq(caseTestData.getExpectedDetails().getId().toString())
+        )).thenReturn(caseTestData.getSendEmailResponse());
 
         assertThat(notificationService.sendAcknowledgementEmailToClaimant(
-            testData.getCaseData(),
+            caseTestData.getCaseData(),
             CLAIMANT,
             "1",
             TEST_RESPONDENT,
             NOT_SET,
-            testData.getExpectedDetails().getId().toString(),
-            testData.getClaimantApplication()
+            caseTestData.getExpectedDetails().getId().toString(),
+            caseTestData.getClaimantApplication()
         ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
     }
 
     @Test
     void shouldSendEmailToRespondentTypeB() throws NotificationClientException {
         notificationService.sendAcknowledgementEmailToRespondents(
-            testData.getCaseData(),
+            caseTestData.getCaseData(),
             CLAIMANT,
             "1",
             "Test Respondent Organisation -1-, Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez",
             NOT_SET,
-            testData.getExpectedDetails().getId().toString(),
+            caseTestData.getExpectedDetails().getId().toString(),
             null,
-            testData.getClaimantApplication()
+            caseTestData.getClaimantApplication()
         );
 
         verify(notificationClient, times(5)).sendEmail(
             eq("B"),
             any(),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         );
     }
 
     @SneakyThrows
     @Test
     void shouldSendEmailToRespondentTypeA() {
-        testData.getClaimantApplication().setContactApplicationType("strike");
+        caseTestData.getClaimantApplication().setContactApplicationType("strike");
         notificationService.sendAcknowledgementEmailToRespondents(
-            testData.getCaseData(),
+            caseTestData.getCaseData(),
             CLAIMANT,
             "1",
             "Test Respondent Organisation -1-, Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez",
             NOT_SET,
-            testData.getExpectedDetails().getId().toString(),
+            caseTestData.getExpectedDetails().getId().toString(),
             null,
-            testData.getClaimantApplication()
+            caseTestData.getClaimantApplication()
         );
 
         verify(notificationClient, times(5)).sendEmail(
             eq("A"),
             any(),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         );
     }
 
     @Test
     void shouldNotSendEmailToRespondentTypeC() throws NotificationClientException {
-        testData.getClaimantApplication().setContactApplicationType(WITNESS);
+        caseTestData.getClaimantApplication().setContactApplicationType(WITNESS);
         notificationService.sendAcknowledgementEmailToRespondents(
-            testData.getCaseData(),
+            caseTestData.getCaseData(),
             CLAIMANT,
             "1",
             "Test Respondent Organisation -1-, Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez",
             NOT_SET,
-            testData.getExpectedDetails().getId().toString(),
+            caseTestData.getExpectedDetails().getId().toString(),
             null,
-            testData.getClaimantApplication()
+            caseTestData.getClaimantApplication()
         );
 
         verify(notificationClient, times(0)).sendEmail(
             any(),
-            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         );
     }
 
     @Test
     void shouldSendEmailToTribunalTypeAOrB() throws NotificationClientException {
         notificationService.sendAcknowledgementEmailToTribunal(
-            testData.getCaseData(),
+            caseTestData.getCaseData(),
             CLAIMANT,
             "1",
             TEST_RESPONDENT,
             NOT_SET,
-            testData.getExpectedDetails().getId().toString(),
-            testData.getClaimantApplication()
+            caseTestData.getExpectedDetails().getId().toString(),
+            caseTestData.getClaimantApplication()
         );
 
         verify(notificationClient, times(1)).sendEmail(
             any(),
-            eq(testData.getCaseData().getTribunalCorrespondenceEmail()),
+            eq(caseTestData.getCaseData().getTribunalCorrespondenceEmail()),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         );
 
     }
 
     @Test
     void shouldSendEmailToTribunalTypeC() throws NotificationClientException {
-        testData.getClaimantApplication().setContactApplicationType(WITNESS);
+        caseTestData.getClaimantApplication().setContactApplicationType(WITNESS);
         notificationService.sendAcknowledgementEmailToTribunal(
-            testData.getCaseData(),
+            caseTestData.getCaseData(),
             CLAIMANT,
             "1",
             TEST_RESPONDENT,
             NOT_SET,
-            testData.getExpectedDetails().getId().toString(),
-            testData.getClaimantApplication()
+            caseTestData.getExpectedDetails().getId().toString(),
+            caseTestData.getClaimantApplication()
         );
 
         verify(notificationClient, times(1)).sendEmail(
             any(),
-            eq(testData.getCaseData().getTribunalCorrespondenceEmail()),
+            eq(caseTestData.getCaseData().getTribunalCorrespondenceEmail()),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         );
     }
 
     @Test
     void shouldNotSendEmailToTribunalUnassignedManagingOffice() throws NotificationClientException {
-        testData.getCaseData().setManagingOffice(UNASSIGNED_OFFICE);
+        caseTestData.getCaseData().setManagingOffice(UNASSIGNED_OFFICE);
         notificationService.sendAcknowledgementEmailToTribunal(
-            testData.getCaseData(),
+            caseTestData.getCaseData(),
             CLAIMANT,
             "1",
             TEST_RESPONDENT,
             NOT_SET,
-            testData.getExpectedDetails().getId().toString(),
-            testData.getClaimantApplication()
+            caseTestData.getExpectedDetails().getId().toString(),
+            caseTestData.getClaimantApplication()
         );
 
         verify(notificationClient, times(0)).sendEmail(
             any(),
             any(),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         );
     }
 
     @Test
     void shouldSendResponseEmailToTribunal() throws NotificationClientException {
-        testData.getCaseData().setTribunalCorrespondenceEmail("tribunal@test.com");
+        caseTestData.getCaseData().setTribunalCorrespondenceEmail("tribunal@test.com");
         notificationService.sendResponseEmailToTribunal(
-            testData.getCaseData(),
+            caseTestData.getCaseData(),
             CLAIMANT,
             "1",
             TEST_RESPONDENT,
             NOT_SET,
-            testData.getExpectedDetails().getId().toString(),
+            caseTestData.getExpectedDetails().getId().toString(),
             CHANGE_DETAILS_APPLICATION_TYPE,
             false
         );
 
         verify(notificationClient, times(1)).sendEmail(
             any(),
-            eq(testData.getCaseData().getTribunalCorrespondenceEmail()),
+            eq(caseTestData.getCaseData().getTribunalCorrespondenceEmail()),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         );
     }
 
     @Test
     void shouldNotSendResponseEmailToTribunal() throws NotificationClientException {
-        testData.getCaseData().setManagingOffice(UNASSIGNED_OFFICE);
+        caseTestData.getCaseData().setManagingOffice(UNASSIGNED_OFFICE);
         notificationService.sendResponseEmailToTribunal(
-            testData.getCaseData(),
+            caseTestData.getCaseData(),
             CLAIMANT,
             "1",
             TEST_RESPONDENT,
             NOT_SET,
-            testData.getExpectedDetails().getId().toString(),
+            caseTestData.getExpectedDetails().getId().toString(),
             CHANGE_DETAILS_APPLICATION_TYPE,
             false
         );
 
         verify(notificationClient, times(0)).sendEmail(
             any(),
-            eq(testData.getCaseData().getTribunalCorrespondenceEmail()),
+            eq(caseTestData.getCaseData().getTribunalCorrespondenceEmail()),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         );
     }
 
     @Test
     void shouldSendResponseEmailToClaimant() throws NotificationClientException {
         notificationService.sendResponseEmailToClaimant(
-            testData.getCaseData(),
+            caseTestData.getCaseData(),
             CLAIMANT,
             "1",
             TEST_RESPONDENT,
             NOT_SET,
-            testData.getExpectedDetails().getId().toString(),
+            caseTestData.getExpectedDetails().getId().toString(),
             CHANGE_DETAILS_APPLICATION_TYPE,
             "No",
             false
@@ -611,22 +608,22 @@ class NotificationServiceTest {
 
         verify(notificationClient, times(1)).sendEmail(
             any(),
-            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         );
     }
 
     @Test
     void shouldNotSendResponseWhenClaimantEmailDoesNotExist() throws NotificationClientException {
-        testData.getCaseData().getClaimantType().setClaimantEmailAddress("");
+        caseTestData.getCaseData().getClaimantType().setClaimantEmailAddress("");
         notificationService.sendResponseEmailToClaimant(
-            testData.getCaseData(),
+            caseTestData.getCaseData(),
             CLAIMANT,
             "1",
             TEST_RESPONDENT,
             NOT_SET,
-            testData.getExpectedDetails().getId().toString(),
+            caseTestData.getExpectedDetails().getId().toString(),
             CHANGE_DETAILS_APPLICATION_TYPE,
             "No",
             false
@@ -634,21 +631,21 @@ class NotificationServiceTest {
 
         verify(notificationClient, times(0)).sendEmail(
             any(),
-            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         );
     }
 
     @Test
     void shouldNotSendResponseEmailToClaimantForTypeCApplication() throws NotificationClientException {
         notificationService.sendResponseEmailToClaimant(
-            testData.getCaseData(),
+            caseTestData.getCaseData(),
             CLAIMANT,
             "1",
             TEST_RESPONDENT,
             NOT_SET,
-            testData.getExpectedDetails().getId().toString(),
+            caseTestData.getExpectedDetails().getId().toString(),
             WITNESS,
             "No",
             false
@@ -656,51 +653,51 @@ class NotificationServiceTest {
 
         verify(notificationClient, times(0)).sendEmail(
             any(),
-            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         );
     }
 
     @Test
     void shouldSendResponseEmailToRespondent() throws NotificationClientException {
         notificationService.sendResponseEmailToRespondent(
-            testData.getCaseData(),
+            caseTestData.getCaseData(),
             CLAIMANT,
             "1",
             TEST_RESPONDENT,
             NOT_SET,
-            testData.getExpectedDetails().getId().toString(),
+            caseTestData.getExpectedDetails().getId().toString(),
             CHANGE_DETAILS_APPLICATION_TYPE,
             YES
         );
 
         verify(notificationClient, times(1)).sendEmail(
             any(),
-            eq(testData.getCaseData().getRespondentCollection().get(0).getValue().getRespondentEmail()),
+            eq(caseTestData.getCaseData().getRespondentCollection().get(0).getValue().getRespondentEmail()),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         );
     }
 
     @Test
     void shouldNotSendResponseEmailToRespondent() throws NotificationClientException {
         notificationService.sendResponseEmailToRespondent(
-            testData.getCaseData(),
+            caseTestData.getCaseData(),
             CLAIMANT,
             "1",
             TEST_RESPONDENT,
             NOT_SET,
-            testData.getExpectedDetails().getId().toString(),
+            caseTestData.getExpectedDetails().getId().toString(),
             CHANGE_DETAILS_APPLICATION_TYPE,
             NO
         );
 
         verify(notificationClient, times(0)).sendEmail(
             any(),
-            eq(testData.getCaseData().getRespondentCollection().get(0).getValue().getRespondentEmail()),
+            eq(caseTestData.getCaseData().getRespondentCollection().get(0).getValue().getRespondentEmail()),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         );
     }
 
@@ -713,16 +710,16 @@ class NotificationServiceTest {
         respondentSumTypeItem.setValue(respondentSumType);
         respondentSumTypeItem.setId(String.valueOf(UUID.randomUUID()));
 
-        CaseData caseData = testData.getCaseData();
+        CaseData caseData = caseTestData.getCaseData();
         caseData.getRespondentCollection().add(respondentSumTypeItem);
 
         notificationService.sendResponseEmailToRespondent(
-            testData.getCaseData(),
+            caseTestData.getCaseData(),
             CLAIMANT,
             "1",
             TEST_RESPONDENT,
             NOT_SET,
-            testData.getExpectedDetails().getId().toString(),
+            caseTestData.getExpectedDetails().getId().toString(),
             CHANGE_DETAILS_APPLICATION_TYPE,
             YES
         );
@@ -731,75 +728,75 @@ class NotificationServiceTest {
             any(),
             eq("test@resRep.com"),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         );
     }
 
     @Test
     void shouldNotSendResponseWhenRespondentEmailDoesNotExist() throws NotificationClientException {
-        testData.getCaseData().getClaimantType().setClaimantEmailAddress("");
+        caseTestData.getCaseData().getClaimantType().setClaimantEmailAddress("");
         notificationService.sendResponseEmailToRespondent(
-            testData.getCaseData(),
+            caseTestData.getCaseData(),
             CLAIMANT,
             "1",
             TEST_RESPONDENT,
             NOT_SET,
-            testData.getExpectedDetails().getId().toString(),
+            caseTestData.getExpectedDetails().getId().toString(),
             CHANGE_DETAILS_APPLICATION_TYPE,
             YES
         );
 
         verify(notificationClient, times(0)).sendEmail(
             any(),
-            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         );
     }
 
     @Test
     void shouldNotSendResponseEmailToRespondentForTypeCApplication() throws NotificationClientException {
         notificationService.sendResponseEmailToRespondent(
-            testData.getCaseData(),
+            caseTestData.getCaseData(),
             CLAIMANT,
             "1",
             TEST_RESPONDENT,
             NOT_SET,
-            testData.getExpectedDetails().getId().toString(),
+            caseTestData.getExpectedDetails().getId().toString(),
             WITNESS,
             YES
         );
 
         verify(notificationClient, times(0)).sendEmail(
             any(),
-            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         );
     }
 
     @Test
     void sendResponseNotificationEmailToTribunal() throws NotificationClientException {
-        testData.getCaseData().setTribunalCorrespondenceEmail("tribunal@test.com");
+        caseTestData.getCaseData().setTribunalCorrespondenceEmail("tribunal@test.com");
         notificationService.sendResponseNotificationEmailToTribunal(
-            testData.getCaseData(),
-            testData.getExpectedDetails().getId().toString()
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString()
         );
 
         verify(notificationClient, times(1)).sendEmail(
             any(),
-            eq(testData.getCaseData().getTribunalCorrespondenceEmail()),
+            eq(caseTestData.getCaseData().getTribunalCorrespondenceEmail()),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         );
     }
 
     @Test
     void sendNotResponseNotificationEmailToTribunalMissingEmail() throws NotificationClientException {
-        testData.getCaseData().setTribunalCorrespondenceEmail(null);
+        caseTestData.getCaseData().setTribunalCorrespondenceEmail(null);
         notificationService.sendResponseNotificationEmailToTribunal(
-            testData.getCaseData(),
-            testData.getExpectedDetails().getId().toString()
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString()
         );
 
         verify(notificationClient, times(0)).sendEmail(
@@ -813,24 +810,24 @@ class NotificationServiceTest {
     @Test
     void sendResponseNotificationEmailToRespondent() throws NotificationClientException {
         notificationService.sendResponseNotificationEmailToRespondent(
-            testData.getCaseData(),
-            testData.getExpectedDetails().getId().toString(),
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString(),
             YES
         );
 
         verify(notificationClient, times(1)).sendEmail(
             any(),
-            eq(testData.getCaseData().getRespondentCollection().get(0).getValue().getRespondentEmail()),
+            eq(caseTestData.getCaseData().getRespondentCollection().get(0).getValue().getRespondentEmail()),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         );
     }
 
     @Test
     void sendNotResponseNotificationEmailToRespondentDoNotCopy() throws NotificationClientException {
         notificationService.sendResponseNotificationEmailToRespondent(
-            testData.getCaseData(),
-            testData.getExpectedDetails().getId().toString(),
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString(),
             NO
         );
 
@@ -844,12 +841,12 @@ class NotificationServiceTest {
 
     @Test
     void sendNotResponseNotificationEmailToRespondentMissingEmail() throws NotificationClientException {
-        for (RespondentSumTypeItem respondentSumTypeItem : testData.getCaseData().getRespondentCollection()) {
+        for (RespondentSumTypeItem respondentSumTypeItem : caseTestData.getCaseData().getRespondentCollection()) {
             respondentSumTypeItem.getValue().setRespondentEmail(null);
         }
         notificationService.sendResponseNotificationEmailToRespondent(
-            testData.getCaseData(),
-            testData.getExpectedDetails().getId().toString(),
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString(),
             YES
         );
 
@@ -864,41 +861,41 @@ class NotificationServiceTest {
     @Test
     void sendResponseNotificationEmailToClaimant() throws NotificationClientException {
         notificationService.sendResponseNotificationEmailToClaimant(
-            testData.getCaseData(),
-            testData.getExpectedDetails().getId().toString(),
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString(),
             YES
         );
 
         verify(notificationClient, times(1)).sendEmail(
             eq("claimantResponseYesTemplateId"),
-            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         );
     }
 
     @Test
     void sendResponseNotificationEmailToClaimantDoNotCopy() throws NotificationClientException {
         notificationService.sendResponseNotificationEmailToClaimant(
-            testData.getCaseData(),
-            testData.getExpectedDetails().getId().toString(),
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString(),
             NO
         );
 
         verify(notificationClient, times(1)).sendEmail(
             eq("claimantResponseNoTemplateId"),
-            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         );
     }
 
     @Test
     void sendNotResponseNotificationEmailToClaimantMissingEmail() throws NotificationClientException {
-        testData.getCaseData().getClaimantType().setClaimantEmailAddress(null);
+        caseTestData.getCaseData().getClaimantType().setClaimantEmailAddress(null);
         notificationService.sendResponseNotificationEmailToClaimant(
-            testData.getCaseData(),
-            testData.getExpectedDetails().getId().toString(),
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString(),
             YES
         );
 
@@ -915,12 +912,12 @@ class NotificationServiceTest {
     void sendResponseToRequestNotificationEmailToClaimant(String yesOrNo, String template)
         throws NotificationClientException {
         notificationService.sendResponseEmailToClaimant(
-            testData.getCaseData(),
+            caseTestData.getCaseData(),
             CLAIMANT,
             "1",
             TEST_RESPONDENT,
             NOT_SET,
-            testData.getExpectedDetails().getId().toString(),
+            caseTestData.getExpectedDetails().getId().toString(),
             CHANGE_DETAILS_APPLICATION_TYPE,
             yesOrNo,
             true
@@ -928,31 +925,31 @@ class NotificationServiceTest {
 
         verify(notificationClient, times(1)).sendEmail(
             eq(template),
-            eq(testData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         );
     }
 
     @Test
     void shouldSendResponseToRequestEmailToTribunal() throws NotificationClientException {
-        testData.getCaseData().setTribunalCorrespondenceEmail("tribunal@test.com");
+        caseTestData.getCaseData().setTribunalCorrespondenceEmail("tribunal@test.com");
         notificationService.sendResponseEmailToTribunal(
-            testData.getCaseData(),
+            caseTestData.getCaseData(),
             CLAIMANT,
             "1",
             TEST_RESPONDENT,
             NOT_SET,
-            testData.getExpectedDetails().getId().toString(),
+            caseTestData.getExpectedDetails().getId().toString(),
             CHANGE_DETAILS_APPLICATION_TYPE,
             true
         );
 
         verify(notificationClient, times(1)).sendEmail(
             eq("tseTribunalResponseToRequestTemplateId"),
-            eq(testData.getCaseData().getTribunalCorrespondenceEmail()),
+            eq(caseTestData.getCaseData().getTribunalCorrespondenceEmail()),
             any(),
-            eq(testData.getExpectedDetails().getId().toString())
+            eq(caseTestData.getExpectedDetails().getId().toString())
         );
     }
 

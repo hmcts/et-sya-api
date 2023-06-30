@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 
 import java.text.ParseException;
@@ -19,16 +20,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class NotificationHelperTest {
 
-    private final TestData testData;
+    private final CaseTestData caseTestData;
 
     NotificationHelperTest() {
-        testData = new TestData();
+        caseTestData = new CaseTestData();
     }
 
     @Test
     void shouldReturnEmptyStringUtil() {
         // Given
-        var data = testData.getCaseDataWithClaimTypes().getCaseData();
+        var data = caseTestData.getCaseDataWithClaimTypes().getCaseData();
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(data);
         // When
         String respondentNames = NotificationsHelper.getRespondentNames(caseData);
@@ -50,7 +51,7 @@ class NotificationHelperTest {
         repItem.setValue(rep);
         List<RepresentedTypeRItem> itemList = new ArrayList<>();
         itemList.add(repItem);
-        CaseData caseData = testData.getCaseData();
+        CaseData caseData = caseTestData.getCaseData();
         caseData.setRepCollection(itemList);
 
         // When
@@ -74,7 +75,7 @@ class NotificationHelperTest {
         repItem.setValue(rep);
         List<RepresentedTypeRItem> itemList = new ArrayList<>();
         itemList.add(repItem);
-        CaseData caseData = testData.getCaseData();
+        CaseData caseData = caseTestData.getCaseData();
         caseData.setRepCollection(itemList);
 
         // When
@@ -90,7 +91,7 @@ class NotificationHelperTest {
     @Test
     void shouldNotReturnRespondentEmail() {
         // Given
-        CaseData caseData = testData.getCaseData();
+        CaseData caseData = caseTestData.getCaseData();
         caseData.getRespondentCollection().get(0).getValue().setRespondentEmail(null);
 
         // When
@@ -106,7 +107,7 @@ class NotificationHelperTest {
     @Test
     void shouldGetNearestHearingToReferralHearingDateInPast() {
         // Given
-        CaseData caseData = testData.getCaseData();
+        CaseData caseData = caseTestData.getCaseData();
 
         // When
         String hearingDate = NotificationsHelper.getNearestHearingToReferral(
@@ -121,7 +122,7 @@ class NotificationHelperTest {
     @Test
     void shouldGetNearestHearingToReferralHearingDateInFuture() throws ParseException {
         // Given
-        CaseData caseData = testData.getCaseData();
+        CaseData caseData = caseTestData.getCaseData();
 
         String futureDate = LocalDateTime.now().plusDays(5).toString();
         caseData.getHearingCollection().get(0).getValue().getHearingDateCollection().get(0).getValue().setListedDate(

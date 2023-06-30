@@ -291,23 +291,23 @@ class PdfServiceTest {
 
     @Test
     void shouldCreatePdfDecodedMultipartFileFromTseApplication() throws DocumentGenerationException {
-        testData.getCaseData().setClaimantTse(new ClaimantTse());
+        caseTestData.getCaseData().setClaimantTse(new ClaimantTse());
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            pdfService.convertClaimantTseIntoMultipartFile(testData.getClaimantTse());
+            pdfService.convertClaimantTseIntoMultipartFile(caseTestData.getClaimantTse());
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
 
     @Test
     void shouldCreatePdfDecodedMultipartFileFromTseApplicationNoSupportingFile() throws DocumentGenerationException {
-        testData.getClaimantTse().setContactApplicationFile(null);
+        caseTestData.getClaimantTse().setContactApplicationFile(null);
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            pdfService.convertClaimantTseIntoMultipartFile(testData.getClaimantTse());
+            pdfService.convertClaimantTseIntoMultipartFile(caseTestData.getClaimantTse());
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
 
     @Test
     void shouldCreatePdfDecodedMultipartFileFromClaimantResponse() throws DocumentGenerationException {
-        var request = testData.getRespondToApplicationRequest();
+        var request = caseTestData.getRespondToApplicationRequest();
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             pdfService.convertClaimantResponseIntoMultipartFile(request, "Response to app");
         assertThat(pdfDecodedMultipartFile).isNotNull();
@@ -315,7 +315,7 @@ class PdfServiceTest {
 
     @Test
     void shouldCreatePdfDecodedMultipartFileFromClaimantResponseNoSupportingFile() throws DocumentGenerationException {
-        var request = testData.getRespondToApplicationRequest();
+        var request = caseTestData.getRespondToApplicationRequest();
         request.getResponse().setHasSupportingMaterial("No");
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             pdfService.convertClaimantResponseIntoMultipartFile(request, "Response to app");

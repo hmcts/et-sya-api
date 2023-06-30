@@ -1,19 +1,24 @@
 package uk.gov.hmcts.reform.et.syaapi.model;
 
+import java.io.IOException;
 import lombok.Data;
 import org.junit.jupiter.params.provider.Arguments;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.TestDataProvider;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
@@ -23,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MICHAEL;
+import uk.gov.service.notify.SendEmailResponse;
 
 @Data
 public final class CaseTestData {
@@ -35,6 +41,16 @@ public final class CaseTestData {
         "requests/caseDataWithClaimTypes.json",
         CaseRequest.class
     );
+
+    private final RespondToApplicationRequest respondToApplicationRequest = ResourceLoader.fromString(
+        "requests/respondToApplication.json",
+        RespondToApplicationRequest.class
+    );
+
+    private final CaseDetails caseDetails = ResourceLoader.fromString(
+        "responses/caseDetails.json",
+        CaseDetails.class
+    );
     private final CaseRequest caseRequest = ResourceLoader.fromString(
         "requests/caseRequest.json",
         CaseRequest.class
@@ -42,6 +58,11 @@ public final class CaseTestData {
     private final CaseRequest caseRequestWithoutManagingAddress = ResourceLoader.fromString(
         "requests/caseDataWithoutManagingAddress.json",
         CaseRequest.class
+    );
+
+    private final ClaimantTse claimantTse = ResourceLoader.fromString(
+        "requests/claimantTse.json",
+        ClaimantTse.class
     );
     private final CaseRequest emptyCaseRequest = ResourceLoader.fromString(
         "requests/noManagingOfficeAndRespondentsAddressCaseRequest.json",
@@ -54,6 +75,47 @@ public final class CaseTestData {
     private final List<CaseDetails> expectedCaseDataListCombined = ResourceLoader.fromStringToList(
         "responses/caseDetailsCombined.json",
         CaseDetails.class
+    );
+
+    public SendEmailResponse getSendEmailResponse() throws IOException {
+        String sendEmailResponseStringVal = ResourceUtil.resourceAsString(
+            "responses/sendEmailResponse.json"
+        );
+        return new SendEmailResponse(sendEmailResponseStringVal);
+    }
+
+    public static Stream<Arguments> generateSubmitCaseConfirmationEmailPdfFilesArguments() {
+        return Stream.of(
+            Arguments.of(null, TestConstants.EMPTY_RESPONSE),
+            Arguments.of(TestConstants.EMPTY_PDF_DECODED_MULTIPART_FILE_LIST, TestConstants.EMPTY_RESPONSE),
+            Arguments.of(TestConstants.NULL_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST, TestConstants.EMPTY_RESPONSE),
+            Arguments.of(TestConstants.EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST, TestConstants.EMPTY_RESPONSE),
+            Arguments.of(NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.TEST_SUBMIT_CASE_PDF_FILE_RESPONSE)
+        );
+    }
+
+    public static Stream<Arguments> generateSendDocUploadErrorEmailPdfFilesArguments() {
+        return Stream.of(
+            Arguments.of(null, null, null),
+            Arguments.of(TestConstants.NULL_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.NULL_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.NULL_UPLOADED_DOCUMENT_TYPE_FILE),
+            Arguments.of(TestConstants.EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.EMPTY_UPLOADED_DOCUMENT_TYPE_FILE),
+            Arguments.of(TestConstants.EMPTY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.EMPTY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.EMPTY_UPLOADED_DOCUMENT_TYPE),
+            Arguments.of(NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
+                         TestConstants.NOT_EMPTY_UPLOADED_DOCUMENT_TYPE_FILE)
+        );
+    }
+
+    private final ClaimantTse claimantApplication = ResourceLoader.fromString(
+        "responses/claimantTse.json",
+        ClaimantTse.class
     );
     private final CaseDetails expectedDetails = ResourceLoader.fromString(
         "responses/caseDetails.json",

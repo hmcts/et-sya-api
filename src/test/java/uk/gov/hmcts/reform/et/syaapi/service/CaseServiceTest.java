@@ -1,5 +1,12 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.MultiValuedMap;
@@ -15,6 +22,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
@@ -33,6 +43,8 @@ import uk.gov.hmcts.reform.et.syaapi.constants.JurisdictionCodesConstants;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
@@ -45,11 +57,6 @@ import uk.gov.service.notify.SendEmailResponse;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
@@ -427,7 +434,7 @@ class CaseServiceTest {
             .thenReturn(new LinkedList<>());
 
         when(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(any()))
-            .thenReturn(testData.getCaseData());
+            .thenReturn(caseTestData.getCaseData());
 
         SendEmailResponse sendEmailResponse
             = new SendEmailResponse("{\n"
@@ -452,7 +459,7 @@ class CaseServiceTest {
 
         CaseDetails caseDetails = caseService.submitCase(
             TEST_SERVICE_AUTH_TOKEN,
-            testData.getCaseRequest()
+            caseTestData.getCaseRequest()
         );
 
         assertEquals(1, ((ArrayList<?>)caseDetails.getData().get("documentCollection")).size());
@@ -472,12 +479,12 @@ class CaseServiceTest {
             null,
             USER_ID,
             TEST_NAME,
-            testData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
-            testData.getCaseData().getClaimantIndType().getClaimantLastName(),
+            caseTestData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
+            caseTestData.getCaseData().getClaimantIndType().getClaimantLastName(),
             null
         ));
 
-        testData.getCaseRequest().setCaseId("1668421480426211");
+        caseTestData.getCaseRequest().setCaseId("1668421480426211");
         when(ccdApiClient.submitEventForCitizen(
             eq(TEST_SERVICE_AUTH_TOKEN),
             eq(TEST_SERVICE_AUTH_TOKEN),
@@ -487,7 +494,7 @@ class CaseServiceTest {
             any(String.class),
             eq(true),
             any(CaseDataContent.class)
-        )).thenReturn(testData.getExpectedDetails());
+        )).thenReturn(caseTestData.getExpectedDetails());
 
         when(ccdApiClient.startEventForCitizen(
             eq(TEST_SERVICE_AUTH_TOKEN),
@@ -497,7 +504,7 @@ class CaseServiceTest {
             eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
             any(String.class),
             any(String.class)
-        )).thenReturn(testData.getStartEventResponse());
+        )).thenReturn(caseTestData.getStartEventResponse());
 
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             new PdfDecodedMultipartFile(
@@ -516,7 +523,7 @@ class CaseServiceTest {
         when(acasService.getAcasCertificatesByCaseData(any())).thenReturn(List.of());
 
         when(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(any()))
-            .thenReturn(testData.getCaseData());
+            .thenReturn(caseTestData.getCaseData());
 
         when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any()))
             .thenThrow(new CaseDocumentException("Failed to upload documents"));
@@ -542,7 +549,7 @@ class CaseServiceTest {
             .thenReturn(sendEmailResponse);
         caseService.submitCase(
             TEST_SERVICE_AUTH_TOKEN,
-            testData.getCaseRequest()
+            caseTestData.getCaseRequest()
         );
 
         verify(notificationService, times(1))
@@ -560,7 +567,7 @@ class CaseServiceTest {
 
         CaseDetails caseDetails = caseService.submitCase(
             TEST_SERVICE_AUTH_TOKEN,
-            testData.getCaseRequest()
+            caseTestData.getCaseRequest()
         );
 
         assertEquals(1, ((ArrayList<?>)caseDetails.getData().get("documentCollection")).size());
@@ -583,7 +590,7 @@ class CaseServiceTest {
 
         caseService.submitCase(
             TEST_SERVICE_AUTH_TOKEN,
-            testData.getCaseRequest()
+            caseTestData.getCaseRequest()
         );
 
         verify(notificationService, times(1))
@@ -595,7 +602,7 @@ class CaseServiceTest {
     void submitCaseShouldSetEt1OnlineSubmission() {
         CaseDetails caseDetails = caseService.submitCase(
             TEST_SERVICE_AUTH_TOKEN,
-            testData.getCaseRequest()
+            caseTestData.getCaseRequest()
         );
 
         assertEquals(YES, caseDetails.getData().get(ET1_ONLINE_SUBMISSION));
@@ -624,11 +631,11 @@ class CaseServiceTest {
 
         SearchResult englandWalesSearchResult = SearchResult.builder()
             .total(1)
-            .cases(testData.getRequestCaseDataListEngland())
+            .cases(caseTestData.getRequestCaseDataListEngland())
             .build();
         SearchResult scotlandSearchResult = SearchResult.builder()
             .total(2)
-            .cases(testData.getRequestCaseDataListScotland())
+            .cases(caseTestData.getRequestCaseDataListScotland())
             .build();
 
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
@@ -835,8 +842,8 @@ class CaseServiceTest {
         assertDoesNotThrow(() ->
             caseService.uploadTseCyaAsPdf(
                 TEST_SERVICE_AUTH_TOKEN,
-                testData.getCaseDetails(),
-                testData.getClaimantTse(),
+                caseTestData.getCaseDetails(),
+                caseTestData.getClaimantTse(),
                 "TEST"
             )
         );
@@ -849,7 +856,7 @@ class CaseServiceTest {
             new DocumentGenerationException(TEST));
 
         assertThrows(DocumentGenerationException.class, () -> caseService.uploadTseCyaAsPdf(
-            "", testData.getCaseDetails(), testData.getClaimantTse(), ""));
+            "", caseTestData.getCaseDetails(), caseTestData.getClaimantTse(), ""));
     }
 
     private List<JurCodesTypeItem> mockJurCodesTypeItems() {
@@ -867,7 +874,7 @@ class CaseServiceTest {
         String caseId = "1646225213651598";
         SearchResult englandWalesSearchResult = SearchResult.builder()
             .total(1)
-            .cases(testData.getRequestCaseDataListEnglandAcas())
+            .cases(caseTestData.getRequestCaseDataListEnglandAcas())
             .build();
         SearchResult scotlandSearchResult = SearchResult.builder()
             .total(0)
