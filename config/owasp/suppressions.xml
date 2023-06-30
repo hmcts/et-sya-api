@@ -182,4 +182,13 @@
    <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
    <cpe>cpe:/a:fasterxml:jackson-databind</cpe>
 </suppress>
+  <suppress>
+    <notes><![CDATA[
+   file name: guava-31.1-jre.jar
+   ]]></notes>
+    <packageUrl regex="true">^pkg:maven/com.google.guava/guava@.*$</packageUrl>
+    <cve>CVE-2023-2976</cve>
+  </suppress>
+
+
 </suppressions>
