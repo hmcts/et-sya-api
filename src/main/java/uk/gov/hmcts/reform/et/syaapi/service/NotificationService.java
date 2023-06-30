@@ -701,8 +701,7 @@ public class NotificationService {
     }
 
     private static void addCommonParameters(Map<String, Object> parameters, CaseData caseData, String caseId) {
-        String claimant = String.format(
-            "%s %s",
+        String claimant = String.join(" ",
             caseData.getClaimantIndType().getClaimantFirstNames(),
             caseData.getClaimantIndType().getClaimantLastName()
         );
