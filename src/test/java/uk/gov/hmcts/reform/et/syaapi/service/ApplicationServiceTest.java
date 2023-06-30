@@ -51,6 +51,7 @@ class ApplicationServiceTest {
     public static final String CLAIMANT = "Michael Jackson";
     public static final String CASE_ID = "1646225213651590";
     public static final String INITIAL_STATE = "initialState";
+    public static final String YES = "Yes";
 
     @MockBean
     private CaseService caseService;
@@ -245,7 +246,7 @@ class ApplicationServiceTest {
 
         @Test
         void shouldSubmitResponseToApplicationAndSendCopy() throws CaseDocumentException, DocumentGenerationException {
-            testRequest.getResponse().setCopyToOtherParty("Yes");
+            testRequest.getResponse().setCopyToOtherParty(YES);
 
             applicationService.respondToApplication(
                 TEST_SERVICE_AUTH_TOKEN,
@@ -271,7 +272,7 @@ class ApplicationServiceTest {
             testRequest.setSupportingMaterialFile(null);
             TseRespondType response = testRequest.getResponse();
             response.setSupportingMaterial(null);
-            response.setCopyToOtherParty("Yes");
+            response.setCopyToOtherParty(YES);
             response.setCopyNoGiveDetails(null);
 
             applicationService.respondToApplication(
@@ -358,7 +359,7 @@ class ApplicationServiceTest {
                                     String expectedClaimantResponseRequired) {
             testRequest.setRespondingToRequestOrOrder(isRespondingToRequestOrOrder);
             GenericTseApplicationType application = GenericTseApplicationType.builder()
-                .claimantResponseRequired("Yes").applicationState(INITIAL_STATE).build();
+                .claimantResponseRequired(YES).applicationState(INITIAL_STATE).build();
 
             MockedStatic<TseApplicationHelper> mockStatic = mockStatic(TseApplicationHelper.class);
             mockStatic.when(() -> TseApplicationHelper.getSelectedApplication(any(), any()))
@@ -375,7 +376,7 @@ class ApplicationServiceTest {
         private static Stream<Arguments> testNewStateAndResponseRequired() {
             return Stream.of(
                 Arguments.of(true, "inProgress", "No"),
-                Arguments.of(false, INITIAL_STATE, "Yes")
+                Arguments.of(false, INITIAL_STATE, YES)
             );
         }
     }
