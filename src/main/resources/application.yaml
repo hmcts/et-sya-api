@@ -94,7 +94,7 @@ notifications:
     tribunalResponseToRequest: ${TSE_TRIBUNAL_RESPONSE_TO_REQUEST:a90587ee-61a4-430a-b14a-5801c14b4976}
     claimantResponseToRequestYes: ${TSE_CLAIMANT_RESPONSE_TO_REQUEST_YES:b29db0e8-27c9-453a-a068-b5a815d43de2}
     claimantResponseToRequestNo: ${TSE_CLAIMANT_RESPONSE_TO_REQUEST_NO:d335b6f8-9f11-4539-9a4c-5b2c936ecc8d}
-    # name these better
+    # todo name these better
 
   pse:
     claimantResponseYes: ${CLAIMANT_RESPONSE_YES:5898b330-674c-48c8-87e1-ee07ab2910ee}

@@ -122,20 +122,13 @@ public class ApplicationService {
         String copyToOtherParty = request.getResponse().getCopyToOtherParty();
         GenericTseApplicationType appType = appToModify.getValue();
 
-        if (YES.equals(appType.getClaimantResponseRequired())) {
+        boolean isRespondingToTribunal = request.isRespondingToRequestOrOrder();
+        if (isRespondingToTribunal) {
             appType.setApplicationState(IN_PROGRESS);
             appType.setClaimantResponseRequired(NO);
-
-            notificationService.sendReplyEmailToRespondent(
-                caseData,
-                caseData.getEthosCaseReference(),
-                caseId,
-                copyToOtherParty
-            );
-        } else {
-            sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty,
-                                            request.isRespondingToRequestOrOrder());
         }
+
+        sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
 
         TseApplicationHelper.setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService);
 
@@ -233,7 +226,7 @@ public class ApplicationService {
         CaseData caseData,
         String caseId,
         String copyToOtherParty,
-        Boolean isRespondingToRequestOrOrder
+        boolean isRespondingToRequestOrOrder
     ) {
         ClaimantIndType claimantIndType = caseData.getClaimantIndType();
 
@@ -249,7 +242,17 @@ public class ApplicationService {
 
         notificationService.sendResponseEmailToTribunal(details, type, isRespondingToRequestOrOrder);
         notificationService.sendResponseEmailToClaimant(details, type, copyToOtherParty, isRespondingToRequestOrOrder);
-        notificationService.sendResponseEmailToRespondent(details, type, copyToOtherParty);
+
+        if (isRespondingToRequestOrOrder) {
+            notificationService.sendReplyEmailToRespondent(
+                caseData,
+                caseData.getEthosCaseReference(),
+                caseId,
+                copyToOtherParty
+            );
+        } else {
+            notificationService.sendResponseEmailToRespondent(details, type, copyToOtherParty);
+        }
     }
 
     private JSONObject getDocumentDownload(String authorization, CaseData caseData) throws NotificationClientException {

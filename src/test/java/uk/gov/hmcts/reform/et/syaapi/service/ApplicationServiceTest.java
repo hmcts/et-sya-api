@@ -354,13 +354,13 @@ class ApplicationServiceTest {
 
         @ParameterizedTest
         @MethodSource
-        void testNewStateAndResponseRequired(String claimantResponseRequired, String expectedApplicationState,
+        void testNewStateAndResponseRequired(boolean isRespondingToRequestOrOrder, String expectedApplicationState,
                                     String expectedClaimantResponseRequired) {
-            MockedStatic<TseApplicationHelper> mockStatic = mockStatic(TseApplicationHelper.class);
-
+            testRequest.setRespondingToRequestOrOrder(isRespondingToRequestOrOrder);
             GenericTseApplicationType application = GenericTseApplicationType.builder()
-                .claimantResponseRequired(claimantResponseRequired).applicationState(INITIAL_STATE).build();
+                .claimantResponseRequired("Yes").applicationState(INITIAL_STATE).build();
 
+            MockedStatic<TseApplicationHelper> mockStatic = mockStatic(TseApplicationHelper.class);
             mockStatic.when(() -> TseApplicationHelper.getSelectedApplication(any(), any()))
                 .thenReturn(GenericTseApplicationTypeItem.builder().value(application).build());
 
@@ -374,9 +374,8 @@ class ApplicationServiceTest {
 
         private static Stream<Arguments> testNewStateAndResponseRequired() {
             return Stream.of(
-                Arguments.of("Yes", "inProgress", "No"),
-                Arguments.of("No", INITIAL_STATE, "No"),
-                Arguments.of(null, INITIAL_STATE, null)
+                Arguments.of(true, "inProgress", "No"),
+                Arguments.of(false, INITIAL_STATE, "Yes")
             );
         }
     }
