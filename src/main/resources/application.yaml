@@ -90,11 +90,10 @@ notifications:
     tribunalResponse: ${TSE_TRIBUNAL_RESPONSE:9da290ff-c7da-4897-80d2-114361271dfa}
     respondentResponse: ${TSE_RESPONDENT_RESPONSE:63b0488f-134c-4bf2-8dea-40df4d158628}
     reply-to-tribunal:
+      to-tribunal: ${TSE_TRIBUNAL_RESPONSE_TO_REQUEST:a90587ee-61a4-430a-b14a-5801c14b4976}
       to-respondent: ${TSE_TO_RESPONDENT_CLAIMANT_REPLIED_TO_REQUEST:19e056f1-fc1e-413e-a465-48fd99b88da2}
-    tribunalResponseToRequest: ${TSE_TRIBUNAL_RESPONSE_TO_REQUEST:a90587ee-61a4-430a-b14a-5801c14b4976}
-    claimantResponseToRequestYes: ${TSE_CLAIMANT_RESPONSE_TO_REQUEST_YES:b29db0e8-27c9-453a-a068-b5a815d43de2}
-    claimantResponseToRequestNo: ${TSE_CLAIMANT_RESPONSE_TO_REQUEST_NO:d335b6f8-9f11-4539-9a4c-5b2c936ecc8d}
-    # todo name these better
+      to-claimant-rule-92-yes: ${TSE_CLAIMANT_RESPONSE_TO_REQUEST_YES:b29db0e8-27c9-453a-a068-b5a815d43de2}
+      to-claimant-rule-92-no: ${TSE_CLAIMANT_RESPONSE_TO_REQUEST_NO:d335b6f8-9f11-4539-9a4c-5b2c936ecc8d}
 
   pse:
     claimantResponseYes: ${CLAIMANT_RESPONSE_YES:5898b330-674c-48c8-87e1-ee07ab2910ee}
