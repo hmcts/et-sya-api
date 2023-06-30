@@ -70,8 +70,6 @@ import static uk.gov.service.notify.NotificationClient.prepareUpload;
 public class NotificationService {
     static final String NOT_SET = "Not set";
 
-    private static final String TWO_STRINGS_PATTERN = "%s %s";
-
     private final NotificationClient notificationClient;
     private final NotificationsProperties notificationsProperties;
 
@@ -80,7 +78,6 @@ public class NotificationService {
     private final String[] typeB = {"withdraw", "change-details", "reconsider-decision", "reconsider-judgement"};
     private static final String TYPE_C = "witness";
     private static final String DONT_SEND_COPY = "No";
-    private static final String CONCAT2STRINGS = "%s%s";
 
     /**
      * Record containing core details of an email.
@@ -257,7 +254,7 @@ public class NotificationService {
             getAndSetRule92EmailTemplate(claimantApplication, details.hearingDate, claimantParameters);
         claimantParameters.put(
             SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
-            String.format(CONCAT2STRINGS, notificationsProperties.getCitizenPortalLink(), details.caseId)
+            notificationsProperties.getCitizenPortalLink() + details.caseId
         );
 
         try {
@@ -325,7 +322,7 @@ public class NotificationService {
         );
         respondentParameters.put(
             SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
-            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), details.caseId)
+            notificationsProperties.getExuiCaseDetailsLink() + details.caseId
         );
 
         sendRespondentEmails(details.caseData, details.caseId, respondentParameters, emailToRespondentTemplate);
@@ -346,7 +343,7 @@ public class NotificationService {
             details.respondentNames,
             details.caseId,
             details.caseNumber,
-            String.format(TWO_STRINGS_PATTERN, details.caseNumber, APP_TYPE_MAP.get(applicationType))
+            details.caseNumber + " " + APP_TYPE_MAP.get(applicationType)
         );
         tribunalParameters.put(
             SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
@@ -354,7 +351,7 @@ public class NotificationService {
         );
         tribunalParameters.put(
             SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
-            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), details.caseId)
+            notificationsProperties.getExuiCaseDetailsLink() + details.caseId
         );
 
         String managingOffice = details.caseData.getManagingOffice();
@@ -384,7 +381,7 @@ public class NotificationService {
      */
     void sendResponseEmailToTribunal(CoreEmailDetails details, String applicationType,
                                      boolean isRespondingToRequestOrOrder) {
-        String subjectLine = String.format(TWO_STRINGS_PATTERN, details.caseNumber, applicationType);
+        String subjectLine = details.caseNumber + " " + applicationType;
 
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
         addCommonParameters(
@@ -403,7 +400,7 @@ public class NotificationService {
         );
         tribunalParameters.put(
             SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
-            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), details.caseId)
+            notificationsProperties.getExuiCaseDetailsLink() + details.caseId
         );
 
         String emailTemplate = isRespondingToRequestOrOrder
@@ -441,7 +438,7 @@ public class NotificationService {
         }
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
 
-        String subjectLine = String.format(TWO_STRINGS_PATTERN, details.caseNumber, applicationType);
+        String subjectLine = details.caseNumber + " " + applicationType;
 
         addCommonParameters(
             claimantParameters,
@@ -452,13 +449,10 @@ public class NotificationService {
             subjectLine,
             applicationType
         );
-        claimantParameters.put(
-            SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
-            details.hearingDate
-        );
+        claimantParameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, details.hearingDate);
         claimantParameters.put(
             SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
-            String.format(CONCAT2STRINGS, notificationsProperties.getCitizenPortalLink(), details.caseId)
+            notificationsProperties.getCitizenPortalLink() + details.caseId
         );
 
         String emailToClaimantTemplate;
@@ -499,7 +493,7 @@ public class NotificationService {
         }
         Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
 
-        String subjectLine = String.format(TWO_STRINGS_PATTERN, details.caseNumber, applicationType);
+        String subjectLine = details.caseNumber + " " + applicationType;
         addCommonParameters(
             respondentParameters,
             details.claimant,
@@ -509,13 +503,10 @@ public class NotificationService {
             subjectLine,
             applicationType
         );
-        respondentParameters.put(
-            SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
-            details.hearingDate
-        );
+        respondentParameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, details.hearingDate);
         respondentParameters.put(
             SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
-            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), details.caseId)
+            notificationsProperties.getExuiCaseDetailsLink() + details.caseId
         );
 
         String emailToRespondentTemplate = notificationsProperties.getTseRespondentResponseTemplateId();
@@ -560,7 +551,7 @@ public class NotificationService {
 
         tribunalParameters.put(
             SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
-            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
+            notificationsProperties.getExuiCaseDetailsLink() + caseId
         );
 
         sendTribunalEmail(
@@ -584,14 +575,14 @@ public class NotificationService {
 
         Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
         addCommonParameters(respondentParameters, caseData, caseId);
-        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET);
+
         respondentParameters.put(
             SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
-            hearingDate
+            NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET)
         );
         respondentParameters.put(
             SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
-            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
+            notificationsProperties.getExuiCaseDetailsLink() + caseId
         );
 
         sendRespondentEmails(caseData, caseId, respondentParameters,
@@ -615,14 +606,14 @@ public class NotificationService {
 
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
         addCommonParameters(claimantParameters, caseData, caseId);
-        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET);
+
         claimantParameters.put(
             SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
-            hearingDate
+            NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET)
         );
         claimantParameters.put(
             SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
-            String.format(CONCAT2STRINGS, notificationsProperties.getCitizenPortalLink(), caseId)
+            notificationsProperties.getCitizenPortalLink() + caseId
         );
 
         try {
@@ -715,7 +706,7 @@ public class NotificationService {
 
     private static void addCommonParameters(Map<String, Object> parameters, CaseData caseData, String caseId) {
         String claimant = String.format(
-            TWO_STRINGS_PATTERN,
+            "%s %s",
             caseData.getClaimantIndType().getClaimantFirstNames(),
             caseData.getClaimantIndType().getClaimantLastName()
         );
