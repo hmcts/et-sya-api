@@ -343,7 +343,7 @@ public class NotificationService {
             details.respondentNames,
             details.caseId,
             details.caseNumber,
-            details.caseNumber + " " + APP_TYPE_MAP.get(applicationType)
+            String.join(" ", details.caseNumber, APP_TYPE_MAP.get(applicationType))
         );
         tribunalParameters.put(
             SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
@@ -381,7 +381,6 @@ public class NotificationService {
      */
     void sendResponseEmailToTribunal(CoreEmailDetails details, String applicationType,
                                      boolean isRespondingToRequestOrOrder) {
-        String subjectLine = details.caseNumber + " " + applicationType;
 
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
         addCommonParameters(
@@ -390,7 +389,7 @@ public class NotificationService {
             details.respondentNames,
             details.caseId,
             details.caseNumber,
-            subjectLine,
+            String.join(" ", details.caseNumber, applicationType),
             applicationType
         );
 
@@ -438,15 +437,13 @@ public class NotificationService {
         }
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
 
-        String subjectLine = details.caseNumber + " " + applicationType;
-
         addCommonParameters(
             claimantParameters,
             details.claimant,
             details.respondentNames,
             details.caseId,
             details.caseNumber,
-            subjectLine,
+            String.join(" ", details.caseNumber, applicationType),
             applicationType
         );
         claimantParameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, details.hearingDate);
@@ -493,14 +490,13 @@ public class NotificationService {
         }
         Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
 
-        String subjectLine = details.caseNumber + " " + applicationType;
         addCommonParameters(
             respondentParameters,
             details.claimant,
             details.respondentNames,
             details.caseId,
             details.caseNumber,
-            subjectLine,
+            String.join(" ", details.caseNumber, applicationType),
             applicationType
         );
         respondentParameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, details.hearingDate);
