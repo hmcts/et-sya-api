@@ -180,8 +180,7 @@ class NotificationServiceTest {
         notificationService = new NotificationService(notificationClient, notificationsProperties);
         doReturn(TestConstants.INPUT_SEND_EMAIL_RESPONSE).when(notificationClient)
             .sendEmail(TestConstants.TEST_TEMPLATE_API_KEY,
-                       TestConstants.TEST_EMAIL, parameters, TestConstants.REFERENCE_STRING
-            );
+                       TestConstants.TEST_EMAIL, parameters, TestConstants.REFERENCE_STRING);
         return notificationService.sendEmail(TestConstants.TEST_TEMPLATE_API_KEY,
                                              TestConstants.TEST_EMAIL, parameters, TestConstants.REFERENCE_STRING
         );
