@@ -44,6 +44,55 @@ public final class TestData {
         CaseDataContent.class
     );
 
+    private final StartEventResponse updateCaseEventResponse = ResourceLoader.fromString(
+        "responses/updateCaseEventResponse.json",
+        StartEventResponse.class
+    );
+
+    private final StartEventResponse startEventResponse = ResourceLoader.fromString(
+        "responses/startEventResponse.json",
+        StartEventResponse.class
+    );
+
+    private final RespondToApplicationRequest respondToApplicationRequest = ResourceLoader.fromString(
+        "requests/respondToApplication.json",
+        RespondToApplicationRequest.class
+    );
+
+    private final CaseDetails caseDetailsWithData = ResourceLoader.fromString(
+        "responses/caseDetailsWithCaseData.json",
+        CaseDetails.class
+    );
+
+    private final CaseData caseData = ResourceLoader.fromString(
+        "requests/caseData.json",
+        CaseData.class
+    );
+
+    private final RespondToApplicationRequest respondToApplicationNoUploadRequest = ResourceLoader.fromString(
+        "requests/respondToApplicationNoUpload.json",
+        RespondToApplicationRequest.class
+    );
+
+    private final ChangeApplicationStatusRequest changeApplicationStatusRequest = ResourceLoader.fromString(
+        "requests/viewAnApplication.json",
+        ChangeApplicationStatusRequest.class
+    );
+
+    private final ClaimantApplicationRequest claimantApplicationRequest = ResourceLoader.fromString(
+        "requests/claimantTseRequest.json",
+        ClaimantApplicationRequest.class
+    );
+
+    private final SendNotificationAddResponseRequest sendNotificationAddResponseRequest = ResourceLoader.fromString(
+        "requests/SendNotificationAddResponseRequest.json",
+        SendNotificationAddResponseRequest.class
+    );
+    private final SendNotificationStateUpdateRequest sendNotificationStateUpdateRequest = ResourceLoader.fromString(
+        "requests/sendNotificationStateUpdateRequest.json",
+        SendNotificationStateUpdateRequest.class
+    );
+
     public static Stream<Arguments> postcodeAddressArguments() {
         return Stream.of(
             Arguments.of("A1 1AA",
@@ -162,55 +211,6 @@ public final class TestData {
             Arguments.of(caseDataEnglishContactLanguage, TestConstants.ENGLISH_LANGUAGE)
         );
     }
-
-    private final StartEventResponse updateCaseEventResponse = ResourceLoader.fromString(
-        "responses/updateCaseEventResponse.json",
-        StartEventResponse.class
-    );
-
-    private final StartEventResponse startEventResponse = ResourceLoader.fromString(
-        "responses/startEventResponse.json",
-        StartEventResponse.class
-    );
-
-    private final RespondToApplicationRequest respondToApplicationRequest = ResourceLoader.fromString(
-        "requests/respondToApplication.json",
-        RespondToApplicationRequest.class
-    );
-
-    private final CaseDetails caseDetailsWithData = ResourceLoader.fromString(
-        "responses/caseDetailsWithCaseData.json",
-        CaseDetails.class
-    );
-
-    private final CaseData caseData = ResourceLoader.fromString(
-        "requests/caseData.json",
-        CaseData.class
-    );
-
-    private final RespondToApplicationRequest respondToApplicationNoUploadRequest = ResourceLoader.fromString(
-        "requests/respondToApplicationNoUpload.json",
-        RespondToApplicationRequest.class
-    );
-
-    private final ChangeApplicationStatusRequest changeApplicationStatusRequest = ResourceLoader.fromString(
-        "requests/viewAnApplication.json",
-        ChangeApplicationStatusRequest.class
-    );
-
-    private final ClaimantApplicationRequest claimantApplicationRequest = ResourceLoader.fromString(
-        "requests/claimantTseRequest.json",
-        ClaimantApplicationRequest.class
-    );
-
-    private final SendNotificationAddResponseRequest sendNotificationAddResponseRequest = ResourceLoader.fromString(
-        "requests/SendNotificationAddResponseRequest.json",
-        SendNotificationAddResponseRequest.class
-    );
-    private final SendNotificationStateUpdateRequest sendNotificationStateUpdateRequest = ResourceLoader.fromString(
-        "requests/sendNotificationStateUpdateRequest.json",
-        SendNotificationStateUpdateRequest.class
-    );
 
     public static Stream<Arguments> generatePdfFileListForTestingHasPdfFileByGivenIndex() {
         return Stream.of(

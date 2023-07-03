@@ -31,6 +31,7 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MICHAEL;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST;
 
 @Data
+@SuppressWarnings({"PMD.TooManyFields"})
 public final class CaseTestData {
 
     private final CaseData caseData = ResourceLoader.fromString(
@@ -40,6 +41,44 @@ public final class CaseTestData {
     private final CaseRequest caseDataWithClaimTypes = ResourceLoader.fromString(
         "requests/caseDataWithClaimTypes.json",
         CaseRequest.class
+    );
+
+    private final ClaimantTse claimantApplication = ResourceLoader.fromString(
+        "responses/claimantTse.json",
+        ClaimantTse.class
+    );
+    private final CaseDetails expectedDetails = ResourceLoader.fromString(
+        "responses/caseDetails.json",
+        CaseDetails.class
+    );
+    private final List<CaseDetails> requestCaseDataList = ResourceLoader.fromStringToList(
+        "responses/caseDetailsList.json",
+        CaseDetails.class
+    );
+    private final List<CaseDetails> requestCaseDataListEngland = ResourceLoader.fromStringToList(
+        "responses/caseDetailsEngland.json",
+        CaseDetails.class
+    );
+    private final List<CaseDetails> requestCaseDataListScotland = ResourceLoader.fromStringToList(
+        "responses/caseDetailsScotland.json",
+        CaseDetails.class
+    );
+
+    private final StartEventResponse startEventResponse = ResourceLoader.fromString(
+        "responses/startEventResponse.json",
+        StartEventResponse.class
+    );
+    private final List<DocumentTypeItem> uploadDocumentResponse = ResourceLoader.fromStringToList(
+        "responses/documentTypeItemList.json",
+        DocumentTypeItem.class
+    );
+    private final UserInfo userInfo = ResourceLoader.fromString(
+        "responses/userInfo.json",
+        UserInfo.class
+    );
+    private final List<CaseDetails> requestCaseDataListEnglandAcas = ResourceLoader.fromStringToList(
+        "responses/caseDetailsEnglandAcasDocs.json",
+        CaseDetails.class
     );
 
     private final RespondToApplicationRequest respondToApplicationRequest = ResourceLoader.fromString(
@@ -112,44 +151,6 @@ public final class CaseTestData {
                          TestConstants.NOT_EMPTY_UPLOADED_DOCUMENT_TYPE_FILE)
         );
     }
-
-    private final ClaimantTse claimantApplication = ResourceLoader.fromString(
-        "responses/claimantTse.json",
-        ClaimantTse.class
-    );
-    private final CaseDetails expectedDetails = ResourceLoader.fromString(
-        "responses/caseDetails.json",
-        CaseDetails.class
-    );
-    private final List<CaseDetails> requestCaseDataList = ResourceLoader.fromStringToList(
-        "responses/caseDetailsList.json",
-        CaseDetails.class
-    );
-    private final List<CaseDetails> requestCaseDataListEngland = ResourceLoader.fromStringToList(
-        "responses/caseDetailsEngland.json",
-        CaseDetails.class
-    );
-    private final List<CaseDetails> requestCaseDataListScotland = ResourceLoader.fromStringToList(
-        "responses/caseDetailsScotland.json",
-        CaseDetails.class
-    );
-
-    private final StartEventResponse startEventResponse = ResourceLoader.fromString(
-        "responses/startEventResponse.json",
-        StartEventResponse.class
-    );
-    private final List<DocumentTypeItem> uploadDocumentResponse = ResourceLoader.fromStringToList(
-        "responses/documentTypeItemList.json",
-        DocumentTypeItem.class
-    );
-    private final UserInfo userInfo = ResourceLoader.fromString(
-        "responses/userInfo.json",
-        UserInfo.class
-    );
-    private final List<CaseDetails> requestCaseDataListEnglandAcas = ResourceLoader.fromStringToList(
-        "responses/caseDetailsEnglandAcasDocs.json",
-        CaseDetails.class
-    );
 
     public Map<String, Object> getCaseRequestCaseDataMap() {
         Et1CaseData et1CaseData = ResourceLoader.fromString("requests/caseData.json", Et1CaseData.class);
