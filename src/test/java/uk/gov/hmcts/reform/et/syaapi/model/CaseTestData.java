@@ -43,9 +43,30 @@ public final class CaseTestData {
         CaseRequest.class
     );
 
+
     private final ClaimantTse claimantApplication = ResourceLoader.fromString(
         "responses/claimantTse.json",
         ClaimantTse.class
+    );
+    private final CaseRequest caseRequest = ResourceLoader.fromString(
+        "requests/caseRequest.json",
+        CaseRequest.class
+    );
+    private final CaseRequest caseRequestWithoutManagingAddress = ResourceLoader.fromString(
+        "requests/caseDataWithoutManagingAddress.json",
+        CaseRequest.class
+    );
+    private final CaseRequest emptyCaseRequest = ResourceLoader.fromString(
+        "requests/noManagingOfficeAndRespondentsAddressCaseRequest.json",
+        CaseRequest.class
+    );
+    private final CaseRequest englandWalesRequest = ResourceLoader.fromString(
+        "requests/caseRequestEnglandWales.json",
+        CaseRequest.class
+    );
+    private final List<CaseDetails> expectedCaseDataListCombined = ResourceLoader.fromStringToList(
+        "responses/caseDetailsCombined.json",
+        CaseDetails.class
     );
     private final CaseDetails expectedDetails = ResourceLoader.fromString(
         "responses/caseDetails.json",
