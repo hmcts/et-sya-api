@@ -14,13 +14,13 @@ import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
+import uk.gov.hmcts.reform.et.syaapi.model.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
-import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
-import uk.gov.hmcts.reform.et.syaapi.models.PdfDecodedMultipartFile;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.util.GenericServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
@@ -43,9 +43,9 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ENGLISH_LANGUAGE;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SUBMIT_CASE_PDF_FILE_RESPONSE;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WELSH_LANGUAGE;
+import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.ENGLISH_LANGUAGE;
+import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.TEST_SUBMIT_CASE_PDF_FILE_RESPONSE;
+import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.WELSH_LANGUAGE;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class NotificationServiceTest {

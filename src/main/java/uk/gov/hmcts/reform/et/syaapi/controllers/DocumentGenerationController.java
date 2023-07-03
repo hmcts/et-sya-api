@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
-import uk.gov.hmcts.reform.et.syaapi.models.ClaimCaseDocument;
-import uk.gov.hmcts.reform.et.syaapi.models.TornadoDocument;
+import uk.gov.hmcts.reform.et.syaapi.model.ClaimCaseDocument;
+import uk.gov.hmcts.reform.et.syaapi.model.TornadoDocument;
 import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationService;
 
 import java.io.IOException;

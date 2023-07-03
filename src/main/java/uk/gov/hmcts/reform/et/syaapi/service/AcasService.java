@@ -13,9 +13,9 @@ import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
-import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
-import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificateRequest;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.model.AcasCertificate;
+import uk.gov.hmcts.reform.et.syaapi.model.AcasCertificateRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.util.GenericServiceUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;

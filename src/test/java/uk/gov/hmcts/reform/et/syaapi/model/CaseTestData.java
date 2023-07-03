@@ -11,10 +11,9 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
-import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.TestDataProvider;
+import uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.util.data.ResourceLoader;
+import uk.gov.hmcts.reform.et.syaapi.service.util.data.TestDataProvider;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.util.List;
@@ -22,7 +21,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MICHAEL;
+import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.MICHAEL;
 
 @Data
 public final class CaseTestData {

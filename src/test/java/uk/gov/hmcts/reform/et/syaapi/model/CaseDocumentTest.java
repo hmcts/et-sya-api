@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.et.syaapi.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 
 import java.util.HashMap;
 import java.util.Map;

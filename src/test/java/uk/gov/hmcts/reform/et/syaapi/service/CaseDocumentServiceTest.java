@@ -20,10 +20,10 @@ import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.et.syaapi.config.interceptors.ResourceNotFoundException;
-import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
-import uk.gov.hmcts.reform.et.syaapi.models.PdfDecodedMultipartFile;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceUtil;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseDocument;
+import uk.gov.hmcts.reform.et.syaapi.model.PdfDecodedMultipartFile;
+import uk.gov.hmcts.reform.et.syaapi.service.util.data.ResourceLoader;
+import uk.gov.hmcts.reform.et.syaapi.service.util.data.ResourceUtil;
 
 import java.io.IOException;
 import java.net.URI;

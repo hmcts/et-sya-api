@@ -6,7 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import uk.gov.hmcts.reform.et.syaapi.models.PdfDecodedMultipartFile;
+import uk.gov.hmcts.reform.et.syaapi.model.PdfDecodedMultipartFile;
 
 import java.io.File;
 import java.io.IOException;

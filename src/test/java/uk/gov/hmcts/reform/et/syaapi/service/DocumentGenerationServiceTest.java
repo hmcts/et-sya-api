@@ -13,7 +13,7 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-import uk.gov.hmcts.reform.et.syaapi.models.ClaimCaseDocument;
+import uk.gov.hmcts.reform.et.syaapi.model.ClaimCaseDocument;
 
 import java.net.UnknownHostException;
 

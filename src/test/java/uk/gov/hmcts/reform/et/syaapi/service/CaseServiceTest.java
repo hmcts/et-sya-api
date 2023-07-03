@@ -27,15 +27,15 @@ import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.constants.JurisdictionCodesConstants;
+import uk.gov.hmcts.reform.et.syaapi.exception.PdfServiceException;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
-import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.model.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
-import uk.gov.hmcts.reform.et.syaapi.models.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
-import uk.gov.hmcts.reform.et.syaapi.exception.PdfServiceException;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.service.notify.SendEmailResponse;
@@ -62,11 +62,11 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.ENGLANDWALES_CASE_TYPE_ID;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CASE_ID;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.SUBMIT_CASE_DRAFT;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_NAME;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.USER_ID;
+import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.CASE_ID;
+import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.SUBMIT_CASE_DRAFT;
+import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.TEST_NAME;
+import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.TEST_SERVICE_AUTH_TOKEN;
+import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.USER_ID;
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)

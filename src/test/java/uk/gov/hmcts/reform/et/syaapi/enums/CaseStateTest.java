@@ -4,9 +4,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Import;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.AWAITING_SUBMISSION_TO_HMCTS;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.DRAFT;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.SUBMITTED;
+import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.AWAITING_SUBMISSION_TO_HMCTS;
+import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.DRAFT;
+import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.SUBMITTED;
 
 @Import(CaseEvent.class)
 class CaseStateTest {

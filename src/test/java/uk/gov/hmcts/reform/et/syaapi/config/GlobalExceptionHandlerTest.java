@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.authorisation.exceptions.InvalidTokenException;
 import uk.gov.hmcts.reform.et.syaapi.config.interceptors.UnAuthorisedServiceException;
-import uk.gov.hmcts.reform.et.syaapi.models.ErrorResponse;
+import uk.gov.hmcts.reform.et.syaapi.model.ErrorResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;

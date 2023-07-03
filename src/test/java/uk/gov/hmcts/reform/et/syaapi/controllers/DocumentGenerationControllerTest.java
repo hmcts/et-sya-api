@@ -13,7 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.util.data.ResourceUtil;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
+import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 @WebMvcTest(
     controllers = {DocumentGenerationController.class}

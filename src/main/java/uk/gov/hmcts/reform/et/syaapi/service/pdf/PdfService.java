@@ -14,9 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.et.syaapi.exception.PdfServiceException;
-import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
-import uk.gov.hmcts.reform.et.syaapi.models.PdfDecodedMultipartFile;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.model.AcasCertificate;
+import uk.gov.hmcts.reform.et.syaapi.model.PdfDecodedMultipartFile;
+import uk.gov.hmcts.reform.et.syaapi.service.util.GenericServiceUtil;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.ByteArrayOutputStream;

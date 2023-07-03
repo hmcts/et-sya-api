@@ -11,11 +11,11 @@ import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TYPE_OF_CLAIM_BREACH_OF_CONTRACT;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TYPE_OF_CLAIM_DISCRIMINATION;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TYPE_OF_CLAIM_PAY_RELATED_CLAIM;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TYPE_OF_CLAIM_UNFAIR_DISMISSAL;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TYPE_OF_CLAIM_WHISTLE_BLOWING;
+import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.TYPE_OF_CLAIM_BREACH_OF_CONTRACT;
+import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.TYPE_OF_CLAIM_DISCRIMINATION;
+import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.TYPE_OF_CLAIM_PAY_RELATED_CLAIM;
+import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.TYPE_OF_CLAIM_UNFAIR_DISMISSAL;
+import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.TYPE_OF_CLAIM_WHISTLE_BLOWING;
 
 @Import(EmployeeObjectMapper.class)
 class EmploymentObjectMapperTest {
