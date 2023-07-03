@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants;
 import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperRespondentUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperServiceUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.util.PdfTemplateRespondentFieldNamesEnum;
+import uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants;
 import uk.gov.hmcts.reform.et.syaapi.service.util.data.PdfMapperRespondentUtilTestDataProvider;
 import uk.gov.hmcts.reform.et.syaapi.service.util.data.TestDataProvider;
 
@@ -33,22 +34,7 @@ import java.util.concurrent.ConcurrentMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.ADDRESS_LINE_1;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.ADDRESS_LINE_2;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.ADDRESS_LINE_3;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.COUNTRY;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.COUNTY;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.INTEGER_NUMERIC_FIVE;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.INTEGER_NUMERIC_FOUR;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.INTEGER_NUMERIC_THREE;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.INTEGER_NUMERIC_TWO;
 import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.NO;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.NULL_ADDRESS;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.NULL_STRING;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.POSTCODE;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.POST_TOWN;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.STRING_NUMERIC_ONE;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.TEST_COMPANY_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.YES;
 
 class PdfMapperRespondentUtilTest {
@@ -73,7 +59,7 @@ class PdfMapperRespondentUtilTest {
             checkAcasCertificate(printFields,
                                  firstRespondent,
                                  firstRespondentPdfFieldModel.respondentAcasCertificatePdfFieldModel());
-            if (respondentCaseData.getRespondentCollection().size() >= INTEGER_NUMERIC_TWO) {
+            if (respondentCaseData.getRespondentCollection().size() >= TestConstants.INTEGER_NUMERIC_TWO) {
                 RespondentPdfFieldModel secondRespondentPdfFieldModel =
                     PdfTemplateRespondentFieldNamesEnum.SECOND_RESPONDENT.respondentPdfFieldModel;
                 RespondentSumType secondRespondent = respondentCaseData.getRespondentCollection().get(1).getValue();
@@ -82,7 +68,7 @@ class PdfMapperRespondentUtilTest {
                                      secondRespondent,
                                      secondRespondentPdfFieldModel.respondentAcasCertificatePdfFieldModel());
             }
-            if (respondentCaseData.getRespondentCollection().size() >= INTEGER_NUMERIC_THREE) {
+            if (respondentCaseData.getRespondentCollection().size() >= TestConstants.INTEGER_NUMERIC_THREE) {
                 RespondentPdfFieldModel thirdRespondentPdfFieldModel =
                     PdfTemplateRespondentFieldNamesEnum.THIRD_RESPONDENT.respondentPdfFieldModel;
                 RespondentSumType thirdRespondent = respondentCaseData.getRespondentCollection().get(2).getValue();
@@ -91,7 +77,7 @@ class PdfMapperRespondentUtilTest {
                                      thirdRespondent,
                                      thirdRespondentPdfFieldModel.respondentAcasCertificatePdfFieldModel());
             }
-            if (respondentCaseData.getRespondentCollection().size() >= INTEGER_NUMERIC_FOUR) {
+            if (respondentCaseData.getRespondentCollection().size() >= TestConstants.INTEGER_NUMERIC_FOUR) {
                 RespondentPdfFieldModel forthRespondentPdfFieldModel =
                     PdfTemplateRespondentFieldNamesEnum.FORTH_RESPONDENT.respondentPdfFieldModel;
                 RespondentSumType forthRespondent = respondentCaseData.getRespondentCollection().get(3).getValue();
@@ -100,7 +86,7 @@ class PdfMapperRespondentUtilTest {
                                      forthRespondent,
                                      forthRespondentPdfFieldModel.respondentAcasCertificatePdfFieldModel());
             }
-            if (respondentCaseData.getRespondentCollection().size() >= INTEGER_NUMERIC_FIVE) {
+            if (respondentCaseData.getRespondentCollection().size() >= TestConstants.INTEGER_NUMERIC_FIVE) {
                 RespondentPdfFieldModel fifthRespondentPdfFieldModel =
                     PdfTemplateRespondentFieldNamesEnum.FIFTH_RESPONDENT.respondentPdfFieldModel;
                 RespondentSumType fifthRespondent = respondentCaseData.getRespondentCollection().get(4).getValue();
@@ -115,19 +101,23 @@ class PdfMapperRespondentUtilTest {
     @Test
     void putRespondentLogsPdfServiceExceptionWhenWrongNoAcasReasonSelected() {
         try (MockedStatic<GenericServiceUtil> mockedServiceUtil = Mockito.mockStatic(GenericServiceUtil.class)) {
-            Address respondentAddress = TestDataProvider.generateAddressByAddressFields(ADDRESS_LINE_1,
-                                                                                        ADDRESS_LINE_2,
-                                                                                        ADDRESS_LINE_3,
-                                                                                        POST_TOWN, COUNTY,
-                                                                                        COUNTRY, POSTCODE);
+            Address respondentAddress = TestDataProvider.generateAddressByAddressFields(TestConstants.ADDRESS_LINE_1,
+                                                                                        TestConstants.ADDRESS_LINE_2,
+                                                                                        TestConstants.ADDRESS_LINE_3,
+                                                                                        TestConstants.POST_TOWN,
+                                                                                        TestConstants.COUNTY,
+                                                                                        TestConstants.COUNTRY,
+                                                                                        TestConstants.POSTCODE);
             CaseData respondentCaseData =
-                TestDataProvider.generateCaseDataForRespondent(STRING_NUMERIC_ONE, YES, NULL_ADDRESS);
+                TestDataProvider.generateCaseDataForRespondent(TestConstants.STRING_NUMERIC_ONE,
+                                                               YES,
+                                                               TestConstants.NULL_ADDRESS);
             RespondentSumTypeItem respondentSumTypeItem =
-                PdfMapperRespondentUtilTestDataProvider.generateRespondentSumTypeItem(STRING_NUMERIC_ONE,
-                                                                                      TEST_COMPANY_NAME,
+                PdfMapperRespondentUtilTestDataProvider.generateRespondentSumTypeItem(TestConstants.STRING_NUMERIC_ONE,
+                                                                                      TestConstants.TEST_COMPANY_NAME,
                                                                                       respondentAddress,
                                                                                       NO,
-                                                                                      NULL_STRING,
+                                                                                      TestConstants.NULL_STRING,
                                                                                       "DUMMY REASON");
 
             List<RespondentSumTypeItem> respondentCollection = new ArrayList<>();
