@@ -12,10 +12,6 @@
     <cve>CVE-2021-29425</cve>
   </suppress>
   <suppress>
-    <notes>Suppresses spring-security-crypto-5.7.5.jar vulnerabilities</notes>
-    <cve>CVE-2020-5408</cve>
-  </suppress>
-  <suppress>
     <notes><![CDATA[
     file name: commons-io-2.11.0.jar
     ]]></notes>
