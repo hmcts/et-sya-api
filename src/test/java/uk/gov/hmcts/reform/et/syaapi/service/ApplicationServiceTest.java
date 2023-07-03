@@ -39,7 +39,6 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.et.syaapi.service.ApplicationService.respondToRequestForInfo;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 @SuppressWarnings({"PMD.SingularField", "PMD.TooManyMethods"})
