@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.AdminDecisionNotificationStateUpdate
 import uk.gov.hmcts.reform.et.syaapi.service.AdminDecisionNotificationService;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
-import uk.gov.hmcts.reform.et.syaapi.utils.ResourceLoader;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 @WebMvcTest(
     controllers = {AdminDecisionNotificationController.class}

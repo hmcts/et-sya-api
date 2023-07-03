@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.et.syaapi.utils.TestConstants.TEST_STRING;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_STRING;
 
 class AcasCertificateTest {
 
@@ -22,7 +22,7 @@ class AcasCertificateTest {
     void testAcasCertificateNumber() {
         AcasCertificate acasCertificate = new AcasCertificate();
         acasCertificate.setCertificateNumber(NUM_STRING);
-        assertThat(NUM_STRING).isEqualTo(acasCertificate.getCertificateNumber());
+        assertThat(acasCertificate.getCertificateNumber()).isEqualTo(NUM_STRING);
 
     }
 
@@ -31,6 +31,6 @@ class AcasCertificateTest {
         AcasCertificate acasCertificate = new AcasCertificate();
         acasCertificate.setCertificateDocument(TEST_STRING);
         acasCertificate.setCertificateNumber(NUM_STRING);
-        assertThat(TEST_STRING).isEqualTo(acasCertificate.getCertificateDocument());
+        assertThat(acasCertificate.getCertificateDocument()).isEqualTo(TEST_STRING);
     }
 }
