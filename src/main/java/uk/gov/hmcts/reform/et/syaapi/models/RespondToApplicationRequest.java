@@ -22,4 +22,6 @@ public class RespondToApplicationRequest {
     private UploadedDocumentType supportingMaterialFile;
     @JsonProperty("response")
     private TseRespondType response;
+    @JsonProperty("isRespondingToRequestOrOrder")
+    private boolean isRespondingToRequestOrOrder;
 }
