@@ -83,17 +83,21 @@ public class NotificationsProperties {
     @NotBlank
     private String tseTribunalResponseTemplateId;
 
-    @Value("${notifications.tse.tribunalResponseToRequest}")
+    @Value("${notifications.tse.reply-to-tribunal.to-tribunal}")
     @NotBlank
     private String tseTribunalResponseToRequestTemplateId;
 
-    @Value("${notifications.tse.claimantResponseToRequestYes}")
+    @Value("${notifications.tse.reply-to-tribunal.to-claimant-rule-92-yes}")
     @NotBlank
     private String tseClaimantResponseToRequestYesTemplateId;
 
-    @Value("${notifications.tse.claimantResponseToRequestNo}")
+    @Value("${notifications.tse.reply-to-tribunal.to-claimant-rule-92-no}")
     @NotBlank
     private String tseClaimantResponseToRequestNoTemplateId;
+
+    @Value("${notifications.tse.reply-to-tribunal.to-respondent}")
+    @NotBlank
+    private String tseReplyToTribunalToRespondentTemplateId;
 
     @Value("${notifications.tse.respondentResponse}")
     @NotBlank
