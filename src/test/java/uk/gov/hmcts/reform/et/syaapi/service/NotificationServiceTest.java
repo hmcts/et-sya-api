@@ -73,7 +73,6 @@ class NotificationServiceTest {
     private NotificationsProperties notificationsProperties;
     private CaseTestData caseTestData;
     private CoreEmailDetails details;
-    private final ConcurrentHashMap<String, String> parameters = new ConcurrentHashMap<>();
 
     @BeforeEach
     void before() throws NotificationClientException {

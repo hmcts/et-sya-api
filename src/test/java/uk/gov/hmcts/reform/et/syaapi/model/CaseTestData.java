@@ -111,30 +111,10 @@ public final class CaseTestData {
         "responses/caseDetails.json",
         CaseDetails.class
     );
-    private final CaseRequest caseRequest = ResourceLoader.fromString(
-        "requests/caseRequest.json",
-        CaseRequest.class
-    );
-    private final CaseRequest caseRequestWithoutManagingAddress = ResourceLoader.fromString(
-        "requests/caseDataWithoutManagingAddress.json",
-        CaseRequest.class
-    );
 
     private final ClaimantTse claimantTse = ResourceLoader.fromString(
         "requests/claimantTse.json",
         ClaimantTse.class
-    );
-    private final CaseRequest emptyCaseRequest = ResourceLoader.fromString(
-        "requests/noManagingOfficeAndRespondentsAddressCaseRequest.json",
-        CaseRequest.class
-    );
-    private final CaseRequest englandWalesRequest = ResourceLoader.fromString(
-        "requests/caseRequestEnglandWales.json",
-        CaseRequest.class
-    );
-    private final List<CaseDetails> expectedCaseDataListCombined = ResourceLoader.fromStringToList(
-        "responses/caseDetailsCombined.json",
-        CaseDetails.class
     );
 
     public SendEmailResponse getSendEmailResponse() throws IOException {

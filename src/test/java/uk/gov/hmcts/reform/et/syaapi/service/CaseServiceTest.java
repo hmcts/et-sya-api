@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
+import org.apache.commons.collections4.MultiValuedMap;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
@@ -14,6 +15,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
@@ -47,9 +51,11 @@ import uk.gov.service.notify.SendEmailResponse;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -108,8 +114,8 @@ class CaseServiceTest {
     private NotificationsProperties notificationsProperties;
     @InjectMocks
     private CaseService caseService;
-    private final CaseTestData caseTestData;
     private SendEmailResponse sendEmailResponse;
+    private final CaseTestData caseTestData;
     public static final String TEST = "test";
     private static final byte[] TSE_PDF_BYTES = TEST.getBytes();
     private static final String TSE_PDF_NAME = "contact_about_something_else.pdf";
@@ -375,185 +381,6 @@ class CaseServiceTest {
 
     @SneakyThrows
     @Test
-    void shouldAddSupportingDocumentToDocumentCollection() {
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
-            null,
-            USER_ID,
-            TEST_NAME,
-            caseTestData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
-            caseTestData.getCaseData().getClaimantIndType().getClaimantLastName(),
-            null
-        ));
-
-        caseTestData.getCaseRequest().setCaseId("1668421480426211");
-        when(ccdApiClient.submitEventForCitizen(
-            eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(USER_ID),
-            eq(EtSyaConstants.JURISDICTION_ID),
-            eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
-            any(String.class),
-            eq(true),
-            any(CaseDataContent.class)
-        )).thenReturn(caseTestData.getExpectedDetails());
-
-        when(ccdApiClient.startEventForCitizen(
-            eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(USER_ID),
-            eq(EtSyaConstants.JURISDICTION_ID),
-            eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
-            any(String.class),
-            any(String.class)
-        )).thenReturn(caseTestData.getStartEventResponse());
-
-        PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            new PdfDecodedMultipartFile(
-                new byte[0],
-                "test",
-                "test",
-                "test"
-            );
-
-        when(pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(any(), any()))
-            .thenReturn(List.of(pdfDecodedMultipartFile));
-
-        when(pdfService.convertCaseDataToPdfDecodedMultipartFile(any(), any()))
-            .thenReturn(List.of(pdfDecodedMultipartFile));
-
-        when(acasService.getAcasCertificatesByCaseData(any())).thenReturn(List.of());
-
-        when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any()))
-            .thenReturn(new LinkedList<>());
-
-        when(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(any()))
-            .thenReturn(caseTestData.getCaseData());
-
-        SendEmailResponse sendEmailResponse
-            = new SendEmailResponse("{\n"
-                                        + "  \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                                        + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
-                                        + "  \"template\": {\n"
-                                        + "    \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                                        + "    \"version\": \"3\",\n"
-                                        + "    \"uri\": \"TEST\"\n"
-                                        + "  },\n"
-                                        + "  \"content\": {\n"
-                                        + "    \"body\": \"Dear test, Please see your detail as 123456789. Regards, "
-                                        + "ET Team.\",\n"
-                                        + "    \"subject\": \"ET Test email created\",\n"
-                                        + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
-                                        + "  }\n"
-                                        + "}\n");
-        when(notificationService.sendSubmitCaseConfirmationEmail(any(), any(), any(), any()))
-            .thenReturn(sendEmailResponse);
-
-        when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(createDocumentTypeItem());
-
-        CaseDetails caseDetails = caseService.submitCase(
-            TEST_SERVICE_AUTH_TOKEN,
-            caseTestData.getCaseRequest()
-        );
-
-        assertEquals(1, ((ArrayList<?>)caseDetails.getData().get("documentCollection")).size());
-        ArrayList docCollection = (ArrayList) caseDetails.getData().get("documentCollection");
-
-        assertEquals("DocumentType(typeOfDocument="
-            + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=https://document.binary.url, "
-            + "documentFilename=filename, documentUrl=https://document.url), ownerDocument=null, "
-            + "creationDate=null, shortDescription=null)",
-            ((DocumentTypeItem) docCollection.get(0)).getValue().toString());
-
-    }
-
-    @Test
-    void shouldSendErrorEmail() throws PdfServiceException, CaseDocumentException {
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
-            null,
-            USER_ID,
-            TEST_NAME,
-            caseTestData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
-            caseTestData.getCaseData().getClaimantIndType().getClaimantLastName(),
-            null
-        ));
-
-        caseTestData.getCaseRequest().setCaseId("1668421480426211");
-        when(ccdApiClient.submitEventForCitizen(
-            eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(USER_ID),
-            eq(EtSyaConstants.JURISDICTION_ID),
-            eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
-            any(String.class),
-            eq(true),
-            any(CaseDataContent.class)
-        )).thenReturn(caseTestData.getExpectedDetails());
-
-        when(ccdApiClient.startEventForCitizen(
-            eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(USER_ID),
-            eq(EtSyaConstants.JURISDICTION_ID),
-            eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
-            any(String.class),
-            any(String.class)
-        )).thenReturn(caseTestData.getStartEventResponse());
-
-        PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            new PdfDecodedMultipartFile(
-                new byte[0],
-                "test",
-                "test",
-                "test"
-            );
-
-        when(pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(any(), any()))
-            .thenReturn(List.of(pdfDecodedMultipartFile));
-
-        when(pdfService.convertCaseDataToPdfDecodedMultipartFile(any(), any()))
-            .thenReturn(List.of(pdfDecodedMultipartFile));
-
-        when(acasService.getAcasCertificatesByCaseData(any())).thenReturn(List.of());
-
-        when(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(any()))
-            .thenReturn(caseTestData.getCaseData());
-
-        when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any()))
-            .thenThrow(new CaseDocumentException("Failed to upload documents"));
-
-        SendEmailResponse sendEmailResponse
-            = new SendEmailResponse("{\n"
-                                        + "  \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                                        + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
-                                        + "  \"template\": {\n"
-                                        + "    \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                                        + "    \"version\": \"3\",\n"
-                                        + "    \"uri\": \"TEST\"\n"
-                                        + "  },\n"
-                                        + "  \"content\": {\n"
-                                        + "    \"body\": \"Dear test, Please see your detail as 123456789. Regards, "
-                                        + "ET Team.\",\n"
-                                        + "    \"subject\": \"ET Test email created\",\n"
-                                        + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
-                                        + "  }\n"
-                                        + "}\n");
-
-        when(notificationService.sendDocUploadErrorEmail(any(), any(), any(), any()))
-            .thenReturn(sendEmailResponse);
-        caseService.submitCase(
-            TEST_SERVICE_AUTH_TOKEN,
-            caseTestData.getCaseRequest()
-        );
-
-        verify(notificationService, times(1))
-            .sendDocUploadErrorEmail(any(), any(), any(), any());
-
-    }
-
-    @SneakyThrows
-    @Test
     void submitCaseShouldAddSupportingDocumentToDocumentCollection() {
         when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any()))
             .thenReturn(new LinkedList<>());
@@ -603,16 +430,16 @@ class CaseServiceTest {
         assertEquals(YES, caseDetails.getData().get(ET1_ONLINE_SUBMISSION));
     }
 
-    private DocumentTypeItem createDocumentTypeItem() {
+    private DocumentTypeItem createDocumentTypeItem(String typeOfDocument) {
         UploadedDocumentType uploadedDocumentType = new UploadedDocumentType();
         uploadedDocumentType.setDocumentFilename("filename");
-        uploadedDocumentType.setDocumentUrl("https://document.url");
-        uploadedDocumentType.setDocumentBinaryUrl("https://document.binary.url");
+        uploadedDocumentType.setDocumentUrl("http://document.binary.url/2333482f-1eb9-44f1-9b78-f5d8f0c74b15");
+        uploadedDocumentType.setDocumentBinaryUrl("http://document.url/2333482f-1eb9-44f1-9b78-f5d8f0c74b15/binary");
         DocumentTypeItem documentTypeItem = new DocumentTypeItem();
         documentTypeItem.setId(UUID.randomUUID().toString());
 
         DocumentType documentType = new DocumentType();
-        documentType.setTypeOfDocument("Other");
+        documentType.setTypeOfDocument(typeOfDocument);
         documentType.setUploadedDocument(uploadedDocumentType);
 
         documentTypeItem.setValue(documentType);
@@ -718,8 +545,9 @@ class CaseServiceTest {
         )).thenReturn(scotlandSearchResult);
 
         List<CaseDetails> caseDetailsList = caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, caseIds);
-        assertThat(caseDetailsList).hasSize(3);
-        assertThat(caseDetailsList).isEqualTo(caseTestData.getExpectedCaseDataListCombined());
+        assertThat(caseDetailsList)
+            .hasSize(3)
+            .isEqualTo(caseTestData.getExpectedCaseDataListCombined());
     }
 
     @Test
@@ -835,12 +663,12 @@ class CaseServiceTest {
             tsePdfMultipartFileMock);
 
         assertDoesNotThrow(() ->
-            caseService.uploadTseCyaAsPdf(
-                TEST_SERVICE_AUTH_TOKEN,
-                caseTestData.getCaseDetails(),
-                caseTestData.getClaimantTse(),
-                "TEST"
-            )
+                               caseService.uploadTseCyaAsPdf(
+                                   TEST_SERVICE_AUTH_TOKEN,
+                                   caseTestData.getCaseDetails(),
+                                   caseTestData.getClaimantTse(),
+                                   "TEST"
+                               )
         );
     }
 
