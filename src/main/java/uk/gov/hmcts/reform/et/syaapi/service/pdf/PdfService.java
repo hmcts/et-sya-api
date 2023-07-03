@@ -45,6 +45,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGU
 @Slf4j
 @Service
 @RequiredArgsConstructor()
+@SuppressWarnings({"PMD.TooManyMethods"})
 public class PdfService {
 
     private final PdfMapperService pdfMapperService;

@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.model;
 
-import java.io.IOException;
 import lombok.Data;
 import org.junit.jupiter.params.provider.Arguments;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -18,17 +17,18 @@ import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.TestDataProvider;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.service.notify.SendEmailResponse;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MICHAEL;
-import uk.gov.service.notify.SendEmailResponse;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST;
 
 @Data
 public final class CaseTestData {

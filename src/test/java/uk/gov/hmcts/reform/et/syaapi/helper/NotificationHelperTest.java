@@ -6,7 +6,6 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
-import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
