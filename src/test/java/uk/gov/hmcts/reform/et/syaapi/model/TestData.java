@@ -69,11 +69,6 @@ public final class TestData {
         CaseData.class
     );
 
-    private final RespondToApplicationRequest respondToApplicationNoUploadRequest = ResourceLoader.fromString(
-        "requests/respondToApplicationNoUpload.json",
-        RespondToApplicationRequest.class
-    );
-
     private final ChangeApplicationStatusRequest changeApplicationStatusRequest = ResourceLoader.fromString(
         "requests/viewAnApplication.json",
         ChangeApplicationStatusRequest.class
