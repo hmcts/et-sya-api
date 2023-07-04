@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.reform.et.syaapi.service.util.GenericServiceUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperClaimDescriptionUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperClaimDetailsUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants;
@@ -61,7 +62,12 @@ public class PdfMapperService {
             printFields.putAll(printCompensation(caseData));
             printFields.putAll(printWhistleBlowing(caseData));
         } catch (Exception e) {
-            log.error("Exception occurred in PDF MAPPER \n" + e.getMessage(), e);
+            GenericServiceUtil.logException("An error occurred while printing compensation and "
+                                                + "whistle blowing to pdf file",
+                                            caseData.getEthosCaseReference(),
+                                            e.getMessage(),
+                                            "PdfMapperService",
+                                            "mapHeadersToPdf");
         }
         return printFields;
     }
