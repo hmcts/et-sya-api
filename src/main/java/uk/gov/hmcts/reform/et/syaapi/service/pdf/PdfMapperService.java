@@ -32,9 +32,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_
  */
 @Slf4j
 @Service
-@SuppressWarnings({"PMD.GodClass",
-    "PMD.CyclomaticComplexity", "PMD.TooManyMethods", "PMD.CognitiveComplexity", "PMD.CollapsibleIfStatements",
-    "PMD.AvoidDeeplyNestedIfStmts"})
 public class PdfMapperService {
 
     private static final String YES_LOWERCASE = "yes";

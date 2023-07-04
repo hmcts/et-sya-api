@@ -25,9 +25,21 @@ public final class PdfMapperClaimDetailsUtil {
     }
 
     public static void putClaimDetails(CaseData caseData, ConcurrentMap<String, Optional<String>> printFields) {
-        if (ObjectUtils.isEmpty(caseData) || ObjectUtils.isEmpty(caseData.getTypesOfClaim())) {
-            return;
+        try {
+            if (ObjectUtils.isEmpty(caseData) || ObjectUtils.isEmpty(caseData.getTypesOfClaim())) {
+                return;
+            }
+            putClaimTypes(printFields, caseData);
+        } catch (Exception e) {
+            GenericServiceUtil.logException("An error occurred while printing claim details to pdf file",
+                                            caseData.getEthosCaseReference(),
+                                            e.getMessage(),
+                                            "PdfMapperClaimDetailsUtil",
+                                            "putClaimDetails");
         }
+    }
+
+    private static void putClaimTypes(ConcurrentMap<String, Optional<String>> printFields, CaseData caseData) {
         for (String typeOfClaim : caseData.getTypesOfClaim()) {
             ClaimType claimType = ClaimType.valueOfLabel(typeOfClaim);
             if (claimType != null) {

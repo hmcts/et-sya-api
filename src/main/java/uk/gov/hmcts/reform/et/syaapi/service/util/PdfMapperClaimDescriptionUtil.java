@@ -16,10 +16,20 @@ public final class PdfMapperClaimDescriptionUtil {
     }
 
     public static void putClaimDescription(CaseData caseData, ConcurrentMap<String, Optional<String>> printFields) {
-        if (ObjectUtils.isNotEmpty(caseData.getClaimantRequests())
-            && StringUtils.isNotBlank(caseData.getClaimantRequests().getClaimDescription())) {
-            printFields.put(PdfMapperConstants.Q8_CLAIM_DESCRIPTION,
-                            ofNullable(caseData.getClaimantRequests().getClaimDescription()));
+        try {
+            if (ObjectUtils.isNotEmpty(caseData.getClaimantRequests())
+                && StringUtils.isNotBlank(caseData.getClaimantRequests().getClaimDescription())) {
+                printFields.put(
+                    PdfMapperConstants.Q8_CLAIM_DESCRIPTION,
+                    ofNullable(caseData.getClaimantRequests().getClaimDescription())
+                );
+            }
+        } catch (Exception e) {
+            GenericServiceUtil.logException("An error occurred while printing claim description to pdf file",
+                                            caseData.getEthosCaseReference(),
+                                            e.getMessage(),
+                                            "PdfMapperClaimDescriptionUtil",
+                                            "putClaimDescription");
         }
     }
 

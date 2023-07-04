@@ -39,7 +39,7 @@ public final class PdfMapperEmploymentDetailsUtil {
                 GenericServiceUtil.logException("An error occurred while printing employment details to pdf file",
                                                 caseData.getEthosCaseReference(),
                                                 e.getMessage(),
-                                                "PdfMapperEmploymentUtil",
+                                                "PdfMapperEmploymentDetailsUtil",
                                                 "putEmploymentDetails");
             }
         }
