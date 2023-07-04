@@ -8,6 +8,7 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.TseAdminRecordDecisionTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.TseRespondTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
@@ -47,6 +48,21 @@ public final class TseApplicationHelper {
         return applications.stream()
             .filter(a -> a.getId().equals(applicationId))
             .findAny()
+            .orElse(null);
+    }
+
+    /**
+     * Finds the admin decision by ID.
+     *
+     * @param selectedApplication - application to update
+     * @param adminDecisionId - id of decision we're trying to find
+     * @return the {@link TseAdminRecordDecisionTypeItem} to be updated
+     */
+    public static TseAdminRecordDecisionTypeItem findAdminDecision(GenericTseApplicationTypeItem selectedApplication,
+                                                          String adminDecisionId) {
+        return selectedApplication.getValue().getAdminDecision().stream()
+            .filter(a -> a.getId().equals(adminDecisionId))
+            .findFirst()
             .orElse(null);
     }
 

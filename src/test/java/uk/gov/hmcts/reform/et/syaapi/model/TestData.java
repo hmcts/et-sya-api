@@ -9,6 +9,7 @@ import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.et.syaapi.models.AdminDecisionNotificationStateUpdateRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
@@ -87,6 +88,12 @@ public final class TestData {
         "requests/sendNotificationStateUpdateRequest.json",
         SendNotificationStateUpdateRequest.class
     );
+
+    private final AdminDecisionNotificationStateUpdateRequest adminDecisionNotificationStateUpdateRequest =
+        ResourceLoader.fromString(
+            "requests/adminNotificationUpdateRequest.json",
+            AdminDecisionNotificationStateUpdateRequest.class
+        );
 
     public static Stream<Arguments> postcodeAddressArguments() {
         return Stream.of(

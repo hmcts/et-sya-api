@@ -63,7 +63,6 @@ class AdminDecisionNotificationControllerTest {
             .caseTypeId(CASE_TYPE)
             .caseId(CASE_ID)
             .adminDecisionId("1")
-            .decisionState("viewed")
             .build();
 
         // when
