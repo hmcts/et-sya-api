@@ -11,8 +11,7 @@ def branchesToSync = ['perftest', 'demo', 'ithc']
 withPipeline(type, product, component) {
   disableLegacyDeployment()
   enablePactAs([AppPipelineDsl.PactRoles.CONSUMER,
-                AppPipelineDsl.PactRoles.PROVIDER,
-                AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK])
+                AppPipelineDsl.PactRoles.PROVIDER])
   syncBranchesWithMaster(branchesToSync)
   enableSlackNotifications('#et-builds')
 }
