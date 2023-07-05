@@ -13,8 +13,8 @@ public class AdminDecisionNotificationStateUpdateRequest {
     private String caseId;
     @JsonProperty("case_type_id")
     private String caseTypeId;
+    @JsonProperty("app_id")
+    private String appId;
     @JsonProperty("admin_decision_id")
     private String adminDecisionId;
-    @JsonProperty("decision_state")
-    private String decisionState;
 }
