@@ -8,6 +8,7 @@ import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,7 +34,6 @@ import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.constants.JurisdictionCodesConstants;
-import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
@@ -77,6 +77,7 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ONLINE_SUBMISSION;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
+import static uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper.mapRequestCaseDataToCaseData;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CASE_ID;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.SUBMIT_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_NAME;
@@ -135,7 +136,7 @@ class CaseServiceTest {
     }
 
     @BeforeEach
-    void setUpForSubmitCaseTests(TestInfo testInfo) throws CaseDocumentException {
+    void setUpForSubmitCaseTests(TestInfo testInfo) {
         if (!testInfo.getDisplayName().startsWith("submitCase")) {
             return;
         }
@@ -190,21 +191,22 @@ class CaseServiceTest {
         when(assignCaseToLocalOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(any()))
             .thenReturn(caseTestData.getCaseData());
         sendEmailResponse
-            = new SendEmailResponse("{\n"
-                                        + "  \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                                        + "  \"reference\": \"TEST_EMAIL_ALERT\",\n"
-                                        + "  \"template\": {\n"
-                                        + "    \"id\": \"8835039a-3544-439b-a3da-882490d959eb\",\n"
-                                        + "    \"version\": \"3\",\n"
-                                        + "    \"uri\": \"TEST\"\n"
-                                        + "  },\n"
-                                        + "  \"content\": {\n"
-                                        + "    \"body\": \"Dear test, Please see your detail as 123456789. Regards, "
-                                        + "ET Team.\",\n"
-                                        + "    \"subject\": \"ET Test email created\",\n"
-                                        + "    \"from_email\": \"TEST@GMAIL.COM\"\n"
-                                        + "  }\n"
-                                        + "}\n");
+            = new SendEmailResponse("""
+                                        {
+                                          "id": "8835039a-3544-439b-a3da-882490d959eb",
+                                          "reference": "TEST_EMAIL_ALERT",
+                                          "template": {
+                                            "id": "8835039a-3544-439b-a3da-882490d959eb",
+                                            "version": "3",
+                                            "uri": "TEST"
+                                          },
+                                          "content": {
+                                            "body": "Dear test, Please see your detail as 123456789. Regards, ET Team.",
+                                            "subject": "ET Test email created",
+                                            "from_email": "TEST@GMAIL.COM"
+                                          }
+                                        }
+                                        """);
         when(notificationService.sendSubmitCaseConfirmationEmail(any(), any(), any(), any()))
             .thenReturn(sendEmailResponse);
     }
@@ -587,11 +589,25 @@ class CaseServiceTest {
             .toString();
     }
 
+    @Nested
+    class UploadTseSupportingDocument {
+        @Test
+        void setsShortDescriptionCorrectly() {
+            CaseDetails caseDetails = CaseDetails.builder().data(new HashMap<>()).build();
+            String actual = "description";
+            caseService.uploadTseSupportingDocument(caseDetails, new UploadedDocumentType(), actual);
+
+            CaseData caseData = mapRequestCaseDataToCaseData(caseDetails.getData());
+            String expected = caseData.getDocumentCollection().get(0).getValue().getShortDescription();
+            assertThat(actual).isEqualTo(expected);
+        }
+    }
+
     @Test
     void shouldInvokeCaseEnrichmentWithJurCodesInSubmitEvent() {
         List<JurCodesTypeItem> expectedItems = mockJurCodesTypeItems();
         caseTestData.getStartEventResponse().setEventId(SUBMIT_CASE_DRAFT);
-        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseTestData.getCaseDataWithClaimTypes()
+        CaseData caseData = mapRequestCaseDataToCaseData(caseTestData.getCaseDataWithClaimTypes()
                                                                                   .getCaseData());
         caseData.setJurCodesCollection(expectedItems);
         caseData.setFeeGroupReference(CASE_ID);
