@@ -10,13 +10,13 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
-import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
-import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseTestData;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperServiceUtil;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperServiceUtil.generateClaimantCompensation;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperServiceUtil.generateClaimantTribunalRecommendation;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperServiceUtil.generateClaimantCompensation;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperServiceUtil.generateClaimantTribunalRecommendation;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)

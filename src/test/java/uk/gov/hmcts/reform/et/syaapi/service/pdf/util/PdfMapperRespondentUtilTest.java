@@ -14,16 +14,16 @@ import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
-import uk.gov.hmcts.reform.et.syaapi.model.AcasCertificatePdfFieldModel;
-import uk.gov.hmcts.reform.et.syaapi.model.RespondentPdfFieldModel;
-import uk.gov.hmcts.reform.et.syaapi.service.util.GenericServiceUtil;
-import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants;
-import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperRespondentUtil;
-import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperServiceUtil;
-import uk.gov.hmcts.reform.et.syaapi.service.util.PdfTemplateRespondentFieldNamesEnum;
-import uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants;
-import uk.gov.hmcts.reform.et.syaapi.service.util.data.PdfMapperRespondentUtilTestDataProvider;
-import uk.gov.hmcts.reform.et.syaapi.service.util.data.TestDataProvider;
+import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificatePdfFieldModel;
+import uk.gov.hmcts.reform.et.syaapi.models.RespondentPdfFieldModel;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperRespondentUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfTemplateRespondentFieldNamesEnum;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.data.PdfMapperRespondentUtilTestDataProvider;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.data.TestDataProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +34,8 @@ import java.util.concurrent.ConcurrentMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.NO;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NO;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.YES;
 
 class PdfMapperRespondentUtilTest {
 

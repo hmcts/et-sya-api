@@ -6,9 +6,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
-import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants;
-import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperHearingPreferencesUtil;
-import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperHearingPreferencesUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperServiceUtil;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,9 +16,9 @@ import java.util.concurrent.ConcurrentMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants.NO_LOWERCASE;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants.PHONE;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants.VIDEO;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.NO_LOWERCASE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PHONE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.VIDEO;
 
 class PdfMapperHearingPreferencesUtilTest {
 

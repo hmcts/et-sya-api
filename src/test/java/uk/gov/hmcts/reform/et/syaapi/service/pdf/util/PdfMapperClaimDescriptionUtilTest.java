@@ -6,8 +6,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantRequestType;
-import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperClaimDescriptionUtil;
-import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperClaimDescriptionUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;

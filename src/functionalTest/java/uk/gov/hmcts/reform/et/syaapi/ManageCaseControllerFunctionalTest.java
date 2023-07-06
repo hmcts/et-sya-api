@@ -10,7 +10,7 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import uk.gov.hmcts.reform.et.syaapi.model.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

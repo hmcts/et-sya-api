@@ -17,11 +17,11 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.exception.PdfServiceException;
-import uk.gov.hmcts.reform.et.syaapi.model.CaseRequest;
-import uk.gov.hmcts.reform.et.syaapi.model.HubLinksStatusesRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
-import uk.gov.hmcts.reform.et.syaapi.service.util.data.ResourceLoader;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.data.ResourceLoader;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
@@ -40,10 +40,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.TEST_FIRST_NAME;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.TEST_NAME;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.TEST_SERVICE_AUTH_TOKEN;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.TEST_SURNAME;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_FIRST_NAME;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_NAME;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SURNAME;
 
 @WebMvcTest(
     controllers = {ManageCaseController.class}

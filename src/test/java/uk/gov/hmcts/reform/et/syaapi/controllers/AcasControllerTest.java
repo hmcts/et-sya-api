@@ -20,7 +20,7 @@ import org.springframework.web.context.WebApplicationContext;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.SyaApiApplication;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
-import uk.gov.hmcts.reform.et.syaapi.model.CaseDocumentAcasResponse;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;

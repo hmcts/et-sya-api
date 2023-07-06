@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import uk.gov.hmcts.reform.et.syaapi.model.TornadoDocument;
+import uk.gov.hmcts.reform.et.syaapi.models.TornadoDocument;
 
 import java.util.Locale;
 

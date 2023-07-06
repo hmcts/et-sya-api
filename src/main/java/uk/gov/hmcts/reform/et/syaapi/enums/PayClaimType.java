@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.enums;
 
 import uk.gov.hmcts.reform.et.syaapi.constants.ClaimTypesConstants;
-import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

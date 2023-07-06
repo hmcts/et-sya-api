@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.PdfServiceException;
-import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseTestData;
 import uk.gov.hmcts.reform.idam.client.IdamApi;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -25,8 +25,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.TEST_SERVICE_AUTH_TOKEN;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.USER_ID;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.USER_ID;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest

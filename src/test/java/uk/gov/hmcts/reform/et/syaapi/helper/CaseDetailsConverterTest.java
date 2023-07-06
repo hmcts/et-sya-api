@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
-import uk.gov.hmcts.reform.et.syaapi.service.util.data.ResourceLoader;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.data.ResourceLoader;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

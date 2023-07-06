@@ -7,9 +7,9 @@ import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantOtherType;
 import uk.gov.hmcts.et.common.model.ccd.types.NewEmploymentType;
-import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants;
-import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperEmploymentDetailsUtil;
-import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperEmploymentDetailsUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperServiceUtil;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,14 +17,14 @@ import java.util.concurrent.ConcurrentMap;
 
 import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants.ANNUAL;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants.MONTHS;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants.NO;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants.NOTICE;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants.NO_LONGER_WORKING;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants.NO_LOWERCASE;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants.WEEKS;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.ANNUAL;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.MONTHS;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.NO;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.NOTICE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.NO_LONGER_WORKING;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.NO_LOWERCASE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.WEEKS;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.YES;
 
 class PdfMapperEmploymentDetailsUtilTest {
 

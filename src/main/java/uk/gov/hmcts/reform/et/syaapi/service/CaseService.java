@@ -32,12 +32,12 @@ import uk.gov.hmcts.reform.et.syaapi.exception.PdfServiceException;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
-import uk.gov.hmcts.reform.et.syaapi.model.CaseDocument;
-import uk.gov.hmcts.reform.et.syaapi.model.CaseDocumentAcasResponse;
-import uk.gov.hmcts.reform.et.syaapi.model.CaseRequest;
-import uk.gov.hmcts.reform.et.syaapi.model.PdfDecodedMultipartFile;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
-import uk.gov.hmcts.reform.et.syaapi.service.util.GenericServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 

@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.gov.hmcts.reform.et.syaapi.model.ClaimCaseDocument;
+import uk.gov.hmcts.reform.et.syaapi.models.ClaimCaseDocument;
 
 import java.io.IOException;
 

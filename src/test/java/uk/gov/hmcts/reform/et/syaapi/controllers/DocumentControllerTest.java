@@ -11,10 +11,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.et.syaapi.config.interceptors.ResourceNotFoundException;
-import uk.gov.hmcts.reform.et.syaapi.model.CaseDocument;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
-import uk.gov.hmcts.reform.et.syaapi.service.util.data.ResourceLoader;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.data.ResourceLoader;
 
 import java.util.Map;
 import java.util.UUID;
@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.TestConstants.TEST_SERVICE_AUTH_TOKEN;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 
 @WebMvcTest(

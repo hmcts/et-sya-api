@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import uk.gov.hmcts.reform.et.syaapi.model.CaseDocument;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentException;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 

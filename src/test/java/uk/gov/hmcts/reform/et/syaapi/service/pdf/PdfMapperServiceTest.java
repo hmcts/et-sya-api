@@ -11,9 +11,9 @@ import uk.gov.hmcts.et.common.model.ccd.types.ClaimantWorkAddressType;
 import uk.gov.hmcts.et.common.model.ccd.types.NewEmploymentType;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
-import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
-import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants;
-import uk.gov.hmcts.reform.et.syaapi.service.util.data.ResourceLoader;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseTestData;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.data.ResourceLoader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,10 +27,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants.Q1_DOB_DAY;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants.Q1_DOB_MONTH;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants.Q1_DOB_YEAR;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants.Q2_4_DIFFERENT_WORK_ADDRESS;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.Q1_DOB_DAY;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.Q1_DOB_MONTH;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.Q1_DOB_YEAR;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.Q2_4_DIFFERENT_WORK_ADDRESS;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class PdfMapperServiceTest {

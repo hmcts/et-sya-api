@@ -9,8 +9,8 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.et.syaapi.enums.ClaimType;
 import uk.gov.hmcts.reform.et.syaapi.enums.DiscriminationType;
 import uk.gov.hmcts.reform.et.syaapi.enums.PayClaimType;
-import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperClaimDetailsUtil;
-import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperClaimDetailsUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;

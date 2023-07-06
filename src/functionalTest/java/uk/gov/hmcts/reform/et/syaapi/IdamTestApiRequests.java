@@ -12,8 +12,8 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
-import uk.gov.hmcts.reform.et.syaapi.model.CreateUser;
-import uk.gov.hmcts.reform.et.syaapi.model.Role;
+import uk.gov.hmcts.reform.et.syaapi.models.CreateUser;
+import uk.gov.hmcts.reform.et.syaapi.models.Role;
 
 import java.io.IOException;
 import java.util.ArrayList;

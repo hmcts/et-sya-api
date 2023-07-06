@@ -8,18 +8,18 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
-import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants;
-import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperRepresentativeUtil;
-import uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperRepresentativeUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperServiceUtil;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants.EMAIL;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants.FAX;
-import static uk.gov.hmcts.reform.et.syaapi.service.util.PdfMapperConstants.POST;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.EMAIL;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.FAX;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.POST;
 
 class PdfMapperRepresentativeUtilTest {
 
