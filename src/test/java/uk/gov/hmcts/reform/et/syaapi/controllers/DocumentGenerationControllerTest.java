@@ -13,7 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.data.ResourceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceUtil;
 
 import java.io.IOException;
 import java.nio.file.Files;

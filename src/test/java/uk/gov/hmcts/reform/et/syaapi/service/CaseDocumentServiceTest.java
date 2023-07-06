@@ -23,7 +23,7 @@ import uk.gov.hmcts.reform.et.syaapi.config.interceptors.ResourceNotFoundExcepti
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.data.ResourceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceUtil;
 
 import java.io.IOException;
 import java.net.URI;

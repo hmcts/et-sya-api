@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.et.syaapi.service.utils.data;
+package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
 import org.springframework.util.ResourceUtils;
 
