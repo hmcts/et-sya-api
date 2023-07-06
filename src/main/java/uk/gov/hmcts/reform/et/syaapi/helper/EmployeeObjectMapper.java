@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.helper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -24,6 +25,7 @@ public class EmployeeObjectMapper {
      */
     public Et1CaseData getEmploymentCaseData(String caseData) {
         ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
         Et1CaseData data = null;
         try {
             data = mapper.readValue(caseData, Et1CaseData.class);
@@ -41,11 +43,13 @@ public class EmployeeObjectMapper {
      */
     public Et1CaseData getEmploymentCaseData(Map<String, Object> caseData) {
         ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
         return mapper.convertValue(caseData, Et1CaseData.class);
     }
 
     private static CaseData getCaseData(Map<String, Object> caseData) {
         ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
         return mapper.convertValue(caseData, CaseData.class);
     }
 
