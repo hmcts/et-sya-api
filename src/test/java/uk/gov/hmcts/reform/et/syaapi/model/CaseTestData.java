@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.TestDataProvider;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.data.TestDataProvider;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.util.List;

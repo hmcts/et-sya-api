@@ -40,11 +40,10 @@ public final class PdfMapperRespondentUtil {
     }
 
     public static void putRespondents(CaseData caseData, ConcurrentMap<String, Optional<String>> printFields) {
-
-        if (ObjectUtils.isEmpty(caseData) || CollectionUtils.isEmpty(caseData.getRespondentCollection())) {
-            putClaimantWorkAddress(caseData, printFields);
-        } else {
-            try {
+        try {
+            if (ObjectUtils.isEmpty(caseData) || CollectionUtils.isEmpty(caseData.getRespondentCollection())) {
+                putClaimantWorkAddress(caseData, printFields);
+            } else {
                 putFirstRespondent(caseData,
                                    PdfTemplateRespondentFieldNamesEnum.FIRST_RESPONDENT.respondentPdfFieldModel,
                                    printFields);
@@ -85,10 +84,10 @@ public final class PdfMapperRespondentUtil {
                         printFields
                     );
                 }
-            } catch (PdfServiceException pse) {
-                GenericServiceUtil.logException("Error while creating PDF file", caseData.getEthosCaseReference(),
-                                                pse.getMessage(), "PDFMapperRespondentUtil", "putRespondents");
             }
+        } catch (PdfServiceException pse) {
+            GenericServiceUtil.logException("Error while creating PDF file", caseData.getEthosCaseReference(),
+                                            pse.getMessage(), "PDFMapperRespondentUtil", "putRespondents");
         }
     }
 
