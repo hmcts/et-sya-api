@@ -13,7 +13,7 @@ import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.data.ResourceLoader;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 
 import java.util.ArrayList;
 import java.util.List;

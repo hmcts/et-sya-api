@@ -22,7 +22,7 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.et.syaapi.config.interceptors.ResourceNotFoundException;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.models.PdfDecodedMultipartFile;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.data.ResourceLoader;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.data.ResourceUtil;
 
 import java.io.IOException;

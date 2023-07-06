@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.et.syaapi.config.interceptors.ResourceNotFoundExcepti
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.data.ResourceLoader;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 
 import java.util.Map;
 import java.util.UUID;

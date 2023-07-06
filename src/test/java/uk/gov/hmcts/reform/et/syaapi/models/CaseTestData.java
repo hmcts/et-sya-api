@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.data.ResourceLoader;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.data.TestDataProvider;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 

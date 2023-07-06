@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.et.syaapi.service.utils.data;
+package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -10,6 +10,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import lombok.SneakyThrows;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.data.ResourceUtil;
 
 import java.util.List;
 

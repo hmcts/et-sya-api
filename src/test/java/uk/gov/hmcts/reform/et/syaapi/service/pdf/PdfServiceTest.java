@@ -28,7 +28,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.data.ResourceLoader;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 
 import java.io.IOException;
 import java.io.InputStream;
