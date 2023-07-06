@@ -21,7 +21,7 @@ import org.springframework.test.web.client.ResponseCreator;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
-import uk.gov.hmcts.reform.et.syaapi.models.CaseTestData;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 
 import java.io.ByteArrayOutputStream;

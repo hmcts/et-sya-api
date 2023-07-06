@@ -6,7 +6,7 @@ import org.mockito.Mock;
 import org.springframework.context.annotation.Import;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
-import uk.gov.hmcts.reform.et.syaapi.models.CaseTestData;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 
 import java.util.Map;
 
