@@ -31,6 +31,7 @@ import java.util.UUID;
 
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
+import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 
@@ -65,7 +66,9 @@ public class ApplicationService {
         UploadedDocumentType contactApplicationFile = claimantTse.getContactApplicationFile();
         if (contactApplicationFile != null) {
             log.info("Uploading supporting file to document collection");
-            caseService.uploadTseSupportingDocument(caseDetails, contactApplicationFile);
+            caseService.uploadTseSupportingDocument(caseDetails, contactApplicationFile,
+                                                    APP_TYPE_MAP.get(claimantTse.getContactApplicationType())
+            );
         }
 
         if (!request.isTypeC() && YES.equals(claimantTse.getCopyToOtherPartyYesOrNo())) {
