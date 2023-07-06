@@ -24,7 +24,7 @@ class PdfMapperHearingPreferencesUtilTest {
 
     @ParameterizedTest
     @NullSource
-    @MethodSource("uk.gov.hmcts.reform.et.syaapi.service.util.data.PdfMapperHearingPreferencesUtilTestDataProvider"
+    @MethodSource("uk.gov.hmcts.reform.et.syaapi.service.utils.data.PdfMapperHearingPreferencesUtilTestDataProvider"
         + "#generateCaseDataSamplesWithHearingPreferences")
     void putHearingPreferences(CaseData caseData) {
         ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();

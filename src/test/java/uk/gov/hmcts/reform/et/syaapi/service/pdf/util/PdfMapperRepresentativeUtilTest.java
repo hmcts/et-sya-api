@@ -33,7 +33,7 @@ class PdfMapperRepresentativeUtilTest {
 
     @ParameterizedTest
     @NullSource
-    @MethodSource("uk.gov.hmcts.reform.et.syaapi.service.util.data.PdfMapperRepresentativeUtilTestDataProvider#"
+    @MethodSource("uk.gov.hmcts.reform.et.syaapi.service.utils.data.PdfMapperRepresentativeUtilTestDataProvider#"
         + "generateRepresentativeClaimantTypes")
     void putRepresentative(RepresentedTypeC representativeClaimantType) {
         ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();

@@ -90,7 +90,7 @@ class PdfMapperPersonalDetailsUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("uk.gov.hmcts.reform.et.syaapi.service.util.data.PdfMapperPersonalDetailsUtilTestDataProvider#"
+    @MethodSource("uk.gov.hmcts.reform.et.syaapi.service.utils.data.PdfMapperPersonalDetailsUtilTestDataProvider#"
         + "generateClaimantIndTypeArguments")
     void putClaimantIndTypeValues(ClaimantIndType claimantIndType,
                                                       String dobDay, String dobMonth, String dobYear) {
@@ -150,7 +150,7 @@ class PdfMapperPersonalDetailsUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("uk.gov.hmcts.reform.et.syaapi.service.util.data.PdfMapperPersonalDetailsUtilTestDataProvider#"
+    @MethodSource("uk.gov.hmcts.reform.et.syaapi.service.utils.data.PdfMapperPersonalDetailsUtilTestDataProvider#"
         + "generateClaimantTypeArguments")
     void putClaimantTypeValues(ClaimantType claimantType) {
         ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();

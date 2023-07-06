@@ -30,7 +30,7 @@ class PdfMapperEmploymentDetailsUtilTest {
 
     @ParameterizedTest
     @NullSource
-    @MethodSource("uk.gov.hmcts.reform.et.syaapi.service.util.data.PdfMapperEmploymentDetailsUtilTestDataProvider#"
+    @MethodSource("uk.gov.hmcts.reform.et.syaapi.service.utils.data.PdfMapperEmploymentDetailsUtilTestDataProvider#"
         + "generateClaimantOtherTypes")
     void putEmploymentDetails(CaseData caseData) {
         ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();

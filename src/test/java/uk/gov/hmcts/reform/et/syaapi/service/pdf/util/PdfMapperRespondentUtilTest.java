@@ -42,7 +42,7 @@ class PdfMapperRespondentUtilTest {
     @ParameterizedTest
     @NullSource
     @MethodSource(
-        "uk.gov.hmcts.reform.et.syaapi.service.util.data.PdfMapperRespondentUtilTestDataProvider#"
+        "uk.gov.hmcts.reform.et.syaapi.service.utils.data.PdfMapperRespondentUtilTestDataProvider#"
             + "generateCaseDataSamplesWithRespondentSumTypeItems")
     void putRespondent(CaseData respondentCaseData) {
         ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
