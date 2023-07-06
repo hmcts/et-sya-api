@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.gov.hmcts.reform.et.syaapi.models.CreateUser;
+import uk.gov.hmcts.reform.et.syaapi.model.CreateUser;
 
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
