@@ -4,8 +4,8 @@ import lombok.Data;
 import org.junit.jupiter.params.provider.Arguments;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.data.TestDataProvider;
 
 import java.util.stream.Stream;
