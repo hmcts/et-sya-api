@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.et.syaapi.service.utils;
 import org.json.JSONObject;
 import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
-import uk.gov.hmcts.reform.et.syaapi.models.PdfDecodedMultipartFile;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.service.notify.SendEmailResponse;
 
 import java.util.ArrayList;
