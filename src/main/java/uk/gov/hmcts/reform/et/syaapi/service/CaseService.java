@@ -54,7 +54,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
@@ -434,7 +433,7 @@ public class CaseService {
                                                 d.getValue().getTypeOfDocument(),
                                                 ""
                                             )))
-                                            .collect(toList()));
+                                            .toList());
 
             if (caseData.getClaimantRequests() != null
                 && caseData.getClaimantRequests().getClaimDescriptionDocument() != null) {
