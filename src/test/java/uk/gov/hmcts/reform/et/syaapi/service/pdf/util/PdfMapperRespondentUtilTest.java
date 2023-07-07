@@ -34,6 +34,8 @@ import java.util.concurrent.ConcurrentMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.NO_LOWERCASE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_Q2_3_1_2_FIRST_RESPONDENT_ACAS_CERTIFICATE_CHECK_NO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.YES;
 
@@ -175,9 +177,8 @@ class PdfMapperRespondentUtilTest {
             assertThat(printFields.get(acasCertificatePdfFieldModel.getAcasCertificateNumberFieldName()))
                 .contains(respondent.getRespondentAcas());
         } else {
-            assertThat(printFields.get(acasCertificatePdfFieldModel.getAcasCertificateCheckNoFieldName()))
-                .contains(PdfMapperConstants.NO_LOWERCASE);
             if (!Strings.isNullOrEmpty(respondent.getRespondentAcasNo())) {
+                checkAcasCertificateNotFoundCheckbox(acasCertificatePdfFieldModel, printFields);
                 switch (respondent.getRespondentAcasNo()) {
                     case PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_UNFAIR_DISMISSAL: {
                         assertThat(printFields.get(
@@ -206,6 +207,18 @@ class PdfMapperRespondentUtilTest {
                     default: break;
                 }
             }
+        }
+    }
+
+    private static void checkAcasCertificateNotFoundCheckbox(AcasCertificatePdfFieldModel acasCertificatePdfFieldModel,
+                                                           ConcurrentMap<String, Optional<String>> printFields) {
+        if (PDF_TEMPLATE_Q2_3_1_2_FIRST_RESPONDENT_ACAS_CERTIFICATE_CHECK_NO
+            .equals(acasCertificatePdfFieldModel.getAcasCertificateCheckNoFieldName())) {
+            assertThat(printFields.get(acasCertificatePdfFieldModel.getAcasCertificateCheckNoFieldName()))
+                .contains(NO_LOWERCASE);
+        } else {
+            assertThat(printFields.get(acasCertificatePdfFieldModel.getAcasCertificateCheckNoFieldName()))
+                .contains(NO);
         }
     }
 }
