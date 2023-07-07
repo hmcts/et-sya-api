@@ -89,7 +89,7 @@ class ApplicationServiceTest {
             testData.getClaimantApplicationRequest().getCaseId()
         )).thenReturn(testData.getCaseDetailsWithData());
 
-        doNothing().when(caseService).uploadTseSupportingDocument(any(), any());
+        doNothing().when(caseService).uploadTseSupportingDocument(any(), any(), any());
         doNothing().when(caseService).uploadTseCyaAsPdf(any(), any(), any(), any());
 
         when(caseService.triggerEvent(

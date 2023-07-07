@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.TseAdminRecordDecisionTypeItem;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
@@ -59,4 +60,29 @@ class TseApplicationHelperTest {
             Assertions.assertEquals("waitingForTheTribunal", app.getApplicationState());
         }
     }
+
+    @Nested
+    class FindAdminDecisions {
+        @Test
+        void shouldFindAdminDecision() {
+            GenericTseApplicationTypeItem app = data.getCaseData().getGenericTseApplicationCollection().get(0);
+            String decisionId = "777";
+
+            TseAdminRecordDecisionTypeItem result = TseApplicationHelper.findAdminDecision(app, decisionId);
+
+            assertThat(result.getId()).isEqualTo(decisionId);
+        }
+
+        @Test
+        void shouldReturnNullIfDecisionNotFound() {
+            GenericTseApplicationTypeItem app = data.getCaseData().getGenericTseApplicationCollection().get(0);
+            String decisionId = "778";
+
+            TseAdminRecordDecisionTypeItem result = TseApplicationHelper.findAdminDecision(app, decisionId);
+
+            assertThat(result).isNull();
+        }
+    }
+
+
 }

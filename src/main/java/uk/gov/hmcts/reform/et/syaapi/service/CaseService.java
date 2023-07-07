@@ -19,6 +19,7 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -524,17 +525,24 @@ public class CaseService {
         caseData.setJurCodesCollection(jurCodesTypeItems);
     }
 
-    void uploadTseSupportingDocument(CaseDetails caseDetails, UploadedDocumentType contactApplicationFile) {
+    void uploadTseSupportingDocument(CaseDetails caseDetails, UploadedDocumentType contactApplicationFile,
+                                     String description) {
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
         List<DocumentTypeItem> docList = caseData.getDocumentCollection();
 
         if (docList == null) {
             docList = new ArrayList<>();
         }
-        docList.add(caseDocumentService.createDocumentTypeItem(
-            CLAIMANT_CORRESPONDENCE_DOCUMENT,
-            contactApplicationFile
-        ));
+
+        DocumentType documentType = new DocumentType();
+        documentType.setTypeOfDocument(CLAIMANT_CORRESPONDENCE_DOCUMENT);
+        documentType.setUploadedDocument(contactApplicationFile);
+        documentType.setShortDescription(description);
+
+        docList.add(DocumentTypeItem.builder()
+                        .id(UUID.randomUUID().toString())
+                        .value(documentType)
+                        .build());
         caseDetails.getData().put(DOCUMENT_COLLECTION, docList);
     }
 
