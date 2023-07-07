@@ -24,6 +24,7 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.NUM
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.NUMERIC_THREE_INT_VALUE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_CREATION_ERROR;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_MULTIPLE_RESPONDENTS_MIN_NUMBER;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_Q2_3_1_2_FIRST_RESPONDENT_ACAS_CERTIFICATE_CHECK_NO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_Q2_4_1_CLAIMANT_WORK_ADDRESS;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_Q2_4_2_CLAIMANT_WORK_POSTCODE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_Q2_5_MULTIPLE_RESPONDENTS;
@@ -168,8 +169,7 @@ public final class PdfMapperRespondentUtil {
                             ofNullable(respondent.getRespondentAcas())
             );
         } else {
-            printFields.put(acasCertificatePdfModel.getAcasCertificateCheckNoFieldName(),
-                            Optional.of(NO_LOWERCASE));
+            putAcasCertificateNotFoundCheckbox(acasCertificatePdfModel, printFields);
             if (!Strings.isNullOrEmpty(respondent.getRespondentAcasNo())) {
                 switch (respondent.getRespondentAcasNo()) {
                     case PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_UNFAIR_DISMISSAL: {
@@ -205,6 +205,22 @@ public final class PdfMapperRespondentUtil {
                     }
                 }
             }
+        }
+    }
+
+    private static void putAcasCertificateNotFoundCheckbox(AcasCertificatePdfFieldModel acasCertificatePdfModel,
+                                                           ConcurrentMap<String, Optional<String>> printFields) {
+        if (PDF_TEMPLATE_Q2_3_1_2_FIRST_RESPONDENT_ACAS_CERTIFICATE_CHECK_NO
+            .equals(acasCertificatePdfModel.getAcasCertificateCheckNoFieldName())) {
+            printFields.put(
+                acasCertificatePdfModel.getAcasCertificateCheckNoFieldName(),
+                Optional.of(NO_LOWERCASE)
+            );
+        } else {
+            printFields.put(
+                acasCertificatePdfModel.getAcasCertificateCheckNoFieldName(),
+                Optional.of(NO)
+            );
         }
     }
 
