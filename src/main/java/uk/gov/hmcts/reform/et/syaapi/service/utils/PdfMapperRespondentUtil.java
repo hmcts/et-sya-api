@@ -24,10 +24,12 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.NUM
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.NUMERIC_THREE_INT_VALUE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_CREATION_ERROR;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_MULTIPLE_RESPONDENTS_MIN_NUMBER;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_Q13_2_1_2_FORTH_RESPONDENT_ACAS_CERTIFICATE_CHECK_NO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_Q2_3_1_2_FIRST_RESPONDENT_ACAS_CERTIFICATE_CHECK_NO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_Q2_4_1_CLAIMANT_WORK_ADDRESS;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_Q2_4_2_CLAIMANT_WORK_POSTCODE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_Q2_5_MULTIPLE_RESPONDENTS;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_Q2_8_1_2_THIRD_RESPONDENT_ACAS_CERTIFICATE_CHECK_NO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_ANOTHER_PERSON;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_EMPLOYER_ALREADY_IN_TOUCH;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_REASON_NOT_HAVING_ACAS_NO_POWER;
@@ -208,19 +210,19 @@ public final class PdfMapperRespondentUtil {
         }
     }
 
-    private static void putAcasCertificateNotFoundCheckbox(AcasCertificatePdfFieldModel acasCertificatePdfModel,
+    private static void putAcasCertificateNotFoundCheckbox(AcasCertificatePdfFieldModel acasCertificatePdfFieldModel,
                                                            ConcurrentMap<String, Optional<String>> printFields) {
         if (PDF_TEMPLATE_Q2_3_1_2_FIRST_RESPONDENT_ACAS_CERTIFICATE_CHECK_NO
-            .equals(acasCertificatePdfModel.getAcasCertificateCheckNoFieldName())) {
-            printFields.put(
-                acasCertificatePdfModel.getAcasCertificateCheckNoFieldName(),
-                Optional.of(NO_LOWERCASE)
-            );
+            .equals(acasCertificatePdfFieldModel.getAcasCertificateCheckNoFieldName())
+            || PDF_TEMPLATE_Q13_2_1_2_FORTH_RESPONDENT_ACAS_CERTIFICATE_CHECK_NO
+            .equals(acasCertificatePdfFieldModel.getAcasCertificateCheckNoFieldName())) {
+            printFields.put(acasCertificatePdfFieldModel.getAcasCertificateCheckNoFieldName(),
+                            Optional.of(NO_LOWERCASE));
+        } else if (PDF_TEMPLATE_Q2_8_1_2_THIRD_RESPONDENT_ACAS_CERTIFICATE_CHECK_NO
+            .equals(acasCertificatePdfFieldModel.getAcasCertificateCheckNoFieldName())) {
+            printFields.put(acasCertificatePdfFieldModel.getAcasCertificateCheckNoFieldName(), Optional.of(YES));
         } else {
-            printFields.put(
-                acasCertificatePdfModel.getAcasCertificateCheckNoFieldName(),
-                Optional.of(NO)
-            );
+            printFields.put(acasCertificatePdfFieldModel.getAcasCertificateCheckNoFieldName(), Optional.of(NO));
         }
     }
 

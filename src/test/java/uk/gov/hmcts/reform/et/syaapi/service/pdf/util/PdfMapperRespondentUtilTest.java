@@ -35,7 +35,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.NO_LOWERCASE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_Q13_2_1_2_FORTH_RESPONDENT_ACAS_CERTIFICATE_CHECK_NO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_Q2_3_1_2_FIRST_RESPONDENT_ACAS_CERTIFICATE_CHECK_NO;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.PDF_TEMPLATE_Q2_8_1_2_THIRD_RESPONDENT_ACAS_CERTIFICATE_CHECK_NO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.YES;
 
@@ -213,9 +215,15 @@ class PdfMapperRespondentUtilTest {
     private static void checkAcasCertificateNotFoundCheckbox(AcasCertificatePdfFieldModel acasCertificatePdfFieldModel,
                                                            ConcurrentMap<String, Optional<String>> printFields) {
         if (PDF_TEMPLATE_Q2_3_1_2_FIRST_RESPONDENT_ACAS_CERTIFICATE_CHECK_NO
+            .equals(acasCertificatePdfFieldModel.getAcasCertificateCheckNoFieldName())
+            || PDF_TEMPLATE_Q13_2_1_2_FORTH_RESPONDENT_ACAS_CERTIFICATE_CHECK_NO
             .equals(acasCertificatePdfFieldModel.getAcasCertificateCheckNoFieldName())) {
             assertThat(printFields.get(acasCertificatePdfFieldModel.getAcasCertificateCheckNoFieldName()))
                 .contains(NO_LOWERCASE);
+        } else if (PDF_TEMPLATE_Q2_8_1_2_THIRD_RESPONDENT_ACAS_CERTIFICATE_CHECK_NO
+            .equals(acasCertificatePdfFieldModel.getAcasCertificateCheckNoFieldName())) {
+            assertThat(printFields.get(acasCertificatePdfFieldModel.getAcasCertificateCheckNoFieldName()))
+                .contains(YES);
         } else {
             assertThat(printFields.get(acasCertificatePdfFieldModel.getAcasCertificateCheckNoFieldName()))
                 .contains(NO);
