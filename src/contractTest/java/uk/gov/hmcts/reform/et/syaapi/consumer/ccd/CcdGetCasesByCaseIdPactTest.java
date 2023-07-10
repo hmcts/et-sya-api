@@ -16,7 +16,7 @@ import static org.springframework.http.HttpStatus.OK;
 
 class CcdGetCasesByCaseIdPactTest extends SpringBootContractBaseTest {
 
-    @Pact(provider = "ccdDataStoreAPI_Cases", consumer = "et_sya_api")
+    @Pact(provider = "ccdDataStoreAPI_Cases", consumer = "et_sya_api_service")
     RequestResponsePact executeCcdGetCasesByCaseId(PactDslWithProvider builder) {
 
         return builder
