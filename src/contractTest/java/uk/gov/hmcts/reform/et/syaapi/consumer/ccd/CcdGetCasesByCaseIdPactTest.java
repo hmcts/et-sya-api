@@ -11,20 +11,20 @@ import uk.gov.hmcts.reform.et.syaapi.consumer.SpringBootContractBaseTest;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.OK;
 
 class CcdGetCasesByCaseIdPactTest extends SpringBootContractBaseTest {
-    private static final String CCD_CASE_URL = "/cases/" + CASE_ID;
 
-    @Pact(provider = "ccdDataStoreAPI_Cases", consumer = "et_sya_api_service")
+    @Pact(provider = "ccdDataStoreAPI_Cases", consumer = "et_sya_api")
     RequestResponsePact executeCcdGetCasesByCaseId(PactDslWithProvider builder) {
 
         return builder
             .given("a case exists")
             .uponReceiving("Provider receives a GET /cases/{caseId} request from et-sya-api API")
-            .path(CCD_CASE_URL)
-            .method(GET.toString())
+            .path("/cases/user-case/")
+            .method(POST.toString())
+            .body("{\"case_id\": \"1668618837188374\"}")
             .willRespondWith()
             .status(OK.value())
             .headers(RESPONSE_HEADERS)
