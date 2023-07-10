@@ -14,7 +14,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpStatus.OK;
 
-public class CcdGetCasesByCaseIdPactTest extends SpringBootContractBaseTest {
+class CcdGetCasesByCaseIdPactTest extends SpringBootContractBaseTest {
     private static final String CCD_CASE_URL = "/cases/" + CASE_ID;
 
     @Pact(provider = "ccdDataStoreAPI_Cases", consumer = "et_sya_api_service")
