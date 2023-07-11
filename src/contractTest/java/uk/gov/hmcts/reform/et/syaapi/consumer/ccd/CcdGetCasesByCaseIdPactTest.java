@@ -24,7 +24,7 @@ class CcdGetCasesByCaseIdPactTest extends SpringBootContractBaseTest {
 
         return builder
             .given("A Get Case is requested", getStateMapForProviderWithCaseData(caseDataContent))
-            .uponReceiving("A Get Case")
+            .uponReceiving("A Get Case for client")
             .path(CCD_CASE_URL)
             .method(GET.toString())
             .willRespondWith()
