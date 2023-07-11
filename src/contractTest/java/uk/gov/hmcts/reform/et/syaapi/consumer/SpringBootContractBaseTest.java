@@ -20,7 +20,7 @@ import static io.pactfoundation.consumer.dsl.LambdaDsl.newJsonBody;
 @Slf4j
 @ExtendWith(PactConsumerTestExt.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@PactTestFor(providerName = "ccd_data_store_cases_api", port = "8890")
+@PactTestFor(providerName = "ccdDataStoreAPI_Cases", port = "8891")
 @PactFolder("pacts")
 @SpringBootTest({
     "core_case_data.api.url : localhost:8890"
