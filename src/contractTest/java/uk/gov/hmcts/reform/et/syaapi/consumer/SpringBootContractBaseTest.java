@@ -20,10 +20,10 @@ import static io.pactfoundation.consumer.dsl.LambdaDsl.newJsonBody;
 @Slf4j
 @ExtendWith(PactConsumerTestExt.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@PactTestFor(providerName = "ccdDataStoreAPI_Cases", port = "8890")
+@PactTestFor(providerName = "ccdDataStoreAPI_Cases", port = "8891")
 @PactFolder("pacts")
 @SpringBootTest({
-    "core_case_data.api.url : localhost:8890"
+    "core_case_data.api.url : localhost:8891"
 })
 public class SpringBootContractBaseTest {
     public static final String AUTH_TOKEN = "Bearer someAuthorizationToken";
