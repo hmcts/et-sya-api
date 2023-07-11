@@ -19,7 +19,7 @@ class CcdGetCasesByCaseIdPactTest extends SpringBootContractBaseTest {
     private static final String CCD_CASE_URL = "/cases/" + CASE_ID;
     public static final String JURISDICTION_ID = "jurisdictionId";
 
-    @Pact(consumer = "et_sya_api")
+    @Pact(consumer = "et_sya_api_service")
     RequestResponsePact executeCcdGetCasesByCaseId(PactDslWithProvider builder) {
 
         return builder
