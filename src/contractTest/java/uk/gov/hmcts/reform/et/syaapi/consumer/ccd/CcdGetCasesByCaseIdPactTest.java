@@ -72,7 +72,7 @@ class CcdGetCasesByCaseIdPactTest extends SpringBootContractBaseTest {
         caseDataContentMap.put("event", event);
         CaseData caseData = new CaseTestData().getCaseData();
         caseData.setCcdID(String.valueOf(CASE_ID));
-        caseDataContentMap.put("data", new CaseTestData().getCaseData());
+        caseDataContentMap.put("data", caseData);
         Map<String, Object> map = this.getStateMapForProviderWithoutCaseData();
         map.put(CASE_DATA_CONTENT, caseDataContentMap);
         return map;
