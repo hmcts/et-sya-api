@@ -6,14 +6,8 @@ import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import org.junit.jupiter.api.Test;
-import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.et.syaapi.consumer.SpringBootContractBaseTest;
-import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,17 +17,13 @@ import static org.springframework.http.HttpStatus.OK;
 @PactTestFor(providerName = "ccdDataStoreAPI_Cases", port = "8891")
 class CcdGetCasesByCaseIdPactTest extends SpringBootContractBaseTest {
     private static final String CCD_CASE_URL = "/cases/" + CASE_ID;
-    private static final String CASEWORKER_USERNAME = "caseworkerUsername";
-    private static final String CASEWORKER_PASSWORD = "caseworkerPassword";
-    private static final String CASE_DATA_CONTENT = "caseDataContent";
     public static final String JURISDICTION_ID = "jurisdictionId";
-    private static final String CASE_TYPE = "caseType";
 
     @Pact(consumer = "et_sya_api")
     RequestResponsePact executeCcdGetCasesByCaseId(PactDslWithProvider builder) {
 
         return builder
-            .given("A Get Case is requested", getStateMapForProviderWithCaseData())
+            .given("A Get Case is requested", getStateMapForProviderWithCaseData(caseDataContent))
             .uponReceiving("Provider receives a GET /cases/{caseId} request from et-sya-api API")
             .path(CCD_CASE_URL)
             .method(GET.toString())
@@ -61,30 +51,8 @@ class CcdGetCasesByCaseIdPactTest extends SpringBootContractBaseTest {
             .stringValue("security_classification", PUBLIC);
     }
 
-    protected Map<String, Object> getStateMapForProviderWithCaseData() {
-        Map<String, Object> caseDataContentMap = new ConcurrentHashMap<>();
-        caseDataContentMap.put("event_token", "testEventToken");
-        Event event = Event.builder()
-            .id("create")
-            .summary("Employment case submission summary")
-            .description("Employment case description")
-            .build();
-        caseDataContentMap.put("event", event);
-        CaseData caseData = new CaseTestData().getCaseData();
-        caseData.setCcdID(String.valueOf(CASE_ID));
-        caseDataContentMap.put("data", caseData);
-        Map<String, Object> map = this.getStateMapForProviderWithoutCaseData();
-        map.put(CASE_DATA_CONTENT, caseDataContentMap);
-        return map;
-    }
 
-    protected Map<String, Object> getStateMapForProviderWithoutCaseData() {
-        Map<String, Object> map = new ConcurrentHashMap<>();
-        map.put(JURISDICTION, "EMPLOYMENT");
-        map.put(CASE_TYPE, "ET_EnglandWales");
-        map.put(CASEWORKER_USERNAME, "caseworker_username");
-        map.put(CASEWORKER_PASSWORD, "caseworker_password");
-        return map;
-    }
+
+
 
 }

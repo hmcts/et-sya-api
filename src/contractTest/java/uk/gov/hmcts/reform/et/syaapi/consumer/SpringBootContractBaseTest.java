@@ -4,6 +4,7 @@ import au.com.dius.pact.consumer.dsl.DslPart;
 import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.annotations.PactFolder;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
@@ -11,11 +12,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.ccd.client.model.Event;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static io.pactfoundation.consumer.dsl.LambdaDsl.newJsonBody;
+import static org.springframework.util.ResourceUtils.getFile;
 
 @Slf4j
 @ExtendWith(PactConsumerTestExt.class)
@@ -41,12 +48,32 @@ public class SpringBootContractBaseTest {
     public static final String EVENT_ID = "EVENT_ID";
     public static final int SLEEP_TIME = 2000;
     protected static final String ALPHABETIC_REGEX = "[/^[A-Za-z_]+$/]+";
+    public static final String CASE_DATA_CONTENT = "caseDataContent";
+    public static final String CASEWORKER_USERNAME = "caseworkerUsername";
+    public static final String CASEWORKER_PASSWORD = "caseworkerPassword";
+
+    protected Map caseDetailsMap;
+    protected CaseDataContent caseDataContent;
+
     @Autowired
     protected CoreCaseDataApi coreCaseDataApi;
+    @Autowired
+    private ObjectMapper objectMapper;
     public static final Map<String, String> RESPONSE_HEADERS = Map.of("Content-Type", "application/json");
 
     @BeforeEach
     public void prepareTest() throws Exception {
+        caseDetailsMap = getCaseDetailsAsMap("caseData.json");
+        caseDataContent = CaseDataContent.builder()
+            .eventToken("someEventToken")
+            .event(
+                Event.builder()
+                    .id("create")
+                    .summary("employment case submission event summary")
+                    .description("employment case submission description")
+                    .build()
+            ).data(caseDetailsMap.get("case_data"))
+            .build();
         Thread.sleep(SLEEP_TIME);
     }
 
@@ -73,7 +100,7 @@ public class SpringBootContractBaseTest {
     }
 
     public static DslPart buildCaseDetailsDsl(Long caseId) {
-        return newJsonBody((o) -> {
+        return newJsonBody(o -> {
             o.numberType("id", caseId)
                 .stringType("jurisdiction", "EMPLOYMENT")
                 .stringType("state", "ADMISSION_TO_HMCTS")
@@ -85,4 +112,27 @@ public class SpringBootContractBaseTest {
                 });
         }).build();
     }
+
+    protected Map getCaseDetailsAsMap(String fileName) throws IOException {
+        File file = getFile(fileName);
+        CaseDetails caseDetails = objectMapper.readValue(file, CaseDetails.class);
+        return objectMapper.convertValue(caseDetails, Map.class);
+    }
+
+    protected Map<String, Object> getStateMapForProviderWithCaseData(CaseDataContent caseDataContent) {
+        Map<String, Object> map = this.getStateMapForProviderWithoutCaseData();
+        Map caseDataContentMap = objectMapper.convertValue(caseDataContent, Map.class);
+        map.put(CASE_DATA_CONTENT, caseDataContentMap);
+        return map;
+    }
+
+    protected Map<String, Object> getStateMapForProviderWithoutCaseData() {
+        Map<String, Object> map = new ConcurrentHashMap<>();
+        map.put(JURISDICTION, "testJurisdictionId");
+        map.put(CASE_TYPE, CASE_TYPE_ID);
+        map.put(CASEWORKER_USERNAME, "testCaseWorker");
+        map.put(CASEWORKER_PASSWORD, "testCaseWorkerPassword");
+        return map;
+    }
+
 }
