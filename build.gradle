@@ -310,6 +310,10 @@ rootProject.tasks.named("processFunctionalTestResources") {
   duplicatesStrategy = 'include'
 }
 
+rootProject.tasks.named("processContractTestResources") {
+  duplicatesStrategy = 'include'
+}
+
 
 wrapper {
   distributionType = Wrapper.DistributionType.ALL
