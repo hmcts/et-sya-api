@@ -17,13 +17,11 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static io.pactfoundation.consumer.dsl.LambdaDsl.newJsonBody;
-import static org.springframework.util.ResourceUtils.getFile;
 
 @Slf4j
 @ExtendWith(PactConsumerTestExt.class)
