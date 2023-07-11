@@ -6,6 +6,7 @@ import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.et.syaapi.consumer.SpringBootContractBaseTest;
@@ -69,6 +70,8 @@ class CcdGetCasesByCaseIdPactTest extends SpringBootContractBaseTest {
             .description("Employment case description")
             .build();
         caseDataContentMap.put("event", event);
+        CaseData caseData = new CaseTestData().getCaseData();
+        caseData.setCcdID(String.valueOf(CASE_ID));
         caseDataContentMap.put("data", new CaseTestData().getCaseData());
         Map<String, Object> map = this.getStateMapForProviderWithoutCaseData();
         map.put(CASE_DATA_CONTENT, caseDataContentMap);
