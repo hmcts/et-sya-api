@@ -13,10 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -62,7 +61,7 @@ public class SpringBootContractBaseTest {
 
     @BeforeEach
     public void prepareTest() throws Exception {
-        caseDetailsMap = getCaseDetailsAsMap("caseData.json");
+        caseDetailsMap = getCaseDetailsAsMap();
         caseDataContent = CaseDataContent.builder()
             .eventToken("someEventToken")
             .event(
@@ -112,10 +111,8 @@ public class SpringBootContractBaseTest {
         }).build();
     }
 
-    protected Map getCaseDetailsAsMap(String fileName) throws IOException {
-        File file = new File(fileName);
-        CaseDetails caseDetails = objectMapper.readValue(file, CaseDetails.class);
-        return objectMapper.convertValue(caseDetails, Map.class);
+    protected Map<String, Object> getCaseDetailsAsMap() throws IOException {
+        return new CaseTestData().getCaseRequestCaseDataMap();
     }
 
     protected Map<String, Object> getStateMapForProviderWithCaseData(CaseDataContent caseDataContent) {
