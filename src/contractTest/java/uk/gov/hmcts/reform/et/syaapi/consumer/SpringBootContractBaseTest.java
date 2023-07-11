@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -61,7 +60,6 @@ public class SpringBootContractBaseTest {
 
     @BeforeEach
     public void prepareTest() throws Exception {
-        caseDetailsMap = getCaseDetailsAsMap();
         caseDataContent = CaseDataContent.builder()
             .eventToken("someEventToken")
             .event(
@@ -70,7 +68,7 @@ public class SpringBootContractBaseTest {
                     .summary("employment case submission event summary")
                     .description("employment case submission description")
                     .build()
-            ).data(caseDetailsMap.get("case_data"))
+            ).data(new CaseTestData().getCaseRequestCaseDataMap())
             .build();
         Thread.sleep(SLEEP_TIME);
     }
@@ -109,10 +107,6 @@ public class SpringBootContractBaseTest {
                         .stringType("caseSource", "Manually Created");
                 });
         }).build();
-    }
-
-    protected Map<String, Object> getCaseDetailsAsMap() throws IOException {
-        return new CaseTestData().getCaseRequestCaseDataMap();
     }
 
     protected Map<String, Object> getStateMapForProviderWithCaseData(CaseDataContent caseDataContent) {
