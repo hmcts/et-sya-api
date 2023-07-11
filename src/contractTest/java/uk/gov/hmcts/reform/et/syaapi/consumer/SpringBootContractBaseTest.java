@@ -115,13 +115,9 @@ public class SpringBootContractBaseTest {
     }
 
     protected Map getCaseDetailsAsMap(String fileName) throws IOException {
-        File file = getJsonFile(fileName);
+        File file = new File(fileName);
         CaseDetails caseDetails = objectMapper.readValue(file, CaseDetails.class);
         return objectMapper.convertValue(caseDetails, Map.class);
-    }
-
-    private File getJsonFile(String fileName) throws FileNotFoundException {
-        return getFile(this.getClass().getResource(fileName));
     }
 
     protected Map<String, Object> getStateMapForProviderWithCaseData(CaseDataContent caseDataContent) {
