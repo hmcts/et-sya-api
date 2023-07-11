@@ -19,12 +19,12 @@ import static org.springframework.http.HttpMethod.GET;
 
 class StartEventForCitizenConsumerTest extends SpringBootContractBaseTest {
 
-    @Pact(provider = "ccd_data_store_api_cases", consumer = "et_sya_api_service")
+    @Pact(provider = "ccdDataStoreAPI_Cases", consumer = "et_sya_api_service")
     RequestResponsePact startEventForCitizen(PactDslWithProvider builder) {
 
         return  builder
                 .given("A Start event for a Citizen is requested", addCaseTypeJurdisticaton())
-                .uponReceiving("A Start event for a Citizen against CCD API")
+                .uponReceiving("A Start event for a Citizen")
                 .path(buildPath())
                 .method(GET.toString())
                 .headers(RESPONSE_HEADERS)

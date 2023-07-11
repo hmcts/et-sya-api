@@ -20,12 +20,12 @@ import static org.springframework.http.HttpMethod.POST;
 
 class SubmitForCitizenConsumerTest extends SpringBootContractBaseTest {
 
-    @Pact(provider = "ccd_data_store_api_cases", consumer = "et_sya_api_service")
+    @Pact(provider = "ccdDataStoreAPI_Cases", consumer = "et_sya_api_service")
     RequestResponsePact submitForCitizen(PactDslWithProvider builder) {
 
         return  builder
-                .given("A Submit case for a Citizen is requested", addCaseTypeJurdisticaton())
-                .uponReceiving("A Submit case for a Citizen by calling CCD API")
+                .given("A Submit for a Citizen is requested", addCaseTypeJurdisticaton())
+                .uponReceiving("A Submit for a Citizen")
                 .path(buildPath())
                 .query("ignore-warning=true")
                 .method(POST.toString())

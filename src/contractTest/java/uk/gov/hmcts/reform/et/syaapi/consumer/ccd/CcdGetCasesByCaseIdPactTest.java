@@ -24,7 +24,7 @@ class CcdGetCasesByCaseIdPactTest extends SpringBootContractBaseTest {
 
         return builder
             .given("A Get Case is requested", getStateMapForProviderWithCaseData(caseDataContent))
-            .uponReceiving("Provider receives a GET /cases/{caseId} request from et-sya-api API")
+            .uponReceiving("A Get Case")
             .path(CCD_CASE_URL)
             .method(GET.toString())
             .willRespondWith()
@@ -50,9 +50,5 @@ class CcdGetCasesByCaseIdPactTest extends SpringBootContractBaseTest {
             .stringValue("case_type", CASE_TYPE_ID)
             .stringValue("security_classification", PUBLIC);
     }
-
-
-
-
 
 }

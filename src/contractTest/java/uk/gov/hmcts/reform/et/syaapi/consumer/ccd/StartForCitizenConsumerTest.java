@@ -18,12 +18,12 @@ import static org.springframework.http.HttpMethod.GET;
 
 class StartForCitizenConsumerTest extends SpringBootContractBaseTest {
 
-    @Pact(provider = "ccd_data_store_api_cases", consumer = "et_sya_api_service")
+    @Pact(provider = "ccdDataStoreAPI_Cases", consumer = "et_sya_api_service")
         RequestResponsePact startForCitizen(PactDslWithProvider builder) {
 
         return  builder
-                .given("A Start case for a Citizen is requested", addCaseTypeJurdisticaton())
-                .uponReceiving("A Start case for a Citizen by calling CCD API")
+                .given("A Start for a Citizen is requested", addCaseTypeJurdisticaton())
+                .uponReceiving("A Start for a Citizen")
                 .path(buildPath())
                 .method(GET.toString())
                 .headers(RESPONSE_HEADERS)
