@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -63,7 +64,7 @@ public class SpringBootContractBaseTest {
 
     @BeforeEach
     public void prepareTest() throws Exception {
-        caseDetailsMap = getCaseDetailsAsMap("requests/pactTestCaseData.json");
+        caseDetailsMap = getCaseDetailsAsMap("caseData.json");
         caseDataContent = CaseDataContent.builder()
             .eventToken("someEventToken")
             .event(
@@ -114,9 +115,13 @@ public class SpringBootContractBaseTest {
     }
 
     protected Map getCaseDetailsAsMap(String fileName) throws IOException {
-        File file = getFile(fileName);
+        File file = getJsonFile(fileName);
         CaseDetails caseDetails = objectMapper.readValue(file, CaseDetails.class);
         return objectMapper.convertValue(caseDetails, Map.class);
+    }
+
+    private File getJsonFile(String fileName) throws FileNotFoundException {
+        return getFile(this.getClass().getResource(fileName));
     }
 
     protected Map<String, Object> getStateMapForProviderWithCaseData(CaseDataContent caseDataContent) {
