@@ -63,7 +63,7 @@ public class SpringBootContractBaseTest {
 
     @BeforeEach
     public void prepareTest() throws Exception {
-        caseDetailsMap = getCaseDetailsAsMap("caseData.json");
+        caseDetailsMap = getCaseDetailsAsMap("requests/caseData.json");
         caseDataContent = CaseDataContent.builder()
             .eventToken("someEventToken")
             .event(
