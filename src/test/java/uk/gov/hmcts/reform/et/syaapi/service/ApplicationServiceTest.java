@@ -100,6 +100,13 @@ class ApplicationServiceTest {
             any()
         )).thenReturn(testData.getCaseDetailsWithData());
 
+        when(caseService.startUpdate(
+            any(),
+            any(),
+            any(),
+            any()
+        )).thenReturn(testData.getUpdateCaseEventResponse());
+
         ResponseEntity<ByteArrayResource> responseEntity =
             new ResponseEntity<>(HttpStatus.OK);
         when(caseDocumentService.downloadDocument(eq(TEST_SERVICE_AUTH_TOKEN), any())).thenReturn(responseEntity);
@@ -351,6 +358,38 @@ class ApplicationServiceTest {
             assertThat(coreEmailDetails.respondentNames()).isEmpty();
             assertThat(coreEmailDetails.hearingDate()).isEqualTo(NOT_SET);
             assertThat(coreEmailDetails.caseId()).isEqualTo("12345");
+        }
+
+        @Test
+        void shouldFindAndUpdateCase() {
+            applicationService.updateTribunalResponseAsViewed(
+                TEST_SERVICE_AUTH_TOKEN,
+                testData.getResponseViewedRequest()
+            );
+
+            verify(caseDetailsConverter, times(1)).caseDataContent(
+                any(),
+                any()
+            );
+            verify(caseService, times(1)).submitUpdate(
+                any(),
+                any(),
+                any(),
+                any()
+            );
+        }
+
+        @Test
+        void shouldNotUpdateCaseAndThrowException() {
+            var testRequest = testData.getResponseViewedRequest();
+            testRequest.setResponseId("778");
+
+            var exception = assertThrows(IllegalArgumentException.class, () ->
+                applicationService.updateTribunalResponseAsViewed(
+                    TEST_SERVICE_AUTH_TOKEN,
+                    testData.getResponseViewedRequest()
+                ));
+            assertThat(exception.getMessage()).isEqualTo("Response id is invalid");
         }
 
         @ParameterizedTest

@@ -9,6 +9,7 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.TseRespondTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.NotificationService.CoreEmailDetails;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
@@ -176,6 +178,48 @@ public class ApplicationService {
             caseDetailsConverter.caseDataContent(startEventResponse, caseData),
             request.getCaseTypeId()
         );
+    }
+
+    /**
+     * Set admin response as viewed by the claimant.
+     *
+     * @param authorization - authorization
+     * @param request - request with application and response ID
+     * @return the associated {@link CaseDetails} for the ID provided in request
+     */
+    public CaseDetails updateTribunalResponseAsViewed(String authorization, TribunalResponseViewedRequest request) {
+        StartEventResponse startEventResponse = caseService.startUpdate(
+            authorization,
+            request.getCaseId(),
+            request.getCaseTypeId(),
+            CaseEvent.UPDATE_NOTIFICATION_STATE
+        );
+
+        CaseData caseData = EmployeeObjectMapper
+            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
+
+        GenericTseApplicationTypeItem selectedApplication = TseApplicationHelper.getSelectedApplication(
+            caseData.getGenericTseApplicationCollection(),
+            request.getAppId()
+        );
+
+        TseRespondTypeItem responseToUpdate = TseApplicationHelper.findResponse(
+            selectedApplication,
+            request.getResponseId()
+        );
+
+        if (responseToUpdate != null) {
+            responseToUpdate.getValue().setViewedByClaimant(YES);
+
+            return caseService.submitUpdate(
+                authorization,
+                request.getCaseId(),
+                caseDetailsConverter.caseDataContent(startEventResponse, caseData),
+                request.getCaseTypeId()
+            );
+        } else {
+            throw new IllegalArgumentException("Response id is invalid");
+        }
     }
 
     private void createAndAddPdfOfResponse(

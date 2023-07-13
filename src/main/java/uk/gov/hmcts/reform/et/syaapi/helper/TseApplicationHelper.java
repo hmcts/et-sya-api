@@ -66,6 +66,14 @@ public final class TseApplicationHelper {
             .orElse(null);
     }
 
+    public static TseRespondTypeItem findResponse(GenericTseApplicationTypeItem selectedApplication,
+                                                  String responseId) {
+        return selectedApplication.getValue().getRespondCollection().stream()
+            .filter(a -> a.getId().equals(responseId))
+            .findFirst()
+            .orElse(null);
+    }
+
     /**
      * Sets case data with claimant's response to the respondent.
      *
