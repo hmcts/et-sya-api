@@ -84,5 +84,27 @@ class TseApplicationHelperTest {
         }
     }
 
+    @Nested
+    class FindResponses {
+        @Test
+        void shouldFindAdminResponse() {
+            GenericTseApplicationTypeItem app = data.getCaseData().getGenericTseApplicationCollection().get(0);
+            String responseId = "777";
+
+            var result = TseApplicationHelper.findResponse(app, responseId);
+
+            assertThat(result.getId()).isEqualTo(responseId);
+        }
+
+        @Test
+        void shouldReturnNullIfResponseNotFound() {
+            GenericTseApplicationTypeItem app = data.getCaseData().getGenericTseApplicationCollection().get(0);
+            String responseId = "778";
+
+            var result = TseApplicationHelper.findResponse(app, responseId);
+
+            assertThat(result).isNull();
+        }
+    }
 
 }
