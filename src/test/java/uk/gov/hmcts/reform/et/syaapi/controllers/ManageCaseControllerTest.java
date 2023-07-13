@@ -63,7 +63,6 @@ class ManageCaseControllerTest {
     private static final String USER_ID = "1234";
     private static final String CASE_TYPE = "ET_Scotland";
 
-
     private final CaseDetails expectedDetails;
 
     private final List<CaseDetails> requestCaseDataList;

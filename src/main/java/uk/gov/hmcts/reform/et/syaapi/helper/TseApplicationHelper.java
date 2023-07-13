@@ -66,6 +66,13 @@ public final class TseApplicationHelper {
             .orElse(null);
     }
 
+    /**
+     * Finds the response by ID.
+     *
+     * @param selectedApplication - application to update
+     * @param responseId - id of decision we're trying to find
+     * @return the {@link TseRespondTypeItem} to be updated
+     */
     public static TseRespondTypeItem findResponse(GenericTseApplicationTypeItem selectedApplication,
                                                   String responseId) {
         return selectedApplication.getValue().getRespondCollection().stream()
