@@ -208,18 +208,18 @@ public class ApplicationService {
             request.getResponseId()
         );
 
-        if (responseToUpdate != null) {
-            responseToUpdate.getValue().setViewedByClaimant(YES);
-
-            return caseService.submitUpdate(
-                authorization,
-                request.getCaseId(),
-                caseDetailsConverter.caseDataContent(startEventResponse, caseData),
-                request.getCaseTypeId()
-            );
-        } else {
+        if (responseToUpdate == null) {
             throw new IllegalArgumentException("Response id is invalid");
         }
+        
+        responseToUpdate.getValue().setViewedByClaimant(YES);
+
+        return caseService.submitUpdate(
+            authorization,
+            request.getCaseId(),
+            caseDetailsConverter.caseDataContent(startEventResponse, caseData),
+            request.getCaseTypeId()
+        );
     }
 
     private void createAndAddPdfOfResponse(
