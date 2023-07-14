@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
@@ -438,6 +439,33 @@ class ManageCaseControllerTest {
         ).andExpect(status().isOk());
 
         verify(applicationService, times(1)).changeApplicationStatus(
+            TEST_SERVICE_AUTH_TOKEN,
+            caseRequest
+        );
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldUpdateTribunalResponse() {
+        TribunalResponseViewedRequest caseRequest = TribunalResponseViewedRequest.builder()
+            .caseTypeId(CASE_TYPE)
+            .caseId(CASE_ID)
+            .appId("123")
+            .responseId("777")
+            .build();
+
+        // when
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+
+        when(applicationService.updateTribunalResponseAsViewed(any(), any())).thenReturn(expectedDetails);
+        mockMvc.perform(
+            put("/cases/tribunal-response-viewed", CASE_ID)
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ResourceLoader.toJson(caseRequest))
+        ).andExpect(status().isOk());
+
+        verify(applicationService, times(1)).updateTribunalResponseAsViewed(
             TEST_SERVICE_AUTH_TOKEN,
             caseRequest
         );
