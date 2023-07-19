@@ -31,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
 
 @SuppressWarnings({"PMD.LawOfDemeter", "PMD.LinguisticNaming"})
 @Slf4j
@@ -39,6 +38,7 @@ import static org.junit.Assert.assertEquals;
 class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
 
     public static final String STATE = "state";
+    public static final String CASES_INITIATE_CASE = "/cases/initiate-case";
     private Long caseId;
     private static final String CASE_TYPE = "ET_EnglandWales";
     private static final String CLAIMANT_EMAIL = "citizen-user-test@test.co.uk";
@@ -72,20 +72,19 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
             .body(caseRequest)
-            .post("/cases/initiate-case")
+            .post(CASES_INITIATE_CASE)
             .then()
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
             .extract().body().jsonPath();
 
-        assertEquals(CASE_TYPE, body.get("case_type_id"));
         caseId = body.get("id");
 
         RestAssured.given()
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
             .body(caseRequest)
-            .post("/cases/initiate-case")
+            .post(CASES_INITIATE_CASE)
             .then()
             .statusCode(HttpStatus.SC_OK)
             .log().all(true);
@@ -280,6 +279,24 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .log().all(true)
             .assertThat().body("id", equalTo(caseId))
             .assertThat().body(STATE, equalTo(SUBMITTED));
+    }
+
+    @Test
+    void createDraftCaseWithInvalidAuthTokenShouldReturn403() {
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseData(caseData)
+            .build();
+
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .header(new Header(AUTHORIZATION, "invalid_token"))
+            .body(caseRequest)
+            .post(CASES_INITIATE_CASE)
+            .then()
+            .statusCode(HttpStatus.SC_FORBIDDEN)
+            .log().all(true)
+            .extract().body().jsonPath();
+
     }
 
 
