@@ -33,15 +33,17 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 
-@SuppressWarnings("PMD.LawOfDemeter")
+@SuppressWarnings({"PMD.LawOfDemeter", "PMD.LinguisticNaming"})
 @Slf4j
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
 
+    public static final String STATE = "state";
     private Long caseId;
     private static final String CASE_TYPE = "ET_EnglandWales";
     private static final String CLAIMANT_EMAIL = "citizen-user-test@test.co.uk";
     private static final String AUTHORIZATION = "Authorization";
+    public static final String SUBMITTED = "Submitted";
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<String, Object> caseData = new ConcurrentHashMap<>();
     private String appId;
@@ -107,7 +109,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
     @SneakyThrows
     @Test
     @Order(3)
-    void getAllCaseDetailsShouldReturnAllCaseDetails() {
+    void getAllCaseDetails() {
         TimeUnit.SECONDS.sleep(2);
         RestAssured.given()
             .contentType(ContentType.JSON)
@@ -159,7 +161,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
             .assertThat().body("id", equalTo(caseId))
-            .assertThat().body("state", equalTo("Submitted"));
+            .assertThat().body(STATE, equalTo(SUBMITTED));
     }
 
     @Test
@@ -180,7 +182,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
             .assertThat().body("id", equalTo(caseId))
-            .assertThat().body("state", equalTo("Submitted"));
+            .assertThat().body(STATE, equalTo(SUBMITTED));
     }
 
     @Test
@@ -204,7 +206,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
             .assertThat().body("id", equalTo(caseId))
-            .assertThat().body("state", equalTo("Submitted")).extract().body().jsonPath();
+            .assertThat().body(STATE, equalTo(SUBMITTED)).extract().body().jsonPath();
 
         CaseData caseDataWithTse = objectMapper.convertValue(body.get("case_data"), CaseData.class);
         appId = caseDataWithTse.getGenericTseApplicationCollection().get(0).getId();
@@ -229,7 +231,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
             .assertThat().body("id", equalTo(caseId))
-            .assertThat().body("state", equalTo("Submitted"));
+            .assertThat().body(STATE, equalTo(SUBMITTED));
     }
 
     @Test
@@ -251,7 +253,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
             .assertThat().body("id", equalTo(caseId))
-            .assertThat().body("state", equalTo("Submitted")).extract().body().jsonPath();
+            .assertThat().body(STATE, equalTo(SUBMITTED)).extract().body().jsonPath();
 
         CaseData caseDataWithTse = objectMapper.convertValue(body.get("case_data"), CaseData.class);
         responseId = caseDataWithTse.getGenericTseApplicationCollection()
@@ -277,7 +279,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
             .assertThat().body("id", equalTo(caseId))
-            .assertThat().body("state", equalTo("Submitted"));
+            .assertThat().body(STATE, equalTo(SUBMITTED));
     }
 
 
