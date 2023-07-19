@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
-@SuppressWarnings({"PMD.LawOfDemeter", "PMD.LinguisticNaming"})
+@SuppressWarnings({"PMD.LawOfDemeter", "PMD.LinguisticNaming", "PMD.TooManyMethods"})
 @Slf4j
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
