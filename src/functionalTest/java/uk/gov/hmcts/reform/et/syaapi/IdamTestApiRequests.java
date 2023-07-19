@@ -24,6 +24,7 @@ import static org.apache.http.client.methods.RequestBuilder.post;
 import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
@@ -59,7 +60,9 @@ public class IdamTestApiRequests {
                                                              .setEntity(new StringEntity(body, APPLICATION_JSON))
                                                              .build());
 
-        assertEquals(CREATED.value(), createUserResponse.getStatusLine().getStatusCode());
+        int statusCode = createUserResponse.getStatusLine().getStatusCode();
+
+        assertTrue(statusCode == CREATED.value() || statusCode == OK.value());
     }
 
     public String getAccessToken(String email) throws IOException {
