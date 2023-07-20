@@ -123,9 +123,11 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .assertThat().body("size()", is(2));
     }
 
+    @SneakyThrows
     @Test
     @Order(4)
-    void updateCaseShouldReturnUpdatedDraftCaseDetails() {
+    void updateCaseShouldReturnUpdatedDraftCaseDetails(){
+        TimeUnit.SECONDS.sleep(5);
         caseData.put("claimantType", Map.of("claimant_email_address", CLAIMANT_EMAIL));
 
         CaseRequest caseRequest = CaseRequest.builder()
@@ -146,10 +148,11 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .assertThat().body("case_data.claimantType.claimant_email_address", equalTo(CLAIMANT_EMAIL));
     }
 
-
+    @SneakyThrows
     @Test
     @Order(5)
     void submitCaseShouldReturnSubmittedCaseDetails() {
+        TimeUnit.SECONDS.sleep(5);
         CaseRequest caseRequest = CaseRequest.builder()
             .caseId(caseId.toString())
             .caseTypeId(CASE_TYPE)
@@ -215,7 +218,9 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
             .assertThat().body("id", equalTo(caseId))
-            .assertThat().body(STATE, equalTo(SUBMITTED)).extract().body().jsonPath();
+            .assertThat().body("case_data.genericTseApplicationCollection[0].value.applicant", equalTo("Claimant"))
+            .assertThat().body("case_data.genericTseApplicationCollection[0].value.type", equalTo("Withdraw all/part of claim"))
+            .extract().body().jsonPath();
 
         CaseData caseDataWithTse = objectMapper.convertValue(body.get("case_data"), CaseData.class);
         appId = caseDataWithTse.getGenericTseApplicationCollection().get(0).getId();
