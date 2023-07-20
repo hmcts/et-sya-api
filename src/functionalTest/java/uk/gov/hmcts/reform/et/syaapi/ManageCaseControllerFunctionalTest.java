@@ -18,9 +18,11 @@ import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.HubLinksStatuses;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 
@@ -39,6 +41,8 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
 
     public static final String STATE = "state";
     public static final String CASES_INITIATE_CASE = "/cases/initiate-case";
+    public static final String RESPONDENT_NAME = "Boris Johnson";
+    public static final String WAITING_FOR_THE_TRIBUNAL = "waitingForTheTribunal";
     private Long caseId;
     private static final String CASE_TYPE = "ET_EnglandWales";
     private static final String CLAIMANT_EMAIL = "citizen-user-test@test.co.uk";
@@ -160,28 +164,33 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
             .assertThat().body("id", equalTo(caseId))
-            .assertThat().body(STATE, equalTo(SUBMITTED));
+            .assertThat().body(STATE, equalTo(SUBMITTED))
+            .assertThat().body("case_data.noticeOfChangeAnswers0.respondentName", equalTo(RESPONDENT_NAME));
     }
 
     @Test
     @Order(6)
     void updateHubLinksStatuses() {
-        CaseRequest caseRequest = CaseRequest.builder()
+        HubLinksStatuses hubLinksStatuses = new HubLinksStatuses();
+        hubLinksStatuses.setRespondentResponse(WAITING_FOR_THE_TRIBUNAL);
+        caseData.put("hubLinksStatuses", hubLinksStatuses);
+
+        HubLinksStatusesRequest hubLinksStatusesRequest = HubLinksStatusesRequest.builder()
             .caseId(caseId.toString())
             .caseTypeId(CASE_TYPE)
-            .caseData(caseData)
+            .hubLinksStatuses(hubLinksStatuses)
             .build();
 
         RestAssured.given()
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
-            .body(caseRequest)
+            .body(hubLinksStatusesRequest)
             .put("/cases/update-hub-links-statuses")
             .then()
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
             .assertThat().body("id", equalTo(caseId))
-            .assertThat().body(STATE, equalTo(SUBMITTED));
+            .assertThat().body("case_data.respondentResponse", equalTo(WAITING_FOR_THE_TRIBUNAL));
     }
 
     @Test
@@ -302,7 +311,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
 
     private RespondentSumTypeItem createRespondentType() {
         RespondentSumType respondentSumType = new RespondentSumType();
-        respondentSumType.setRespondentName("Boris Johnson");
+        respondentSumType.setRespondentName(RESPONDENT_NAME);
         RespondentSumTypeItem respondentSumTypeItem = new RespondentSumTypeItem();
         respondentSumTypeItem.setValue(respondentSumType);
 
