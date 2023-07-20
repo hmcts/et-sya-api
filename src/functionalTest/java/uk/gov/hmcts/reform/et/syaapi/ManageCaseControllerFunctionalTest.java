@@ -126,7 +126,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
     @SneakyThrows
     @Test
     @Order(4)
-    void updateCaseShouldReturnUpdatedDraftCaseDetails(){
+    void updateCaseShouldReturnUpdatedDraftCaseDetails() {
         TimeUnit.SECONDS.sleep(5);
         caseData.put("claimantType", Map.of("claimant_email_address", CLAIMANT_EMAIL));
 
@@ -219,7 +219,8 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .log().all(true)
             .assertThat().body("id", equalTo(caseId))
             .assertThat().body("case_data.genericTseApplicationCollection[0].value.applicant", equalTo("Claimant"))
-            .assertThat().body("case_data.genericTseApplicationCollection[0].value.type", equalTo("Withdraw all/part of claim"))
+            .assertThat().body("case_data.genericTseApplicationCollection[0].value.type",
+                               equalTo("Withdraw all/part of claim"))
             .extract().body().jsonPath();
 
         CaseData caseDataWithTse = objectMapper.convertValue(body.get("case_data"), CaseData.class);
