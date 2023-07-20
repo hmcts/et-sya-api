@@ -66,7 +66,6 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
         claimantIndType.setClaimantLastName("Johnson");
         caseData.put("claimantIndType", claimantIndType);
         caseData.put("respondentCollection", List.of(createRespondentType()));
-        caseData.put("claimantType", Map.of("claimant_email_address", CLAIMANT_EMAIL));
 
         CaseRequest caseRequest = CaseRequest.builder()
             .caseData(caseData)
@@ -127,6 +126,8 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
     @Test
     @Order(4)
     void updateCaseShouldReturnUpdatedDraftCaseDetails() {
+        caseData.put("claimantType", Map.of("claimant_email_address", CLAIMANT_EMAIL));
+
         CaseRequest caseRequest = CaseRequest.builder()
             .caseId(caseId.toString())
             .caseTypeId(CASE_TYPE)
@@ -190,7 +191,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
             .assertThat().body("id", equalTo(caseId))
-            .assertThat().body("case_data.respondentResponse", equalTo(WAITING_FOR_THE_TRIBUNAL));
+            .assertThat().body("case_data.hubLinksStatuses.respondentResponse", equalTo(WAITING_FOR_THE_TRIBUNAL));
     }
 
     @Test
