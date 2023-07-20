@@ -46,7 +46,7 @@ public class IdamTestApiRequests {
             "ATestForename",
             "ATestSurname",
             USER_PASSWORD,
-            Collections.singletonList(new Role("citizen"))
+            List.of(new Role("citizen"), new Role("caseworker-employment-api"))
         );
 
         String body = new ObjectMapper().writeValueAsString(createUser);
