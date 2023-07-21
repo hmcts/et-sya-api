@@ -55,6 +55,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
     public static final String CASES_RESPOND_TO_APPLICATION = "/cases/respond-to-application";
     public static final String CASES_CHANGE_APPLICATION_STATUS = "/cases/change-application-status";
     public static final String CASES_TRIBUNAL_RESPONSE_VIEWED = "/cases/tribunal-response-viewed";
+    public static final String INVALID_TOKEN = "invalid_token";
     private Long caseId;
     private static final String CASE_TYPE = "ET_EnglandWales";
     private static final String CLAIMANT_EMAIL = "citizen-user-test@test.co.uk";
@@ -249,7 +250,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .response(new TseRespondType())
             .build();
 
-        JsonPath body = RestAssured.given()
+        RestAssured.given()
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
             .body(respondToApplicationRequest)
@@ -259,8 +260,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .log().all(true)
             .assertThat().body("id", equalTo(caseId))
             .assertThat().body("case_data.genericTseApplicationCollection[0].value.respondCollection[0].value.from",
-                               equalTo(CLAIMANT))
-            .extract().body().jsonPath();
+                               equalTo(CLAIMANT));
     }
 
     @Test
@@ -325,7 +325,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
 
         RestAssured.given()
             .contentType(ContentType.JSON)
-            .header(new Header(AUTHORIZATION, "invalid_token"))
+            .header(new Header(AUTHORIZATION, INVALID_TOKEN))
             .body(caseRequest)
             .post(CASES_INITIATE_CASE)
             .then()
@@ -342,7 +342,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
 
         RestAssured.given()
             .contentType(ContentType.JSON)
-            .header(new Header(AUTHORIZATION, "invalid_token"))
+            .header(new Header(AUTHORIZATION, INVALID_TOKEN))
             .body(caseRequest)
             .post(CASES_USER_CASE)
             .then()
@@ -359,7 +359,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
 
         RestAssured.given()
             .contentType(ContentType.JSON)
-            .header(new Header(AUTHORIZATION, "invalid_token"))
+            .header(new Header(AUTHORIZATION, INVALID_TOKEN))
             .body(caseRequest)
             .get(CASES_USER_CASES)
             .then()
@@ -376,7 +376,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
 
         RestAssured.given()
             .contentType(ContentType.JSON)
-            .header(new Header(AUTHORIZATION, "invalid_token"))
+            .header(new Header(AUTHORIZATION, INVALID_TOKEN))
             .body(caseRequest)
             .put(CASES_UPDATE_CASE)
             .then()
@@ -393,7 +393,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
 
         RestAssured.given()
             .contentType(ContentType.JSON)
-            .header(new Header(AUTHORIZATION, "invalid_token"))
+            .header(new Header(AUTHORIZATION, INVALID_TOKEN))
             .body(caseRequest)
             .put(CASES_UPDATE_CASE)
             .then()
@@ -410,7 +410,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
 
         RestAssured.given()
             .contentType(ContentType.JSON)
-            .header(new Header(AUTHORIZATION, "invalid_token"))
+            .header(new Header(AUTHORIZATION, INVALID_TOKEN))
             .body(caseRequest)
             .put(CASES_UPDATE_HUB_LINKS_STATUSES)
             .then()
@@ -427,7 +427,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
 
         RestAssured.given()
             .contentType(ContentType.JSON)
-            .header(new Header(AUTHORIZATION, "invalid_token"))
+            .header(new Header(AUTHORIZATION, INVALID_TOKEN))
             .body(caseRequest)
             .put(CASES_SUBMIT_CLAIMANT_APPLICATION)
             .then()
@@ -444,7 +444,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
 
         RestAssured.given()
             .contentType(ContentType.JSON)
-            .header(new Header(AUTHORIZATION, "invalid_token"))
+            .header(new Header(AUTHORIZATION, INVALID_TOKEN))
             .body(caseRequest)
             .put(CASES_RESPOND_TO_APPLICATION)
             .then()
@@ -461,7 +461,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
 
         RestAssured.given()
             .contentType(ContentType.JSON)
-            .header(new Header(AUTHORIZATION, "invalid_token"))
+            .header(new Header(AUTHORIZATION, INVALID_TOKEN))
             .body(caseRequest)
             .put(CASES_CHANGE_APPLICATION_STATUS)
             .then()
@@ -478,7 +478,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
 
         RestAssured.given()
             .contentType(ContentType.JSON)
-            .header(new Header(AUTHORIZATION, "invalid_token"))
+            .header(new Header(AUTHORIZATION, INVALID_TOKEN))
             .body(caseRequest)
             .put(CASES_TRIBUNAL_RESPONSE_VIEWED)
             .then()
