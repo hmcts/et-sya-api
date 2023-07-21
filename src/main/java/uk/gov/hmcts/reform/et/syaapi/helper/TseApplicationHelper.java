@@ -105,6 +105,7 @@ public final class TseApplicationHelper {
                 CLAIMANT_CORRESPONDENCE_DOCUMENT,
                 request.getSupportingMaterialFile()
             );
+            documentTypeItem.getValue().setShortDescription("Response to " + appToModify.getType());
 
             if (caseData.getDocumentCollection() == null) {
                 caseData.setDocumentCollection(new ArrayList<>());
