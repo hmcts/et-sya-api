@@ -33,6 +33,8 @@ import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT;
 
 @SuppressWarnings({"PMD.LawOfDemeter", "PMD.LinguisticNaming", "PMD.TooManyMethods"})
 @Slf4j
@@ -43,6 +45,16 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
     public static final String CASES_INITIATE_CASE = "/cases/initiate-case";
     public static final String RESPONDENT_NAME = "Boris Johnson";
     public static final String WAITING_FOR_THE_TRIBUNAL = "waitingForTheTribunal";
+    public static final String NEW_STATUS = "newStatus";
+    public static final String CASES_USER_CASE = "/cases/user-case";
+    public static final String CASES_USER_CASES = "/cases/user-cases";
+    public static final String CASES_UPDATE_CASE = "/cases/update-case";
+    public static final String CASES_SUBMIT_CASE = "/cases/submit-case";
+    public static final String CASES_UPDATE_HUB_LINKS_STATUSES = "/cases/update-hub-links-statuses";
+    public static final String CASES_SUBMIT_CLAIMANT_APPLICATION = "/cases/submit-claimant-application";
+    public static final String CASES_RESPOND_TO_APPLICATION = "/cases/respond-to-application";
+    public static final String CASES_CHANGE_APPLICATION_STATUS = "/cases/change-application-status";
+    public static final String CASES_TRIBUNAL_RESPONSE_VIEWED = "/cases/tribunal-response-viewed";
     private Long caseId;
     private static final String CASE_TYPE = "ET_EnglandWales";
     private static final String CLAIMANT_EMAIL = "citizen-user-test@test.co.uk";
@@ -66,7 +78,6 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
         claimantIndType.setClaimantLastName("Johnson");
         caseData.put("claimantIndType", claimantIndType);
         caseData.put("respondentCollection", List.of(createRespondentType()));
-
         caseData.put("claimantType", Map.of("claimant_email_address", CLAIMANT_EMAIL));
 
         CaseRequest caseRequest = CaseRequest.builder()
@@ -102,7 +113,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
             .body("{\"case_id\":\"" + caseId + "\"}")
-            .post("/cases/user-case")
+            .post(CASES_USER_CASE)
             .then()
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
@@ -118,7 +129,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
         RestAssured.given()
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
-            .get("/cases/user-cases")
+            .get(CASES_USER_CASES)
             .then()
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
@@ -141,7 +152,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
             .body(caseRequest)
-            .put("/cases/update-case")
+            .put(CASES_UPDATE_CASE)
             .then()
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
@@ -164,7 +175,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
             .body(caseRequest)
-            .put("/cases/submit-case")
+            .put(CASES_SUBMIT_CASE)
             .then()
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
@@ -175,7 +186,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
 
     @Test
     @Order(6)
-    void updateHubLinksStatuses() {
+    void updateHubLinksStatusesShouldReturnCaseDetailsWithHubLinksStatuses() {
         HubLinksStatuses hubLinksStatuses = new HubLinksStatuses();
         hubLinksStatuses.setRespondentResponse(WAITING_FOR_THE_TRIBUNAL);
         caseData.put("hubLinksStatuses", hubLinksStatuses);
@@ -190,7 +201,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
             .body(hubLinksStatusesRequest)
-            .put("/cases/update-hub-links-statuses")
+            .put(CASES_UPDATE_HUB_LINKS_STATUSES)
             .then()
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
@@ -200,7 +211,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
 
     @Test
     @Order(7)
-    void submitClaimantApplication() {
+    void submitClaimantApplicationShouldReturnCaseDetailsWithTseApplication() {
         ClaimantTse claimantTse = new ClaimantTse();
         claimantTse.setContactApplicationType("withdraw");
 
@@ -214,12 +225,12 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
             .body(claimantApplicationRequest)
-            .put("/cases/submit-claimant-application")
+            .put(CASES_SUBMIT_CLAIMANT_APPLICATION)
             .then()
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
             .assertThat().body("id", equalTo(caseId))
-            .assertThat().body("case_data.genericTseApplicationCollection[0].value.applicant", equalTo("Claimant"))
+            .assertThat().body("case_data.genericTseApplicationCollection[0].value.applicant", equalTo(CLAIMANT))
             .assertThat().body("case_data.genericTseApplicationCollection[0].value.type",
                                equalTo("Withdraw all/part of claim"))
             .extract().body().jsonPath();
@@ -230,7 +241,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
 
     @Test
     @Order(8)
-    void respondToApplication() {
+    void respondToApplicationShouldReturnCaseDetailsWithTseAppWithResponse() {
         RespondToApplicationRequest respondToApplicationRequest = RespondToApplicationRequest.builder()
             .caseId(caseId.toString())
             .caseTypeId(CASE_TYPE)
@@ -238,37 +249,42 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .response(new TseRespondType())
             .build();
 
-        RestAssured.given()
+        JsonPath body = RestAssured.given()
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
             .body(respondToApplicationRequest)
-            .put("/cases/respond-to-application")
+            .put(CASES_RESPOND_TO_APPLICATION)
             .then()
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
-            .assertThat().body("id", equalTo(caseId));
+            .assertThat().body("id", equalTo(caseId))
+            .assertThat().body("case_data.genericTseApplicationCollection[0].value.respondCollection[0].value.from",
+                               equalTo(CLAIMANT))
+            .extract().body().jsonPath();
     }
 
     @Test
     @Order(9)
-    void changeApplicationStatus() {
+    void changeApplicationStatusShouldReturnCaseDetailsWithTseAppWithStatusUpdated() {
         ChangeApplicationStatusRequest changeApplicationStatusRequest = ChangeApplicationStatusRequest.builder()
             .caseId(caseId.toString())
             .caseTypeId(CASE_TYPE)
             .applicationId(appId)
-            .newStatus("test")
+            .newStatus(NEW_STATUS)
             .build();
 
         JsonPath body = RestAssured.given()
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
             .body(changeApplicationStatusRequest)
-            .put("/cases/change-application-status")
+            .put(CASES_CHANGE_APPLICATION_STATUS)
             .then()
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
             .assertThat().body("id", equalTo(caseId))
-            .assertThat().body(STATE, equalTo(SUBMITTED)).extract().body().jsonPath();
+            .assertThat().body("case_data.genericTseApplicationCollection[0].value.applicationState",
+                               equalTo(NEW_STATUS))
+            .extract().body().jsonPath();
 
         CaseData caseDataWithTse = objectMapper.convertValue(body.get("case_data"), CaseData.class);
         responseId = caseDataWithTse.getGenericTseApplicationCollection()
@@ -277,7 +293,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
 
     @Test
     @Order(10)
-    void updateResponseAsViewed() {
+    void updateResponseAsViewedShouldReturnCaseDetailsWithTseResponseAsViewed() {
         TribunalResponseViewedRequest tribunalResponseViewedRequest = TribunalResponseViewedRequest.builder()
             .caseId(caseId.toString())
             .caseTypeId(CASE_TYPE)
@@ -289,12 +305,16 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
             .body(tribunalResponseViewedRequest)
-            .put("/cases/tribunal-response-viewed")
+            .put(CASES_TRIBUNAL_RESPONSE_VIEWED)
             .then()
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
             .assertThat().body("id", equalTo(caseId))
-            .assertThat().body(STATE, equalTo(SUBMITTED));
+            .assertThat().body(STATE, equalTo(SUBMITTED))
+            .assertThat().body("case_data.genericTseApplicationCollection[0]"
+                                   + ".value.respondCollection[0].value.viewedByClaimant",
+                               equalTo(YES.getValue()))
+            .extract().body().jsonPath();
     }
 
     @Test
@@ -312,7 +332,159 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .statusCode(HttpStatus.SC_FORBIDDEN)
             .log().all(true)
             .extract().body().jsonPath();
+    }
 
+    @Test
+    void getSingleCaseDetailsWithInvalidAuthTokenShouldReturn403() {
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseData(caseData)
+            .build();
+
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .header(new Header(AUTHORIZATION, "invalid_token"))
+            .body(caseRequest)
+            .post(CASES_USER_CASE)
+            .then()
+            .statusCode(HttpStatus.SC_FORBIDDEN)
+            .log().all(true)
+            .extract().body().jsonPath();
+    }
+
+    @Test
+    void getAllCaseDetailsWithInvalidAuthTokenShouldReturn403() {
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseData(caseData)
+            .build();
+
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .header(new Header(AUTHORIZATION, "invalid_token"))
+            .body(caseRequest)
+            .get(CASES_USER_CASES)
+            .then()
+            .statusCode(HttpStatus.SC_FORBIDDEN)
+            .log().all(true)
+            .extract().body().jsonPath();
+    }
+
+    @Test
+    void updateCaseWithInvalidAuthTokenShouldReturn403() {
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseData(caseData)
+            .build();
+
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .header(new Header(AUTHORIZATION, "invalid_token"))
+            .body(caseRequest)
+            .put(CASES_UPDATE_CASE)
+            .then()
+            .statusCode(HttpStatus.SC_FORBIDDEN)
+            .log().all(true)
+            .extract().body().jsonPath();
+    }
+
+    @Test
+    void submitCaseWithInvalidAuthTokenShouldReturn403() {
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseData(caseData)
+            .build();
+
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .header(new Header(AUTHORIZATION, "invalid_token"))
+            .body(caseRequest)
+            .put(CASES_UPDATE_CASE)
+            .then()
+            .statusCode(HttpStatus.SC_FORBIDDEN)
+            .log().all(true)
+            .extract().body().jsonPath();
+    }
+
+    @Test
+    void updateHubLinksStatusesWithInvalidAuthTokenShouldReturn403() {
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseData(caseData)
+            .build();
+
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .header(new Header(AUTHORIZATION, "invalid_token"))
+            .body(caseRequest)
+            .put(CASES_UPDATE_HUB_LINKS_STATUSES)
+            .then()
+            .statusCode(HttpStatus.SC_FORBIDDEN)
+            .log().all(true)
+            .extract().body().jsonPath();
+    }
+
+    @Test
+    void submitClaimantApplicationWithInvalidAuthTokenShouldReturn403() {
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseData(caseData)
+            .build();
+
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .header(new Header(AUTHORIZATION, "invalid_token"))
+            .body(caseRequest)
+            .put(CASES_SUBMIT_CLAIMANT_APPLICATION)
+            .then()
+            .statusCode(HttpStatus.SC_FORBIDDEN)
+            .log().all(true)
+            .extract().body().jsonPath();
+    }
+
+    @Test
+    void respondToApplicationWithInvalidAuthTokenShouldReturn403() {
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseData(caseData)
+            .build();
+
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .header(new Header(AUTHORIZATION, "invalid_token"))
+            .body(caseRequest)
+            .put(CASES_RESPOND_TO_APPLICATION)
+            .then()
+            .statusCode(HttpStatus.SC_FORBIDDEN)
+            .log().all(true)
+            .extract().body().jsonPath();
+    }
+
+    @Test
+    void changeApplicationStatusWithInvalidAuthTokenShouldReturn403() {
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseData(caseData)
+            .build();
+
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .header(new Header(AUTHORIZATION, "invalid_token"))
+            .body(caseRequest)
+            .put(CASES_CHANGE_APPLICATION_STATUS)
+            .then()
+            .statusCode(HttpStatus.SC_FORBIDDEN)
+            .log().all(true)
+            .extract().body().jsonPath();
+    }
+
+    @Test
+    void updateResponseAsViewedWithInvalidAuthTokenShouldReturn403() {
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseData(caseData)
+            .build();
+
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .header(new Header(AUTHORIZATION, "invalid_token"))
+            .body(caseRequest)
+            .put(CASES_TRIBUNAL_RESPONSE_VIEWED)
+            .then()
+            .statusCode(HttpStatus.SC_FORBIDDEN)
+            .log().all(true)
+            .extract().body().jsonPath();
     }
 
 
