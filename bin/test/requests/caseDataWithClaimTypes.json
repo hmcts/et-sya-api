@@ -1,0 +1,22 @@
+{
+  "case_id": "1663685972102820",
+  "case_type_id": "ET_EnglandWales",
+  "case_data": {
+    "caseType": "Single",
+    "caseSource": "Manually Created",
+    "claimantRepresentedQuestion": "Yes",
+    "claimantIndType": {
+      "claimant_first_names": "John",
+      "claimant_last_name": "Doe",
+      "claimant_date_of_birth": "1978-06-14"
+    },
+    "claimantType": {
+      "claimant_email_address": "citizen-user@test.co.uk"
+    },
+    "typesOfClaim": [
+      "breachOfContract",
+      "payRelated",
+      "otherTypesOfClaims"
+    ]
+  }
+}
