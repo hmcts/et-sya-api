@@ -14,8 +14,10 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
@@ -106,6 +108,8 @@ class ApplicationServiceTest {
             any(),
             any()
         )).thenReturn(testData.getUpdateCaseEventResponse());
+        DocumentTypeItem docType = DocumentTypeItem.builder().id("1").value(new DocumentType()).build();
+        when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(docType);
 
         ResponseEntity<ByteArrayResource> responseEntity =
             new ResponseEntity<>(HttpStatus.OK);
