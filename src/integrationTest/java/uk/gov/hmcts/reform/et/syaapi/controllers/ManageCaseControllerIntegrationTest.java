@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
@@ -41,6 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 
+@SuppressWarnings({"PMD.TooManyMethods"})
 @AutoConfigureMockMvc(addFilters = false)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest
@@ -89,6 +91,7 @@ class ManageCaseControllerIntegrationTest {
         when(idamClient.getUserInfo(any())).thenReturn(UserInfo.builder().uid("1234").build());
         when(applicationService.submitApplication(any(), any())).thenReturn(caseDetailsResponse);
         when(applicationService.respondToApplication(any(), any())).thenReturn(caseDetailsResponse);
+        when(applicationService.updateTribunalResponseAsViewed(any(),any())).thenReturn(caseDetailsResponse);
     }
 
     @DisplayName("Should get single case details")
@@ -233,6 +236,25 @@ class ManageCaseControllerIntegrationTest {
 
         mockMvc.perform(
                 put("/cases/respond-to-application")
+                    .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(resourceLoader.toJson(caseRequest)))
+            .andExpect(status().isOk())
+            .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
+    }
+
+    @DisplayName("Should update tribunal response as viewed")
+    @Test
+    void updateTribunalResponse() throws Exception {
+        TribunalResponseViewedRequest caseRequest = TribunalResponseViewedRequest.builder()
+            .caseTypeId(SCOTLAND_CASE_TYPE)
+            .caseId("12")
+            .appId("1234")
+            .responseId("1")
+            .build();
+
+        mockMvc.perform(
+                put("/cases/tribunal-response-viewed")
                     .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(resourceLoader.toJson(caseRequest)))

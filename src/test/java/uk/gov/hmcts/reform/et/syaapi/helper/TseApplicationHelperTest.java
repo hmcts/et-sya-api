@@ -3,10 +3,13 @@ package uk.gov.hmcts.reform.et.syaapi.helper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.TseAdminRecordDecisionTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
@@ -14,9 +17,13 @@ import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class TseApplicationHelperTest {
+    @MockBean
+    private CaseDocumentService caseDocumentService;
 
     TestData data = new TestData();
 
@@ -51,13 +58,19 @@ class TseApplicationHelperTest {
         @Test
         void applicationStatusWaitingForTheTribunal() {
             RespondToApplicationRequest request = data.getRespondToApplicationRequest();
-            GenericTseApplicationType app = GenericTseApplicationType.builder().build();
+            GenericTseApplicationType app = GenericTseApplicationType.builder().type("Amend Response").build();
             CaseData caseData = data.getCaseData();
-            CaseDocumentService service = mock(CaseDocumentService.class);
+            caseDocumentService = mock(CaseDocumentService.class);
+            DocumentTypeItem docType = DocumentTypeItem.builder().id("1").value(new DocumentType()).build();
+            when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(docType);
 
-            TseApplicationHelper.setRespondentApplicationWithResponse(request, app, caseData, service);
+            TseApplicationHelper.setRespondentApplicationWithResponse(request, app, caseData, caseDocumentService);
 
             Assertions.assertEquals("waitingForTheTribunal", app.getApplicationState());
+            Assertions.assertEquals(
+                caseData.getDocumentCollection().get(0).getValue().getShortDescription(),
+                "Response to Amend Response"
+            );
         }
     }
 
@@ -84,5 +97,27 @@ class TseApplicationHelperTest {
         }
     }
 
+    @Nested
+    class FindResponses {
+        @Test
+        void shouldFindAdminResponse() {
+            GenericTseApplicationTypeItem app = data.getCaseData().getGenericTseApplicationCollection().get(0);
+            String responseId = "777";
+
+            var result = TseApplicationHelper.findResponse(app, responseId);
+
+            assertThat(result.getId()).isEqualTo(responseId);
+        }
+
+        @Test
+        void shouldReturnNullIfResponseNotFound() {
+            GenericTseApplicationTypeItem app = data.getCaseData().getGenericTseApplicationCollection().get(0);
+            String responseId = "778";
+
+            var result = TseApplicationHelper.findResponse(app, responseId);
+
+            assertThat(result).isNull();
+        }
+    }
 
 }

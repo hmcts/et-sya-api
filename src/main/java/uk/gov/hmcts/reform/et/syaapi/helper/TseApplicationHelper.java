@@ -67,6 +67,21 @@ public final class TseApplicationHelper {
     }
 
     /**
+     * Finds the response by ID.
+     *
+     * @param selectedApplication - application to update
+     * @param responseId - id of decision we're trying to find
+     * @return the {@link TseRespondTypeItem} to be updated
+     */
+    public static TseRespondTypeItem findResponse(GenericTseApplicationTypeItem selectedApplication,
+                                                  String responseId) {
+        return selectedApplication.getValue().getRespondCollection().stream()
+            .filter(a -> a.getId().equals(responseId))
+            .findFirst()
+            .orElse(null);
+    }
+
+    /**
      * Sets case data with claimant's response to the respondent.
      *
      * @param request - request from the claimant
@@ -90,6 +105,7 @@ public final class TseApplicationHelper {
                 CLAIMANT_CORRESPONDENCE_DOCUMENT,
                 request.getSupportingMaterialFile()
             );
+            documentTypeItem.getValue().setShortDescription("Response to " + appToModify.getType());
 
             if (caseData.getDocumentCollection() == null) {
                 caseData.setDocumentCollection(new ArrayList<>());

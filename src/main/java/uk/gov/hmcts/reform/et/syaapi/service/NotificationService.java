@@ -539,6 +539,10 @@ public class NotificationService {
 
         Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
         respondentParameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
+        respondentParameters.put(
+            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+            notificationsProperties.getExuiCaseDetailsLink() + caseId
+        );
 
         String emailToRespondentTemplate = notificationsProperties.getTseReplyToTribunalToRespondentTemplateId();
 

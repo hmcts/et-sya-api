@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
@@ -93,6 +94,12 @@ public final class TestData {
         ResourceLoader.fromString(
             "requests/adminNotificationUpdateRequest.json",
             AdminDecisionNotificationStateUpdateRequest.class
+        );
+
+    private final TribunalResponseViewedRequest responseViewedRequest =
+        ResourceLoader.fromString(
+            "requests/tribunalResponseViewedRequest.json",
+            TribunalResponseViewedRequest.class
         );
 
     public static Stream<Arguments> postcodeAddressArguments() {

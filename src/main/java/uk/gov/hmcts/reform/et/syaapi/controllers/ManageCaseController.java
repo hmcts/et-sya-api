@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
@@ -239,6 +240,27 @@ public class ManageCaseController {
 
         CaseDetails finalCaseDetails = applicationService.changeApplicationStatus(authorization, request);
 
+        return ok(finalCaseDetails);
+    }
+
+    /**
+     * Update response as viewed.
+     *
+     * @param authorization jwt of the user
+     * @param request       the request object which contains the appId and response to update
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    @PutMapping("/tribunal-response-viewed")
+    @Operation(summary = "Update response as viewed")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> updateResponseAsViewed(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody TribunalResponseViewedRequest request
+    ) {
+        log.info("Received a request to set tribunal response to viewed - caseTypeId: {} caseId: {}",
+                 request.getCaseTypeId(), request.getCaseId()
+        );
+        CaseDetails finalCaseDetails = applicationService.updateTribunalResponseAsViewed(authorization, request);
         return ok(finalCaseDetails);
     }
 }

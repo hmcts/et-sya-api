@@ -869,6 +869,13 @@
         "responsesCount": 0,
         "status": "Open",
         "applicationState": "notStartedYet",
+        "respondCollection": [
+          {
+            "id": "777",
+            "value": {
+            }
+          }
+        ],
         "adminDecision": [
           {
             "id": "777",

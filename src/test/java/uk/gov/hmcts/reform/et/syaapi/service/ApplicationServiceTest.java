@@ -14,8 +14,10 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
@@ -99,6 +101,15 @@ class ApplicationServiceTest {
             eq(testData.getClaimantApplicationRequest().getCaseTypeId()),
             any()
         )).thenReturn(testData.getCaseDetailsWithData());
+
+        when(caseService.startUpdate(
+            any(),
+            any(),
+            any(),
+            any()
+        )).thenReturn(testData.getUpdateCaseEventResponse());
+        DocumentTypeItem docType = DocumentTypeItem.builder().id("1").value(new DocumentType()).build();
+        when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(docType);
 
         ResponseEntity<ByteArrayResource> responseEntity =
             new ResponseEntity<>(HttpStatus.OK);
@@ -351,6 +362,38 @@ class ApplicationServiceTest {
             assertThat(coreEmailDetails.respondentNames()).isEmpty();
             assertThat(coreEmailDetails.hearingDate()).isEqualTo(NOT_SET);
             assertThat(coreEmailDetails.caseId()).isEqualTo("12345");
+        }
+
+        @Test
+        void shouldFindAndUpdateCase() {
+            applicationService.updateTribunalResponseAsViewed(
+                TEST_SERVICE_AUTH_TOKEN,
+                testData.getResponseViewedRequest()
+            );
+
+            verify(caseDetailsConverter, times(1)).caseDataContent(
+                any(),
+                any()
+            );
+            verify(caseService, times(1)).submitUpdate(
+                any(),
+                any(),
+                any(),
+                any()
+            );
+        }
+
+        @Test
+        void shouldNotUpdateCaseAndThrowException() {
+            var testRequest = testData.getResponseViewedRequest();
+            testRequest.setResponseId("778");
+
+            var exception = assertThrows(IllegalArgumentException.class, () ->
+                applicationService.updateTribunalResponseAsViewed(
+                    TEST_SERVICE_AUTH_TOKEN,
+                    testData.getResponseViewedRequest()
+                ));
+            assertThat(exception.getMessage()).isEqualTo("Response id is invalid");
         }
 
         @ParameterizedTest
