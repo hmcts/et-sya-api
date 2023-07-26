@@ -31,6 +31,7 @@ import uk.gov.service.notify.NotificationClientException;
 import java.util.List;
 import java.util.UUID;
 
+import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
@@ -303,7 +304,7 @@ public class ApplicationService {
     }
 
     private JSONObject getDocumentDownload(String authorization, CaseData caseData) throws NotificationClientException {
-        List<DocumentTypeItem> tseFiles = caseData.getDocumentCollection().stream()
+        List<DocumentTypeItem> tseFiles = emptyIfNull(caseData.getDocumentCollection()).stream()
             .filter(n -> TSE_FILENAME.equals(n.getValue().getUploadedDocument().getDocumentFilename()))
             .toList();
 

@@ -52,8 +52,10 @@ public final class NotificationsHelper {
     public static String getEmailAddressForRespondent(CaseData caseData, RespondentSumType respondent) {
         RepresentedTypeR representative = getRespondentRepresentative(caseData, respondent);
         if (representative != null) {
-            String email = representative.getRepresentativeEmailAddress();
-            return isNullOrEmpty(email) ? "" : email;
+            String repEmail = representative.getRepresentativeEmailAddress();
+            if (!isNullOrEmpty(repEmail)) {
+                return repEmail;
+            }
         }
 
         return isNullOrEmpty(respondent.getRespondentEmail()) ? "" : respondent.getRespondentEmail();
