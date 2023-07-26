@@ -225,7 +225,8 @@ class AcasCaseServiceTest {
         doCallRealMethod().when(caseDocumentService).createDocumentTypeItem(
             isA(String.class), isA(UploadedDocumentType.class));
         doCallRealMethod().when(caseDocumentService).getDocumentUuid(isA(String.class));
-        when(caseDocumentService.getDocumentDetails(any(), any())).thenReturn(TestDataProvider.getDocumentDetailsFromCdam());
+        when(caseDocumentService.getDocumentDetails(any(), any()))
+            .thenReturn(TestDataProvider.getDocumentDetailsFromCdam());
         MultiValuedMap<String, CaseDocumentAcasResponse> documents = acasCaseService.retrieveAcasDocuments(caseId);
         assertNotNull(documents);
         assertThat(documents.size()).isEqualTo(5);
