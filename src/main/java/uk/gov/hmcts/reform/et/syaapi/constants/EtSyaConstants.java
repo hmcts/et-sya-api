@@ -41,14 +41,18 @@ public final class EtSyaConstants {
     public static final String WELSH_LANGUAGE = "Welsh";
     public static final String WELSH_LANGUAGE_PARAM = "/?lng=cy";
 
+    public static final String ET3_ATTACHMENT = "ET3 Attachment";
+    public static final String ET3 = "ET3";
     public static final List<String> ACAS_VISIBLE_DOCS = List.of("ET1", "ACAS Certificate", "Notice of a claim",
-                                                                 "ET3", "Claimant correspondence",
+                                                                 ET3, "Claimant correspondence",
                                                                  "Respondent correspondence", "Notice of Hearing",
                                                                  "Tribunal correspondence",
                                                                  "Tribunal Order/Deposit Order",
-                                                                 "Tribunal Judgment/Reasons", "ET1 Attachment",
-                                                                 "ET3 Attachment");
+                                                                 "Tribunal Judgment/Reasons", ET1_ATTACHMENT,
+                                                                 ET3_ATTACHMENT
+    );
 
+    public static final List<String> ET3_DOC_TYPES = List.of(ET3, ET3_ATTACHMENT);
 
 
     private EtSyaConstants() {

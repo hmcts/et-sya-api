@@ -4,16 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.MultiValuedMap;
-import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.RangeQueryBuilder;
-import org.elasticsearch.index.query.TermsQueryBuilder;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -25,14 +17,11 @@ import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
-import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
-import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
-import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
@@ -49,16 +38,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
-import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ACAS_VISIBLE_DOCS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ATTACHMENT;
@@ -89,11 +71,6 @@ public class CaseService {
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
     private final CaseOfficeService caseOfficeService;
     private static final String ALL_CASES_QUERY = "{\"size\":10000,\"query\":{\"match_all\": {}}}";
-
-    @Value("${caseWorkerUserName}")
-    private transient String caseWorkerUserName;
-    @Value("${caseWorkerPassword}")
-    private transient String caseWorkerPassword;
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
@@ -382,130 +359,6 @@ public class CaseService {
             true,
             caseDataContent
         );
-    }
-
-    /**
-     * Given a datetime, this method will return a list of caseIds which have been modified since the datetime
-     * provided.
-     *
-     * @param authorisation   used for IDAM authentication for the query
-     * @param requestDateTime used as the query parameter
-     * @return a list of caseIds
-     */
-    public List<Long> getLastModifiedCasesId(String authorisation, LocalDateTime requestDateTime) {
-        BoolQueryBuilder boolQueryBuilder = boolQuery()
-            .filter(new RangeQueryBuilder("last_modified").gte(requestDateTime));
-        String query = new SearchSourceBuilder()
-            .size(MAX_ES_SIZE)
-            .query(boolQueryBuilder)
-            .toString();
-        return searchEnglandScotlandCases(authorisation, query)
-            .stream()
-            .map(CaseDetails::getId)
-            .toList();
-    }
-
-    /**
-     * Given a caseId, return a list of document IDs which are visible to ACAS.
-     *
-     * @param caseId 16 digit CCD id
-     * @return a MultiValuedMap containing a list of document ids and timestamps
-     */
-    public MultiValuedMap<String, CaseDocumentAcasResponse> retrieveAcasDocuments(String caseId) {
-        BoolQueryBuilder boolQueryBuilder = boolQuery()
-            .filter(new TermsQueryBuilder("reference.keyword", caseId));
-        String query = new SearchSourceBuilder()
-            .size(MAX_ES_SIZE)
-            .query(boolQueryBuilder)
-            .toString();
-        return getDocumentUuids(query);
-    }
-
-    private MultiValuedMap<String, CaseDocumentAcasResponse> getDocumentUuids(String query) {
-        String authorisation = idamClient.getAccessToken(caseWorkerUserName, caseWorkerPassword);
-        List<CaseData> caseDataList = searchAndReturnCaseDataList(authorisation, query);
-
-        List<DocumentTypeItem> documentTypeItemList = new ArrayList<>();
-
-        for (CaseData caseData : caseDataList) {
-            documentTypeItemList.addAll(caseData.getDocumentCollection().stream()
-                                            .filter(d -> ACAS_VISIBLE_DOCS.contains(defaultIfEmpty(
-                                                d.getValue().getTypeOfDocument(),
-                                                ""
-                                            )))
-                                            .toList());
-
-            if (caseData.getClaimantRequests() != null
-                && caseData.getClaimantRequests().getClaimDescriptionDocument() != null) {
-                documentTypeItemList.add(caseDocumentService.createDocumentTypeItem("ET1 Attachment",
-                                                    caseData.getClaimantRequests().getClaimDescriptionDocument()
-                ));
-            }
-        }
-
-        MultiValuedMap<String, CaseDocumentAcasResponse> documentIds = new ArrayListValuedHashMap<>();
-        Pattern pattern = Pattern.compile(".{36}$");
-
-        for (DocumentTypeItem documentTypeItem : documentTypeItemList) {
-            Matcher matcher = pattern.matcher(documentTypeItem.getValue().getUploadedDocument().getDocumentUrl());
-            if (matcher.find()) {
-                CaseDocument caseDocument = caseDocumentService.getDocumentDetails(
-                    authorisation, UUID.fromString(matcher.group())).getBody();
-                if (caseDocument != null) {
-                    CaseDocumentAcasResponse caseDocumentAcasResponse = CaseDocumentAcasResponse.builder()
-                        .documentId(matcher.group())
-                        .modifiedOn(caseDocument.getModifiedOn())
-                        .build();
-                    documentIds.put(documentTypeItem.getValue().getTypeOfDocument(), caseDocumentAcasResponse);
-                }
-            }
-        }
-        return documentIds;
-    }
-
-    /**
-     * Given a list of caseIds, this method will return a list of case details.
-     *
-     * @param authorisation used for IDAM authentication for the query
-     * @param caseIds       used as the query parameter
-     * @return a list of case details
-     */
-    public List<CaseDetails> getCaseData(String authorisation, List<String> caseIds) {
-        BoolQueryBuilder boolQueryBuilder = boolQuery()
-            .filter(new TermsQueryBuilder("reference.keyword", caseIds));
-        String query = new SearchSourceBuilder()
-            .size(MAX_ES_SIZE)
-            .query(boolQueryBuilder)
-            .toString();
-
-        return searchEnglandScotlandCases(authorisation, query);
-    }
-
-    private List<CaseData> searchAndReturnCaseDataList(String authorisation, String query) {
-        List<CaseDetails> searchResults = searchEnglandScotlandCases(authorisation, query);
-        List<CaseData> caseDataList = new ArrayList<>();
-        for (CaseDetails caseDetails : searchResults) {
-            caseDataList.add(EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData()));
-        }
-        return caseDataList;
-    }
-
-    private List<CaseDetails> searchEnglandScotlandCases(String authorisation, String query) {
-        List<CaseDetails> caseDetailsList = new ArrayList<>();
-        caseDetailsList.addAll(searchCaseType(authorisation, ENGLAND_CASE_TYPE, query));
-        caseDetailsList.addAll(searchCaseType(authorisation, SCOTLAND_CASE_TYPE, query));
-        return caseDetailsList;
-    }
-
-    private List<CaseDetails> searchCaseType(String authorisation, String caseTypeId, String query) {
-        List<CaseDetails> caseDetailsList = new ArrayList<>();
-        SearchResult searchResult = ccdApiClient.searchCases(authorisation, authTokenGenerator.generate(),
-                                                             caseTypeId, query
-        );
-        if (searchResult != null && !CollectionUtils.isEmpty(searchResult.getCases())) {
-            caseDetailsList.addAll(searchResult.getCases());
-        }
-        return caseDetailsList;
     }
 
     private void enrichCaseDataWithJurisdictionCodes(CaseData caseData) {

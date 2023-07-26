@@ -467,4 +467,12 @@ class CaseDocumentServiceTest {
         assertEquals(uploadedDocumentType, createdDoc.getValue().getUploadedDocument());
     }
 
+    @Test
+    void shouldReturnUuid() {
+        UUID uuid = UUID.randomUUID();
+        String url = "http://document.url/documents/" + uuid;
+        UUID returnedValue = caseDocumentService.getDocumentUuid(url);
+        assertEquals(uuid, returnedValue);
+    }
+
 }
