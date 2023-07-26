@@ -124,7 +124,8 @@ public class AcasCaseService {
         }
     }
 
-    private boolean isCheckRespondentDoc(MultiValuedMap<String, CaseDocumentAcasResponse> documentIds, DocumentTypeItem documentTypeItem) {
+    private boolean isCheckRespondentDoc(MultiValuedMap<String, CaseDocumentAcasResponse> documentIds,
+                                         DocumentTypeItem documentTypeItem) {
         String documentUrl = documentTypeItem.getValue().getUploadedDocument().getDocumentUrl();
         UUID uuid = caseDocumentService.getDocumentUuid(documentUrl);
         if (uuid != null) {
