@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.TestDataProvider;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 import java.time.LocalDateTime;
@@ -223,8 +224,10 @@ class AcasCaseServiceTest {
         )).thenReturn(scotlandSearchResult);
         doCallRealMethod().when(caseDocumentService).createDocumentTypeItem(
             isA(String.class), isA(UploadedDocumentType.class));
+        doCallRealMethod().when(caseDocumentService).getDocumentUuid(isA(String.class));
+        when(caseDocumentService.getDocumentDetails(any(), any())).thenReturn(TestDataProvider.getDocumentDetailsFromCdam());
         MultiValuedMap<String, CaseDocumentAcasResponse> documents = acasCaseService.retrieveAcasDocuments(caseId);
         assertNotNull(documents);
-        assertThat(documents.size()).isEqualTo(6);
+        assertThat(documents.size()).isEqualTo(5);
     }
 }
