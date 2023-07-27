@@ -112,7 +112,7 @@ public class DocumentGenerationService {
         return requestWrapper;
     }
 
-    private byte[] generateDocument(TornadoRequestWrapper requestWrapper)
+    private byte[]  generateDocument(TornadoRequestWrapper requestWrapper)
         throws DocumentGenerationException {
         String body;
         try {

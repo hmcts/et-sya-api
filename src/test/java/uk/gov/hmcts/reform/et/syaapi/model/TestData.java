@@ -7,6 +7,15 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.et.syaapi.models.AdminDecisionNotificationStateUpdateRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
@@ -36,6 +45,62 @@ public final class TestData {
         "requests/submitCaseDataContent.json",
         CaseDataContent.class
     );
+
+    private final StartEventResponse updateCaseEventResponse = ResourceLoader.fromString(
+        "responses/updateCaseEventResponse.json",
+        StartEventResponse.class
+    );
+
+    private final StartEventResponse startEventResponse = ResourceLoader.fromString(
+        "responses/startEventResponse.json",
+        StartEventResponse.class
+    );
+
+    private final RespondToApplicationRequest respondToApplicationRequest = ResourceLoader.fromString(
+        "requests/respondToApplication.json",
+        RespondToApplicationRequest.class
+    );
+
+    private final CaseDetails caseDetailsWithData = ResourceLoader.fromString(
+        "responses/caseDetailsWithCaseData.json",
+        CaseDetails.class
+    );
+
+    private final CaseData caseData = ResourceLoader.fromString(
+        "requests/caseData.json",
+        CaseData.class
+    );
+
+    private final ChangeApplicationStatusRequest changeApplicationStatusRequest = ResourceLoader.fromString(
+        "requests/viewAnApplication.json",
+        ChangeApplicationStatusRequest.class
+    );
+
+    private final ClaimantApplicationRequest claimantApplicationRequest = ResourceLoader.fromString(
+        "requests/claimantTseRequest.json",
+        ClaimantApplicationRequest.class
+    );
+
+    private final SendNotificationAddResponseRequest sendNotificationAddResponseRequest = ResourceLoader.fromString(
+        "requests/SendNotificationAddResponseRequest.json",
+        SendNotificationAddResponseRequest.class
+    );
+    private final SendNotificationStateUpdateRequest sendNotificationStateUpdateRequest = ResourceLoader.fromString(
+        "requests/sendNotificationStateUpdateRequest.json",
+        SendNotificationStateUpdateRequest.class
+    );
+
+    private final AdminDecisionNotificationStateUpdateRequest adminDecisionNotificationStateUpdateRequest =
+        ResourceLoader.fromString(
+            "requests/adminNotificationUpdateRequest.json",
+            AdminDecisionNotificationStateUpdateRequest.class
+        );
+
+    private final TribunalResponseViewedRequest responseViewedRequest =
+        ResourceLoader.fromString(
+            "requests/tribunalResponseViewedRequest.json",
+            TribunalResponseViewedRequest.class
+        );
 
     public static Stream<Arguments> postcodeAddressArguments() {
         return Stream.of(
@@ -155,7 +220,6 @@ public final class TestData {
             Arguments.of(caseDataEnglishContactLanguage, TestConstants.ENGLISH_LANGUAGE)
         );
     }
-
 
     public static Stream<Arguments> generatePdfFileListForTestingHasPdfFileByGivenIndex() {
         return Stream.of(
@@ -313,6 +377,5 @@ public final class TestData {
         respondentSumTypeItem.setValue(respondentSumType);
         return respondentSumTypeItem;
     }
-
 
 }
