@@ -12,12 +12,19 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.HubLinksStatuses;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
@@ -49,6 +56,7 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SUR
     controllers = {ManageCaseController.class}
 )
 @Import(ManageCaseController.class)
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 class ManageCaseControllerTest {
 
     private static final String CASE_ID = "1646225213651590";
@@ -70,6 +78,9 @@ class ManageCaseControllerTest {
 
     @MockBean
     private VerifyTokenService verifyTokenService;
+
+    @MockBean
+    private ApplicationService applicationService;
 
     ManageCaseControllerTest() {
         // Default constructor
@@ -350,5 +361,113 @@ class ManageCaseControllerTest {
             CaseEvent.valueOf("UPDATE_CASE_SUBMITTED"),
             hubLinksStatusesRequest.getCaseTypeId(),
             expectedDetails.getData());
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldSubmitClaimantApplication() {
+        ClaimantTse claimantTse = new ClaimantTse();
+        ClaimantApplicationRequest claimantApplicationRequest = ClaimantApplicationRequest.builder()
+            .caseId(CASE_ID)
+            .caseTypeId(CASE_TYPE)
+            .claimantTse(claimantTse)
+            .build();
+
+        // when
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+
+        when(applicationService.submitApplication(any(), any())).thenReturn(expectedDetails);
+        mockMvc.perform(
+            put("/cases/submit-claimant-application", CASE_ID)
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ResourceLoader.toJson(claimantApplicationRequest))
+        ).andExpect(status().isOk());
+
+        verify(applicationService, times(1)).submitApplication(
+            TEST_SERVICE_AUTH_TOKEN,
+            claimantApplicationRequest
+        );
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldRespondToRespondentApplication() {
+        RespondToApplicationRequest caseRequest = RespondToApplicationRequest.builder()
+            .caseTypeId(CASE_TYPE)
+            .caseId(CASE_ID)
+            .applicationId("1234")
+            .response(new TseRespondType())
+            .build();
+
+        // when
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+
+        when(applicationService.submitApplication(any(), any())).thenReturn(expectedDetails);
+        mockMvc.perform(
+            put("/cases/respond-to-application", CASE_ID)
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ResourceLoader.toJson(caseRequest))
+        ).andExpect(status().isOk());
+
+        verify(applicationService, times(1)).respondToApplication(
+            TEST_SERVICE_AUTH_TOKEN,
+            caseRequest
+        );
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldChangeApplicationStatus() {
+        ChangeApplicationStatusRequest caseRequest = ChangeApplicationStatusRequest.builder()
+            .caseTypeId(CASE_TYPE)
+            .caseId(CASE_ID)
+            .applicationId("1234")
+            .newStatus("viewed")
+            .build();
+
+        // when
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+
+        when(applicationService.submitApplication(any(), any())).thenReturn(expectedDetails);
+        mockMvc.perform(
+            put("/cases/change-application-status", CASE_ID)
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ResourceLoader.toJson(caseRequest))
+        ).andExpect(status().isOk());
+
+        verify(applicationService, times(1)).changeApplicationStatus(
+            TEST_SERVICE_AUTH_TOKEN,
+            caseRequest
+        );
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldUpdateTribunalResponse() {
+        TribunalResponseViewedRequest caseRequest = TribunalResponseViewedRequest.builder()
+            .caseTypeId(CASE_TYPE)
+            .caseId(CASE_ID)
+            .appId("123")
+            .responseId("777")
+            .build();
+
+        // when
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+
+        when(applicationService.updateTribunalResponseAsViewed(any(), any())).thenReturn(expectedDetails);
+        mockMvc.perform(
+            put("/cases/tribunal-response-viewed", CASE_ID)
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ResourceLoader.toJson(caseRequest))
+        ).andExpect(status().isOk());
+
+        verify(applicationService, times(1)).updateTribunalResponseAsViewed(
+            TEST_SERVICE_AUTH_TOKEN,
+            caseRequest
+        );
     }
 }

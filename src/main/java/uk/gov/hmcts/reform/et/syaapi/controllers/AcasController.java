@@ -46,7 +46,6 @@ public class AcasController {
     @Value("${caseWorkerPassword}")
     private transient String caseWorkerPassword;
 
-
     /**
      * Given a datetime, this method will return a list of caseIds which have been modified since the datetime
      * provided.
@@ -104,14 +103,14 @@ public class AcasController {
      */
     @GetMapping("/downloadAcasDocuments")
     @Operation(summary = "Get a document from CDAM in binary format")
-    @ApiResponses(
-        {@ApiResponse(
+    @ApiResponses({
+        @ApiResponse(
             responseCode = "200",
             description = "OK"),
-            @ApiResponse(
-                responseCode = "404",
-                description = "Case document not found")
-        })
+        @ApiResponse(
+            responseCode = "404",
+            description = "Case document not found")
+    })
     public ResponseEntity<ByteArrayResource> getDocumentBinaryContent(
         @RequestParam(name = "documentId") final UUID documentId,
         @RequestHeader(AUTHORIZATION) String authToken) {

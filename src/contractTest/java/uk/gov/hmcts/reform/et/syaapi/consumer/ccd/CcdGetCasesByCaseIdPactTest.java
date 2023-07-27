@@ -7,7 +7,7 @@ import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.et.syaapi.consumer.SpringBootContractBaseTest;
+import uk.gov.hmcts.reform.et.syaapi.consumer.SpringBootContractTestBase;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;

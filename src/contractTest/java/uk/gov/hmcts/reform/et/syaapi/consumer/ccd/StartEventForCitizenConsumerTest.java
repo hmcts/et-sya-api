@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
-import uk.gov.hmcts.reform.et.syaapi.consumer.SpringBootContractBaseTest;
+import uk.gov.hmcts.reform.et.syaapi.consumer.SpringBootContractTestBase;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.http.HttpMethod.GET;
 
 
-class StartEventForCitizenConsumerTest extends SpringBootContractBaseTest {
+class StartEventForCitizenConsumerTest extends SpringBootContractTestBase {
 
     @Pact(provider = "ccd_data_store_api_cases", consumer = "et_sya_api_service")
     RequestResponsePact startEventForCitizen(PactDslWithProvider builder) {
