@@ -15,8 +15,8 @@ withPipeline(type, product, component) {
   enableSlackNotifications('#et-builds')
 
   before('smoketest:preview') {
-    env.IDAM_URL = "https://idam-api.demo.platform.hmcts.net"
-    env.SYA_API_TEST_URL = "http://et-sya-api-demo.service.core-compute-demo.internal"
+    env.IDAM_URL = "https://idam-api.aat.platform.hmcts.net"
+    env.SYA_API_TEST_URL = "http://et-sya-api-aat.service.core-compute-aat.internal"
   }
 
   before('functionalTest:preview') {
