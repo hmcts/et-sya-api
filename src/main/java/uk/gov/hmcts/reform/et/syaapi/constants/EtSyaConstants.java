@@ -55,13 +55,10 @@ public final class EtSyaConstants {
 
     public static final String ET3_ATTACHMENT = "ET3 Attachment";
     public static final String ET3 = "ET3";
-    public static final List<String> ACAS_VISIBLE_DOCS = List.of("ET1", "ACAS Certificate", "Notice of a claim",
-                                                                 ET3, "Claimant correspondence",
-
     public static final String ET1_ONLINE_SUBMISSION = "et1OnlineSubmission";
 
     public static final List<String> ACAS_VISIBLE_DOCS = List.of("ET1", "ACAS Certificate", "Notice of a claim",
-                                                                 "ET3", CLAIMANT_CORRESPONDENCE_DOCUMENT,
+                                                                 ET3, CLAIMANT_CORRESPONDENCE_DOCUMENT,
                                                                  "Respondent correspondence", "Notice of Hearing",
                                                                  "Tribunal correspondence",
                                                                  "Tribunal Order/Deposit Order",
