@@ -48,7 +48,7 @@ public class ManageCaseController {
     /**
      * Accepts parameter of type {@link CaseRequest} and returns the case specified in 'getCaseId'.
      *
-     * @param authorization Json web token - allows user to access resources permitted with the token
+     * @param authorization jwt of the user
      * @param caseRequest   search query for the requested case
      * @return the requested case wrapped in a {@link CaseDetails} object
      */
