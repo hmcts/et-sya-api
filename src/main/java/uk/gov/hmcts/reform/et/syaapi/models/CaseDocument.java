@@ -41,7 +41,7 @@ public class CaseDocument {
     Map<String, Map<String, String>> links;
 
     /**
-     * Retrives the link for the document that has been uploaded to dm-store.
+     * Retrieves the link for the document that has been uploaded to dm-store.
      * @return a link to the document uploaded wrapped within a URI object
      */
     public URI getUri() {

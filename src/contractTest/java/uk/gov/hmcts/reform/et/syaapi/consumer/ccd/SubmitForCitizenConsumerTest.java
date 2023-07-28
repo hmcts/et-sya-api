@@ -12,13 +12,13 @@ import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
-import uk.gov.hmcts.reform.et.syaapi.consumer.SpringBootContractBaseTest;
+import uk.gov.hmcts.reform.et.syaapi.consumer.SpringBootContractTestBase;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.http.HttpMethod.POST;
 
-class SubmitForCitizenConsumerTest extends SpringBootContractBaseTest {
+class SubmitForCitizenConsumerTest extends SpringBootContractTestBase {
 
     @Pact(provider = "ccd_data_store_api_cases", consumer = "et_sya_api_service")
     RequestResponsePact submitForCitizen(PactDslWithProvider builder) {

@@ -13,4 +13,34 @@ withPipeline(type, product, component) {
   enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
   syncBranchesWithMaster(branchesToSync)
   enableSlackNotifications('#et-builds')
+
+  before('smoketest:preview') {
+    env.IDAM_URL = "https://idam-api.aat.platform.hmcts.net"
+    env.SYA_API_TEST_URL = "http://et-sya-api-aat.service.core-compute-aat.internal"
+  }
+
+  before('functionalTest:preview') {
+    env.MAX_FT_TESTS_PARALLEL_FORKS = 5
+    env.ENABLE_TEST_USER_DELETION = true
+  }
+
+  afterAlways('functionalTest:preview') {
+    steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/reports/tests/functional/**/*'
+  }
+
+  before('smoketest:aat') {
+    env.IDAM_URL = "https://idam-api.aat.platform.hmcts.net"
+    env.SYA_API_TEST_URL = "https://et-sya-api-staging.aat.platform.hmcts.net/"
+  }
+
+  before('functionalTest:aat') {
+    env.INITIATION_JOB_RUNNING = false
+    env.MAX_FT_TESTS_PARALLEL_FORKS = 5
+    env.ENABLE_TEST_USER_DELETION = true
+  }
+
+  afterAlways('functionalTest:aat') {
+    steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/reports/tests/functional/**/*'
+  }
+
 }
