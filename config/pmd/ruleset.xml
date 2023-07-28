@@ -11,6 +11,7 @@
     <exclude name="JUnitTestContainsTooManyAsserts"/>
     <exclude name="JUnitAssertionsShouldIncludeMessage"/>
     <exclude name="JUnitTestsShouldIncludeAssert"/>
+    <exclude name="UnusedPrivateMethod"/>
   </rule>
   <rule ref="category/java/codestyle.xml">
     <exclude name="AtLeastOneConstructor"/>
@@ -54,7 +55,7 @@
   </rule>
   <rule ref="category/java/design.xml/LawOfDemeter">
     <properties>
-      <property name="violationSuppressRegex" value="(.*method chain calls.*|.*object not created locally.*)"/>
+      <property name="violationSuppressRegex" value="(.*method chain calls.*|.*object not created locally.*|.*static property access.*)"/>
     </properties>
   </rule>
   <rule ref="category/java/design.xml/SignatureDeclareThrowsException">
@@ -67,8 +68,10 @@
     <exclude name="CommentSize"/>
     <exclude name="UncommentedEmptyMethodBody"/>
   </rule>
-  <rule ref="category/java/errorprone.xml">
-    <exclude name="BeanMembersShouldSerialize"/>
+  <rule ref="category/java/errorprone.xml/AvoidDuplicateLiterals">
+    <properties>
+      <property name="violationSuppressRegex" value=".*%s(\s+%s)+.*"/>
+    </properties>
   </rule>
   <rule ref="category/java/multithreading.xml"/>
   <rule ref="category/java/performance.xml"/>

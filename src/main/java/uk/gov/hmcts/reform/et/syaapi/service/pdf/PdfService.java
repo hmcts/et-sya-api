@@ -13,7 +13,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
+import uk.gov.hmcts.reform.et.syaapi.models.ClaimantResponseCya;
+import uk.gov.hmcts.reform.et.syaapi.models.GenericTseApplication;
+import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationException;
+import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationService;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
@@ -27,6 +35,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 
@@ -36,14 +45,22 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGU
 @Slf4j
 @Service
 @RequiredArgsConstructor()
+@SuppressWarnings({"PMD.TooManyMethods"})
 public class PdfService {
 
     private final PdfMapperService pdfMapperService;
+    private final DocumentGenerationService documentGenerationService;
     @Value("${pdf.english}")
     public String englishPdfTemplateSource;
     @Value("${pdf.welsh}")
     public String welshPdfTemplateSource;
+    @Value("${pdf.contact_tribunal_template}")
+    public String contactTheTribunalPdfTemplate;
+    @Value("${pdf.claimant_response_template}")
+    public String claimantResponsePdfTemplate;
 
+    private static final String TSE_FILENAME = "Contact the tribunal.pdf";
+    private static final String CLAIMANT_RESPONSE = "ClaimantResponse.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private static final String NOT_FOUND = "not found";
 
@@ -254,5 +271,81 @@ public class PdfService {
             }
         }
         return pdfDecodedMultipartFiles;
+    }
+
+    /**
+     * Converts a given object of type {@link ClaimantTse} to a {@link PdfDecodedMultipartFile}.
+     * Firstly by converting to a pdf byte array and then wrapping within the return object.
+     *
+     * @param claimantTse {@link CaseData} object that contains the {@link ClaimantTse} object to be converted.
+     * @return {@link PdfDecodedMultipartFile} with the claimant tse CYA page in pdf format.
+     * @throws DocumentGenerationException if there is an error generating the PDF.
+     */
+    public PdfDecodedMultipartFile convertClaimantTseIntoMultipartFile(ClaimantTse claimantTse)
+        throws DocumentGenerationException {
+        return new PdfDecodedMultipartFile(
+            convertClaimantTseToPdf(claimantTse),
+            TSE_FILENAME,
+            PDF_FILE_TIKA_CONTENT_TYPE,
+            APP_TYPE_MAP.get(claimantTse.getContactApplicationType())
+        );
+    }
+
+    /**
+     * Converts a given object of type {@link RespondToApplicationRequest} to a {@link PdfDecodedMultipartFile}.
+     * Firstly by converting to a pdf byte array and then wrapping within the return object.
+     *
+     * @param request {@link RespondToApplicationRequest} object that contains the data to be converted
+     * @return {@link PdfDecodedMultipartFile} with the claimant response CYA page in pdf format.
+     * @throws DocumentGenerationException if there is an error generating the PDF.
+     */
+    public PdfDecodedMultipartFile convertClaimantResponseIntoMultipartFile(RespondToApplicationRequest request,
+                                                                            String description)
+        throws DocumentGenerationException {
+        return new PdfDecodedMultipartFile(
+            convertClaimantResponseToPdf(request),
+            CLAIMANT_RESPONSE,
+            PDF_FILE_TIKA_CONTENT_TYPE,
+            description
+        );
+    }
+
+    private byte[] convertClaimantResponseToPdf(RespondToApplicationRequest request)
+        throws DocumentGenerationException {
+        TseRespondType claimantResponse = request.getResponse();
+        String fileName = claimantResponse.getSupportingMaterial() != null
+            ? request.getSupportingMaterialFile().getDocumentFilename() : null;
+        ClaimantResponseCya claimantResponseCya = ClaimantResponseCya.builder()
+            .response(claimantResponse.getResponse())
+            .fileName(fileName)
+            .copyToOtherPartyYesOrNo(claimantResponse.getCopyToOtherParty())
+            .build();
+
+        return documentGenerationService.genPdfDocument(
+            claimantResponsePdfTemplate,
+            CLAIMANT_RESPONSE,
+            claimantResponseCya
+        );
+    }
+
+    private byte[] convertClaimantTseToPdf(ClaimantTse claimantTse) throws DocumentGenerationException {
+        UploadedDocumentType contactApplicationFile = claimantTse.getContactApplicationFile();
+        String supportingEvidence = contactApplicationFile == null
+            ? null
+            : contactApplicationFile.getDocumentFilename();
+
+        GenericTseApplication genericTseApplication = GenericTseApplication.builder()
+            .applicationType(claimantTse.getContactApplicationType())
+            .tellOrAskTribunal(claimantTse.getContactApplicationText())
+            .supportingEvidence(supportingEvidence)
+            .copyToOtherPartyYesOrNo(claimantTse.getCopyToOtherPartyYesOrNo())
+            .copyToOtherPartyText(claimantTse.getCopyToOtherPartyText())
+            .build();
+
+        return documentGenerationService.genPdfDocument(
+            contactTheTribunalPdfTemplate,
+            TSE_FILENAME,
+            genericTseApplication
+        );
     }
 }

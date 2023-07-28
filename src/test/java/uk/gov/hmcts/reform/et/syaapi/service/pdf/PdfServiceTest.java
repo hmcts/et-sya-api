@@ -23,8 +23,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.test.util.ReflectionTestUtils;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
+import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationException;
+import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationService;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
@@ -48,7 +51,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGU
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-@SuppressWarnings({"PMD.CloseResource"})
+@SuppressWarnings({"PMD.CloseResource", "PMD.ExcessiveImports"})
 class PdfServiceTest {
     private static final Map<String, Optional<String>> PDF_VALUES = Map.of(
         PdfMapperConstants.TRIBUNAL_OFFICE, Optional.of("Manchester"),
@@ -75,6 +78,8 @@ class PdfServiceTest {
 
     @Mock
     private PdfMapperService pdfMapperService;
+    @Mock
+    private DocumentGenerationService documentGenerationService;
     @InjectMocks
     private PdfService pdfService;
 
@@ -131,6 +136,35 @@ class PdfServiceTest {
     }
 
     @SneakyThrows
+    @Test
+    void shouldCreateEnglishPdfFile() {
+        PdfService pdfService1 = new PdfService(new PdfMapperService(), documentGenerationService);
+        pdfService1.englishPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH;
+        byte[] pdfData = pdfService1.createPdf(caseTestData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH);
+        assertThat(pdfData).isNotEmpty();
+        assertThat(new Tika().detect(pdfData)).isEqualTo(PDF_FILE_TIKA_CONTENT_TYPE);
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldNotCreateEnglishPdfFileWhenEnglishPdfTemplateIsNull() {
+        PdfService pdfService1 = new PdfService(new PdfMapperService(), documentGenerationService);
+        byte[] pdfData = pdfService1.createPdf(caseTestData.getCaseData(), null);
+        assertThat(pdfData).isEmpty();
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldNotCreateEnglishPdfFileWhenEnglishPdfTemplateNotExists() {
+        PdfService pdfService1 = new PdfService(new PdfMapperService(), documentGenerationService);
+        pdfService1.englishPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH_NOT_EXISTS;
+        byte[] pdfData = pdfService1.createPdf(caseTestData.getCaseData(), null);
+        assertThat(pdfData).isEmpty();
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldThrowExceptionWhenPdfTemplateIsNotValid() {
     @ParameterizedTest
     @CsvSource({
         ENGLISH_LANGUAGE + "," + PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH,
@@ -177,6 +211,64 @@ class PdfServiceTest {
                 );
             }
         }
+            mockedServiceUtil.when(() -> GenericServiceUtil.findClaimantLanguage(caseTestData.getCaseData()))
+                .thenReturn(ENGLISH_LANGUAGE);
+            PdfService pdfService1 = new PdfService(new PdfMapperService(), documentGenerationService);
+            pdfService1.createPdf(caseTestData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH_INVALID);
+            mockedServiceUtil.verify(
+                () -> GenericServiceUtil.logException(anyString(), anyString(), anyString(), anyString(), anyString()),
+                atLeast(1)
+            );
+        }
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldCreateWelshPdfFile() {
+        caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
+        PdfService pdfService1 = new PdfService(new PdfMapperService(), documentGenerationService);
+        pdfService1.welshPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH;
+        byte[] pdfData = pdfService1.createPdf(caseTestData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH);
+        assertThat(pdfData).isNotEmpty();
+        assertThat(new Tika().detect(pdfData)).isEqualTo(PDF_FILE_TIKA_CONTENT_TYPE);
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldNotCreateWelshPdfFileWhenWelshPdfTemplateIsNull() {
+        caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
+        PdfService pdfService1 = new PdfService(new PdfMapperService(), documentGenerationService);
+        byte[] pdfData = pdfService1.createPdf(caseTestData.getCaseData(), null);
+        assertThat(pdfData).isEmpty();
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldNotCreateWelshPdfFileWhenWelshPdfTemplateNotExists() {
+        caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
+        PdfService pdfService1 = new PdfService(new PdfMapperService(), documentGenerationService);
+        pdfService1.welshPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH_NOT_EXISTS;
+        byte[] pdfData = pdfService1.createPdf(
+            caseTestData.getCaseData(),
+            PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH_NOT_EXISTS);
+        assertThat(pdfData).isEmpty();
+    }
+
+    @Test
+    void shouldCreatePdfDecodedMultipartFileListFromCaseDataWhenUserInfoIsNull() {
+        List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseTestData.getCaseData(), null);
+        assertThat(pdfDecodedMultipartFileList).hasSize(1);
+    }
+
+    @Test
+    void shouldCreatePdfDecodedMultipartFileListWhenUserInfoIsNotNull() {
+        caseTestData.getCaseData().getClaimantIndType().setClaimantFirstNames(null);
+        caseTestData.getCaseData().getClaimantIndType().setClaimantLastName(null);
+        UserInfo userInfo = caseTestData.getUserInfo();
+        List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseTestData.getCaseData(), userInfo);
+        assertThat(pdfDecodedMultipartFileList).hasSize(1);
     }
 
     @ParameterizedTest
@@ -195,9 +287,17 @@ class PdfServiceTest {
     }
 
     @Test
+    void shouldCreateEnglishAndWelshPdfDecodedMultipartFileFromCaseDataWhenUserContactLanguageIsWelsh() {
+        caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
+        List<PdfDecodedMultipartFile> pdfDecodedMultipartFileList =
+            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseTestData.getCaseData(), null);
+        assertThat(pdfDecodedMultipartFileList).hasSize(2);
+    }
+
+    @Test
     void shouldNotCreatePdfDecodedMultipartFileFromCaseDataWhenBothWelshAndEnglishTemplateSourcesNotExist() {
         caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
-        PdfService pdfService1 = new PdfService(new PdfMapperService());
+        PdfService pdfService1 = new PdfService(new PdfMapperService(), documentGenerationService);
         pdfService1.welshPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH_NOT_EXISTS;
         pdfService1.englishPdfTemplateSource = PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH_NOT_EXISTS;
         try (MockedStatic<GenericServiceUtil> mockedServiceUtil = Mockito.mockStatic(GenericServiceUtil.class)) {
@@ -220,6 +320,39 @@ class PdfServiceTest {
         List<PdfDecodedMultipartFile> pdfDecodedMultipartFiles =
             pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(caseTestData.getCaseData(), acasCertificates);
         assertThat(pdfDecodedMultipartFiles).hasSize(1);
+    }
+
+    @Test
+    void shouldCreatePdfDecodedMultipartFileFromTseApplication() throws DocumentGenerationException {
+        caseTestData.getCaseData().setClaimantTse(new ClaimantTse());
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            pdfService.convertClaimantTseIntoMultipartFile(caseTestData.getClaimantTse());
+        assertThat(pdfDecodedMultipartFile).isNotNull();
+    }
+
+    @Test
+    void shouldCreatePdfDecodedMultipartFileFromTseApplicationNoSupportingFile() throws DocumentGenerationException {
+        caseTestData.getClaimantTse().setContactApplicationFile(null);
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            pdfService.convertClaimantTseIntoMultipartFile(caseTestData.getClaimantTse());
+        assertThat(pdfDecodedMultipartFile).isNotNull();
+    }
+
+    @Test
+    void shouldCreatePdfDecodedMultipartFileFromClaimantResponse() throws DocumentGenerationException {
+        var request = caseTestData.getRespondToApplicationRequest();
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            pdfService.convertClaimantResponseIntoMultipartFile(request, "Response to app");
+        assertThat(pdfDecodedMultipartFile).isNotNull();
+    }
+
+    @Test
+    void shouldCreatePdfDecodedMultipartFileFromClaimantResponseNoSupportingFile() throws DocumentGenerationException {
+        var request = caseTestData.getRespondToApplicationRequest();
+        request.getResponse().setHasSupportingMaterial("No");
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            pdfService.convertClaimantResponseIntoMultipartFile(request, "Response to app");
+        assertThat(pdfDecodedMultipartFile).isNotNull();
     }
 
     @Test

@@ -11,7 +11,7 @@ import java.io.File;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-class DocumentControllerFunctionalTest extends BaseFunctionalTest {
+class DocumentControllerFunctionalTest extends FunctionalTestBase {
     private static final String CASE_TYPE = "ET_EnglandWales";
     private static final String AUTHORIZATION = "Authorization";
     private static final File UPLOAD_TEST_FILE = new File("src/functionalTest/resources/uploads/zipcode.txt");

@@ -8,7 +8,9 @@ import uk.gov.service.notify.SendEmailResponse;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
+@SuppressWarnings("PMD.TestClassWithoutTestCases")
 public final class TestConstants {
 
     public static final String TEST_SERVICE_AUTH_TOKEN = "Bearer TestServiceAuth";
@@ -25,6 +27,7 @@ public final class TestConstants {
     public static final String TYPE_OF_CLAIM_UNFAIR_DISMISSAL = "unfairDismissal";
     public static final String TYPE_OF_CLAIM_WHISTLE_BLOWING = "whistleBlowing";
     public static final String USER_ID = "TEST_USER_ID";
+    public static final UUID NOTIFICATION_CONFIRMATION_ID = UUID.fromString("f30b2148-b1a6-4c0d-8a10-50109c96dc2c");
     public static final String DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID = "3007a1e9-13b0-4bf9-9753-398ea91b8564";
     public static final String TEST_FIRST_NAME = "Joe";
     public static final String TEST_SURNAME = "Bloggs";
