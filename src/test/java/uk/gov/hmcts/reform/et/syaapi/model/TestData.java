@@ -2,7 +2,10 @@ package uk.gov.hmcts.reform.et.syaapi.model;
 
 import lombok.Data;
 import org.junit.jupiter.params.provider.Arguments;
+import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
@@ -18,11 +21,23 @@ import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.data.TestDataProvider;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.MULTIPLE_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_ACAS;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_COMPANY_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TRUE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_ADDRESS_LINE_1;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_ADDRESS_LINE_2;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_ADDRESS_LINE_3;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_COUNTRY;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_COUNTY;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_POSTCODE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_POST_TOWN;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.YES;
 
 @Data
 public final class TestData {

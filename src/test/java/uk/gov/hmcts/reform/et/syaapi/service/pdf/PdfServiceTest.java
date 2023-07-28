@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationService;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,7 +52,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGU
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-@SuppressWarnings({"PMD.CloseResource", "PMD.ExcessiveImports"})
+@SuppressWarnings({"PMD.CloseResource", "PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.CyclomaticComplexity"})
 class PdfServiceTest {
     private static final Map<String, Optional<String>> PDF_VALUES = Map.of(
         PdfMapperConstants.TRIBUNAL_OFFICE, Optional.of("Manchester"),
@@ -162,9 +163,6 @@ class PdfServiceTest {
         assertThat(pdfData).isEmpty();
     }
 
-    @SneakyThrows
-    @Test
-    void shouldThrowExceptionWhenPdfTemplateIsNotValid() {
     @ParameterizedTest
     @CsvSource({
         ENGLISH_LANGUAGE + "," + PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH,
@@ -187,7 +185,7 @@ class PdfServiceTest {
                 mockedServiceUtil.when(() -> GenericServiceUtil.findClaimantLanguage(caseTestData.getCaseData()))
                     .thenReturn(WELSH_LANGUAGE);
             }
-            PdfService pdfService1 = new PdfService(new PdfMapperService());
+            PdfService pdfService1 = new PdfService(new PdfMapperService(), documentGenerationService);
             byte[] pdfData = pdfService1.createPdf(caseTestData.getCaseData(), templateSource);
             if (PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH.equals(templateSource)
                 || PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH.equals(templateSource)) {
@@ -210,15 +208,8 @@ class PdfServiceTest {
                     atLeast(1)
                 );
             }
-        }
-            mockedServiceUtil.when(() -> GenericServiceUtil.findClaimantLanguage(caseTestData.getCaseData()))
-                .thenReturn(ENGLISH_LANGUAGE);
-            PdfService pdfService1 = new PdfService(new PdfMapperService(), documentGenerationService);
-            pdfService1.createPdf(caseTestData.getCaseData(), PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH_INVALID);
-            mockedServiceUtil.verify(
-                () -> GenericServiceUtil.logException(anyString(), anyString(), anyString(), anyString(), anyString()),
-                atLeast(1)
-            );
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
