@@ -13,13 +13,15 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -34,6 +36,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
@@ -56,15 +59,19 @@ import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
+import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ACAS_VISIBLE_DOCS;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ATTACHMENT;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ONLINE_SUBMISSION;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.INITIATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
@@ -78,6 +85,7 @@ import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTE
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 public class CaseService {
 
+    public static final String DOCUMENT_COLLECTION = "documentCollection";
     private final AuthTokenGenerator authTokenGenerator;
     private final CoreCaseDataApi ccdApiClient;
     private final IdamClient idamClient;
@@ -232,7 +240,10 @@ public class CaseService {
                                                                  acasCertificates);
         // Setting caliamantPCqId and documentCollection to case details
         caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
-        caseDetails.getData().put("documentCollection", documentList);
+        caseDetails.getData().put(DOCUMENT_COLLECTION, documentList);
+        // For determining the case is submitted via ET1
+        caseDetails.getData().put(ET1_ONLINE_SUBMISSION, YES);
+
         // Updating case with ClaimantPcqId and Document collection
         triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
                      caseDetails.getData()
@@ -303,7 +314,7 @@ public class CaseService {
         return submitUpdate(
             authorization,
             caseId,
-            caseDetailsConverter.caseDataContent(startEventResponse, caseData1),
+            caseDetailsConverter.et1ToCaseDataContent(startEventResponse, caseData1),
             caseType
         );
     }
@@ -317,7 +328,8 @@ public class CaseService {
      */
     public CaseDetails triggerEventForSubmitCase(String authorization, CaseRequest caseRequest) {
         StartEventResponse startEventResponse = startUpdate(authorization, caseRequest.getCaseId(),
-                                                            caseRequest.getCaseTypeId(), SUBMIT_CASE_DRAFT);
+                                                            caseRequest.getCaseTypeId(), SUBMIT_CASE_DRAFT
+        );
         CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(
             startEventResponse.getCaseDetails().getData());
         enrichCaseDataWithJurisdictionCodes(caseData1);
@@ -502,7 +514,7 @@ public class CaseService {
         SearchResult searchResult = ccdApiClient.searchCases(authorisation, authTokenGenerator.generate(),
                                                              caseTypeId, query
         );
-        if (searchResult != null && !CollectionUtils.isEmpty(searchResult.getCases())) {
+        if (searchResult != null && !isEmpty(searchResult.getCases())) {
             caseDetailsList.addAll(searchResult.getCases());
         }
         return caseDetailsList;
@@ -513,4 +525,71 @@ public class CaseService {
         caseData.setJurCodesCollection(jurCodesTypeItems);
     }
 
+    void uploadTseSupportingDocument(CaseDetails caseDetails, UploadedDocumentType contactApplicationFile,
+                                     String description) {
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        List<DocumentTypeItem> docList = caseData.getDocumentCollection();
+
+        if (docList == null) {
+            docList = new ArrayList<>();
+        }
+
+        DocumentType documentType = new DocumentType();
+        documentType.setTypeOfDocument(CLAIMANT_CORRESPONDENCE_DOCUMENT);
+        documentType.setUploadedDocument(contactApplicationFile);
+        documentType.setShortDescription(description);
+
+        docList.add(DocumentTypeItem.builder()
+                        .id(UUID.randomUUID().toString())
+                        .value(documentType)
+                        .build());
+        caseDetails.getData().put(DOCUMENT_COLLECTION, docList);
+    }
+
+    void uploadTseCyaAsPdf(
+        String authorization,
+        CaseDetails caseDetails,
+        ClaimantTse claimantTse,
+        String caseType
+    ) throws DocumentGenerationException, CaseDocumentException {
+
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        List<DocumentTypeItem> docList = caseData.getDocumentCollection();
+
+        if (docList == null) {
+            docList = new ArrayList<>();
+        }
+        PdfDecodedMultipartFile pdfDecodedMultipartFile = pdfService.convertClaimantTseIntoMultipartFile(claimantTse);
+        docList.add(caseDocumentService.createDocumentTypeItem(
+            authorization,
+            caseType,
+            CLAIMANT_CORRESPONDENCE_DOCUMENT,
+            pdfDecodedMultipartFile
+        ));
+
+        caseDetails.getData().put(DOCUMENT_COLLECTION, docList);
+    }
+
+    void createResponsePdf(String authorization,
+                           CaseData caseData,
+                           RespondToApplicationRequest request,
+                           String appType)
+        throws DocumentGenerationException, CaseDocumentException {
+        String description = "Response to " + appType;
+        PdfDecodedMultipartFile multipartResponsePdf =
+            pdfService.convertClaimantResponseIntoMultipartFile(request, description);
+
+        var responsePdf = caseDocumentService.createDocumentTypeItem(
+            authorization,
+            request.getCaseTypeId(),
+            CLAIMANT_CORRESPONDENCE_DOCUMENT,
+            multipartResponsePdf
+        );
+
+        if (isEmpty(caseData.getDocumentCollection())) {
+            caseData.setDocumentCollection(new ArrayList<>());
+        }
+        var docCollection = caseData.getDocumentCollection();
+        docCollection.add(responsePdf);
+    }
 }

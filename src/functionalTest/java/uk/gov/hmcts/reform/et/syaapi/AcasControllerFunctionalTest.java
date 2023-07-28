@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-class AcasControllerFunctionalTest extends BaseFunctionalTest {
+class AcasControllerFunctionalTest extends FunctionalTestBase {
     private static final String AUTHORIZATION = "Authorization";
 
     @Test

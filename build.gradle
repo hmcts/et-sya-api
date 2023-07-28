@@ -205,10 +205,11 @@ ext {
 }
 
 dependencies {
+
   implementation('com.github.hmcts:et-common:1.16.1') { transitive = false }
   implementation group: 'uk.gov.dwp.regex', name: 'postcode-validation', version: '1.1.0'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
-  implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.0.3', {
+  implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '3.1.6', {
     exclude group: 'commons-io', module: 'commons-io'
   }
 
@@ -225,10 +226,10 @@ dependencies {
   implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.7.0'
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '5.1.9'
-  implementation group: 'com.github.hmcts', name: 'et-data-model', version: '2.2.13'
+  implementation group: 'com.github.hmcts', name: 'et-data-model', version: '2.3.2'
   implementation group: 'com.github.hmcts', name: 'ccd-client', version: '4.9.2'
-  implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.1'
-  implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.1.0'
+  implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '2.1.1'
+  implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '4.1.2'
 
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '4.1.0-RELEASE'
   implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.5'
@@ -315,7 +316,7 @@ wrapper {
   distributionType = Wrapper.DistributionType.ALL
 }
 
-task runAndPublishConsumerPactTests(type: Test){
+task runAndPublishConsumerPactTests(type: Test) {
   logger.lifecycle("Runs pact Tests")
   testClassesDirs = sourceSets.contractTest.output.classesDirs
   classpath = sourceSets.contractTest.runtimeClasspath
@@ -329,11 +330,11 @@ project.ext {
   pactVersion = getCheckedOutGitCommitHash()
 }
 
-task fortifyScan(type: JavaExec)  {
-    // main = "uk.gov.hmcts.fortifyclient.FortifyClientMainApp"
-    mainClass.set("uk.gov.hmcts.fortifyclient.FortifyClientMainApp")
-    classpath += sourceSets.test.runtimeClasspath
-    jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
+task fortifyScan(type: JavaExec) {
+  // main = "uk.gov.hmcts.fortifyclient.FortifyClientMainApp"
+  mainClass.set("uk.gov.hmcts.fortifyclient.FortifyClientMainApp")
+  classpath += sourceSets.test.runtimeClasspath
+  jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
 }
 
 pact {
