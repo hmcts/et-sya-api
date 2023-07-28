@@ -27,7 +27,7 @@ import static io.restassured.RestAssured.useRelaxedHTTPSValidation;
 @SpringBootTest(classes = {SyaApiApplication.class})
 @Slf4j
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class BaseFunctionalTest {
+public class FunctionalTestBase {
     protected String userToken;
     protected CloseableHttpClient client;
     protected IdamTestApiRequests idamTestApiRequests;

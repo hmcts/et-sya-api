@@ -44,7 +44,6 @@ public class AcasController {
     @Value("${caseWorkerPassword}")
     private String caseWorkerPassword;
 
-
     /**
      * Given a datetime, this method will return a list of caseIds which have been modified since the datetime
      * provided.

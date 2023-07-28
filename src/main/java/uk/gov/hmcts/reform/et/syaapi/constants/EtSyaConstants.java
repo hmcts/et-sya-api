@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.et.syaapi.constants;
 import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 
 import java.util.List;
+
 /**
  * Defines attributes used by et-sya-api as constants.
  */
@@ -26,18 +27,29 @@ public final class EtSyaConstants {
     public static final String SEND_EMAIL_PARAMS_ACAS_PDF3_LINK_KEY = "link_to_acas_cert_pdf_file_3";
     public static final String SEND_EMAIL_PARAMS_ACAS_PDF4_LINK_KEY = "link_to_acas_cert_pdf_file_4";
     public static final String SEND_EMAIL_PARAMS_ACAS_PDF5_LINK_KEY = "link_to_acas_cert_pdf_file_5";
+    public static final String SEND_EMAIL_PARAMS_CASE_ID = "caseId";
     public static final String SEND_EMAIL_PARAMS_CASE_NUMBER_KEY = "caseNumber";
     public static final String SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY = "citizenPortalLink";
+    public static final String SEND_EMAIL_PARAMS_EXUI_LINK_KEY = "exuiCaseDetailsLink";
     public static final String SEND_EMAIL_PARAMS_CLAIM_DESCRIPTION_FILE_LINK_KEY = "link_to_claim_description_file";
     public static final String SEND_EMAIL_PARAMS_ET1PDF_ENGLISH_LINK_KEY = "link_to_et1_pdf_file_en";
     public static final String SEND_EMAIL_PARAMS_ET1PDF_LINK_KEY = "link_to_et1_pdf_file";
     public static final String SEND_EMAIL_PARAMS_ET1PDF_WELSH_LINK_KEY = "link_to_et1_pdf_file_cy";
+    public static final String SEND_EMAIL_PARAMS_SUBJECTLINE_KEY = "subjectLine";
     public static final String SEND_EMAIL_PARAMS_FIRSTNAME_KEY = "firstName";
     public static final String SEND_EMAIL_PARAMS_LASTNAME_KEY = "lastName";
+    public static final String SEND_EMAIL_PARAMS_HEARING_DATE_KEY = "hearingDate";
+    public static final String SEND_EMAIL_PARAMS_SHORTTEXT_KEY = "shortText";
+    public static final String SEND_EMAIL_PARAMS_DATEPLUS7_KEY = "datePlus7";
+    public static final String SEND_EMAIL_PARAMS_LINK_DOC_KEY = "linkToDocument";
     public static final String SEND_EMAIL_SERVICE_OWNER_NAME_KEY = "serviceOwnerName";
     public static final String SEND_EMAIL_SERVICE_OWNER_NAME_VALUE = "Service Owner";
     public static final String SCOTLAND_CASE_TYPE = "ET_Scotland";
     public static final String UNASSIGNED_OFFICE = "Unassigned";
+
+    public static final String CLAIMANT_CORRESPONDENCE_DOCUMENT = "Claimant correspondence";
+    public static final String YES = "Yes";
+
     public static final String WELSH_LANGUAGE = "Welsh";
     public static final String WELSH_LANGUAGE_PARAM = "/?lng=cy";
 
@@ -45,6 +57,11 @@ public final class EtSyaConstants {
     public static final String ET3 = "ET3";
     public static final List<String> ACAS_VISIBLE_DOCS = List.of("ET1", "ACAS Certificate", "Notice of a claim",
                                                                  ET3, "Claimant correspondence",
+
+    public static final String ET1_ONLINE_SUBMISSION = "et1OnlineSubmission";
+
+    public static final List<String> ACAS_VISIBLE_DOCS = List.of("ET1", "ACAS Certificate", "Notice of a claim",
+                                                                 "ET3", CLAIMANT_CORRESPONDENCE_DOCUMENT,
                                                                  "Respondent correspondence", "Notice of Hearing",
                                                                  "Tribunal correspondence",
                                                                  "Tribunal Order/Deposit Order",

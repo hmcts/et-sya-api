@@ -338,7 +338,7 @@ public class CaseDocumentService {
         return documentTypeItem;
     }
 
-    private DocumentTypeItem createDocumentTypeItem(String authToken,
+    public DocumentTypeItem createDocumentTypeItem(String authToken,
                                                     String caseType,
                                                     String documentType,
                                                     PdfDecodedMultipartFile pdfDecodedMultipartFile)
