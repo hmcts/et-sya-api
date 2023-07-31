@@ -67,6 +67,30 @@ it is necessary to use the `cftlib` profile.
   ./gradlew bootRun --args='--spring.profiles.active=cftlib'
 ```
 
+### Functional API Tests
+To run all Functional API tests against AAT instances:
+Ensure F5 VPN is on.
+These three variables need to be set in your WSL:
+```bash
+IDAM_API_URL=https://idam-api.aat.platform.hmcts.net
+FT_SYA_URL=http://et-sya-api-aat.service.core-compute-aat.internal
+```
+Then run
+```bash
+./gradlew functional
+```
+
+To run all Functional API tests against local instances (useful for debugging purposes):
+Note that some tests may fail as it uses the et.dev@hmcts.net user by default when being run locally,
+the workaround is to create a new user for test (need to replace username and password in getLocalAccessToken method).
+Ensure your local environment is up and running (see instructions in ecm-ccd-docker), Callback and SYA API instances are started in separate terminals.
+
+Then run
+```bash
+./gradlew functional
+```
+
+
 ### Viewing the API specification and consuming
 
 In order to view API endpoints and consume the API directly, you can use the OpenAPI specification by navigating to the site with the following route appended (swagger-ui/index.html). Swagger UI (https://swagger.io/tools/swagger-ui/) allows anyone — be it your development team or your end consumers — to visualize and interact with the API’s resources without having any of the implementation logic in place. It’s automatically generated from your OpenAPI (formerly known as Swagger) Specification, with the visual documentation making it easy for back end implementation and client side consumption.
