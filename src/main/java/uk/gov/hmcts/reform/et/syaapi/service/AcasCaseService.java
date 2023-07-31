@@ -47,6 +47,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CA
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings({"PMD.TooManyMethods"})
 public class AcasCaseService {
 
     private final AuthTokenGenerator authTokenGenerator;
