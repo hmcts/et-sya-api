@@ -34,7 +34,7 @@ public class FunctionalTestBase {
 
     @Value("${sya.api.test.url}")
     protected String baseUrl;
-    @Value("${idam.url}")
+    @Value("${ft.idam.url}")
     private String idamApiUrl;
 
     @BeforeAll
@@ -42,7 +42,8 @@ public class FunctionalTestBase {
         client = buildClient();
         idamTestApiRequests = new IdamTestApiRequests(client, idamApiUrl);
         CreateUser user = idamTestApiRequests.createUser(createRandomEmail());
-        userToken = idamTestApiRequests.getAccessToken(user.getEmail());
+        userToken = baseUrl.contains("localhost") ? idamTestApiRequests.getLocalAccessToken()
+            : idamTestApiRequests.getAccessToken(user.getEmail());
         baseURI = baseUrl;
         useRelaxedHTTPSValidation();
     }
