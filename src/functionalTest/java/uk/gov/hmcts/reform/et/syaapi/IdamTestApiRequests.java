@@ -135,7 +135,7 @@ public class IdamTestApiRequests {
         String auth = Arrays.stream(callbackResponse.getHeaders("Set-Cookie")).filter(o -> o.getValue().startsWith(
             "__auth__")).findFirst().get().getValue();
 
-        return "Bearer " + auth.substring(9, auth.indexOf(";"));
+        return "Bearer " + auth.substring(9, auth.indexOf(';'));
     }
 
 }
