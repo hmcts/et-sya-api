@@ -15,8 +15,8 @@ withPipeline(type, product, component) {
   enableSlackNotifications('#et-builds')
 
   before('smoketest:preview') {
-    env.IDAM_URL = "https://idam-api.aat.platform.hmcts.net"
-    env.SYA_API_TEST_URL = "http://et-sya-api-aat.service.core-compute-aat.internal"
+    env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
+    env.FT_SYA_URL = "http://et-sya-api-aat.service.core-compute-aat.internal"
   }
 
   before('functionalTest:preview') {
@@ -29,8 +29,8 @@ withPipeline(type, product, component) {
   }
 
   before('smoketest:aat') {
-    env.IDAM_URL = "https://idam-api.aat.platform.hmcts.net"
-    env.SYA_API_TEST_URL = "https://et-sya-api-staging.aat.platform.hmcts.net/"
+    env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
+    env.FT_SYA_URL = "https://et-sya-api-staging.aat.platform.hmcts.net/"
   }
 
   before('functionalTest:aat') {
