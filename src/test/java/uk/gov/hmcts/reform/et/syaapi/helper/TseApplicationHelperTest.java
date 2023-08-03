@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -120,4 +121,16 @@ class TseApplicationHelperTest {
         }
     }
 
+    @Nested
+    class FormatCurrentDate {
+        @Test
+        void shouldReturnDateTimeFormattedInUkPattern() {
+            GenericTseApplicationTypeItem app = data.getCaseData().getGenericTseApplicationCollection().get(0);
+            String expectedLocalDateTime = "07 Feb 2022";
+            LocalDate data = LocalDate.of(2022, 2, 7);
+            String actualLocalDateTime = TseApplicationHelper.formatCurrentDate(data);
+
+            assertThat(actualLocalDateTime).isEqualTo(expectedLocalDateTime);
+        }
+    }
 }

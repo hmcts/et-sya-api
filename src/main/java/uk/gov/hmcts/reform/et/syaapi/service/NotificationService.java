@@ -21,6 +21,7 @@ import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -73,7 +74,7 @@ public class NotificationService {
 
     private final NotificationClient notificationClient;
     private final NotificationsProperties notificationsProperties;
-
+    public static final DateTimeFormatter UK_DATE_TIME_PATTERN = DateTimeFormatter.ofPattern("dd MMM yyyy");
     private final String[] typeA =
         {"strike", "amend", "non-compliance", "other", "postpone", "vary", "respondent", "publicity"};
     private final String[] typeB = {"withdraw", "change-details", "reconsider-decision", "reconsider-judgement"};
@@ -313,7 +314,7 @@ public class NotificationService {
         );
         respondentParameters.put(
             SEND_EMAIL_PARAMS_DATEPLUS7_KEY,
-            LocalDate.now().plusDays(7).toString()
+            LocalDate.now().plusDays(7).format(UK_DATE_TIME_PATTERN)
         );
 
         String emailToRespondentTemplate;
