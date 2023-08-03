@@ -3,9 +3,10 @@ provider "azurerm" {
 }
 
 locals {
+  tagEnv = var.env == "aat" ? "staging" : var.env
   tags = merge(var.common_tags,
     tomap({
-      "environment" = var.env,
+      "environment" = local.tagEnv,
       "managedBy" = var.team_name,
       "Team Contact" = var.team_contact,
       "application" = "employment-tribunals",
