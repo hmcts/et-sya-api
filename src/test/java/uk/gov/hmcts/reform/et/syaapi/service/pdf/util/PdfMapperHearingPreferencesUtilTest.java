@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.et.syaapi.service.utils;
+package uk.gov.hmcts.reform.et.syaapi.service.pdf.util;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -6,6 +6,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperHearingPreferencesUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperServiceUtil;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,7 +24,7 @@ class PdfMapperHearingPreferencesUtilTest {
 
     @ParameterizedTest
     @NullSource
-    @MethodSource("uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperTestDataProvider"
+    @MethodSource("uk.gov.hmcts.reform.et.syaapi.service.utils.data.PdfMapperHearingPreferencesUtilTestDataProvider"
         + "#generateCaseDataSamplesWithHearingPreferences")
     void putHearingPreferences(CaseData caseData) {
         ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();

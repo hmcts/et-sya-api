@@ -17,7 +17,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.TestDataProvider;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.data.TestDataProvider;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.service.notify.SendEmailResponse;
 
