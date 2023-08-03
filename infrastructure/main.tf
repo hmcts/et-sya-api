@@ -7,7 +7,10 @@ locals {
     tomap({
       "environment" = var.env,
       "managedBy" = var.team_name,
-      "Team Contact" = var.team_contact
+      "Team Contact" = var.team_contact,
+      "application" = "employment-tribunals",
+      "businessArea" = "CFT",
+      "builtFrom" = "et-sya-api"
     })
   )
 
