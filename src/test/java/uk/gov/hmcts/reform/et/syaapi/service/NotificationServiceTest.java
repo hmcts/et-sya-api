@@ -449,7 +449,7 @@ class NotificationServiceTest {
         }
 
         @Test
-        void shouldSendEmailToRespondentTypeB_Personalisation_Check() throws NotificationClientException {
+        void shouldSendEmailToRespondentTypeBPersonalisationCheck() throws NotificationClientException {
             notificationService.sendAcknowledgementEmailToRespondents(
                 details,
                 null,
@@ -462,7 +462,7 @@ class NotificationServiceTest {
             Object targetParameter = respondentParameters.get(SEND_EMAIL_PARAMS_DATEPLUS7_KEY);
             String[] dateParts = targetParameter.toString().split(" ");
             String[] plusSevenDays = LocalDate.now().plusDays(7)
-                .format(DateTimeFormatter.ofPattern("dd MMM yyyy")).split(" ");;
+                .format(DateTimeFormatter.ofPattern("dd MMM yyyy")).split(" ");
             assertThat(dateParts[0]).isEqualTo(plusSevenDays[0]);
             assertThat(dateParts[1]).isEqualTo(plusSevenDays[1]);
             assertThat(dateParts[2]).isEqualTo(plusSevenDays[2]);
