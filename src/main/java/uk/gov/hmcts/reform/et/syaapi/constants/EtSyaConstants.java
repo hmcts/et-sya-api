@@ -62,7 +62,7 @@ public final class EtSyaConstants {
                                                                  "Respondent correspondence", "Notice of Hearing",
                                                                  "Tribunal correspondence",
                                                                  "Tribunal Order/Deposit Order",
-                                                                 "Tribunal Judgment/Reasons", "ET1 Attachment",
+                                                                 "Tribunal Judgment/Reasons", ET1_ATTACHMENT,
                                                                  "ET3 Attachment");
 
 

@@ -125,7 +125,6 @@ class TseApplicationHelperTest {
     class FormatCurrentDate {
         @Test
         void shouldReturnDateTimeFormattedInUkPattern() {
-            GenericTseApplicationTypeItem app = data.getCaseData().getGenericTseApplicationCollection().get(0);
             String expectedLocalDateTime = "07 Feb 2022";
             LocalDate data = LocalDate.of(2022, 2, 7);
             String actualLocalDateTime = TseApplicationHelper.formatCurrentDate(data);
