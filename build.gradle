@@ -4,7 +4,7 @@ plugins {
   id 'pmd'
   id 'jacoco'
   id 'io.spring.dependency-management' version '1.1.2'
-  id 'org.springframework.boot' version '2.7.12'
+  id 'org.springframework.boot' version '2.7.14'
   id 'org.owasp.dependencycheck' version '8.2.1'
   id 'com.github.ben-manes.versions' version '0.46.0'
   id 'org.sonarqube' version '4.0.0.2929'
@@ -246,7 +246,7 @@ dependencies {
   implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.31'
 
   implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.17.12'
-  implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.12'
+  implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.14'
   implementation 'org.json:json:20230227'
   implementation group: 'org.yaml', name: 'snakeyaml', version: '2.0'
 
