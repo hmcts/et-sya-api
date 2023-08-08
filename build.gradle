@@ -225,7 +225,7 @@ dependencies {
 
   implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.7.0'
 
-  implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '5.1.9'
+  implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.0.1'
 
   implementation group: 'com.github.hmcts', name: 'et-data-model', version: '2.3.2'
 
@@ -239,19 +239,19 @@ dependencies {
 
   implementation 'org.apache.tika:tika-core:2.7.0'
 
-  implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '3.0.0-alpha2'
+  implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '3.0.0-RC1'
 
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4JVersion
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
   implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.31'
 
-  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.17.9'
+  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.17.12'
   implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.12'
   implementation 'org.json:json:20230227'
   implementation group: 'org.yaml', name: 'snakeyaml', version: '2.0'
 
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.75'
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '9.0.75'
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.78'
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '9.0.78'
   implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.7.10'
 
   implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
