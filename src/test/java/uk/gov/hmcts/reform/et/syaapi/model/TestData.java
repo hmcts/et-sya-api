@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.TestDataProvider;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.data.TestDataProvider;
 
 import java.util.ArrayList;
 import java.util.List;

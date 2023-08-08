@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.et.syaapi.service.utils;
+package uk.gov.hmcts.reform.et.syaapi.service.pdf.util;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +11,9 @@ import org.mockito.Mockito;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantType;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperPersonalDetailsUtil;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -87,7 +90,7 @@ class PdfMapperPersonalDetailsUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperTestDataProvider#"
+    @MethodSource("uk.gov.hmcts.reform.et.syaapi.service.utils.data.PdfMapperPersonalDetailsUtilTestDataProvider#"
         + "generateClaimantIndTypeArguments")
     void putClaimantIndTypeValues(ClaimantIndType claimantIndType,
                                                       String dobDay, String dobMonth, String dobYear) {
@@ -147,7 +150,8 @@ class PdfMapperPersonalDetailsUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperTestDataProvider#generateClaimantTypeArguments")
+    @MethodSource("uk.gov.hmcts.reform.et.syaapi.service.utils.data.PdfMapperPersonalDetailsUtilTestDataProvider#"
+        + "generateClaimantTypeArguments")
     void putClaimantTypeValues(ClaimantType claimantType) {
         ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         caseData.setClaimantType(claimantType);
