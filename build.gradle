@@ -128,7 +128,7 @@ task contract(type: Test) {
 
 checkstyle {
   maxWarnings = 0
-  toolVersion = '10.9.3'
+  toolVersion = '10.12.2'
   getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
 
