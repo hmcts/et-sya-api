@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.et.syaapi.service.utils;
+package uk.gov.hmcts.reform.et.syaapi.service.pdf.util;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -7,6 +7,9 @@ import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantOtherType;
 import uk.gov.hmcts.et.common.model.ccd.types.NewEmploymentType;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperEmploymentDetailsUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperServiceUtil;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,10 +30,11 @@ class PdfMapperEmploymentDetailsUtilTest {
 
     @ParameterizedTest
     @NullSource
-    @MethodSource("uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperTestDataProvider#generateClaimantOtherTypes")
+    @MethodSource("uk.gov.hmcts.reform.et.syaapi.service.utils.data.PdfMapperEmploymentDetailsUtilTestDataProvider#"
+        + "generateClaimantOtherTypes")
     void putEmploymentDetails(CaseData caseData) {
         ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
-        PdfMapperEmploymentUtil.putEmploymentDetails(caseData, printFields);
+        PdfMapperEmploymentDetailsUtil.putEmploymentDetails(caseData, printFields);
         if (ObjectUtils.isEmpty(caseData) || ObjectUtils.isEmpty(caseData.getClaimantOtherType())) {
             assertThat(printFields.get(PdfMapperConstants.Q4_EMPLOYED_BY_NO)).isNull();
             assertThat(printFields.get(PdfMapperConstants.Q4_EMPLOYED_BY_YES)).isNull();

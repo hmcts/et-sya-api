@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.et.syaapi.service.utils;
+package uk.gov.hmcts.reform.et.syaapi.service.pdf.util;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -6,6 +6,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantRequestType;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperClaimDescriptionUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,7 +26,8 @@ class PdfMapperClaimDescriptionUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperTestDataProvider#generateClaimantRequests")
+    @MethodSource("uk.gov.hmcts.reform.et.syaapi.service.utils.data.PdfMapperClaimDescriptionUtilTestDataProvider"
+        + "#generateClaimantRequests")
     void putClaimDescription(ClaimantRequestType claimantRequests, String expectedResult) {
         ConcurrentMap<String, Optional<String>> printFields = new ConcurrentHashMap<>();
         caseData.setClaimantRequests(claimantRequests);
