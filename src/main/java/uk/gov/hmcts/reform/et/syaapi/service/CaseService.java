@@ -18,6 +18,7 @@ import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
@@ -559,7 +560,18 @@ public class CaseService {
         if (docList == null) {
             docList = new ArrayList<>();
         }
-        PdfDecodedMultipartFile pdfDecodedMultipartFile = pdfService.convertClaimantTseIntoMultipartFile(claimantTse);
+
+        String contactApplicationDate = "";
+        String contactApplicant =  "";
+        if (caseData.getGenericTseApplicationCollection() != null) {
+            GenericTseApplicationTypeItem tseApplicationTypeItem = caseData.getGenericTseApplicationCollection()
+                .get(caseData.getGenericTseApplicationCollection().size() - 1);
+            contactApplicationDate = tseApplicationTypeItem.getValue().getDate();
+            contactApplicant  = tseApplicationTypeItem.getValue().getApplicant();
+        }
+
+        PdfDecodedMultipartFile pdfDecodedMultipartFile = pdfService.convertClaimantTseIntoMultipartFile(
+            claimantTse, contactApplicationDate, contactApplicant);
         docList.add(caseDocumentService.createDocumentTypeItem(
             authorization,
             caseType,

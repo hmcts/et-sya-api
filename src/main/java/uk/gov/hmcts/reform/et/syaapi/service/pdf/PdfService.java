@@ -281,10 +281,12 @@ public class PdfService {
      * @return {@link PdfDecodedMultipartFile} with the claimant tse CYA page in pdf format.
      * @throws DocumentGenerationException if there is an error generating the PDF.
      */
-    public PdfDecodedMultipartFile convertClaimantTseIntoMultipartFile(ClaimantTse claimantTse)
+    public PdfDecodedMultipartFile convertClaimantTseIntoMultipartFile(ClaimantTse claimantTse,
+                                                                       String contactApplicationDate,
+                                                                       String contactApplicant)
         throws DocumentGenerationException {
         return new PdfDecodedMultipartFile(
-            convertClaimantTseToPdf(claimantTse),
+            convertClaimantTseToPdf(claimantTse, contactApplicationDate, contactApplicant),
             TSE_FILENAME,
             PDF_FILE_TIKA_CONTENT_TYPE,
             APP_TYPE_MAP.get(claimantTse.getContactApplicationType())
@@ -328,14 +330,18 @@ public class PdfService {
         );
     }
 
-    private byte[] convertClaimantTseToPdf(ClaimantTse claimantTse) throws DocumentGenerationException {
+    private byte[] convertClaimantTseToPdf(ClaimantTse claimantTse,
+                                           String contactApplicationDate,
+                                           String contactApplicant) throws DocumentGenerationException {
         UploadedDocumentType contactApplicationFile = claimantTse.getContactApplicationFile();
         String supportingEvidence = contactApplicationFile == null
             ? null
             : contactApplicationFile.getDocumentFilename();
 
         GenericTseApplication genericTseApplication = GenericTseApplication.builder()
+            .applicant(contactApplicant)
             .applicationType(claimantTse.getContactApplicationType())
+            .applicationDate(contactApplicationDate)
             .tellOrAskTribunal(claimantTse.getContactApplicationText())
             .supportingEvidence(supportingEvidence)
             .copyToOtherPartyYesOrNo(claimantTse.getCopyToOtherPartyYesOrNo())
