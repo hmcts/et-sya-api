@@ -18,6 +18,7 @@ import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
@@ -82,7 +83,7 @@ import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTE
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods",  "PMD.GodClass"})
 public class CaseService {
 
     public static final String DOCUMENT_COLLECTION = "documentCollection";
@@ -559,7 +560,12 @@ public class CaseService {
         if (docList == null) {
             docList = new ArrayList<>();
         }
-        PdfDecodedMultipartFile pdfDecodedMultipartFile = pdfService.convertClaimantTseIntoMultipartFile(claimantTse);
+
+        GenericTseApplicationTypeItem tseApplicationTypeItem = getGenericTseApplicationTypeItem(caseData);
+        PdfDecodedMultipartFile pdfDecodedMultipartFile = pdfService.convertClaimantTseIntoMultipartFile(
+            claimantTse,
+            tseApplicationTypeItem != null ? tseApplicationTypeItem.getValue().getDate() : null,
+            tseApplicationTypeItem != null ? tseApplicationTypeItem.getValue().getApplicant() : null);
         docList.add(caseDocumentService.createDocumentTypeItem(
             authorization,
             caseType,
@@ -568,6 +574,15 @@ public class CaseService {
         ));
 
         caseDetails.getData().put(DOCUMENT_COLLECTION, docList);
+    }
+
+    private static GenericTseApplicationTypeItem getGenericTseApplicationTypeItem(CaseData caseData) {
+        if (caseData.getGenericTseApplicationCollection() == null) {
+            return null;
+        }
+
+        return caseData.getGenericTseApplicationCollection()
+            .get(caseData.getGenericTseApplicationCollection().size() - 1);
     }
 
     void createResponsePdf(String authorization,
