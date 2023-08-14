@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.et.syaapi.service.utils;
+package uk.gov.hmcts.reform.et.syaapi.service.utils.data;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -8,6 +8,7 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantWorkAddressType;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 
 import java.util.Map;
 
