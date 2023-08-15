@@ -317,9 +317,10 @@ class PdfServiceTest {
     void shouldCreatePdfDecodedMultipartFileFromTseApplication() throws DocumentGenerationException {
         caseTestData.getCaseData().setClaimantTse(new ClaimantTse());
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            pdfService.convertClaimantTseIntoMultipartFile(caseTestData.getClaimantTse(),
-                                                           "23-8-19",
-                                                           "Mr Applier");
+            pdfService.convertClaimantTseIntoMultipartFile(
+                caseTestData.getClaimantTse(),
+                caseTestData.getCaseData().getGenericTseApplicationCollection());
+
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
 
@@ -327,9 +328,10 @@ class PdfServiceTest {
     void shouldCreatePdfDecodedMultipartFileFromTseApplicationNoSupportingFile() throws DocumentGenerationException {
         caseTestData.getClaimantTse().setContactApplicationFile(null);
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            pdfService.convertClaimantTseIntoMultipartFile(caseTestData.getClaimantTse(),
-                                                           "23-8-19",
-                                                           "Mr Applier");
+            pdfService.convertClaimantTseIntoMultipartFile(
+                caseTestData.getClaimantTse(),
+                caseTestData.getCaseData().getGenericTseApplicationCollection());
+
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
 
