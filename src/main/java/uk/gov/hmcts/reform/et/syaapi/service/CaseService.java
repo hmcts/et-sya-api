@@ -559,7 +559,10 @@ public class CaseService {
         if (docList == null) {
             docList = new ArrayList<>();
         }
-        PdfDecodedMultipartFile pdfDecodedMultipartFile = pdfService.convertClaimantTseIntoMultipartFile(claimantTse);
+
+        PdfDecodedMultipartFile pdfDecodedMultipartFile = pdfService.convertClaimantTseIntoMultipartFile(
+            claimantTse, caseData.getGenericTseApplicationCollection());
+
         docList.add(caseDocumentService.createDocumentTypeItem(
             authorization,
             caseType,
