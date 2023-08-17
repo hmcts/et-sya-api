@@ -329,6 +329,9 @@ public class PdfService {
         String fileName = claimantResponse.getSupportingMaterial() != null
             ? request.getSupportingMaterialFile().getDocumentFilename() : null;
         ClaimantResponseCya claimantResponseCya = ClaimantResponseCya.builder()
+            .applicant(claimantResponse.getFrom())
+            .applicationType(claimantResponse.getIsCmoOrRequest())
+            .applicationDate(claimantResponse.getDate())
             .response(claimantResponse.getResponse())
             .fileName(fileName)
             .copyToOtherPartyYesOrNo(claimantResponse.getCopyToOtherParty())
