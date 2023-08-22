@@ -252,7 +252,7 @@ dependencies {
 
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.79'
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '9.0.79'
-  implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.8.5'
+  implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.8.6'
 
   implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
 
