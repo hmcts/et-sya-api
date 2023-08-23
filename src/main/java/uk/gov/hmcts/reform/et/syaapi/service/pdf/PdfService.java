@@ -313,24 +313,28 @@ public class PdfService {
      * @throws DocumentGenerationException if there is an error generating the PDF.
      */
     public PdfDecodedMultipartFile convertClaimantResponseIntoMultipartFile(RespondToApplicationRequest request,
-                                                                            String description)
+                                                                            String description,
+                                                                            String ethosCaseReference)
         throws DocumentGenerationException {
         return new PdfDecodedMultipartFile(
-            convertClaimantResponseToPdf(request),
+            convertClaimantResponseToPdf(request, ethosCaseReference, description),
             CLAIMANT_RESPONSE,
             PDF_FILE_TIKA_CONTENT_TYPE,
             description
         );
     }
 
-    private byte[] convertClaimantResponseToPdf(RespondToApplicationRequest request)
+    private byte[] convertClaimantResponseToPdf(RespondToApplicationRequest request, String ethosCaseReference,
+                                                String appTypeDescription)
         throws DocumentGenerationException {
         TseRespondType claimantResponse = request.getResponse();
         String fileName = claimantResponse.getSupportingMaterial() != null
             ? request.getSupportingMaterialFile().getDocumentFilename() : null;
+
         ClaimantResponseCya claimantResponseCya = ClaimantResponseCya.builder()
+            .caseNumber(ethosCaseReference)
             .applicant(claimantResponse.getFrom())
-            .applicationType(claimantResponse.getIsCmoOrRequest())
+            .applicationType(appTypeDescription)
             .applicationDate(claimantResponse.getDate())
             .response(claimantResponse.getResponse())
             .fileName(fileName)

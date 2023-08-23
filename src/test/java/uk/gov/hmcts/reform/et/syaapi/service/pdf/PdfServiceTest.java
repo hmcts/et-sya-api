@@ -339,7 +339,8 @@ class PdfServiceTest {
     void shouldCreatePdfDecodedMultipartFileFromClaimantResponse() throws DocumentGenerationException {
         var request = caseTestData.getRespondToApplicationRequest();
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            pdfService.convertClaimantResponseIntoMultipartFile(request, "Response to app");
+            pdfService.convertClaimantResponseIntoMultipartFile(request, "Response to app",
+                                                                "6000001/2023");
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
 
@@ -348,7 +349,8 @@ class PdfServiceTest {
         var request = caseTestData.getRespondToApplicationRequest();
         request.getResponse().setHasSupportingMaterial("No");
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            pdfService.convertClaimantResponseIntoMultipartFile(request, "Response to app");
+            pdfService.convertClaimantResponseIntoMultipartFile(request, "Response to app",
+                                                                "6000001/2023");
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
 
