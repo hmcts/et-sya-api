@@ -579,8 +579,9 @@ public class CaseService {
                            String appType)
         throws DocumentGenerationException, CaseDocumentException {
         String description = "Response to " + appType;
+        var ethosCaseReference = caseData.getEthosCaseReference();
         PdfDecodedMultipartFile multipartResponsePdf =
-            pdfService.convertClaimantResponseIntoMultipartFile(request, description);
+            pdfService.convertClaimantResponseIntoMultipartFile(request, description, ethosCaseReference);
 
         var responsePdf = caseDocumentService.createDocumentTypeItem(
             authorization,
