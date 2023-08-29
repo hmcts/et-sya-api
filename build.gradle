@@ -233,7 +233,7 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.1'
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '4.1.2'
 
-  implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '3.19.2-RELEASE'
+  implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '4.1.0-RELEASE'
   implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.5'
   implementation group: 'com.google.guava', name: 'guava', version: '32.1.2-jre'
 
