@@ -15,6 +15,4 @@ public class SubmitStoredApplicationRequest {
     private String caseTypeId;
     @JsonProperty("application_id")
     private String applicationId;
-    @JsonProperty("new_status")
-    private String newStatus;
 }

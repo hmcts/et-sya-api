@@ -35,6 +35,7 @@ import java.util.UUID;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.OPEN_STATE;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
@@ -352,7 +353,7 @@ public class ApplicationService {
             authorization,
             request.getCaseId(),
             request.getCaseTypeId(),
-            CaseEvent.CLAIMANT_TSE_RESPOND
+            CaseEvent.SUBMIT_STORED_CLAIMANT_TSE
         );
 
         CaseData caseData = EmployeeObjectMapper
@@ -367,7 +368,7 @@ public class ApplicationService {
             throw new IllegalArgumentException("Application id provided is incorrect");
         }
 
-        appToModify.getValue().setStatus(request.getNewStatus());
+        appToModify.getValue().setStatus(OPEN_STATE);
 
         return caseService.submitUpdate(
             authorization,
