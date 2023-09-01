@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ecm.common.helpers.UtilHelper;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
@@ -29,6 +30,7 @@ import uk.gov.hmcts.reform.et.syaapi.service.NotificationService.CoreEmailDetail
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -362,6 +364,9 @@ public class ApplicationService {
             throw new IllegalArgumentException("Application id provided is incorrect");
         }
 
+        appToModify.getValue().setDate(UtilHelper.formatCurrentDate(LocalDate.now()));
+        appToModify.getValue().setDueDate(UtilHelper.formatCurrentDatePlusDays(LocalDate.now(), 7));
+        appToModify.getValue().setApplicationState(IN_PROGRESS);
         appToModify.getValue().setStatus(OPEN_STATE);
 
         return caseService.submitUpdate(
