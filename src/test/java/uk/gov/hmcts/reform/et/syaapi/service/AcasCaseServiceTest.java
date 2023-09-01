@@ -2,9 +2,6 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.EqualsAndHashCode;
 import org.apache.commons.collections4.MultiValuedMap;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.TermsQueryBuilder;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -27,7 +24,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
