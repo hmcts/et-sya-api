@@ -106,7 +106,7 @@ public class AcasCaseService {
                   "filter": [
                     {
                       "terms": {
-                        "reference.keyword": %s,
+                        "reference.keyword": [%s],
                         "boost": 1.0
                       }
                     }
