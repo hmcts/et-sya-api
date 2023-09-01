@@ -123,12 +123,26 @@ class AcasCaseServiceTest {
     }
 
     private String generateCaseDataEsQueryWithDate(LocalDateTime requestDateTime) {
-        BoolQueryBuilder boolQueryBuilder = boolQuery()
-            .filter(new RangeQueryBuilder("last_modified").gte(requestDateTime));
-        return new SearchSourceBuilder()
-            .size(MAX_ES_SIZE)
-            .query(boolQueryBuilder)
-            .toString();
+        return """
+            {
+              "size": %d,
+              "query": {
+                "bool": {
+                  "filter": [
+                    {
+                      "range": {
+                        "last_modified": {
+                          "gte": "%s",
+                          "boost": 1.0
+                        }
+                      }
+                    }
+                  ],
+                  "boost": 1.0
+                }
+              }
+            }
+            """.formatted(10000, requestDateTime.toString());
     }
 
     @Test
