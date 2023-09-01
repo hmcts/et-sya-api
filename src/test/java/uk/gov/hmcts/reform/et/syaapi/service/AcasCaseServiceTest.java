@@ -141,7 +141,7 @@ class AcasCaseServiceTest {
                 }
               }
             }
-            """.formatted(10000, requestDateTime.toString());
+            """.formatted(MAX_ES_SIZE, requestDateTime.toString());
     }
 
     @Test
