@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 import lombok.EqualsAndHashCode;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.jupiter.api.Test;
