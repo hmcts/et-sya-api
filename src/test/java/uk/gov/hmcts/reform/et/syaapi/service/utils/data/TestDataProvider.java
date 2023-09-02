@@ -123,6 +123,7 @@ public final class TestDataProvider {
 
     public static GenericTseApplication generateExpectedTseApp(List<String> argumentsList) {
         return GenericTseApplication.builder()
+            .caseNumber(argumentsList.get(7))
             .applicant(argumentsList.get(0))
             .applicationType(argumentsList.get(2))
             .applicationDate(argumentsList.get(3))

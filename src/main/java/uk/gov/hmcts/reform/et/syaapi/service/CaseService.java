@@ -561,7 +561,7 @@ public class CaseService {
         }
 
         PdfDecodedMultipartFile pdfDecodedMultipartFile = pdfService.convertClaimantTseIntoMultipartFile(
-            claimantTse, caseData.getGenericTseApplicationCollection());
+            claimantTse, caseData.getGenericTseApplicationCollection(), caseData.getEthosCaseReference());
 
         docList.add(caseDocumentService.createDocumentTypeItem(
             authorization,

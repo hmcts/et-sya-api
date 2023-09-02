@@ -13,4 +13,5 @@ public class GenericTseApplication implements TornadoDocument {
     String copyToOtherPartyText;
     String applicant;
     String applicationDate;
+    String caseNumber;
 }
