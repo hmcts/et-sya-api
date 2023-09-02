@@ -19,9 +19,12 @@ class ClaimantTseUtilTest {
         "uk.gov.hmcts.reform.et.syaapi.model.CaseTestData#generateClaimantTseArgumentsForTestingCurrentTseApplication")
     void theGetCurrentGenericTseApplication(ClaimantTse claimantTse,
                                             List<GenericTseApplicationTypeItem> items,
-                                            GenericTseApplication expectedGenericTseApplication) {
+                                            GenericTseApplication expectedGenericTseApplication,
+                                            String caseReference) {
         GenericTseApplication actualGenericTseApplication = ClaimantTseUtil.getCurrentGenericTseApplication(
-            claimantTse, items);
+            claimantTse, items, caseReference);
+        assertThat(actualGenericTseApplication.getCaseNumber())
+            .isEqualTo(expectedGenericTseApplication.getCaseNumber());
         assertThat(actualGenericTseApplication.getApplicant())
             .isEqualTo(expectedGenericTseApplication.getApplicant());
         assertThat(actualGenericTseApplication.getApplicationType())

@@ -179,13 +179,14 @@ public final class CaseTestData {
     }
 
     public static Stream<Arguments> generateClaimantTseArgumentsForTestingCurrentTseApplication() {
+        String caseReference = "1234/456";
         List<String> completeArgumentsList = List.of("Mr Test Applicant", "1", "test Contact Application Type",
-                                             "13 Jan 2023", "Yes", "3", "test-Document-Filename.pdf");
+                                             "13 Jan 2023", "Yes", "3", "test-Document-Filename.pdf", caseReference);
         List<String> missingTypeItemDetailsArgumentsList = List.of("", "1", "test Contact Application Type", "",
-                                                                   "Yes", "3", "test-Document-Filename.pdf");
+                                                                   "Yes", "3", "test-Document-Filename.pdf",
+                                                                   caseReference);
         List<String> missingClaimantTseDetailsArgumentsList = List.of("Mr Test Applicant", "1", "",
-                                                                      "13 Jan 2023", "Yes", "3", "");
-
+                                                                      "13 Jan 2023", "Yes", "3", "", caseReference);
         GenericTseApplication  completeExpectedTseApp = TestDataProvider.generateExpectedTseApp(completeArgumentsList);
         GenericTseApplication  expectedTseAppWithIncompleteClaimantTse = TestDataProvider.generateExpectedTseApp(
             missingClaimantTseDetailsArgumentsList);
@@ -205,11 +206,14 @@ public final class CaseTestData {
         GenericTseApplicationTypeItem tseItemWithMissingDetails = TestDataProvider.generateGenericTseAppTypeItem(
             missingTypeItemDetailsArgumentsList);
 
-        return Stream.of(Arguments.of(completeClaimantTse, List.of(completeTseItem), completeExpectedTseApp),
+        return Stream.of(Arguments.of(completeClaimantTse, List.of(completeTseItem),
+                                      completeExpectedTseApp, caseReference),
                          Arguments.of(inCompleteClaimantTseWithMissingClaimantTse,
-                                      List.of(tseItemWithMissingClaimantTse), expectedTseAppWithIncompleteClaimantTse),
+                                      List.of(tseItemWithMissingClaimantTse),
+                                      expectedTseAppWithIncompleteClaimantTse, caseReference),
                         Arguments.of(inCompleteClaimantTseWithMissingItemDetail,
-                                     List.of(tseItemWithMissingDetails), expectedTseAppWithMissingTypeItemDetails));
+                                     List.of(tseItemWithMissingDetails),
+                                     expectedTseAppWithMissingTypeItemDetails, caseReference));
     }
 
     public static Stream<Arguments> generateCaseDataUserInfoArgumentsForTestingFirstNames() {

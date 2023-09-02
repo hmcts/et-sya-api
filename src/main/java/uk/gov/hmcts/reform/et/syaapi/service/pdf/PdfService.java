@@ -12,6 +12,7 @@ import org.elasticsearch.common.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import uk.gov.hmcts.ecm.common.helpers.UtilHelper;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
@@ -29,6 +30,7 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -61,6 +63,7 @@ public class PdfService {
     public String claimantResponsePdfTemplate;
 
     private static final String TSE_FILENAME = "Contact the tribunal.pdf";
+    private static final String CLAIMANT_TITLE = "Claimant";
     private static final String CLAIMANT_RESPONSE = "ClaimantResponse.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private static final String NOT_FOUND = "not found";
@@ -284,12 +287,14 @@ public class PdfService {
      */
     public PdfDecodedMultipartFile convertClaimantTseIntoMultipartFile(
         ClaimantTse claimantTse,
-        List<GenericTseApplicationTypeItem> tseApplicationTypeItems)
+        List<GenericTseApplicationTypeItem> tseApplicationTypeItems,
+        String caseReference)
 
         throws DocumentGenerationException {
 
         GenericTseApplication genericTseApplication = ClaimantTseUtil.getCurrentGenericTseApplication(claimantTse,
-                                                                                              tseApplicationTypeItems);
+                                                                                              tseApplicationTypeItems,
+                                                                                                      caseReference);
         byte[] tseApplicationPdf = documentGenerationService.genPdfDocument(
             contactTheTribunalPdfTemplate,
             TSE_FILENAME,
@@ -333,9 +338,9 @@ public class PdfService {
 
         ClaimantResponseCya claimantResponseCya = ClaimantResponseCya.builder()
             .caseNumber(ethosCaseReference)
-            .applicant(claimantResponse.getFrom())
+            .applicant(CLAIMANT_TITLE)
             .applicationType(appTypeDescription)
-            .applicationDate(claimantResponse.getDate())
+            .applicationDate(UtilHelper.formatCurrentDate(LocalDate.now()))
             .response(claimantResponse.getResponse())
             .fileName(fileName)
             .copyToOtherPartyYesOrNo(claimantResponse.getCopyToOtherParty())
