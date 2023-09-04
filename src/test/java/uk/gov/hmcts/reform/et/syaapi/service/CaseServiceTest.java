@@ -514,12 +514,26 @@ class CaseServiceTest {
     }
 
     private String generateCaseDataEsQueryWithDate(LocalDateTime requestDateTime) {
-        BoolQueryBuilder boolQueryBuilder = boolQuery()
-            .filter(new RangeQueryBuilder("last_modified").gte(requestDateTime));
-        return new SearchSourceBuilder()
-            .size(MAX_ES_SIZE)
-            .query(boolQueryBuilder)
-            .toString();
+        return """
+            {
+              "size": %d,
+              "query": {
+                "bool": {
+                  "filter": [
+                    {
+                      "range": {
+                        "last_modified": {
+                          "gte": "%s",
+                          "boost": 1.0
+                        }
+                      }
+                    }
+                  ],
+                  "boost": 1.0
+                }
+              }
+            }
+            """.formatted(MAX_ES_SIZE, requestDateTime.toString());
     }
 
     @Test
@@ -581,12 +595,24 @@ class CaseServiceTest {
     }
 
     private String generateCaseDataEsQuery(List<String> caseIds) {
-        BoolQueryBuilder boolQueryBuilder = boolQuery()
-            .filter(new TermsQueryBuilder("reference.keyword", caseIds));
-        return new SearchSourceBuilder()
-            .size(MAX_ES_SIZE)
-            .query(boolQueryBuilder)
-            .toString();
+        return """
+            {
+              "size": %d,
+              "query": {
+                "bool": {
+                  "filter": [
+                    {
+                      "terms": {
+                        "reference.keyword": %s,
+                        "boost": 1.0
+                      }
+                    }
+                  ],
+                  "boost": 1.0
+                }
+              }
+            }
+            """.formatted(MAX_ES_SIZE, caseIds);
     }
 
     @Nested
