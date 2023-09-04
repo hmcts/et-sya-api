@@ -337,6 +337,7 @@ public class CaseService {
                                         caseRequest.getCaseData().get("managingOffice").toString());
         caseData1.setReceiptDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         caseData1.setFeeGroupReference(caseRequest.getCaseId());
+        caseData1.setPositionType("ET1 Online submission");
         ObjectMapper objectMapper = new ObjectMapper();
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         return submitUpdate(
