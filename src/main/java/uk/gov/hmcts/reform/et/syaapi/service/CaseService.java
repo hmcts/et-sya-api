@@ -579,7 +579,7 @@ public class CaseService {
                            String appType)
         throws DocumentGenerationException, CaseDocumentException {
         String description = "Response to " + appType;
-        var ethosCaseReference = caseData.getEthosCaseReference();
+        String ethosCaseReference = caseData.getEthosCaseReference();
         PdfDecodedMultipartFile multipartResponsePdf =
             pdfService.convertClaimantResponseIntoMultipartFile(request, description, ethosCaseReference);
 
@@ -593,7 +593,6 @@ public class CaseService {
         if (isEmpty(caseData.getDocumentCollection())) {
             caseData.setDocumentCollection(new ArrayList<>());
         }
-        var docCollection = caseData.getDocumentCollection();
-        docCollection.add(responsePdf);
+        caseData.getDocumentCollection().add(responsePdf);
     }
 }
