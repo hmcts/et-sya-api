@@ -6,10 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.RangeQueryBuilder;
-import org.elasticsearch.index.query.TermsQueryBuilder;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -58,7 +54,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
