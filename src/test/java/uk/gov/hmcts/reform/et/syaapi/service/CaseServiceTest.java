@@ -696,7 +696,7 @@ class CaseServiceTest {
     @Test
     void shouldInvokeClaimantTsePdf()
         throws DocumentGenerationException {
-        when(pdfService.convertClaimantTseIntoMultipartFile(any(), any())).thenReturn(
+        when(pdfService.convertClaimantTseIntoMultipartFile(any(), any(), any())).thenReturn(
             tsePdfMultipartFileMock);
 
         assertDoesNotThrow(() ->
@@ -712,7 +712,7 @@ class CaseServiceTest {
     @SneakyThrows
     @Test
     void givenPdfServiceErrorProducesDocumentGenerationException() {
-        when(pdfService.convertClaimantTseIntoMultipartFile(any(), any())).thenThrow(
+        when(pdfService.convertClaimantTseIntoMultipartFile(any(), any(), any())).thenThrow(
             new DocumentGenerationException(TEST));
 
         assertThrows(DocumentGenerationException.class, () -> caseService.uploadTseCyaAsPdf(

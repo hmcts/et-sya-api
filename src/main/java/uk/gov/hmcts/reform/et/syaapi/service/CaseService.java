@@ -594,7 +594,7 @@ public class CaseService {
         }
 
         PdfDecodedMultipartFile pdfDecodedMultipartFile = pdfService.convertClaimantTseIntoMultipartFile(
-            claimantTse, caseData.getGenericTseApplicationCollection());
+            claimantTse, caseData.getGenericTseApplicationCollection(), caseData.getEthosCaseReference());
 
         docList.add(caseDocumentService.createDocumentTypeItem(
             authorization,
@@ -626,7 +626,6 @@ public class CaseService {
         if (isEmpty(caseData.getDocumentCollection())) {
             caseData.setDocumentCollection(new ArrayList<>());
         }
-        var docCollection = caseData.getDocumentCollection();
-        docCollection.add(responsePdf);
+        caseData.getDocumentCollection().add(responsePdf);
     }
 }

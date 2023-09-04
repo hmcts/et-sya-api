@@ -319,7 +319,8 @@ class PdfServiceTest {
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             pdfService.convertClaimantTseIntoMultipartFile(
                 caseTestData.getClaimantTse(),
-                caseTestData.getCaseData().getGenericTseApplicationCollection());
+                caseTestData.getCaseData().getGenericTseApplicationCollection(),
+                caseTestData.getCaseData().getEthosCaseReference());
 
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
@@ -330,7 +331,8 @@ class PdfServiceTest {
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             pdfService.convertClaimantTseIntoMultipartFile(
                 caseTestData.getClaimantTse(),
-                caseTestData.getCaseData().getGenericTseApplicationCollection());
+                caseTestData.getCaseData().getGenericTseApplicationCollection(),
+                caseTestData.getCaseData().getEthosCaseReference());
 
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }

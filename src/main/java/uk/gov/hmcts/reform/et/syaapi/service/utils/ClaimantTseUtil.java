@@ -15,7 +15,7 @@ public final class ClaimantTseUtil {
     }
 
     public static GenericTseApplication getCurrentGenericTseApplication(ClaimantTse claimantTse,
-                                                 List<GenericTseApplicationTypeItem> items) {
+                                                 List<GenericTseApplicationTypeItem> items,  String caseReference) {
         if (claimantTse == null || items == null) {
             return null;
         }
@@ -30,14 +30,15 @@ public final class ClaimantTseUtil {
             ? tseApplicationTypeItem.getValue().getApplicant() : null;
 
         return GenericTseApplication.builder()
-        .applicant(contactApplicant)
-        .applicationType(claimantTse.getContactApplicationType())
-        .applicationDate(contactApplicationDate)
-        .tellOrAskTribunal(claimantTse.getContactApplicationText())
-        .supportingEvidence(supportingEvidence)
-        .copyToOtherPartyYesOrNo(claimantTse.getCopyToOtherPartyYesOrNo())
-        .copyToOtherPartyText(claimantTse.getCopyToOtherPartyText())
-        .build();
+            .caseNumber(caseReference)
+            .applicant(contactApplicant)
+            .applicationType(claimantTse.getContactApplicationType())
+            .applicationDate(contactApplicationDate)
+            .tellOrAskTribunal(claimantTse.getContactApplicationText())
+            .supportingEvidence(supportingEvidence)
+            .copyToOtherPartyYesOrNo(claimantTse.getCopyToOtherPartyYesOrNo())
+            .copyToOtherPartyText(claimantTse.getCopyToOtherPartyText())
+            .build();
     }
 
     private static GenericTseApplicationTypeItem getGenericTseApplicationTypeItem(
