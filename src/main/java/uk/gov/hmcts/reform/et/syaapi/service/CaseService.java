@@ -6,10 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.RangeQueryBuilder;
-import org.elasticsearch.index.query.TermsQueryBuilder;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -58,7 +54,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
@@ -406,12 +401,26 @@ public class CaseService {
      * @return a list of caseIds
      */
     public List<Long> getLastModifiedCasesId(String authorisation, LocalDateTime requestDateTime) {
-        BoolQueryBuilder boolQueryBuilder = boolQuery()
-            .filter(new RangeQueryBuilder("last_modified").gte(requestDateTime));
-        String query = new SearchSourceBuilder()
-            .size(MAX_ES_SIZE)
-            .query(boolQueryBuilder)
-            .toString();
+        String query = """
+             {
+               "size": %d,
+               "query": {
+                 "bool": {
+                   "filter": [
+                     {
+                       "range": {
+                         "last_modified": {
+                           "gte": "%s",
+                           "boost": 1.0
+                         }
+                       }
+                     }
+                   ],
+                   "boost": 1.0
+                 }
+               }
+             }
+             """.formatted(MAX_ES_SIZE, requestDateTime.toString());
         return searchEnglandScotlandCases(authorisation, query)
             .stream()
             .map(CaseDetails::getId)
@@ -425,12 +434,24 @@ public class CaseService {
      * @return a MultiValuedMap containing a list of document ids and timestamps
      */
     public MultiValuedMap<String, CaseDocumentAcasResponse> retrieveAcasDocuments(String caseId) {
-        BoolQueryBuilder boolQueryBuilder = boolQuery()
-            .filter(new TermsQueryBuilder("reference.keyword", caseId));
-        String query = new SearchSourceBuilder()
-            .size(MAX_ES_SIZE)
-            .query(boolQueryBuilder)
-            .toString();
+        String query = """
+             {
+               "size": %d,
+               "query": {
+                 "bool": {
+                   "filter": [
+                     {
+                       "terms": {
+                         "reference.keyword": [%s],
+                         "boost": 1.0
+                       }
+                     }
+                   ],
+                   "boost": 1.0
+                 }
+               }
+             }
+             """.formatted(MAX_ES_SIZE, caseId);
         return getDocumentUuids(query);
     }
 
@@ -484,13 +505,24 @@ public class CaseService {
      * @return a list of case details
      */
     public List<CaseDetails> getCaseData(String authorisation, List<String> caseIds) {
-        BoolQueryBuilder boolQueryBuilder = boolQuery()
-            .filter(new TermsQueryBuilder("reference.keyword", caseIds));
-        String query = new SearchSourceBuilder()
-            .size(MAX_ES_SIZE)
-            .query(boolQueryBuilder)
-            .toString();
-
+        String query = """
+             {
+               "size": %d,
+               "query": {
+                 "bool": {
+                   "filter": [
+                     {
+                       "terms": {
+                         "reference.keyword": %s,
+                         "boost": 1.0
+                       }
+                     }
+                   ],
+                   "boost": 1.0
+                 }
+               }
+             }
+             """.formatted(MAX_ES_SIZE, caseIds);
         return searchEnglandScotlandCases(authorisation, query);
     }
 
