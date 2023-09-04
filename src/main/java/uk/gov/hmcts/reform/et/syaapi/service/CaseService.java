@@ -593,7 +593,6 @@ public class CaseService {
         if (isEmpty(caseData.getDocumentCollection())) {
             caseData.setDocumentCollection(new ArrayList<>());
         }
-        var docCollection = caseData.getDocumentCollection();
-        docCollection.add(responsePdf);
+        caseData.getDocumentCollection().add(responsePdf);
     }
 }
