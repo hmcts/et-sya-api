@@ -318,7 +318,8 @@ public class PdfService {
      * @throws DocumentGenerationException if there is an error generating the PDF.
      */
     public PdfDecodedMultipartFile convertClaimantResponseIntoMultipartFile(RespondToApplicationRequest request,
-                                                                            String description)
+                                                                            String description,
+                                                                            String ethosCaseReference)
         throws DocumentGenerationException {
         return new PdfDecodedMultipartFile(
             convertClaimantResponseToPdf(request, ethosCaseReference, description),
