@@ -56,12 +56,12 @@ import java.util.stream.Stream;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.ET1_ATTACHMENT;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ACAS_VISIBLE_DOCS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ATTACHMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ONLINE_SUBMISSION;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
@@ -260,6 +260,12 @@ public class CaseService {
 
             if (!ObjectUtils.isEmpty(caseData.getClaimantRequests())
                 && !ObjectUtils.isEmpty(caseData.getClaimantRequests().getClaimDescriptionDocument())) {
+                caseData.getClaimantRequests().getClaimDescriptionDocument().setDocumentFilename(
+                    ET1_ATTACHMENT
+                    + " - "
+                    + caseData.getClaimantIndType().getClaimantFirstNames()
+                    + " "
+                    + caseData.getClaimantIndType().getClaimantLastName());
                 documentList.add(caseDocumentService.createDocumentTypeItem(
                     ET1_ATTACHMENT,
                     caseData.getClaimantRequests().getClaimDescriptionDocument()

@@ -17,6 +17,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import uk.gov.hmcts.ecm.common.helpers.DocumentHelper;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
@@ -26,6 +27,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -34,6 +36,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.ACAS_CERTIFICATE;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.ET1;
 import static uk.gov.hmcts.reform.ccd.client.model.Classification.PUBLIC;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.RESOURCE_NOT_FOUND;
@@ -58,8 +62,6 @@ public class CaseDocumentService {
     private static final Pattern FILE_NAME_PATTERN = Pattern.compile(FILE_NAME_REGEX_PATTERN);
     private static final String UPLOAD_FILE_EXCEPTION_MESSAGE = "Document management failed uploading file: ";
     private static final String VALIDATE_FILE_EXCEPTION_MESSAGE = "File does not pass validation";
-    private static final String TYPE_OF_DOCUMENT_ET1_CASE_PDF = "ET1";
-    private static final String TYPE_OF_DOCUMENT_ET1_ACAS_CERTIFICATE = "ACAS Certificate";
     private final Integer maxApiRetries;
     private final RestTemplate restTemplate;
     private final AuthTokenGenerator authTokenGenerator;
@@ -299,7 +301,7 @@ public class CaseDocumentService {
                 documentTypeItems.add(createDocumentTypeItem(
                     authToken,
                     caseType,
-                    TYPE_OF_DOCUMENT_ET1_CASE_PDF,
+                    ET1,
                     casePdf
                 ));
             }
@@ -309,7 +311,7 @@ public class CaseDocumentService {
                 documentTypeItems.add(createDocumentTypeItem(
                     authToken,
                     caseType,
-                    TYPE_OF_DOCUMENT_ET1_ACAS_CERTIFICATE,
+                    ACAS_CERTIFICATE,
                     acasCertificate
                 ));
             }
@@ -330,7 +332,10 @@ public class CaseDocumentService {
         DocumentType documentType = new DocumentType();
         documentType.setTypeOfDocument(typeOfDocument);
         documentType.setUploadedDocument(uploadedDoc);
-
+        documentType.setDateOfCorrespondence(LocalDate.now().toString());
+        documentType.setTopLevelDocuments(DocumentHelper.getTopLevelDocument(typeOfDocument));
+        DocumentHelper.setSecondLevelDocumentFromType(documentType, typeOfDocument);
+        DocumentHelper.setDocumentTypeForDocument(documentType);
         documentTypeItem.setValue(documentType);
 
         return documentTypeItem;
@@ -351,7 +356,11 @@ public class CaseDocumentService {
                                                                    String shortDescription) {
         DocumentType documentType = new DocumentType();
         documentType.setTypeOfDocument(typeOfDocument);
+        documentType.setTopLevelDocuments(DocumentHelper.getTopLevelDocument(typeOfDocument));
         documentType.setShortDescription(shortDescription);
+        documentType.setDateOfCorrespondence(LocalDate.now().toString());
+        DocumentHelper.setSecondLevelDocumentFromType(documentType, typeOfDocument);
+        DocumentHelper.setDocumentTypeForDocument(documentType);
         UploadedDocumentType uploadedDocumentType = new UploadedDocumentType();
         uploadedDocumentType.setDocumentFilename(caseDocument.getOriginalDocumentName());
         uploadedDocumentType.setDocumentUrl(caseDocument.getLinks().get("self").get("href"));

@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
@@ -35,6 +36,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
@@ -155,27 +157,36 @@ public class PdfService {
         if (Strings.isNullOrEmpty(claimantLastName)) {
             claimantLastName = userInfo.getFamilyName();
         }
-        return "ET1_CASE_DOCUMENT_"
-            + claimantFirstName.replace(" ", "_")
-            + "_"
-            + claimantLastName.replace(" ", "_")
-            + (ENGLISH_LANGUAGE.equals(documentLanguage) ? "" : "_" + documentLanguage)
+        return "ET1 - "
+            + claimantFirstName
+            + " "
+            + claimantLastName
+            + (ENGLISH_LANGUAGE.equals(documentLanguage) ? "" : " " + documentLanguage)
             + ".pdf";
     }
 
     private static String createPdfDocumentNameFromCaseDataAndAcasCertificate(
         CaseData caseData, AcasCertificate acasCertificate) {
-        return "ET1_ACAS_CERTIFICATE_"
-            + caseData.getClaimantIndType().getClaimantFirstNames().replace(" ", "_")
-            + "_"
-            + caseData.getClaimantIndType().getClaimantLastName().replace(" ", "_")
-            + "_"
-            + acasCertificate.getCertificateNumber().replace("/", "_")
-            + ".pdf";
+        return getRespondentAcasCertificate(caseData, acasCertificate);
+    }
+
+    private static String getRespondentAcasCertificate(CaseData caseData, AcasCertificate acasCertificate) {
+        Optional<RespondentSumTypeItem> respondent = caseData.getRespondentCollection().stream()
+            .filter(r -> acasCertificate.getCertificateNumber().equals(defaultIfEmpty(r.getValue().getRespondentAcas(), "")))
+            .findFirst();
+        String acasName = "";
+        if (respondent.isPresent()) {
+            acasName = respondent.get().getValue().getRespondentName();
+        }
+        return "ACAS Certificate - "
+               + acasName
+               + " - "
+               + acasCertificate.getCertificateNumber().replace("/", "_")
+               + ".pdf";
     }
 
     private static String createPdfDocumentDescriptionFromCaseData(CaseData caseData) {
-        return "Case Details - "
+        return "ET1 - "
             + caseData.getClaimantIndType().getClaimantFirstNames()
             + " " + caseData.getClaimantIndType().getClaimantLastName();
     }
@@ -183,12 +194,7 @@ public class PdfService {
     private static String createPdfDocumentDescriptionFromCaseDataAndAcasCertificate(
         CaseData caseData,
         AcasCertificate acasCertificate) {
-        return "ACAS Certificate - "
-            + caseData.getClaimantIndType().getClaimantFirstNames()
-            + " "
-            + caseData.getClaimantIndType().getClaimantLastName()
-            + " - "
-            + acasCertificate.getCertificateNumber();
+        return getRespondentAcasCertificate(caseData, acasCertificate);
     }
 
 
