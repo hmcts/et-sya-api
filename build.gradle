@@ -245,7 +245,7 @@ dependencies {
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
   implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.31'
 
-  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.9.1'
+  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.9.2'
   implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.15'
   implementation 'org.json:json:20230618'
   implementation group: 'org.yaml', name: 'snakeyaml', version: '2.2'
