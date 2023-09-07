@@ -12,9 +12,10 @@ import org.elasticsearch.common.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import uk.gov.hmcts.ecm.common.helpers.UtilHelper;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
-import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantResponseCya;
@@ -22,12 +23,14 @@ import uk.gov.hmcts.reform.et.syaapi.models.GenericTseApplication;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationException;
 import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationService;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.ClaimantTseUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -60,6 +63,7 @@ public class PdfService {
     public String claimantResponsePdfTemplate;
 
     private static final String TSE_FILENAME = "Contact the tribunal.pdf";
+    private static final String CLAIMANT_TITLE = "Claimant";
     private static final String CLAIMANT_RESPONSE = "ClaimantResponse.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private static final String NOT_FOUND = "not found";
@@ -281,10 +285,24 @@ public class PdfService {
      * @return {@link PdfDecodedMultipartFile} with the claimant tse CYA page in pdf format.
      * @throws DocumentGenerationException if there is an error generating the PDF.
      */
-    public PdfDecodedMultipartFile convertClaimantTseIntoMultipartFile(ClaimantTse claimantTse)
+    public PdfDecodedMultipartFile convertClaimantTseIntoMultipartFile(
+        ClaimantTse claimantTse,
+        List<GenericTseApplicationTypeItem> tseApplicationTypeItems,
+        String caseReference)
+
         throws DocumentGenerationException {
+
+        GenericTseApplication genericTseApplication = ClaimantTseUtil.getCurrentGenericTseApplication(claimantTse,
+                                                                                              tseApplicationTypeItems,
+                                                                                                      caseReference);
+        byte[] tseApplicationPdf = documentGenerationService.genPdfDocument(
+            contactTheTribunalPdfTemplate,
+            TSE_FILENAME,
+            genericTseApplication
+        );
+
         return new PdfDecodedMultipartFile(
-            convertClaimantTseToPdf(claimantTse),
+            tseApplicationPdf,
             TSE_FILENAME,
             PDF_FILE_TIKA_CONTENT_TYPE,
             APP_TYPE_MAP.get(claimantTse.getContactApplicationType())
@@ -300,22 +318,29 @@ public class PdfService {
      * @throws DocumentGenerationException if there is an error generating the PDF.
      */
     public PdfDecodedMultipartFile convertClaimantResponseIntoMultipartFile(RespondToApplicationRequest request,
-                                                                            String description)
+                                                                            String description,
+                                                                            String ethosCaseReference)
         throws DocumentGenerationException {
         return new PdfDecodedMultipartFile(
-            convertClaimantResponseToPdf(request),
+            convertClaimantResponseToPdf(request, ethosCaseReference, description),
             CLAIMANT_RESPONSE,
             PDF_FILE_TIKA_CONTENT_TYPE,
             description
         );
     }
 
-    private byte[] convertClaimantResponseToPdf(RespondToApplicationRequest request)
+    private byte[] convertClaimantResponseToPdf(RespondToApplicationRequest request, String ethosCaseReference,
+                                                String appTypeDescription)
         throws DocumentGenerationException {
         TseRespondType claimantResponse = request.getResponse();
         String fileName = claimantResponse.getSupportingMaterial() != null
             ? request.getSupportingMaterialFile().getDocumentFilename() : null;
+
         ClaimantResponseCya claimantResponseCya = ClaimantResponseCya.builder()
+            .caseNumber(ethosCaseReference)
+            .applicant(CLAIMANT_TITLE)
+            .applicationType(appTypeDescription)
+            .applicationDate(UtilHelper.formatCurrentDate(LocalDate.now()))
             .response(claimantResponse.getResponse())
             .fileName(fileName)
             .copyToOtherPartyYesOrNo(claimantResponse.getCopyToOtherParty())
@@ -325,27 +350,6 @@ public class PdfService {
             claimantResponsePdfTemplate,
             CLAIMANT_RESPONSE,
             claimantResponseCya
-        );
-    }
-
-    private byte[] convertClaimantTseToPdf(ClaimantTse claimantTse) throws DocumentGenerationException {
-        UploadedDocumentType contactApplicationFile = claimantTse.getContactApplicationFile();
-        String supportingEvidence = contactApplicationFile == null
-            ? null
-            : contactApplicationFile.getDocumentFilename();
-
-        GenericTseApplication genericTseApplication = GenericTseApplication.builder()
-            .applicationType(claimantTse.getContactApplicationType())
-            .tellOrAskTribunal(claimantTse.getContactApplicationText())
-            .supportingEvidence(supportingEvidence)
-            .copyToOtherPartyYesOrNo(claimantTse.getCopyToOtherPartyYesOrNo())
-            .copyToOtherPartyText(claimantTse.getCopyToOtherPartyText())
-            .build();
-
-        return documentGenerationService.genPdfDocument(
-            contactTheTribunalPdfTemplate,
-            TSE_FILENAME,
-            genericTseApplication
         );
     }
 }
