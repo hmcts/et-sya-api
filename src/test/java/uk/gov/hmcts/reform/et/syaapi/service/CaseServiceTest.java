@@ -430,6 +430,20 @@ class CaseServiceTest {
         return documentTypeItem;
     }
 
+    @Nested
+    class UploadTseSupportingDocument {
+        @Test
+        void setsShortDescriptionCorrectly() {
+            CaseDetails caseDetails = CaseDetails.builder().data(new HashMap<>()).build();
+            String actual = "description";
+            caseService.uploadTseSupportingDocument(caseDetails, new UploadedDocumentType(), actual);
+
+            CaseData caseData = mapRequestCaseDataToCaseData(caseDetails.getData());
+            String expected = caseData.getDocumentCollection().get(0).getValue().getShortDescription();
+            assertThat(actual).isEqualTo(expected);
+        }
+    }
+
     @Test
     void shouldInvokeCaseEnrichmentWithJurCodesInSubmitEvent() {
         List<JurCodesTypeItem> expectedItems = mockJurCodesTypeItems();

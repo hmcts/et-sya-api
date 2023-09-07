@@ -46,7 +46,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class AcasServiceTest {
 
-    private static final String ACAS_DEV_API_URL = "https://api-dev-acas-01.azure-api.net/ECCLDev";
+    private static final String ACAS_DEV_API_URL = "https://api-dev-acas-01.azure-api.net/ECCLUAT";
     private static final String ACAS_API_KEY = "dummyApiKey";
     private static final String NO_CERTS_JSON = "[]";
 
