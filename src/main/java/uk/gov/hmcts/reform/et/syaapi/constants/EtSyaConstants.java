@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.constants;
 
 import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -45,6 +46,7 @@ public final class EtSyaConstants {
     public static final String SEND_EMAIL_SERVICE_OWNER_NAME_KEY = "serviceOwnerName";
     public static final String SEND_EMAIL_SERVICE_OWNER_NAME_VALUE = "Service Owner";
     public static final String SCOTLAND_CASE_TYPE = "ET_Scotland";
+    public static final DateTimeFormatter UK_LOCAL_DATE_PATTERN = DateTimeFormatter.ofPattern("dd MMM yyyy");
     public static final String UNASSIGNED_OFFICE = "Unassigned";
 
     public static final String CLAIMANT_CORRESPONDENCE_DOCUMENT = "Claimant correspondence";
@@ -60,7 +62,7 @@ public final class EtSyaConstants {
                                                                  "Respondent correspondence", "Notice of Hearing",
                                                                  "Tribunal correspondence",
                                                                  "Tribunal Order/Deposit Order",
-                                                                 "Tribunal Judgment/Reasons", "ET1 Attachment",
+                                                                 "Tribunal Judgment/Reasons", ET1_ATTACHMENT,
                                                                  "ET3 Attachment");
 
 
