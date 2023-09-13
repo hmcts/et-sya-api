@@ -3,13 +3,21 @@ package uk.gov.hmcts.reform.et.syaapi.service.utils.data;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantWorkAddressType;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
+
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
+import uk.gov.hmcts.reform.et.syaapi.models.GenericTseApplication;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 
+import java.util.List;
 import java.util.Map;
 
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_CASE_DATA_JSON_FILE;
@@ -113,4 +121,37 @@ public final class TestDataProvider {
         );
     }
 
+    public static GenericTseApplicationTypeItem generateGenericTseAppTypeItem(List<String> argumentsList) {
+        GenericTseApplicationTypeItem tseAppTypeItem = new GenericTseApplicationTypeItem();
+        GenericTseApplicationType tseApplicationType = new GenericTseApplicationType();
+        tseApplicationType.setApplicant(argumentsList.get(0));
+        tseApplicationType.setDate(argumentsList.get(3));
+        tseAppTypeItem.setValue(tseApplicationType);
+        return tseAppTypeItem;
+    }
+
+    public static ClaimantTse generateClaimantTse(List<String> argumentsList) {
+        ClaimantTse claimantTse = new ClaimantTse();
+        claimantTse.setContactApplicationText(argumentsList.get(1));
+        claimantTse.setContactApplicationType(argumentsList.get(2));
+        claimantTse.setCopyToOtherPartyYesOrNo(argumentsList.get(4));
+        claimantTse.setCopyToOtherPartyText(argumentsList.get(5));
+        UploadedDocumentType docType = new UploadedDocumentType();
+        docType.setDocumentFilename(argumentsList.get(6));
+        claimantTse.setContactApplicationFile(docType);
+        return claimantTse;
+    }
+
+    public static GenericTseApplication generateExpectedTseApp(List<String> argumentsList) {
+        return GenericTseApplication.builder()
+            .caseNumber(argumentsList.get(7))
+            .applicant(argumentsList.get(0))
+            .applicationType(argumentsList.get(2))
+            .applicationDate(argumentsList.get(3))
+            .tellOrAskTribunal(argumentsList.get(1))
+            .supportingEvidence(argumentsList.get(6))
+            .copyToOtherPartyYesOrNo(argumentsList.get(4))
+            .copyToOtherPartyText(argumentsList.get(5))
+            .build();
+    }
 }

@@ -415,7 +415,10 @@ public class CaseService {
         if (docList == null) {
             docList = new ArrayList<>();
         }
-        PdfDecodedMultipartFile pdfDecodedMultipartFile = pdfService.convertClaimantTseIntoMultipartFile(claimantTse);
+
+        PdfDecodedMultipartFile pdfDecodedMultipartFile = pdfService.convertClaimantTseIntoMultipartFile(
+            claimantTse, caseData.getGenericTseApplicationCollection(), caseData.getEthosCaseReference());
+
         docList.add(caseDocumentService.createDocumentTypeItem(
             authorization,
             caseType,
@@ -432,10 +435,11 @@ public class CaseService {
                            String appType)
         throws DocumentGenerationException, CaseDocumentException {
         String description = "Response to " + appType;
+        String ethosCaseReference = caseData.getEthosCaseReference();
         PdfDecodedMultipartFile multipartResponsePdf =
-            pdfService.convertClaimantResponseIntoMultipartFile(request, description);
+            pdfService.convertClaimantResponseIntoMultipartFile(request, description, ethosCaseReference);
 
-        var responsePdf = caseDocumentService.createDocumentTypeItem(
+        DocumentTypeItem responsePdf = caseDocumentService.createDocumentTypeItem(
             authorization,
             request.getCaseTypeId(),
             CLAIMANT_CORRESPONDENCE_DOCUMENT,
@@ -445,7 +449,6 @@ public class CaseService {
         if (isEmpty(caseData.getDocumentCollection())) {
             caseData.setDocumentCollection(new ArrayList<>());
         }
-        var docCollection = caseData.getDocumentCollection();
-        docCollection.add(responsePdf);
+        caseData.getDocumentCollection().add(responsePdf);
     }
 }
