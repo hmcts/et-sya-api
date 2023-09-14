@@ -33,7 +33,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CAS
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ATTACHMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET3;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET3_ATTACHMENT;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET3_DOC_TYPES;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.POSSIBLE_DUPLICATED_DOCs;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 
 /**
@@ -136,20 +136,20 @@ public class AcasCaseService {
     private void addDocumentsToMap(String authorisation, MultiValuedMap<String, CaseDocumentAcasResponse> documentIds,
                                    List<DocumentTypeItem> documentTypeItemList) {
         for (DocumentTypeItem documentTypeItem : documentTypeItemList) {
-            boolean checkRespondentDoc = false;
-            if (ET3_DOC_TYPES.contains(documentTypeItem.getValue().getTypeOfDocument())) {
-                checkRespondentDoc = isCheckRespondentDoc(documentIds, documentTypeItem);
+            boolean duplicatedDoc = false;
+            if (POSSIBLE_DUPLICATED_DOCs.contains(documentTypeItem.getValue().getTypeOfDocument())) {
+                duplicatedDoc = isDuplicatedDoc(documentIds, documentTypeItem);
             }
 
-            if (!checkRespondentDoc) {
+            if (!duplicatedDoc) {
                 documentIds.put(documentTypeItem.getValue().getTypeOfDocument(),
                                 caseDocumentAcasResponseBuilder(documentTypeItem, authorisation, null));
             }
         }
     }
 
-    private boolean isCheckRespondentDoc(MultiValuedMap<String, CaseDocumentAcasResponse> documentIds,
-                                         DocumentTypeItem documentTypeItem) {
+    private boolean isDuplicatedDoc(MultiValuedMap<String, CaseDocumentAcasResponse> documentIds,
+                                    DocumentTypeItem documentTypeItem) {
         String documentUrl = documentTypeItem.getValue().getUploadedDocument().getDocumentUrl();
         UUID uuid = caseDocumentService.getDocumentUuid(documentUrl);
         if (uuid != null) {
