@@ -33,7 +33,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CAS
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ATTACHMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET3;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET3_ATTACHMENT;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.POSSIBLE_DUPLICATED_DOCs;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.POSSIBLE_DUPLICATED_DOCS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 
 /**
@@ -137,7 +137,7 @@ public class AcasCaseService {
                                    List<DocumentTypeItem> documentTypeItemList) {
         for (DocumentTypeItem documentTypeItem : documentTypeItemList) {
             boolean duplicatedDoc = false;
-            if (POSSIBLE_DUPLICATED_DOCs.contains(documentTypeItem.getValue().getTypeOfDocument())) {
+            if (POSSIBLE_DUPLICATED_DOCS.contains(documentTypeItem.getValue().getTypeOfDocument())) {
                 duplicatedDoc = isDuplicatedDoc(documentIds, documentTypeItem);
             }
 

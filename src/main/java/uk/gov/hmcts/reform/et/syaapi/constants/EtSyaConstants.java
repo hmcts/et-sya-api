@@ -67,7 +67,7 @@ public final class EtSyaConstants {
                                                                  "Tribunal Judgment/Reasons", ET1_ATTACHMENT,
                                                                  ET3_ATTACHMENT);
 
-    public static final List<String> POSSIBLE_DUPLICATED_DOCs = List.of(ET3, ET3_ATTACHMENT, ET1_ATTACHMENT);
+    public static final List<String> POSSIBLE_DUPLICATED_DOCS = List.of(ET3, ET3_ATTACHMENT, ET1_ATTACHMENT);
 
 
     private EtSyaConstants() {
