@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ecm.common.helpers.UtilHelper;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
@@ -23,16 +24,19 @@ import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.NotificationService.CoreEmailDetails;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.OPEN_STATE;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
@@ -211,7 +215,7 @@ public class ApplicationService {
         if (responseToUpdate == null) {
             throw new IllegalArgumentException("Response id is invalid");
         }
-        
+
         responseToUpdate.getValue().setViewedByClaimant(YES);
 
         return caseService.submitUpdate(
@@ -265,7 +269,7 @@ public class ApplicationService {
 
         notificationService.sendAcknowledgementEmailToClaimant(details, claimantTse);
         notificationService.sendAcknowledgementEmailToRespondents(details, documentJson, claimantTse);
-        notificationService.sendAcknowledgementEmailToTribunal(details, claimantTse.getContactApplicationType());
+        notificationService.sendAcknowledgementEmailToTribunal(details, claimantTse);
     }
 
     private void sendResponseToApplicationEmails(
@@ -331,4 +335,46 @@ public class ApplicationService {
             WEEKS_78
         );
     }
+
+    /**
+     * Submits a stored Claimant Application:
+     * - Update application state in ExUI from 'Unsubmitted' to be 'Open'.
+     *
+     * @param authorization - authorization
+     * @param request - request with application's id
+     * @return the associated {@link CaseDetails} for the ID provided in request
+     */
+    public CaseDetails submitStoredApplication(String authorization, SubmitStoredApplicationRequest request) {
+        StartEventResponse startEventResponse = caseService.startUpdate(
+            authorization,
+            request.getCaseId(),
+            request.getCaseTypeId(),
+            CaseEvent.SUBMIT_STORED_CLAIMANT_TSE
+        );
+
+        CaseData caseData = EmployeeObjectMapper
+            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
+
+        GenericTseApplicationTypeItem appToModify = TseApplicationHelper.getSelectedApplication(
+            caseData.getGenericTseApplicationCollection(),
+            request.getApplicationId()
+        );
+
+        if (appToModify == null) {
+            throw new IllegalArgumentException("Application id provided is incorrect");
+        }
+
+        appToModify.getValue().setDate(UtilHelper.formatCurrentDate(LocalDate.now()));
+        appToModify.getValue().setDueDate(UtilHelper.formatCurrentDatePlusDays(LocalDate.now(), 7));
+        appToModify.getValue().setApplicationState(IN_PROGRESS);
+        appToModify.getValue().setStatus(OPEN_STATE);
+
+        return caseService.submitUpdate(
+            authorization,
+            request.getCaseId(),
+            caseDetailsConverter.caseDataContent(startEventResponse, caseData),
+            request.getCaseTypeId()
+        );
+    }
+
 }
