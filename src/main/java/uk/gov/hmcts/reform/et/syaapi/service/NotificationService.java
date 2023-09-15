@@ -259,7 +259,8 @@ public class NotificationService {
         );
 
         SendEmailResponse claimantEmail;
-        String emailToClaimantTemplate =
+        String emailToClaimantTemplate = TYPE_C.equals(claimantApplication.getContactApplicationType())
+            ? notificationsProperties.getClaimantTseEmailTypeCTemplateId() :
             getAndSetRule92EmailTemplate(claimantApplication, details.hearingDate, claimantParameters);
         claimantParameters.put(
             SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
