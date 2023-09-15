@@ -48,6 +48,7 @@ public class ApplicationService {
     public static final String WEEKS_78 = "78 weeks";
 
     private static final String TSE_FILENAME = "Contact the tribunal.pdf";
+    private static final String APP_ID_PROVIDED_IS_INCORRECT = "Application id provided is incorrect";
 
     private final CaseService caseService;
     private final NotificationService notificationService;
@@ -125,7 +126,7 @@ public class ApplicationService {
         );
 
         if (appToModify == null) {
-            throw new IllegalArgumentException("Application id provided is incorrect");
+            throw new IllegalArgumentException(APP_ID_PROVIDED_IS_INCORRECT);
         }
 
         String copyToOtherParty = request.getResponse().getCopyToOtherParty();
@@ -171,7 +172,7 @@ public class ApplicationService {
         );
 
         if (appToModify == null) {
-            throw new IllegalArgumentException("Application id provided is incorrect");
+            throw new IllegalArgumentException(APP_ID_PROVIDED_IS_INCORRECT);
         }
 
         appToModify.getValue().setApplicationState(request.getNewStatus());
@@ -269,7 +270,7 @@ public class ApplicationService {
 
         notificationService.sendAcknowledgementEmailToClaimant(details, claimantTse);
         notificationService.sendAcknowledgementEmailToRespondents(details, documentJson, claimantTse);
-        notificationService.sendAcknowledgementEmailToTribunal(details, claimantTse.getContactApplicationType());
+        notificationService.sendAcknowledgementEmailToTribunal(details, claimantTse);
     }
 
     private void sendResponseToApplicationEmails(
@@ -338,7 +339,7 @@ public class ApplicationService {
 
     /**
      * Submits a stored Claimant Application:
-     * - Update application state in ExUI from 'Unsubmitted' to be 'Open'
+     * - Update application state in ExUI from 'Unsubmitted' to be 'Open'.
      *
      * @param authorization - authorization
      * @param request - request with application's id
@@ -361,7 +362,7 @@ public class ApplicationService {
         );
 
         if (appToModify == null) {
-            throw new IllegalArgumentException("Application id provided is incorrect");
+            throw new IllegalArgumentException(APP_ID_PROVIDED_IS_INCORRECT);
         }
 
         appToModify.getValue().setDate(UtilHelper.formatCurrentDate(LocalDate.now()));

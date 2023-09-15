@@ -57,6 +57,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 import static uk.gov.service.notify.NotificationClient.prepareUpload;
 
@@ -258,8 +259,7 @@ public class NotificationService {
         );
 
         SendEmailResponse claimantEmail;
-        String emailToClaimantTemplate = TYPE_C.equals(claimantApplication.getContactApplicationType())
-            ? notificationsProperties.getClaimantTseEmailTypeCTemplateId() :
+        String emailToClaimantTemplate =
             getAndSetRule92EmailTemplate(claimantApplication, details.hearingDate, claimantParameters);
         claimantParameters.put(
             SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
@@ -295,6 +295,12 @@ public class NotificationService {
             log.info("Acknowledgement email not sent to respondents for this application type");
             return;
         }
+
+        if (YES.equals(claimantApplication.getStoredPending())) {
+            log.info("Acknowledgement email not sent to respondents for stored correspondence");
+            return;
+        }
+
         Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
         addCommonParameters(
             respondentParameters,
@@ -341,9 +347,15 @@ public class NotificationService {
      * Format details of claimant request and retrieve case data, then send email to confirmation to tribunal.
      *
      * @param details core details of the email
-     * @param applicationType type of application
+     * @param claimantApplication application
      */
-    void sendAcknowledgementEmailToTribunal(CoreEmailDetails details, String applicationType) {
+    void sendAcknowledgementEmailToTribunal(CoreEmailDetails details, ClaimantTse claimantApplication) {
+        if (YES.equals(claimantApplication.getStoredPending())) {
+            log.info("Acknowledgement email not sent to tribunal for stored correspondence");
+            return;
+        }
+
+        String applicationType = claimantApplication.getContactApplicationType();
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
 
         addCommonParameters(
@@ -727,18 +739,23 @@ public class NotificationService {
     private String getAndSetRule92EmailTemplate(ClaimantTse claimantApplication,
                                                 String hearingDate,
                                                 Map<String, Object> parameters) {
-        String emailTemplate;
+        if (TYPE_C.equals(claimantApplication.getContactApplicationType())) {
+            return notificationsProperties.getClaimantTseEmailTypeCTemplateId();
+        }
+
         parameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, hearingDate);
         String shortText = APP_TYPE_MAP.get(claimantApplication.getContactApplicationType());
         if (DONT_SEND_COPY.equals(claimantApplication.getCopyToOtherPartyYesOrNo())) {
             parameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
-            emailTemplate = notificationsProperties.getClaimantTseEmailNoTemplateId();
+            return notificationsProperties.getClaimantTseEmailNoTemplateId();
+        } else if (YES.equals(claimantApplication.getStoredPending())) {
+            parameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
+            return notificationsProperties.getClaimantTseEmailStoredTemplateId();
         } else {
             String abText = getCustomTextForAOrBApplication(claimantApplication, shortText);
             parameters.put("abText", abText);
-            emailTemplate = notificationsProperties.getClaimantTseEmailYesTemplateId();
+            return notificationsProperties.getClaimantTseEmailYesTemplateId();
         }
-        return emailTemplate;
     }
 
     private String getCustomTextForAOrBApplication(ClaimantTse claimantApplication, String shortText) {
