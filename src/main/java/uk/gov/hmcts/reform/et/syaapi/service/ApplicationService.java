@@ -48,7 +48,6 @@ public class ApplicationService {
     public static final String WEEKS_78 = "78 weeks";
 
     private static final String TSE_FILENAME = "Contact the tribunal.pdf";
-    private static final String APP_ID_PROVIDED_IS_INCORRECT = "Application id provided is incorrect";
 
     private final CaseService caseService;
     private final NotificationService notificationService;
@@ -126,7 +125,7 @@ public class ApplicationService {
         );
 
         if (appToModify == null) {
-            throw new IllegalArgumentException(APP_ID_PROVIDED_IS_INCORRECT);
+            throw new IllegalArgumentException("Application id provided is incorrect");
         }
 
         String copyToOtherParty = request.getResponse().getCopyToOtherParty();
@@ -172,7 +171,7 @@ public class ApplicationService {
         );
 
         if (appToModify == null) {
-            throw new IllegalArgumentException(APP_ID_PROVIDED_IS_INCORRECT);
+            throw new IllegalArgumentException("Application id provided is incorrect");
         }
 
         appToModify.getValue().setApplicationState(request.getNewStatus());
@@ -362,7 +361,7 @@ public class ApplicationService {
         );
 
         if (appToModify == null) {
-            throw new IllegalArgumentException(APP_ID_PROVIDED_IS_INCORRECT);
+            throw new IllegalArgumentException("Application id provided is incorrect");
         }
 
         appToModify.getValue().setDate(UtilHelper.formatCurrentDate(LocalDate.now()));

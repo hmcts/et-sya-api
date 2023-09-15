@@ -739,23 +739,21 @@ public class NotificationService {
     private String getAndSetRule92EmailTemplate(ClaimantTse claimantApplication,
                                                 String hearingDate,
                                                 Map<String, Object> parameters) {
-        if (TYPE_C.equals(claimantApplication.getContactApplicationType())) {
-            return notificationsProperties.getClaimantTseEmailTypeCTemplateId();
-        }
-
+        String emailTemplate;
         parameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, hearingDate);
         String shortText = APP_TYPE_MAP.get(claimantApplication.getContactApplicationType());
         if (DONT_SEND_COPY.equals(claimantApplication.getCopyToOtherPartyYesOrNo())) {
             parameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
-            return notificationsProperties.getClaimantTseEmailNoTemplateId();
+            emailTemplate = notificationsProperties.getClaimantTseEmailNoTemplateId();
         } else if (YES.equals(claimantApplication.getStoredPending())) {
             parameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
-            return notificationsProperties.getClaimantTseEmailStoredTemplateId();
+            emailTemplate = notificationsProperties.getClaimantTseEmailStoredTemplateId();
         } else {
             String abText = getCustomTextForAOrBApplication(claimantApplication, shortText);
             parameters.put("abText", abText);
-            return notificationsProperties.getClaimantTseEmailYesTemplateId();
+            emailTemplate = notificationsProperties.getClaimantTseEmailYesTemplateId();
         }
+        return emailTemplate;
     }
 
     private String getCustomTextForAOrBApplication(ClaimantTse claimantApplication, String shortText) {
