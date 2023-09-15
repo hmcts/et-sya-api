@@ -62,6 +62,10 @@ public class NotificationsProperties {
     @NotBlank
     private String claimantTseEmailStoredTemplateId;
 
+    @Value("${notifications.applicationAcknowledgementSubmitStored}")
+    @NotBlank
+    private String claimantTseEmailSubmitStoredTemplateId;
+
     @Value("${notifications.respondentCopyTypeA}")
     @NotBlank
     private String respondentTseEmailTypeATemplateId;
