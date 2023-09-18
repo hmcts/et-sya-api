@@ -57,7 +57,15 @@
         {
           "id": "777",
           "value": {
-            "notificationState": "notViewed"
+            "notificationState": "notViewed",
+            "respondNotificationTypeCollection": [
+              {
+                "id": "777",
+                "value": {
+                  "isClaimantResponseDue": "Yes - see document for details"
+                }
+              }
+            ]
           }
         }
       ]

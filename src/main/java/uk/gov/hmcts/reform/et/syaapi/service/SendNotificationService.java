@@ -42,7 +42,7 @@ public class SendNotificationService {
     private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final NotificationService notificationService;
-    private static final String VIEWED = "viewed";
+    static final String VIEWED = "viewed";
 
     public CaseDetails updateSendNotificationState(String authorization, SendNotificationStateUpdateRequest request) {
         StartEventResponse startEventResponse = caseService.startUpdate(
