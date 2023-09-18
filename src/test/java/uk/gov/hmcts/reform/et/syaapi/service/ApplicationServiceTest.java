@@ -13,6 +13,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import uk.gov.hmcts.ecm.common.helpers.UtilHelper;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
@@ -26,9 +27,11 @@ import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.NotificationService.CoreEmailDetails;
 import uk.gov.service.notify.NotificationClientException;
 
+import java.time.LocalDate;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -423,4 +426,28 @@ class ApplicationServiceTest {
             );
         }
     }
+
+    @Test
+    void shouldSubmitStoredApplication() {
+        SubmitStoredApplicationRequest testRequest = testData.getSubmitStoredApplicationRequest();
+
+        when(caseService.startUpdate(
+            TEST_SERVICE_AUTH_TOKEN,
+            testRequest.getCaseId(),
+            testRequest.getCaseTypeId(),
+            CaseEvent.SUBMIT_STORED_CLAIMANT_TSE
+        )).thenReturn(testData.getUpdateCaseEventResponse());
+
+        applicationService.submitStoredApplication(TEST_SERVICE_AUTH_TOKEN, testRequest);
+
+        ArgumentCaptor<CaseData> argumentCaptor = ArgumentCaptor.forClass(CaseData.class);
+        verify(caseDetailsConverter).caseDataContent(any(), argumentCaptor.capture());
+
+        GenericTseApplicationType actual = argumentCaptor.getValue().getGenericTseApplicationCollection().get(0).getValue();
+        assertThat(actual.getDate()).isEqualTo(UtilHelper.formatCurrentDate(LocalDate.now()));
+        assertThat(actual.getDueDate()).isEqualTo(UtilHelper.formatCurrentDatePlusDays(LocalDate.now(), 7));
+        assertThat(actual.getApplicationState()).isEqualTo("inProgress");
+        assertThat(actual.getStatus()).isEqualTo("Open");
+    }
+
 }
