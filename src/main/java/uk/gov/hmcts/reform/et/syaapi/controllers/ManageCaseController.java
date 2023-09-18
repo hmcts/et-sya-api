@@ -266,7 +266,7 @@ public class ManageCaseController {
     }
 
     /**
-     * Submits a stored Claimant Application
+     * Submits a stored Claimant Application.
      *
      * @param authorization jwt of the user
      * @param request       the request object which contains the claimant application passed from sya-frontend
@@ -278,7 +278,7 @@ public class ManageCaseController {
     public ResponseEntity<CaseDetails> submitStoredClaimantApplication(
         @RequestHeader(AUTHORIZATION) String authorization,
         @NotNull @RequestBody SubmitStoredApplicationRequest request
-    ) throws NotificationClientException {
+    ) {
         log.info("Received submit the stored claimant application request - caseTypeId: {} caseId: {}",
                  request.getCaseTypeId(), request.getCaseId()
         );
