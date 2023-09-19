@@ -243,7 +243,7 @@ dependencies {
 
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4JVersion
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
-  implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.34'
+  implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.35'
 
   implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.10.1'
   implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.15'
