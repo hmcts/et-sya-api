@@ -11,4 +11,7 @@ public class GenericTseApplication implements TornadoDocument {
     String supportingEvidence;
     String copyToOtherPartyYesOrNo;
     String copyToOtherPartyText;
+    String applicant;
+    String applicationDate;
+    String caseNumber;
 }

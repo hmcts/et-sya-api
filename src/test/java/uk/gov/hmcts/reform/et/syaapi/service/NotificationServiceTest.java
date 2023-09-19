@@ -4,14 +4,20 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
@@ -30,8 +36,11 @@ import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
@@ -58,13 +67,15 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SUB
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WELSH_LANGUAGE;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.WARN)
 class NotificationServiceTest {
     public static final String CLAIMANT = "Michael Jackson";
     public static final String NOT_SET = "Not set";
     public static final String TEST_RESPONDENT = "Test Respondent";
     private static final String WITNESS = "witness";
     private static final String CHANGE_DETAILS_APPLICATION_TYPE = "Change my personal details";
-
+    public static final String SEND_EMAIL_PARAMS_DATE_PLUS7_KEY = "datePlus7";
     private final ConcurrentHashMap<String, String> parameters = new ConcurrentHashMap<>();
 
     @MockBean
@@ -73,6 +84,8 @@ class NotificationServiceTest {
     private NotificationsProperties notificationsProperties;
     private CaseTestData caseTestData;
     private CoreEmailDetails details;
+    @Captor
+    ArgumentCaptor<Map<String, Object>> respondentParametersCaptor;
 
     @BeforeEach
     void before() throws NotificationClientException {
@@ -433,6 +446,26 @@ class NotificationServiceTest {
                 NOT_SET,
                 caseTestData.getExpectedDetails().getId().toString()
             );
+        }
+
+        @Test
+        void shouldSendEmailToRespondentTypeBPersonalisationCheck() throws NotificationClientException {
+            notificationService.sendAcknowledgementEmailToRespondents(
+                details,
+                null,
+                caseTestData.getClaimantApplication()
+            );
+
+            verify(notificationClient, times(5)).sendEmail(any(), any(),
+                                                           respondentParametersCaptor.capture(), any());
+            Map<String, Object> respondentParameters = respondentParametersCaptor.getValue();
+            Object targetParameter = respondentParameters.get(SEND_EMAIL_PARAMS_DATE_PLUS7_KEY);
+            String[] dateParts = targetParameter.toString().split(" ");
+            String[] plusSevenDays = LocalDate.now().plusDays(7)
+                .format(DateTimeFormatter.ofPattern("dd MMM yyyy")).split(" ");
+            assertThat(dateParts[0]).isEqualTo(plusSevenDays[0]);
+            assertThat(dateParts[1]).isEqualTo(plusSevenDays[1]);
+            assertThat(dateParts[2]).isEqualTo(plusSevenDays[2]);
         }
 
         @Test
