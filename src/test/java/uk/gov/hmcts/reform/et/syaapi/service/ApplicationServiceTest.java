@@ -443,7 +443,8 @@ class ApplicationServiceTest {
         ArgumentCaptor<CaseData> argumentCaptor = ArgumentCaptor.forClass(CaseData.class);
         verify(caseDetailsConverter).caseDataContent(any(), argumentCaptor.capture());
 
-        GenericTseApplicationType actual = argumentCaptor.getValue().getGenericTseApplicationCollection().get(0).getValue();
+        GenericTseApplicationType actual =
+            argumentCaptor.getValue().getGenericTseApplicationCollection().get(0).getValue();
         assertThat(actual.getDate()).isEqualTo(UtilHelper.formatCurrentDate(LocalDate.now()));
         assertThat(actual.getDueDate()).isEqualTo(UtilHelper.formatCurrentDatePlusDays(LocalDate.now(), 7));
         assertThat(actual.getApplicationState()).isEqualTo("inProgress");

@@ -41,6 +41,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/cases")
+@SuppressWarnings({"PMD.TooManyMethods"})
 public class ManageCaseController {
 
     private final CaseService caseService;
