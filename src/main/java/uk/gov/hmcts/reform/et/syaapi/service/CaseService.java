@@ -234,7 +234,7 @@ public class CaseService {
         // Uploading all documents to document store
         List<DocumentTypeItem> documentList = uploadAllDocuments(authorization, caseRequest, caseData, casePdfFiles,
                                                                  acasCertificates);
-        // Setting cliamantPCqId and documentCollection to case details
+        // Setting claimantPcqId and documentCollection to case details
         caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
         caseDetails.getData().put(DOCUMENT_COLLECTION, documentList);
         // For determining the case is submitted via ET1
