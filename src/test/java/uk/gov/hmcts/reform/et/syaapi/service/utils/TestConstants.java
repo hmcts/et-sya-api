@@ -112,7 +112,6 @@ public final class TestConstants {
     public static final String SWIFT = "Swift";
     public static final String PREFER_NOT_TO_SAY = "Prefer not to say";
     public static final String YES = "Yes";
-    public static final String YES_RESPONSE = "Yes - view document for details";
     public static final String NO = "No";
     public static final String REASONABLE_ADJUSTMENT_DETAILS = "Wheelchair, Walking-Stick";
     public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];

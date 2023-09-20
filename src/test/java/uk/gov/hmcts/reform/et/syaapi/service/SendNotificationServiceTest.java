@@ -37,7 +37,7 @@ import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT
 import static uk.gov.hmcts.reform.et.syaapi.service.SendNotificationService.VIEWED;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.YES_RESPONSE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.YES;
 
 @ExtendWith(MockitoExtension.class)
 class SendNotificationServiceTest {
@@ -78,7 +78,7 @@ class SendNotificationServiceTest {
 
         ListTypeItem<RespondNotificationType> from = ListTypeItem.from(
             GenericTypeItem.from(ID, RespondNotificationType.builder()
-                .state(VIEWED).isClaimantResponseDue(YES_RESPONSE).build()
+                .state(VIEWED).isClaimantResponseDue(YES).build()
             )
         );
 
@@ -144,6 +144,12 @@ class SendNotificationServiceTest {
             UPDATE_NOTIFICATION_RESPONSE
         )).thenReturn(testData.getUpdateCaseEventResponse());
 
+        ListTypeItem<RespondNotificationType> from = ListTypeItem.from(
+            GenericTypeItem.from(ID, RespondNotificationType.builder()
+                .state(VIEWED).isClaimantResponseDue(YES).build()
+            )
+        );
+
         PseResponseTypeItem build = PseResponseTypeItem.builder()
             .id(ID)
             .value(
@@ -159,6 +165,7 @@ class SendNotificationServiceTest {
                 .id(ID)
                 .value(SendNotificationType.builder()
                            .respondCollection(List.of(build))
+                           .respondNotificationTypeCollection(from)
                            .build())
                 .build()
         );
@@ -176,11 +183,13 @@ class SendNotificationServiceTest {
         PseResponseType expected = expectedResponses.get(0).getValue();
         SendNotificationType notification = data.getSendNotificationCollection().get(0).getValue();
         PseResponseType actual = notification.getRespondCollection().get(0).getValue();
+        var tribunalResponse = notification.getRespondNotificationTypeCollection().get(0);
 
         Assertions.assertEquals(expected.getResponse(), actual.getResponse());
         Assertions.assertEquals(expected.getFrom(), actual.getFrom());
         Assertions.assertTrue(actual.getDate().matches("^\\d{1,2} [A-Za-z]{3,4} \\d{4}$"));
         Assertions.assertEquals(actual.getHasSupportingMaterial(), NO);
+        Assertions.assertNull(tribunalResponse.getValue().getIsClaimantResponseDue());
     }
 
     @SuppressWarnings("unchecked")
