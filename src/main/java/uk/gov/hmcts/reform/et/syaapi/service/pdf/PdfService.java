@@ -61,7 +61,7 @@ public class PdfService {
     @Value("${pdf.claimant_response_template}")
     public String claimantResponsePdfTemplate;
 
-    private static final String TSE_FILENAME = "Contact the tribunal.pdf";
+    private static final String TSE_FILENAME = "Contact the tribunal - ";
     private static final String CLAIMANT_RESPONSE = "ClaimantResponse.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private static final String NOT_FOUND = "not found";
@@ -172,7 +172,8 @@ public class PdfService {
 
     private static String getRespondentAcasCertificate(CaseData caseData, AcasCertificate acasCertificate) {
         Optional<RespondentSumTypeItem> respondent = caseData.getRespondentCollection().stream()
-            .filter(r -> acasCertificate.getCertificateNumber().equals(defaultIfEmpty(r.getValue().getRespondentAcas(), "")))
+            .filter(r -> acasCertificate.getCertificateNumber().equals(
+                defaultIfEmpty(r.getValue().getRespondentAcas(), "")))
             .findFirst();
         String acasName = "";
         if (respondent.isPresent()) {
@@ -287,13 +288,13 @@ public class PdfService {
      * @return {@link PdfDecodedMultipartFile} with the claimant tse CYA page in pdf format.
      * @throws DocumentGenerationException if there is an error generating the PDF.
      */
-    public PdfDecodedMultipartFile convertClaimantTseIntoMultipartFile(ClaimantTse claimantTse)
+    public PdfDecodedMultipartFile convertClaimantTseIntoMultipartFile(ClaimantTse claimantTse, String documentName)
         throws DocumentGenerationException {
         return new PdfDecodedMultipartFile(
-            convertClaimantTseToPdf(claimantTse),
-            TSE_FILENAME,
+            convertClaimantTseToPdf(claimantTse, documentName),
+            documentName,
             PDF_FILE_TIKA_CONTENT_TYPE,
-            APP_TYPE_MAP.get(claimantTse.getContactApplicationType())
+            TSE_FILENAME + APP_TYPE_MAP.get(claimantTse.getContactApplicationType())
         );
     }
 
@@ -334,7 +335,8 @@ public class PdfService {
         );
     }
 
-    private byte[] convertClaimantTseToPdf(ClaimantTse claimantTse) throws DocumentGenerationException {
+    private byte[] convertClaimantTseToPdf(ClaimantTse claimantTse, String documentName)
+        throws DocumentGenerationException {
         UploadedDocumentType contactApplicationFile = claimantTse.getContactApplicationFile();
         String supportingEvidence = contactApplicationFile == null
             ? null
@@ -350,7 +352,7 @@ public class PdfService {
 
         return documentGenerationService.genPdfDocument(
             contactTheTribunalPdfTemplate,
-            TSE_FILENAME,
+            documentName,
             genericTseApplication
         );
     }
