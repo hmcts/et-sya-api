@@ -108,6 +108,7 @@ public class CaseService {
             authTokenGenerator.generate(),
             SCOTLAND_CASE_TYPE,
             ALL_CASES_QUERY).getCases()).orElse(Collections.emptyList());
+        log.info("Cases found in Scotland: " + scotlandCases.size());
 
         // Elasticsearch
         List<CaseDetails> englandCases = Optional.ofNullable(ccdApiClient.searchCases(
@@ -115,6 +116,7 @@ public class CaseService {
             authTokenGenerator.generate(),
             ENGLAND_CASE_TYPE,
             ALL_CASES_QUERY).getCases()).orElse(Collections.emptyList());
+        log.info("Cases found in EnglandWales: " + englandCases.size());
 
         return Stream.of(scotlandCases, englandCases).flatMap(Collection::stream).toList();
     }
