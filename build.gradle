@@ -243,9 +243,9 @@ dependencies {
 
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4JVersion
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
-  implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.34'
+  implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.35'
 
-  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.10.0'
+  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.10.1'
   implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.15'
   implementation 'org.json:json:20230618'
   implementation group: 'org.yaml', name: 'snakeyaml', version: '2.2'
@@ -253,7 +253,7 @@ dependencies {
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.80'
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.13'
 
-  implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '6.1.3'
+  implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '6.1.4'
 
   implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
 
