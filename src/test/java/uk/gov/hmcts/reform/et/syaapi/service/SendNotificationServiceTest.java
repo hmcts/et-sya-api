@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.Item;
 import uk.gov.hmcts.et.common.model.ccd.items.ListTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.PseResponseTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
@@ -183,7 +184,7 @@ class SendNotificationServiceTest {
         PseResponseType expected = expectedResponses.get(0).getValue();
         SendNotificationType notification = data.getSendNotificationCollection().get(0).getValue();
         PseResponseType actual = notification.getRespondCollection().get(0).getValue();
-        var tribunalResponse = notification.getRespondNotificationTypeCollection().get(0);
+        Item<RespondNotificationType> tribunalResponse = notification.getRespondNotificationTypeCollection().get(0);
 
         Assertions.assertEquals(expected.getResponse(), actual.getResponse());
         Assertions.assertEquals(expected.getFrom(), actual.getFrom());

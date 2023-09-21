@@ -79,7 +79,7 @@ public class SendNotificationService {
             return;
         }
 
-        for (var item : responses) {
+        for (GenericTypeItem<RespondNotificationType> item : responses) {
             item.getValue().setState(VIEWED);
         }
     }
@@ -176,7 +176,7 @@ public class SendNotificationService {
             return;
         }
 
-        for (var item : responses) {
+        for (GenericTypeItem<RespondNotificationType> item : responses) {
             item.getValue().setIsClaimantResponseDue(null);
         }
     }
