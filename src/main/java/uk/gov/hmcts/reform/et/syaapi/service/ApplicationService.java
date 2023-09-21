@@ -143,9 +143,9 @@ public class ApplicationService {
 
         sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
 
-        TseApplicationHelper.setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService);
-
         createAndAddPdfOfResponse(authorization, request, caseData, appType);
+        TseApplicationHelper.setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService
+        );
 
         return caseService.submitUpdate(
             authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);

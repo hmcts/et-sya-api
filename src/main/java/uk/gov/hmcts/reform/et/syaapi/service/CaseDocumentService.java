@@ -349,7 +349,6 @@ public class CaseDocumentService {
         documentTypeItem.setId(UUID.randomUUID().toString());
 
         DocumentType documentType = new DocumentType();
-        documentType.setTypeOfDocument(typeOfDocument);
         documentType.setUploadedDocument(uploadedDoc);
         documentType.setDateOfCorrespondence(LocalDate.now().toString());
         documentType.setTopLevelDocuments(DocumentHelper.getTopLevelDocument(typeOfDocument));
@@ -383,7 +382,16 @@ public class CaseDocumentService {
         return getDocumentTypeItem(caseDocument, documentType);
     }
 
-
+    /**
+     * Accepts a {@link PdfDecodedMultipartFile} and wraps it in a {@link DocumentTypeItem} and assigns a randon UUID.
+     * @param authToken is the jwt token used to call this service
+     * @param caseType is the jurisdiction of the case e.g. ET_EnglandWales
+     * @param topLevel is the top level document type
+     * @param secondLevel is the second level document type
+     * @param pdfDecodedMultipartFile is the file to be wrapped
+     * @return a {@link DocumentTypeItem} with the document and a new UUID
+     * @throws CaseDocumentException thrown if there is an error encounted whilst uploading a file
+     */
     public DocumentTypeItem createDocumentTypeItemLevels(String authToken,
                                                          String caseType,
                                                          String topLevel,
@@ -395,7 +403,15 @@ public class CaseDocumentService {
                                               pdfDecodedMultipartFile.getDocumentDescription());
     }
 
-    private DocumentTypeItem createDocumentTypeItemLevels(CaseDocument caseDocument,
+    /**
+     * Creates a {@link DocumentTypeItem} from a {@link CaseDocument} and assigns a random UUID.
+     * @param caseDocument is the document to be wrapped
+     * @param topLevel is the top level document type
+     * @param secondLevel is the second level document type
+     * @param shortDescription is the short description of the document
+     * @return a {@link DocumentTypeItem} with the document and a new UUID
+     */
+    public DocumentTypeItem createDocumentTypeItemLevels(CaseDocument caseDocument,
                                                             String topLevel,
                                                             String secondLevel,
                                                             String shortDescription) {

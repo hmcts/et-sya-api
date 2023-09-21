@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
@@ -307,11 +308,16 @@ public class PdfService {
      * @throws DocumentGenerationException if there is an error generating the PDF.
      */
     public PdfDecodedMultipartFile convertClaimantResponseIntoMultipartFile(RespondToApplicationRequest request,
-                                                                            String description)
+                                                                            String description,
+                                                                            GenericTseApplicationType application)
         throws DocumentGenerationException {
+        String documentName = "Application %s  - %s - Claimant Response.pdf".formatted(
+            application.getNumber(),
+            application.getType()
+        );
         return new PdfDecodedMultipartFile(
             convertClaimantResponseToPdf(request),
-            CLAIMANT_RESPONSE,
+            documentName,
             PDF_FILE_TIKA_CONTENT_TYPE,
             description
         );

@@ -14,6 +14,7 @@ import uk.gov.hmcts.ecm.common.helpers.DocumentHelper;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
@@ -29,6 +30,7 @@ import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
+import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
@@ -623,20 +625,28 @@ public class CaseService {
                            String appType)
         throws DocumentGenerationException, CaseDocumentException {
         String description = "Response to " + appType;
-        PdfDecodedMultipartFile multipartResponsePdf =
-            pdfService.convertClaimantResponseIntoMultipartFile(request, description);
+        GenericTseApplicationType application = TseApplicationHelper.getSelectedApplication(
+            caseData.getGenericTseApplicationCollection(),
+            request.getApplicationId())
+            .getValue();
 
-        var responsePdf = caseDocumentService.createDocumentTypeItem(
+        PdfDecodedMultipartFile multipartResponsePdf =
+            pdfService.convertClaimantResponseIntoMultipartFile(request, description, application);
+
+        String applicationDoc = TseApplicationHelper.getApplicationDoc(application);
+        String topLevel = DocumentHelper.getTopLevelDocument(applicationDoc);
+        DocumentTypeItem responsePdf = caseDocumentService.createDocumentTypeItemLevels(
             authorization,
             request.getCaseTypeId(),
-            CLAIMANT_CORRESPONDENCE_DOCUMENT,
+            topLevel,
+            applicationDoc,
             multipartResponsePdf
         );
 
         if (isEmpty(caseData.getDocumentCollection())) {
             caseData.setDocumentCollection(new ArrayList<>());
         }
-        var docCollection = caseData.getDocumentCollection();
+        List<DocumentTypeItem> docCollection = caseData.getDocumentCollection();
         docCollection.add(responsePdf);
     }
 
