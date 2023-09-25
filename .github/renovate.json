@@ -4,11 +4,6 @@
     "local>hmcts/.github:renovate-config",
     "local>hmcts/.github//renovate/automerge-all"
   ], 
-  "enabledManagers": [
-    "helm-requirements",
-    "gradle-wrapper",
-    "gradle"
-  ],
   "labels": [
     "dependencies"
   ],
