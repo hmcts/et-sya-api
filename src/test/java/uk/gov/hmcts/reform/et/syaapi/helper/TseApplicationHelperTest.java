@@ -18,8 +18,9 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_TO_AMEND_RESPONSE;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.CASE_MANAGEMENT;
 
 class TseApplicationHelperTest {
     @MockBean
@@ -58,18 +59,20 @@ class TseApplicationHelperTest {
         @Test
         void applicationStatusWaitingForTheTribunal() {
             RespondToApplicationRequest request = data.getRespondToApplicationRequest();
-            GenericTseApplicationType app = GenericTseApplicationType.builder().type("Amend Response").build();
+            GenericTseApplicationType app = GenericTseApplicationType.builder().type("Amend response").build();
             CaseData caseData = data.getCaseData();
             caseDocumentService = mock(CaseDocumentService.class);
-            DocumentTypeItem docType = DocumentTypeItem.builder().id("1").value(new DocumentType()).build();
-            when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(docType);
-
+            doCallRealMethod().when(caseDocumentService).createDocumentTypeItem(any(), any());
             TseApplicationHelper.setRespondentApplicationWithResponse(request, app, caseData, caseDocumentService);
 
             Assertions.assertEquals("waitingForTheTribunal", app.getApplicationState());
             Assertions.assertEquals(
-                caseData.getDocumentCollection().get(0).getValue().getShortDescription(),
-                "Response to Amend Response"
+                CASE_MANAGEMENT,
+                caseData.getDocumentCollection().get(0).getValue().getTopLevelDocuments()
+            );
+            Assertions.assertEquals(
+                APP_TO_AMEND_RESPONSE,
+                caseData.getDocumentCollection().get(0).getValue().getCaseManagementDocuments()
             );
         }
     }

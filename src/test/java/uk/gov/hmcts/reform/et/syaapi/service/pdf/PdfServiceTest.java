@@ -313,27 +313,29 @@ class PdfServiceTest {
         assertThat(pdfDecodedMultipartFiles).hasSize(1);
     }
 
-//    @Test
-//    void shouldCreatePdfDecodedMultipartFileFromTseApplication() throws DocumentGenerationException {
-//        caseTestData.getCaseData().setClaimantTse(new ClaimantTse());
-//        PdfDecodedMultipartFile pdfDecodedMultipartFile =
-//            pdfService.convertClaimantTseIntoMultipartFile(caseTestData.getClaimantTse());
-//        assertThat(pdfDecodedMultipartFile).isNotNull();
-//    }
-//
-//    @Test
-//    void shouldCreatePdfDecodedMultipartFileFromTseApplicationNoSupportingFile() throws DocumentGenerationException {
-//        caseTestData.getClaimantTse().setContactApplicationFile(null);
-//        PdfDecodedMultipartFile pdfDecodedMultipartFile =
-//            pdfService.convertClaimantTseIntoMultipartFile(caseTestData.getClaimantTse());
-//        assertThat(pdfDecodedMultipartFile).isNotNull();
-//    }
+    @Test
+    void shouldCreatePdfDecodedMultipartFileFromTseApplication() throws DocumentGenerationException {
+        caseTestData.getCaseData().setClaimantTse(new ClaimantTse());
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            pdfService.convertClaimantTseIntoMultipartFile(caseTestData.getClaimantTse(), "docName");
+        assertThat(pdfDecodedMultipartFile).isNotNull();
+    }
+
+    @Test
+    void shouldCreatePdfDecodedMultipartFileFromTseApplicationNoSupportingFile() throws DocumentGenerationException {
+        caseTestData.getClaimantTse().setContactApplicationFile(null);
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            pdfService.convertClaimantTseIntoMultipartFile(caseTestData.getClaimantTse(), "docName");
+        assertThat(pdfDecodedMultipartFile).isNotNull();
+    }
 
     @Test
     void shouldCreatePdfDecodedMultipartFileFromClaimantResponse() throws DocumentGenerationException {
         var request = caseTestData.getRespondToApplicationRequest();
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            pdfService.convertClaimantResponseIntoMultipartFile(request, "Response to app");
+            pdfService.convertClaimantResponseIntoMultipartFile(
+                request, "Response to app",
+                caseTestData.getCaseData().getGenericTseApplicationCollection().get(0).getValue());
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
 
@@ -342,7 +344,8 @@ class PdfServiceTest {
         var request = caseTestData.getRespondToApplicationRequest();
         request.getResponse().setHasSupportingMaterial("No");
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            pdfService.convertClaimantResponseIntoMultipartFile(request, "Response to app");
+            pdfService.convertClaimantResponseIntoMultipartFile(request, "Response to app",
+                                    caseTestData.getCaseData().getGenericTseApplicationCollection().get(0).getValue());
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
 

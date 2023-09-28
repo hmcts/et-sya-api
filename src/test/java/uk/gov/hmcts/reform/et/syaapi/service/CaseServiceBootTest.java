@@ -94,7 +94,8 @@ class CaseServiceBootTest {
             eq(TEST_SERVICE_AUTH_TOKEN),
             eq(caseTestData.getCaseRequest().getCaseTypeId()),
             anyList(),
-            anyList()
+            anyList(),
+            any()
         )).thenReturn(caseTestData.getUploadDocumentResponse());
         when(notificationService.sendSubmitCaseConfirmationEmail(
             eq(caseTestData.getCaseRequest()),

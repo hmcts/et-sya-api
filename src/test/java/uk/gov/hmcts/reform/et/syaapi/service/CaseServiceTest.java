@@ -63,10 +63,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.ENGLANDWALES_CASE_TYPE_ID;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
@@ -379,15 +376,14 @@ class CaseServiceTest {
     @SneakyThrows
     @Test
     void submitCaseShouldAddSupportingDocumentToDocumentCollection() {
-        when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any()))
-            .thenReturn(new LinkedList<>());
-
-        when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(createDocumentTypeItem("Other"));
+        when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any(), any()))
+            .thenReturn(List.of(createDocumentTypeItem("Other")));
 
         CaseDetails caseDetails = caseService.submitCase(
             TEST_SERVICE_AUTH_TOKEN,
             caseTestData.getCaseRequest()
         );
+        System.out.println(caseDetails.getData());
 
         assertEquals(1, ((ArrayList<?>)caseDetails.getData().get("documentCollection")).size());
         List<?> docCollection = (List<?>) caseDetails.getData().get("documentCollection");
@@ -406,7 +402,7 @@ class CaseServiceTest {
 
     @Test
     void submitCaseShouldSendErrorEmail() throws PdfServiceException, CaseDocumentException {
-        when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any()))
+        when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any(), any()))
             .thenThrow(new CaseDocumentException("Failed to upload documents"));
 
         when(notificationService.sendDocUploadErrorEmail(any(), any(), any(), any()))
@@ -620,7 +616,7 @@ class CaseServiceTest {
         @Test
         void setsShortDescriptionCorrectly() {
             CaseDetails caseDetails = CaseDetails.builder().data(new HashMap<>()).build();
-            String actual = "description";
+            String actual = "withdraw";
             caseService.uploadTseSupportingDocument(caseDetails, new UploadedDocumentType(), actual);
 
             CaseData caseData = mapRequestCaseDataToCaseData(caseDetails.getData());
