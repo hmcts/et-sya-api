@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
@@ -92,6 +93,7 @@ class ManageCaseControllerIntegrationTest {
         when(applicationService.submitApplication(any(), any())).thenReturn(caseDetailsResponse);
         when(applicationService.respondToApplication(any(), any())).thenReturn(caseDetailsResponse);
         when(applicationService.updateTribunalResponseAsViewed(any(),any())).thenReturn(caseDetailsResponse);
+        when(applicationService.submitStoredApplication(any(),any())).thenReturn(caseDetailsResponse);
     }
 
     @DisplayName("Should get single case details")
@@ -255,6 +257,24 @@ class ManageCaseControllerIntegrationTest {
 
         mockMvc.perform(
                 put("/cases/tribunal-response-viewed")
+                    .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(resourceLoader.toJson(caseRequest)))
+            .andExpect(status().isOk())
+            .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
+    }
+
+    @DisplayName("Should update tribunal response as viewed")
+    @Test
+    void submitStoredApplicationRequest() throws Exception {
+        SubmitStoredApplicationRequest caseRequest = SubmitStoredApplicationRequest.builder()
+            .caseId("12")
+            .caseTypeId(SCOTLAND_CASE_TYPE)
+            .applicationId("1234")
+            .build();
+
+        mockMvc.perform(
+                put("/cases/submit-stored-claimant-application")
                     .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(resourceLoader.toJson(caseRequest)))

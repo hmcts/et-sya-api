@@ -58,7 +58,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
     public static final String CASES_RESPOND_TO_APPLICATION = "/cases/respond-to-application";
     public static final String CASES_CHANGE_APPLICATION_STATUS = "/cases/change-application-status";
     public static final String CASES_TRIBUNAL_RESPONSE_VIEWED = "/cases/tribunal-response-viewed";
-    private static final String CASES_SUBMIT_STORED_CLAIMANT_APPLICATION = "/cases/submit-stored-claimant-application";
+    public static final String CASES_SUBMIT_STORED_CLAIMANT_APPLICATION = "/cases/submit-stored-claimant-application";
     public static final String INVALID_TOKEN = "invalid_token";
     private Long caseId;
     private static final String CASE_TYPE = "ET_EnglandWales";
@@ -327,7 +327,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
         SubmitStoredApplicationRequest submitStoredApplicationRequest = SubmitStoredApplicationRequest.builder()
             .caseId(caseId.toString())
             .caseTypeId(CASE_TYPE)
-            .applicationId("123")
+            .applicationId(appId)
             .build();
 
         RestAssured.given()
@@ -521,7 +521,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
         SubmitStoredApplicationRequest submitStoredApplicationRequest = SubmitStoredApplicationRequest.builder()
             .caseId(caseId.toString())
             .caseTypeId(CASE_TYPE)
-            .applicationId("123")
+            .applicationId(appId)
             .build();
 
         RestAssured.given()
