@@ -36,7 +36,14 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -135,7 +142,8 @@ public class CaseService {
 
         log.info("England cases2 size: {}", englandCases2.size());
 
-        return Stream.of(scotlandCases, englandCases, scotlandCases2, englandCases2).flatMap(Collection::stream).toList();
+        return Stream.of(scotlandCases, englandCases, scotlandCases2, englandCases2)
+            .flatMap(Collection::stream).toList();
     }
 
     /**
