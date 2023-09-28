@@ -213,6 +213,15 @@ class CaseServiceTest {
 
     @Test
     void shouldGetAllUserCases() {
+        when(idamClient.getUserInfo(any())).thenReturn(new UserInfo(
+            null,
+            USER_ID,
+            TEST_NAME,
+            caseTestData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
+            caseTestData.getCaseData().getClaimantIndType().getClaimantLastName(),
+            null
+        ));
+        when(ccdApiClient.searchForCitizen(any(), any(), any(), any(), any(), any())).thenReturn(new ArrayList<>());
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(ccdApiClient.searchCases(
             TEST_SERVICE_AUTH_TOKEN,
@@ -235,6 +244,17 @@ class CaseServiceTest {
 
     @Test
     void shouldGetAllUserCasesDifferentCaseType() {
+        when(idamClient.getUserInfo(any())).thenReturn(new UserInfo(
+            null,
+            USER_ID,
+            TEST_NAME,
+            caseTestData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
+            caseTestData.getCaseData().getClaimantIndType().getClaimantLastName(),
+            null
+        ));
+
+        when(ccdApiClient.searchForCitizen(any(), any(), any(), any(), any(), any())).thenReturn(new ArrayList<>());
+
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
 
         when(ccdApiClient.searchCases(
