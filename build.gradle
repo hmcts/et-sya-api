@@ -7,7 +7,7 @@ plugins {
   id 'org.springframework.boot' version '2.7.16'
   id 'org.owasp.dependencycheck' version '8.4.0'
   id 'com.github.ben-manes.versions' version '0.48.0'
-  id 'org.sonarqube' version '4.3.1.3277'
+  id 'org.sonarqube' version '4.4.0.3356'
   id 'hmcts.ccd.sdk' version '5.4.4'
   id 'au.com.dius.pact' version '4.3.15'
 }
@@ -272,7 +272,7 @@ dependencies {
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     exclude group: 'com.vaadin.external.google', module: 'android-json'
   }
-  testImplementation group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version: '3.15.1'
+  testImplementation group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version: '3.15.2'
   testImplementation('org.assertj:assertj-core:3.24.2')
   testImplementation group: 'io.rest-assured', name: 'rest-assured'
   testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit', version: '3.2.2'
