@@ -56,6 +56,7 @@ class ManageCaseControllerIntegrationTest {
     private StartEventResponse startEventResponse;
 
     private static final String AUTH_TOKEN = "testToken";
+    private static final String APP_ID = "1234";
 
     @Autowired
     private MockMvc mockMvc;
@@ -232,7 +233,7 @@ class ManageCaseControllerIntegrationTest {
         RespondToApplicationRequest caseRequest = RespondToApplicationRequest.builder()
             .caseTypeId(SCOTLAND_CASE_TYPE)
             .caseId("12")
-            .applicationId("1234")
+            .applicationId(APP_ID)
             .response(new TseRespondType())
             .build();
 
@@ -251,7 +252,7 @@ class ManageCaseControllerIntegrationTest {
         TribunalResponseViewedRequest caseRequest = TribunalResponseViewedRequest.builder()
             .caseTypeId(SCOTLAND_CASE_TYPE)
             .caseId("12")
-            .appId("1234")
+            .appId(APP_ID)
             .responseId("1")
             .build();
 
@@ -270,7 +271,7 @@ class ManageCaseControllerIntegrationTest {
         SubmitStoredApplicationRequest caseRequest = SubmitStoredApplicationRequest.builder()
             .caseId("12")
             .caseTypeId(SCOTLAND_CASE_TYPE)
-            .applicationId("1234")
+            .applicationId(APP_ID)
             .build();
 
         mockMvc.perform(
