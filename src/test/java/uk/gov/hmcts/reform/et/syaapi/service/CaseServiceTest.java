@@ -694,31 +694,31 @@ class CaseServiceTest {
         );
     }
 
-//    @Test
-//    void shouldInvokeClaimantTsePdf()
-//        throws DocumentGenerationException {
-//        when(pdfService.convertClaimantTseIntoMultipartFile(any())).thenReturn(
-//            tsePdfMultipartFileMock);
-//
-//        assertDoesNotThrow(() ->
-//                               caseService.uploadTseCyaAsPdf(
-//                                   TEST_SERVICE_AUTH_TOKEN,
-//                                   caseTestData.getCaseDetails(),
-//                                   caseTestData.getClaimantTse(),
-//                                   "TEST"
-//                               )
-//        );
-//    }
+    @Test
+    void shouldInvokeClaimantTsePdf()
+        throws DocumentGenerationException {
+        when(pdfService.convertClaimantTseIntoMultipartFile(any(), any(), any())).thenReturn(
+            tsePdfMultipartFileMock);
 
-//    @SneakyThrows
-//    @Test
-//    void givenPdfServiceErrorProducesDocumentGenerationException() {
-//        when(pdfService.convertClaimantTseIntoMultipartFile(any())).thenThrow(
-//            new DocumentGenerationException(TEST));
-//
-//        assertThrows(DocumentGenerationException.class, () -> caseService.uploadTseCyaAsPdf(
-//            "", caseTestData.getCaseDetails(), caseTestData.getClaimantTse(), ""));
-//    }
+        assertDoesNotThrow(() ->
+                               caseService.uploadTseCyaAsPdf(
+                                   TEST_SERVICE_AUTH_TOKEN,
+                                   caseTestData.getCaseDetails(),
+                                   caseTestData.getClaimantTse(),
+                                   "TEST"
+                               )
+        );
+    }
+
+    @SneakyThrows
+    @Test
+    void givenPdfServiceErrorProducesDocumentGenerationException() {
+        when(pdfService.convertClaimantTseIntoMultipartFile(any(), any(), any())).thenThrow(
+            new DocumentGenerationException(TEST));
+
+        assertThrows(DocumentGenerationException.class, () -> caseService.uploadTseCyaAsPdf(
+            "", caseTestData.getCaseDetails(), caseTestData.getClaimantTse(), ""));
+    }
 
     private List<JurCodesTypeItem> mockJurCodesTypeItems() {
         JurCodesTypeItem item = new JurCodesTypeItem();

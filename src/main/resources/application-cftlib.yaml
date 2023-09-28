@@ -1,7 +1,7 @@
 idam:
   api:
-    url: http://localhost:5000
-    jwksUrl: http://localhost:5000/o/jwks
+    url: http://localhost:5062
+    jwksUrl: http://localhost:5062/o/jwks
   s2s-auth:
     url: http://localhost:8489
     secret: AAAAAAAAAAAAAAAA
