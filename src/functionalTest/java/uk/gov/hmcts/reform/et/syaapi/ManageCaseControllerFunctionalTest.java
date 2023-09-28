@@ -518,16 +518,14 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
 
     @Test
     void submitStoredClaimantApplicationWithInvalidAuthTokenShouldReturn403() {
-        SubmitStoredApplicationRequest submitStoredApplicationRequest = SubmitStoredApplicationRequest.builder()
-            .caseId(caseId.toString())
-            .caseTypeId(CASE_TYPE)
-            .applicationId(appId)
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseData(caseData)
             .build();
 
         RestAssured.given()
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, INVALID_TOKEN))
-            .body(submitStoredApplicationRequest)
+            .body(caseRequest)
             .put(CASES_SUBMIT_STORED_CLAIMANT_APPLICATION)
             .then()
             .statusCode(HttpStatus.SC_FORBIDDEN)
