@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
@@ -781,4 +782,40 @@ public class NotificationService {
         }
         return abText;
     }
+
+    public SendEmailResponse sendSubmitStoredEmailToClaimant(CoreEmailDetails details,
+                                                             GenericTseApplicationTypeItem appToModify) {
+        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
+
+        addCommonParameters(
+            claimantParameters,
+            details.claimant,
+            details.respondentNames,
+            details.caseId,
+            details.caseNumber
+        );
+
+        SendEmailResponse claimantEmail;
+        String emailToClaimantTemplate = notificationsProperties.getClaimantTseEmailSubmitStoredTemplateId();
+        claimantParameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, details.hearingDate);
+        claimantParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, appToModify.getValue().getType());
+        claimantParameters.put(
+            SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
+            notificationsProperties.getCitizenPortalLink() + details.caseId
+        );
+
+        try {
+            claimantEmail = notificationClient.sendEmail(
+                emailToClaimantTemplate,
+                details.caseData.getClaimantType().getClaimantEmailAddress(),
+                claimantParameters,
+                details.caseId
+            );
+        } catch (NotificationClientException ne) {
+            throw new NotificationException(ne);
+        }
+
+        return claimantEmail;
+    }
+
 }

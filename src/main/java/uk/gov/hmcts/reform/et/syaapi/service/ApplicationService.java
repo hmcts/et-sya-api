@@ -369,12 +369,32 @@ public class ApplicationService {
         appToModify.getValue().setApplicationState(IN_PROGRESS);
         appToModify.getValue().setStatus(OPEN_STATE);
 
-        return caseService.submitUpdate(
+        CaseDetails finalCaseDetails =  caseService.submitUpdate(
             authorization,
             request.getCaseId(),
             caseDetailsConverter.caseDataContent(startEventResponse, caseData),
             request.getCaseTypeId()
         );
+
+        sendSubmitStoredEmails(finalCaseDetails, appToModify);
+
+        return finalCaseDetails;
+    }
+
+    private void sendSubmitStoredEmails(CaseDetails finalCaseDetails, GenericTseApplicationTypeItem appToModify) {
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(finalCaseDetails.getData());
+        ClaimantIndType claimantIndType = caseData.getClaimantIndType();
+
+        CoreEmailDetails details = new CoreEmailDetails(
+            caseData,
+            claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName(),
+            caseData.getEthosCaseReference(),
+            getRespondentNames(caseData),
+            NotificationsHelper.getNearestHearingToReferral(caseData, "Not set"),
+            finalCaseDetails.getId().toString()
+        );
+
+        notificationService.sendSubmitStoredEmailToClaimant(details, appToModify);
     }
 
 }
