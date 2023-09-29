@@ -4,7 +4,7 @@ package uk.gov.hmcts.reform.et.syaapi.service.utils.data;
 import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
-import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantWorkAddressType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
@@ -100,13 +100,13 @@ public final class TestDataProvider {
         return caseData;
     }
 
-    public static GenericTseApplicationTypeItem generateGenericTseAppTypeItem(List<String> argumentsList) {
-        GenericTseApplicationTypeItem tseAppTypeItem = new GenericTseApplicationTypeItem();
-        GenericTseApplicationType tseApplicationType = new GenericTseApplicationType();
-        tseApplicationType.setApplicant(argumentsList.get(0));
-        tseApplicationType.setDate(argumentsList.get(3));
-        tseAppTypeItem.setValue(tseApplicationType);
-        return tseAppTypeItem;
+    public static TypeItem<GenericTseApplicationType> generateGenericTseAppType(List<String> argumentsList) {
+        TypeItem<GenericTseApplicationType> tseApplicationType = new TypeItem<>();
+        GenericTseApplicationType value = new GenericTseApplicationType();
+        value.setApplicant(argumentsList.get(0));
+        value.setDate(argumentsList.get(3));
+        tseApplicationType.setValue(value);
+        return tseApplicationType;
     }
 
     public static ClaimantTse generateClaimantTse(List<String> argumentsList) {

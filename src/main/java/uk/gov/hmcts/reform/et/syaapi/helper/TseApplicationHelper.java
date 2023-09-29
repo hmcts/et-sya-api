@@ -7,16 +7,15 @@ import org.apache.commons.collections4.CollectionUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
-import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.items.TseAdminRecordDecisionTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.items.TseRespondTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.ListTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.TseAdminRecordDecisionType;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
@@ -39,10 +38,10 @@ public final class TseApplicationHelper {
      *
      * @param applications - list of all applications attached to the case
      * @param applicationId - id of application we're trying to find
-     * @return the {@link GenericTseApplicationTypeItem} to be updated
+     * @return the {@link GenericTseApplicationType} to be updated
      */
-    public static GenericTseApplicationTypeItem getSelectedApplication(
-        List<GenericTseApplicationTypeItem> applications,
+    public static TypeItem<GenericTseApplicationType> getSelectedApplication(
+        ListTypeItem<GenericTseApplicationType> applications,
         String applicationId) {
         return applications.stream()
             .filter(a -> a.getId().equals(applicationId))
@@ -54,15 +53,16 @@ public final class TseApplicationHelper {
      * Finds the admin decision by ID.
      *
      * @param selectedApplication - application to update
-     * @param adminDecisionId - id of decision we're trying to find
-     * @return the {@link TseAdminRecordDecisionTypeItem} to be updated
+     * @param adminDecisionId     - id of decision we're trying to find
+     * @return the {@link TseAdminRecordDecisionType} to be updated
      */
-    public static TseAdminRecordDecisionTypeItem findAdminDecision(GenericTseApplicationTypeItem selectedApplication,
-                                                          String adminDecisionId) {
+    public static TypeItem<TseAdminRecordDecisionType> findAdminDecision(
+            TypeItem<GenericTseApplicationType> selectedApplication,
+            String adminDecisionId) {
         return selectedApplication.getValue().getAdminDecision().stream()
-            .filter(a -> a.getId().equals(adminDecisionId))
-            .findFirst()
-            .orElse(null);
+                .filter(a -> a.getId().equals(adminDecisionId))
+                .findFirst()
+                .orElse(null);
     }
 
     /**
@@ -70,9 +70,9 @@ public final class TseApplicationHelper {
      *
      * @param selectedApplication - application to update
      * @param responseId - id of decision we're trying to find
-     * @return the {@link TseRespondTypeItem} to be updated
+     * @return the {@link TseRespondType} to be updated
      */
-    public static TseRespondTypeItem findResponse(GenericTseApplicationTypeItem selectedApplication,
+    public static TypeItem<TseRespondType> findResponse(TypeItem<GenericTseApplicationType> selectedApplication,
                                                   String responseId) {
         return selectedApplication.getValue().getRespondCollection().stream()
             .filter(a -> a.getId().equals(responseId))
@@ -93,7 +93,7 @@ public final class TseApplicationHelper {
                                                             CaseData caseData,
                                                             CaseDocumentService caseDocumentService) {
         if (CollectionUtils.isEmpty(appToModify.getRespondCollection())) {
-            appToModify.setRespondCollection(new ArrayList<>());
+            appToModify.setRespondCollection(new ListTypeItem<TseRespondType>());
         }
         TseRespondType responseToAdd = request.getResponse();
         responseToAdd.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
@@ -114,7 +114,7 @@ public final class TseApplicationHelper {
             responseToAdd.getSupportingMaterial().add(documentTypeItem);
         }
 
-        appToModify.getRespondCollection().add(TseRespondTypeItem.builder()
+        appToModify.getRespondCollection().add(TypeItem.<TseRespondType>builder()
                                                    .id(UUID.randomUUID().toString())
                                                    .value(responseToAdd).build());
         appToModify.setResponsesCount(
