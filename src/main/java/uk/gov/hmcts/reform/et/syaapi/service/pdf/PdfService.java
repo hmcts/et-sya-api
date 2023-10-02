@@ -12,11 +12,11 @@ import org.elasticsearch.common.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
-import uk.gov.hmcts.ecm.common.helpers.UtilHelper;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantResponseCya;
@@ -24,14 +24,12 @@ import uk.gov.hmcts.reform.et.syaapi.models.GenericTseApplication;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationException;
 import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationService;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.ClaimantTseUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -65,7 +63,6 @@ public class PdfService {
     public String claimantResponsePdfTemplate;
 
     private static final String TSE_FILENAME = "Contact the tribunal - ";
-    private static final String CLAIMANT_TITLE = "Claimant";
     private static final String CLAIMANT_RESPONSE = "ClaimantResponse.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private static final String NOT_FOUND = "not found";
@@ -294,16 +291,6 @@ public class PdfService {
      */
     public PdfDecodedMultipartFile convertClaimantTseIntoMultipartFile(ClaimantTse claimantTse, String documentName)
         throws DocumentGenerationException {
-
-        GenericTseApplication genericTseApplication = ClaimantTseUtil.getCurrentGenericTseApplication(claimantTse,
-                                                                                              tseApplicationTypeItems,
-                                                                                                      caseReference);
-        byte[] tseApplicationPdf = documentGenerationService.genPdfDocument(
-            contactTheTribunalPdfTemplate,
-            TSE_FILENAME,
-            genericTseApplication
-        );
-
         return new PdfDecodedMultipartFile(
             convertClaimantTseToPdf(claimantTse, documentName),
             documentName,
@@ -336,18 +323,12 @@ public class PdfService {
         );
     }
 
-    private byte[] convertClaimantResponseToPdf(RespondToApplicationRequest request, String ethosCaseReference,
-                                                String appTypeDescription)
+    private byte[] convertClaimantResponseToPdf(RespondToApplicationRequest request)
         throws DocumentGenerationException {
         TseRespondType claimantResponse = request.getResponse();
         String fileName = claimantResponse.getSupportingMaterial() != null
             ? request.getSupportingMaterialFile().getDocumentFilename() : null;
-
         ClaimantResponseCya claimantResponseCya = ClaimantResponseCya.builder()
-            .caseNumber(ethosCaseReference)
-            .applicant(CLAIMANT_TITLE)
-            .applicationType(appTypeDescription)
-            .applicationDate(UtilHelper.formatCurrentDate(LocalDate.now()))
             .response(claimantResponse.getResponse())
             .fileName(fileName)
             .copyToOtherPartyYesOrNo(claimantResponse.getCopyToOtherParty())
@@ -381,5 +362,4 @@ public class PdfService {
             genericTseApplication
         );
     }
-
 }

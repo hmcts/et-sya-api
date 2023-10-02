@@ -74,9 +74,7 @@ class NotificationHelperTest {
         repItem.setValue(rep);
         List<RepresentedTypeRItem> itemList = new ArrayList<>();
         itemList.add(repItem);
-
         CaseData caseData = caseTestData.getCaseData();
-        caseData.getRespondentCollection().get(0).getValue().setRespondentEmail(null);
         caseData.setRepCollection(itemList);
 
         // When

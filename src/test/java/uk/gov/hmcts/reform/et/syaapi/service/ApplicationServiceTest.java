@@ -212,7 +212,7 @@ class ApplicationServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             testRequest.getCaseId(),
             testRequest.getCaseTypeId(),
-            CaseEvent.UPDATE_APPLICATION_STATE
+            CaseEvent.CLAIMANT_TSE_RESPOND
         )).thenReturn(testData.getUpdateCaseEventResponse());
 
         applicationService.changeApplicationStatus(TEST_SERVICE_AUTH_TOKEN, testRequest);

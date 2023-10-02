@@ -163,7 +163,7 @@ public class ApplicationService {
             authorization,
             request.getCaseId(),
             request.getCaseTypeId(),
-            CaseEvent.UPDATE_APPLICATION_STATE
+            CaseEvent.CLAIMANT_TSE_RESPOND
         );
 
         CaseData caseData = EmployeeObjectMapper

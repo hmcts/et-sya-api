@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,18 +24,18 @@ import java.util.UUID;
 
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UK_LOCAL_DATE_PATTERN;
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @SuppressWarnings({"checkstyle:HideUtilityClassConstructor"})
 public final class TseApplicationHelper {
 
+    public static final DateTimeFormatter NEW_DATE_PATTERN = DateTimeFormatter.ofPattern("d MMMM yyyy");
     public static final String CLAIMANT = "Claimant";
     public static final String WAITING_FOR_TRIBUNAL = "waitingForTheTribunal";
 
     public static String formatCurrentDate(LocalDate date) {
-        return date.format(UK_LOCAL_DATE_PATTERN);
+        return date.format(NEW_DATE_PATTERN);
     }
 
     /**

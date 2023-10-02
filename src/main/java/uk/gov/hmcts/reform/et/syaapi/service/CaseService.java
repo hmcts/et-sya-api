@@ -646,8 +646,8 @@ public class CaseService {
         if (isEmpty(caseData.getDocumentCollection())) {
             caseData.setDocumentCollection(new ArrayList<>());
         }
-
-        caseData.getDocumentCollection().add(responsePdf);
+        List<DocumentTypeItem> docCollection = caseData.getDocumentCollection();
+        docCollection.add(responsePdf);
     }
 
 }
