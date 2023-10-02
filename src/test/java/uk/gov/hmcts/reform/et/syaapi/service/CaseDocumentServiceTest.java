@@ -16,6 +16,7 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -433,7 +434,7 @@ class CaseDocumentServiceTest {
 
         List<PdfDecodedMultipartFile> acasCertificates = new ArrayList<>();
         caseDocumentService.uploadAllDocuments(MOCK_TOKEN, CASE_TYPE, MOCK_PDF_DECODED_MULTIPART_FILE_LIST,
-                                               acasCertificates
+                                               acasCertificates, new CaseData()
         );
     }
 
@@ -448,7 +449,7 @@ class CaseDocumentServiceTest {
         List<PdfDecodedMultipartFile> acasCertificates = new ArrayList<>();
         acasCertificates.add(MOCK_PDF_DECODED_MULTIPART_FILE);
         caseDocumentService.uploadAllDocuments(MOCK_TOKEN, CASE_TYPE, null,
-                                               acasCertificates
+                                               acasCertificates, new CaseData()
         );
     }
 

@@ -860,7 +860,7 @@
       "id": "1xx567",
       "value": {
         "number": "1234",
-        "type": "Amend details",
+        "type": "Amend response",
         "applicant": "Respondent",
         "date": "2023-05-01",
         "details": "Need to amend",

@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.ecm.common.helpers.UtilHelper;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
@@ -38,6 +40,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
@@ -62,7 +65,7 @@ public class PdfService {
     @Value("${pdf.claimant_response_template}")
     public String claimantResponsePdfTemplate;
 
-    private static final String TSE_FILENAME = "Contact the tribunal.pdf";
+    private static final String TSE_FILENAME = "Contact the tribunal - ";
     private static final String CLAIMANT_TITLE = "Claimant";
     private static final String CLAIMANT_RESPONSE = "ClaimantResponse.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
@@ -159,27 +162,37 @@ public class PdfService {
         if (Strings.isNullOrEmpty(claimantLastName)) {
             claimantLastName = userInfo.getFamilyName();
         }
-        return "ET1_CASE_DOCUMENT_"
-            + claimantFirstName.replace(" ", "_")
-            + "_"
-            + claimantLastName.replace(" ", "_")
-            + (ENGLISH_LANGUAGE.equals(documentLanguage) ? "" : "_" + documentLanguage)
+        return "ET1 - "
+            + claimantFirstName
+            + " "
+            + claimantLastName
+            + (ENGLISH_LANGUAGE.equals(documentLanguage) ? "" : " " + documentLanguage)
             + ".pdf";
     }
 
     private static String createPdfDocumentNameFromCaseDataAndAcasCertificate(
         CaseData caseData, AcasCertificate acasCertificate) {
-        return "ET1_ACAS_CERTIFICATE_"
-            + caseData.getClaimantIndType().getClaimantFirstNames().replace(" ", "_")
-            + "_"
-            + caseData.getClaimantIndType().getClaimantLastName().replace(" ", "_")
-            + "_"
+        return getRespondentAcasCertificate(caseData, acasCertificate);
+    }
+
+    private static String getRespondentAcasCertificate(CaseData caseData, AcasCertificate acasCertificate) {
+        Optional<RespondentSumTypeItem> respondent = caseData.getRespondentCollection().stream()
+            .filter(r -> acasCertificate.getCertificateNumber().equals(
+                defaultIfEmpty(r.getValue().getRespondentAcas(), "")))
+            .findFirst();
+        String acasName = "";
+        if (respondent.isPresent()) {
+            acasName = respondent.get().getValue().getRespondentName();
+        }
+        return "ACAS Certificate - "
+            + acasName
+            + " - "
             + acasCertificate.getCertificateNumber().replace("/", "_")
             + ".pdf";
     }
 
     private static String createPdfDocumentDescriptionFromCaseData(CaseData caseData) {
-        return "Case Details - "
+        return "ET1 - "
             + caseData.getClaimantIndType().getClaimantFirstNames()
             + " " + caseData.getClaimantIndType().getClaimantLastName();
     }
@@ -187,12 +200,7 @@ public class PdfService {
     private static String createPdfDocumentDescriptionFromCaseDataAndAcasCertificate(
         CaseData caseData,
         AcasCertificate acasCertificate) {
-        return "ACAS Certificate - "
-            + caseData.getClaimantIndType().getClaimantFirstNames()
-            + " "
-            + caseData.getClaimantIndType().getClaimantLastName()
-            + " - "
-            + acasCertificate.getCertificateNumber();
+        return getRespondentAcasCertificate(caseData, acasCertificate);
     }
 
 
@@ -288,7 +296,8 @@ public class PdfService {
     public PdfDecodedMultipartFile convertClaimantTseIntoMultipartFile(
         ClaimantTse claimantTse,
         List<GenericTseApplicationTypeItem> tseApplicationTypeItems,
-        String caseReference)
+        String caseReference,
+        String docName)
 
         throws DocumentGenerationException {
 
@@ -297,15 +306,15 @@ public class PdfService {
                                                                                                       caseReference);
         byte[] tseApplicationPdf = documentGenerationService.genPdfDocument(
             contactTheTribunalPdfTemplate,
-            TSE_FILENAME,
+            docName,
             genericTseApplication
         );
 
         return new PdfDecodedMultipartFile(
             tseApplicationPdf,
-            TSE_FILENAME,
+            docName,
             PDF_FILE_TIKA_CONTENT_TYPE,
-            APP_TYPE_MAP.get(claimantTse.getContactApplicationType())
+            TSE_FILENAME + APP_TYPE_MAP.get(claimantTse.getContactApplicationType())
         );
     }
 
@@ -319,18 +328,25 @@ public class PdfService {
      */
     public PdfDecodedMultipartFile convertClaimantResponseIntoMultipartFile(RespondToApplicationRequest request,
                                                                             String description,
-                                                                            String ethosCaseReference)
+                                                                            String ethosCaseReference,
+                                                                            GenericTseApplicationType application)
         throws DocumentGenerationException {
+
+        String documentName = "Application %s  - %s - Claimant Response.pdf".formatted(
+            application.getNumber(),
+            application.getType()
+        );
+
         return new PdfDecodedMultipartFile(
-            convertClaimantResponseToPdf(request, ethosCaseReference, description),
-            CLAIMANT_RESPONSE,
+            convertClaimantResponseToPdf(request, ethosCaseReference, description, documentName),
+            documentName,
             PDF_FILE_TIKA_CONTENT_TYPE,
             description
         );
     }
 
     private byte[] convertClaimantResponseToPdf(RespondToApplicationRequest request, String ethosCaseReference,
-                                                String appTypeDescription)
+                                                String appTypeDescription, String documentName)
         throws DocumentGenerationException {
         TseRespondType claimantResponse = request.getResponse();
         String fileName = claimantResponse.getSupportingMaterial() != null
@@ -348,7 +364,7 @@ public class PdfService {
 
         return documentGenerationService.genPdfDocument(
             claimantResponsePdfTemplate,
-            CLAIMANT_RESPONSE,
+            documentName,
             claimantResponseCya
         );
     }

@@ -9,11 +9,12 @@ import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 import uk.gov.dwp.regex.InvalidPostcodeException;
+import uk.gov.hmcts.ecm.common.helpers.DocumentHelper;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
@@ -29,6 +30,7 @@ import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
+import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
@@ -40,6 +42,7 @@ import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -57,11 +60,11 @@ import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
+import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ACAS_VISIBLE_DOCS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ATTACHMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ONLINE_SUBMISSION;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
@@ -70,7 +73,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.INITIATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
-
 /**
  * Provides read and write access to cases stored by ET.
  */
@@ -256,15 +258,7 @@ public class CaseService {
         try {
             documentList.addAll(caseDocumentService
                                     .uploadAllDocuments(authorization, caseRequest.getCaseTypeId(),
-                                                        casePdfFiles, acasCertificates));
-
-            if (!ObjectUtils.isEmpty(caseData.getClaimantRequests())
-                && !ObjectUtils.isEmpty(caseData.getClaimantRequests().getClaimDescriptionDocument())) {
-                documentList.add(caseDocumentService.createDocumentTypeItem(
-                    ET1_ATTACHMENT,
-                    caseData.getClaimantRequests().getClaimDescriptionDocument()
-                ));
-            }
+                                                        casePdfFiles, acasCertificates, caseData));
         } catch (CaseDocumentException cde) {
             // Send upload error alert email to shared inbox
             notificationService.sendDocUploadErrorEmail(caseRequest, casePdfFiles, acasCertificates,
@@ -567,10 +561,22 @@ public class CaseService {
             docList = new ArrayList<>();
         }
 
-        DocumentType documentType = new DocumentType();
-        documentType.setTypeOfDocument(CLAIMANT_CORRESPONDENCE_DOCUMENT);
-        documentType.setUploadedDocument(contactApplicationFile);
-        documentType.setShortDescription(description);
+        String docName = "Application %d - %s - Attachment.pdf".formatted(
+            ApplicationService.getNextApplicationNumber(caseData),
+            APP_TYPE_MAP.get(description));
+        String applicationDocMapping =
+            DocumentHelper.claimantApplicationTypeToDocType(description);
+        String topLevel = DocumentHelper.getTopLevelDocument(applicationDocMapping);
+        contactApplicationFile.setDocumentFilename(docName);
+        DocumentType documentType = DocumentType.builder()
+            .topLevelDocuments(topLevel)
+            .typeOfDocument(CLAIMANT_CORRESPONDENCE_DOCUMENT)
+            .uploadedDocument(contactApplicationFile)
+            .shortDescription(description)
+            .dateOfCorrespondence(LocalDate.now().toString())
+            .build();
+        DocumentHelper.setSecondLevelDocumentFromType(documentType, applicationDocMapping);
+        DocumentHelper.setDocumentTypeForDocument(documentType);
 
         docList.add(DocumentTypeItem.builder()
                         .id(UUID.randomUUID().toString())
@@ -593,13 +599,22 @@ public class CaseService {
             docList = new ArrayList<>();
         }
 
-        PdfDecodedMultipartFile pdfDecodedMultipartFile = pdfService.convertClaimantTseIntoMultipartFile(
-            claimantTse, caseData.getGenericTseApplicationCollection(), caseData.getEthosCaseReference());
+        String docName = "Application %d - %s.pdf".formatted(
+            ApplicationService.getNextApplicationNumber(caseData),
+            ClaimantTse.APP_TYPE_MAP.get(claimantTse.getContactApplicationType()));
 
-        docList.add(caseDocumentService.createDocumentTypeItem(
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            pdfService.convertClaimantTseIntoMultipartFile(claimantTse,caseData.getGenericTseApplicationCollection(),
+                                                           caseData.getEthosCaseReference(), docName);
+        String applicationDocMapping =
+            DocumentHelper.claimantApplicationTypeToDocType(claimantTse.getContactApplicationType());
+        String topLevel = DocumentHelper.getTopLevelDocument(applicationDocMapping);
+
+        docList.add(caseDocumentService.createDocumentTypeItemLevels(
             authorization,
             caseType,
-            CLAIMANT_CORRESPONDENCE_DOCUMENT,
+            topLevel,
+            applicationDocMapping,
             pdfDecodedMultipartFile
         ));
 
@@ -612,20 +627,28 @@ public class CaseService {
                            String appType)
         throws DocumentGenerationException, CaseDocumentException {
         String description = "Response to " + appType;
-        String ethosCaseReference = caseData.getEthosCaseReference();
-        PdfDecodedMultipartFile multipartResponsePdf =
-            pdfService.convertClaimantResponseIntoMultipartFile(request, description, ethosCaseReference);
+        GenericTseApplicationType application = TseApplicationHelper.getSelectedApplication(
+                caseData.getGenericTseApplicationCollection(),
+                request.getApplicationId())
+            .getValue();
 
-        DocumentTypeItem responsePdf = caseDocumentService.createDocumentTypeItem(
+        PdfDecodedMultipartFile multipartResponsePdf =
+            pdfService.convertClaimantResponseIntoMultipartFile(request, description, caseData.getEthosCaseReference(),
+                                                                application);
+
+        String applicationDoc = TseApplicationHelper.getApplicationDoc(application);
+        String topLevel = DocumentHelper.getTopLevelDocument(applicationDoc);
+        DocumentTypeItem responsePdf = caseDocumentService.createDocumentTypeItemLevels(
             authorization,
             request.getCaseTypeId(),
-            CLAIMANT_CORRESPONDENCE_DOCUMENT,
+            topLevel,
+            applicationDoc,
             multipartResponsePdf
         );
 
         if (isEmpty(caseData.getDocumentCollection())) {
             caseData.setDocumentCollection(new ArrayList<>());
         }
-        caseData.getDocumentCollection().add(responsePdf);
+        caseData.getDocumentCollection().add(responsePdf);;
     }
 }

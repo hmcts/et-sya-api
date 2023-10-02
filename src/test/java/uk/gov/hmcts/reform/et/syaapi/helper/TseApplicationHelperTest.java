@@ -59,7 +59,10 @@ class TseApplicationHelperTest {
         @Test
         void applicationStatusWaitingForTheTribunal() {
             RespondToApplicationRequest request = data.getRespondToApplicationRequest();
-            GenericTseApplicationType app = GenericTseApplicationType.builder().type("Amend Response").build();
+            GenericTseApplicationType app = GenericTseApplicationType.builder()
+                .type("Amend response")
+                .applicant("Respondent")
+                .build();
             CaseData caseData = data.getCaseData();
             caseDocumentService = mock(CaseDocumentService.class);
             DocumentTypeItem docType = DocumentTypeItem.builder().id("1").value(new DocumentType()).build();
@@ -70,7 +73,7 @@ class TseApplicationHelperTest {
             Assertions.assertEquals("waitingForTheTribunal", app.getApplicationState());
             Assertions.assertEquals(
                 caseData.getDocumentCollection().get(0).getValue().getShortDescription(),
-                "Response to Amend Response"
+                "Response to Amend response"
             );
         }
     }

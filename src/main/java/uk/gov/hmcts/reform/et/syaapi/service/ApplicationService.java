@@ -31,6 +31,8 @@ import uk.gov.service.notify.NotificationClientException;
 import java.util.List;
 import java.util.UUID;
 
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
@@ -43,12 +45,24 @@ import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespon
 public class ApplicationService {
     public static final String WEEKS_78 = "78 weeks";
 
-    private static final String TSE_FILENAME = "Contact the tribunal.pdf";
+    private static final String TSE_FILENAME = "Contact the tribunal";
 
     private final CaseService caseService;
     private final NotificationService notificationService;
     private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
+
+    /**
+     * Get the next application number for the case.
+     * @param caseData - case data
+     * @return the next application number
+     */
+    public static int getNextApplicationNumber(CaseData caseData) {
+        if (isEmpty(caseData.getGenericTseApplicationCollection())) {
+            return 1;
+        }
+        return caseData.getGenericTseApplicationCollection().size() + 1;
+    }
 
     /**
      * Submit Claimant Application to Tell Something Else.
@@ -65,14 +79,6 @@ public class ApplicationService {
         ClaimantTse claimantTse = request.getClaimantTse();
         caseDetails.getData().put("claimantTse", claimantTse);
 
-        UploadedDocumentType contactApplicationFile = claimantTse.getContactApplicationFile();
-        if (contactApplicationFile != null) {
-            log.info("Uploading supporting file to document collection");
-            caseService.uploadTseSupportingDocument(caseDetails, contactApplicationFile,
-                                                    APP_TYPE_MAP.get(claimantTse.getContactApplicationType())
-            );
-        }
-
         if (!request.isTypeC() && YES.equals(claimantTse.getCopyToOtherPartyYesOrNo())) {
             try {
                 log.info("Uploading pdf of TSE application");
@@ -80,6 +86,14 @@ public class ApplicationService {
             } catch (CaseDocumentException | DocumentGenerationException e) {
                 log.error("Couldn't upload pdf of TSE application " + e.getMessage());
             }
+        }
+
+        UploadedDocumentType contactApplicationFile = claimantTse.getContactApplicationFile();
+        if (contactApplicationFile != null) {
+            log.info("Uploading supporting file to document collection");
+            caseService.uploadTseSupportingDocument(caseDetails, contactApplicationFile,
+                                                    APP_TYPE_MAP.get(claimantTse.getContactApplicationType())
+            );
         }
 
         CaseDetails finalCaseDetails = caseService.triggerEvent(
@@ -135,9 +149,8 @@ public class ApplicationService {
 
         sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
 
-        TseApplicationHelper.setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService);
-
         createAndAddPdfOfResponse(authorization, request, caseData, appType);
+        TseApplicationHelper.setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService);
 
         return caseService.submitUpdate(
             authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
@@ -304,7 +317,7 @@ public class ApplicationService {
 
     private JSONObject getDocumentDownload(String authorization, CaseData caseData) throws NotificationClientException {
         List<DocumentTypeItem> tseFiles = caseData.getDocumentCollection().stream()
-            .filter(n -> TSE_FILENAME.equals(n.getValue().getUploadedDocument().getDocumentFilename()))
+            .filter(n -> defaultIfEmpty(n.getValue().getShortDescription(), "").startsWith(TSE_FILENAME))
             .toList();
 
         if (tseFiles.isEmpty()) {

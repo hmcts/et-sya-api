@@ -13,10 +13,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import uk.gov.hmcts.ecm.common.helpers.DocumentHelper;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
@@ -26,6 +29,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -34,7 +38,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.ACAS_CERTIFICATE;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.ET1;
 import static uk.gov.hmcts.reform.ccd.client.model.Classification.PUBLIC;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ATTACHMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.RESOURCE_NOT_FOUND;
 
@@ -291,7 +298,8 @@ public class CaseDocumentService {
     public List<DocumentTypeItem> uploadAllDocuments(String authToken,
                                                      String caseType,
                                                      List<PdfDecodedMultipartFile> pdfDecodedMultipartFiles,
-                                                     List<PdfDecodedMultipartFile> acasCertificates)
+                                                     List<PdfDecodedMultipartFile> acasCertificates,
+                                                     CaseData caseData)
         throws CaseDocumentException {
         List<DocumentTypeItem> documentTypeItems = new ArrayList<>();
         if (pdfDecodedMultipartFiles != null) {
@@ -299,17 +307,32 @@ public class CaseDocumentService {
                 documentTypeItems.add(createDocumentTypeItem(
                     authToken,
                     caseType,
-                    TYPE_OF_DOCUMENT_ET1_CASE_PDF,
+                    ET1,
                     casePdf
                 ));
             }
         }
+
+        if (!ObjectUtils.isEmpty(caseData.getClaimantRequests())
+            && !ObjectUtils.isEmpty(caseData.getClaimantRequests().getClaimDescriptionDocument())) {
+            caseData.getClaimantRequests().getClaimDescriptionDocument().setDocumentFilename(
+                ET1_ATTACHMENT
+                    + " - "
+                    + caseData.getClaimantIndType().getClaimantFirstNames()
+                    + " "
+                    + caseData.getClaimantIndType().getClaimantLastName());
+            documentTypeItems.add(createDocumentTypeItem(
+                ET1_ATTACHMENT,
+                caseData.getClaimantRequests().getClaimDescriptionDocument()
+            ));
+        }
+
         if (acasCertificates != null) {
             for (PdfDecodedMultipartFile acasCertificate : acasCertificates) {
                 documentTypeItems.add(createDocumentTypeItem(
                     authToken,
                     caseType,
-                    TYPE_OF_DOCUMENT_ET1_ACAS_CERTIFICATE,
+                    ACAS_CERTIFICATE,
                     acasCertificate
                 ));
             }
@@ -330,16 +353,19 @@ public class CaseDocumentService {
         DocumentType documentType = new DocumentType();
         documentType.setTypeOfDocument(typeOfDocument);
         documentType.setUploadedDocument(uploadedDoc);
-
+        documentType.setDateOfCorrespondence(LocalDate.now().toString());
+        documentType.setTopLevelDocuments(DocumentHelper.getTopLevelDocument(typeOfDocument));
+        DocumentHelper.setSecondLevelDocumentFromType(documentType, typeOfDocument);
+        DocumentHelper.setDocumentTypeForDocument(documentType);
         documentTypeItem.setValue(documentType);
 
         return documentTypeItem;
     }
 
     public DocumentTypeItem createDocumentTypeItem(String authToken,
-                                                    String caseType,
-                                                    String documentType,
-                                                    PdfDecodedMultipartFile pdfDecodedMultipartFile)
+                                                   String caseType,
+                                                   String documentType,
+                                                   PdfDecodedMultipartFile pdfDecodedMultipartFile)
         throws CaseDocumentException {
         CaseDocument caseDocument = uploadDocument(authToken, caseType, pdfDecodedMultipartFile);
         return createDocumentTypeItemFromCaseDocument(caseDocument, documentType,
@@ -347,11 +373,54 @@ public class CaseDocumentService {
     }
 
     private DocumentTypeItem createDocumentTypeItemFromCaseDocument(CaseDocument caseDocument,
-                                                                   String typeOfDocument,
-                                                                   String shortDescription) {
+                                                                    String typeOfDocument,
+                                                                    String shortDescription) {
         DocumentType documentType = new DocumentType();
         documentType.setTypeOfDocument(typeOfDocument);
+        documentType.setTopLevelDocuments(DocumentHelper.getTopLevelDocument(typeOfDocument));
         documentType.setShortDescription(shortDescription);
+        documentType.setDateOfCorrespondence(LocalDate.now().toString());
+        DocumentHelper.setSecondLevelDocumentFromType(documentType, typeOfDocument);
+        DocumentHelper.setDocumentTypeForDocument(documentType);
+        return getDocumentTypeItem(caseDocument, documentType);
+    }
+
+
+    /**
+     * Accepts a {@link PdfDecodedMultipartFile} and wraps it in a {@link DocumentTypeItem} and assigns a random UUID.
+     * @param authToken is the jwt token used to call this service
+     * @param caseType is the jurisdiction of the case e.g. ET_EnglandWales
+     * @param topLevel is the top level document type e.g. Starting a claim
+     * @param secondLevel is the second level document type e.g. ET1
+     * @param pdfDecodedMultipartFile is the pdf file to be uploaded
+     * @return DocumentTypeItem
+     * @throws CaseDocumentException ds
+     */
+    public DocumentTypeItem createDocumentTypeItemLevels(String authToken,
+                                                         String caseType,
+                                                         String topLevel,
+                                                         String secondLevel,
+                                                         PdfDecodedMultipartFile pdfDecodedMultipartFile)
+        throws CaseDocumentException {
+        CaseDocument caseDocument = uploadDocument(authToken, caseType, pdfDecodedMultipartFile);
+        return createDocumentTypeItemLevels(caseDocument, topLevel, secondLevel,
+                                            pdfDecodedMultipartFile.getDocumentDescription());
+    }
+
+    private DocumentTypeItem createDocumentTypeItemLevels(CaseDocument caseDocument,
+                                                          String topLevel,
+                                                          String secondLevel,
+                                                          String shortDescription) {
+        DocumentType documentType = new DocumentType();
+        documentType.setTopLevelDocuments(topLevel);
+        documentType.setShortDescription(shortDescription);
+        documentType.setDateOfCorrespondence(LocalDate.now().toString());
+        DocumentHelper.setSecondLevelDocumentFromType(documentType, secondLevel);
+        DocumentHelper.setDocumentTypeForDocument(documentType);
+        return getDocumentTypeItem(caseDocument, documentType);
+    }
+
+    private static DocumentTypeItem getDocumentTypeItem(CaseDocument caseDocument, DocumentType documentType) {
         UploadedDocumentType uploadedDocumentType = new UploadedDocumentType();
         uploadedDocumentType.setDocumentFilename(caseDocument.getOriginalDocumentName());
         uploadedDocumentType.setDocumentUrl(caseDocument.getLinks().get("self").get("href"));
