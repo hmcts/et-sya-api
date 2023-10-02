@@ -650,6 +650,6 @@ public class CaseService {
         if (isEmpty(caseData.getDocumentCollection())) {
             caseData.setDocumentCollection(new ArrayList<>());
         }
-        caseData.getDocumentCollection().add(responsePdf);;
+        caseData.getDocumentCollection().add(responsePdf);
     }
 }
