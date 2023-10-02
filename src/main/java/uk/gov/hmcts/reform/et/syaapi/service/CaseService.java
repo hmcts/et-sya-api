@@ -76,6 +76,7 @@ import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTE
 /**
  * Provides read and write access to cases stored by ET.
  */
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
