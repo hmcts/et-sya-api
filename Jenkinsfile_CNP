@@ -9,6 +9,9 @@ def component = "sya-api"
 def branchesToSync = ['perftest', 'demo', 'ithc']
 
 withPipeline(type, product, component) {
+  afterSuccess('smoketest:preview') {
+      sh "./gradlew integration"
+    }
   disableLegacyDeployment()
   enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
   syncBranchesWithMaster(branchesToSync)
