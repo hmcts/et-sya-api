@@ -120,6 +120,10 @@ public class SendNotificationService {
             pseResponseType.setHasSupportingMaterial(NO);
         }
 
+        if (YES.equals(request.getPseResponseType().getStoredPending())) {
+            pseResponseType.setStoredPending(YES);
+        }
+
         PseResponseTypeItem pseResponseTypeItem =
             PseResponseTypeItem.builder().id(UUID.randomUUID().toString())
                 .value(pseResponseType)
