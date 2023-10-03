@@ -131,11 +131,17 @@ public class SendNotificationService {
         sendNotificationType.setNotificationState(VIEWED);
 
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
-        sendAddResponseSendNotificationEmails(
-            caseData,
-            request.getCaseId(),
-            request.getPseResponseType().getCopyToOtherParty()
-        );
+
+        if (YES.equals(request.getPseResponseType().getStoredPending())) {
+            notificationService.sendStoredConfirmationEmailForOrder(caseData, request.getCaseId());
+        } else {
+            sendAddResponseSendNotificationEmails(
+                caseData,
+                request.getCaseId(),
+                request.getPseResponseType().getCopyToOtherParty()
+            );
+        }
+
         return caseService.submitUpdate(
             authorization,
             request.getCaseId(),
