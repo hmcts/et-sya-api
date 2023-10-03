@@ -376,7 +376,9 @@ public class ApplicationService {
             request.getCaseTypeId()
         );
 
-        sendSubmitStoredEmails(finalCaseDetails, appToModify);
+        if (finalCaseDetails != null) {
+            sendSubmitStoredEmails(finalCaseDetails, appToModify);
+        }
 
         return finalCaseDetails;
     }
