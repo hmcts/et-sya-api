@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
@@ -55,6 +56,7 @@ class ManageCaseControllerIntegrationTest {
     private StartEventResponse startEventResponse;
 
     private static final String AUTH_TOKEN = "testToken";
+    private static final String APP_ID = "1234";
 
     @Autowired
     private MockMvc mockMvc;
@@ -92,6 +94,7 @@ class ManageCaseControllerIntegrationTest {
         when(applicationService.submitApplication(any(), any())).thenReturn(caseDetailsResponse);
         when(applicationService.respondToApplication(any(), any())).thenReturn(caseDetailsResponse);
         when(applicationService.updateTribunalResponseAsViewed(any(),any())).thenReturn(caseDetailsResponse);
+        when(applicationService.submitStoredApplication(any(),any())).thenReturn(caseDetailsResponse);
     }
 
     @DisplayName("Should get single case details")
@@ -230,7 +233,7 @@ class ManageCaseControllerIntegrationTest {
         RespondToApplicationRequest caseRequest = RespondToApplicationRequest.builder()
             .caseTypeId(SCOTLAND_CASE_TYPE)
             .caseId("12")
-            .applicationId("1234")
+            .applicationId(APP_ID)
             .response(new TseRespondType())
             .build();
 
@@ -249,12 +252,30 @@ class ManageCaseControllerIntegrationTest {
         TribunalResponseViewedRequest caseRequest = TribunalResponseViewedRequest.builder()
             .caseTypeId(SCOTLAND_CASE_TYPE)
             .caseId("12")
-            .appId("1234")
+            .appId(APP_ID)
             .responseId("1")
             .build();
 
         mockMvc.perform(
                 put("/cases/tribunal-response-viewed")
+                    .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(resourceLoader.toJson(caseRequest)))
+            .andExpect(status().isOk())
+            .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
+    }
+
+    @DisplayName("Should update tribunal response as viewed")
+    @Test
+    void submitStoredApplicationRequest() throws Exception {
+        SubmitStoredApplicationRequest caseRequest = SubmitStoredApplicationRequest.builder()
+            .caseId("12")
+            .caseTypeId(SCOTLAND_CASE_TYPE)
+            .applicationId(APP_ID)
+            .build();
+
+        mockMvc.perform(
+                put("/cases/submit-stored-claimant-application")
                     .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(resourceLoader.toJson(caseRequest)))

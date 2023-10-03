@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
@@ -40,6 +41,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/cases")
+@SuppressWarnings({"PMD.TooManyMethods"})
 public class ManageCaseController {
 
     private final CaseService caseService;
@@ -263,4 +265,26 @@ public class ManageCaseController {
         CaseDetails finalCaseDetails = applicationService.updateTribunalResponseAsViewed(authorization, request);
         return ok(finalCaseDetails);
     }
+
+    /**
+     * Submits a stored Claimant Application.
+     *
+     * @param authorization jwt of the user
+     * @param request       the request object which contains the claimant application passed from sya-frontend
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    @PutMapping("/submit-stored-claimant-application")
+    @Operation(summary = "Submit a stored claimant application")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> submitStoredClaimantApplication(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody SubmitStoredApplicationRequest request
+    ) {
+        log.info("Received submit the stored claimant application request - caseTypeId: {} caseId: {}",
+                 request.getCaseTypeId(), request.getCaseId()
+        );
+        CaseDetails finalCaseDetails = applicationService.submitStoredApplication(authorization, request);
+        return ok(finalCaseDetails);
+    }
+
 }
