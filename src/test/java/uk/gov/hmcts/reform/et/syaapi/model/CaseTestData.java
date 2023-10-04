@@ -6,6 +6,7 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
+import uk.gov.hmcts.et.common.model.ccd.items.ListTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
@@ -207,13 +208,13 @@ public final class CaseTestData {
         TypeItem<GenericTseApplicationType> tseItemWithMissingDetails = TestDataProvider.generateGenericTseAppType(
             missingTypeItemDetailsArgumentsList);
 
-        return Stream.of(Arguments.of(completeClaimantTse, List.of(completeTseItem),
+        return Stream.of(Arguments.of(completeClaimantTse, ListTypeItem.from(completeTseItem),
                                       completeExpectedTseApp, caseReference),
                          Arguments.of(inCompleteClaimantTseWithMissingClaimantTse,
-                                      List.of(tseItemWithMissingClaimantTse),
+                                      ListTypeItem.from(tseItemWithMissingClaimantTse),
                                       expectedTseAppWithIncompleteClaimantTse, caseReference),
                         Arguments.of(inCompleteClaimantTseWithMissingItemDetail,
-                                     List.of(tseItemWithMissingDetails),
+                                     ListTypeItem.from(tseItemWithMissingDetails),
                                      expectedTseAppWithMissingTypeItemDetails, caseReference));
     }
 
