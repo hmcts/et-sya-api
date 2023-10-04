@@ -137,7 +137,11 @@ public class ApplicationService {
             appType.setClaimantResponseRequired(NO);
         }
 
-        sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
+        if (request.isStoredPending()) {
+            log.info("Send Stored Emails");
+        } else {
+            sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
+        }
 
         TseApplicationHelper.setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService);
 

@@ -24,4 +24,6 @@ public class RespondToApplicationRequest {
     private TseRespondType response;
     @JsonProperty("isRespondingToRequestOrOrder")
     private boolean isRespondingToRequestOrOrder;
+    @JsonProperty("isStoredPending")
+    private boolean isStoredPending;
 }
