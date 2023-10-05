@@ -183,7 +183,8 @@ class SendNotificationServiceTest {
         PseResponseType expected = expectedResponses.get(0).getValue();
         SendNotificationType notification = data.getSendNotificationCollection().get(0).getValue();
         PseResponseType actual = notification.getRespondCollection().get(0).getValue();
-        Item<RespondNotificationType> tribunalResponse = notification.getRespondNotificationTypeCollection().get(0);
+        GenericTypeItem<RespondNotificationType> tribunalResponse =
+            notification.getRespondNotificationTypeCollection().get(0);
 
         Assertions.assertEquals(expected.getResponse(), actual.getResponse());
         Assertions.assertEquals(expected.getFrom(), actual.getFrom());
