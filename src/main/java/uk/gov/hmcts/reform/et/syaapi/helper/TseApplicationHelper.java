@@ -19,8 +19,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UK_LOCAL_DATE_PATTERN;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -46,6 +48,22 @@ public final class TseApplicationHelper {
         String applicationId) {
         return applications.stream()
             .filter(a -> a.getId().equals(applicationId))
+            .findAny()
+            .orElse(null);
+    }
+
+    /**
+     * Finds the response by ID.
+     *
+     * @param responds - list of all applications attached to the case
+     * @param respondId - id of application we're trying to find
+     * @return the {@link GenericTseApplicationTypeItem} to be updated
+     */
+    public static TseRespondTypeItem getResponseInSelectedApplication(
+        List<TseRespondTypeItem> responds,
+        String respondId) {
+        return responds.stream()
+            .filter(a -> a.getId().equals(respondId))
             .findAny()
             .orElse(null);
     }
@@ -92,6 +110,8 @@ public final class TseApplicationHelper {
                                                             GenericTseApplicationType appToModify,
                                                             CaseData caseData,
                                                             CaseDocumentService caseDocumentService) {
+        boolean isStoredPending = YES.equals(request.getResponse().getStoredPending());
+
         if (CollectionUtils.isEmpty(appToModify.getRespondCollection())) {
             appToModify.setRespondCollection(new ArrayList<>());
         }
@@ -106,10 +126,13 @@ public final class TseApplicationHelper {
             );
             documentTypeItem.getValue().setShortDescription("Response to " + appToModify.getType());
 
-            if (caseData.getDocumentCollection() == null) {
-                caseData.setDocumentCollection(new ArrayList<>());
+            if (!isStoredPending) {
+                if (caseData.getDocumentCollection() == null) {
+                    caseData.setDocumentCollection(new ArrayList<>());
+                }
+                caseData.getDocumentCollection().add(documentTypeItem);
             }
-            caseData.getDocumentCollection().add(documentTypeItem);
+
             responseToAdd.setSupportingMaterial(new ArrayList<>());
             responseToAdd.getSupportingMaterial().add(documentTypeItem);
         }
@@ -119,6 +142,11 @@ public final class TseApplicationHelper {
                                                    .value(responseToAdd).build());
         appToModify.setResponsesCount(
             String.valueOf(appToModify.getRespondCollection().size()));
-        appToModify.setApplicationState(WAITING_FOR_TRIBUNAL);
+
+        if (isStoredPending) {
+            appToModify.setApplicationState(STORED);
+        } else {
+            appToModify.setApplicationState(WAITING_FOR_TRIBUNAL);
+        }
     }
 }

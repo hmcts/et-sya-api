@@ -655,6 +655,15 @@ public class NotificationService {
         );
     }
 
+    void sendSubmitStoredRespondToAppEmailToClaimant(CoreEmailDetails details,
+                                                     GenericTseApplicationTypeItem appToModify) {
+        sendStoreConfirmationEmail(
+            notificationsProperties.getClaimantTseEmailSubmitStoredTemplateId(),
+            details,
+            appToModify.getValue().getType()
+        );
+    }
+
     private void sendTribunalEmail(CaseData caseData,
                                    String caseId,
                                    Map<String, Object> tribunalParameters,

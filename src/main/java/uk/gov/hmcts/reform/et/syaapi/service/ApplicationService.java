@@ -137,11 +137,16 @@ public class ApplicationService {
             appType.setClaimantResponseRequired(NO);
         }
 
-        sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
+        boolean isStoredPending = YES.equals(request.getResponse().getStoredPending());
+        if (!isStoredPending) {
+            sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
+        }
 
         TseApplicationHelper.setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService);
 
-        createAndAddPdfOfResponse(authorization, request, caseData, appType);
+        if (!isStoredPending) {
+            createAndAddPdfOfResponse(authorization, request, caseData, appType);
+        }
 
         return caseService.submitUpdate(
             authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
@@ -339,68 +344,4 @@ public class ApplicationService {
             WEEKS_78
         );
     }
-
-    /**
-     * Submits a stored Claimant Application:
-     * - Update application state in ExUI from 'Unsubmitted' to be 'Open'.
-     *
-     * @param authorization - authorization
-     * @param request - request with application's id
-     * @return the associated {@link CaseDetails} for the ID provided in request
-     */
-    public CaseDetails submitStoredApplication(String authorization, SubmitStoredApplicationRequest request) {
-        StartEventResponse startEventResponse = caseService.startUpdate(
-            authorization,
-            request.getCaseId(),
-            request.getCaseTypeId(),
-            CaseEvent.SUBMIT_STORED_CLAIMANT_TSE
-        );
-
-        CaseData caseData = EmployeeObjectMapper
-            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
-
-        GenericTseApplicationTypeItem appToModify = TseApplicationHelper.getSelectedApplication(
-            caseData.getGenericTseApplicationCollection(),
-            request.getApplicationId()
-        );
-
-        if (appToModify == null) {
-            throw new IllegalArgumentException("Application id provided is incorrect");
-        }
-
-        appToModify.getValue().setDate(UtilHelper.formatCurrentDate(LocalDate.now()));
-        appToModify.getValue().setDueDate(UtilHelper.formatCurrentDatePlusDays(LocalDate.now(), 7));
-        appToModify.getValue().setApplicationState(IN_PROGRESS);
-        appToModify.getValue().setStatus(OPEN_STATE);
-
-        CaseDetails finalCaseDetails =  caseService.submitUpdate(
-            authorization,
-            request.getCaseId(),
-            caseDetailsConverter.caseDataContent(startEventResponse, caseData),
-            request.getCaseTypeId()
-        );
-
-        if (finalCaseDetails != null) {
-            sendSubmitStoredEmails(finalCaseDetails, appToModify);
-        }
-
-        return finalCaseDetails;
-    }
-
-    private void sendSubmitStoredEmails(CaseDetails finalCaseDetails, GenericTseApplicationTypeItem appToModify) {
-        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(finalCaseDetails.getData());
-        ClaimantIndType claimantIndType = caseData.getClaimantIndType();
-
-        CoreEmailDetails details = new CoreEmailDetails(
-            caseData,
-            claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName(),
-            caseData.getEthosCaseReference(),
-            getRespondentNames(caseData),
-            NotificationsHelper.getNearestHearingToReferral(caseData, "Not set"),
-            finalCaseDetails.getId().toString()
-        );
-
-        notificationService.sendSubmitStoredEmailToClaimant(details, appToModify);
-    }
-
 }

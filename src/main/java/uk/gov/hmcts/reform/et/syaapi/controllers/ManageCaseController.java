@@ -23,8 +23,10 @@ import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
+import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.service.notify.NotificationClientException;
 
@@ -46,6 +48,7 @@ public class ManageCaseController {
 
     private final CaseService caseService;
     private final ApplicationService applicationService;
+    private final StoredApplicationService storedApplicationService;
 
     /**
      * Accepts parameter of type {@link CaseRequest} and returns the case specified in 'getCaseId'.
@@ -283,7 +286,30 @@ public class ManageCaseController {
         log.info("Received submit the stored claimant application request - caseTypeId: {} caseId: {}",
                  request.getCaseTypeId(), request.getCaseId()
         );
-        CaseDetails finalCaseDetails = applicationService.submitStoredApplication(authorization, request);
+        CaseDetails finalCaseDetails = storedApplicationService.submitStoredApplication(authorization, request);
+        return ok(finalCaseDetails);
+    }
+
+    /**
+     * Respond to an Application.
+     *
+     * @param authorization jwt of the user
+     * @param request       the request object which contains the appId and claimant response passed from sya-frontend
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    @PutMapping("/submit-stored-respond-to-application")
+    @Operation(summary = "Submit Stored Respond to an application")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> submitStoredRespondToApplication(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody UpdateStoredRespondToApplicationRequest request
+    ) {
+        log.info("Received submit respond to application request - caseTypeId: {} caseId: {}",
+            request.getCaseTypeId(), request.getCaseId()
+        );
+
+        CaseDetails finalCaseDetails = storedApplicationService.submitRespondToApplication(authorization, request);
+
         return ok(finalCaseDetails);
     }
 

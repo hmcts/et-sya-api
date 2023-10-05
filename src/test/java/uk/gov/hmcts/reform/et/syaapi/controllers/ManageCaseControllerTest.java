@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
+import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
@@ -82,6 +83,9 @@ class ManageCaseControllerTest {
 
     @MockBean
     private ApplicationService applicationService;
+    @MockBean
+    private StoredApplicationService storedApplicationService;
+
 
     ManageCaseControllerTest() {
         // Default constructor
@@ -492,7 +496,7 @@ class ManageCaseControllerTest {
                 .content(ResourceLoader.toJson(caseRequest))
         ).andExpect(status().isOk());
 
-        verify(applicationService, times(1)).submitStoredApplication(
+        verify(storedApplicationService, times(1)).submitStoredApplication(
             TEST_SERVICE_AUTH_TOKEN,
             caseRequest
         );
