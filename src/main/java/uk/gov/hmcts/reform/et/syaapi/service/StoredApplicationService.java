@@ -11,6 +11,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.TseRespondTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
@@ -181,7 +182,11 @@ public class StoredApplicationService {
                 .caseId(request.getCaseId())
                 .caseTypeId(request.getCaseTypeId())
                 .applicationId("")
-                .supportingMaterialFile(tseRespond.getSupportingMaterial().get(0).getValue().getUploadedDocument())
+                .supportingMaterialFile(
+                    tseRespond.getSupportingMaterial() != null
+                        ? tseRespond.getSupportingMaterial().get(0).getValue().getUploadedDocument()
+                        : null
+                )
                 .response(tseRespond)
                 .isRespondingToRequestOrOrder(request.isRespondingToRequestOrOrder())
                 .build();

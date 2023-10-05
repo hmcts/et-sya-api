@@ -14,9 +14,9 @@ public class UpdateStoredRespondToApplicationRequest {
     private String caseId;
     @JsonProperty("case_type_id")
     private String caseTypeId;
-    @JsonProperty("applicationId")
+    @JsonProperty("application_id")
     private String applicationId;
-    @JsonProperty("respondId")
+    @JsonProperty("response_id")
     private String respondId;
     @JsonProperty("isRespondingToRequestOrOrder")
     private boolean isRespondingToRequestOrOrder;
