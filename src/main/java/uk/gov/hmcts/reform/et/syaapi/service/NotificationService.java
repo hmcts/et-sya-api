@@ -639,7 +639,7 @@ public class NotificationService {
         }
     }
 
-    void sendStoredConfirmationEmailForApplication(CoreEmailDetails details, ClaimantTse claimantTse) {
+    void sendStoredConfirmEmailForApplication(CoreEmailDetails details, ClaimantTse claimantTse) {
         sendStoreConfirmationEmail(
             notificationsProperties.getClaimantTseEmailStoredTemplateId(),
             details,
@@ -650,6 +650,15 @@ public class NotificationService {
     void sendSubmitStoredEmailToClaimant(CoreEmailDetails details, GenericTseApplicationTypeItem appToModify) {
         sendStoreConfirmationEmail(
             notificationsProperties.getClaimantTseEmailSubmitStoredTemplateId(),
+            details,
+            appToModify.getValue().getType()
+        );
+    }
+
+    void sendStoredConfirmEmailForRespondApplication(CoreEmailDetails details,
+                                                     GenericTseApplicationTypeItem appToModify) {
+        sendStoreConfirmationEmail(
+            notificationsProperties.getClaimantTseEmailStoredTemplateId(),
             details,
             appToModify.getValue().getType()
         );

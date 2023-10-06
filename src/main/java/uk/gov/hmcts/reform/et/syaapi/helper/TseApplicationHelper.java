@@ -127,10 +127,7 @@ public final class TseApplicationHelper {
             documentTypeItem.getValue().setShortDescription("Response to " + appToModify.getType());
 
             if (!isStoredPending) {
-                if (caseData.getDocumentCollection() == null) {
-                    caseData.setDocumentCollection(new ArrayList<>());
-                }
-                caseData.getDocumentCollection().add(documentTypeItem);
+                addToDocumentCollection(caseData, documentTypeItem);
             }
 
             responseToAdd.setSupportingMaterial(new ArrayList<>());
@@ -148,5 +145,12 @@ public final class TseApplicationHelper {
         } else {
             appToModify.setApplicationState(WAITING_FOR_TRIBUNAL);
         }
+    }
+
+    private static void addToDocumentCollection(CaseData caseData, DocumentTypeItem documentTypeItem) {
+        if (caseData.getDocumentCollection() == null) {
+            caseData.setDocumentCollection(new ArrayList<>());
+        }
+        caseData.getDocumentCollection().add(documentTypeItem);
     }
 }

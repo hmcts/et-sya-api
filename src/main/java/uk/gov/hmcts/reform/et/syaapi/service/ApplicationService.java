@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.ecm.common.helpers.UtilHelper;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
@@ -24,19 +23,16 @@ import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.NotificationService.CoreEmailDetails;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
-import static uk.gov.hmcts.ecm.common.model.helper.Constants.OPEN_STATE;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
@@ -48,6 +44,7 @@ public class ApplicationService {
     public static final String WEEKS_78 = "78 weeks";
 
     private static final String TSE_FILENAME = "Contact the tribunal.pdf";
+    private static final String NOT_SET = "Not set";
 
     private final CaseService caseService;
     private final NotificationService notificationService;
@@ -148,8 +145,26 @@ public class ApplicationService {
             createAndAddPdfOfResponse(authorization, request, caseData, appType);
         }
 
+        if (isStoredPending) {
+            sendStoredConfirmEmailForResponseApplication(caseData, caseId, appToModify);
+        }
+
         return caseService.submitUpdate(
             authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
+    }
+
+    private void sendStoredConfirmEmailForResponseApplication(CaseData caseData, String caseId,
+                                                              GenericTseApplicationTypeItem appToModify) {
+        ClaimantIndType claimantIndType = caseData.getClaimantIndType();
+        CoreEmailDetails details = new CoreEmailDetails(
+            caseData,
+            claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName(),
+            caseData.getEthosCaseReference(),
+            getRespondentNames(caseData),
+            NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET),
+            caseId
+        );
+        notificationService.sendStoredConfirmEmailForRespondApplication(details, appToModify);
     }
 
     /**
@@ -265,7 +280,7 @@ public class ApplicationService {
             claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName(),
             caseData.getEthosCaseReference(),
             getRespondentNames(caseData),
-            NotificationsHelper.getNearestHearingToReferral(caseData, "Not set"),
+            NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET),
             finalCaseDetails.getId().toString()
         );
 
@@ -273,7 +288,7 @@ public class ApplicationService {
         JSONObject documentJson = getDocumentDownload(authorization, caseData);
 
         if (YES.equals(claimantTse.getStoredPending())) {
-            notificationService.sendStoredConfirmationEmailForApplication(details, claimantTse);
+            notificationService.sendStoredConfirmEmailForApplication(details, claimantTse);
         } else {
             notificationService.sendAcknowledgementEmailToClaimant(details, claimantTse);
             notificationService.sendAcknowledgementEmailToRespondents(details, documentJson, claimantTse);
@@ -295,7 +310,7 @@ public class ApplicationService {
             claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName(),
             caseData.getEthosCaseReference(),
             getRespondentNames(caseData),
-            NotificationsHelper.getNearestHearingToReferral(caseData, "Not set"),
+            NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET),
             caseId
         );
         String type = application.getType();
