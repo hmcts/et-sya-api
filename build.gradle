@@ -205,7 +205,7 @@ ext {
 }
 
 dependencies {
-
+  implementation group: 'com.github.hmcts', name: 'et-data-model', version: '2.7.2'
   implementation('com.github.hmcts:et-common:1.16.1') { transitive = false }
   implementation group: 'uk.gov.dwp.regex', name: 'postcode-validation', version: '1.1.0'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
@@ -226,9 +226,6 @@ dependencies {
   implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.7.0'
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.0.1'
-
-  implementation group: 'com.github.hmcts', name: 'et-data-model', version: '2.7.1'
-
   implementation group: 'com.github.hmcts', name: 'ccd-client', version: '4.9.2'
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.1'
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '4.1.2'
