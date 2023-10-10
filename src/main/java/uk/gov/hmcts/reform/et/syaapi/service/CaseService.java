@@ -109,40 +109,15 @@ public class CaseService {
             authTokenGenerator.generate(),
             SCOTLAND_CASE_TYPE,
             ALL_CASES_QUERY).getCases()).orElse(Collections.emptyList());
-        log.info("Cases found in Scotland: " + scotlandCases.size());
 
-        log.info("Scotland cases size: {}", scotlandCases.size());
-
-        List<CaseDetails> scotlandCases2 = Optional.ofNullable(ccdApiClient.searchForCitizen(
-            authorization,
-            authTokenGenerator.generate(),
-            idamClient.getUserInfo(authorization).getUid(),
-            JURISDICTION_ID,
-            SCOTLAND_CASE_TYPE,
-            new HashMap<>())).orElse(Collections.emptyList());
-
-        log.info("Scotland cases2 size: {}", scotlandCases2.size());
         // Elasticsearch
         List<CaseDetails> englandCases = Optional.ofNullable(ccdApiClient.searchCases(
             authorization,
             authTokenGenerator.generate(),
             ENGLAND_CASE_TYPE,
             ALL_CASES_QUERY).getCases()).orElse(Collections.emptyList());
-        log.info("Cases found in EnglandWales: " + englandCases.size());
 
-        log.info("England cases size: {}", englandCases.size());
-
-        List<CaseDetails> englandCases2 = Optional.ofNullable(ccdApiClient.searchForCitizen(
-            authorization,
-            authTokenGenerator.generate(),
-            idamClient.getUserInfo(authorization).getUid(),
-            JURISDICTION_ID,
-            ENGLAND_CASE_TYPE,
-            new HashMap<>())).orElse(Collections.emptyList());
-
-        log.info("England cases2 size: {}", englandCases2.size());
-
-        return Stream.of(scotlandCases, englandCases, scotlandCases2, englandCases2)
+        return Stream.of(scotlandCases, englandCases)
             .flatMap(Collection::stream).toList();
     }
 
