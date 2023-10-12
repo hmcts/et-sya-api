@@ -579,6 +579,20 @@ public class CaseService {
         caseDetails.getData().put(DOCUMENT_COLLECTION, docList);
     }
 
+    void uploadBundlesHearingDoc(CaseDetails caseDetails, UploadedDocumentType hearingDoc) {
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        List<DocumentTypeItem> docList = caseData.getDocumentCollection();
+
+        if (docList == null) {
+            docList = new ArrayList<>();
+        }
+        docList.add(caseDocumentService.createDocumentTypeItem(
+            CLAIMANT_CORRESPONDENCE_DOCUMENT, // find out if this is correct
+            hearingDoc
+        ));
+        caseDetails.getData().put(DOCUMENT_COLLECTION, docList);
+    }
+
     void uploadTseCyaAsPdf(
         String authorization,
         CaseDetails caseDetails,
