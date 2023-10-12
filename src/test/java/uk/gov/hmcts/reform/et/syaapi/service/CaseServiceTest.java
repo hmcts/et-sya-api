@@ -70,6 +70,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.ENGLANDWALES_CASE_TYPE_ID;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.ET1_PDF_DOC_CATEGORY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ONLINE_SUBMISSION;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper.mapRequestCaseDataToCaseData;
@@ -395,7 +396,7 @@ class CaseServiceTest {
         assertEquals("DocumentType(typeOfDocument="
                          + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=http://document.url/2333482f-1eb9-44f1"
                          + "-9b78-f5d8f0c74b15/binary, documentFilename=filename, documentUrl=http://document.binary"
-                         + ".url/2333482f-1eb9-44f1-9b78-f5d8f0c74b15, categoryId=null, uploadTimestamp=null), "
+                         + ".url/2333482f-1eb9-44f1-9b78-f5d8f0c74b15, categoryId=C11, uploadTimestamp=null), "
                          + "ownerDocument=null, creationDate=null, "
                          + "shortDescription=null)", ((DocumentTypeItem) docCollection.get(0)).getValue().toString());
     }
@@ -433,6 +434,7 @@ class CaseServiceTest {
         uploadedDocumentType.setDocumentFilename("filename");
         uploadedDocumentType.setDocumentUrl("http://document.binary.url/2333482f-1eb9-44f1-9b78-f5d8f0c74b15");
         uploadedDocumentType.setDocumentBinaryUrl("http://document.url/2333482f-1eb9-44f1-9b78-f5d8f0c74b15/binary");
+        uploadedDocumentType.setCategoryId(ET1_PDF_DOC_CATEGORY);
         DocumentTypeItem documentTypeItem = new DocumentTypeItem();
         documentTypeItem.setId(UUID.randomUUID().toString());
 
