@@ -35,6 +35,8 @@ import java.util.regex.Pattern;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static uk.gov.hmcts.reform.ccd.client.model.Classification.PUBLIC;
+import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.ACAS_DOC_CATEGORY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.ET1_PDF_DOC_CATEGORY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.RESOURCE_NOT_FOUND;
 
@@ -76,7 +78,7 @@ public class CaseDocumentService {
     public CaseDocumentService(RestTemplate restTemplate,
                                AuthTokenGenerator authTokenGenerator,
                                @Value("${case_document_am.url}")
-                                   String caseDocApiUrl,
+                               String caseDocApiUrl,
                                @Value("${case_document_am.max_retries}") Integer maxApiRetries) {
         this.restTemplate = restTemplate;
         this.authTokenGenerator = authTokenGenerator;
@@ -128,7 +130,8 @@ public class CaseDocumentService {
         } catch (HttpClientErrorException ex) {
             if (NOT_FOUND.equals(ex.getStatusCode())) {
                 throw new ResourceNotFoundException(String.format(RESOURCE_NOT_FOUND,
-                                                                  documentId, ex.getMessage()), ex);
+                                                                  documentId, ex.getMessage()
+                ), ex);
             }
             throw ex;
         }
@@ -160,7 +163,8 @@ public class CaseDocumentService {
         } catch (HttpClientErrorException ex) {
             if (NOT_FOUND.equals(ex.getStatusCode())) {
                 throw new ResourceNotFoundException(String.format(RESOURCE_NOT_FOUND,
-                                                                  documentId, ex.getMessage()), ex);
+                                                                  documentId, ex.getMessage()
+                ), ex);
             }
             throw ex;
         }
@@ -178,9 +182,9 @@ public class CaseDocumentService {
     }
 
     private DocumentUploadResponse attemptWithRetriesToUploadDocumentToCaseDocumentApi(int attempts,
-                                                                               String authToken,
-                                                                               String caseTypeId,
-                                                                               MultipartFile file)
+                                                                                       String authToken,
+                                                                                       String caseTypeId,
+                                                                                       MultipartFile file)
         throws CaseDocumentException {
         try {
             return uploadDocumentToCaseDocumentApi(authToken, caseTypeId, file).getBody();
@@ -194,8 +198,8 @@ public class CaseDocumentService {
     }
 
     private ResponseEntity<DocumentUploadResponse> uploadDocumentToCaseDocumentApi(String authToken,
-                                                           String caseTypeId,
-                                                           MultipartFile file)
+                                                                                   String caseTypeId,
+                                                                                   MultipartFile file)
         throws IOException, CaseDocumentException {
         validateFile(file);
 
@@ -281,10 +285,11 @@ public class CaseDocumentService {
     /**
      * Accepts all files for a given case as a list of {@link PdfDecodedMultipartFile} and uploads them.
      * Files are uploaded one at a file via this service and then returned as a list of {@link DocumentTypeItem}
-     * @param authToken jwt token used to call this service
-     * @param caseType defines the juridiction of the case e.g. ET_EnglandWales
+     *
+     * @param authToken                jwt token used to call this service
+     * @param caseType                 defines the juridiction of the case e.g. ET_EnglandWales
      * @param pdfDecodedMultipartFiles The pdf files that are generated for the case upon submittion
-     * @param acasCertificates The acas certificates that are converted to pdf format for a case
+     * @param acasCertificates         The acas certificates that are converted to pdf format for a case
      * @return a complete list of each successfully uploaded file passed to the function
      * @throws CaseDocumentException thrown if there is an error encounted whilst uploading a file
      */
@@ -300,6 +305,7 @@ public class CaseDocumentService {
                     authToken,
                     caseType,
                     TYPE_OF_DOCUMENT_ET1_CASE_PDF,
+                    ET1_PDF_DOC_CATEGORY,
                     casePdf
                 ));
             }
@@ -310,6 +316,7 @@ public class CaseDocumentService {
                     authToken,
                     caseType,
                     TYPE_OF_DOCUMENT_ET1_ACAS_CERTIFICATE,
+                    ACAS_DOC_CATEGORY,
                     acasCertificate
                 ));
             }
@@ -319,8 +326,9 @@ public class CaseDocumentService {
 
     /**
      * Accepts a {@link UploadedDocumentType} and wraps it in a {@link DocumentTypeItem} and assigns a randon UUID.
+     *
      * @param typeOfDocument specifies the relevance of the document to the case
-     * @param uploadedDoc is to be wrapped and returned
+     * @param uploadedDoc    is to be wrapped and returned
      * @return a {@link DocumentTypeItem} with the document and a new UUID
      */
     public DocumentTypeItem createDocumentTypeItem(String typeOfDocument, UploadedDocumentType uploadedDoc) {
@@ -337,18 +345,22 @@ public class CaseDocumentService {
     }
 
     public DocumentTypeItem createDocumentTypeItem(String authToken,
-                                                    String caseType,
-                                                    String documentType,
-                                                    PdfDecodedMultipartFile pdfDecodedMultipartFile)
+                                                   String caseType,
+                                                   String documentType,
+                                                   String categoryId,
+                                                   PdfDecodedMultipartFile pdfDecodedMultipartFile)
         throws CaseDocumentException {
         CaseDocument caseDocument = uploadDocument(authToken, caseType, pdfDecodedMultipartFile);
         return createDocumentTypeItemFromCaseDocument(caseDocument, documentType,
-                                                      pdfDecodedMultipartFile.getDocumentDescription());
+                                                      pdfDecodedMultipartFile.getDocumentDescription(),
+                                                      categoryId
+        );
     }
 
     private DocumentTypeItem createDocumentTypeItemFromCaseDocument(CaseDocument caseDocument,
-                                                                   String typeOfDocument,
-                                                                   String shortDescription) {
+                                                                    String typeOfDocument,
+                                                                    String shortDescription,
+                                                                    String categoryId) {
         DocumentType documentType = new DocumentType();
         documentType.setTypeOfDocument(typeOfDocument);
         documentType.setShortDescription(shortDescription);
@@ -357,6 +369,7 @@ public class CaseDocumentService {
         uploadedDocumentType.setDocumentUrl(caseDocument.getLinks().get("self").get("href"));
         uploadedDocumentType.setDocumentBinaryUrl(caseDocument.getLinks().get("binary") == null ? null :
                                                       caseDocument.getLinks().get("binary").get("href"));
+        uploadedDocumentType.setCategoryId(categoryId);
         documentType.setUploadedDocument(uploadedDocumentType);
         DocumentTypeItem documentTypeItem = new DocumentTypeItem();
         documentTypeItem.setId(UUID.randomUUID().toString());
