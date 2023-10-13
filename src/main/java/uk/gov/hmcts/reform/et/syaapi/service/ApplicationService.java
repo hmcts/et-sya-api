@@ -33,6 +33,7 @@ import java.util.UUID;
 
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED_STATE;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
@@ -134,7 +135,7 @@ public class ApplicationService {
             appType.setClaimantResponseRequired(NO);
         }
 
-        boolean isStoredPending = YES.equals(request.getResponse().getStoredPending());
+        boolean isStoredPending = STORED_STATE.equals(request.getResponse().getStatus());
         if (!isStoredPending) {
             sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
         }

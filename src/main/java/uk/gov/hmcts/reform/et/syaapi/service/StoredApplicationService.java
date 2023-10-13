@@ -164,7 +164,7 @@ public class StoredApplicationService {
             caseData.getDocumentCollection().add(documentTypeItem);
         }
         tseRespondType.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
-        tseRespondType.setStoredPending(null);
+        tseRespondType.setStatus(OPEN_STATE);
         appToModify.getValue().setApplicationState(WAITING_FOR_TRIBUNAL);
     }
 
