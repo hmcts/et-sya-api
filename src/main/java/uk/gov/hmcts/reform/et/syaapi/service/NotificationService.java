@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
@@ -80,6 +81,7 @@ public class NotificationService {
     private final String[] typeB = {"withdraw", "change-details", "reconsider-decision", "reconsider-judgement"};
     private static final String TYPE_C = "witness";
     private static final String DONT_SEND_COPY = "No";
+    private static final String CONCAT2STRINGS = "%s%s";
 
     /**
      * Record containing core details of an email.
@@ -764,5 +766,64 @@ public class NotificationService {
                 + "and in any event within 7 days.";
         }
         return abText;
+    }
+
+    public void sendBundlesEmailToRespondent(CaseData caseData,
+                                                 String caseId) {
+        ClaimantIndType claimantIndType = caseData.getClaimantIndType();
+        String claimant = claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName();
+        String caseNumber = caseData.getEthosCaseReference();
+        String respondentNames = getRespondentNames(caseData);
+        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET);
+
+        sendClaimantSubmittedBundleNotificationEmailToRespondent(
+            caseData,
+            claimant,
+            caseNumber,
+            respondentNames,
+            hearingDate,
+            caseId
+        );
+    }
+
+    private void sendClaimantSubmittedBundleNotificationEmailToRespondent(
+        CaseData caseData,
+        String claimant,
+        String caseNumber,
+        String respondentNames,
+        String hearingDate,
+        String caseId
+    ) {
+        Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
+
+        addCommonParameters(
+            respondentParameters,
+            claimant,
+            respondentNames,
+            caseId,
+            caseNumber
+        );
+        respondentParameters.put(
+            SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
+            hearingDate
+        );
+        respondentParameters.put(
+            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
+        );
+
+        String emailToRespondentTemplate
+            = notificationsProperties.getBundlesClaimantSubmittedRespondentNotificationTemplateId();
+
+        try {
+            notificationClient.sendEmail(
+                emailToRespondentTemplate,
+                caseData.getTribunalCorrespondenceEmail(),
+                respondentParameters,
+                caseId
+            );
+        } catch (NotificationClientException ne) {
+            throw new NotificationException(ne);
+        }
     }
 }

@@ -168,7 +168,7 @@ public class SendNotificationService {
         notificationService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty);
         notificationService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty);
 
-
+        notificationService.sendBundlesEmailToRespondent(caseData, caseId);
     }
 
     private void setResponsesAsRespondedTo(List<GenericTypeItem<RespondNotificationType>> responses) {

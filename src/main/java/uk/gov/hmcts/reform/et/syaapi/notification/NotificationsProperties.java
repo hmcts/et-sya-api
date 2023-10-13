@@ -119,4 +119,8 @@ public class NotificationsProperties {
     @Value("${notifications.pse.respondentResponse}")
     @NotBlank
     private String pseRespondentResponseTemplateId;
+
+    @Value("${notifications.bundlesClaimantSubmittedRespondentNotificationTemplateId}")
+    @NotBlank
+    private String bundlesClaimantSubmittedRespondentNotificationTemplateId;
 }

@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.types.HearingBundleType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
+import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantBundlesRequest;
 
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ import java.util.ArrayList;
 public class BundlesService {
 
         private final CaseService caseService;
+        private final NotificationService notificationService;
 
         /**
          * Submit Claimant Bundles.
@@ -39,6 +42,11 @@ public class BundlesService {
                 log.info("Uploading hearing document bundles file to document collection");
                 caseService.uploadBundlesHearingDoc(caseDetails, hearingDoc);
             }
+
+            CaseData caseData = EmployeeObjectMapper
+            .mapRequestCaseDataToCaseData(caseDetails.getData());
+
+            notificationService.sendBundlesEmailToRespondent(caseData, request.getCaseId());
 
             CaseDetails finalCaseDetails = caseService.triggerEvent(
                 authorization,
