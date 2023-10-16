@@ -23,7 +23,6 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED_STATE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UK_LOCAL_DATE_PATTERN;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
