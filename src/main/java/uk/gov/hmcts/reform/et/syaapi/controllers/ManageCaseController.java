@@ -40,6 +40,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
  */
 @Slf4j
 @RequiredArgsConstructor
+@SuppressWarnings({"PMD.TooManyMethods"})
 @RestController
 @RequestMapping("/cases")
 public class ManageCaseController {
@@ -47,6 +48,7 @@ public class ManageCaseController {
     private final CaseService caseService;
     private final ApplicationService applicationService;
     private final BundlesService bundlesService;
+
     /**
      * Accepts parameter of type {@link CaseRequest} and returns the case specified in 'getCaseId'.
      *
@@ -266,7 +268,7 @@ public class ManageCaseController {
         return ok(finalCaseDetails);
     }
 
-        /**
+    /**
      * Submits claimant hearing document pdf and related information.
      * @param authorization jwt of the user
      * @param request the request object which contains the claimant application passed from sya-frontend

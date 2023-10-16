@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.hmcts.et.common.model.ccd.types.HearingBundleType;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.HubLinksStatuses;
@@ -21,10 +22,12 @@ import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.ClaimantBundlesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
+import uk.gov.hmcts.reform.et.syaapi.service.BundlesService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
@@ -81,6 +84,9 @@ class ManageCaseControllerTest {
 
     @MockBean
     private ApplicationService applicationService;
+
+    @MockBean
+    private BundlesService bundlesService;
 
     ManageCaseControllerTest() {
         // Default constructor
@@ -468,6 +474,32 @@ class ManageCaseControllerTest {
         verify(applicationService, times(1)).updateTribunalResponseAsViewed(
             TEST_SERVICE_AUTH_TOKEN,
             caseRequest
+        );
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldSubmitClaimantBundles() {
+        HearingBundleType bundle = new HearingBundleType();
+        ClaimantBundlesRequest bundleRequest = ClaimantBundlesRequest.builder()
+            .caseId(CASE_ID)
+            .caseTypeId(CASE_TYPE)
+            .claimantBundles(bundle)
+            .build();
+
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+
+        when(bundlesService.submitBundles(any(), any())).thenReturn(expectedDetails);
+        mockMvc.perform(
+            put("/cases/submit-bundles", CASE_ID)
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ResourceLoader.toJson(bundleRequest))
+        ).andExpect(status().isOk());
+
+        verify(bundlesService, times(1)).submitBundles(
+            TEST_SERVICE_AUTH_TOKEN,
+            bundleRequest
         );
     }
 }

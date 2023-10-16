@@ -19,9 +19,11 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.ClaimantBundlesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
+import uk.gov.hmcts.reform.et.syaapi.service.BundlesService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -68,6 +70,8 @@ class ManageCaseControllerIntegrationTest {
     private CoreCaseDataApi ccdApiClient;
     @MockBean
     private ApplicationService applicationService;
+    @MockBean
+    private BundlesService bundlesService;
 
     @Autowired
     private ResourceLoader resourceLoader;
@@ -92,6 +96,7 @@ class ManageCaseControllerIntegrationTest {
         when(applicationService.submitApplication(any(), any())).thenReturn(caseDetailsResponse);
         when(applicationService.respondToApplication(any(), any())).thenReturn(caseDetailsResponse);
         when(applicationService.updateTribunalResponseAsViewed(any(),any())).thenReturn(caseDetailsResponse);
+        when(bundlesService.submitBundles(any(),any())).thenReturn(caseDetailsResponse);
     }
 
     @DisplayName("Should get single case details")
@@ -217,6 +222,23 @@ class ManageCaseControllerIntegrationTest {
 
         mockMvc.perform(
                 put("/cases/submit-claimant-application")
+                    .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(resourceLoader.toJson(caseRequest)))
+            .andExpect(status().isOk())
+            .andExpect(content().json(getSerialisedMessage(CASE_DETAILS_JSON)));
+    }
+
+    @DisplayName("Should create bundle and return case details")
+    @Test
+    void submitBundles() throws Exception {
+        ClaimantBundlesRequest caseRequest = ClaimantBundlesRequest.builder()
+            .caseTypeId(SCOTLAND_CASE_TYPE)
+            .caseId("12")
+            .build();
+
+        mockMvc.perform(
+                put("/cases/submit-bundles")
                     .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(resourceLoader.toJson(caseRequest)))
