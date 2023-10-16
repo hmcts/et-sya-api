@@ -3,10 +3,6 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.MultiValuedMap;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.RangeQueryBuilder;
-import org.elasticsearch.index.query.TermsQueryBuilder;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -59,7 +55,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -75,6 +70,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.ENGLANDWALES_CASE_TYPE_ID;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.ET1_PDF_DOC_CATEGORY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ONLINE_SUBMISSION;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper.mapRequestCaseDataToCaseData;
@@ -400,7 +396,8 @@ class CaseServiceTest {
         assertEquals("DocumentType(typeOfDocument="
                          + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=http://document.url/2333482f-1eb9-44f1"
                          + "-9b78-f5d8f0c74b15/binary, documentFilename=filename, documentUrl=http://document.binary"
-                         + ".url/2333482f-1eb9-44f1-9b78-f5d8f0c74b15), ownerDocument=null, creationDate=null, "
+                         + ".url/2333482f-1eb9-44f1-9b78-f5d8f0c74b15, categoryId=C11, uploadTimestamp=null), "
+                         + "ownerDocument=null, creationDate=null, "
                          + "shortDescription=null)", ((DocumentTypeItem) docCollection.get(0)).getValue().toString());
     }
 
@@ -437,6 +434,7 @@ class CaseServiceTest {
         uploadedDocumentType.setDocumentFilename("filename");
         uploadedDocumentType.setDocumentUrl("http://document.binary.url/2333482f-1eb9-44f1-9b78-f5d8f0c74b15");
         uploadedDocumentType.setDocumentBinaryUrl("http://document.url/2333482f-1eb9-44f1-9b78-f5d8f0c74b15/binary");
+        uploadedDocumentType.setCategoryId(ET1_PDF_DOC_CATEGORY);
         DocumentTypeItem documentTypeItem = new DocumentTypeItem();
         documentTypeItem.setId(UUID.randomUUID().toString());
 
@@ -514,12 +512,26 @@ class CaseServiceTest {
     }
 
     private String generateCaseDataEsQueryWithDate(LocalDateTime requestDateTime) {
-        BoolQueryBuilder boolQueryBuilder = boolQuery()
-            .filter(new RangeQueryBuilder("last_modified").gte(requestDateTime));
-        return new SearchSourceBuilder()
-            .size(MAX_ES_SIZE)
-            .query(boolQueryBuilder)
-            .toString();
+        return """
+            {
+              "size": %d,
+              "query": {
+                "bool": {
+                  "filter": [
+                    {
+                      "range": {
+                        "last_modified": {
+                          "gte": "%s",
+                          "boost": 1.0
+                        }
+                      }
+                    }
+                  ],
+                  "boost": 1.0
+                }
+              }
+            }
+            """.formatted(MAX_ES_SIZE, requestDateTime.toString());
     }
 
     @Test
@@ -581,12 +593,24 @@ class CaseServiceTest {
     }
 
     private String generateCaseDataEsQuery(List<String> caseIds) {
-        BoolQueryBuilder boolQueryBuilder = boolQuery()
-            .filter(new TermsQueryBuilder("reference.keyword", caseIds));
-        return new SearchSourceBuilder()
-            .size(MAX_ES_SIZE)
-            .query(boolQueryBuilder)
-            .toString();
+        return """
+            {
+              "size": %d,
+              "query": {
+                "bool": {
+                  "filter": [
+                    {
+                      "terms": {
+                        "reference.keyword": %s,
+                        "boost": 1.0
+                      }
+                    }
+                  ],
+                  "boost": 1.0
+                }
+              }
+            }
+            """.formatted(MAX_ES_SIZE, caseIds);
     }
 
     @Nested
@@ -675,7 +699,7 @@ class CaseServiceTest {
     @Test
     void shouldInvokeClaimantTsePdf()
         throws DocumentGenerationException {
-        when(pdfService.convertClaimantTseIntoMultipartFile(any())).thenReturn(
+        when(pdfService.convertClaimantTseIntoMultipartFile(any(), any(), any())).thenReturn(
             tsePdfMultipartFileMock);
 
         assertDoesNotThrow(() ->
@@ -691,7 +715,7 @@ class CaseServiceTest {
     @SneakyThrows
     @Test
     void givenPdfServiceErrorProducesDocumentGenerationException() {
-        when(pdfService.convertClaimantTseIntoMultipartFile(any())).thenThrow(
+        when(pdfService.convertClaimantTseIntoMultipartFile(any(), any(), any())).thenThrow(
             new DocumentGenerationException(TEST));
 
         assertThrows(DocumentGenerationException.class, () -> caseService.uploadTseCyaAsPdf(

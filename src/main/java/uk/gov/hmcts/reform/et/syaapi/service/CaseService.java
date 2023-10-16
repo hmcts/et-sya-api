@@ -6,10 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.RangeQueryBuilder;
-import org.elasticsearch.index.query.TermsQueryBuilder;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -58,10 +54,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
+import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.CASE_MANAGEMENT_DOC_CATEGORY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ACAS_VISIBLE_DOCS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
@@ -238,7 +234,7 @@ public class CaseService {
         // Uploading all documents to document store
         List<DocumentTypeItem> documentList = uploadAllDocuments(authorization, caseRequest, caseData, casePdfFiles,
                                                                  acasCertificates);
-        // Setting caliamantPCqId and documentCollection to case details
+        // Setting claimantPcqId and documentCollection to case details
         caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
         caseDetails.getData().put(DOCUMENT_COLLECTION, documentList);
         // For determining the case is submitted via ET1
@@ -337,6 +333,7 @@ public class CaseService {
                                         caseRequest.getCaseData().get("managingOffice").toString());
         caseData1.setReceiptDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         caseData1.setFeeGroupReference(caseRequest.getCaseId());
+        caseData1.setPositionType("ET1 Online submission");
         ObjectMapper objectMapper = new ObjectMapper();
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         return submitUpdate(
@@ -405,12 +402,26 @@ public class CaseService {
      * @return a list of caseIds
      */
     public List<Long> getLastModifiedCasesId(String authorisation, LocalDateTime requestDateTime) {
-        BoolQueryBuilder boolQueryBuilder = boolQuery()
-            .filter(new RangeQueryBuilder("last_modified").gte(requestDateTime));
-        String query = new SearchSourceBuilder()
-            .size(MAX_ES_SIZE)
-            .query(boolQueryBuilder)
-            .toString();
+        String query = """
+             {
+               "size": %d,
+               "query": {
+                 "bool": {
+                   "filter": [
+                     {
+                       "range": {
+                         "last_modified": {
+                           "gte": "%s",
+                           "boost": 1.0
+                         }
+                       }
+                     }
+                   ],
+                   "boost": 1.0
+                 }
+               }
+             }
+             """.formatted(MAX_ES_SIZE, requestDateTime.toString());
         return searchEnglandScotlandCases(authorisation, query)
             .stream()
             .map(CaseDetails::getId)
@@ -424,12 +435,24 @@ public class CaseService {
      * @return a MultiValuedMap containing a list of document ids and timestamps
      */
     public MultiValuedMap<String, CaseDocumentAcasResponse> retrieveAcasDocuments(String caseId) {
-        BoolQueryBuilder boolQueryBuilder = boolQuery()
-            .filter(new TermsQueryBuilder("reference.keyword", caseId));
-        String query = new SearchSourceBuilder()
-            .size(MAX_ES_SIZE)
-            .query(boolQueryBuilder)
-            .toString();
+        String query = """
+             {
+               "size": %d,
+               "query": {
+                 "bool": {
+                   "filter": [
+                     {
+                       "terms": {
+                         "reference.keyword": [%s],
+                         "boost": 1.0
+                       }
+                     }
+                   ],
+                   "boost": 1.0
+                 }
+               }
+             }
+             """.formatted(MAX_ES_SIZE, caseId);
         return getDocumentUuids(query);
     }
 
@@ -483,13 +506,24 @@ public class CaseService {
      * @return a list of case details
      */
     public List<CaseDetails> getCaseData(String authorisation, List<String> caseIds) {
-        BoolQueryBuilder boolQueryBuilder = boolQuery()
-            .filter(new TermsQueryBuilder("reference.keyword", caseIds));
-        String query = new SearchSourceBuilder()
-            .size(MAX_ES_SIZE)
-            .query(boolQueryBuilder)
-            .toString();
-
+        String query = """
+             {
+               "size": %d,
+               "query": {
+                 "bool": {
+                   "filter": [
+                     {
+                       "terms": {
+                         "reference.keyword": %s,
+                         "boost": 1.0
+                       }
+                     }
+                   ],
+                   "boost": 1.0
+                 }
+               }
+             }
+             """.formatted(MAX_ES_SIZE, caseIds);
         return searchEnglandScotlandCases(authorisation, query);
     }
 
@@ -559,11 +593,15 @@ public class CaseService {
         if (docList == null) {
             docList = new ArrayList<>();
         }
-        PdfDecodedMultipartFile pdfDecodedMultipartFile = pdfService.convertClaimantTseIntoMultipartFile(claimantTse);
+
+        PdfDecodedMultipartFile pdfDecodedMultipartFile = pdfService.convertClaimantTseIntoMultipartFile(
+            claimantTse, caseData.getGenericTseApplicationCollection(), caseData.getEthosCaseReference());
+
         docList.add(caseDocumentService.createDocumentTypeItem(
             authorization,
             caseType,
             CLAIMANT_CORRESPONDENCE_DOCUMENT,
+            CASE_MANAGEMENT_DOC_CATEGORY,
             pdfDecodedMultipartFile
         ));
 
@@ -576,20 +614,21 @@ public class CaseService {
                            String appType)
         throws DocumentGenerationException, CaseDocumentException {
         String description = "Response to " + appType;
+        String ethosCaseReference = caseData.getEthosCaseReference();
         PdfDecodedMultipartFile multipartResponsePdf =
-            pdfService.convertClaimantResponseIntoMultipartFile(request, description);
+            pdfService.convertClaimantResponseIntoMultipartFile(request, description, ethosCaseReference);
 
-        var responsePdf = caseDocumentService.createDocumentTypeItem(
+        DocumentTypeItem responsePdf = caseDocumentService.createDocumentTypeItem(
             authorization,
             request.getCaseTypeId(),
             CLAIMANT_CORRESPONDENCE_DOCUMENT,
+            CASE_MANAGEMENT_DOC_CATEGORY,
             multipartResponsePdf
         );
 
         if (isEmpty(caseData.getDocumentCollection())) {
             caseData.setDocumentCollection(new ArrayList<>());
         }
-        var docCollection = caseData.getDocumentCollection();
-        docCollection.add(responsePdf);
+        caseData.getDocumentCollection().add(responsePdf);
     }
 }

@@ -155,7 +155,7 @@ public class ApplicationService {
             authorization,
             request.getCaseId(),
             request.getCaseTypeId(),
-            CaseEvent.CLAIMANT_TSE_RESPOND
+            CaseEvent.UPDATE_APPLICATION_STATE
         );
 
         CaseData caseData = EmployeeObjectMapper
@@ -211,7 +211,7 @@ public class ApplicationService {
         if (responseToUpdate == null) {
             throw new IllegalArgumentException("Response id is invalid");
         }
-        
+
         responseToUpdate.getValue().setViewedByClaimant(YES);
 
         return caseService.submitUpdate(

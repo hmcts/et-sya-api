@@ -50,7 +50,7 @@ public class FunctionalTestBase {
 
     private String createRandomEmail() {
         int randomNumber = (int) (Math.random() * 10_000_000);
-        return "test" + randomNumber + "@hmcts.net";
+        return "ET.test" + randomNumber + "@hmcts.net";
     }
 
     private CloseableHttpClient buildClient()

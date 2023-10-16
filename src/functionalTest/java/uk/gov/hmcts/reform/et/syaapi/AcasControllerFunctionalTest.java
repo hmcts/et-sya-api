@@ -11,19 +11,20 @@ class AcasControllerFunctionalTest extends FunctionalTestBase {
     private static final String AUTHORIZATION = "Authorization";
 
     @Test
-    void shouldRecieveAcceptedStatusWhenGetLastModifiedCaseInvoked() {
+    void shouldReceiveAcceptedStatusWhenGetLastModifiedCaseInvoked() {
         RestAssured.given()
             .header(new Header(AUTHORIZATION, userToken))
-            .param("datetime", "2022-11-23T00:00:00.000-00:00")
+            .param("datetime", "2022-11-23T00:00:00")
             .when()
             .get("/getLastModifiedCaseList")
             .then()
             .statusCode(HttpStatus.SC_OK)
-            .log().all(true);
+            .log()
+            .all(true);
     }
 
     @Test
-    void shouldRecieveAcceptedStatusWhenGetCaseDataInvoked() {
+    void shouldReceiveAcceptedStatusWhenGetCaseDataInvoked() {
         RestAssured.given()
             .header(new Header(AUTHORIZATION, userToken))
             .param("caseIds", List.of("1669137978672616"))
@@ -31,6 +32,7 @@ class AcasControllerFunctionalTest extends FunctionalTestBase {
             .get("/getCaseData")
             .then()
             .statusCode(HttpStatus.SC_OK)
-            .log().all(true);
+            .log()
+            .all(true);
     }
 }
