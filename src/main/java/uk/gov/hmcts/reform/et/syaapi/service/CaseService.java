@@ -60,6 +60,7 @@ import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
+import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.CASE_MANAGEMENT_DOC_CATEGORY;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ACAS_VISIBLE_DOCS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
@@ -236,7 +237,7 @@ public class CaseService {
         // Uploading all documents to document store
         List<DocumentTypeItem> documentList = uploadAllDocuments(authorization, caseRequest, caseData, casePdfFiles,
                                                                  acasCertificates);
-        // Setting caliamantPCqId and documentCollection to case details
+        // Setting claimantPcqId and documentCollection to case details
         caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
         caseDetails.getData().put(DOCUMENT_COLLECTION, documentList);
         // For determining the case is submitted via ET1
@@ -614,8 +615,8 @@ public class CaseService {
         docList.add(caseDocumentService.createDocumentTypeItemLevels(
             authorization,
             caseType,
-            topLevel,
-            applicationDocMapping,
+            CLAIMANT_CORRESPONDENCE_DOCUMENT,
+            CASE_MANAGEMENT_DOC_CATEGORY,
             pdfDecodedMultipartFile
         ));
 
@@ -642,8 +643,8 @@ public class CaseService {
         DocumentTypeItem responsePdf = caseDocumentService.createDocumentTypeItemLevels(
             authorization,
             request.getCaseTypeId(),
-            topLevel,
-            applicationDoc,
+            CLAIMANT_CORRESPONDENCE_DOCUMENT,
+            CASE_MANAGEMENT_DOC_CATEGORY,
             multipartResponsePdf
         );
 
