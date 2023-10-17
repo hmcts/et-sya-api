@@ -41,9 +41,9 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.ACAS_CERTIFICATE;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.ET1;
 import static uk.gov.hmcts.reform.ccd.client.model.Classification.PUBLIC;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ATTACHMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.ACAS_DOC_CATEGORY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.ET1_PDF_DOC_CATEGORY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ATTACHMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.RESOURCE_NOT_FOUND;
 
@@ -292,7 +292,7 @@ public class CaseDocumentService {
      * Files are uploaded one at a file via this service and then returned as a list of {@link DocumentTypeItem}
      *
      * @param authToken                jwt token used to call this service
-     * @param caseType                 defines the juridiction of the case e.g. ET_EnglandWales
+     * @param caseType                 defines the jurisdiction of the case e.g. ET_EnglandWales
      * @param pdfDecodedMultipartFiles The pdf files that are generated for the case upon submittion
      * @param acasCertificates         The acas certificates that are converted to pdf format for a case
      * @return a complete list of each successfully uploaded file passed to the function
@@ -392,7 +392,7 @@ public class CaseDocumentService {
         documentType.setDateOfCorrespondence(LocalDate.now().toString());
         DocumentHelper.setSecondLevelDocumentFromType(documentType, typeOfDocument);
         DocumentHelper.setDocumentTypeForDocument(documentType);
-        return getDocumentTypeItem(caseDocument, documentType);
+        return getDocumentTypeItem(caseDocument, documentType, categoryId);
     }
 
 
@@ -410,27 +410,31 @@ public class CaseDocumentService {
                                                          String caseType,
                                                          String topLevel,
                                                          String secondLevel,
+                                                         String categoryId,
                                                          PdfDecodedMultipartFile pdfDecodedMultipartFile)
         throws CaseDocumentException {
         CaseDocument caseDocument = uploadDocument(authToken, caseType, pdfDecodedMultipartFile);
         return createDocumentTypeItemLevels(caseDocument, topLevel, secondLevel,
-                                            pdfDecodedMultipartFile.getDocumentDescription());
+                                            pdfDecodedMultipartFile.getDocumentDescription(),
+                                            categoryId);
     }
 
     private DocumentTypeItem createDocumentTypeItemLevels(CaseDocument caseDocument,
                                                           String topLevel,
                                                           String secondLevel,
-                                                          String shortDescription) {
+                                                          String shortDescription,
+                                                          String categoryId) {
         DocumentType documentType = new DocumentType();
         documentType.setTopLevelDocuments(topLevel);
         documentType.setShortDescription(shortDescription);
         documentType.setDateOfCorrespondence(LocalDate.now().toString());
         DocumentHelper.setSecondLevelDocumentFromType(documentType, secondLevel);
         DocumentHelper.setDocumentTypeForDocument(documentType);
-        return getDocumentTypeItem(caseDocument, documentType);
+        return getDocumentTypeItem(caseDocument, documentType, categoryId);
     }
 
-    private static DocumentTypeItem getDocumentTypeItem(CaseDocument caseDocument, DocumentType documentType) {
+    private static DocumentTypeItem getDocumentTypeItem(CaseDocument caseDocument, DocumentType documentType,
+                                                        String categoryId) {
         UploadedDocumentType uploadedDocumentType = new UploadedDocumentType();
         uploadedDocumentType.setCategoryId(categoryId);
         uploadedDocumentType.setDocumentFilename(caseDocument.getOriginalDocumentName());

@@ -393,7 +393,7 @@ class CaseServiceTest {
         assertEquals("DocumentType(typeOfDocument="
              + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=http://document.url/2333482f-1eb9-44f1"
              + "-9b78-f5d8f0c74b15/binary, documentFilename=filename, documentUrl=http://document.binary"
-             + ".url/2333482f-1eb9-44f1-9b78-f5d8f0c74b15, categoryId=null, uploadTimestamp=null), "
+             + ".url/2333482f-1eb9-44f1-9b78-f5d8f0c74b15, categoryId=C11, uploadTimestamp=null), "
              + "ownerDocument=null, creationDate=null, "
              + "shortDescription=null, topLevelDocuments=null, startingClaimDocuments=null, "
              + "responseClaimDocuments=null, initialConsiderationDocuments=null, "

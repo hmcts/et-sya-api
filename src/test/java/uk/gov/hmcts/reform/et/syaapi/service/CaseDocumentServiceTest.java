@@ -46,6 +46,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.ET1;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.STARTING_A_CLAIM;
+import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.ET1_PDF_DOC_CATEGORY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.RESOURCE_NOT_FOUND;
@@ -498,11 +499,13 @@ class CaseDocumentServiceTest {
             ENGLAND_CASE_TYPE,
             STARTING_A_CLAIM,
             ET1,
+            ET1_PDF_DOC_CATEGORY,
             MOCK_PDF_DECODED_MULTIPART_FILE);
 
         assertEquals(createdDoc.getValue().getTopLevelDocuments(), documentTypeItem.getValue().getTopLevelDocuments());
         assertEquals(createdDoc.getValue().getDocumentType(), documentTypeItem.getValue().getDocumentType());
         assertEquals(createdDoc.getValue().getShortDescription(), documentTypeItem.getValue().getShortDescription());
-        assertEquals(createdDoc.getValue().getDateOfCorrespondence(), documentTypeItem.getValue().getDateOfCorrespondence());
+        assertEquals(createdDoc.getValue().getDateOfCorrespondence(),
+                     documentTypeItem.getValue().getDateOfCorrespondence());
     }
 }
