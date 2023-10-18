@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 
 import java.util.List;
@@ -34,6 +35,8 @@ import java.util.concurrent.TimeUnit;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.OPEN_STATE;
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT;
 
 @SuppressWarnings({"PMD.LawOfDemeter", "PMD.LinguisticNaming", "PMD.TooManyMethods"})
@@ -55,6 +58,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
     public static final String CASES_RESPOND_TO_APPLICATION = "/cases/respond-to-application";
     public static final String CASES_CHANGE_APPLICATION_STATUS = "/cases/change-application-status";
     public static final String CASES_TRIBUNAL_RESPONSE_VIEWED = "/cases/tribunal-response-viewed";
+    public static final String CASES_SUBMIT_STORED_CLAIMANT_APPLICATION = "/cases/submit-stored-claimant-application";
     public static final String INVALID_TOKEN = "invalid_token";
     private Long caseId;
     private static final String CASE_TYPE = "ET_EnglandWales";
@@ -318,6 +322,31 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
     }
 
     @Test
+    @Order(11)
+    void submitStoredClaimantApplicationShouldReturnCaseDetails() {
+        SubmitStoredApplicationRequest submitStoredApplicationRequest = SubmitStoredApplicationRequest.builder()
+            .caseId(caseId.toString())
+            .caseTypeId(CASE_TYPE)
+            .applicationId(appId)
+            .build();
+
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .header(new Header(AUTHORIZATION, userToken))
+            .body(submitStoredApplicationRequest)
+            .put(CASES_SUBMIT_STORED_CLAIMANT_APPLICATION)
+            .then()
+            .statusCode(HttpStatus.SC_OK)
+            .log().all(true)
+            .assertThat().body("id", equalTo(caseId))
+            .assertThat().body("case_data.genericTseApplicationCollection[0].value.applicationState",
+                               equalTo(IN_PROGRESS))
+            .assertThat().body("case_data.genericTseApplicationCollection[0].value.state",
+                               equalTo(OPEN_STATE))
+            .extract().body().jsonPath();
+    }
+
+    @Test
     void createDraftCaseWithInvalidAuthTokenShouldReturn403() {
         CaseRequest caseRequest = CaseRequest.builder()
             .caseData(caseData)
@@ -487,6 +516,22 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .extract().body().jsonPath();
     }
 
+    @Test
+    void submitStoredClaimantApplicationWithInvalidAuthTokenShouldReturn403() {
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseData(caseData)
+            .build();
+
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .header(new Header(AUTHORIZATION, INVALID_TOKEN))
+            .body(caseRequest)
+            .put(CASES_SUBMIT_STORED_CLAIMANT_APPLICATION)
+            .then()
+            .statusCode(HttpStatus.SC_FORBIDDEN)
+            .log().all(true)
+            .extract().body().jsonPath();
+    }
 
     private RespondentSumTypeItem createRespondentType() {
         RespondentSumType respondentSumType = new RespondentSumType();
