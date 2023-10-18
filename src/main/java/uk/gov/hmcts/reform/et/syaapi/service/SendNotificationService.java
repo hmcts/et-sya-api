@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED_STATE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT;
@@ -146,11 +147,21 @@ public class SendNotificationService {
         setResponsesAsRespondedTo(sendNotificationType.getRespondNotificationTypeCollection());
 
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
-        sendAddResponseSendNotificationEmails(
-            caseData,
-            request.getCaseId(),
-            request.getPseResponseType().getCopyToOtherParty()
-        );
+
+        if (STORED_STATE.equals(pseResponseType.getStatus())) {
+            notificationService.sendStoredConfirmEmailForRespondTribunal(
+                caseData,
+                request.getCaseId(),
+                request.getPseResponseType().getResponse()
+            );
+        } else {
+            sendAddResponseSendNotificationEmails(
+                caseData,
+                request.getCaseId(),
+                request.getPseResponseType().getCopyToOtherParty()
+            );
+        }
+
         return caseService.submitUpdate(
             authorization,
             request.getCaseId(),
