@@ -655,8 +655,9 @@ public class NotificationService {
         );
     }
 
-    void sendStoredConfirmEmailForRespondApplication(CoreEmailDetails details,
+    void sendStoredConfirmEmailForRespondApplication(CaseData caseData, String caseId,
                                                      GenericTseApplicationTypeItem appToModify) {
+        CoreEmailDetails details = formatCoreEmailDetails(caseData, caseId);
         sendStoreConfirmationEmail(
             notificationsProperties.getClaimantTseEmailStoredTemplateId(),
             details,
@@ -670,6 +671,17 @@ public class NotificationService {
             notificationsProperties.getClaimantTseEmailSubmitStoredTemplateId(),
             details,
             appToModify.getValue().getType()
+        );
+    }
+
+    private CoreEmailDetails formatCoreEmailDetails(CaseData caseData, String caseId) {
+        return new CoreEmailDetails(
+            caseData,
+            caseData.getClaimantIndType().getClaimantFirstNames() + " " + caseData.getClaimantIndType().getClaimantLastName(),
+            caseData.getEthosCaseReference(),
+            getRespondentNames(caseData),
+            NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET),
+            caseId
         );
     }
 
