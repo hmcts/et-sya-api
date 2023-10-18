@@ -147,25 +147,11 @@ public class ApplicationService {
         }
 
         if (isStoredPending) {
-            sendStoredConfirmEmailForResponseApplication(caseData, caseId, appToModify);
+            notificationService.sendStoredConfirmEmailForRespondApplication(caseData, caseId, appToModify);
         }
 
         return caseService.submitUpdate(
             authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
-    }
-
-    private void sendStoredConfirmEmailForResponseApplication(CaseData caseData, String caseId,
-                                                              GenericTseApplicationTypeItem appToModify) {
-        ClaimantIndType claimantIndType = caseData.getClaimantIndType();
-        CoreEmailDetails details = new CoreEmailDetails(
-            caseData,
-            claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName(),
-            caseData.getEthosCaseReference(),
-            getRespondentNames(caseData),
-            NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET),
-            caseId
-        );
-        notificationService.sendStoredConfirmEmailForRespondApplication(details, appToModify);
     }
 
     /**
