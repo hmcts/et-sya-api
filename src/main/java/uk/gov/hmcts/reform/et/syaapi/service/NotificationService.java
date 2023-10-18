@@ -673,7 +673,7 @@ public class NotificationService {
             appToModify.getValue().getType()
         );
     }
-    
+
     void sendStoredConfirmEmailForRespondTribunal(CaseData caseData, String caseId, String shortText) {
         CoreEmailDetails details = formatCoreEmailDetails(caseData, caseId);
         sendStoreConfirmationEmail(
@@ -686,7 +686,8 @@ public class NotificationService {
     private CoreEmailDetails formatCoreEmailDetails(CaseData caseData, String caseId) {
         return new CoreEmailDetails(
             caseData,
-            caseData.getClaimantIndType().getClaimantFirstNames() + " " + caseData.getClaimantIndType().getClaimantLastName(),
+            caseData.getClaimantIndType().getClaimantFirstNames() + " "
+                + caseData.getClaimantIndType().getClaimantLastName(),
             caseData.getEthosCaseReference(),
             getRespondentNames(caseData),
             NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET),
