@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
@@ -638,6 +639,22 @@ public class NotificationService {
         }
     }
 
+    void sendStoredConfirmEmailForApplication(CoreEmailDetails details, ClaimantTse claimantTse) {
+        sendStoreConfirmationEmail(
+            notificationsProperties.getClaimantTseEmailStoredTemplateId(),
+            details,
+            APP_TYPE_MAP.get(claimantTse.getContactApplicationType())
+        );
+    }
+
+    void sendSubmitStoredEmailToClaimant(CoreEmailDetails details, GenericTseApplicationTypeItem appToModify) {
+        sendStoreConfirmationEmail(
+            notificationsProperties.getClaimantTseEmailSubmitStoredTemplateId(),
+            details,
+            appToModify.getValue().getType()
+        );
+    }
+
     private void sendTribunalEmail(CaseData caseData,
                                    String caseId,
                                    Map<String, Object> tribunalParameters,
@@ -692,6 +709,42 @@ public class NotificationService {
                     }
                 }
             });
+    }
+
+    private void sendStoreConfirmationEmail(String emailToClaimantTemplate, CoreEmailDetails details,
+                                            String shortText) {
+        String claimantEmailAddress = details.caseData.getClaimantType().getClaimantEmailAddress();
+        if (isBlank(claimantEmailAddress)) {
+            log.info("No claimant email found - Application response acknowledgment not being sent");
+            return;
+        }
+
+        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
+
+        addCommonParameters(
+            claimantParameters,
+            details.claimant,
+            details.respondentNames,
+            details.caseId,
+            details.caseNumber
+        );
+        claimantParameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, details.hearingDate);
+        claimantParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
+        claimantParameters.put(
+            SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
+            notificationsProperties.getCitizenPortalLink() + details.caseId
+        );
+
+        try {
+            notificationClient.sendEmail(
+                emailToClaimantTemplate,
+                claimantEmailAddress,
+                claimantParameters,
+                details.caseId
+            );
+        } catch (NotificationClientException ne) {
+            throw new NotificationException(ne);
+        }
     }
 
     private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
