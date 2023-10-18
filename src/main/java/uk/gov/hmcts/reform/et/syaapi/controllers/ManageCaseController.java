@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationService;
@@ -288,4 +289,28 @@ public class ManageCaseController {
         CaseDetails finalCaseDetails = storedApplicationService.submitStoredApplication(authorization, request);
         return ok(finalCaseDetails);
     }
+
+    /**
+     * Respond to an Application.
+     *
+     * @param authorization jwt of the user
+     * @param request       the request object which contains the appId and claimant response passed from sya-frontend
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    @PutMapping("/submit-stored-respond-to-application")
+    @Operation(summary = "Submit Stored Respond to an application")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> submitStoredRespondToApplication(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody UpdateStoredRespondToApplicationRequest request
+    ) {
+        log.info("Received submit respond to application request - caseTypeId: {} caseId: {}",
+            request.getCaseTypeId(), request.getCaseId()
+        );
+
+        CaseDetails finalCaseDetails = storedApplicationService.submitRespondToApplication(authorization, request);
+
+        return ok(finalCaseDetails);
+    }
+
 }

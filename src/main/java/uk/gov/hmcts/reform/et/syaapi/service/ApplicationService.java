@@ -33,6 +33,7 @@ import java.util.UUID;
 
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED_STATE;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
@@ -44,6 +45,7 @@ public class ApplicationService {
     public static final String WEEKS_78 = "78 weeks";
 
     private static final String TSE_FILENAME = "Contact the tribunal.pdf";
+    private static final String NOT_SET = "Not set";
 
     private final CaseService caseService;
     private final NotificationService notificationService;
@@ -133,14 +135,37 @@ public class ApplicationService {
             appType.setClaimantResponseRequired(NO);
         }
 
-        sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
+        boolean isStoredPending = STORED_STATE.equals(request.getResponse().getStatus());
+        if (!isStoredPending) {
+            sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
+        }
 
         TseApplicationHelper.setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService);
 
-        createAndAddPdfOfResponse(authorization, request, caseData, appType);
+        if (!isStoredPending) {
+            createAndAddPdfOfResponse(authorization, request, caseData, appType);
+        }
+
+        if (isStoredPending) {
+            sendStoredConfirmEmailForResponseApplication(caseData, caseId, appToModify);
+        }
 
         return caseService.submitUpdate(
             authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
+    }
+
+    private void sendStoredConfirmEmailForResponseApplication(CaseData caseData, String caseId,
+                                                              GenericTseApplicationTypeItem appToModify) {
+        ClaimantIndType claimantIndType = caseData.getClaimantIndType();
+        CoreEmailDetails details = new CoreEmailDetails(
+            caseData,
+            claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName(),
+            caseData.getEthosCaseReference(),
+            getRespondentNames(caseData),
+            NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET),
+            caseId
+        );
+        notificationService.sendStoredConfirmEmailForRespondApplication(details, appToModify);
     }
 
     /**
@@ -256,7 +281,7 @@ public class ApplicationService {
             claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName(),
             caseData.getEthosCaseReference(),
             getRespondentNames(caseData),
-            NotificationsHelper.getNearestHearingToReferral(caseData, "Not set"),
+            NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET),
             finalCaseDetails.getId().toString()
         );
 
@@ -286,7 +311,7 @@ public class ApplicationService {
             claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName(),
             caseData.getEthosCaseReference(),
             getRespondentNames(caseData),
-            NotificationsHelper.getNearestHearingToReferral(caseData, "Not set"),
+            NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET),
             caseId
         );
         String type = application.getType();
