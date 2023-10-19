@@ -13,7 +13,9 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.SendNotificationService;
+import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationService;
 
 import javax.validation.constraints.NotNull;
 
@@ -27,6 +29,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 public class SendNotificationController {
 
     private final SendNotificationService sendNotificationService;
+    private final StoredApplicationService storedApplicationService;
 
     /**
      * Updates SendNotification status.
@@ -72,6 +75,26 @@ public class SendNotificationController {
         return ok(finalCaseDetails);
     }
 
+    /**
+     * Updates a Tribunal Send Notification from stored to submit.
+     *
+     * @param authorization jwt of the user
+     * @param request       the request object which contains the appId and claimant response passed from sya-frontend
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    @PutMapping("/submit-stored-respond-to-tribunal")
+    @Operation(summary = "Submit Stored Respond to an application")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> submitStoredRespondToApplication(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody UpdateStoredRespondToApplicationRequest request
+    ) {
+        log.info("Received submit respond to application request - caseTypeId: {} caseId: {}",
+                 request.getCaseTypeId(), request.getCaseId()
+        );
 
+        CaseDetails finalCaseDetails = storedApplicationService.submitRespondToTribunal(authorization, request);
 
+        return ok(finalCaseDetails);
+    }
 }

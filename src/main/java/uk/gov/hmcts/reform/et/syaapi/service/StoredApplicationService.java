@@ -220,4 +220,8 @@ public class StoredApplicationService {
         notificationService.sendSubmitStoredRespondToAppEmailToClaimant(details, appToModify);
         //TODO: sendResponseEmailToRespondent?
     }
+
+    public CaseDetails submitRespondToTribunal(String authorization, UpdateStoredRespondToApplicationRequest request) {
+        //TODO:
+    }
 }
