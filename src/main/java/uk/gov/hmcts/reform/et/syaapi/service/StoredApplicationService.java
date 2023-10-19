@@ -80,7 +80,7 @@ public class StoredApplicationService {
     private void sendEmailForApplication(CaseDetails finalCaseDetails, CaseData caseData,
                                          GenericTseApplicationTypeItem appToModify) {
         String caseId = finalCaseDetails.getId().toString();
-        NotificationService.CoreEmailDetails details =  notificationService.formatCoreEmailDetails(caseData, caseId);
+        NotificationService.CoreEmailDetails details = notificationService.formatCoreEmailDetails(caseData, caseId);
         String shortText = appToModify.getValue().getType();
 
         notificationService.sendAcknowledgementEmailToTribunal(details, shortText);
