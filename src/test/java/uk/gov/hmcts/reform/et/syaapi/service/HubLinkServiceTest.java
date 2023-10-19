@@ -27,6 +27,8 @@ class HubLinkServiceTest {
     CaseDetailsConverter caseDetailsConverter;
     @MockBean
     private HubLinkService hubLinkService;
+    @MockBean
+    private FeatureToggleService featureToggleService;
 
     private final TestData testData;
 
@@ -38,7 +40,8 @@ class HubLinkServiceTest {
     void before() {
         caseService = mock(CaseService.class);
         caseDetailsConverter = mock(CaseDetailsConverter.class);
-        hubLinkService = new HubLinkService(caseService, caseDetailsConverter);
+        featureToggleService = mock(FeatureToggleService.class);
+        hubLinkService = new HubLinkService(caseService, caseDetailsConverter, featureToggleService);
 
         when(caseService.startUpdate(
             any(),
@@ -46,7 +49,6 @@ class HubLinkServiceTest {
             any(),
             any()
         )).thenReturn(testData.getUpdateCaseEventResponse());
-
 
     }
 
@@ -58,6 +60,7 @@ class HubLinkServiceTest {
             .hubLinksStatuses(new HubLinksStatuses())
             .build();
 
+        when(featureToggleService.isCaseFlagsEnabled()).thenReturn(true);
         when(caseService.triggerEvent(
             eq(TEST_SERVICE_AUTH_TOKEN),
             any(),
