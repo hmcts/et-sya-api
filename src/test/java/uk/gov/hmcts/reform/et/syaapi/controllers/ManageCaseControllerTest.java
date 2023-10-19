@@ -23,9 +23,11 @@ import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
+import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
@@ -81,6 +83,9 @@ class ManageCaseControllerTest {
 
     @MockBean
     private ApplicationService applicationService;
+    @MockBean
+    private StoredApplicationService storedApplicationService;
+
 
     ManageCaseControllerTest() {
         // Default constructor
@@ -466,6 +471,32 @@ class ManageCaseControllerTest {
         ).andExpect(status().isOk());
 
         verify(applicationService, times(1)).updateTribunalResponseAsViewed(
+            TEST_SERVICE_AUTH_TOKEN,
+            caseRequest
+        );
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldSubmitStoredClaimantApplication() {
+        SubmitStoredApplicationRequest caseRequest = SubmitStoredApplicationRequest.builder()
+            .caseTypeId(CASE_TYPE)
+            .caseId(CASE_ID)
+            .applicationId("123")
+            .build();
+
+        // when
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+
+        when(applicationService.updateTribunalResponseAsViewed(any(), any())).thenReturn(expectedDetails);
+        mockMvc.perform(
+            put("/cases/submit-stored-claimant-application", CASE_ID)
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ResourceLoader.toJson(caseRequest))
+        ).andExpect(status().isOk());
+
+        verify(storedApplicationService, times(1)).submitStoredApplication(
             TEST_SERVICE_AUTH_TOKEN,
             caseRequest
         );

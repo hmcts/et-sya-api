@@ -263,9 +263,13 @@ public class ApplicationService {
         ClaimantTse claimantTse = request.getClaimantTse();
         JSONObject documentJson = getDocumentDownload(authorization, caseData);
 
-        notificationService.sendAcknowledgementEmailToClaimant(details, claimantTse);
-        notificationService.sendAcknowledgementEmailToRespondents(details, documentJson, claimantTse);
-        notificationService.sendAcknowledgementEmailToTribunal(details, claimantTse.getContactApplicationType());
+        if (YES.equals(claimantTse.getStoredPending())) {
+            notificationService.sendStoredConfirmEmailForApplication(details, claimantTse);
+        } else {
+            notificationService.sendAcknowledgementEmailToClaimant(details, claimantTse);
+            notificationService.sendAcknowledgementEmailToRespondents(details, documentJson, claimantTse);
+            notificationService.sendAcknowledgementEmailToTribunal(details, claimantTse.getContactApplicationType());
+        }
     }
 
     private void sendResponseToApplicationEmails(
