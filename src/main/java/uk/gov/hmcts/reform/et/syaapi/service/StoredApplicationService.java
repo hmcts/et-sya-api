@@ -24,8 +24,6 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.OPEN_STATE;
 @Slf4j
 public class StoredApplicationService {
 
-    private static final String NOT_SET = "Not set";
-
     private final CaseService caseService;
     private final NotificationService notificationService;
     private final CaseDetailsConverter caseDetailsConverter;
@@ -73,11 +71,19 @@ public class StoredApplicationService {
 
         // Send confirmation emails
         if (finalCaseDetails != null) {
-            notificationService.sendSubmitStoredEmailToClaimant(
-                caseData, finalCaseDetails.getId().toString(), appToModify);
-            //TODO: sendAcknowledgementEmailToTribunal
+            sendEmailForApplication(finalCaseDetails, caseData, appToModify);
         }
 
         return finalCaseDetails;
+    }
+
+    private void sendEmailForApplication(CaseDetails finalCaseDetails, CaseData caseData,
+                                         GenericTseApplicationTypeItem appToModify) {
+        String caseId = finalCaseDetails.getId().toString();
+        NotificationService.CoreEmailDetails details =  notificationService.formatCoreEmailDetails(caseData, caseId);
+        String shortText = appToModify.getValue().getType();
+
+        notificationService.sendAcknowledgementEmailToTribunal(details, shortText);
+        notificationService.sendSubmitStoredEmailToClaimant(details, shortText);
     }
 }

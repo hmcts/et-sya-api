@@ -264,7 +264,8 @@ public class ApplicationService {
         JSONObject documentJson = getDocumentDownload(authorization, caseData);
 
         if (YES.equals(claimantTse.getStoredPending())) {
-            notificationService.sendStoredConfirmEmailForApplication(details, claimantTse);
+            notificationService.sendStoredEmailToClaimant(
+                details, APP_TYPE_MAP.get(claimantTse.getContactApplicationType()));
         } else {
             notificationService.sendAcknowledgementEmailToClaimant(details, claimantTse);
             notificationService.sendAcknowledgementEmailToRespondents(details, documentJson, claimantTse);

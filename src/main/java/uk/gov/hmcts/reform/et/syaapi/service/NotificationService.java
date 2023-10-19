@@ -7,7 +7,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
-import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
@@ -639,23 +638,23 @@ public class NotificationService {
         }
     }
 
-    void sendStoredConfirmEmailForApplication(CoreEmailDetails details, ClaimantTse claimantTse) {
+    void sendStoredEmailToClaimant(CoreEmailDetails details, String shortText) {
         sendStoreConfirmationEmail(
             notificationsProperties.getClaimantTseEmailStoredTemplateId(),
             details,
-            APP_TYPE_MAP.get(claimantTse.getContactApplicationType())
+            shortText
         );
     }
 
-    void sendSubmitStoredEmailToClaimant(CaseData caseData, String caseId, GenericTseApplicationTypeItem appToModify) {
+    void sendSubmitStoredEmailToClaimant(CoreEmailDetails details, String shortText) {
         sendStoreConfirmationEmail(
             notificationsProperties.getClaimantTseEmailSubmitStoredTemplateId(),
-            formatCoreEmailDetails(caseData, caseId),
-            appToModify.getValue().getType()
+            details,
+            shortText
         );
     }
 
-    private CoreEmailDetails formatCoreEmailDetails(CaseData caseData, String caseId) {
+    CoreEmailDetails formatCoreEmailDetails(CaseData caseData, String caseId) {
         return new CoreEmailDetails(
             caseData,
             caseData.getClaimantIndType().getClaimantFirstNames() + " "
