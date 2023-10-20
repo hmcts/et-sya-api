@@ -341,7 +341,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .assertThat().body("id", equalTo(caseId))
             .assertThat().body("case_data.genericTseApplicationCollection[0].value.applicationState",
                                equalTo(IN_PROGRESS))
-            .assertThat().body("case_data.genericTseApplicationCollection[0].value.state",
+            .assertThat().body("case_data.genericTseApplicationCollection[0].value.status",
                                equalTo(OPEN_STATE))
             .extract().body().jsonPath();
     }
