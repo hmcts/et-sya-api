@@ -60,7 +60,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
     public static final String CASES_TRIBUNAL_RESPONSE_VIEWED = "/cases/tribunal-response-viewed";
     public static final String CASES_SUBMIT_STORED_CLAIMANT_APPLICATION = "/cases/submit-stored-claimant-application";
     public static final String INVALID_TOKEN = "invalid_token";
-    private Long caseId;
+    private Long caseId = 123L;
     private static final String CASE_TYPE = "ET_EnglandWales";
     private static final String CLAIMANT_EMAIL = "citizen-user-test@test.co.uk";
     private static final String AUTHORIZATION = "Authorization";
