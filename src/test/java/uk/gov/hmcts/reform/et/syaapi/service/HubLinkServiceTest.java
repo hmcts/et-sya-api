@@ -98,7 +98,6 @@ class HubLinkServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             hubLinksStatusesRequest.getCaseId()
         );
-
         verify(caseService, times(1)).triggerEvent(
             TEST_SERVICE_AUTH_TOKEN, hubLinksStatusesRequest.getCaseId(),
             CaseEvent.valueOf("UPDATE_CASE_SUBMITTED"),
