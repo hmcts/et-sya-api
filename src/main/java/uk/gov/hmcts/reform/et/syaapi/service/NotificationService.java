@@ -638,6 +638,34 @@ public class NotificationService {
         }
     }
 
+    void sendStoredEmailToClaimant(CoreEmailDetails details, String shortText) {
+        sendStoreConfirmationEmail(
+            notificationsProperties.getClaimantTseEmailStoredTemplateId(),
+            details,
+            shortText
+        );
+    }
+
+    void sendSubmitStoredEmailToClaimant(CoreEmailDetails details, String shortText) {
+        sendStoreConfirmationEmail(
+            notificationsProperties.getClaimantTseEmailSubmitStoredTemplateId(),
+            details,
+            shortText
+        );
+    }
+
+    CoreEmailDetails formatCoreEmailDetails(CaseData caseData, String caseId) {
+        return new CoreEmailDetails(
+            caseData,
+            caseData.getClaimantIndType().getClaimantFirstNames() + " "
+                + caseData.getClaimantIndType().getClaimantLastName(),
+            caseData.getEthosCaseReference(),
+            getRespondentNames(caseData),
+            NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET),
+            caseId
+        );
+    }
+
     private void sendTribunalEmail(CaseData caseData,
                                    String caseId,
                                    Map<String, Object> tribunalParameters,
@@ -692,6 +720,42 @@ public class NotificationService {
                     }
                 }
             });
+    }
+
+    private void sendStoreConfirmationEmail(String emailToClaimantTemplate, CoreEmailDetails details,
+                                            String shortText) {
+        String claimantEmailAddress = details.caseData.getClaimantType().getClaimantEmailAddress();
+        if (isBlank(claimantEmailAddress)) {
+            log.info("No claimant email found - Application response acknowledgment not being sent");
+            return;
+        }
+
+        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
+
+        addCommonParameters(
+            claimantParameters,
+            details.claimant,
+            details.respondentNames,
+            details.caseId,
+            details.caseNumber
+        );
+        claimantParameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, details.hearingDate);
+        claimantParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
+        claimantParameters.put(
+            SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
+            notificationsProperties.getCitizenPortalLink() + details.caseId
+        );
+
+        try {
+            notificationClient.sendEmail(
+                emailToClaimantTemplate,
+                claimantEmailAddress,
+                claimantParameters,
+                details.caseId
+            );
+        } catch (NotificationClientException ne) {
+            throw new NotificationException(ne);
+        }
     }
 
     private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
