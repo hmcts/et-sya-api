@@ -30,7 +30,7 @@ public class HubLinkService {
     public CaseDetails updateHubLinkStatuses(HubLinksStatusesRequest request, String authorization) {
 
         if (featureToggleService.isCaseFlagsEnabled()) {
-            log.info("Case flags enabled - updating hub link status");
+            log.info("Case flags enabled - calling UPDATE_HUBLINK_STATUS");
             StartEventResponse startEventResponse = caseService.startUpdate(
                 authorization,
                 request.getCaseId(),
