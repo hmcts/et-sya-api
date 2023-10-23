@@ -83,7 +83,7 @@ class StoreCaseControllerIntegrationTest {
             .build();
 
         mockMvc.perform(
-                put("/store/submit-stored-claimant-application")
+                put("/submit-stored-claimant-application")
                     .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(resourceLoader.toJson(caseRequest)))

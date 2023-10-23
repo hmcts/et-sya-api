@@ -22,7 +22,7 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.OPEN_STATE;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
 
-    public static final String CASES_SUBMIT_STORED_CLAIMANT_APPLICATION = "/store/submit-stored-claimant-application";
+    public static final String CASES_SUBMIT_STORED_CLAIMANT_APPLICATION = "/submit-stored-claimant-application";
     public static final String INVALID_TOKEN = "invalid_token";
     private static final Long CASE_ID = 12_345_678L;
     private static final String CASE_TYPE = "ET_EnglandWales";
