@@ -62,7 +62,7 @@ class StoreCaseControllerTest {
         when(storedApplicationService.submitStoredApplication(any(), any())).thenReturn(expectedDetails);
 
         mockMvc.perform(
-            put("/submit-stored-claimant-application", CASE_ID)
+            put("/store/submit-stored-claimant-application", CASE_ID)
                 .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(ResourceLoader.toJson(caseRequest))
