@@ -40,6 +40,7 @@ public class HubLinkService {
 
             CaseData caseData = EmployeeObjectMapper
                 .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
+            caseData.setHubLinksStatuses(request.getHubLinksStatuses());
 
             return caseService.submitUpdate(
                 authorization,
