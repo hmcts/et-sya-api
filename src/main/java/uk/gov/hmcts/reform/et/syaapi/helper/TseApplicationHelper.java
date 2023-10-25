@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED_STATE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UK_LOCAL_DATE_PATTERN;
 
@@ -46,6 +48,22 @@ public final class TseApplicationHelper {
         String applicationId) {
         return applications.stream()
             .filter(a -> a.getId().equals(applicationId))
+            .findAny()
+            .orElse(null);
+    }
+
+    /**
+     * Finds the response by ID.
+     *
+     * @param responds - list of all applications attached to the case
+     * @param respondId - id of application we're trying to find
+     * @return the {@link GenericTseApplicationTypeItem} to be updated
+     */
+    public static TseRespondTypeItem getResponseInSelectedApplication(
+        List<TseRespondTypeItem> responds,
+        String respondId) {
+        return responds.stream()
+            .filter(a -> a.getId().equals(respondId))
             .findAny()
             .orElse(null);
     }
@@ -119,6 +137,11 @@ public final class TseApplicationHelper {
                                                    .value(responseToAdd).build());
         appToModify.setResponsesCount(
             String.valueOf(appToModify.getRespondCollection().size()));
-        appToModify.setApplicationState(WAITING_FOR_TRIBUNAL);
+
+        if (STORED_STATE.equals(request.getResponse().getStatus())) {
+            appToModify.setApplicationState(STORED);
+        } else {
+            appToModify.setApplicationState(WAITING_FOR_TRIBUNAL);
+        }
     }
 }
