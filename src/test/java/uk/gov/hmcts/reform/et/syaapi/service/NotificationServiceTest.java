@@ -13,16 +13,19 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.ClaimantHearingPreference;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
@@ -39,6 +42,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -47,6 +51,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -78,12 +83,20 @@ class NotificationServiceTest {
     public static final String SEND_EMAIL_PARAMS_DATE_PLUS7_KEY = "datePlus7";
     private final ConcurrentHashMap<String, String> parameters = new ConcurrentHashMap<>();
 
-    @MockBean
+    @InjectMocks
     private NotificationService notificationService;
+    private Map<String, Object> params;
+    @Mock
+    private CaseData caseData;
+    @Mock
+    private ClaimantTse claimantApplication;
     private NotificationClient notificationClient;
+    @Mock
     private NotificationsProperties notificationsProperties;
     private CaseTestData caseTestData;
+    @Mock
     private CoreEmailDetails details;
+    private ClaimantHearingPreference claimantHearingPreference;
     @Captor
     ArgumentCaptor<Map<String, Object>> respondentParametersCaptor;
 
@@ -1021,5 +1034,74 @@ class NotificationServiceTest {
             any(),
             any()
         );
+    }
+
+    @BeforeEach
+    void setUp() {
+        claimantHearingPreference = new ClaimantHearingPreference();
+        params = new HashMap<>();
+
+        String hearingDate = "12 January 2023";
+        when(details.hearingDate()).thenReturn(hearingDate);
+        when(caseData.getClaimantHearingPreference()).thenReturn(claimantHearingPreference);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "Welsh, strike, Yes, CY_APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
+        "Welsh, withdraw, Yes, CY_APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
+        "English, strike, Yes, APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
+        "Welsh, strike, No, CY_APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID",
+        "English, strike, No, APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID"
+    })
+    void shouldReturnExpectedEmailTemplateForRule92(
+        String language, String contactType, String copyTo, String expectedTemplateId) {
+        claimantHearingPreference.setContactLanguage(language);
+        when(claimantApplication.getContactApplicationType()).thenReturn(contactType);
+        when(claimantApplication.getCopyToOtherPartyYesOrNo()).thenReturn(copyTo);
+
+        if (WELSH_LANGUAGE.equals(language) && YES.equals(copyTo)) {
+            when(notificationsProperties.getCyClaimantTseEmailYesTemplateId()).thenReturn(expectedTemplateId);
+        }
+
+        if (WELSH_LANGUAGE.equals(language) && NO.equals(copyTo)) {
+            when(notificationsProperties.getCyClaimantTseEmailNoTemplateId()).thenReturn(expectedTemplateId);
+        }
+
+        if (ENGLISH_LANGUAGE.equals(language) && YES.equals(copyTo)) {
+            when(notificationsProperties.getClaimantTseEmailYesTemplateId()).thenReturn(expectedTemplateId);
+        }
+
+        if (ENGLISH_LANGUAGE.equals(language) && NO.equals(copyTo)) {
+            when(notificationsProperties.getClaimantTseEmailNoTemplateId()).thenReturn(expectedTemplateId);
+        }
+
+        String emailTemplate = notificationService.getAndSetRule92EmailTemplate(
+            claimantApplication, details.hearingDate(), params, caseData);
+
+        assertEquals(expectedTemplateId, emailTemplate);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "Welsh, CY_APPLICATION_ACKNOWLEDGEMENT_TYPE_C_EMAIL_TEMPLATE_ID",
+        "English, APPLICATION_ACKNOWLEDGEMENT_TYPE_C_EMAIL_TEMPLATE_ID"
+    })
+    void shouldReturnExpectedEmailTemplateForTypeC(String language, String expectedTemplateId) {
+        String emailTemplate = null;
+        claimantHearingPreference.setContactLanguage(language);
+        when(claimantApplication.getContactApplicationType()).thenReturn("witness");
+
+        if (WELSH_LANGUAGE.equals(language)) {
+            when(notificationsProperties.getCyClaimantTseEmailTypeCTemplateId()).thenReturn(expectedTemplateId);
+            emailTemplate = notificationsProperties.getCyClaimantTseEmailTypeCTemplateId();
+        }
+
+        if (ENGLISH_LANGUAGE.equals(language)) {
+            when(notificationsProperties.getClaimantTseEmailTypeCTemplateId()).thenReturn(expectedTemplateId);
+            emailTemplate = notificationsProperties.getClaimantTseEmailTypeCTemplateId();
+        }
+
+        assertEquals(expectedTemplateId, emailTemplate);
     }
 }

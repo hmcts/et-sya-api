@@ -744,10 +744,10 @@ public class NotificationService {
         addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber, caseNumber);
     }
 
-    private String getAndSetRule92EmailTemplate(ClaimantTse claimantApplication,
-                                                String hearingDate,
-                                                Map<String, Object> parameters,
-                                                CaseData caseData) {
+    String getAndSetRule92EmailTemplate(ClaimantTse claimantApplication,
+                                        String hearingDate,
+                                        Map<String, Object> parameters,
+                                        CaseData caseData) {
         String emailTemplate;
         String selectedLanguage = GenericServiceUtil.findClaimantLanguage(caseData);
         boolean isWelsh = WELSH_LANGUAGE.equals(selectedLanguage);
