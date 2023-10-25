@@ -201,7 +201,7 @@ repositories {
 
 ext {
   reformLoggingVersion = "5.1.9"
-  log4JVersion = "2.21.0"
+  log4JVersion = "2.21.1"
 }
 
 dependencies {
@@ -264,7 +264,7 @@ dependencies {
   functionalTestAnnotationProcessor group: 'org.projectlombok', name: 'lombok'
   integrationTestAnnotationProcessor group: 'org.projectlombok', name: 'lombok'
 
-  testImplementation group: 'io.github.openfeign', name: 'feign-jackson', version: '12.5'
+  testImplementation group: 'io.github.openfeign', name: 'feign-jackson', version: '13.0'
   testImplementation group: 'org.mockito', name: 'mockito-inline', version: '5.2.0'
   testImplementation(platform('org.junit:junit-bom:5.10.0'))
   testImplementation group: 'org.projectlombok', name: 'lombok'
