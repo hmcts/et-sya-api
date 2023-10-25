@@ -95,9 +95,9 @@ public class CaseService {
     private static final String ALL_CASES_QUERY = "{\"size\":10000,\"query\":{\"match_all\": {}}}";
 
     @Value("${caseWorkerUserName}")
-    private transient String caseWorkerUserName;
+    private String caseWorkerUserName;
     @Value("${caseWorkerPassword}")
-    private transient String caseWorkerPassword;
+    private String caseWorkerPassword;
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
