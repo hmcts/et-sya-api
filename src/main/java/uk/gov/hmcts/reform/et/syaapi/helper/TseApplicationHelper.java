@@ -35,6 +35,7 @@ public final class TseApplicationHelper {
     public static String formatCurrentDate(LocalDate date) {
         return date.format(UK_LOCAL_DATE_PATTERN);
     }
+    
     public static String getCurrentDateTime() {
         return LocalDateTime.now().format(OLD_DATE_TIME_PATTERN);
     }
