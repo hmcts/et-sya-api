@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ecm.common.helpers.UtilHelper;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -156,7 +157,7 @@ public class StoredApplicationService {
         if (tseRespondType.getSupportingMaterial() != null) {
             DocumentTypeItem documentTypeItem =
                 (DocumentTypeItem) tseRespondType.getSupportingMaterial().get(0);
-            if (caseData.getDocumentCollection() == null) {
+            if (CollectionUtils.isEmpty(caseData.getDocumentCollection())) {
                 caseData.setDocumentCollection(new ArrayList<>());
             }
             caseData.getDocumentCollection().add(documentTypeItem);
