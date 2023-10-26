@@ -57,6 +57,11 @@ public final class TestData {
         StartEventResponse.class
     );
 
+    private final StartEventResponse sendNotificationCollectionResponse = ResourceLoader.fromString(
+        "responses/sendNotificationCollectionResponse.json",
+        StartEventResponse.class
+    );
+
     private final RespondToApplicationRequest respondToApplicationRequest = ResourceLoader.fromString(
         "requests/respondToApplication.json",
         RespondToApplicationRequest.class

@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationService;
 
 import javax.validation.constraints.NotNull;
@@ -67,6 +68,27 @@ public class StoreCaseController {
                  request.getCaseTypeId(), request.getCaseId()
         );
         CaseDetails finalCaseDetails = storedApplicationService.submitRespondToApplication(authorization, request);
+        return ok(finalCaseDetails);
+    }
+
+    /**
+     * Updates a Tribunal Send Notification from stored to submit.
+     *
+     * @param authorization jwt of the user
+     * @param request       the request object which contains the appId and claimant response passed from sya-frontend
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    @PutMapping("/submit-stored-respond-to-tribunal")
+    @Operation(summary = "Submit Stored Respond to a Tribunal Send Notification")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> submitStoredRespondToTribunal(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody UpdateStoredRespondToTribunalRequest request
+    ) {
+        log.info("Received submit respond to application request - caseTypeId: {} caseId: {}",
+            request.getCaseTypeId(), request.getCaseId()
+        );
+        CaseDetails finalCaseDetails = storedApplicationService.submitRespondToTribunal(authorization, request);
         return ok(finalCaseDetails);
     }
 }

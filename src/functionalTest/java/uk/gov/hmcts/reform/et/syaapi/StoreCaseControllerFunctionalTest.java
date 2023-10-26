@@ -15,14 +15,17 @@ import org.junit.jupiter.api.TestMethodOrder;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
+import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
 
 import java.util.List;
 import java.util.Map;
@@ -44,6 +47,7 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
     public static final String CASES_SUBMIT_STORED_CLAIMANT_APPLICATION = "/store/submit-stored-claimant-application";
     public static final String CASES_SUBMIT_STORED_RESPOND_TO_APPLICATION =
         "/store/submit-stored-respond-to-application";
+    public static final String CASES_SUBMIT_STORED_RESPOND_TO_TRIBUNAL = "/store/submit-stored-respond-to-tribunal";
     public static final String RESPONDENT_NAME = "Boris Johnson";
     public static final String INVALID_TOKEN = "invalid_token";
     private static final String CASE_TYPE = "ET_EnglandWales";
@@ -52,6 +56,8 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
     private Long caseId;
     private String appId;
     private String responseId;
+    private String orderId;
+    private String orderResponseId;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<String, Object> caseData = new ConcurrentHashMap<>();
 
@@ -215,6 +221,58 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
     }
 
     @Test
+    @Order(7)
+    void addResponseSendNotificationShouldReturnCaseDetailsWithSendNotification() {
+        SendNotificationAddResponseRequest caseRequest = SendNotificationAddResponseRequest.builder()
+            .caseId(caseId.toString())
+            .caseTypeId(CASE_TYPE)
+            .sendNotificationId(orderId)
+            .pseResponseType(PseResponseType.builder()
+                .date("20 Oct 2023")
+                .from("Claimant")
+                .response("response test")
+                .copyToOtherParty("Yes")
+                .hasSupportingMaterial("No")
+                .build())
+            .build();
+
+        JsonPath body = RestAssured.given()
+            .contentType(ContentType.JSON)
+            .header(new Header(AUTHORIZATION, userToken))
+            .body(caseRequest)
+            .put("/sendNotification/add-response-send-notification")
+            .then()
+            .statusCode(HttpStatus.SC_OK)
+            .log().all(true)
+            .extract().body().jsonPath();
+
+        CaseData caseDataWithTse = objectMapper.convertValue(body.get("case_data"), CaseData.class);
+        responseId = caseDataWithTse.getSendNotificationCollection().get(0).getValue()
+            .getRespondCollection().get(0).getId();
+    }
+
+    @Test
+    @Order(8)
+    void submitStoredRespondToTribunalShouldReturnCaseDetails() {
+        UpdateStoredRespondToTribunalRequest caseRequest = UpdateStoredRespondToTribunalRequest.builder()
+            .caseId(String.valueOf(caseId))
+            .caseTypeId(CASE_TYPE)
+            .orderId(orderId)
+            .respondId(responseId)
+            .isRespondingToRequestOrOrder(true)
+            .build();
+
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .header(new Header(AUTHORIZATION, userToken))
+            .body(caseRequest)
+            .put(CASES_SUBMIT_STORED_RESPOND_TO_TRIBUNAL)
+            .then()
+            .statusCode(HttpStatus.SC_OK)
+            .log().all(true);
+    }
+
+    @Test
     void submitStoredClaimantApplicationWithInvalidAuthTokenShouldReturn403() {
         CaseRequest caseRequest = CaseRequest.builder()
             .caseData(caseData)
@@ -241,6 +299,22 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
             .header(new Header(AUTHORIZATION, INVALID_TOKEN))
             .body(caseRequest)
             .put(CASES_SUBMIT_STORED_RESPOND_TO_APPLICATION)
+            .then()
+            .statusCode(HttpStatus.SC_FORBIDDEN)
+            .log().all(true);
+    }
+
+    @Test
+    void submitStoredRespondToTribunalWithInvalidAuthTokenShouldReturn403() {
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseData(caseData)
+            .build();
+
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .header(new Header(AUTHORIZATION, INVALID_TOKEN))
+            .body(caseRequest)
+            .put(CASES_SUBMIT_STORED_RESPOND_TO_TRIBUNAL)
             .then()
             .statusCode(HttpStatus.SC_FORBIDDEN)
             .log().all(true);
