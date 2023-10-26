@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.BundlesService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
+import uk.gov.hmcts.reform.et.syaapi.service.HubLinkService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
@@ -84,6 +85,8 @@ class ManageCaseControllerTest {
 
     @MockBean
     private ApplicationService applicationService;
+    @MockBean
+    private HubLinkService hubLinkService;
 
     @MockBean
     private BundlesService bundlesService;
@@ -317,7 +320,7 @@ class ManageCaseControllerTest {
 
     @SneakyThrows
     @Test
-    void shouldStartUpdateSubmittedCase() {
+    void shouldUpdateHubLinkStatus() {
         HubLinksStatuses hubLinksStatuses = new HubLinksStatuses();
         HubLinksStatusesRequest hubLinksStatusesRequest = HubLinksStatusesRequest.builder()
             .caseTypeId(CASE_TYPE)
@@ -325,7 +328,6 @@ class ManageCaseControllerTest {
             .hubLinksStatuses(hubLinksStatuses)
             .build();
 
-        // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
             null,
@@ -335,38 +337,19 @@ class ManageCaseControllerTest {
             "Bloggs",
             null
         ));
-
-        when(caseService.getUserCase(TEST_SERVICE_AUTH_TOKEN, CASE_ID))
+        when(hubLinkService.updateHubLinkStatuses(hubLinksStatusesRequest, TEST_SERVICE_AUTH_TOKEN))
             .thenReturn(expectedDetails);
 
-        when(caseService.triggerEvent(
-            TEST_SERVICE_AUTH_TOKEN,
-            CASE_ID,
-            CaseEvent.valueOf("UPDATE_CASE_SUBMITTED"),
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
-            null
-        )).thenReturn(expectedDetails);
-
-        expectedDetails.getData().put("hubLinksStatuses", hubLinksStatuses);
-
-        // when
         mockMvc.perform(
             put("/cases/update-hub-links-statuses", CASE_ID)
                 .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(ResourceLoader.toJson(hubLinksStatusesRequest))
         ).andExpect(status().isOk());
-
-        verify(caseService, times(1)).getUserCase(
-            TEST_SERVICE_AUTH_TOKEN,
-            hubLinksStatusesRequest.getCaseId()
+        verify(hubLinkService, times(1)).updateHubLinkStatuses(
+            hubLinksStatusesRequest,
+            TEST_SERVICE_AUTH_TOKEN
         );
-
-        verify(caseService, times(1)).triggerEvent(
-            TEST_SERVICE_AUTH_TOKEN, hubLinksStatusesRequest.getCaseId(),
-            CaseEvent.valueOf("UPDATE_CASE_SUBMITTED"),
-            hubLinksStatusesRequest.getCaseTypeId(),
-            expectedDetails.getData());
     }
 
     @SneakyThrows

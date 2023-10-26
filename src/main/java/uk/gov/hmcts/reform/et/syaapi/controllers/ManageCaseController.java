@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
-import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
@@ -26,6 +25,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.BundlesService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
+import uk.gov.hmcts.reform.et.syaapi.service.HubLinkService;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.service.notify.NotificationClientException;
 
@@ -47,6 +47,7 @@ public class ManageCaseController {
 
     private final CaseService caseService;
     private final ApplicationService applicationService;
+    private final HubLinkService hubLinkService;
     private final BundlesService bundlesService;
 
     /**
@@ -164,18 +165,7 @@ public class ManageCaseController {
         log.info("Received update hub link statuses request - caseTypeId: {} caseId: {}",
                  request.getCaseTypeId(), request.getCaseId()
         );
-
-        CaseDetails caseDetails = caseService.getUserCase(authorization, request.getCaseId());
-        caseDetails.getData().put("hubLinksStatuses", request.getHubLinksStatuses());
-
-        CaseDetails finalCaseDetails = caseService.triggerEvent(
-            authorization,
-            request.getCaseId(),
-            CaseEvent.UPDATE_CASE_SUBMITTED,
-            request.getCaseTypeId(),
-            caseDetails.getData()
-        );
-        return ok(finalCaseDetails);
+        return ok(hubLinkService.updateHubLinkStatuses(request, authorization));
     }
 
     /**

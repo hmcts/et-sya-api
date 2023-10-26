@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.et.syaapi.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MultiValuedMap;
@@ -30,7 +29,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 
 /**
  * REST Controller for ACAS to communicate with CCD through ET using Azure API Management.
-*/
+ */
 @Slf4j
 @RequiredArgsConstructor
 @RestController
@@ -42,14 +41,15 @@ public class AcasController {
     private final IdamClient idamClient;
 
     @Value("${caseWorkerUserName}")
-    private transient String caseWorkerUserName;
+    private String caseWorkerUserName;
     @Value("${caseWorkerPassword}")
-    private transient String caseWorkerPassword;
+    private String caseWorkerPassword;
 
     /**
      * Given a datetime, this method will return a list of caseIds which have been modified since the datetime
      * provided.
-     * @param userToken used for IDAM Authentication
+     *
+     * @param userToken       used for IDAM Authentication
      * @param requestDateTime used for querying when a case was last updated
      * @return a list of case ids
      */
@@ -65,8 +65,9 @@ public class AcasController {
 
     /**
      * This method is used to fetch the raw case data from CCD from a list of CaseIds.
+     *
      * @param authorisation used for IDAM authentication
-     * @param caseIds a list of CCD ids
+     * @param caseIds       a list of CCD ids
      * @return a list of case data
      */
     @GetMapping(value = "/getCaseData")
@@ -80,8 +81,9 @@ public class AcasController {
 
     /**
      * This method is used to retrieve a list of documents which are available to ACAS.
+     *
      * @param authorisation used for IDAM authentication
-     * @param caseId ccd case id
+     * @param caseId        ccd case id
      * @return a multi valued map containing a list of documents for ACAS
      */
     @GetMapping(value = "/getAcasDocuments")
@@ -97,20 +99,15 @@ public class AcasController {
     /**
      * This method downloads documents for ACAS. Due to permissions, we retrieve a new token which can view the document
      * and use that to retireve the document
+     *
      * @param documentId UUID for the document in DM Store
-     * @param authToken idam token of ACAS to initially verify access to the API
+     * @param authToken  idam token of ACAS to initially verify access to the API
      * @return document
      */
     @GetMapping("/downloadAcasDocuments")
     @Operation(summary = "Get a document from CDAM in binary format")
-    @ApiResponses({
-        @ApiResponse(
-            responseCode = "200",
-            description = "OK"),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Case document not found")
-    })
+    @ApiResponse(responseCode = "200", description = "OK")
+    @ApiResponse(responseCode = "404", description = "Case document not found")
     public ResponseEntity<ByteArrayResource> getDocumentBinaryContent(
         @RequestParam(name = "documentId") final UUID documentId,
         @RequestHeader(AUTHORIZATION) String authToken) {
