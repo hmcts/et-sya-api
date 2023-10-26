@@ -40,8 +40,9 @@ class StoredApplicationServiceTest {
 
     private final TestData testData;
 
-    private static final String APP_ID_INCORRECT =  "Application id provided is incorrect";
-    private static final String RESPOND_ID_INCORRECT =  "Respond id provided is incorrect";
+    private static final String APP_ID_INCORRECT = "Application id provided is incorrect";
+    private static final String RESPOND_ID_INCORRECT = "Respond id provided is incorrect";
+    private static final String SEND_NOTIFICATION_ID_INCORRECT = "SendNotification Id is incorrect";
 
     private static final long CASE_ID = 1_646_225_213_651_590L;
     private static final String CASE_TYPE_ID = "ET_EnglandWales";
