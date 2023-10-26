@@ -16,10 +16,13 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
+import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
 
 import java.util.List;
 import java.util.Map;
@@ -37,7 +40,10 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
     public static final String CASES_INITIATE_CASE = "/cases/initiate-case";
     public static final String CASES_SUBMIT_CASE = "/cases/submit-case";
     public static final String CASES_SUBMIT_CLAIMANT_APPLICATION = "/cases/submit-claimant-application";
+    public static final String CASES_RESPOND_TO_APPLICATION = "/cases/respond-to-application";
     public static final String CASES_SUBMIT_STORED_CLAIMANT_APPLICATION = "/store/submit-stored-claimant-application";
+    public static final String CASES_SUBMIT_STORED_RESPOND_TO_APPLICATION =
+        "/store/submit-stored-respond-to-application";
     public static final String RESPONDENT_NAME = "Boris Johnson";
     public static final String INVALID_TOKEN = "invalid_token";
     private static final String CASE_TYPE = "ET_EnglandWales";
@@ -45,6 +51,7 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
     private static final String AUTHORIZATION = "Authorization";
     private Long caseId;
     private String appId;
+    private String responseId;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<String, Object> caseData = new ConcurrentHashMap<>();
 
@@ -116,7 +123,7 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
         ClaimantTse claimantTse = new ClaimantTse();
         claimantTse.setContactApplicationType("withdraw");
 
-        ClaimantApplicationRequest claimantApplicationRequest = ClaimantApplicationRequest.builder()
+        ClaimantApplicationRequest caseRequest = ClaimantApplicationRequest.builder()
             .caseId(caseId.toString())
             .caseTypeId(CASE_TYPE)
             .claimantTse(claimantTse)
@@ -125,7 +132,7 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
         JsonPath body = RestAssured.given()
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
-            .body(claimantApplicationRequest)
+            .body(caseRequest)
             .put(CASES_SUBMIT_CLAIMANT_APPLICATION)
             .then()
             .statusCode(HttpStatus.SC_OK)
@@ -139,7 +146,7 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
     @Test
     @Order(4)
     void submitStoredClaimantApplicationShouldReturnCaseDetails() {
-        SubmitStoredApplicationRequest submitStoredApplicationRequest = SubmitStoredApplicationRequest.builder()
+        SubmitStoredApplicationRequest caseRequest = SubmitStoredApplicationRequest.builder()
             .caseId(String.valueOf(caseId))
             .caseTypeId(CASE_TYPE)
             .applicationId(appId)
@@ -148,7 +155,7 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
         RestAssured.given()
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
-            .body(submitStoredApplicationRequest)
+            .body(caseRequest)
             .put(CASES_SUBMIT_STORED_CLAIMANT_APPLICATION)
             .then()
             .statusCode(HttpStatus.SC_OK)
@@ -157,8 +164,54 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
             .assertThat().body("case_data.genericTseApplicationCollection[0].value.applicationState",
                                equalTo(IN_PROGRESS))
             .assertThat().body("case_data.genericTseApplicationCollection[0].value.status",
-                               equalTo(OPEN_STATE))
+                               equalTo(OPEN_STATE));
+    }
+
+    @Test
+    @Order(5)
+    void respondToApplicationShouldReturnCaseDetailsWithTseAppWithResponse() {
+        RespondToApplicationRequest caseRequest = RespondToApplicationRequest.builder()
+            .caseId(caseId.toString())
+            .caseTypeId(CASE_TYPE)
+            .applicationId(appId)
+            .response(new TseRespondType())
+            .build();
+
+        JsonPath body = RestAssured.given()
+            .contentType(ContentType.JSON)
+            .header(new Header(AUTHORIZATION, userToken))
+            .body(caseRequest)
+            .put(CASES_RESPOND_TO_APPLICATION)
+            .then()
+            .statusCode(HttpStatus.SC_OK)
+            .log().all(true)
             .extract().body().jsonPath();
+
+        CaseData caseDataWithTse = objectMapper.convertValue(body.get("case_data"), CaseData.class);
+        responseId = caseDataWithTse.getGenericTseApplicationCollection()
+            .get(0).getValue().getRespondCollection().get(0).getId();
+    }
+
+    @Test
+    @Order(6)
+    void submitStoredRespondToApplicationShouldReturnCaseDetails() {
+        UpdateStoredRespondToApplicationRequest caseRequest = UpdateStoredRespondToApplicationRequest.builder()
+            .caseId(String.valueOf(caseId))
+            .caseTypeId(CASE_TYPE)
+            .applicationId(appId)
+            .respondId(responseId)
+            .isRespondingToRequestOrOrder(true)
+            .build();
+
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .header(new Header(AUTHORIZATION, userToken))
+            .body(caseRequest)
+            .put(CASES_SUBMIT_STORED_RESPOND_TO_APPLICATION)
+            .then()
+            .statusCode(HttpStatus.SC_OK)
+            .log().all(true)
+            .assertThat().body("id", equalTo(caseId));
     }
 
     @Test
@@ -174,8 +227,23 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
             .put(CASES_SUBMIT_STORED_CLAIMANT_APPLICATION)
             .then()
             .statusCode(HttpStatus.SC_FORBIDDEN)
-            .log().all(true)
-            .extract().body().jsonPath();
+            .log().all(true);
+    }
+
+    @Test
+    void submitStoredRespondToApplicationWithInvalidAuthTokenShouldReturn403() {
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseData(caseData)
+            .build();
+
+        RestAssured.given()
+            .contentType(ContentType.JSON)
+            .header(new Header(AUTHORIZATION, INVALID_TOKEN))
+            .body(caseRequest)
+            .put(CASES_SUBMIT_STORED_RESPOND_TO_APPLICATION)
+            .then()
+            .statusCode(HttpStatus.SC_FORBIDDEN)
+            .log().all(true);
     }
 
     private RespondentSumTypeItem createRespondentType() {
@@ -187,4 +255,3 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
         return respondentSumTypeItem;
     }
 }
-

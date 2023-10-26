@@ -42,6 +42,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED_STATE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 @SuppressWarnings({"PMD.SingularField", "PMD.TooManyMethods"})
@@ -184,6 +185,24 @@ class ApplicationServiceTest {
             assertThat(coreEmailDetails.hearingDate()).isEqualTo(NOT_SET);
             assertThat(coreEmailDetails.caseId()).isEqualTo(CASE_ID);
         }
+    }
+
+    @Test
+    void shouldStoreRespondToApplication() {
+        RespondToApplicationRequest request = testData.getRespondToApplicationRequest();
+        request.getResponse().setStatus(STORED_STATE);
+
+        applicationService.respondToApplication(TEST_SERVICE_AUTH_TOKEN, request);
+
+        ArgumentCaptor<CoreEmailDetails> argument = ArgumentCaptor.forClass(CoreEmailDetails.class);
+        verify(notificationService, times(0)).sendAcknowledgementEmailToTribunal(
+            argument.capture(),
+            any()
+        );
+        verify(notificationService, times(1)).sendStoredEmailToClaimant(
+            argument.capture(),
+            any()
+        );
     }
 
     @Test

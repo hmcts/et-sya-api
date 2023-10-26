@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
@@ -74,4 +75,31 @@ class StoreCaseControllerTest {
         );
     }
 
+    @SneakyThrows
+    @Test
+    void submitStoredRespondToApplication() {
+        UpdateStoredRespondToApplicationRequest caseRequest = UpdateStoredRespondToApplicationRequest.builder()
+            .caseTypeId(CASE_TYPE)
+            .caseId(CASE_ID)
+            .applicationId("123")
+            .respondId("456")
+            .isRespondingToRequestOrOrder(true)
+            .build();
+
+        // when
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+        when(storedApplicationService.submitRespondToApplication(any(), any())).thenReturn(expectedDetails);
+
+        mockMvc.perform(
+            put("/store/submit-stored-respond-to-application", CASE_ID)
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ResourceLoader.toJson(caseRequest))
+        ).andExpect(status().isOk());
+
+        verify(storedApplicationService, times(1)).submitRespondToApplication(
+            TEST_SERVICE_AUTH_TOKEN,
+            caseRequest
+        );
+    }
 }
