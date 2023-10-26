@@ -264,10 +264,21 @@ public class NotificationService {
         SendEmailResponse claimantEmail;
         String selectedLanguage = GenericServiceUtil.findClaimantLanguage(details.caseData);
         String emailToClaimantTemplate;
+        String finalHearingDate = null;
 
         boolean isWelsh = WELSH_LANGUAGE.equals(selectedLanguage);
         String citizenPortalLink = notificationsProperties.getCitizenPortalLink() + details.caseId
             + (isWelsh ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
+        if (isWelsh) {
+            for (Map.Entry<String, String> monthEntry : MONTHS_WELSH_MAP.entrySet()) {
+                if (details.hearingDate.contains(monthEntry.getKey())) {
+                    finalHearingDate = details.hearingDate.replace(monthEntry.getKey(), monthEntry.getValue());
+                    break;
+                }
+            }
+        } else {
+            finalHearingDate = details.hearingDate;
+        }
 
         if (TYPE_C.equals(claimantApplication.getContactApplicationType())) {
             emailToClaimantTemplate = isWelsh
@@ -276,7 +287,7 @@ public class NotificationService {
         } else {
             emailToClaimantTemplate = getAndSetRule92EmailTemplate(
                 claimantApplication,
-                details.hearingDate,
+                finalHearingDate,
                 claimantParameters,
                 details.caseData
             );
@@ -751,18 +762,10 @@ public class NotificationService {
         String emailTemplate;
         String selectedLanguage = GenericServiceUtil.findClaimantLanguage(caseData);
         boolean isWelsh = WELSH_LANGUAGE.equals(selectedLanguage);
-        String finalHearingDate = hearingDate;
-        if (isWelsh) {
-            for (Map.Entry<String, String> monthEntry : MONTHS_WELSH_MAP.entrySet()) {
-                if (hearingDate.contains(monthEntry.getKey())) {
-                    finalHearingDate = hearingDate.replace(monthEntry.getKey(), monthEntry.getValue());
-                    break;
-                }
-            }
-        }
-        parameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, finalHearingDate);
+        parameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, hearingDate);
         Map<String, String> selectedMap = isWelsh ? CY_APP_TYPE_MAP : APP_TYPE_MAP;
         String shortText = selectedMap.get(claimantApplication.getContactApplicationType());
+
         if (DONT_SEND_COPY.equals(claimantApplication.getCopyToOtherPartyYesOrNo())) {
             parameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
             emailTemplate = isWelsh
