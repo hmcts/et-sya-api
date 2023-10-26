@@ -24,27 +24,27 @@ class PostcodeToOfficeLookupTest {
 
     @Test
     void whenFactoryProvidedThenYamlPropertiesInjected() {
-        assertThat(postcodeToOfficeLookup.getPostcodes().size()).isGreaterThan(50);
+        assertThat(postcodeToOfficeLookup.getPostcodes()).hasSizeGreaterThan(50);
     }
 
     @Test
     void mapMatchesPostcodePartialsToLeedsOffice() {
-        assertThat(postcodeToOfficeLookup.getPostcodes().get("BD")).isEqualTo(LEEDS);
+        assertThat(postcodeToOfficeLookup.getPostcodes()).containsEntry("BD", LEEDS);
     }
 
     @Test
     void mapMatchesPostcodePartialsToManchesterOffice() {
-        assertThat(postcodeToOfficeLookup.getPostcodes().get("M")).isEqualTo(MANCHESTER);
+        assertThat(postcodeToOfficeLookup.getPostcodes()).containsEntry("M", MANCHESTER);
     }
 
     @Test
     void mapMatchesPostcodePartialsToGlasgowOffice() {
-        assertThat(postcodeToOfficeLookup.getPostcodes().get("G")).isEqualTo(GLASGOW);
+        assertThat(postcodeToOfficeLookup.getPostcodes()).containsEntry("G", GLASGOW);
     }
 
     @Test
     void mapMatchesPostcodePartialsToEdinburghOffice() {
-        assertThat(postcodeToOfficeLookup.getPostcodes().get("EH")).isEqualTo(EDINGBURGH);
+        assertThat(postcodeToOfficeLookup.getPostcodes()).containsEntry("EH", EDINGBURGH);
     }
 
     @Test

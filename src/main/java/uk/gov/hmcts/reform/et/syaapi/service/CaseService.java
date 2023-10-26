@@ -57,6 +57,7 @@ import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
+import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.CASE_MANAGEMENT_DOC_CATEGORY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ACAS_VISIBLE_DOCS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
@@ -94,9 +95,9 @@ public class CaseService {
     private static final String ALL_CASES_QUERY = "{\"size\":10000,\"query\":{\"match_all\": {}}}";
 
     @Value("${caseWorkerUserName}")
-    private transient String caseWorkerUserName;
+    private String caseWorkerUserName;
     @Value("${caseWorkerPassword}")
-    private transient String caseWorkerPassword;
+    private String caseWorkerPassword;
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
@@ -233,7 +234,7 @@ public class CaseService {
         // Uploading all documents to document store
         List<DocumentTypeItem> documentList = uploadAllDocuments(authorization, caseRequest, caseData, casePdfFiles,
                                                                  acasCertificates);
-        // Setting caliamantPCqId and documentCollection to case details
+        // Setting claimantPcqId and documentCollection to case details
         caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
         caseDetails.getData().put(DOCUMENT_COLLECTION, documentList);
         // For determining the case is submitted via ET1
@@ -600,6 +601,7 @@ public class CaseService {
             authorization,
             caseType,
             CLAIMANT_CORRESPONDENCE_DOCUMENT,
+            CASE_MANAGEMENT_DOC_CATEGORY,
             pdfDecodedMultipartFile
         ));
 
@@ -620,6 +622,7 @@ public class CaseService {
             authorization,
             request.getCaseTypeId(),
             CLAIMANT_CORRESPONDENCE_DOCUMENT,
+            CASE_MANAGEMENT_DOC_CATEGORY,
             multipartResponsePdf
         );
 
