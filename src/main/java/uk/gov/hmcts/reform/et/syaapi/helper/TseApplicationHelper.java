@@ -15,11 +15,13 @@ import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.OLD_DATE_TIME_PATTERN;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UK_LOCAL_DATE_PATTERN;
 
 @Slf4j
@@ -32,6 +34,9 @@ public final class TseApplicationHelper {
 
     public static String formatCurrentDate(LocalDate date) {
         return date.format(UK_LOCAL_DATE_PATTERN);
+    }
+    public static String getCurrentDateTime() {
+        return LocalDateTime.now().format(OLD_DATE_TIME_PATTERN);
     }
 
     /**
@@ -98,6 +103,8 @@ public final class TseApplicationHelper {
         TseRespondType responseToAdd = request.getResponse();
         responseToAdd.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
         responseToAdd.setFrom(CLAIMANT);
+        responseToAdd.setDateTime(TseApplicationHelper.getCurrentDateTime());
+        responseToAdd.setApplicationType(appToModify.getType());
 
         if (request.getSupportingMaterialFile() != null) {
             DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(

@@ -71,6 +71,9 @@ class TseApplicationHelperTest {
             Assertions.assertEquals("Response to Amend Response",
                 caseData.getDocumentCollection().get(0).getValue().getShortDescription()
             );
+            Assertions.assertEquals("Amend Response",
+                app.getRespondCollection().get(0).getValue().getApplicationType()
+            );
         }
     }
 
