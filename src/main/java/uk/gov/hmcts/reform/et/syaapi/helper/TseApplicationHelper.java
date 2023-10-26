@@ -32,10 +32,18 @@ public final class TseApplicationHelper {
     public static final String CLAIMANT = "Claimant";
     public static final String WAITING_FOR_TRIBUNAL = "waitingForTheTribunal";
 
+    /**
+     * Gives current date in string format.
+     * @return current date in "dd MMM yyyy" format
+     */
     public static String formatCurrentDate(LocalDate date) {
         return date.format(UK_LOCAL_DATE_PATTERN);
     }
 
+    /**
+     * Gives current datetime in string format.
+     * @return current datetime in "yyyy-MM-dd'T'HH:mm:ss.SSS" format
+     */
     public static String getCurrentDateTime() {
         return LocalDateTime.now().format(OLD_DATE_TIME_PATTERN);
     }
@@ -104,7 +112,7 @@ public final class TseApplicationHelper {
         TseRespondType responseToAdd = request.getResponse();
         responseToAdd.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
         responseToAdd.setFrom(CLAIMANT);
-        responseToAdd.setDateTime(TseApplicationHelper.getCurrentDateTime());
+        responseToAdd.setDateTime(getCurrentDateTime());
         responseToAdd.setApplicationType(appToModify.getType());
 
         if (request.getSupportingMaterialFile() != null) {
