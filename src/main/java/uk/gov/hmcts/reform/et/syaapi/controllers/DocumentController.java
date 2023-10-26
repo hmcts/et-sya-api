@@ -21,7 +21,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 
 /**
  * Rest Controller will use {@link CaseDocumentService} for getting document contents and
- *  details from the case management API.
+ * details from the case management API.
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -33,19 +33,15 @@ public class DocumentController {
 
     /**
      * Returns content in binary stream of the given document id.
-     * @param authToken jwt token for authentication
+     *
+     * @param authToken  jwt token for authentication
      * @param documentId id for the chosen document
      */
     @GetMapping("/download/{documentId}")
     @Operation(summary = "Get document binary content by id from case document api")
-    @ApiResponses(
-        {@ApiResponse(
-            responseCode = "200",
-            description = "OK"),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Case document not found")
-    })
+    @ApiResponse(responseCode = "200", description = "OK")
+    @ApiResponse(responseCode = "404", description = "Case document not found")
+
     public ResponseEntity<ByteArrayResource> getDocumentBinaryContent(
         @PathVariable("documentId") final UUID documentId,
         @RequestHeader(AUTHORIZATION) String authToken) {
@@ -55,7 +51,8 @@ public class DocumentController {
 
     /**
      * Returns document details in JSON format of the given document id.
-     * @param authToken jwt token for authentication
+     *
+     * @param authToken  jwt token for authentication
      * @param documentId id for the chosen document
      */
     @GetMapping("/details/{documentId}")
