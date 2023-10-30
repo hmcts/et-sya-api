@@ -80,6 +80,8 @@ public class NotificationService {
     private final String[] typeB = {"withdraw", "change-details", "reconsider-decision", "reconsider-judgement"};
     private static final String TYPE_C = "witness";
     private static final String DONT_SEND_COPY = "No";
+    private static final String NO_CLAIMANT_EMAIL_FOUND =
+        "No claimant email found - Application response acknowledgment not being sent";
 
     /**
      * Record containing core details of an email.
@@ -442,7 +444,7 @@ public class NotificationService {
         }
         String claimantEmailAddress = details.caseData.getClaimantType().getClaimantEmailAddress();
         if (isBlank(claimantEmailAddress)) {
-            log.info("No claimant email found - Application response acknowledgment not being sent");
+            log.info(NO_CLAIMANT_EMAIL_FOUND);
             return;
         }
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
@@ -606,7 +608,7 @@ public class NotificationService {
     ) {
 
         if (isBlank(caseData.getClaimantType().getClaimantEmailAddress())) {
-            log.info("No claimant email found - Application response acknowledgment not being sent");
+            log.info(NO_CLAIMANT_EMAIL_FOUND);
             return;
         }
 
@@ -726,7 +728,7 @@ public class NotificationService {
                                             String shortText) {
         String claimantEmailAddress = details.caseData.getClaimantType().getClaimantEmailAddress();
         if (isBlank(claimantEmailAddress)) {
-            log.info("No claimant email found - Application response acknowledgment not being sent");
+            log.info(NO_CLAIMANT_EMAIL_FOUND);
             return;
         }
 
