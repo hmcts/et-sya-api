@@ -16,7 +16,7 @@ withPipeline(type, product, component) {
 
   before('smoketest:preview') {
     env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
-    env.FT_SYA_URL = "http://et-sya-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+    env.FT_SYA_URL = "https://et-sya-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
   }
 
   before('functionalTest:preview') {
