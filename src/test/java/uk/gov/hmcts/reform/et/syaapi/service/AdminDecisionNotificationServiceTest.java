@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
+import uk.gov.hmcts.reform.et.syaapi.models.AdminDecisionNotificationStateUpdateRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -67,13 +68,14 @@ class AdminDecisionNotificationServiceTest {
 
     @Test
     void shouldNotUpdateCaseAndThrowException() {
-        var testRequest = testData.getAdminDecisionNotificationStateUpdateRequest();
+        AdminDecisionNotificationStateUpdateRequest testRequest =
+            testData.getAdminDecisionNotificationStateUpdateRequest();
         testRequest.setAdminDecisionId("778");
 
-        var exception = assertThrows(IllegalArgumentException.class, () ->
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
             adminDecisionNotificationService.updateAdminDecisionNotificationState(
                 TEST_SERVICE_AUTH_TOKEN,
-                testData.getAdminDecisionNotificationStateUpdateRequest()
+                testRequest
             ));
         assertThat(exception.getMessage()).isEqualTo("Admin decision id is invalid");
     }

@@ -118,7 +118,7 @@ class TseApplicationHelperTest {
             TseApplicationHelper.setRespondentApplicationWithResponse(request, app, caseData, caseDocumentService);
 
             Assertions.assertEquals("waitingForTheTribunal", app.getApplicationState());
-            Assertions.assertEquals(
+            Assertions.assertEquals("Response to Amend Response",
                 "Response to Amend response",
                 caseData.getDocumentCollection().get(0).getValue().getShortDescription()
             );
