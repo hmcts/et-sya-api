@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Maps types of claims values {@link ClaimTypesConstants} to jurisdiction codes {@link JurisdictionCodesConstants}.
@@ -46,7 +45,6 @@ public class JurisdictionCodesMapper {
      * Extracts type of claims data from @{@link Et1CaseData}
      * object and maps to Jurisdiction codes.
      *
-     *
      * @param data which would be in json format
      * @return list of JurCodesTypeItem
      */
@@ -59,7 +57,7 @@ public class JurisdictionCodesMapper {
         return uniqueJurCodes.stream()
             .filter(Objects::nonNull)
             .map(this::toJurCodesTypeItem)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     private List<String> retrieveDiscriminationCodes(Et1CaseData data) {
@@ -69,7 +67,7 @@ public class JurisdictionCodesMapper {
         }
         return data.getClaimantRequests().getDiscriminationClaims().stream()
             .map(JURISDICTION_CODES::get)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     private List<String> retrievePaymentCodes(Et1CaseData data) {
@@ -78,7 +76,7 @@ public class JurisdictionCodesMapper {
         }
         return data.getClaimantRequests().getPayClaims().stream()
             .map(JURISDICTION_CODES::get)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     private List<String> retrieveTypeOfClaimsCodes(Et1CaseData data) {
@@ -87,7 +85,7 @@ public class JurisdictionCodesMapper {
         }
         return data.getTypesOfClaim().stream()
             .map(JURISDICTION_CODES::get)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     private JurCodesTypeItem toJurCodesTypeItem(String jurCodeValue) {
