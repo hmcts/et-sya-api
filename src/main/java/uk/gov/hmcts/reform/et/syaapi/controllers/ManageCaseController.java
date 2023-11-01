@@ -38,7 +38,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
  */
 @Slf4j
 @RequiredArgsConstructor
-@SuppressWarnings({"PMD.TooManyMethods"})
 @RestController
 @RequestMapping("/cases")
 public class ManageCaseController {
