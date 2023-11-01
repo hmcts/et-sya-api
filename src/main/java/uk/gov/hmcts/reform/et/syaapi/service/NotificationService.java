@@ -765,4 +765,83 @@ public class NotificationService {
         }
         return abText;
     }
+
+    void sendBundlesEmailToRespondent(CoreEmailDetails details) {
+        Map<String, Object> params = new ConcurrentHashMap<>();
+
+        addCommonParameters(
+            params,
+            details.claimant,
+            details.respondentNames,
+            details.caseId,
+            details.caseNumber
+        );
+        params.put(
+            SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
+            details.hearingDate
+        );
+        params.put(
+            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+            notificationsProperties.getExuiCaseDetailsLink() + details.caseId
+        );
+
+        sendClaimantSubmittedBundleNotificationEmailToRespondent(details, params);
+        sendClaimantSubmittedBundleNotificationEmailToTribunal(details, params);
+    }
+
+    private void sendClaimantSubmittedBundleNotificationEmailToRespondent(
+        CoreEmailDetails details, Map<String, Object> respondentParameters
+    ) {
+        String emailToRespondentTemplate
+            = notificationsProperties.getBundlesClaimantSubmittedRespondentNotificationTemplateId();
+
+        details.caseData.getRespondentCollection()
+            .forEach(resp -> {
+                String respondentEmailAddress = NotificationsHelper.getEmailAddressForRespondent(
+                    details.caseData,
+                    resp.getValue()
+                );
+                if (isNullOrEmpty(respondentEmailAddress)) {
+                    log.info(
+                        String.format("Respondent %s did not have an email address associated with their account",
+                                      resp.getId()));
+                } else {
+                    try {
+                        notificationClient.sendEmail(
+                            emailToRespondentTemplate,
+                            respondentEmailAddress,
+                            respondentParameters,
+                            details.caseId
+                        );
+                        log.info("Sent email to respondent");
+                    } catch (NotificationClientException ne) {
+                        throw new NotificationException(ne);
+                    }
+                }
+            });
+    }
+
+    private void sendClaimantSubmittedBundleNotificationEmailToTribunal(CoreEmailDetails details, Map<String, Object> tribunalParameters) {
+        String emailToRespondentTemplate
+            = notificationsProperties.getBundlesClaimantSubmittedRespondentNotificationTemplateId();
+
+        String managingOffice = details.caseData.getManagingOffice();
+        if (managingOffice.equals(UNASSIGNED_OFFICE) || isNullOrEmpty(managingOffice)) {
+            log.info("Could not send email as no office has been assigned");
+            return;
+        }
+
+        try {
+            notificationClient.sendEmail(
+                emailToRespondentTemplate,
+                details.caseData.getTribunalCorrespondenceEmail(),
+                tribunalParameters,
+                details.caseId
+            );
+            log.info("Sent email to Tribunal");
+        } catch (NotificationClientException ne) {
+            throw new NotificationException(ne);
+        }
+    }
+
 }

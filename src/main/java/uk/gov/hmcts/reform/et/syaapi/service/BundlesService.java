@@ -6,6 +6,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.HearingBundleType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -13,11 +14,14 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
+import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantBundlesRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.NotificationService.CoreEmailDetails;
 
 import java.util.ArrayList;
 
 import static java.util.UUID.randomUUID;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 
 @RequiredArgsConstructor
 @Service
@@ -26,6 +30,7 @@ public class BundlesService {
 
     private final CaseService caseService;
     private final CaseDetailsConverter caseDetailsConverter;
+    private final NotificationService notificationService;
 
     /**
      * Submit Claimant Bundles.
@@ -62,11 +67,28 @@ public class BundlesService {
 
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
 
+        sendBundleNotifications(caseData, startEventResponse.getCaseDetails());
+
         return caseService.submitUpdate(
             authorization,
             request.getCaseId(),
             content,
             request.getCaseTypeId()
         );
+    }
+
+    private void sendBundleNotifications(CaseData caseData, CaseDetails caseDetails) {
+        ClaimantIndType claimantIndType = caseData.getClaimantIndType();
+
+        CoreEmailDetails details = new CoreEmailDetails(
+            caseData,
+            claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName(),
+            caseData.getEthosCaseReference(),
+            getRespondentNames(caseData),
+            NotificationsHelper.getNearestHearingToReferral(caseData, "Not set"),
+            caseDetails.getId().toString()
+        );
+
+        notificationService.sendBundlesEmailToRespondent(details);
     }
 }

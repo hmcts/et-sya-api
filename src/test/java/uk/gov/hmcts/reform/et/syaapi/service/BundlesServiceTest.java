@@ -19,24 +19,26 @@ import uk.gov.hmcts.reform.et.syaapi.models.ClaimantBundlesRequest;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_CLAIMANT_BUNDLES;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 class BundlesServiceTest {
 
+    private static final String MOCK_TOKEN = "Bearer TestServiceAuth";
+    private static final String CLAIMANT = "Michael Jackson";
+    private static final String NOT_SET = "Not set";
+    private static final String CASE_ID = "1646225213651590";
+
     private BundlesService bundlesService;
     @MockBean
     private CaseService caseService;
-
+    @MockBean
+    private NotificationService notificationService;
     private final TestData testData;
-
-    private static final String MOCK_TOKEN = "Bearer TestServiceAuth";
 
     BundlesServiceTest() {
         testData = new TestData();
@@ -46,10 +48,12 @@ class BundlesServiceTest {
     void before()  {
         ObjectMapper objectMapper = new ObjectMapper();
         caseService = mock(CaseService.class);
+        notificationService = mock(NotificationService.class);
 
         bundlesService = new BundlesService(
             caseService,
-            new CaseDetailsConverter(objectMapper)
+            new CaseDetailsConverter(objectMapper),
+            notificationService
             );
 
         when(caseService.getUserCase(
@@ -114,5 +118,19 @@ class BundlesServiceTest {
 
         CaseData data = (CaseData) contentCaptor.getValue().getData();
         Assertions.assertEquals(collection.get(0).getValue(), data.getBundlesClaimantCollection().get(0).getValue());
+
+        ArgumentCaptor<NotificationService.CoreEmailDetails> argument = ArgumentCaptor.forClass(NotificationService.CoreEmailDetails.class);
+        verify(notificationService, times(1)).sendBundlesEmailToRespondent(
+            argument.capture()
+        );
+
+        NotificationService.CoreEmailDetails coreEmailDetails = argument.getValue();
+        assertThat(coreEmailDetails.caseData()).isNotNull();
+        assertThat(coreEmailDetails.claimant()).isEqualTo(CLAIMANT);
+        assertThat(coreEmailDetails.caseNumber()).isNotNull();
+        //assertThat(coreEmailDetails.respondentNames()).isEqualTo(RESPONDENT_LIST);
+        assertThat(coreEmailDetails.hearingDate()).isEqualTo(NOT_SET);
+        assertThat(coreEmailDetails.caseId()).isEqualTo(CASE_ID);
     }
+
 }
