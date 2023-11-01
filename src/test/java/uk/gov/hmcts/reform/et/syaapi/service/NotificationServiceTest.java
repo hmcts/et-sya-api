@@ -67,6 +67,7 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_ABBREVIATED_MONTHS_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.service.NotificationService.HEARING_DATE_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOTIFICATION_CONFIRMATION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SUBMIT_CASE_PDF_FILE_RESPONSE;
@@ -80,6 +81,8 @@ class NotificationServiceTest {
     public static final String NOT_SET = "Not set";
     public static final String TEST_RESPONDENT = "Test Respondent";
     private static final String WITNESS = "witness";
+    private static final String DATE_DAY = "12";
+    private static final String DATE_YEAR = "2024";
     private static final String CHANGE_DETAILS_APPLICATION_TYPE = "Change my personal details";
     public static final String SEND_EMAIL_PARAMS_DATE_PLUS7_KEY = "datePlus7";
     private final ConcurrentHashMap<String, String> parameters = new ConcurrentHashMap<>();
@@ -100,6 +103,8 @@ class NotificationServiceTest {
     private ClaimantHearingPreference claimantHearingPreference;
     @Captor
     ArgumentCaptor<Map<String, Object>> respondentParametersCaptor;
+    @Captor
+    ArgumentCaptor<Map<String, Object>> claimantParametersCaptor;
 
     @BeforeEach
     void before() throws NotificationClientException {
@@ -449,6 +454,54 @@ class NotificationServiceTest {
     }
 
     @Nested
+    class SendAcknowledgementEmailToClaimantWelsh {
+
+        @ParameterizedTest
+        @MethodSource("monthTranslations")
+        void shouldTranslateHearingDateToWelsh(
+            String englishMonth, String welshMonth) throws NotificationClientException {
+            details = new CoreEmailDetails(
+                caseTestData.getCaseData(),
+                CLAIMANT,
+                "1",
+                TEST_RESPONDENT,
+                DATE_DAY + " " + englishMonth + " " + DATE_YEAR,
+                caseTestData.getExpectedDetails().getId().toString()
+            );
+            when(notificationsProperties.getCyClaimantTseEmailTypeCTemplateId()).thenReturn(
+                "ExpectedEmailTemplateIdForWelsh");
+            caseTestData.getClaimantApplication().setContactApplicationType(WITNESS);
+            caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
+            when(notificationClient.sendEmail(
+                anyString(),
+                anyString(),
+                claimantParametersCaptor.capture(),
+                anyString()
+            ))
+                .thenReturn(mock(SendEmailResponse.class));
+            notificationService.sendAcknowledgementEmailToClaimant(details, caseTestData.getClaimantApplication());
+
+            Map<String, Object> capturedClaimantParameters = claimantParametersCaptor.getValue();
+            String translatedHearingDate = capturedClaimantParameters.get(HEARING_DATE_KEY).toString();
+            assertThat(translatedHearingDate).isEqualTo(DATE_DAY + " " + welshMonth + " " + DATE_YEAR);
+        }
+
+        static Stream<Arguments> monthTranslations() {
+
+            return CY_ABBREVIATED_MONTHS_MAP.entrySet().stream()
+                .map(entry -> Arguments.of(DATE_DAY
+                                               + " "
+                                               + entry.getKey()
+                                               + " "
+                                               + DATE_YEAR, DATE_DAY
+                                               + " "
+                                               + entry.getValue()
+                                               + " "
+                                               + DATE_YEAR));
+        }
+    }
+
+    @Nested
     class SendAcknowledgementEmailToRespondents {
         @BeforeEach
         void setUp() {
@@ -464,6 +517,7 @@ class NotificationServiceTest {
 
         @Test
         void shouldSendEmailToRespondentTypeBPersonalisationCheck() throws NotificationClientException {
+            caseTestData.getClaimantApplication().setContactApplicationType("strike");
             notificationService.sendAcknowledgementEmailToRespondents(
                 details,
                 null,
@@ -1104,32 +1158,6 @@ class NotificationServiceTest {
         }
 
         assertEquals(expectedTemplateId, emailTemplate);
-    }
-
-    @ParameterizedTest
-    @MethodSource("monthTranslations")
-    void shouldTranslateHearingDateForWelshMonth(String inputDate, String expectedTranslatedDate) {
-        caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
-        String translatedDate = translateDateForWelsh(inputDate);
-        assertThat(translatedDate).isEqualTo(expectedTranslatedDate);
-    }
-
-    private String translateDateForWelsh(String date) {
-
-        String translatedDate = date;
-        for (Map.Entry<String, String> monthEntry : CY_ABBREVIATED_MONTHS_MAP.entrySet()) {
-            if (date.contains(monthEntry.getKey())) {
-                translatedDate = date.replace(monthEntry.getKey(), monthEntry.getValue());
-                break;
-            }
-        }
-        return translatedDate;
-    }
-
-    static Stream<Arguments> monthTranslations() {
-
-        return CY_ABBREVIATED_MONTHS_MAP.entrySet().stream()
-            .map(entry -> Arguments.of("12 " + entry.getKey() + " 2024", "12 " + entry.getValue() + " 2024"));
     }
 }
 
