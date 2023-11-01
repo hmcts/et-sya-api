@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.apache.tika.utils.StringUtils.isBlank;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
+import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_ABBREVIATED_MONTHS_MAP;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CASE_ID_NOT_FOUND;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.FILE_NOT_EXISTS;
@@ -82,6 +83,7 @@ public class NotificationService {
     private final String[] typeB = {"withdraw", "change-details", "reconsider-decision", "reconsider-judgement"};
     private static final String TYPE_C = "witness";
     private static final String DONT_SEND_COPY = "No";
+    public static final String HEARING_DATE_KEY = "hearingDate";
 
     /**
      * Record containing core details of an email.
@@ -251,6 +253,17 @@ public class NotificationService {
      */
     SendEmailResponse sendAcknowledgementEmailToClaimant(CoreEmailDetails details, ClaimantTse claimantApplication) {
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
+        boolean isWelsh = WELSH_LANGUAGE.equals(details.caseData().getClaimantHearingPreference().getContactLanguage());
+        String hearingDate = details.hearingDate;
+        if (isWelsh) {
+            for (Map.Entry<String, String> monthEntry : CY_ABBREVIATED_MONTHS_MAP.entrySet()) {
+                if (details.hearingDate.contains(monthEntry.getKey())) {
+                    hearingDate = details.hearingDate.replace(monthEntry.getKey(), monthEntry.getValue());
+                    break;
+                }
+            }
+        }
+        claimantParameters.put(HEARING_DATE_KEY, hearingDate);
 
         addCommonParameters(
             claimantParameters,
@@ -261,10 +274,7 @@ public class NotificationService {
         );
 
         SendEmailResponse claimantEmail;
-        String selectedLanguage = GenericServiceUtil.findClaimantLanguage(details.caseData);
         String emailToClaimantTemplate;
-
-        boolean isWelsh = WELSH_LANGUAGE.equals(selectedLanguage);
         String citizenPortalLink = notificationsProperties.getCitizenPortalLink() + details.caseId
             + (isWelsh ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
 
@@ -275,7 +285,7 @@ public class NotificationService {
         } else {
             emailToClaimantTemplate = getAndSetRule92EmailTemplate(
                 claimantApplication,
-                details.hearingDate,
+                hearingDate,
                 claimantParameters,
                 details.caseData
             );
@@ -748,8 +758,7 @@ public class NotificationService {
                                         Map<String, Object> parameters,
                                         CaseData caseData) {
         String emailTemplate;
-        String selectedLanguage = GenericServiceUtil.findClaimantLanguage(caseData);
-        boolean isWelsh = WELSH_LANGUAGE.equals(selectedLanguage);
+        boolean isWelsh = WELSH_LANGUAGE.equals(caseData.getClaimantHearingPreference().getContactLanguage());
 
         parameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, hearingDate);
         Map<String, String> selectedMap = isWelsh ? CY_APP_TYPE_MAP : APP_TYPE_MAP;

@@ -25,19 +25,15 @@ import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.NotificationService.CoreEmailDetails;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
-import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_ABBREVIATED_MONTHS_MAP;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 
@@ -255,16 +251,6 @@ public class ApplicationService {
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(finalCaseDetails.getData());
         ClaimantIndType claimantIndType = caseData.getClaimantIndType();
         String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
-        String selectedLanguage = GenericServiceUtil.findClaimantLanguage(caseData);
-        boolean isWelsh = WELSH_LANGUAGE.equals(selectedLanguage);
-        if (isWelsh) {
-            for (Map.Entry<String, String> monthEntry : CY_ABBREVIATED_MONTHS_MAP.entrySet()) {
-                if (hearingDate.contains(monthEntry.getKey())) {
-                    hearingDate = hearingDate.replace(monthEntry.getKey(), monthEntry.getValue());
-                    break;
-                }
-            }
-        }
         CoreEmailDetails details = new CoreEmailDetails(
             caseData,
             claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName(),

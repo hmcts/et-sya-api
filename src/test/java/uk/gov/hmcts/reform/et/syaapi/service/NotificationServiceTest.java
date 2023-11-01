@@ -64,6 +64,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
+import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_ABBREVIATED_MONTHS_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ENGLISH_LANGUAGE;
@@ -1090,7 +1091,7 @@ class NotificationServiceTest {
     void shouldReturnExpectedEmailTemplateForTypeC(String language, String expectedTemplateId) {
         String emailTemplate = null;
         claimantHearingPreference.setContactLanguage(language);
-        when(claimantApplication.getContactApplicationType()).thenReturn("witness");
+        when(claimantApplication.getContactApplicationType()).thenReturn(WITNESS);
 
         if (WELSH_LANGUAGE.equals(language)) {
             when(notificationsProperties.getCyClaimantTseEmailTypeCTemplateId()).thenReturn(expectedTemplateId);
@@ -1104,4 +1105,31 @@ class NotificationServiceTest {
 
         assertEquals(expectedTemplateId, emailTemplate);
     }
+
+    @ParameterizedTest
+    @MethodSource("monthTranslations")
+    void shouldTranslateHearingDateForWelshMonth(String inputDate, String expectedTranslatedDate) {
+        caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
+        String translatedDate = translateDateForWelsh(inputDate);
+        assertThat(translatedDate).isEqualTo(expectedTranslatedDate);
+    }
+
+    private String translateDateForWelsh(String date) {
+
+        String translatedDate = date;
+        for (Map.Entry<String, String> monthEntry : CY_ABBREVIATED_MONTHS_MAP.entrySet()) {
+            if (date.contains(monthEntry.getKey())) {
+                translatedDate = date.replace(monthEntry.getKey(), monthEntry.getValue());
+                break;
+            }
+        }
+        return translatedDate;
+    }
+
+    static Stream<Arguments> monthTranslations() {
+
+        return CY_ABBREVIATED_MONTHS_MAP.entrySet().stream()
+            .map(entry -> Arguments.of("12 " + entry.getKey() + " 2024", "12 " + entry.getValue() + " 2024"));
+    }
 }
+
