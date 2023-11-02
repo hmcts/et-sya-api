@@ -119,6 +119,8 @@ class NotificationServiceTest {
             .willReturn("tseClaimantResponseToRequestYesTemplateId");
         given(notificationsProperties.getTseClaimantResponseToRequestNoTemplateId())
             .willReturn("tseClaimantResponseToRequestNoTemplateId");
+        given(notificationsProperties.getBundlesClaimantSubmittedRespondentNotificationTemplateId())
+            .willReturn("bundlesClaimantSubmittedRespondentNotificationTemplateId");
         caseTestData = new CaseTestData();
     }
 
@@ -1021,5 +1023,60 @@ class NotificationServiceTest {
             any(),
             any()
         );
+    }
+
+    @Nested
+    class SendBundleNotification {
+        @BeforeEach
+        void setUp() {
+            details = new CoreEmailDetails(
+                caseTestData.getCaseData(),
+                CLAIMANT,
+                "1",
+                TEST_RESPONDENT,
+                NOT_SET,
+                caseTestData.getExpectedDetails().getId().toString()
+            );
+        }
+
+        @Test
+        void shouldSendBundleNotificationEmail() throws NotificationClientException {
+            details.caseData().setTribunalCorrespondenceEmail("testTribunal@mail.com");
+            notificationService.sendBundlesEmailToRespondent(details);
+
+            verify(notificationClient, times(6)).sendEmail(
+                any(),
+                any(),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            );
+        }
+
+        @Test
+        void sendNoBundleNotificationEmailsNoRespondentAndTribunalEmail() throws NotificationClientException {
+            details.caseData().setRespondentCollection(new ArrayList<>());
+            details.caseData().setTribunalCorrespondenceEmail(null);
+            notificationService.sendBundlesEmailToRespondent(details);
+
+            verify(notificationClient, times(0)).sendEmail(
+                any(),
+                any(),
+                any(),
+                any()
+            );
+        }
+
+        @Test
+        void sendNoBundleNotificationEmailToTribunalMissingEmailAddress() throws NotificationClientException {
+            details.caseData().setTribunalCorrespondenceEmail(null);
+            notificationService.sendBundlesEmailToRespondent(details);
+
+            verify(notificationClient, times(0)).sendEmail(
+                any(),
+                eq(caseTestData.getCaseData().getTribunalCorrespondenceEmail()),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            );
+        }
     }
 }

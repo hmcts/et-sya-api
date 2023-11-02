@@ -22,7 +22,10 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_CLAIMANT_BUNDLES;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
@@ -119,7 +122,8 @@ class BundlesServiceTest {
         CaseData data = (CaseData) contentCaptor.getValue().getData();
         Assertions.assertEquals(collection.get(0).getValue(), data.getBundlesClaimantCollection().get(0).getValue());
 
-        ArgumentCaptor<NotificationService.CoreEmailDetails> argument = ArgumentCaptor.forClass(NotificationService.CoreEmailDetails.class);
+        ArgumentCaptor<NotificationService.CoreEmailDetails> argument =
+            ArgumentCaptor.forClass(NotificationService.CoreEmailDetails.class);
         verify(notificationService, times(1)).sendBundlesEmailToRespondent(
             argument.capture()
         );

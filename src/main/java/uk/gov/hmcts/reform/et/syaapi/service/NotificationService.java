@@ -768,7 +768,6 @@ public class NotificationService {
 
     void sendBundlesEmailToRespondent(CoreEmailDetails details) {
         Map<String, Object> params = new ConcurrentHashMap<>();
-
         addCommonParameters(
             params,
             details.claimant,
@@ -785,16 +784,15 @@ public class NotificationService {
             notificationsProperties.getExuiCaseDetailsLink() + details.caseId
         );
 
-        sendClaimantSubmittedBundleNotificationEmailToRespondent(details, params);
-        sendClaimantSubmittedBundleNotificationEmailToTribunal(details, params);
+        String emailTemplate
+            = notificationsProperties.getBundlesClaimantSubmittedRespondentNotificationTemplateId();
+        sendClaimantSubmittedBundleNotificationEmailToRespondent(details, params, emailTemplate);
+        sendClaimantSubmittedBundleNotificationEmailToTribunal(details, params, emailTemplate);
     }
 
-    private void sendClaimantSubmittedBundleNotificationEmailToRespondent(
-        CoreEmailDetails details, Map<String, Object> respondentParameters
-    ) {
-        String emailToRespondentTemplate
-            = notificationsProperties.getBundlesClaimantSubmittedRespondentNotificationTemplateId();
-
+    private void sendClaimantSubmittedBundleNotificationEmailToRespondent(CoreEmailDetails details,
+                                                                          Map<String, Object> respondentParameters,
+                                                                          String emailTemplateId) {
         details.caseData.getRespondentCollection()
             .forEach(resp -> {
                 String respondentEmailAddress = NotificationsHelper.getEmailAddressForRespondent(
@@ -803,12 +801,14 @@ public class NotificationService {
                 );
                 if (isNullOrEmpty(respondentEmailAddress)) {
                     log.info(
-                        String.format("Respondent %s did not have an email address associated with their account",
-                                      resp.getId()));
+                        String.format(
+                            "Respondent %s did not have an email address associated with their account",
+                            resp.getId()
+                        ));
                 } else {
                     try {
                         notificationClient.sendEmail(
-                            emailToRespondentTemplate,
+                            emailTemplateId,
                             respondentEmailAddress,
                             respondentParameters,
                             details.caseId
@@ -821,19 +821,24 @@ public class NotificationService {
             });
     }
 
-    private void sendClaimantSubmittedBundleNotificationEmailToTribunal(CoreEmailDetails details, Map<String, Object> tribunalParameters) {
-        String emailToRespondentTemplate
-            = notificationsProperties.getBundlesClaimantSubmittedRespondentNotificationTemplateId();
-
+    private void sendClaimantSubmittedBundleNotificationEmailToTribunal(CoreEmailDetails details,
+                                                                        Map<String, Object> tribunalParameters,
+                                                                        String emailTemplateId) {
         String managingOffice = details.caseData.getManagingOffice();
         if (managingOffice.equals(UNASSIGNED_OFFICE) || isNullOrEmpty(managingOffice)) {
             log.info("Could not send email as no office has been assigned");
             return;
         }
 
+        String tribunalEmail = details.caseData.getTribunalCorrespondenceEmail();
+        if (isNullOrEmpty(tribunalEmail)) {
+            log.info("Could not send email. No email found");
+            return;
+        }
+
         try {
             notificationClient.sendEmail(
-                emailToRespondentTemplate,
+                emailTemplateId,
                 details.caseData.getTribunalCorrespondenceEmail(),
                 tribunalParameters,
                 details.caseId
