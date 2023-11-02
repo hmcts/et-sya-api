@@ -124,7 +124,7 @@ class BundlesServiceTest {
 
         ArgumentCaptor<NotificationService.CoreEmailDetails> argument =
             ArgumentCaptor.forClass(NotificationService.CoreEmailDetails.class);
-        verify(notificationService, times(1)).sendBundlesEmailToRespondent(
+        verify(notificationService, times(1)).sendBundlesEmailNotifications(
             argument.capture()
         );
 

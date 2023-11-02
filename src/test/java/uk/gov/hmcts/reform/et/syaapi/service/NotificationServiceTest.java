@@ -1042,7 +1042,7 @@ class NotificationServiceTest {
         @Test
         void shouldSendBundleNotificationEmail() throws NotificationClientException {
             details.caseData().setTribunalCorrespondenceEmail("testTribunal@mail.com");
-            notificationService.sendBundlesEmailToRespondent(details);
+            notificationService.sendBundlesEmailNotifications(details);
 
             verify(notificationClient, times(6)).sendEmail(
                 any(),
@@ -1056,7 +1056,7 @@ class NotificationServiceTest {
         void sendNoBundleNotificationEmailsNoRespondentAndTribunalEmail() throws NotificationClientException {
             details.caseData().setRespondentCollection(new ArrayList<>());
             details.caseData().setTribunalCorrespondenceEmail(null);
-            notificationService.sendBundlesEmailToRespondent(details);
+            notificationService.sendBundlesEmailNotifications(details);
 
             verify(notificationClient, times(0)).sendEmail(
                 any(),
@@ -1069,7 +1069,7 @@ class NotificationServiceTest {
         @Test
         void sendNoBundleNotificationEmailToTribunalMissingEmailAddress() throws NotificationClientException {
             details.caseData().setTribunalCorrespondenceEmail(null);
-            notificationService.sendBundlesEmailToRespondent(details);
+            notificationService.sendBundlesEmailNotifications(details);
 
             verify(notificationClient, times(0)).sendEmail(
                 any(),

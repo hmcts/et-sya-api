@@ -89,6 +89,6 @@ public class BundlesService {
             caseDetails.getId().toString()
         );
 
-        notificationService.sendBundlesEmailToRespondent(details);
+        notificationService.sendBundlesEmailNotifications(details);
     }
 }

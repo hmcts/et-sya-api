@@ -766,7 +766,7 @@ public class NotificationService {
         return abText;
     }
 
-    void sendBundlesEmailToRespondent(CoreEmailDetails details) {
+    void sendBundlesEmailNotifications(CoreEmailDetails details) {
         Map<String, Object> params = new ConcurrentHashMap<>();
         addCommonParameters(
             params,
