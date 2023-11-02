@@ -24,4 +24,8 @@ public class FeatureToggleService {
     public boolean isCaseFlagsEnabled() {
         return this.featureToggleApi.isFeatureEnabled("case-flags-linking-enabled");
     }
+
+    public boolean isBundlesEnabled() {
+        return this.featureToggleApi.isFeatureEnabled("bundles");
+    }
 }
