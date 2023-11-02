@@ -83,7 +83,7 @@ notifications:
   respondentCopyTypeA: ${RESPONDENT_COPY_A:a2ffb9b3-8bf7-4e9a-aab8-08a6c5a82636}
   respondentCopyTypeB: ${RESPONDENT_COPY_B:59ccc472-8f2e-43e4-b275-832f1c714eff}
   tribunalAcknowledgement: ${TRIBUNAL_ACKNOWLEDGEMENT:d82aa18a-1a3d-44af-91fa-565d178f5e0e}
-
+  bundlesClaimantSubmittedRespondentNotificationTemplateId: ${BUNDLE_EMAIL_TEMPLATE_ID:5c829358-0b54-4335-9d60-1c8296c4a516}
   tse:
     claimantResponseYes: ${TSE_CLAIMANT_RESPONSE_YES:091abb61-0a21-4208-b3b6-22121e8682be}
     claimantResponseNo: ${TSE_CLAIMANT_RESPONSE_NO:0727a137-322f-458b-9941-ee8b6d3c11c2}
