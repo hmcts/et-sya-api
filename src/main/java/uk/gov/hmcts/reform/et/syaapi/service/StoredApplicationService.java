@@ -142,7 +142,7 @@ public class StoredApplicationService {
         }
 
         // Update response details and application status
-        updateResponseForSubmitStored(responseToModify, caseData, appToModify);
+        updateResponseForSubmitStored(responseToModify, appToModify);
 
         // Update pdf
         createAndAddPdfOfResponse(authorization, request, caseData, appToModify.getValue(),
@@ -155,7 +155,7 @@ public class StoredApplicationService {
             authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
     }
 
-    private static void updateResponseForSubmitStored(TseRespondTypeItem responseToModify, CaseData caseData,
+    private static void updateResponseForSubmitStored(TseRespondTypeItem responseToModify,
                                                       GenericTseApplicationTypeItem appToModify) {
         TseRespondType tseRespondType = responseToModify.getValue();
         tseRespondType.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
