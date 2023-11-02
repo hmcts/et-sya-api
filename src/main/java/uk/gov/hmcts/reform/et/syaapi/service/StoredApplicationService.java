@@ -6,7 +6,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ecm.common.helpers.UtilHelper;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
-import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.PseResponseTypeItem;
@@ -25,7 +24,6 @@ import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequ
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
@@ -144,7 +142,7 @@ public class StoredApplicationService {
         }
 
         // Update response details and application status
-        updateResponseForSubmitStored(responseToModify, caseData, appToModify);
+        updateResponseForSubmitStored(responseToModify, appToModify);
 
         // Update pdf
         createAndAddPdfOfResponse(authorization, request, caseData, appToModify.getValue(),
@@ -157,17 +155,9 @@ public class StoredApplicationService {
             authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
     }
 
-    private static void updateResponseForSubmitStored(TseRespondTypeItem responseToModify, CaseData caseData,
+    private static void updateResponseForSubmitStored(TseRespondTypeItem responseToModify,
                                                       GenericTseApplicationTypeItem appToModify) {
         TseRespondType tseRespondType = responseToModify.getValue();
-        if (tseRespondType.getSupportingMaterial() != null) {
-            DocumentTypeItem documentTypeItem =
-                (DocumentTypeItem) tseRespondType.getSupportingMaterial().get(0);
-            if (CollectionUtils.isEmpty(caseData.getDocumentCollection())) {
-                caseData.setDocumentCollection(new ArrayList<>());
-            }
-            caseData.getDocumentCollection().add(documentTypeItem);
-        }
         tseRespondType.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
         tseRespondType.setStatus(null);
         appToModify.getValue().setApplicationState(WAITING_FOR_TRIBUNAL);
