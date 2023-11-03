@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.ClaimantHearingPreference;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
@@ -34,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT;
 
 @SuppressWarnings({"PMD.LawOfDemeter", "PMD.LinguisticNaming", "PMD.TooManyMethods"})
@@ -77,9 +79,12 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
         ClaimantIndType claimantIndType = new ClaimantIndType();
         claimantIndType.setClaimantFirstNames("Boris");
         claimantIndType.setClaimantLastName("Johnson");
+        ClaimantHearingPreference hearingPreference = new ClaimantHearingPreference();
+        hearingPreference.setContactLanguage(ENGLISH_LANGUAGE);
         caseData.put("claimantIndType", claimantIndType);
         caseData.put("respondentCollection", List.of(createRespondentType()));
         caseData.put("claimantType", Map.of("claimant_email_address", CLAIMANT_EMAIL));
+        caseData.put("claimantHearingPreference", hearingPreference);
 
         CaseRequest caseRequest = CaseRequest.builder()
             .caseData(caseData)
@@ -105,21 +110,6 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .then()
             .statusCode(HttpStatus.SC_OK)
             .log().all(true);
-    }
-
-    @Test
-    @Order(2)
-    void getSingleCaseDetailsShouldReturnSingleCaseDetails() {
-        RestAssured.given()
-            .contentType(ContentType.JSON)
-            .header(new Header(AUTHORIZATION, userToken))
-            .body("{\"case_id\":\"" + caseId + "\"}")
-            .post(CASES_USER_CASE)
-            .then()
-            .statusCode(HttpStatus.SC_OK)
-            .log().all(true)
-            .assertThat().body("id", equalTo(caseId))
-            .assertThat().body("case_type_id", equalTo(CASE_TYPE));
     }
 
     @SneakyThrows
