@@ -20,8 +20,12 @@ public class RequestInterceptor implements HandlerInterceptor {
 
     private static final String FAILED_TO_VERIFY_TOKEN = "Failed to verify the following token: {}";
 
+    private final VerifyTokenService verifyTokenService;
+
     @Autowired
-    VerifyTokenService verifyTokenService;
+    public RequestInterceptor(VerifyTokenService verifyTokenService) {
+        this.verifyTokenService = verifyTokenService;
+    }
 
     /**
      * Intercepts any incoming calls and throws exception if token is invalid.
