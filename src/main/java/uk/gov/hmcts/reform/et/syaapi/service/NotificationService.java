@@ -77,6 +77,7 @@ public class NotificationService {
 
     private final NotificationClient notificationClient;
     private final NotificationsProperties notificationsProperties;
+    private final FeatureToggleService featureToggleService;
 
     private final String[] typeA =
         {"strike", "amend", "non-compliance", "other", "postpone", "vary", "respondent", "publicity"};
@@ -253,7 +254,9 @@ public class NotificationService {
      */
     SendEmailResponse sendAcknowledgementEmailToClaimant(CoreEmailDetails details, ClaimantTse claimantApplication) {
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
-        boolean isWelsh = WELSH_LANGUAGE.equals(details.caseData().getClaimantHearingPreference().getContactLanguage());
+        boolean welshFlagEnabled = featureToggleService.isWelshEnabled();
+        boolean isWelsh = welshFlagEnabled && WELSH_LANGUAGE.equals(
+            details.caseData().getClaimantHearingPreference().getContactLanguage());
         String hearingDate = details.hearingDate;
         if (isWelsh) {
             for (Map.Entry<String, String> monthEntry : CY_ABBREVIATED_MONTHS_MAP.entrySet()) {
@@ -758,7 +761,9 @@ public class NotificationService {
                                         Map<String, Object> parameters,
                                         CaseData caseData) {
         String emailTemplate;
-        boolean isWelsh = WELSH_LANGUAGE.equals(caseData.getClaimantHearingPreference().getContactLanguage());
+        boolean welshFlagEnabled = featureToggleService.isWelshEnabled();
+        boolean isWelsh = welshFlagEnabled && WELSH_LANGUAGE.equals(
+            caseData.getClaimantHearingPreference().getContactLanguage());
 
         parameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, hearingDate);
         Map<String, String> selectedMap = isWelsh ? CY_APP_TYPE_MAP : APP_TYPE_MAP;

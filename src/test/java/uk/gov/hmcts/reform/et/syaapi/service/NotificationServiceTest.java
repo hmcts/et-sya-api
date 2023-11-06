@@ -100,6 +100,8 @@ class NotificationServiceTest {
     private CaseTestData caseTestData;
     @Mock
     private CoreEmailDetails details;
+    @Mock
+    private FeatureToggleService featureToggleService;
     private ClaimantHearingPreference claimantHearingPreference;
     @Captor
     ArgumentCaptor<Map<String, Object>> respondentParametersCaptor;
@@ -112,7 +114,8 @@ class NotificationServiceTest {
         parameters.put("references", "123456789");
         notificationClient = mock(NotificationClient.class);
         notificationsProperties = mock(NotificationsProperties.class);
-        notificationService = new NotificationService(notificationClient, notificationsProperties);
+        notificationService = new NotificationService(
+            notificationClient, notificationsProperties, featureToggleService);
         given(notificationClient.sendEmail(anyString(), anyString(), any(), anyString()))
             .willReturn(TestConstants.INPUT_SEND_EMAIL_RESPONSE);
         given(notificationsProperties.getCySubmitCaseEmailTemplateId())
@@ -208,7 +211,8 @@ class NotificationServiceTest {
     @SneakyThrows
     private SendEmailResponse mockSendEmailResponse() {
         notificationClient = mock(NotificationClient.class);
-        notificationService = new NotificationService(notificationClient, notificationsProperties);
+        notificationService = new NotificationService(
+            notificationClient, notificationsProperties, featureToggleService);
         doReturn(TestConstants.INPUT_SEND_EMAIL_RESPONSE).when(notificationClient)
             .sendEmail(TestConstants.TEST_TEMPLATE_API_KEY,
                        TestConstants.TEST_EMAIL, parameters, TestConstants.REFERENCE_STRING);
@@ -221,7 +225,8 @@ class NotificationServiceTest {
     @MethodSource("retrieveSubmitCaseConfirmationEmailPdfFilesArguments")
     void shouldTestSubmitCaseConfirmationWithGivenPdfFilesArguments(List<PdfDecodedMultipartFile> pdfFiles,
                                                                     String expectedValue) {
-        NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
+        NotificationService notificationService = new NotificationService(
+            notificationClient, notificationsProperties, featureToggleService);
         caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(null);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
             caseTestData.getCaseRequest(),
@@ -248,7 +253,8 @@ class NotificationServiceTest {
         caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(null);
         List<PdfDecodedMultipartFile> casePdfFiles = new ArrayList<>();
         casePdfFiles.add(TestConstants.PDF_DECODED_MULTIPART_FILE1);
-        NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
+        NotificationService notificationService = new NotificationService(
+            notificationClient, notificationsProperties, featureToggleService);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
             caseTestData.getCaseRequest(),
             caseTestData.getCaseData(),
@@ -281,7 +287,8 @@ class NotificationServiceTest {
         caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(selectedLanguage);
         List<PdfDecodedMultipartFile> casePdfFiles = new ArrayList<>();
         casePdfFiles.add(TestConstants.PDF_DECODED_MULTIPART_FILE1);
-        NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
+        NotificationService notificationService = new NotificationService(
+            notificationClient, notificationsProperties, featureToggleService);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
             caseTestData.getCaseRequest(),
             caseTestData.getCaseData(),
@@ -313,7 +320,7 @@ class NotificationServiceTest {
             mockedServiceUtil.when(() -> GenericServiceUtil.findPdfFileBySelectedLanguage(any(), anyString()))
                 .thenReturn(TEST_SUBMIT_CASE_PDF_FILE_RESPONSE.getBytes());
             NotificationService notificationService =
-                new NotificationService(notificationClient, notificationsProperties);
+                new NotificationService(notificationClient, notificationsProperties, featureToggleService);
             notificationService.sendSubmitCaseConfirmationEmail(
                 caseTestData.getCaseRequest(),
                 caseTestData.getCaseData(),
@@ -468,6 +475,7 @@ class NotificationServiceTest {
                 DATE_DAY + " " + englishMonth + " " + DATE_YEAR,
                 caseTestData.getExpectedDetails().getId().toString()
             );
+            when(featureToggleService.isWelshEnabled()).thenReturn(true);
             when(notificationsProperties.getCyClaimantTseEmailTypeCTemplateId()).thenReturn(
                 "ExpectedEmailTemplateIdForWelsh");
             caseTestData.getClaimantApplication().setContactApplicationType(WITNESS);
@@ -1096,40 +1104,39 @@ class NotificationServiceTest {
         claimantHearingPreference = new ClaimantHearingPreference();
         params = new HashMap<>();
 
-        String hearingDate = "12 January 2023";
+        String hearingDate = "12 Jan 2023";
         when(details.hearingDate()).thenReturn(hearingDate);
         when(caseData.getClaimantHearingPreference()).thenReturn(claimantHearingPreference);
     }
 
     @ParameterizedTest
     @CsvSource({
-        "Welsh, strike, Yes, CY_APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
-        "Welsh, withdraw, Yes, CY_APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
-        "English, strike, Yes, APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
-        "Welsh, strike, No, CY_APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID",
-        "English, strike, No, APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID"
+        "true, Welsh, strike, Yes, CY_APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
+        "false, Welsh, strike, Yes, APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
+        "true, Welsh, withdraw, Yes, CY_APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
+        "false, Welsh, withdraw, Yes, APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
+        "true, Welsh, strike, No, CY_APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID",
+        "false, Welsh, strike, No, APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID",
+        "true, English, strike, Yes, APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
+        "false, English, strike, Yes, APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
+        "true, English, strike, No, APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID",
+        "false, English, strike, No, APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID"
     })
     void shouldReturnExpectedEmailTemplateForRule92(
-        String language, String contactType, String copyTo, String expectedTemplateId) {
+        Boolean welshFlagEnabled, String language, String contactType, String copyTo, String expectedTemplateId) {
+
         claimantHearingPreference.setContactLanguage(language);
+        when(featureToggleService.isWelshEnabled()).thenReturn(welshFlagEnabled);
         when(claimantApplication.getContactApplicationType()).thenReturn(contactType);
         when(claimantApplication.getCopyToOtherPartyYesOrNo()).thenReturn(copyTo);
-
-        if (WELSH_LANGUAGE.equals(language) && YES.equals(copyTo)) {
-            when(notificationsProperties.getCyClaimantTseEmailYesTemplateId()).thenReturn(expectedTemplateId);
-        }
-
-        if (WELSH_LANGUAGE.equals(language) && NO.equals(copyTo)) {
-            when(notificationsProperties.getCyClaimantTseEmailNoTemplateId()).thenReturn(expectedTemplateId);
-        }
-
-        if (ENGLISH_LANGUAGE.equals(language) && YES.equals(copyTo)) {
-            when(notificationsProperties.getClaimantTseEmailYesTemplateId()).thenReturn(expectedTemplateId);
-        }
-
-        if (ENGLISH_LANGUAGE.equals(language) && NO.equals(copyTo)) {
-            when(notificationsProperties.getClaimantTseEmailNoTemplateId()).thenReturn(expectedTemplateId);
-        }
+        when(notificationsProperties.getCyClaimantTseEmailYesTemplateId()).thenReturn(
+            "CY_APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID");
+        when(notificationsProperties.getCyClaimantTseEmailNoTemplateId()).thenReturn(
+            "CY_APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID");
+        when(notificationsProperties.getClaimantTseEmailYesTemplateId()).thenReturn(
+            "APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID");
+        when(notificationsProperties.getClaimantTseEmailNoTemplateId()).thenReturn(
+            "APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID");
 
         String emailTemplate = notificationService.getAndSetRule92EmailTemplate(
             claimantApplication, details.hearingDate(), params, caseData);
@@ -1139,23 +1146,26 @@ class NotificationServiceTest {
 
     @ParameterizedTest
     @CsvSource({
-        "Welsh, CY_APPLICATION_ACKNOWLEDGEMENT_TYPE_C_EMAIL_TEMPLATE_ID",
-        "English, APPLICATION_ACKNOWLEDGEMENT_TYPE_C_EMAIL_TEMPLATE_ID"
+        "true, Welsh, CY_APPLICATION_ACKNOWLEDGEMENT_TYPE_C_EMAIL_TEMPLATE_ID",
+        "false, Welsh, APPLICATION_ACKNOWLEDGEMENT_TYPE_C_EMAIL_TEMPLATE_ID",
+        "true, English, APPLICATION_ACKNOWLEDGEMENT_TYPE_C_EMAIL_TEMPLATE_ID",
+        "false, English, APPLICATION_ACKNOWLEDGEMENT_TYPE_C_EMAIL_TEMPLATE_ID"
     })
-    void shouldReturnExpectedEmailTemplateForTypeC(String language, String expectedTemplateId) {
-        String emailTemplate = null;
+    void shouldReturnExpectedEmailTemplateForTypeC(
+        Boolean welshFlagEnabled, String language, String expectedTemplateId) {
+
+        when(featureToggleService.isWelshEnabled()).thenReturn(welshFlagEnabled);
         claimantHearingPreference.setContactLanguage(language);
-        when(claimantApplication.getContactApplicationType()).thenReturn(WITNESS);
 
-        if (WELSH_LANGUAGE.equals(language)) {
+        if (WELSH_LANGUAGE.equals(language) && welshFlagEnabled) {
             when(notificationsProperties.getCyClaimantTseEmailTypeCTemplateId()).thenReturn(expectedTemplateId);
-            emailTemplate = notificationsProperties.getCyClaimantTseEmailTypeCTemplateId();
+        } else if (ENGLISH_LANGUAGE.equals(language) || !welshFlagEnabled) {
+            when(notificationsProperties.getClaimantTseEmailTypeCTemplateId()).thenReturn(expectedTemplateId);
         }
 
-        if (ENGLISH_LANGUAGE.equals(language)) {
-            when(notificationsProperties.getClaimantTseEmailTypeCTemplateId()).thenReturn(expectedTemplateId);
-            emailTemplate = notificationsProperties.getClaimantTseEmailTypeCTemplateId();
-        }
+        String emailTemplate = WELSH_LANGUAGE.equals(language) && welshFlagEnabled
+            ? notificationsProperties.getCyClaimantTseEmailTypeCTemplateId()
+            : notificationsProperties.getClaimantTseEmailTypeCTemplateId();
 
         assertEquals(expectedTemplateId, emailTemplate);
     }

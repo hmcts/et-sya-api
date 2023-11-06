@@ -12,6 +12,7 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.mockito.Mock;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantHearingPreference;
@@ -26,6 +27,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.FeatureToggleService;
 
 import java.util.List;
 import java.util.Map;
@@ -34,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT;
@@ -67,6 +70,8 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
     private final Map<String, Object> caseData = new ConcurrentHashMap<>();
     private String appId;
     private String responseId;
+    @Mock
+    private FeatureToggleService featureToggleService;
 
     @Test
     @Order(1)
@@ -81,6 +86,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
         claimantIndType.setClaimantLastName("Johnson");
         ClaimantHearingPreference hearingPreference = new ClaimantHearingPreference();
         hearingPreference.setContactLanguage(ENGLISH_LANGUAGE);
+        when(featureToggleService.isWelshEnabled()).thenReturn(false);
         caseData.put("claimantIndType", claimantIndType);
         caseData.put("respondentCollection", List.of(createRespondentType()));
         caseData.put("claimantType", Map.of("claimant_email_address", CLAIMANT_EMAIL));
