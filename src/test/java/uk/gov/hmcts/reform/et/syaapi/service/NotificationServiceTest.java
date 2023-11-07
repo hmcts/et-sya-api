@@ -467,12 +467,13 @@ class NotificationServiceTest {
         @MethodSource("monthTranslations")
         void shouldTranslateHearingDateToWelsh(
             String englishMonth, String welshMonth) throws NotificationClientException {
+            String hearingDate = DATE_DAY + " " + englishMonth + " " + DATE_YEAR;
             details = new CoreEmailDetails(
                 caseTestData.getCaseData(),
                 CLAIMANT,
                 "1",
                 TEST_RESPONDENT,
-                DATE_DAY + " " + englishMonth + " " + DATE_YEAR,
+                hearingDate,
                 caseTestData.getExpectedDetails().getId().toString()
             );
             when(featureToggleService.isWelshEnabled()).thenReturn(true);
@@ -495,17 +496,8 @@ class NotificationServiceTest {
         }
 
         static Stream<Arguments> monthTranslations() {
-
             return CY_ABBREVIATED_MONTHS_MAP.entrySet().stream()
-                .map(entry -> Arguments.of(DATE_DAY
-                                               + " "
-                                               + entry.getKey()
-                                               + " "
-                                               + DATE_YEAR, DATE_DAY
-                                               + " "
-                                               + entry.getValue()
-                                               + " "
-                                               + DATE_YEAR));
+                .map(entry -> Arguments.of(entry.getKey(), entry.getValue()));
         }
     }
 
