@@ -11,9 +11,12 @@ import uk.gov.hmcts.reform.et.syaapi.config.interceptors.RequestInterceptor;
  */
 @Component
 public class WebConfig implements WebMvcConfigurer {
+    private final RequestInterceptor requestInterceptor;
 
     @Autowired
-    private RequestInterceptor requestInterceptor;
+    public WebConfig(RequestInterceptor requestInterceptor) {
+        this.requestInterceptor = requestInterceptor;
+    }
 
     /**
      * This config excludes certain urls to the inteceptor.
