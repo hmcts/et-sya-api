@@ -1,14 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
 import lombok.SneakyThrows;
-import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
-import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import org.apache.pdfbox.pdmodel.interactive.form.PDField;
-import org.apache.pdfbox.pdmodel.interactive.form.PDNonTerminalField;
 import org.apache.tika.Tika;
-import org.elasticsearch.core.Tuple;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,14 +32,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 
@@ -97,41 +88,6 @@ class PdfServiceTest {
             PDF_TEMPLATE_SOURCE_ATTRIBUTE_NAME_WELSH,
             PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH
         );
-    }
-
-    @SneakyThrows
-    @Test
-    void givenPdfValuesProducesAPdfDocument() {
-        when(pdfMapperService.mapHeadersToPdf(caseTestData.getCaseData())).thenReturn(PDF_VALUES);
-        byte[] pdfBytes = pdfService.convertCaseToPdf(
-        );
-        try (PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
-            Map<String, Optional<String>> actualPdfValues = processPdf(actualPdf);
-            PDF_VALUES.forEach((k, v) -> assertThat(actualPdfValues).containsEntry(k, v));
-        }
-    }
-
-    private Map<String, Optional<String>> processPdf(PDDocument pdDocument) {
-        PDDocumentCatalog pdDocumentCatalog = pdDocument.getDocumentCatalog();
-        PDAcroForm pdfForm = pdDocumentCatalog.getAcroForm();
-        Map<String, Optional<String>> returnFields = new ConcurrentHashMap<>();
-        pdfForm.getFields().forEach(
-            field -> {
-                Tuple<String, String> fieldTuple = processField(field);
-                returnFields.put(fieldTuple.v1(), Optional.ofNullable(fieldTuple.v2()));
-            }
-        );
-        return returnFields;
-    }
-
-    private Tuple<String, String> processField(PDField field) {
-        if (field instanceof PDNonTerminalField) {
-            for (PDField child : ((PDNonTerminalField) field).getChildren()) {
-                processField(child);
-            }
-        }
-
-        return new Tuple<>(field.getFullyQualifiedName(), field.getValueAsString());
     }
 
     @SneakyThrows

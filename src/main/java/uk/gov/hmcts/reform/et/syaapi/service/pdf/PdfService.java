@@ -3,11 +3,6 @@ package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
-import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.elasticsearch.common.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -27,16 +22,12 @@ import uk.gov.hmcts.reform.et.syaapi.service.utils.ClaimantTseUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
@@ -90,42 +81,8 @@ public class PdfService {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         InputStream stream = ObjectUtils.isEmpty(cl) || StringUtils.isBlank(pdfSource) ? null
             : cl.getResourceAsStream(pdfSource);
-        if (!ObjectUtils.isEmpty(stream)) {
-            try (PDDocument pdfDocument = Loader.loadPDF(
-                Objects.requireNonNull(stream))) {
-                PDDocumentCatalog pdDocumentCatalog = pdfDocument.getDocumentCatalog();
-                PDAcroForm pdfForm = pdDocumentCatalog.getAcroForm();
-                for (Map.Entry<String, Optional<String>> entry : this.pdfMapperService.mapHeadersToPdf(caseData)
-                    .entrySet()) {
-                    String entryKey = entry.getKey();
-                    Optional<String> entryValue = entry.getValue();
-                    if (entryValue.isPresent()) {
-                        try {
-                            PDField pdfField = pdfForm.getField(entryKey);
-                            pdfField.setValue(entryValue.get());
-                        } catch (Exception e) {
-                            GenericServiceUtil.logException("Error while parsing PDF file for entry key \""
-                                                         + entryKey
-                                                         + "\", entry value \""
-                                                         + getEntryValueFromOptionalString(entryValue)
-                                                         + "\"", caseData.getEthosCaseReference(), e.getMessage(),
-                                                            this.getClass().getName(), "createPdf");
-                        }
-                    }
-                }
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                pdfDocument.save(byteArrayOutputStream);
-                return byteArrayOutputStream.toByteArray();
-            } finally {
-                safeClose(stream, caseData);
-            }
-        }
         safeClose(stream, caseData);
         return new byte[0];
-    }
-
-    private String getEntryValueFromOptionalString(Optional<String> entryValue) {
-        return ObjectUtils.isEmpty(entryValue) || entryValue.isEmpty() ? "" : entryValue.get();
     }
 
     public static void safeClose(InputStream is, CaseData caseData) {
