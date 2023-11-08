@@ -775,7 +775,8 @@ public class NotificationService {
                 ? notificationsProperties.getCyClaimantTseEmailNoTemplateId()
                 : notificationsProperties.getClaimantTseEmailNoTemplateId();
         } else {
-            String abText = getCustomTextForAOrBApplication(claimantApplication, shortText, isWelsh);
+            String abText = getCustomTextForAOrBApplication(
+                claimantApplication, shortText, caseData);
             parameters.put("abText", abText);
             emailTemplate = isWelsh
                 ? notificationsProperties.getCyClaimantTseEmailYesTemplateId()
@@ -784,7 +785,13 @@ public class NotificationService {
         return emailTemplate;
     }
 
-    private String getCustomTextForAOrBApplication(ClaimantTse claimantApplication, String shortText, Boolean isWelsh) {
+    private String getCustomTextForAOrBApplication(
+        ClaimantTse claimantApplication,
+        String shortText,
+        CaseData caseData) {
+        boolean welshFlagEnabled = featureToggleService.isWelshEnabled();
+        boolean isWelsh = welshFlagEnabled && WELSH_LANGUAGE.equals(
+            caseData.getClaimantHearingPreference().getContactLanguage());
         String abText = "";
         if (Stream.of(typeA).anyMatch(appType -> Objects.equals(
             appType,
