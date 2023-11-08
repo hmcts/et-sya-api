@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.et.syaapi.consumer.ccd;
+package uk.gov.hmcts.reform.et.syaapi.consumer.test.ccd;
 
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
@@ -12,19 +12,19 @@ import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
-import uk.gov.hmcts.reform.et.syaapi.consumer.SpringBootContractTestBase;
+import uk.gov.hmcts.reform.et.syaapi.consumer.test.SpringBootContractBaseTest;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.http.HttpMethod.POST;
 
-class SubmitForCitizenConsumerTest extends SpringBootContractTestBase {
+class SubmitTestForCitizenConsumer extends SpringBootContractBaseTest {
 
     @Pact(provider = "ccd_data_store_api_cases", consumer = "et_sya_api_service")
     RequestResponsePact submitForCitizen(PactDslWithProvider builder) {
 
         return  builder
-                .given("A Submit case for a Citizen is requested", addCaseTypeJurdisticaton())
+                .given("A Submit case for a Citizen is requested", addCaseTypeJurisdiction())
                 .uponReceiving("A Submit case for a Citizen by calling CCD API")
                 .path(buildPath())
                 .query("ignore-warning=true")
@@ -58,15 +58,13 @@ class SubmitForCitizenConsumerTest extends SpringBootContractTestBase {
     }
 
     private String buildPath() {
-        return new StringBuilder()
-            .append("/citizens/")
-            .append(USER_ID)
-            .append("/jurisdictions/")
-            .append(JURISDICTION_ID)
-            .append("/case-types/")
-            .append(CASE_TYPE_ID)
-            .append("/cases")
-            .toString();
+        return "/citizens/"
+            + USER_ID
+            + "/jurisdictions/"
+            + JURISDICTION_ID
+            + "/case-types/"
+            + CASE_TYPE_ID
+            + "/cases";
     }
 
 }

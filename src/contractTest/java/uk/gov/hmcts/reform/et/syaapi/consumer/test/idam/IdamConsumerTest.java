@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.et.syaapi.consumer.idam;
+package uk.gov.hmcts.reform.et.syaapi.consumer.test.idam;
 
 import au.com.dius.pact.consumer.MockServer;
 import au.com.dius.pact.consumer.dsl.DslPart;
@@ -7,7 +7,7 @@ import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
-import au.com.dius.pact.core.model.annotations.PactFolder;
+import au.com.dius.pact.core.model.annotations.PactDirectory;
 import io.restassured.RestAssured;
 import org.assertj.core.api.Assertions;
 import org.json.JSONObject;
@@ -25,12 +25,12 @@ import static org.springframework.http.HttpStatus.OK;
 
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
-@PactFolder("pacts")
+@PactDirectory("pacts")
 class IdamConsumerTest {
     private static final String IDAM_USER_DETAILS = "/details";
 
     @Pact(provider = "idam_user_details", consumer = "et_sya_api_service")
-    RequestResponsePact exeucteIdamUserDetailApi(PactDslWithProvider builder) {
+    RequestResponsePact executeIdamUserDetailApi(PactDslWithProvider builder) {
         Map<String, String> responseHeaders = Map.of(HttpHeaders.AUTHORIZATION, "Bearer UserAuthToken");
 
         return builder
@@ -46,7 +46,7 @@ class IdamConsumerTest {
     }
 
     @Test
-    @PactTestFor(pactMethod = "exeucteIdamUserDetailApi")
+    @PactTestFor(pactMethod = "executeIdamUserDetailApi")
     void shouldReceiveUserDetails(MockServer mockServer) {
 
         String responseBody = RestAssured
@@ -66,16 +66,13 @@ class IdamConsumerTest {
     }
 
     private DslPart createAuthResponse() {
-        return newJsonBody((o) -> {
-            o.stringType("id",
-                         "123432")
-                .stringType("forename", "Joe")
-                .stringType("surname", "Bloggs")
-                .stringType("email", "joe.bloggs@hmcts.net")
-                .booleanType("active", true)
-                .array("roles", role -> role.stringType("caseworker").stringType("citizen"))
-            ;
-        }).build();
+        return newJsonBody(o -> o.stringType("id",
+                                         "123432")
+            .stringType("forename", "Joe")
+            .stringType("surname", "Bloggs")
+            .stringType("email", "joe.bloggs@hmcts.net")
+            .booleanType("active", true)
+            .array("roles", role -> role.stringType("caseworker").stringType("citizen"))).build();
     }
 }
 

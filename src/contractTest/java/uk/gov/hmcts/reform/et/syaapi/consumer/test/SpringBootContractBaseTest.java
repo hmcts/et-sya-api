@@ -1,9 +1,9 @@
-package uk.gov.hmcts.reform.et.syaapi.consumer;
+package uk.gov.hmcts.reform.et.syaapi.consumer.test;
 
 import au.com.dius.pact.consumer.dsl.DslPart;
 import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
-import au.com.dius.pact.core.model.annotations.PactFolder;
+import au.com.dius.pact.core.model.annotations.PactDirectory;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
@@ -21,11 +21,11 @@ import static io.pactfoundation.consumer.dsl.LambdaDsl.newJsonBody;
 @ExtendWith(PactConsumerTestExt.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @PactTestFor(providerName = "ccd_data_store_cases_api", port = "8890")
-@PactFolder("pacts")
+@PactDirectory("pacts")
 @SpringBootTest({
-    "core_case_data.api.url : localhost:8890"
+    "core_case_data.api.url = localhost:8890"
 })
-public class SpringBootContractTestBase {
+public class SpringBootContractBaseTest {
     public static final String AUTH_TOKEN = "Bearer someAuthorizationToken";
     public static final String SERVICE_AUTH_TOKEN = "Bearer someServiceAuthorizationToken";
 
@@ -50,7 +50,7 @@ public class SpringBootContractTestBase {
         Thread.sleep(SLEEP_TIME);
     }
 
-    protected Map<String, Object> addCaseTypeJurdisticaton() {
+    protected Map<String, Object> addCaseTypeJurisdiction() {
         Map<String, Object> map = new ConcurrentHashMap<>();
         map.put(JURISDICTION, JURISDICTION_ID);
         map.put(CASE_TYPE, CASE_TYPE_ID);
@@ -58,31 +58,25 @@ public class SpringBootContractTestBase {
     }
 
     protected static DslPart buildStartEventResponseWithEmptyCaseDetails(String eventId) {
-        return newJsonBody((o) -> {
-            o.stringType("event_id", eventId)
-                .stringType("token", null)
-                .object("case_details", (cd) -> {
-                    cd.numberType("id", CASE_ID);
-                    cd.stringMatcher("jurisdiction", ALPHABETIC_REGEX, "EMPLOYMENT");
-                    cd.stringType("callback_response_status", null);
-                    cd.stringMatcher("case_type_id", ALPHABETIC_REGEX, "ET_EnglandWales");
-                    cd.object("case_data", data -> {
-                    });
+        return newJsonBody(o -> o.stringType("event_id", eventId)
+            .stringType("token", null)
+            .object("case_details", cd -> {
+                cd.numberType("id", CASE_ID);
+                cd.stringMatcher("jurisdiction", ALPHABETIC_REGEX, JURISDICTION_ID);
+                cd.stringType("callback_response_status", null);
+                cd.stringMatcher("case_type_id", ALPHABETIC_REGEX, CASE_TYPE_ID);
+                cd.object("case_data", data -> {
                 });
-        }).build();
+            })).build();
     }
 
     public static DslPart buildCaseDetailsDsl(Long caseId) {
-        return newJsonBody((o) -> {
-            o.numberType("id", caseId)
-                .stringType("jurisdiction", "EMPLOYMENT")
-                .stringType("state", "ADMISSION_TO_HMCTS")
-                .stringValue("case_type_id", "ET_EnglandWales")
-                .object("case_data", (dataMap) -> {
-                    dataMap
-                        .stringType("caseType", "Single")
-                        .stringType("caseSource", "Manually Created");
-                });
-        }).build();
+        return newJsonBody(o -> o.numberType("id", caseId)
+            .stringType("jurisdiction", JURISDICTION_ID)
+            .stringType("state", "ADMISSION_TO_HMCTS")
+            .stringValue("case_type_id", CASE_TYPE_ID)
+            .object("case_data", dataMap -> dataMap
+                .stringType(CASE_TYPE, "Single")
+                .stringType("caseSource", "Manually Created"))).build();
     }
 }

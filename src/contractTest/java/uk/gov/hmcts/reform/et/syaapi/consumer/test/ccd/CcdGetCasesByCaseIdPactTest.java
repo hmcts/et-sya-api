@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.et.syaapi.consumer.ccd;
+package uk.gov.hmcts.reform.et.syaapi.consumer.test.ccd;
 
 import au.com.dius.pact.consumer.dsl.PactDslJsonBody;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
@@ -7,7 +7,7 @@ import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.et.syaapi.consumer.SpringBootContractTestBase;
+import uk.gov.hmcts.reform.et.syaapi.consumer.test.SpringBootContractBaseTest;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -15,7 +15,7 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpStatus.OK;
 
 @PactTestFor(providerName = "ccdDataStoreAPI_Cases", port = "8890")
-class CcdGetCasesByCaseIdPactTest extends SpringBootContractTestBase {
+class CcdGetCasesByCaseIdPactTest extends SpringBootContractBaseTest {
     private static final String CCD_CASE_URL = "/cases/" + CASE_ID;
 
     @Pact(provider = "ccdDataStoreAPI_Cases", consumer = "et_sya_api_service")

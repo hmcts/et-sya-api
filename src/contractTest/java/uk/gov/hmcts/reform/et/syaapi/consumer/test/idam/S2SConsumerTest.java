@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.et.syaapi.consumer.idam;
+package uk.gov.hmcts.reform.et.syaapi.consumer.test.idam;
 
 import au.com.dius.pact.consumer.MockServer;
 import au.com.dius.pact.consumer.dsl.PactDslJsonBody;
@@ -7,9 +7,8 @@ import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
-import au.com.dius.pact.core.model.annotations.PactFolder;
+import au.com.dius.pact.core.model.annotations.PactDirectory;
 import io.restassured.RestAssured;
-import org.assertj.core.api.Assertions;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,24 +18,25 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpStatus.OK;
 
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
-@PactFolder("pacts")
-class JwksConsumerTest {
-    private static final String JWKS_AUTH_URL = "/o/jwks";
+@PactDirectory("pacts")
+class S2SConsumerTest {
+    private static final String S2S_URL = "/lease";
 
-    @Pact(provider = "idam_jwks_api", consumer = "et_sya_api_service")
-    RequestResponsePact executeServiceAuthApiGetToke(PactDslWithProvider builder) {
+    @Pact(provider = "s2-auth-api", consumer = "et_sya_api_service")
+    RequestResponsePact executeServiceAuthApiGetToken(PactDslWithProvider builder) {
 
-        Map<String, String> responseHeaders = Map.of(HttpHeaders.AUTHORIZATION, "Bearer UserAuthToken");
+        Map<String, String> responseHeaders = Map.of(HttpHeaders.AUTHORIZATION, "someToken");
 
         return builder
-            .given("a case exists")
+            .given("a secret exists")
             .uponReceiving("Provider receives a token request request from et-sya-api API")
-            .path(JWKS_AUTH_URL)
+            .path(S2S_URL)
             .method(GET.toString())
             .willRespondWith()
             .status(OK.value())
@@ -46,15 +46,16 @@ class JwksConsumerTest {
     }
 
     @Test
-    @PactTestFor(pactMethod = "executeServiceAuthApiGetToke")
+    @PactTestFor(pactMethod = "executeServiceAuthApiGetToken")
     void shouldReceiveTokenAnd200(MockServer mockServer) {
 
         String responseBody = RestAssured
             .given()
             .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+            .body(createRequestBody())
             .log().all(true)
             .when()
-            .get(mockServer.getUrl() + JWKS_AUTH_URL)
+            .get(mockServer.getUrl() + S2S_URL)
             .then()
             .statusCode(200)
             .and()
@@ -62,17 +63,20 @@ class JwksConsumerTest {
             .asString();
 
         JSONObject response = new JSONObject(responseBody);
-        Assertions.assertThat(response).isNotNull();
-
+        assertThat(response).isNotNull();
+        assertThat(response.getString("token")).isNotBlank();
     }
+
 
     private PactDslJsonBody createAuthResponse() {
         return new PactDslJsonBody()
-            .eachLike("keys")
-                .stringType("kid", "KeyId1")
-                .stringType("kty", "RSA")
-                .stringType("e", "AQAB")
-                .stringType("use", "Public Key Use1")
-                .stringType("n", "someToken");
+            .stringType("token","someMicroServiceToken");
     }
+
+    private static String createRequestBody() {
+        return new StringBuffer().append("{\"microservice\": \"microServiceName\"))")
+            .append(" \"oneTimePassword\": \"987651\",")
+            .append(" }").toString();
+    }
+
 }
