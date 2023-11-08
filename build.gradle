@@ -161,6 +161,7 @@ def sonarExclusions = [
 
 sonarqube {
   properties {
+    property "sonar.gradle.skipCompile", true
     property "sonar.projectName", "Reform :: et-sya-api"
     property "sonar.projectKey", "uk.gov.hmcts.reform:et-sya-api"
     property "sonar.coverage.exclusions", sonarExclusions.join(', ')
