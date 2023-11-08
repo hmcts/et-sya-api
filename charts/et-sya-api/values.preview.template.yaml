@@ -20,6 +20,8 @@ java:
           alias: ET1_SERVICE_OWNER_NOTIFICATION_EMAIL
         - name: et1-ecm-dts-core-team-slack-notification-email
           alias: ET1_ECM_DTS_CORE_TEAM_SLACK_NOTIFICATION_EMAIL
+        - name: launch-darkly-sdk-key
+          alias: LAUNCH_DARKLY_SDK_KEY
     et:
       secrets:
         - AppInsightsInstrumentationKey
