@@ -104,8 +104,6 @@ class PdfServiceTest {
     void givenPdfValuesProducesAPdfDocument() {
         when(pdfMapperService.mapHeadersToPdf(caseTestData.getCaseData())).thenReturn(PDF_VALUES);
         byte[] pdfBytes = pdfService.convertCaseToPdf(
-            caseTestData.getCaseData(),
-            PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH
         );
         try (PDDocument actualPdf = Loader.loadPDF(pdfBytes)) {
             Map<String, Optional<String>> actualPdfValues = processPdf(actualPdf);

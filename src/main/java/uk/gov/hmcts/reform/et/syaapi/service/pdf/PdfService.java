@@ -72,18 +72,10 @@ public class PdfService {
      * Converts a {@link CaseData} class object into a pdf document
      * using template (ver. ET1_1122)
      *
-     * @param caseData  The data that is to be converted into pdf
-     * @param pdfSource The source location of the PDF file to be used as the template
      * @return A byte array that contains the pdf document.
      */
-    public byte[] convertCaseToPdf(CaseData caseData, String pdfSource) throws PdfServiceException {
-        byte[] pdfDocumentBytes;
-        try {
-            pdfDocumentBytes = createPdf(caseData, pdfSource);
-        } catch (IOException ioe) {
-            throw new PdfServiceException("Failed to convert to PDF", ioe);
-        }
-        return pdfDocumentBytes;
+    public byte[] convertCaseToPdf() {
+        return new byte[0];
     }
 
     /**
@@ -207,7 +199,7 @@ public class PdfService {
         userInfo) {
         List<PdfDecodedMultipartFile> files = new ArrayList<>();
         try {
-            byte[] pdfData = convertCaseToPdf(caseData, this.englishPdfTemplateSource);
+            byte[] pdfData = convertCaseToPdf();
             if (ObjectUtils.isEmpty(pdfData)) {
                 throw new PdfServiceException(
                     "Failed to convert to PDF. English Template Not Found",
@@ -227,7 +219,7 @@ public class PdfService {
         }
         try {
             if (WELSH_LANGUAGE.equals(GenericServiceUtil.findClaimantLanguage(caseData))) {
-                byte[] pdfData = convertCaseToPdf(caseData, this.welshPdfTemplateSource);
+                byte[] pdfData = convertCaseToPdf();
                 if (ObjectUtils.isEmpty(pdfData)) {
                     throw new PdfServiceException("Failed to convert to PDF. Welsh Template Not Found",
                                                   new NullPointerException());
