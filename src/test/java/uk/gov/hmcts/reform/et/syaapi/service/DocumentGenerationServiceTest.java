@@ -173,7 +173,7 @@ class DocumentGenerationServiceTest {
         assertThat(exception.getCause()).isInstanceOf(ResourceAccessException.class);
         assertThat(exception.getCause().getCause()).isInstanceOf(UnknownHostException.class);
         assertThat(exception.getCause().getMessage()).isEqualTo("I/O error on POST request for \"" + TORNADO_API_URL
-            + "\": null; nested exception is java.net.UnknownHostException");
+            + "\": null");
     }
 
     @Test
