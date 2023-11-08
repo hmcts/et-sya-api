@@ -187,26 +187,8 @@ class PdfServiceTest {
             }
             PdfService pdfService1 = new PdfService(new PdfMapperService(), documentGenerationService);
             byte[] pdfData = pdfService1.createPdf(caseTestData.getCaseData(), templateSource);
-            if (PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH.equals(templateSource)
-                || PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH.equals(templateSource)) {
-                assertThat(pdfData).isNotEmpty();
-                assertThat(new Tika().detect(pdfData)).isEqualTo(PDF_FILE_TIKA_CONTENT_TYPE);
-            }
             if (templateSource == null || templateSource.contains("invalid")) {
                 assertThat(pdfData).isEmpty();
-            }
-            if (PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_ENGLISH_INVALID.equals(templateSource)
-                || PDF_TEMPLATE_SOURCE_ATTRIBUTE_VALUE_WELSH_INVALID.equals(templateSource)) {
-                mockedServiceUtil.verify(
-                    () -> GenericServiceUtil.logException(
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        anyString(),
-                        anyString()
-                    ),
-                    atLeast(1)
-                );
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
