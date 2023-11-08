@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.et.syaapi.consumer.test.idam;
+package uk.gov.hmcts.reform.et.syaapi.consumer.idam;
 
 import au.com.dius.pact.consumer.MockServer;
 import au.com.dius.pact.consumer.dsl.PactDslJsonBody;

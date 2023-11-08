@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.et.syaapi.consumer.test;
+package uk.gov.hmcts.reform.et.syaapi.consumer;
 
 import au.com.dius.pact.consumer.dsl.DslPart;
 import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;

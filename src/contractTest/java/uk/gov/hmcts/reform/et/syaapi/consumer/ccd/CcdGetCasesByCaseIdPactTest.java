@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.et.syaapi.consumer.test.ccd;
+package uk.gov.hmcts.reform.et.syaapi.consumer.ccd;
 
 import au.com.dius.pact.consumer.dsl.PactDslJsonBody;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
@@ -7,7 +7,7 @@ import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.et.syaapi.consumer.test.SpringBootContractBaseTest;
+import uk.gov.hmcts.reform.et.syaapi.consumer.SpringBootContractBaseTest;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;

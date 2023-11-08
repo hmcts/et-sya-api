@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.et.syaapi.consumer.test.document;
+package uk.gov.hmcts.reform.et.syaapi.consumer.document;
 
 import au.com.dius.pact.consumer.MockServer;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;

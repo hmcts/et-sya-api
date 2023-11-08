@@ -1,7 +1,7 @@
-package uk.gov.hmcts.reform.et.syaapi.consumer.test.idam;
+package uk.gov.hmcts.reform.et.syaapi.consumer.idam;
 
 import au.com.dius.pact.consumer.MockServer;
-import au.com.dius.pact.consumer.dsl.PactDslJsonBody;
+import au.com.dius.pact.consumer.dsl.DslPart;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
 import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
@@ -9,6 +9,7 @@ import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import au.com.dius.pact.core.model.annotations.PactDirectory;
 import io.restassured.RestAssured;
+import org.assertj.core.api.Assertions;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,25 +19,24 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.pactfoundation.consumer.dsl.LambdaDsl.newJsonBody;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpStatus.OK;
 
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
 @PactDirectory("pacts")
-class S2SConsumerTest {
-    private static final String S2S_URL = "/lease";
+class IdamConsumerTest {
+    private static final String IDAM_USER_DETAILS = "/details";
 
-    @Pact(provider = "s2-auth-api", consumer = "et_sya_api_service")
-    RequestResponsePact executeServiceAuthApiGetToken(PactDslWithProvider builder) {
-
-        Map<String, String> responseHeaders = Map.of(HttpHeaders.AUTHORIZATION, "someToken");
+    @Pact(provider = "idam_user_details", consumer = "et_sya_api_service")
+    RequestResponsePact executeIdamUserDetailApi(PactDslWithProvider builder) {
+        Map<String, String> responseHeaders = Map.of(HttpHeaders.AUTHORIZATION, "Bearer UserAuthToken");
 
         return builder
-            .given("a secret exists")
-            .uponReceiving("Provider receives a token request request from et-sya-api API")
-            .path(S2S_URL)
+            .given("a user exists")
+            .uponReceiving("Provider receives a token request and send user details to the API")
+            .path(IDAM_USER_DETAILS)
             .method(GET.toString())
             .willRespondWith()
             .status(OK.value())
@@ -46,16 +46,15 @@ class S2SConsumerTest {
     }
 
     @Test
-    @PactTestFor(pactMethod = "executeServiceAuthApiGetToken")
-    void shouldReceiveTokenAnd200(MockServer mockServer) {
+    @PactTestFor(pactMethod = "executeIdamUserDetailApi")
+    void shouldReceiveUserDetails(MockServer mockServer) {
 
         String responseBody = RestAssured
             .given()
             .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-            .body(createRequestBody())
             .log().all(true)
             .when()
-            .get(mockServer.getUrl() + S2S_URL)
+            .get(mockServer.getUrl() + IDAM_USER_DETAILS)
             .then()
             .statusCode(200)
             .and()
@@ -63,20 +62,17 @@ class S2SConsumerTest {
             .asString();
 
         JSONObject response = new JSONObject(responseBody);
-        assertThat(response).isNotNull();
-        assertThat(response.getString("token")).isNotBlank();
+        Assertions.assertThat(response).isNotNull();
     }
 
-
-    private PactDslJsonBody createAuthResponse() {
-        return new PactDslJsonBody()
-            .stringType("token","someMicroServiceToken");
+    private DslPart createAuthResponse() {
+        return newJsonBody(o -> o.stringType("id",
+                                         "123432")
+            .stringType("forename", "Joe")
+            .stringType("surname", "Bloggs")
+            .stringType("email", "joe.bloggs@hmcts.net")
+            .booleanType("active", true)
+            .array("roles", role -> role.stringType("caseworker").stringType("citizen"))).build();
     }
-
-    private static String createRequestBody() {
-        return new StringBuffer().append("{\"microservice\": \"microServiceName\"))")
-            .append(" \"oneTimePassword\": \"987651\",")
-            .append(" }").toString();
-    }
-
 }
+
