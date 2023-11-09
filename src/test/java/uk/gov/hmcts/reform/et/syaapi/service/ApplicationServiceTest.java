@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.NotificationService.CoreEmailDetails;
 import uk.gov.service.notify.NotificationClientException;
 
@@ -385,13 +386,13 @@ class ApplicationServiceTest {
 
         @Test
         void shouldNotUpdateCaseAndThrowException() {
-            var testRequest = testData.getResponseViewedRequest();
+            TribunalResponseViewedRequest testRequest = testData.getResponseViewedRequest();
             testRequest.setResponseId("778");
 
-            var exception = assertThrows(IllegalArgumentException.class, () ->
+            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
                 applicationService.updateTribunalResponseAsViewed(
                     TEST_SERVICE_AUTH_TOKEN,
-                    testData.getResponseViewedRequest()
+                    testRequest
                 ));
             assertThat(exception.getMessage()).isEqualTo("Response id is invalid");
         }

@@ -106,7 +106,7 @@ public final class NotificationsHelper {
         List<DateListedTypeItem> earliestDatePerHearing = hearingCollection.stream()
             .map(NotificationsHelper::mapEarliest)
             .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+            .toList();
 
         if (earliestDatePerHearing.isEmpty()) {
             return null;
@@ -129,7 +129,7 @@ public final class NotificationsHelper {
         return hearingDateCollection.stream()
             .filter(d -> isDateInFuture(d.getValue().getListedDate(), LocalDateTime.now())
                 && HEARING_STATUS_LISTED.equals(d.getValue().getHearingStatus()))
-            .collect(Collectors.toList());
+            .toList();
     }
 
     private static boolean isDateInFuture(String date, LocalDateTime now) {

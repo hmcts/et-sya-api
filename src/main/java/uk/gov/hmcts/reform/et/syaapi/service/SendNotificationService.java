@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -8,6 +9,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
+import uk.gov.hmcts.et.common.model.ccd.types.RespondNotificationType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationTypeItem;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -31,6 +33,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CO
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class SendNotificationService {
 
@@ -38,7 +41,7 @@ public class SendNotificationService {
     private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final NotificationService notificationService;
-    private static final String VIEWED = "viewed";
+    static final String VIEWED = "viewed";
 
     public CaseDetails updateSendNotificationState(String authorization, SendNotificationStateUpdateRequest request) {
         StartEventResponse startEventResponse = caseService.startUpdate(
@@ -55,6 +58,7 @@ public class SendNotificationService {
         for (SendNotificationTypeItem item : notifications) {
             if (item.getId().equals(request.getSendNotificationId())) {
                 item.getValue().setNotificationState(VIEWED);
+                setResponsesAsViewed(item.getValue().getRespondNotificationTypeCollection());
                 break;
             }
         }
@@ -67,6 +71,16 @@ public class SendNotificationService {
             content,
             request.getCaseTypeId()
         );
+    }
+
+    private void setResponsesAsViewed(List<GenericTypeItem<RespondNotificationType>> responses) {
+        if (CollectionUtils.isEmpty(responses)) {
+            return;
+        }
+
+        for (GenericTypeItem<RespondNotificationType> item : responses) {
+            item.getValue().setState(VIEWED);
+        }
     }
 
     /**
@@ -128,6 +142,7 @@ public class SendNotificationService {
         sendNotificationType.setSendNotificationResponsesCount(String.valueOf(
             sendNotificationType.getRespondCollection().size()));
         sendNotificationType.setNotificationState(VIEWED);
+        setResponsesAsRespondedTo(sendNotificationType.getRespondNotificationTypeCollection());
 
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
         sendAddResponseSendNotificationEmails(
@@ -153,6 +168,16 @@ public class SendNotificationService {
         notificationService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty);
 
 
+    }
+
+    private void setResponsesAsRespondedTo(List<GenericTypeItem<RespondNotificationType>> responses) {
+        if (CollectionUtils.isEmpty(responses)) {
+            return;
+        }
+
+        for (GenericTypeItem<RespondNotificationType> item : responses) {
+            item.getValue().setIsClaimantResponseDue(null);
+        }
     }
 
 }
