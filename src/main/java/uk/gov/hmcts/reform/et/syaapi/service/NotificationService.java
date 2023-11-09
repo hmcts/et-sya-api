@@ -255,6 +255,7 @@ public class NotificationService {
     SendEmailResponse sendAcknowledgementEmailToClaimant(CoreEmailDetails details, ClaimantTse claimantApplication) {
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
         boolean welshFlagEnabled = featureToggleService.isWelshEnabled();
+        log.info("Welsh feature flag is set to " + welshFlagEnabled);
         boolean isWelsh = welshFlagEnabled && WELSH_LANGUAGE.equals(
             details.caseData().getClaimantHearingPreference().getContactLanguage());
         String hearingDate = details.hearingDate;
@@ -290,7 +291,7 @@ public class NotificationService {
                 claimantApplication,
                 hearingDate,
                 claimantParameters,
-                details.caseData
+                isWelsh
             );
         }
         claimantParameters.put(
@@ -759,12 +760,8 @@ public class NotificationService {
     String getAndSetRule92EmailTemplate(ClaimantTse claimantApplication,
                                         String hearingDate,
                                         Map<String, Object> parameters,
-                                        CaseData caseData) {
+                                        boolean isWelsh) {
         String emailTemplate;
-        boolean welshFlagEnabled = featureToggleService.isWelshEnabled();
-        boolean isWelsh = welshFlagEnabled && WELSH_LANGUAGE.equals(
-            caseData.getClaimantHearingPreference().getContactLanguage());
-
         parameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, hearingDate);
         Map<String, String> selectedMap = isWelsh ? CY_APP_TYPE_MAP : APP_TYPE_MAP;
         String shortText = selectedMap.get(claimantApplication.getContactApplicationType());
@@ -776,7 +773,7 @@ public class NotificationService {
                 : notificationsProperties.getClaimantTseEmailNoTemplateId();
         } else {
             String abText = getCustomTextForAOrBApplication(
-                claimantApplication, shortText, caseData);
+                claimantApplication, shortText, isWelsh);
             parameters.put("abText", abText);
             emailTemplate = isWelsh
                 ? notificationsProperties.getCyClaimantTseEmailYesTemplateId()
@@ -788,10 +785,7 @@ public class NotificationService {
     private String getCustomTextForAOrBApplication(
         ClaimantTse claimantApplication,
         String shortText,
-        CaseData caseData) {
-        boolean welshFlagEnabled = featureToggleService.isWelshEnabled();
-        boolean isWelsh = welshFlagEnabled && WELSH_LANGUAGE.equals(
-            caseData.getClaimantHearingPreference().getContactLanguage());
+        boolean isWelsh) {
         String abText = "";
         if (Stream.of(typeA).anyMatch(appType -> Objects.equals(
             appType,

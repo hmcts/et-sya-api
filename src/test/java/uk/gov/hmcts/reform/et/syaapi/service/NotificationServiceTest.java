@@ -328,11 +328,13 @@ class NotificationServiceTest {
                 casePdfFiles
             );
             mockedServiceUtil.verify(
-                () -> GenericServiceUtil.logException(anyString(),
-                                               anyString(),
-                                               eq(null),
-                                               anyString(),
-                                               anyString()),
+                () -> GenericServiceUtil.logException(
+                    anyString(),
+                    anyString(),
+                    eq(null),
+                    anyString(),
+                    anyString()
+                ),
                 times(1)
             );
         }
@@ -349,16 +351,19 @@ class NotificationServiceTest {
         when(notificationsProperties.getSubmitCaseDocUploadErrorEmailTemplateId())
             .thenReturn(TestConstants.DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID);
         when(notificationClient.sendEmail(TestConstants.TEST_TEMPLATE_API_KEY, TestConstants.TEST_EMAIL, parameters,
-                                          TestConstants.REFERENCE_STRING))
+                                          TestConstants.REFERENCE_STRING
+        ))
             .thenReturn(TestConstants.SEND_EMAIL_RESPONSE_DOC_UPLOAD_FAILURE);
 
         CaseRequest caseRequest = CaseRequest.builder().build();
         caseRequest.setCaseId("1_231_231");
 
-        SendEmailResponse sendEmailResponse = notificationService.sendDocUploadErrorEmail(caseRequest,
-                                                                                          casePdfFiles,
-                                                                                          acasCertificates,
-                                                                                          claimDescriptionDocument);
+        SendEmailResponse sendEmailResponse = notificationService.sendDocUploadErrorEmail(
+            caseRequest,
+            casePdfFiles,
+            acasCertificates,
+            claimDescriptionDocument
+        );
         assertThat(sendEmailResponse.getFromEmail()).isPresent();
         assertThat(sendEmailResponse.getFromEmail()).asString()
             .isEqualTo("Optional[" + TestConstants.TEST_EMAIL + "]");
@@ -375,16 +380,20 @@ class NotificationServiceTest {
             mockedServiceUtil.when(() -> GenericServiceUtil.prepareUpload(any(), anyInt()))
                 .thenReturn(TestConstants.FILE_NOT_EXISTS);
             UploadedDocumentType claimDescriptionDocument = new UploadedDocumentType();
-            notificationService.sendDocUploadErrorEmail(caseTestData.getCaseRequest(),
-                                                        List.of(TestConstants.PDF_DECODED_MULTIPART_FILE1),
-                                                        List.of(TestConstants.PDF_DECODED_MULTIPART_FILE1),
-                                                        claimDescriptionDocument);
+            notificationService.sendDocUploadErrorEmail(
+                caseTestData.getCaseRequest(),
+                List.of(TestConstants.PDF_DECODED_MULTIPART_FILE1),
+                List.of(TestConstants.PDF_DECODED_MULTIPART_FILE1),
+                claimDescriptionDocument
+            );
             mockedServiceUtil.verify(
-                () -> GenericServiceUtil.logException(anyString(),
-                                               eq(null),
-                                               anyString(),
-                                               anyString(),
-                                               anyString()),
+                () -> GenericServiceUtil.logException(
+                    anyString(),
+                    eq(null),
+                    anyString(),
+                    anyString(),
+                    anyString()
+                ),
                 times(1)
             );
         }
@@ -525,7 +534,8 @@ class NotificationServiceTest {
             );
 
             verify(notificationClient, times(5)).sendEmail(any(), any(),
-                                                           respondentParametersCaptor.capture(), any());
+                                                           respondentParametersCaptor.capture(), any()
+            );
             Map<String, Object> respondentParameters = respondentParametersCaptor.getValue();
             Object targetParameter = respondentParameters.get(SEND_EMAIL_PARAMS_DATE_PLUS7_KEY);
             String[] dateParts = targetParameter.toString().split(" ");
@@ -1103,22 +1113,20 @@ class NotificationServiceTest {
 
     @ParameterizedTest
     @CsvSource({
-        "true, Welsh, strike, Yes, CY_APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
-        "false, Welsh, strike, Yes, APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
-        "true, Welsh, withdraw, Yes, CY_APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
-        "false, Welsh, withdraw, Yes, APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
-        "true, Welsh, strike, No, CY_APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID",
-        "false, Welsh, strike, No, APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID",
-        "true, English, strike, Yes, APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
-        "false, English, strike, Yes, APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
-        "true, English, strike, No, APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID",
-        "false, English, strike, No, APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID"
+        "true, strike, Yes, CY_APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
+        "false, strike, Yes, APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
+        "true, withdraw, Yes, CY_APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
+        "false, withdraw, Yes, APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
+        "true, strike, No, CY_APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID",
+        "false, strike, No, APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID",
+        "false, strike, Yes, APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
+        "false, strike, Yes, APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
+        "false, strike, No, APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID",
+        "false, strike, No, APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID"
     })
     void shouldReturnExpectedEmailTemplateForRule92(
-        Boolean welshFlagEnabled, String language, String contactType, String copyTo, String expectedTemplateId) {
+        Boolean isWelsh, String contactType, String copyTo, String expectedTemplateId) {
 
-        claimantHearingPreference.setContactLanguage(language);
-        when(featureToggleService.isWelshEnabled()).thenReturn(welshFlagEnabled);
         when(claimantApplication.getContactApplicationType()).thenReturn(contactType);
         when(claimantApplication.getCopyToOtherPartyYesOrNo()).thenReturn(copyTo);
         when(notificationsProperties.getCyClaimantTseEmailYesTemplateId()).thenReturn(
@@ -1131,7 +1139,7 @@ class NotificationServiceTest {
             "APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID");
 
         String emailTemplate = notificationService.getAndSetRule92EmailTemplate(
-            claimantApplication, details.hearingDate(), params, caseData);
+            claimantApplication, details.hearingDate(), params, isWelsh);
 
         assertEquals(expectedTemplateId, emailTemplate);
     }
