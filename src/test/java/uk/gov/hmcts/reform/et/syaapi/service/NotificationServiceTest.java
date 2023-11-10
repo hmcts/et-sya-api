@@ -511,6 +511,53 @@ class NotificationServiceTest {
     }
 
     @Nested
+    class HandlingNotSetHearingDateBasedOnLanguage {
+
+        @ParameterizedTest
+        @CsvSource({
+            "Welsh, true, Welsh translation required",
+            "Welsh, false, Not set",
+            "English, true, Not set",
+            "English, false, Not set"
+        })
+        void shouldHandleNotSetHearingDateBasedOnLanguage(
+            String language, Boolean isWelshEnabled, String expectedOutcome) throws NotificationClientException {
+            details = new CoreEmailDetails(
+                caseTestData.getCaseData(),
+                CLAIMANT,
+                "1",
+                TEST_RESPONDENT,
+                    NOT_SET,
+                caseTestData.getExpectedDetails().getId().toString()
+            );
+            when(featureToggleService.isWelshEnabled()).thenReturn(isWelshEnabled);
+            caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(language);
+            when(notificationsProperties.getCyClaimantTseEmailTypeCTemplateId()).thenReturn(
+                "ExpectedEmailTemplateIdForWelsh");
+            caseTestData.getClaimantApplication().setContactApplicationType(WITNESS);
+            when(notificationClient.sendEmail(
+                anyString(),
+                anyString(),
+                claimantParametersCaptor.capture(),
+                anyString()
+            )).thenReturn(mock(SendEmailResponse.class));
+
+            notificationService.sendAcknowledgementEmailToClaimant(details, caseTestData.getClaimantApplication());
+
+            verify(notificationClient).sendEmail(
+                anyString(),
+                anyString(),
+                claimantParametersCaptor.capture(),
+                anyString()
+            );
+
+            Map<String, Object> capturedClaimantParameters = claimantParametersCaptor.getValue();
+            String actualHearingDate = capturedClaimantParameters.get(HEARING_DATE_KEY).toString();
+            assertThat(actualHearingDate).isEqualTo(expectedOutcome);
+        }
+    }
+
+    @Nested
     class SendAcknowledgementEmailToRespondents {
         @BeforeEach
         void setUp() {

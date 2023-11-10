@@ -259,14 +259,13 @@ public class NotificationService {
         boolean isWelsh = welshFlagEnabled && WELSH_LANGUAGE.equals(
             details.caseData().getClaimantHearingPreference().getContactLanguage());
         String hearingDate = details.hearingDate;
-        if (isWelsh) {
-            for (Map.Entry<String, String> monthEntry : CY_ABBREVIATED_MONTHS_MAP.entrySet()) {
-                if (details.hearingDate.contains(monthEntry.getKey())) {
-                    hearingDate = details.hearingDate.replace(monthEntry.getKey(), monthEntry.getValue());
-                    break;
-                }
-            }
+
+        if (NOT_SET.equals(hearingDate) && isWelsh) {
+            hearingDate = "Welsh translation required";
+        } else if (isWelsh) {
+            hearingDate = translateHearingDateToWelsh(hearingDate);
         }
+
         claimantParameters.put(HEARING_DATE_KEY, hearingDate);
 
         addCommonParameters(
@@ -310,6 +309,14 @@ public class NotificationService {
             throw new NotificationException(ne);
         }
         return claimantEmail;
+    }
+
+    private String translateHearingDateToWelsh(String hearingDate) {
+        return CY_ABBREVIATED_MONTHS_MAP.entrySet().stream()
+            .filter(entry -> hearingDate.contains(entry.getKey()))
+            .findFirst()
+            .map(entry -> hearingDate.replace(entry.getKey(), entry.getValue()))
+            .orElse(hearingDate);
     }
 
     /**
