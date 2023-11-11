@@ -41,6 +41,14 @@ class FeatureToggleServiceTest {
         assertThat(featureToggleService.isCaseFlagsEnabled()).isEqualTo(toggleStat);
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldReturnCorrectValueWhenWorkAllocationIsEnabled(Boolean toggleStat) {
+        givenToggle("work-allocation", toggleStat);
+
+        assertThat(featureToggleService.isWorkAllocationEnabled()).isEqualTo(toggleStat);
+    }
+
     private void givenToggle(String feature, boolean state) {
         when(featureToggleApi.isFeatureEnabled(feature)).thenReturn(state);
     }
