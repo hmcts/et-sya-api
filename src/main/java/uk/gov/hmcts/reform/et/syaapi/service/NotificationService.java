@@ -51,14 +51,13 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_LASTNAME_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_LINK_DOC_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SHORTTEXT_KEY;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SUBJECTLINE_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_SERVICE_OWNER_NAME_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_SERVICE_OWNER_NAME_VALUE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UK_LOCAL_DATE_PATTERN;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM;
-import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.addCommonParameters;
 import static uk.gov.service.notify.NotificationClient.prepareUpload;
 
 /**
@@ -692,37 +691,6 @@ public class NotificationService {
                     }
                 }
             });
-    }
-
-    private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
-                                            String caseId, String caseNumber) {
-        parameters.put("claimant", claimant);
-        parameters.put("respondentNames", respondentNames);
-        parameters.put(SEND_EMAIL_PARAMS_CASE_ID, caseId);
-        parameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
-    }
-
-    private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
-                                            String caseId, String caseNumber, String subjectLine) {
-        addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber);
-        parameters.put(SEND_EMAIL_PARAMS_SUBJECTLINE_KEY, subjectLine);
-    }
-
-    private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
-                                            String caseId, String caseNumber, String subjectLine, String shortText) {
-        addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber, subjectLine);
-        parameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
-    }
-
-    private static void addCommonParameters(Map<String, Object> parameters, CaseData caseData, String caseId) {
-        String claimant = String.join(" ",
-            caseData.getClaimantIndType().getClaimantFirstNames(),
-            caseData.getClaimantIndType().getClaimantLastName()
-        );
-        String caseNumber = caseData.getEthosCaseReference();
-        String respondentNames = getRespondentNames(caseData);
-
-        addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber, caseNumber);
     }
 
     private String getAndSetRule92EmailTemplate(ClaimantTse claimantApplication,

@@ -101,6 +101,9 @@ notifications:
     tribunalResponse: ${TRIBUNAL_RESPONSE:bdbfcc4c-713e-4355-b2f3-39f999964c9b}
     respondentResponse: ${RESPONDENT_RESPONSE:9ea43b1d-7029-48ea-a0bd-b9fc4c3c8b66}
 
+  bundles:
+    submittedRespondentTemplateId: ${BUNDLES_SUBMITTED_RESPONDENT_TEMPLATE_ID:5c829358-0b54-4335-9d60-1c8296c4a516}
+
 
 pdf:
   english: "ET1_2222.pdf"

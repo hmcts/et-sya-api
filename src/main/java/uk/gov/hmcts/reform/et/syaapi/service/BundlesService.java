@@ -26,6 +26,7 @@ public class BundlesService {
 
     private final CaseService caseService;
     private final CaseDetailsConverter caseDetailsConverter;
+    private final BundlesNotificationService bundlesNotificationService;
 
     /**
      * Submit Claimant Bundles.
@@ -62,11 +63,16 @@ public class BundlesService {
 
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
 
-        return caseService.submitUpdate(
+        CaseDetails response = caseService.submitUpdate(
             authorization,
             request.getCaseId(),
             content,
             request.getCaseTypeId()
         );
+        claimantBundles.getHearing();
+
+        bundlesNotificationService.sendBundlesEmailToRespondent(caseData, request.getCaseId());
+
+        return response;
     }
 }
