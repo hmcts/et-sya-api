@@ -82,10 +82,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorResponse> handleResponseStatusException(ResponseStatusException exception) {
         log.error(exception.getMessage(), exception);
-        return ResponseEntity.status(exception.getStatus()).body(
+        return ResponseEntity.status(exception.getStatusCode()).body(
             ErrorResponse.builder()
                 .message(exception.getLocalizedMessage())
-                .code(exception.getStatus().value())
+                .code(exception.getStatusCode().value())
                 .build()
         );
     }

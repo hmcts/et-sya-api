@@ -1,13 +1,12 @@
 package uk.gov.hmcts.reform.et.syaapi.config.interceptors;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 

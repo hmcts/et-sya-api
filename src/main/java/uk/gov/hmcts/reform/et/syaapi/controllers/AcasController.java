@@ -33,7 +33,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@SuppressWarnings({"PMD.UnnecessaryAnnotationValueElement"})
 public class AcasController {
 
     private final CaseService caseService;
@@ -53,11 +52,11 @@ public class AcasController {
      * @param requestDateTime used for querying when a case was last updated
      * @return a list of case ids
      */
-    @GetMapping(value = "/getLastModifiedCaseList")
+    @GetMapping("/getLastModifiedCaseList")
     @Operation(summary = "Return a list of CCD case IDs from a provided date")
     @ApiResponseGroup
     public ResponseEntity<Object> getLastModifiedCaseList(
-        @RequestHeader(value = HttpHeaders.AUTHORIZATION) String userToken,
+        @RequestHeader(HttpHeaders.AUTHORIZATION) String userToken,
         @RequestParam(name = "datetime")
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime requestDateTime) {
         return ok(caseService.getLastModifiedCasesId(userToken, requestDateTime));
@@ -70,11 +69,11 @@ public class AcasController {
      * @param caseIds       a list of CCD ids
      * @return a list of case data
      */
-    @GetMapping(value = "/getCaseData")
+    @GetMapping("/getCaseData")
     @Operation(summary = "Provide a JSON format of the case data for a specific CCD case")
     @ApiResponseGroup
     public ResponseEntity<Object> getCaseData(
-        @RequestHeader(value = HttpHeaders.AUTHORIZATION) String authorisation,
+        @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation,
         @RequestParam(name = "caseIds") List<String> caseIds) {
         return ok(caseService.getCaseData(authorisation, caseIds));
     }
@@ -86,11 +85,11 @@ public class AcasController {
      * @param caseId        ccd case id
      * @return a multi valued map containing a list of documents for ACAS
      */
-    @GetMapping(value = "/getAcasDocuments")
+    @GetMapping("/getAcasDocuments")
     @Operation(summary = "Return a list of documents on a case")
     @ApiResponseGroup
     public ResponseEntity<Object> getAcasDocuments(
-        @RequestHeader(value = HttpHeaders.AUTHORIZATION) String authorisation,
+        @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation,
         @RequestParam(name = "caseId") String caseId) {
         MultiValuedMap<String, CaseDocumentAcasResponse> body = caseService.retrieveAcasDocuments(caseId);
         return ok(body.asMap());
