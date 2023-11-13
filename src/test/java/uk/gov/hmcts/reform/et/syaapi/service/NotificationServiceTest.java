@@ -515,7 +515,7 @@ class NotificationServiceTest {
 
         @ParameterizedTest
         @CsvSource({
-            "Welsh, true, Welsh translation required",
+            "Welsh, true, Heb ei anfon",
             "Welsh, false, Not set",
             "English, true, Not set",
             "English, false, Not set"

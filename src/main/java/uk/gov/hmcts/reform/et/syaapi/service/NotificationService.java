@@ -261,7 +261,7 @@ public class NotificationService {
         String hearingDate = details.hearingDate;
 
         if (NOT_SET.equals(hearingDate) && isWelsh) {
-            hearingDate = "Welsh translation required";
+            hearingDate = "Heb ei anfon";
         } else if (isWelsh) {
             hearingDate = translateHearingDateToWelsh(hearingDate);
         }
