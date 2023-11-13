@@ -32,7 +32,7 @@ public final class GenericServiceUtil {
 
     public static void logException(String firstWord, String caseReferenceNumber, String errorMessage,
                              String className, String methodName) {
-        log.info("*************EXCEPTION OCCURED*************"
+        log.error("*************EXCEPTION OCCURED*************"
                      + "\nERROR DESCRIPTION: " + firstWord
                      + "\nCASE REFERENCE: " + caseReferenceNumber
                      + "\nERROR MESSAGE: " + errorMessage
