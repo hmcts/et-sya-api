@@ -34,7 +34,7 @@ class BundlesServiceTest {
     @MockBean
     private CaseService caseService;
     @MockBean
-    private BundlesNotificationService bundlesNotificationService;
+    private NotificationService notificationService;
 
     private final TestData testData;
 
@@ -48,12 +48,12 @@ class BundlesServiceTest {
     void before()  {
         ObjectMapper objectMapper = new ObjectMapper();
         caseService = mock(CaseService.class);
-        bundlesNotificationService = mock(BundlesNotificationService.class);
+        notificationService = mock(NotificationService.class);
 
         bundlesService = new BundlesService(
             caseService,
             new CaseDetailsConverter(objectMapper),
-            bundlesNotificationService
+            notificationService
             );
 
         when(caseService.getUserCase(
@@ -80,7 +80,7 @@ class BundlesServiceTest {
 
         verify(caseService, times(1)).submitUpdate(
             any(), any(), any(), any());
-        verify(bundlesNotificationService, times(1)).sendBundlesEmailToRespondent(any(), any());
+        verify(notificationService, times(1)).sendBundlesEmailToRespondent(any(), any(), any());
 
     }
 

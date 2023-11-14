@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
@@ -51,13 +52,14 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_LASTNAME_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_LINK_DOC_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SHORTTEXT_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SUBJECTLINE_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_SERVICE_OWNER_NAME_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_SERVICE_OWNER_NAME_VALUE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UK_LOCAL_DATE_PATTERN;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM;
-import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.addCommonParameters;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 import static uk.gov.service.notify.NotificationClient.prepareUpload;
 
 /**
@@ -79,6 +81,7 @@ public class NotificationService {
     private final String[] typeB = {"withdraw", "change-details", "reconsider-decision", "reconsider-judgement"};
     private static final String TYPE_C = "witness";
     private static final String DONT_SEND_COPY = "No";
+    private static final String CONCAT2STRINGS = "%s%s";
 
     /**
      * Record containing core details of an email.
@@ -663,6 +666,76 @@ public class NotificationService {
         } catch (NotificationClientException ne) {
             throw new NotificationException(ne);
         }
+    }
+
+    public void sendBundlesEmailToRespondent(CaseData caseData,
+                                             String caseId,
+                                             String hearingId) {
+        ClaimantIndType claimantIndType = caseData.getClaimantIndType();
+        String claimant = claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName();
+        String caseNumber = caseData.getEthosCaseReference();
+        String respondentNames = getRespondentNames(caseData);
+        String hearingDate = NotificationsHelper.getEarliestDateForHearing(caseData, hearingId, NOT_SET);
+
+        Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
+
+        addCommonParameters(
+            respondentParameters,
+            claimant,
+            respondentNames,
+            caseId,
+            caseNumber
+        );
+        respondentParameters.put(
+            SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
+            hearingDate
+        );
+        respondentParameters.put(
+            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+            String.format(CONCAT2STRINGS, notificationsProperties.getExuiCaseDetailsLink(), caseId)
+        );
+
+        String emailToRespondentTemplate
+            = notificationsProperties.getBundlesClaimantSubmittedRespondentNotificationTemplateId();
+
+        sendRespondentEmails(
+            caseData,
+            caseId,
+            respondentParameters,
+            emailToRespondentTemplate
+        );
+    }
+
+    private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
+                                           String caseId, String caseNumber) {
+        parameters.put("claimant", claimant);
+        parameters.put("respondentNames", respondentNames);
+        parameters.put(SEND_EMAIL_PARAMS_CASE_ID, caseId);
+        parameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
+    }
+
+    private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
+                                           String caseId, String caseNumber, String subjectLine) {
+        addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber);
+        parameters.put(SEND_EMAIL_PARAMS_SUBJECTLINE_KEY, subjectLine);
+    }
+
+    private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
+                                           String caseId, String caseNumber, String subjectLine, String shortText) {
+        addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber, subjectLine);
+        parameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
+    }
+
+    private static void addCommonParameters(Map<String, Object> parameters, CaseData caseData, String caseId) {
+        String claimant = String.join(
+            " ",
+            caseData.getClaimantIndType().getClaimantFirstNames(),
+            caseData.getClaimantIndType().getClaimantLastName()
+        );
+        String caseNumber = caseData.getEthosCaseReference();
+        String respondentNames = getRespondentNames(caseData);
+
+        addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber, caseNumber);
     }
 
     private void sendRespondentEmails(CaseData caseData, String caseId, Map<String, Object> respondentParameters,

@@ -1022,4 +1022,23 @@ class NotificationServiceTest {
             any()
         );
     }
+
+    @Test
+    void sendBundlesEmailToAllRespondents() throws NotificationClientException {
+        given(notificationsProperties.getBundlesClaimantSubmittedRespondentNotificationTemplateId()
+        ).willReturn("bundlesRespondentTemplateId");
+
+        notificationService.sendBundlesEmailToRespondent(
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString(),
+            YES
+        );
+
+        verify(notificationClient, times(5)).sendEmail(
+            eq("bundlesRespondentTemplateId"),
+            any(),
+            any(),
+            eq(caseTestData.getExpectedDetails().getId().toString())
+        );
+    }
 }

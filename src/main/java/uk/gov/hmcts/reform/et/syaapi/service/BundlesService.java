@@ -26,13 +26,13 @@ public class BundlesService {
 
     private final CaseService caseService;
     private final CaseDetailsConverter caseDetailsConverter;
-    private final BundlesNotificationService bundlesNotificationService;
+    private final NotificationService notificationService;
 
     /**
      * Submit Claimant Bundles.
      *
      * @param authorization - authorization
-     * @param request - bundles request from the claimant
+     * @param request       - bundles request from the claimant
      * @return the associated {@link CaseDetails} for the ID provided in request
      */
     public CaseDetails submitBundles(String authorization, ClaimantBundlesRequest request) {
@@ -71,7 +71,11 @@ public class BundlesService {
         );
         claimantBundles.getHearing();
 
-        bundlesNotificationService.sendBundlesEmailToRespondent(caseData, request.getCaseId());
+        notificationService.sendBundlesEmailToRespondent(
+            caseData,
+            request.getCaseId(),
+            request.getClaimantBundles().getHearing()
+        );
 
         return response;
     }
