@@ -114,10 +114,7 @@ public class PdfService {
                             pdfField.setValue(entryValue.get());
                         } catch (Exception e) {
                             GenericServiceUtil.logException("Error while parsing PDF file for entry key \""
-                                                         + entryKey
-                                                         + "\", entry value \""
-                                                         + getEntryValueFromOptionalString(entryValue)
-                                                         + "\"", caseData.getEthosCaseReference(), e.getMessage(),
+                                                         + entryKey, caseData.getEthosCaseReference(), e.getMessage(),
                                                             this.getClass().getName(), "createPdf");
                         }
                     }
@@ -131,10 +128,6 @@ public class PdfService {
         }
         safeClose(stream, caseData);
         return new byte[0];
-    }
-
-    private String getEntryValueFromOptionalString(Optional<String> entryValue) {
-        return ObjectUtils.isEmpty(entryValue) || entryValue.isEmpty() ? "" : entryValue.get();
     }
 
     public static void safeClose(InputStream is, CaseData caseData) {
