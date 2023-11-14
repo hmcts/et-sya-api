@@ -114,6 +114,11 @@ public final class CaseTestData {
         CaseDetails.class
     );
 
+    private final CaseDetails caseDetailsWithCaseData = ResourceLoader.fromString(
+        "responses/caseDetailsWithCaseData.json",
+        CaseDetails.class
+    );
+
     private final ClaimantTse claimantTse = ResourceLoader.fromString(
         "requests/claimantTse.json",
         ClaimantTse.class
