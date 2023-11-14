@@ -105,15 +105,19 @@ public final class TseApplicationHelper {
     public static void setRespondentApplicationWithResponse(RespondToApplicationRequest request,
                                                             GenericTseApplicationType appToModify,
                                                             CaseData caseData,
-                                                            CaseDocumentService caseDocumentService) {
+                                                            CaseDocumentService caseDocumentService,
+                                                            Boolean isWorkAllocationEnabled) {
         if (CollectionUtils.isEmpty(appToModify.getRespondCollection())) {
             appToModify.setRespondCollection(new ArrayList<>());
         }
         TseRespondType responseToAdd = request.getResponse();
         responseToAdd.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
         responseToAdd.setFrom(CLAIMANT);
-        responseToAdd.setDateTime(getCurrentDateTime());
-        responseToAdd.setApplicationType(appToModify.getType());
+
+        if (isWorkAllocationEnabled) {
+            responseToAdd.setDateTime(getCurrentDateTime());
+            responseToAdd.setApplicationType(appToModify.getType());
+        }
 
         if (request.getSupportingMaterialFile() != null) {
             DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(

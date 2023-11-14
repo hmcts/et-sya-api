@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.helper;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -18,9 +17,11 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.setRespondentApplicationWithResponse;
 
 class TseApplicationHelperTest {
     @MockBean
@@ -65,15 +66,12 @@ class TseApplicationHelperTest {
             DocumentTypeItem docType = DocumentTypeItem.builder().id("1").value(new DocumentType()).build();
             when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(docType);
 
-            TseApplicationHelper.setRespondentApplicationWithResponse(request, app, caseData, caseDocumentService);
+            setRespondentApplicationWithResponse(request, app, caseData, caseDocumentService, true);
 
-            Assertions.assertEquals("waitingForTheTribunal", app.getApplicationState());
-            Assertions.assertEquals("Response to Amend response",
-                caseData.getDocumentCollection().get(0).getValue().getShortDescription()
-            );
-            Assertions.assertEquals("Amend response",
-                app.getRespondCollection().get(0).getValue().getApplicationType()
-            );
+            assertEquals("waitingForTheTribunal", app.getApplicationState());
+            String actualShortDescription = caseData.getDocumentCollection().get(0).getValue().getShortDescription();
+            assertEquals("Response to Amend response", actualShortDescription);
+            assertEquals("Amend response", app.getRespondCollection().get(0).getValue().getApplicationType());
         }
     }
 
