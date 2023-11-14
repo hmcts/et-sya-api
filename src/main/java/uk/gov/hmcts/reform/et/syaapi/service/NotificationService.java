@@ -30,6 +30,8 @@ import java.util.stream.Stream;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.apache.tika.utils.StringUtils.isBlank;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
+import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_ABBREVIATED_MONTHS_MAP;
+import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CASE_ID_NOT_FOUND;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.FILE_NOT_EXISTS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ACAS_PDF1_LINK_KEY;
@@ -58,6 +60,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UK_LOCAL_DA
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 import static uk.gov.service.notify.NotificationClient.prepareUpload;
 
@@ -74,12 +77,14 @@ public class NotificationService {
 
     private final NotificationClient notificationClient;
     private final NotificationsProperties notificationsProperties;
+    private final FeatureToggleService featureToggleService;
 
     private final String[] typeA =
         {"strike", "amend", "non-compliance", "other", "postpone", "vary", "respondent", "publicity"};
     private final String[] typeB = {"withdraw", "change-details", "reconsider-decision", "reconsider-judgement"};
     private static final String TYPE_C = "witness";
     private static final String DONT_SEND_COPY = "No";
+    public static final String HEARING_DATE_KEY = "hearingDate";
 
     /**
      * Record containing core details of an email.
@@ -129,14 +134,14 @@ public class NotificationService {
      * Prepares case submission confirmation email content from user and case data & sends email to the user.
      *
      * @param caseRequest  top level non-modifiable case details
-     * @param caseData  user provided data
-     * @param userInfo   user details from Idam
-     * @param casePdfFiles  pdf files of the ET1 form according to selected language
+     * @param caseData     user provided data
+     * @param userInfo     user details from Idam
+     * @param casePdfFiles pdf files of the ET1 form according to selected language
      * @return Gov notify email format
      */
     SendEmailResponse sendSubmitCaseConfirmationEmail(CaseRequest caseRequest, CaseData caseData,
-                                                             UserInfo userInfo,
-                                                             List<PdfDecodedMultipartFile> casePdfFiles) {
+                                                      UserInfo userInfo,
+                                                      List<PdfDecodedMultipartFile> casePdfFiles) {
         SendEmailResponse sendEmailResponse = null;
         if (GenericServiceUtil.hasPdfFile(casePdfFiles, 0)) {
             String firstName = GenericServiceUtil.findClaimantFirstNameByCaseDataUserInfo(caseData, userInfo);
@@ -179,15 +184,15 @@ public class NotificationService {
     /**
      * Prepared doc upload error alert email content from user and case data then sends email to the service.
      *
-     * @param caseRequest  top level non-modifiable case details
-     * @param casePdfFiles  pdf copy of ET1 form content
-     * @param acasCertificates  pdf copy of Acas Certificates
+     * @param caseRequest      top level non-modifiable case details
+     * @param casePdfFiles     pdf copy of ET1 form content
+     * @param acasCertificates pdf copy of Acas Certificates
      * @return Gov notify email format
      */
     SendEmailResponse sendDocUploadErrorEmail(CaseRequest caseRequest,
-                                                     List<PdfDecodedMultipartFile> casePdfFiles,
-                                                     List<PdfDecodedMultipartFile> acasCertificates,
-                                                     UploadedDocumentType claimDescriptionDocument) {
+                                              List<PdfDecodedMultipartFile> casePdfFiles,
+                                              List<PdfDecodedMultipartFile> acasCertificates,
+                                              UploadedDocumentType claimDescriptionDocument) {
         SendEmailResponse sendEmailResponse = null;
         try {
             String caseNumber = caseRequest.getCaseId() == null ? CASE_ID_NOT_FOUND : caseRequest.getCaseId();
@@ -243,12 +248,25 @@ public class NotificationService {
     /**
      * Format details of claimant request and retrieve case data, then send email.
      *
-     * @param details core details of the email
+     * @param details             core details of the email
      * @param claimantApplication application request data
      * @return Gov notify email format
      */
     SendEmailResponse sendAcknowledgementEmailToClaimant(CoreEmailDetails details, ClaimantTse claimantApplication) {
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
+        boolean welshFlagEnabled = featureToggleService.isWelshEnabled();
+        log.info("Welsh feature flag is set to " + welshFlagEnabled);
+        boolean isWelsh = welshFlagEnabled && WELSH_LANGUAGE.equals(
+            details.caseData().getClaimantHearingPreference().getContactLanguage());
+        String hearingDate = details.hearingDate;
+
+        if (NOT_SET.equals(hearingDate) && isWelsh) {
+            hearingDate = "Heb ei anfon";
+        } else if (isWelsh) {
+            hearingDate = translateHearingDateToWelsh(hearingDate);
+        }
+
+        claimantParameters.put(HEARING_DATE_KEY, hearingDate);
 
         addCommonParameters(
             claimantParameters,
@@ -259,12 +277,25 @@ public class NotificationService {
         );
 
         SendEmailResponse claimantEmail;
-        String emailToClaimantTemplate = TYPE_C.equals(claimantApplication.getContactApplicationType())
-            ? notificationsProperties.getClaimantTseEmailTypeCTemplateId() :
-            getAndSetRule92EmailTemplate(claimantApplication, details.hearingDate, claimantParameters);
+        String emailToClaimantTemplate;
+        String citizenPortalLink = notificationsProperties.getCitizenPortalLink() + details.caseId
+            + (isWelsh ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
+
+        if (TYPE_C.equals(claimantApplication.getContactApplicationType())) {
+            emailToClaimantTemplate = isWelsh
+                ? notificationsProperties.getCyClaimantTseEmailTypeCTemplateId()
+                : notificationsProperties.getClaimantTseEmailTypeCTemplateId();
+        } else {
+            emailToClaimantTemplate = getAndSetRule92EmailTemplate(
+                claimantApplication,
+                hearingDate,
+                claimantParameters,
+                isWelsh
+            );
+        }
         claimantParameters.put(
             SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
-            notificationsProperties.getCitizenPortalLink() + details.caseId
+            citizenPortalLink
         );
 
         try {
@@ -280,10 +311,18 @@ public class NotificationService {
         return claimantEmail;
     }
 
+    private String translateHearingDateToWelsh(String hearingDate) {
+        return CY_ABBREVIATED_MONTHS_MAP.entrySet().stream()
+            .filter(entry -> hearingDate.contains(entry.getKey()))
+            .findFirst()
+            .map(entry -> hearingDate.replace(entry.getKey(), entry.getValue()))
+            .orElse(hearingDate);
+    }
+
     /**
      * Format details of claimant request and retrieve case data, then send email to confirmation to respondent.
      *
-     * @param details core details of the email
+     * @param details             core details of the email
      * @param claimantApplication application request data
      */
     void sendAcknowledgementEmailToRespondents(
@@ -341,7 +380,7 @@ public class NotificationService {
     /**
      * Format details of claimant request and retrieve case data, then send email to confirmation to tribunal.
      *
-     * @param details core details of the email
+     * @param details         core details of the email
      * @param applicationType type of application
      */
     void sendAcknowledgementEmailToTribunal(CoreEmailDetails details, String applicationType) {
@@ -385,8 +424,8 @@ public class NotificationService {
     /**
      * Format details of claimant request and retrieve case data, then send email to confirmation to tribunal.
      *
-     * @param details core details of the email
-     * @param applicationType type of application
+     * @param details                      core details of the email
+     * @param applicationType              type of application
      * @param isRespondingToRequestOrOrder indicates whether the reply is to a tribunal order or not
      */
     void sendResponseEmailToTribunal(CoreEmailDetails details, String applicationType,
@@ -425,12 +464,12 @@ public class NotificationService {
     }
 
     /**
-     *  Send acknowledgment email to the claimant when they are responding to
-     *  an application (type A/B) made by the Respondent.
+     * Send acknowledgment email to the claimant when they are responding to
+     * an application (type A/B) made by the Respondent.
      *
-     * @param details core details of the email
-     * @param applicationType type of application
-     * @param copyToOtherParty  whether to notify other party
+     * @param details                      core details of the email
+     * @param applicationType              type of application
+     * @param copyToOtherParty             whether to notify other party
      * @param isRespondingToRequestOrOrder indicates whether the reply is to a tribunal order or not
      */
     void sendResponseEmailToClaimant(CoreEmailDetails details, String applicationType, String copyToOtherParty,
@@ -489,8 +528,8 @@ public class NotificationService {
      * Send acknowledgment email to the respondent when they are responding to
      * an application (type A/B) made by the Respondent.
      *
-     * @param details core details of the email
-     * @param applicationType type of application
+     * @param details          core details of the email
+     * @param applicationType  type of application
      * @param copyToOtherParty should copy response to other party
      */
     void sendResponseEmailToRespondent(CoreEmailDetails details, String applicationType, String copyToOtherParty) {
@@ -523,9 +562,9 @@ public class NotificationService {
     /**
      * Email respondent when claimant responds to a request for info from the tribunal on a TSE application.
      *
-     * @param caseData        existing case details
-     * @param caseNumber      ethos case reference
-     * @param caseId          16 digit case id
+     * @param caseData   existing case details
+     * @param caseNumber ethos case reference
+     * @param caseId     16 digit case id
      */
     void sendReplyEmailToRespondent(
         CaseData caseData,
@@ -725,43 +764,68 @@ public class NotificationService {
         addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber, caseNumber);
     }
 
-    private String getAndSetRule92EmailTemplate(ClaimantTse claimantApplication,
-                                                String hearingDate,
-                                                Map<String, Object> parameters) {
+    String getAndSetRule92EmailTemplate(ClaimantTse claimantApplication,
+                                        String hearingDate,
+                                        Map<String, Object> parameters,
+                                        boolean isWelsh) {
         String emailTemplate;
         parameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, hearingDate);
-        String shortText = APP_TYPE_MAP.get(claimantApplication.getContactApplicationType());
+        Map<String, String> selectedMap = isWelsh ? CY_APP_TYPE_MAP : APP_TYPE_MAP;
+        String shortText = selectedMap.get(claimantApplication.getContactApplicationType());
+
         if (DONT_SEND_COPY.equals(claimantApplication.getCopyToOtherPartyYesOrNo())) {
             parameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
-            emailTemplate = notificationsProperties.getClaimantTseEmailNoTemplateId();
+            emailTemplate = isWelsh
+                ? notificationsProperties.getCyClaimantTseEmailNoTemplateId()
+                : notificationsProperties.getClaimantTseEmailNoTemplateId();
         } else {
-            String abText = getCustomTextForAOrBApplication(claimantApplication, shortText);
+            String abText = getCustomTextForAOrBApplication(
+                claimantApplication, shortText, isWelsh);
             parameters.put("abText", abText);
-            emailTemplate = notificationsProperties.getClaimantTseEmailYesTemplateId();
+            emailTemplate = isWelsh
+                ? notificationsProperties.getCyClaimantTseEmailYesTemplateId()
+                : notificationsProperties.getClaimantTseEmailYesTemplateId();
         }
         return emailTemplate;
     }
 
-    private String getCustomTextForAOrBApplication(ClaimantTse claimantApplication, String shortText) {
+    private String getCustomTextForAOrBApplication(
+        ClaimantTse claimantApplication,
+        String shortText,
+        boolean isWelsh) {
         String abText = "";
         if (Stream.of(typeA).anyMatch(appType -> Objects.equals(
             appType,
             claimantApplication.getContactApplicationType()
         ))) {
-            abText = "The other party will be notified that any objections to your "
-                + shortText
-                + " application should be sent to the tribunal as soon as possible, "
-                + "and in any event within 7 days.";
-
+            if (isWelsh) {
+                abText = "Bydd y parti arall yn cael gwybod y dylid anfon unrhyw wrthwynebiadau i'ch cais "
+                    + shortText
+                    + " i'r tribiwnlys cyn gynted â phosibl, "
+                    + "a fan bellaf o fewn 7 diwrnod.";
+            } else {
+                abText = "The other party will be notified that any objections to your "
+                    + shortText
+                    + " application should be sent to the tribunal as soon as possible, "
+                    + "and in any event within 7 days.";
+            }
         } else if (Stream.of(typeB).anyMatch(appType -> Objects.equals(
             appType,
             claimantApplication.getContactApplicationType()
         ))) {
-            abText = "The other party is not expected to respond to this application. "
-                + "However, they have been notified that any objections to your "
-                + shortText
-                + " application should be sent to the tribunal as soon as possible, "
-                + "and in any event within 7 days.";
+            if (isWelsh) {
+                abText = "Nid oes disgwyl i'r parti arall ymateb i'r cais hwn.\n\n "
+                    + "Fodd bynnag, fe'i hysbyswyd y dylid anfon unrhyw wrthwynebiadau i'ch cais "
+                    + shortText
+                    + " i'r tribiwnlys cyn gynted â phosibl, "
+                    + "a fan bellaf o fewn 7 diwrnod.";
+            } else {
+                abText = "The other party is not expected to respond to this application. "
+                    + "However, they have been notified that any objections to your "
+                    + shortText
+                    + " application should be sent to the tribunal as soon as possible, "
+                    + "and in any event within 7 days.";
+            }
         }
         return abText;
     }
