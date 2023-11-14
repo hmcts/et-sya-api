@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.et.syaapi.helper;
 import org.apache.tika.utils.StringUtils;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.HearingTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class NotificationHelperTest {
 
@@ -164,5 +166,33 @@ class NotificationHelperTest {
 
         // Then
         assertThat(hearingDate).isEqualTo(simpleDate);
+    }
+
+    @Test
+    void shouldNotFindHearingAndThrowError() {
+
+        caseTestData.getCaseData().setHearingCollection(new ArrayList<>());
+        var hearingCollection = caseTestData.getCaseData().getHearingCollection();
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+            NotificationsHelper.getEarliestDateForHearing(
+                hearingCollection,
+                "123345",
+                NOT_SET
+            ));
+        assertThat(exception.getMessage()).isEqualTo("Hearing does not exist in hearing collection");
+    }
+
+    @Test
+    void shouldNotFindHearingDateInFutureAndThrowError() {
+        List<HearingTypeItem> hearingCollection = caseTestData.getCaseData().getHearingCollection();
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+            NotificationsHelper.getEarliestDateForHearing(
+                hearingCollection,
+                "123345",
+                NOT_SET
+            ));
+        assertThat(exception.getMessage()).isEqualTo("Hearing does not have any future dates");
     }
 }

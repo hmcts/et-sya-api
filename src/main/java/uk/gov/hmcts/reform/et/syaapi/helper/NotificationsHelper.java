@@ -110,10 +110,13 @@ public final class NotificationsHelper {
         )).findFirst();
 
         if (hearing.isPresent()) {
-            String earliestFutureDate = Objects.requireNonNull(mapEarliest(hearing.get())).getValue().getListedDate();
-            return formatToSimpleDate(defaultValue, earliestFutureDate);
+            DateListedTypeItem earliestFutureDate = mapEarliest(hearing.get());
+            if (earliestFutureDate != null) {
+                return formatToSimpleDate(defaultValue, earliestFutureDate.getValue().getListedDate());
+            }
+            throw new IllegalArgumentException("Hearing does not have any future dates");
         }
-        return defaultValue;
+        throw new IllegalArgumentException("Hearing does not exist in hearing collection");
     }
 
     private static String formatToSimpleDate(String defaultValue, String earliestFutureHearingDate) {
