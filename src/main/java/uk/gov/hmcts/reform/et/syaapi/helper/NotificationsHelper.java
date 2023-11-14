@@ -79,7 +79,8 @@ public final class NotificationsHelper {
     /**
      * Gets the nearest future hearing date.
      *
-     * @param caseData existing case data next future hearing date
+     * @param caseData     existing case data next future hearing date
+     * @param defaultValue default value if hearing with future date is not found
      * @return hearing date
      */
     public static String getNearestHearingToReferral(CaseData caseData, String defaultValue) {
@@ -92,9 +93,18 @@ public final class NotificationsHelper {
         return formatToSimpleDate(defaultValue, earliestFutureHearingDate);
     }
 
-
-    public static String getEarliestDateForHearing(CaseData caseData, String hearingId, String defaultValue) {
-        Optional<HearingTypeItem> hearing = caseData.getHearingCollection().stream().filter(x -> Objects.equals(
+    /**
+     * Searches hearing collection by id and gets the nearest future hearing date.
+     *
+     * @param hearingCollection all hearings on case data
+     * @param hearingId         id of hearing we are searching
+     * @param defaultValue      default value if hearing with future date is not found
+     * @return hearing date
+     */
+    public static String getEarliestDateForHearing(List<HearingTypeItem> hearingCollection,
+                                                   String hearingId,
+                                                   String defaultValue) {
+        Optional<HearingTypeItem> hearing = hearingCollection.stream().filter(x -> Objects.equals(
             x.getId(),
             hearingId
         )).findFirst();

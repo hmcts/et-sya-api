@@ -157,7 +157,7 @@ class NotificationHelperTest {
 
         // When
         String hearingDate = NotificationsHelper.getEarliestDateForHearing(
-            caseData,
+            caseData.getHearingCollection(),
             "123345",
             NOT_SET
         );

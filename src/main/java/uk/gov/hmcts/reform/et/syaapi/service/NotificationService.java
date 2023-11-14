@@ -688,6 +688,44 @@ public class NotificationService {
         }
     }
 
+    private void sendRespondentEmails(CaseData caseData, String caseId, Map<String, Object> respondentParameters,
+                                      String emailToRespondentTemplate) {
+        caseData.getRespondentCollection()
+            .forEach(resp -> {
+                String respondentEmailAddress = NotificationsHelper.getEmailAddressForRespondent(
+                    caseData,
+                    resp.getValue()
+                );
+                if (isNullOrEmpty(respondentEmailAddress)) {
+                    log.info(
+                        String.format(
+                            "Respondent %s did not have an email address associated with their account",
+                            resp.getId()
+                        ));
+                } else {
+                    try {
+                        notificationClient.sendEmail(
+                            emailToRespondentTemplate,
+                            respondentEmailAddress,
+                            respondentParameters,
+                            caseId
+                        );
+                        log.info("Sent email to respondent");
+                    } catch (NotificationClientException ne) {
+                        throw new NotificationException(ne);
+                    }
+                }
+            });
+    }
+
+    /**
+     * Sends email to all respondents/legal reps plus the tribunal when the claimant submits a bundle.
+     * Content of email is the same therefore the same template is used.
+     *
+     * @param caseData  existing case data
+     * @param caseId    id of case
+     * @param hearingId id of hearing
+     */
     public void sendBundlesEmails(CaseData caseData,
                                   String caseId,
                                   String hearingId) {
@@ -695,7 +733,11 @@ public class NotificationService {
         Map<String, Object> emailParameters = new ConcurrentHashMap<>();
         addCommonParameters(emailParameters, caseData, caseId);
 
-        String hearingDate = NotificationsHelper.getEarliestDateForHearing(caseData, hearingId, NOT_SET);
+        String hearingDate = NotificationsHelper.getEarliestDateForHearing(
+            caseData.getHearingCollection(),
+            hearingId,
+            NOT_SET
+        );
         emailParameters.put(
             SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
             hearingDate
@@ -751,36 +793,6 @@ public class NotificationService {
         String respondentNames = getRespondentNames(caseData);
 
         addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber, caseNumber);
-    }
-
-    private void sendRespondentEmails(CaseData caseData, String caseId, Map<String, Object> respondentParameters,
-                                      String emailToRespondentTemplate) {
-        caseData.getRespondentCollection()
-            .forEach(resp -> {
-                String respondentEmailAddress = NotificationsHelper.getEmailAddressForRespondent(
-                    caseData,
-                    resp.getValue()
-                );
-                if (isNullOrEmpty(respondentEmailAddress)) {
-                    log.info(
-                        String.format(
-                            "Respondent %s did not have an email address associated with their account",
-                            resp.getId()
-                        ));
-                } else {
-                    try {
-                        notificationClient.sendEmail(
-                            emailToRespondentTemplate,
-                            respondentEmailAddress,
-                            respondentParameters,
-                            caseId
-                        );
-                        log.info("Sent email to respondent");
-                    } catch (NotificationClientException ne) {
-                        throw new NotificationException(ne);
-                    }
-                }
-            });
     }
 
     private String getAndSetRule92EmailTemplate(ClaimantTse claimantApplication,
