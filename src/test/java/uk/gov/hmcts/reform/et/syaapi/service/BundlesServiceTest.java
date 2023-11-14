@@ -80,7 +80,7 @@ class BundlesServiceTest {
 
         verify(caseService, times(1)).submitUpdate(
             any(), any(), any(), any());
-        verify(notificationService, times(1)).sendBundlesEmailToRespondent(any(), any(), any());
+        verify(notificationService, times(1)).sendBundlesEmails(any(), any(), any());
 
     }
 

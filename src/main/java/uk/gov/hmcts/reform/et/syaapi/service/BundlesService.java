@@ -71,7 +71,7 @@ public class BundlesService {
         );
         claimantBundles.getHearing();
 
-        notificationService.sendBundlesEmailToRespondent(
+        notificationService.sendBundlesEmails(
             caseData,
             request.getCaseId(),
             request.getClaimantBundles().getHearing()
