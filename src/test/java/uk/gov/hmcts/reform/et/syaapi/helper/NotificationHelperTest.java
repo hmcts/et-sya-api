@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class NotificationHelperTest {
 
+    public static final String NOT_SET = "Not set";
     private final CaseTestData caseTestData;
 
     NotificationHelperTest() {
@@ -113,11 +114,11 @@ class NotificationHelperTest {
         // When
         String hearingDate = NotificationsHelper.getNearestHearingToReferral(
             caseData,
-            "Not set"
+            NOT_SET
         );
 
         // Then
-        assertThat(hearingDate).isEqualTo("Not set");
+        assertThat(hearingDate).isEqualTo(NOT_SET);
     }
 
     @Test
@@ -135,7 +136,30 @@ class NotificationHelperTest {
         // When
         String hearingDate = NotificationsHelper.getNearestHearingToReferral(
             caseData,
-            "Not set"
+            NOT_SET
+        );
+
+        // Then
+        assertThat(hearingDate).isEqualTo(simpleDate);
+    }
+
+    @Test
+    void shouldGetNearestHearingDateInFuture() throws ParseException {
+        // Given
+        CaseData caseData = caseTestData.getCaseData();
+
+        String futureDate = LocalDateTime.now().plusDays(5).toString();
+        caseData.getHearingCollection().get(0).getValue().getHearingDateCollection().get(0).getValue().setListedDate(
+            futureDate);
+
+        Date hearingStartDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.ENGLISH).parse(futureDate);
+        String simpleDate = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH).format(hearingStartDate);
+
+        // When
+        String hearingDate = NotificationsHelper.getEarliestDateForHearing(
+            caseData,
+            "123345",
+            NOT_SET
         );
 
         // Then

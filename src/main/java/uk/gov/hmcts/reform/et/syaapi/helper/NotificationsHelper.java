@@ -100,8 +100,8 @@ public final class NotificationsHelper {
         )).findFirst();
 
         if (hearing.isPresent()) {
-            var earliestFutureDate = mapEarliest(hearing.get());
-            return formatToSimpleDate(String.valueOf(earliestFutureDate), defaultValue);
+            String earliestFutureDate = Objects.requireNonNull(mapEarliest(hearing.get())).getValue().getListedDate();
+            return formatToSimpleDate(defaultValue, earliestFutureDate);
         }
         return defaultValue;
     }
