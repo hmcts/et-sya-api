@@ -113,8 +113,6 @@ public final class TseApplicationHelper {
         TseRespondType responseToAdd = request.getResponse();
         responseToAdd.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
         responseToAdd.setFrom(CLAIMANT);
-        responseToAdd.setDateTime(getCurrentDateTime());
-        responseToAdd.setApplicationType(appToModify.getType());
 
         if (isWorkAllocationEnabled) {
             responseToAdd.setDateTime(getCurrentDateTime());
