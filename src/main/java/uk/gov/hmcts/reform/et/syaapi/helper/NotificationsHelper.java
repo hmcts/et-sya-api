@@ -30,10 +30,10 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.HEARING_STATUS_LIST
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-@SuppressWarnings({"PMD.SimpleDateFormatNeedsLocale",
-    "PMD.UseConcurrentHashMap",
-    "checkstyle:HideUtilityClassConstructor"})
+@SuppressWarnings({"checkstyle:HideUtilityClassConstructor"})
 public final class NotificationsHelper {
+
+    public static final String INVALID_DATE = "Invalid date";
 
     /**
      * Format all respondent names into one string.
@@ -98,12 +98,10 @@ public final class NotificationsHelper {
      *
      * @param hearingCollection all hearings on case data
      * @param hearingId         id of hearing we are searching
-     * @param defaultValue      default value if hearing with future date is not found
      * @return hearing date
      */
     public static String getEarliestDateForHearing(List<HearingTypeItem> hearingCollection,
-                                                   String hearingId,
-                                                   String defaultValue) {
+                                                   String hearingId) {
         Optional<HearingTypeItem> hearing = hearingCollection.stream().filter(x -> Objects.equals(
             x.getId(),
             hearingId
@@ -112,7 +110,7 @@ public final class NotificationsHelper {
         if (hearing.isPresent()) {
             DateListedTypeItem earliestFutureDate = mapEarliest(hearing.get());
             if (earliestFutureDate != null) {
-                return formatToSimpleDate(defaultValue, earliestFutureDate.getValue().getListedDate());
+                return formatToSimpleDate(INVALID_DATE, earliestFutureDate.getValue().getListedDate());
             }
             throw new IllegalArgumentException("Hearing does not have any future dates");
         }

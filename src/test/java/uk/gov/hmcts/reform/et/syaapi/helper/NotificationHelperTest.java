@@ -160,8 +160,7 @@ class NotificationHelperTest {
         // When
         String hearingDate = NotificationsHelper.getEarliestDateForHearing(
             caseData.getHearingCollection(),
-            "123345",
-            NOT_SET
+            "123345"
         );
 
         // Then
@@ -177,8 +176,7 @@ class NotificationHelperTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
             NotificationsHelper.getEarliestDateForHearing(
                 hearingCollection,
-                "123345",
-                NOT_SET
+                "123345"
             ));
         assertThat(exception.getMessage()).isEqualTo("Hearing does not exist in hearing collection");
     }
@@ -190,8 +188,7 @@ class NotificationHelperTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
             NotificationsHelper.getEarliestDateForHearing(
                 hearingCollection,
-                "123345",
-                NOT_SET
+                "123345"
             ));
         assertThat(exception.getMessage()).isEqualTo("Hearing does not have any future dates");
     }

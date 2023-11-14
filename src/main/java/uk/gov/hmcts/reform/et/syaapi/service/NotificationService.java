@@ -774,8 +774,7 @@ public class NotificationService {
 
         String hearingDate = NotificationsHelper.getEarliestDateForHearing(
             caseData.getHearingCollection(),
-            hearingId,
-            NOT_SET
+            hearingId
         );
         emailParameters.put(
             SEND_EMAIL_PARAMS_HEARING_DATE_KEY,

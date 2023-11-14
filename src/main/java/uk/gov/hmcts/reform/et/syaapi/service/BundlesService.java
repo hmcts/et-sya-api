@@ -37,8 +37,6 @@ public class BundlesService {
      */
     public CaseDetails submitBundles(String authorization, ClaimantBundlesRequest request) {
 
-        HearingBundleType claimantBundles = request.getClaimantBundles();
-
         StartEventResponse startEventResponse = caseService.startUpdate(
             authorization,
             request.getCaseId(),
@@ -46,20 +44,17 @@ public class BundlesService {
             CaseEvent.SUBMIT_CLAIMANT_BUNDLES
         );
 
-        // todo: may need to upload bundles cya information / pdf for viewing on ExUi
-
         CaseData caseData = EmployeeObjectMapper
             .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
 
         if (CollectionUtils.isEmpty(caseData.getBundlesClaimantCollection())) {
             caseData.setBundlesClaimantCollection(new ArrayList<>());
         }
+        GenericTypeItem<HearingBundleType> hearingBundleTypeItem = new GenericTypeItem<>();
+        hearingBundleTypeItem.setId(String.valueOf(randomUUID()));
+        hearingBundleTypeItem.setValue(request.getClaimantBundles());
 
-        GenericTypeItem<HearingBundleType> genericTypeItem = new GenericTypeItem<>();
-        genericTypeItem.setId(String.valueOf(randomUUID()));
-        genericTypeItem.setValue(claimantBundles);
-
-        caseData.getBundlesClaimantCollection().add(genericTypeItem);
+        caseData.getBundlesClaimantCollection().add(hearingBundleTypeItem);
 
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
 
@@ -69,7 +64,6 @@ public class BundlesService {
             content,
             request.getCaseTypeId()
         );
-        claimantBundles.getHearing();
 
         notificationService.sendBundlesEmails(
             caseData,
