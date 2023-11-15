@@ -171,11 +171,11 @@ public class PdfService {
         String acasName = "";
         if (respondent.isPresent()) {
             acasName = respondent.get().getValue().getRespondentName();
+            acasName = acasName + " - ";
         }
 
         return "ACAS Certificate - "
             + acasName
-            + " - "
             + acasCertificate.getCertificateNumber().replace("/", "_");
     }
 
