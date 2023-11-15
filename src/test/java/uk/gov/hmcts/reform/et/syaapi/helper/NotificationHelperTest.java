@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class NotificationHelperTest {
 
-    public static final String NOT_SET = "Not set";
+    private static final String NOT_SET = "Not set";
     private final CaseTestData caseTestData;
 
     NotificationHelperTest() {
