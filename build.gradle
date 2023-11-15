@@ -128,7 +128,7 @@ task contract(type: Test) {
 
 checkstyle {
   maxWarnings = 0
-  toolVersion = '10.12.4'
+  toolVersion = '10.12.5'
   getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
 
@@ -249,14 +249,14 @@ dependencies {
   implementation 'org.json:json:20231013'
   implementation group: 'org.yaml', name: 'snakeyaml', version: '2.2'
 
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.82'
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.83'
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.15'
 
   implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '6.1.5'
 
   implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
 
-  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '7.1.0'
+  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '7.1.1'
 
   compileOnly 'org.projectlombok:lombok'
   annotationProcessor group: 'org.projectlombok', name: 'lombok'
