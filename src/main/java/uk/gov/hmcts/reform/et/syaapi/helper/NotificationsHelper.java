@@ -33,7 +33,7 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.HEARING_STATUS_LIST
 @SuppressWarnings({"checkstyle:HideUtilityClassConstructor"})
 public final class NotificationsHelper {
 
-    public static final String INVALID_DATE = "Invalid date";
+    private static final String INVALID_DATE = "Invalid date";
 
     /**
      * Format all respondent names into one string.
