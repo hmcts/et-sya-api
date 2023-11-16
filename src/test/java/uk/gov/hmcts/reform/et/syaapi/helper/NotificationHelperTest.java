@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.et.syaapi.helper;
 import org.apache.tika.utils.StringUtils;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.HearingTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
@@ -16,9 +17,11 @@ import java.util.List;
 import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class NotificationHelperTest {
 
+    private static final String NOT_SET = "Not set";
     private final CaseTestData caseTestData;
 
     NotificationHelperTest() {
@@ -113,11 +116,11 @@ class NotificationHelperTest {
         // When
         String hearingDate = NotificationsHelper.getNearestHearingToReferral(
             caseData,
-            "Not set"
+            NOT_SET
         );
 
         // Then
-        assertThat(hearingDate).isEqualTo("Not set");
+        assertThat(hearingDate).isEqualTo(NOT_SET);
     }
 
     @Test
@@ -135,10 +138,58 @@ class NotificationHelperTest {
         // When
         String hearingDate = NotificationsHelper.getNearestHearingToReferral(
             caseData,
-            "Not set"
+            NOT_SET
         );
 
         // Then
         assertThat(hearingDate).isEqualTo(simpleDate);
+    }
+
+    @Test
+    void shouldGetNearestHearingDateInFuture() throws ParseException {
+        // Given
+        CaseData caseData = caseTestData.getCaseData();
+
+        String futureDate = LocalDateTime.now().plusDays(5).toString();
+        caseData.getHearingCollection().get(0).getValue().getHearingDateCollection().get(0).getValue().setListedDate(
+            futureDate);
+
+        Date hearingStartDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.ENGLISH).parse(futureDate);
+        String simpleDate = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH).format(hearingStartDate);
+
+        // When
+        String hearingDate = NotificationsHelper.getEarliestDateForHearing(
+            caseData.getHearingCollection(),
+            "123345"
+        );
+
+        // Then
+        assertThat(hearingDate).isEqualTo(simpleDate);
+    }
+
+    @Test
+    void shouldNotFindHearingAndThrowError() {
+
+        caseTestData.getCaseData().setHearingCollection(new ArrayList<>());
+        var hearingCollection = caseTestData.getCaseData().getHearingCollection();
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+            NotificationsHelper.getEarliestDateForHearing(
+                hearingCollection,
+                "123345"
+            ));
+        assertThat(exception.getMessage()).isEqualTo("Hearing does not exist in hearing collection");
+    }
+
+    @Test
+    void shouldNotFindHearingDateInFutureAndThrowError() {
+        List<HearingTypeItem> hearingCollection = caseTestData.getCaseData().getHearingCollection();
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+            NotificationsHelper.getEarliestDateForHearing(
+                hearingCollection,
+                "123345"
+            ));
+        assertThat(exception.getMessage()).isEqualTo("Hearing does not have any future dates");
     }
 }

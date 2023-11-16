@@ -40,6 +40,7 @@ import uk.gov.service.notify.SendEmailResponse;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -1145,6 +1146,31 @@ class NotificationServiceTest {
             any(),
             any(),
             any()
+        );
+    }
+
+    @Test
+    void shouldSendBundlesEmailToAll() throws NotificationClientException {
+        given(notificationsProperties.getBundlesClaimantSubmittedNotificationTemplateId()
+        ).willReturn("bundlesClaimantSubmittedNotificationTemplateId");
+
+        CaseData caseData =  caseTestData.getCaseData();
+        String futureDate = LocalDateTime.now().plusDays(5).toString();
+        caseData.getHearingCollection().get(0).getValue().getHearingDateCollection().get(0).getValue().setListedDate(
+            futureDate);
+
+        notificationService.sendBundlesEmails(
+            caseData,
+            caseTestData.getExpectedDetails().getId().toString(),
+            "123345"
+        );
+
+        // Sends to 5 respondents + 1 to tribunal
+        verify(notificationClient, times(6)).sendEmail(
+            eq("bundlesClaimantSubmittedNotificationTemplateId"),
+            any(),
+            any(),
+            eq(caseTestData.getExpectedDetails().getId().toString())
         );
     }
 
