@@ -253,13 +253,13 @@ public class ApplicationService {
     ) throws NotificationClientException {
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(finalCaseDetails.getData());
         ClaimantIndType claimantIndType = caseData.getClaimantIndType();
-
+        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
         CoreEmailDetails details = new CoreEmailDetails(
             caseData,
             claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName(),
             caseData.getEthosCaseReference(),
             getRespondentNames(caseData),
-            NotificationsHelper.getNearestHearingToReferral(caseData, "Not set"),
+            hearingDate,
             finalCaseDetails.getId().toString()
         );
 

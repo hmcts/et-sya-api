@@ -49,6 +49,14 @@ class FeatureToggleServiceTest {
         assertThat(featureToggleService.isWorkAllocationEnabled()).isEqualTo(toggleStat);
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldReturnCorrectValueWhenWelshIsEnabled(Boolean toggleStat) {
+        givenToggle("welsh-language", toggleStat);
+
+        assertThat(featureToggleService.isWelshEnabled()).isEqualTo(toggleStat);
+    }
+
     private void givenToggle(String feature, boolean state) {
         when(featureToggleApi.isFeatureEnabled(feature)).thenReturn(state);
     }
