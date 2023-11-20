@@ -438,7 +438,7 @@
   "tribunalCorrespondenceTelephone": null,
   "tribunalCorrespondenceFax": null,
   "tribunalCorrespondenceDX": null,
-  "tribunalCorrespondenceEmail": null,
+  "tribunalCorrespondenceEmail": "tribunal@email.com",
   "ethosCaseReference": "123456/2022",
   "multipleReference": null,
   "multipleReferenceLinkMarkUp": null,

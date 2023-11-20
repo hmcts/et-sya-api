@@ -47,12 +47,25 @@
     },
     "hearingCollection": [
       {
-        "id": "1",
+        "id": "123345",
         "value": {
-          "hearing_date_collection": {
-            "listed_date": "2026-09-29T05:04:43.684+01:00",
-            "listing_status": "Listed"
-          }
+          "Est_Hearing": {
+            "fromDays": "2",
+            "fromHours": "3",
+            "fromMinues": "4"
+          },
+          "HearingType": "Single",
+          "Hearing_date_start": "2019-11-25 12:11:00",
+          "Hearing_judge_name": "JudgeName",
+          "hearingDateCollection": [
+            {
+              "id": "1",
+              "value": {
+                "listedDate": "2019-12-30T19:34:50.63",
+                "Hearing_status": "Listed"
+              }
+            }
+          ]
         }
       }
     ],
@@ -482,7 +495,6 @@
     "fileLocationAberdeen": null,
     "fileLocationDundee": null,
     "fileLocationEdinburgh": null,
-    "hearingCollection": null,
     "depositType": null,
     "judgementCollection": null,
     "bfActions": null,
