@@ -47,6 +47,8 @@ class CaseServiceBootTest {
     private NotificationService notificationService;
     @MockBean
     private AcasService acasService;
+    @MockBean
+    BundlesService bundlesService;
     private CaseTestData caseTestData;
 
     @BeforeEach

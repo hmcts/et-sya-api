@@ -30,10 +30,10 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.HEARING_STATUS_LIST
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-@SuppressWarnings({"PMD.SimpleDateFormatNeedsLocale",
-    "PMD.UseConcurrentHashMap",
-    "checkstyle:HideUtilityClassConstructor"})
+@SuppressWarnings({"checkstyle:HideUtilityClassConstructor"})
 public final class NotificationsHelper {
+
+    private static final String INVALID_DATE = "Invalid date";
 
     /**
      * Format all respondent names into one string.
@@ -79,7 +79,8 @@ public final class NotificationsHelper {
     /**
      * Gets the nearest future hearing date.
      *
-     * @param caseData existing case data next future hearing date
+     * @param caseData     existing case data next future hearing date
+     * @param defaultValue default value if hearing with future date is not found
      * @return hearing date
      */
     public static String getNearestHearingToReferral(CaseData caseData, String defaultValue) {
@@ -89,6 +90,34 @@ public final class NotificationsHelper {
             return defaultValue;
         }
 
+        return formatToSimpleDate(defaultValue, earliestFutureHearingDate);
+    }
+
+    /**
+     * Searches hearing collection by id and gets the nearest future hearing date.
+     *
+     * @param hearingCollection all hearings on case data
+     * @param hearingId         id of hearing we are searching
+     * @return hearing date
+     */
+    public static String getEarliestDateForHearing(List<HearingTypeItem> hearingCollection,
+                                                   String hearingId) {
+        Optional<HearingTypeItem> hearing = hearingCollection.stream().filter(x -> Objects.equals(
+            x.getId(),
+            hearingId
+        )).findFirst();
+
+        if (hearing.isPresent()) {
+            DateListedTypeItem earliestFutureDate = mapEarliest(hearing.get());
+            if (earliestFutureDate != null) {
+                return formatToSimpleDate(INVALID_DATE, earliestFutureDate.getValue().getListedDate());
+            }
+            throw new IllegalArgumentException("Hearing does not have any future dates");
+        }
+        throw new IllegalArgumentException("Hearing does not exist in hearing collection");
+    }
+
+    private static String formatToSimpleDate(String defaultValue, String earliestFutureHearingDate) {
         try {
             Date hearingStartDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").parse(earliestFutureHearingDate);
             return new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH).format(hearingStartDate);
@@ -106,7 +135,7 @@ public final class NotificationsHelper {
         List<DateListedTypeItem> earliestDatePerHearing = hearingCollection.stream()
             .map(NotificationsHelper::mapEarliest)
             .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+            .toList();
 
         if (earliestDatePerHearing.isEmpty()) {
             return null;
@@ -129,7 +158,7 @@ public final class NotificationsHelper {
         return hearingDateCollection.stream()
             .filter(d -> isDateInFuture(d.getValue().getListedDate(), LocalDateTime.now())
                 && HEARING_STATUS_LISTED.equals(d.getValue().getHearingStatus()))
-            .collect(Collectors.toList());
+            .toList();
     }
 
     private static boolean isDateInFuture(String date, LocalDateTime now) {
