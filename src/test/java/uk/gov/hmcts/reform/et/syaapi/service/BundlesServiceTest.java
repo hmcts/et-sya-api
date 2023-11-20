@@ -33,6 +33,8 @@ class BundlesServiceTest {
     private BundlesService bundlesService;
     @MockBean
     private CaseService caseService;
+    @MockBean
+    private NotificationService notificationService;
 
     private final TestData testData;
 
@@ -43,14 +45,16 @@ class BundlesServiceTest {
     }
 
     @BeforeEach
-    void before()  {
+    void before() {
         ObjectMapper objectMapper = new ObjectMapper();
         caseService = mock(CaseService.class);
+        notificationService = mock(NotificationService.class);
 
         bundlesService = new BundlesService(
             caseService,
-            new CaseDetailsConverter(objectMapper)
-            );
+            new CaseDetailsConverter(objectMapper),
+            notificationService
+        );
 
         when(caseService.getUserCase(
             TEST_SERVICE_AUTH_TOKEN,
@@ -75,7 +79,16 @@ class BundlesServiceTest {
         );
 
         verify(caseService, times(1)).submitUpdate(
-            any(), any(), any(), any());
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(testRequest.getCaseId()),
+            any(),
+            any()
+        );
+        verify(notificationService, times(1)).sendBundlesEmails(
+            any(),
+            eq(testRequest.getCaseId()),
+            eq(testRequest.getClaimantBundles().getHearing())
+        );
 
     }
 

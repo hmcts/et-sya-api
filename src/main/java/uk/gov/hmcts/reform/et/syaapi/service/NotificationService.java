@@ -121,10 +121,13 @@ public class NotificationService {
             sendEmailResponse = notificationClient.sendEmail(templateId, targetEmail, parameters, reference);
         } catch (NotificationClientException ne) {
             GenericServiceUtil.logException("Error while trying to sending notification to client",
-                                     GenericServiceUtil.getStringValueFromStringMap(parameters,
-                                                                             SEND_EMAIL_PARAMS_CASE_NUMBER_KEY),
-                                     ne.getMessage(),
-                                     this.getClass().getName(), "sendEmail");
+                                            GenericServiceUtil.getStringValueFromStringMap(
+                                                parameters,
+                                                SEND_EMAIL_PARAMS_CASE_NUMBER_KEY
+                                            ),
+                                            ne.getMessage(),
+                                            this.getClass().getName(), "sendEmail"
+            );
             throw new NotificationException(ne);
         }
         return sendEmailResponse;
@@ -174,8 +177,9 @@ public class NotificationService {
                 );
             } catch (NotificationClientException ne) {
                 GenericServiceUtil.logException("Submit case confirmation email was not sent to client.",
-                                         caseData.getEthosCaseReference(), ne.getMessage(),
-                                         this.getClass().getName(), "sendSubmitCaseConfirmationEmail");
+                                                caseData.getEthosCaseReference(), ne.getMessage(),
+                                                this.getClass().getName(), "sendSubmitCaseConfirmationEmail"
+                );
             }
         }
         return sendEmailResponse;
@@ -199,25 +203,41 @@ public class NotificationService {
             Map<String, Object> parameters = new ConcurrentHashMap<>();
             parameters.put(SEND_EMAIL_SERVICE_OWNER_NAME_KEY, SEND_EMAIL_SERVICE_OWNER_NAME_VALUE);
             parameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
-            parameters.put(SEND_EMAIL_PARAMS_ET1PDF_ENGLISH_LINK_KEY,
-                           GenericServiceUtil.prepareUpload(casePdfFiles, 0));
-            parameters.put(SEND_EMAIL_PARAMS_ET1PDF_WELSH_LINK_KEY,
-                           GenericServiceUtil.prepareUpload(casePdfFiles, 1));
-            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF1_LINK_KEY,
-                           GenericServiceUtil.prepareUpload(acasCertificates, 0));
-            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF2_LINK_KEY,
-                           GenericServiceUtil.prepareUpload(acasCertificates, 1));
-            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF3_LINK_KEY,
-                           GenericServiceUtil.prepareUpload(acasCertificates, 2));
-            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF4_LINK_KEY,
-                           GenericServiceUtil.prepareUpload(acasCertificates, 3));
-            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF5_LINK_KEY,
-                           GenericServiceUtil.prepareUpload(acasCertificates, 4));
-            parameters.put(SEND_EMAIL_PARAMS_CLAIM_DESCRIPTION_FILE_LINK_KEY,
-                           ObjectUtils.isNotEmpty(claimDescriptionDocument)
-                                && StringUtils.isNotBlank(claimDescriptionDocument.getDocumentUrl())
-                                ? claimDescriptionDocument.getDocumentUrl()
-                                : FILE_NOT_EXISTS);
+            parameters.put(
+                SEND_EMAIL_PARAMS_ET1PDF_ENGLISH_LINK_KEY,
+                GenericServiceUtil.prepareUpload(casePdfFiles, 0)
+            );
+            parameters.put(
+                SEND_EMAIL_PARAMS_ET1PDF_WELSH_LINK_KEY,
+                GenericServiceUtil.prepareUpload(casePdfFiles, 1)
+            );
+            parameters.put(
+                SEND_EMAIL_PARAMS_ACAS_PDF1_LINK_KEY,
+                GenericServiceUtil.prepareUpload(acasCertificates, 0)
+            );
+            parameters.put(
+                SEND_EMAIL_PARAMS_ACAS_PDF2_LINK_KEY,
+                GenericServiceUtil.prepareUpload(acasCertificates, 1)
+            );
+            parameters.put(
+                SEND_EMAIL_PARAMS_ACAS_PDF3_LINK_KEY,
+                GenericServiceUtil.prepareUpload(acasCertificates, 2)
+            );
+            parameters.put(
+                SEND_EMAIL_PARAMS_ACAS_PDF4_LINK_KEY,
+                GenericServiceUtil.prepareUpload(acasCertificates, 3)
+            );
+            parameters.put(
+                SEND_EMAIL_PARAMS_ACAS_PDF5_LINK_KEY,
+                GenericServiceUtil.prepareUpload(acasCertificates, 4)
+            );
+            parameters.put(
+                SEND_EMAIL_PARAMS_CLAIM_DESCRIPTION_FILE_LINK_KEY,
+                ObjectUtils.isNotEmpty(claimDescriptionDocument)
+                    && StringUtils.isNotBlank(claimDescriptionDocument.getDocumentUrl())
+                    ? claimDescriptionDocument.getDocumentUrl()
+                    : FILE_NOT_EXISTS
+            );
 
             String emailTemplateId = notificationsProperties.getSubmitCaseDocUploadErrorEmailTemplateId();
 
@@ -240,7 +260,8 @@ public class NotificationService {
             GenericServiceUtil.logException(
                 "Case Documents Upload error - Failed to send document upload error message",
                 caseRequest.getCaseId(), ne.getMessage(),
-                this.getClass().getName(), "sendDocUploadErrorEmail");
+                this.getClass().getName(), "sendDocUploadErrorEmail"
+            );
         }
         return sendEmailResponse;
     }
@@ -635,7 +656,8 @@ public class NotificationService {
         );
 
         sendRespondentEmails(caseData, caseId, respondentParameters,
-                             notificationsProperties.getPseRespondentResponseTemplateId());
+                             notificationsProperties.getPseRespondentResponseTemplateId()
+        );
     }
 
     void sendResponseNotificationEmailToClaimant(
@@ -715,8 +737,10 @@ public class NotificationService {
                 );
                 if (isNullOrEmpty(respondentEmailAddress)) {
                     log.info(
-                        String.format("Respondent %s did not have an email address associated with their account",
-                                      resp.getId()));
+                        String.format(
+                            "Respondent %s did not have an email address associated with their account",
+                            resp.getId()
+                        ));
                 } else {
                     try {
                         notificationClient.sendEmail(
@@ -731,6 +755,50 @@ public class NotificationService {
                     }
                 }
             });
+    }
+
+    /**
+     * Sends email to all respondents/legal reps plus the tribunal when the claimant submits a bundle.
+     * Content of email is the same therefore the same template is used.
+     *
+     * @param caseData  existing case data
+     * @param caseId    id of case
+     * @param hearingId id of hearing
+     */
+    public void sendBundlesEmails(CaseData caseData,
+                                  String caseId,
+                                  String hearingId) {
+
+        Map<String, Object> emailParameters = new ConcurrentHashMap<>();
+        addCommonParameters(emailParameters, caseData, caseId);
+
+        String hearingDate = NotificationsHelper.getEarliestDateForHearing(
+            caseData.getHearingCollection(),
+            hearingId
+        );
+        emailParameters.put(
+            SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
+            hearingDate
+        );
+
+        emailParameters.put(
+            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+            notificationsProperties.getExuiCaseDetailsLink() + caseId
+        );
+
+        sendTribunalEmail(
+            caseData,
+            caseId,
+            emailParameters,
+            notificationsProperties.getBundlesClaimantSubmittedNotificationTemplateId()
+        );
+
+        sendRespondentEmails(
+            caseData,
+            caseId,
+            emailParameters,
+            notificationsProperties.getBundlesClaimantSubmittedNotificationTemplateId()
+        );
     }
 
     private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
@@ -754,7 +822,8 @@ public class NotificationService {
     }
 
     private static void addCommonParameters(Map<String, Object> parameters, CaseData caseData, String caseId) {
-        String claimant = String.join(" ",
+        String claimant = String.join(
+            " ",
             caseData.getClaimantIndType().getClaimantFirstNames(),
             caseData.getClaimantIndType().getClaimantLastName()
         );
