@@ -6,6 +6,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.ListTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
@@ -73,12 +74,12 @@ public class SendNotificationService {
         );
     }
 
-    private void setResponsesAsViewed(List<GenericTypeItem<RespondNotificationType>> responses) {
+    private void setResponsesAsViewed(List<TypeItem<RespondNotificationType>> responses) {
         if (CollectionUtils.isEmpty(responses)) {
             return;
         }
 
-        for (GenericTypeItem<RespondNotificationType> item : responses) {
+        for (TypeItem<RespondNotificationType> item : responses) {
             item.getValue().setState(VIEWED);
         }
     }
@@ -170,12 +171,12 @@ public class SendNotificationService {
 
     }
 
-    private void setResponsesAsRespondedTo(List<GenericTypeItem<RespondNotificationType>> responses) {
+    private void setResponsesAsRespondedTo(List<TypeItem<RespondNotificationType>> responses) {
         if (CollectionUtils.isEmpty(responses)) {
             return;
         }
 
-        for (GenericTypeItem<RespondNotificationType> item : responses) {
+        for (TypeItem<RespondNotificationType> item : responses) {
             item.getValue().setIsClaimantResponseDue(null);
         }
     }
