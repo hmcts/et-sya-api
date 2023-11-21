@@ -71,7 +71,7 @@ import static uk.gov.service.notify.NotificationClient.prepareUpload;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.CyclomaticComplexity"})
 public class NotificationService {
     static final String NOT_SET = "Not set";
 
@@ -123,13 +123,10 @@ public class NotificationService {
             sendEmailResponse = notificationClient.sendEmail(templateId, targetEmail, parameters, reference);
         } catch (NotificationClientException ne) {
             GenericServiceUtil.logException("Error while trying to sending notification to client",
-                                            GenericServiceUtil.getStringValueFromStringMap(
-                                                parameters,
-                                                SEND_EMAIL_PARAMS_CASE_NUMBER_KEY
-                                            ),
-                                            ne.getMessage(),
-                                            this.getClass().getName(), "sendEmail"
-            );
+                                     GenericServiceUtil.getStringValueFromStringMap(parameters,
+                                                                             SEND_EMAIL_PARAMS_CASE_NUMBER_KEY),
+                                     ne.getMessage(),
+                                     this.getClass().getName(), "sendEmail");
             throw new NotificationException(ne);
         }
         return sendEmailResponse;
@@ -139,14 +136,14 @@ public class NotificationService {
      * Prepares case submission confirmation email content from user and case data & sends email to the user.
      *
      * @param caseRequest  top level non-modifiable case details
-     * @param caseData     user provided data
-     * @param userInfo     user details from Idam
-     * @param casePdfFiles pdf files of the ET1 form according to selected language
+     * @param caseData  user provided data
+     * @param userInfo   user details from Idam
+     * @param casePdfFiles  pdf files of the ET1 form according to selected language
      * @return Gov notify email format
      */
     SendEmailResponse sendSubmitCaseConfirmationEmail(CaseRequest caseRequest, CaseData caseData,
-                                                      UserInfo userInfo,
-                                                      List<PdfDecodedMultipartFile> casePdfFiles) {
+                                                             UserInfo userInfo,
+                                                             List<PdfDecodedMultipartFile> casePdfFiles) {
         SendEmailResponse sendEmailResponse = null;
         if (GenericServiceUtil.hasPdfFile(casePdfFiles, 0)) {
             String firstName = GenericServiceUtil.findClaimantFirstNameByCaseDataUserInfo(caseData, userInfo);
@@ -179,9 +176,8 @@ public class NotificationService {
                 );
             } catch (NotificationClientException ne) {
                 GenericServiceUtil.logException("Submit case confirmation email was not sent to client.",
-                                                caseData.getEthosCaseReference(), ne.getMessage(),
-                                                this.getClass().getName(), "sendSubmitCaseConfirmationEmail"
-                );
+                                         caseData.getEthosCaseReference(), ne.getMessage(),
+                                         this.getClass().getName(), "sendSubmitCaseConfirmationEmail");
             }
         }
         return sendEmailResponse;
@@ -190,56 +186,40 @@ public class NotificationService {
     /**
      * Prepared doc upload error alert email content from user and case data then sends email to the service.
      *
-     * @param caseRequest      top level non-modifiable case details
-     * @param casePdfFiles     pdf copy of ET1 form content
-     * @param acasCertificates pdf copy of Acas Certificates
+     * @param caseRequest  top level non-modifiable case details
+     * @param casePdfFiles  pdf copy of ET1 form content
+     * @param acasCertificates  pdf copy of Acas Certificates
      * @return Gov notify email format
      */
     SendEmailResponse sendDocUploadErrorEmail(CaseRequest caseRequest,
-                                              List<PdfDecodedMultipartFile> casePdfFiles,
-                                              List<PdfDecodedMultipartFile> acasCertificates,
-                                              UploadedDocumentType claimDescriptionDocument) {
+                                                     List<PdfDecodedMultipartFile> casePdfFiles,
+                                                     List<PdfDecodedMultipartFile> acasCertificates,
+                                                     UploadedDocumentType claimDescriptionDocument) {
         SendEmailResponse sendEmailResponse = null;
         try {
             String caseNumber = caseRequest.getCaseId() == null ? CASE_ID_NOT_FOUND : caseRequest.getCaseId();
             Map<String, Object> parameters = new ConcurrentHashMap<>();
             parameters.put(SEND_EMAIL_SERVICE_OWNER_NAME_KEY, SEND_EMAIL_SERVICE_OWNER_NAME_VALUE);
             parameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
-            parameters.put(
-                SEND_EMAIL_PARAMS_ET1PDF_ENGLISH_LINK_KEY,
-                GenericServiceUtil.prepareUpload(casePdfFiles, 0)
-            );
-            parameters.put(
-                SEND_EMAIL_PARAMS_ET1PDF_WELSH_LINK_KEY,
-                GenericServiceUtil.prepareUpload(casePdfFiles, 1)
-            );
-            parameters.put(
-                SEND_EMAIL_PARAMS_ACAS_PDF1_LINK_KEY,
-                GenericServiceUtil.prepareUpload(acasCertificates, 0)
-            );
-            parameters.put(
-                SEND_EMAIL_PARAMS_ACAS_PDF2_LINK_KEY,
-                GenericServiceUtil.prepareUpload(acasCertificates, 1)
-            );
-            parameters.put(
-                SEND_EMAIL_PARAMS_ACAS_PDF3_LINK_KEY,
-                GenericServiceUtil.prepareUpload(acasCertificates, 2)
-            );
-            parameters.put(
-                SEND_EMAIL_PARAMS_ACAS_PDF4_LINK_KEY,
-                GenericServiceUtil.prepareUpload(acasCertificates, 3)
-            );
-            parameters.put(
-                SEND_EMAIL_PARAMS_ACAS_PDF5_LINK_KEY,
-                GenericServiceUtil.prepareUpload(acasCertificates, 4)
-            );
-            parameters.put(
-                SEND_EMAIL_PARAMS_CLAIM_DESCRIPTION_FILE_LINK_KEY,
-                ObjectUtils.isNotEmpty(claimDescriptionDocument)
-                    && StringUtils.isNotBlank(claimDescriptionDocument.getDocumentUrl())
-                    ? claimDescriptionDocument.getDocumentUrl()
-                    : FILE_NOT_EXISTS
-            );
+            parameters.put(SEND_EMAIL_PARAMS_ET1PDF_ENGLISH_LINK_KEY,
+                           GenericServiceUtil.prepareUpload(casePdfFiles, 0));
+            parameters.put(SEND_EMAIL_PARAMS_ET1PDF_WELSH_LINK_KEY,
+                           GenericServiceUtil.prepareUpload(casePdfFiles, 1));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF1_LINK_KEY,
+                           GenericServiceUtil.prepareUpload(acasCertificates, 0));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF2_LINK_KEY,
+                           GenericServiceUtil.prepareUpload(acasCertificates, 1));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF3_LINK_KEY,
+                           GenericServiceUtil.prepareUpload(acasCertificates, 2));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF4_LINK_KEY,
+                           GenericServiceUtil.prepareUpload(acasCertificates, 3));
+            parameters.put(SEND_EMAIL_PARAMS_ACAS_PDF5_LINK_KEY,
+                           GenericServiceUtil.prepareUpload(acasCertificates, 4));
+            parameters.put(SEND_EMAIL_PARAMS_CLAIM_DESCRIPTION_FILE_LINK_KEY,
+                           ObjectUtils.isNotEmpty(claimDescriptionDocument)
+                                && StringUtils.isNotBlank(claimDescriptionDocument.getDocumentUrl())
+                                ? claimDescriptionDocument.getDocumentUrl()
+                                : FILE_NOT_EXISTS);
 
             String emailTemplateId = notificationsProperties.getSubmitCaseDocUploadErrorEmailTemplateId();
 
@@ -262,8 +242,7 @@ public class NotificationService {
             GenericServiceUtil.logException(
                 "Case Documents Upload error - Failed to send document upload error message",
                 caseRequest.getCaseId(), ne.getMessage(),
-                this.getClass().getName(), "sendDocUploadErrorEmail"
-            );
+                this.getClass().getName(), "sendDocUploadErrorEmail");
         }
         return sendEmailResponse;
     }
@@ -271,7 +250,7 @@ public class NotificationService {
     /**
      * Format details of claimant request and retrieve case data, then send email.
      *
-     * @param details             core details of the email
+     * @param details core details of the email
      * @param claimantApplication application request data
      * @return Gov notify email format
      */
@@ -821,6 +800,7 @@ public class NotificationService {
         } catch (NotificationClientException ne) {
             throw new NotificationException(ne);
         }
+    }
 
     /**
      * Sends email to all respondents/legal reps plus the tribunal when the claimant submits a bundle.

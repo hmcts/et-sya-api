@@ -1196,6 +1196,7 @@ class NotificationServiceTest {
                 eq(caseTestData.getExpectedDetails().getId().toString())
             );
         }
+    }
 
     @Test
     void shouldSendBundlesEmailToAll() throws NotificationClientException {
