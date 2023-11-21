@@ -27,7 +27,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_FOR_A_JUDGMENT_TO_BE_RECONSIDERED_C;
-import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_FOR_A_WITNESS_ORDER;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_FOR_A_WITNESS_ORDER_C;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_TO_AMEND_CLAIM;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_TO_HAVE_A_LEGAL_OFFICER_DECISION_CONSIDERED_AFRESH_C;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_TO_ORDER_THE_R_TO_DO_SOMETHING;
@@ -55,7 +55,7 @@ class TseApplicationHelperTest {
             Arguments.of("Consider a decision afresh", APP_TO_HAVE_A_LEGAL_OFFICER_DECISION_CONSIDERED_AFRESH_C),
             Arguments.of("Amend my claim", APP_TO_AMEND_CLAIM),
             Arguments.of("Order respondent to do something", APP_TO_ORDER_THE_R_TO_DO_SOMETHING),
-            Arguments.of("Order a witness to attend", APP_FOR_A_WITNESS_ORDER),
+            Arguments.of("Order a witness to attend", APP_FOR_A_WITNESS_ORDER_C),
             Arguments.of("Tell tribunal respondent not complied", R_HAS_NOT_COMPLIED_WITH_AN_ORDER_C),
             Arguments.of("Restrict publicity", APP_TO_RESTRICT_PUBLICITY_C),
             Arguments.of("Strike out all/part of response", APP_TO_STRIKE_OUT_ALL_OR_PART_OF_THE_RESPONSE),
@@ -118,8 +118,7 @@ class TseApplicationHelperTest {
             TseApplicationHelper.setRespondentApplicationWithResponse(request, app, caseData, caseDocumentService);
 
             Assertions.assertEquals("waitingForTheTribunal", app.getApplicationState());
-            Assertions.assertEquals("Response to Amend Response",
-                "Response to Amend response",
+            Assertions.assertEquals("Response to Amend response",
                 caseData.getDocumentCollection().get(0).getValue().getShortDescription()
             );
         }
