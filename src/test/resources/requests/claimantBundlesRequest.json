@@ -1,0 +1,16 @@
+{
+    "case_id": "11",
+    "case_type_id": "1234",
+    "claimant_bundles": {
+      "agreedDocWith": "text",
+      "hearing": "122333-abc-1122333",
+      "whatDocuments": "supplementary",
+      "whoseDocuments": "bothParties",
+      "uploadFile": {
+        "document_binary_url": "url",
+        "document_filename": "filename.pdf",
+        "document_url": "url"
+      }
+    }
+}
+

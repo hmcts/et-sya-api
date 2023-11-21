@@ -13,16 +13,19 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.ClaimantHearingPreference;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
@@ -37,8 +40,10 @@ import uk.gov.service.notify.SendEmailResponse;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -47,6 +52,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -59,8 +65,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
+import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_ABBREVIATED_MONTHS_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.service.NotificationService.HEARING_DATE_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOTIFICATION_CONFIRMATION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SUBMIT_CASE_PDF_FILE_RESPONSE;
@@ -74,18 +82,32 @@ class NotificationServiceTest {
     public static final String NOT_SET = "Not set";
     public static final String TEST_RESPONDENT = "Test Respondent";
     private static final String WITNESS = "witness";
+    private static final String DATE_DAY = "12";
+    private static final String DATE_YEAR = "2024";
     private static final String CHANGE_DETAILS_APPLICATION_TYPE = "Change my personal details";
     public static final String SEND_EMAIL_PARAMS_DATE_PLUS7_KEY = "datePlus7";
     private final ConcurrentHashMap<String, String> parameters = new ConcurrentHashMap<>();
 
-    @MockBean
+    @InjectMocks
     private NotificationService notificationService;
+    private Map<String, Object> params;
+    @Mock
+    private CaseData caseData;
+    @Mock
+    private ClaimantTse claimantApplication;
     private NotificationClient notificationClient;
+    @Mock
     private NotificationsProperties notificationsProperties;
     private CaseTestData caseTestData;
+    @Mock
     private CoreEmailDetails details;
+    @Mock
+    private FeatureToggleService featureToggleService;
+    private ClaimantHearingPreference claimantHearingPreference;
     @Captor
     ArgumentCaptor<Map<String, Object>> respondentParametersCaptor;
+    @Captor
+    ArgumentCaptor<Map<String, Object>> claimantParametersCaptor;
 
     @BeforeEach
     void before() throws NotificationClientException {
@@ -93,7 +115,8 @@ class NotificationServiceTest {
         parameters.put("references", "123456789");
         notificationClient = mock(NotificationClient.class);
         notificationsProperties = mock(NotificationsProperties.class);
-        notificationService = new NotificationService(notificationClient, notificationsProperties);
+        notificationService = new NotificationService(
+            notificationClient, notificationsProperties, featureToggleService);
         given(notificationClient.sendEmail(anyString(), anyString(), any(), anyString()))
             .willReturn(TestConstants.INPUT_SEND_EMAIL_RESPONSE);
         given(notificationsProperties.getCySubmitCaseEmailTemplateId())
@@ -193,7 +216,8 @@ class NotificationServiceTest {
     @SneakyThrows
     private SendEmailResponse mockSendEmailResponse() {
         notificationClient = mock(NotificationClient.class);
-        notificationService = new NotificationService(notificationClient, notificationsProperties);
+        notificationService = new NotificationService(
+            notificationClient, notificationsProperties, featureToggleService);
         doReturn(TestConstants.INPUT_SEND_EMAIL_RESPONSE).when(notificationClient)
             .sendEmail(TestConstants.TEST_TEMPLATE_API_KEY,
                        TestConstants.TEST_EMAIL, parameters, TestConstants.REFERENCE_STRING);
@@ -206,7 +230,8 @@ class NotificationServiceTest {
     @MethodSource("retrieveSubmitCaseConfirmationEmailPdfFilesArguments")
     void shouldTestSubmitCaseConfirmationWithGivenPdfFilesArguments(List<PdfDecodedMultipartFile> pdfFiles,
                                                                     String expectedValue) {
-        NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
+        NotificationService notificationService = new NotificationService(
+            notificationClient, notificationsProperties, featureToggleService);
         caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(null);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
             caseTestData.getCaseRequest(),
@@ -233,7 +258,8 @@ class NotificationServiceTest {
         caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(null);
         List<PdfDecodedMultipartFile> casePdfFiles = new ArrayList<>();
         casePdfFiles.add(TestConstants.PDF_DECODED_MULTIPART_FILE1);
-        NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
+        NotificationService notificationService = new NotificationService(
+            notificationClient, notificationsProperties, featureToggleService);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
             caseTestData.getCaseRequest(),
             caseTestData.getCaseData(),
@@ -266,7 +292,8 @@ class NotificationServiceTest {
         caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(selectedLanguage);
         List<PdfDecodedMultipartFile> casePdfFiles = new ArrayList<>();
         casePdfFiles.add(TestConstants.PDF_DECODED_MULTIPART_FILE1);
-        NotificationService notificationService = new NotificationService(notificationClient, notificationsProperties);
+        NotificationService notificationService = new NotificationService(
+            notificationClient, notificationsProperties, featureToggleService);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
             caseTestData.getCaseRequest(),
             caseTestData.getCaseData(),
@@ -298,7 +325,7 @@ class NotificationServiceTest {
             mockedServiceUtil.when(() -> GenericServiceUtil.findPdfFileBySelectedLanguage(any(), anyString()))
                 .thenReturn(TEST_SUBMIT_CASE_PDF_FILE_RESPONSE.getBytes());
             NotificationService notificationService =
-                new NotificationService(notificationClient, notificationsProperties);
+                new NotificationService(notificationClient, notificationsProperties, featureToggleService);
             notificationService.sendSubmitCaseConfirmationEmail(
                 caseTestData.getCaseRequest(),
                 caseTestData.getCaseData(),
@@ -306,11 +333,13 @@ class NotificationServiceTest {
                 casePdfFiles
             );
             mockedServiceUtil.verify(
-                () -> GenericServiceUtil.logException(anyString(),
-                                               anyString(),
-                                               eq(null),
-                                               anyString(),
-                                               anyString()),
+                () -> GenericServiceUtil.logException(
+                    anyString(),
+                    anyString(),
+                    eq(null),
+                    anyString(),
+                    anyString()
+                ),
                 times(1)
             );
         }
@@ -327,16 +356,19 @@ class NotificationServiceTest {
         when(notificationsProperties.getSubmitCaseDocUploadErrorEmailTemplateId())
             .thenReturn(TestConstants.DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID);
         when(notificationClient.sendEmail(TestConstants.TEST_TEMPLATE_API_KEY, TestConstants.TEST_EMAIL, parameters,
-                                          TestConstants.REFERENCE_STRING))
+                                          TestConstants.REFERENCE_STRING
+        ))
             .thenReturn(TestConstants.SEND_EMAIL_RESPONSE_DOC_UPLOAD_FAILURE);
 
         CaseRequest caseRequest = CaseRequest.builder().build();
         caseRequest.setCaseId("1_231_231");
 
-        SendEmailResponse sendEmailResponse = notificationService.sendDocUploadErrorEmail(caseRequest,
-                                                                                          casePdfFiles,
-                                                                                          acasCertificates,
-                                                                                          claimDescriptionDocument);
+        SendEmailResponse sendEmailResponse = notificationService.sendDocUploadErrorEmail(
+            caseRequest,
+            casePdfFiles,
+            acasCertificates,
+            claimDescriptionDocument
+        );
         assertThat(sendEmailResponse.getFromEmail()).isPresent();
         assertThat(sendEmailResponse.getFromEmail()).asString()
             .isEqualTo("Optional[" + TestConstants.TEST_EMAIL + "]");
@@ -353,16 +385,20 @@ class NotificationServiceTest {
             mockedServiceUtil.when(() -> GenericServiceUtil.prepareUpload(any(), anyInt()))
                 .thenReturn(TestConstants.FILE_NOT_EXISTS);
             UploadedDocumentType claimDescriptionDocument = new UploadedDocumentType();
-            notificationService.sendDocUploadErrorEmail(caseTestData.getCaseRequest(),
-                                                        List.of(TestConstants.PDF_DECODED_MULTIPART_FILE1),
-                                                        List.of(TestConstants.PDF_DECODED_MULTIPART_FILE1),
-                                                        claimDescriptionDocument);
+            notificationService.sendDocUploadErrorEmail(
+                caseTestData.getCaseRequest(),
+                List.of(TestConstants.PDF_DECODED_MULTIPART_FILE1),
+                List.of(TestConstants.PDF_DECODED_MULTIPART_FILE1),
+                claimDescriptionDocument
+            );
             mockedServiceUtil.verify(
-                () -> GenericServiceUtil.logException(anyString(),
-                                               eq(null),
-                                               anyString(),
-                                               anyString(),
-                                               anyString()),
+                () -> GenericServiceUtil.logException(
+                    anyString(),
+                    eq(null),
+                    anyString(),
+                    anyString(),
+                    anyString()
+                ),
                 times(1)
             );
         }
@@ -439,6 +475,94 @@ class NotificationServiceTest {
     }
 
     @Nested
+    class SendAcknowledgementEmailToClaimantWelsh {
+
+        @ParameterizedTest
+        @MethodSource("monthTranslations")
+        void shouldTranslateHearingDateToWelsh(
+            String englishMonth, String welshMonth) throws NotificationClientException {
+            String hearingDate = DATE_DAY + " " + englishMonth + " " + DATE_YEAR;
+            details = new CoreEmailDetails(
+                caseTestData.getCaseData(),
+                CLAIMANT,
+                "1",
+                TEST_RESPONDENT,
+                hearingDate,
+                caseTestData.getExpectedDetails().getId().toString()
+            );
+            when(featureToggleService.isWelshEnabled()).thenReturn(true);
+            when(notificationsProperties.getCyClaimantTseEmailTypeCTemplateId()).thenReturn(
+                "ExpectedEmailTemplateIdForWelsh");
+            caseTestData.getClaimantApplication().setContactApplicationType(WITNESS);
+            caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(WELSH_LANGUAGE);
+            when(notificationClient.sendEmail(
+                anyString(),
+                anyString(),
+                claimantParametersCaptor.capture(),
+                anyString()
+            ))
+                .thenReturn(mock(SendEmailResponse.class));
+            notificationService.sendAcknowledgementEmailToClaimant(details, caseTestData.getClaimantApplication());
+
+            Map<String, Object> capturedClaimantParameters = claimantParametersCaptor.getValue();
+            String translatedHearingDate = capturedClaimantParameters.get(HEARING_DATE_KEY).toString();
+            assertThat(translatedHearingDate).isEqualTo(DATE_DAY + " " + welshMonth + " " + DATE_YEAR);
+        }
+
+        static Stream<Arguments> monthTranslations() {
+            return CY_ABBREVIATED_MONTHS_MAP.entrySet().stream()
+                .map(entry -> Arguments.of(entry.getKey(), entry.getValue()));
+        }
+    }
+
+    @Nested
+    class HandlingNotSetHearingDateBasedOnLanguage {
+
+        @ParameterizedTest
+        @CsvSource({
+            "Welsh, true, Heb ei anfon",
+            "Welsh, false, Not set",
+            "English, true, Not set",
+            "English, false, Not set"
+        })
+        void shouldHandleNotSetHearingDateBasedOnLanguage(
+            String language, Boolean isWelshEnabled, String expectedOutcome) throws NotificationClientException {
+            details = new CoreEmailDetails(
+                caseTestData.getCaseData(),
+                CLAIMANT,
+                "1",
+                TEST_RESPONDENT,
+                    NOT_SET,
+                caseTestData.getExpectedDetails().getId().toString()
+            );
+            when(featureToggleService.isWelshEnabled()).thenReturn(isWelshEnabled);
+            caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(language);
+            when(notificationsProperties.getCyClaimantTseEmailTypeCTemplateId()).thenReturn(
+                "ExpectedEmailTemplateIdForWelsh");
+            caseTestData.getClaimantApplication().setContactApplicationType(WITNESS);
+            when(notificationClient.sendEmail(
+                anyString(),
+                anyString(),
+                claimantParametersCaptor.capture(),
+                anyString()
+            )).thenReturn(mock(SendEmailResponse.class));
+
+            notificationService.sendAcknowledgementEmailToClaimant(details, caseTestData.getClaimantApplication());
+
+            verify(notificationClient).sendEmail(
+                anyString(),
+                anyString(),
+                claimantParametersCaptor.capture(),
+                anyString()
+            );
+
+            Map<String, Object> capturedClaimantParameters = claimantParametersCaptor.getValue();
+            String actualHearingDate = capturedClaimantParameters.get(HEARING_DATE_KEY).toString();
+            assertThat(actualHearingDate).isEqualTo(expectedOutcome);
+        }
+    }
+
+    @Nested
     class SendAcknowledgementEmailToRespondents {
         @BeforeEach
         void setUp() {
@@ -454,6 +578,7 @@ class NotificationServiceTest {
 
         @Test
         void shouldSendEmailToRespondentTypeBPersonalisationCheck() throws NotificationClientException {
+            caseTestData.getClaimantApplication().setContactApplicationType("strike");
             notificationService.sendAcknowledgementEmailToRespondents(
                 details,
                 null,
@@ -461,7 +586,8 @@ class NotificationServiceTest {
             );
 
             verify(notificationClient, times(5)).sendEmail(any(), any(),
-                                                           respondentParametersCaptor.capture(), any());
+                                                           respondentParametersCaptor.capture(), any()
+            );
             Map<String, Object> respondentParameters = respondentParametersCaptor.getValue();
             Object targetParameter = respondentParameters.get(SEND_EMAIL_PARAMS_DATE_PLUS7_KEY);
             String[] dateParts = targetParameter.toString().split(" ");
@@ -1070,5 +1196,99 @@ class NotificationServiceTest {
                 eq(caseTestData.getExpectedDetails().getId().toString())
             );
         }
+
+    @Test
+    void shouldSendBundlesEmailToAll() throws NotificationClientException {
+        given(notificationsProperties.getBundlesClaimantSubmittedNotificationTemplateId()
+        ).willReturn("bundlesClaimantSubmittedNotificationTemplateId");
+
+        CaseData caseData =  caseTestData.getCaseData();
+        String futureDate = LocalDateTime.now().plusDays(5).toString();
+        caseData.getHearingCollection().get(0).getValue().getHearingDateCollection().get(0).getValue().setListedDate(
+            futureDate);
+
+        notificationService.sendBundlesEmails(
+            caseData,
+            caseTestData.getExpectedDetails().getId().toString(),
+            "123345"
+        );
+
+        // Sends to 5 respondents + 1 to tribunal
+        verify(notificationClient, times(6)).sendEmail(
+            eq("bundlesClaimantSubmittedNotificationTemplateId"),
+            any(),
+            any(),
+            eq(caseTestData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @BeforeEach
+    void setUp() {
+        claimantHearingPreference = new ClaimantHearingPreference();
+        params = new HashMap<>();
+
+        String hearingDate = "12 Jan 2023";
+        when(details.hearingDate()).thenReturn(hearingDate);
+        when(caseData.getClaimantHearingPreference()).thenReturn(claimantHearingPreference);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "true, strike, Yes, CY_APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
+        "false, strike, Yes, APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
+        "true, withdraw, Yes, CY_APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
+        "false, withdraw, Yes, APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
+        "true, strike, No, CY_APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID",
+        "false, strike, No, APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID",
+        "false, strike, Yes, APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
+        "false, strike, Yes, APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
+        "false, strike, No, APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID",
+        "false, strike, No, APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID"
+    })
+    void shouldReturnExpectedEmailTemplateForRule92(
+        Boolean isWelsh, String contactType, String copyTo, String expectedTemplateId) {
+
+        when(claimantApplication.getContactApplicationType()).thenReturn(contactType);
+        when(claimantApplication.getCopyToOtherPartyYesOrNo()).thenReturn(copyTo);
+        when(notificationsProperties.getCyClaimantTseEmailYesTemplateId()).thenReturn(
+            "CY_APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID");
+        when(notificationsProperties.getCyClaimantTseEmailNoTemplateId()).thenReturn(
+            "CY_APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID");
+        when(notificationsProperties.getClaimantTseEmailYesTemplateId()).thenReturn(
+            "APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID");
+        when(notificationsProperties.getClaimantTseEmailNoTemplateId()).thenReturn(
+            "APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID");
+
+        String emailTemplate = notificationService.getAndSetRule92EmailTemplate(
+            claimantApplication, details.hearingDate(), params, isWelsh);
+
+        assertEquals(expectedTemplateId, emailTemplate);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "true, Welsh, CY_APPLICATION_ACKNOWLEDGEMENT_TYPE_C_EMAIL_TEMPLATE_ID",
+        "false, Welsh, APPLICATION_ACKNOWLEDGEMENT_TYPE_C_EMAIL_TEMPLATE_ID",
+        "true, English, APPLICATION_ACKNOWLEDGEMENT_TYPE_C_EMAIL_TEMPLATE_ID",
+        "false, English, APPLICATION_ACKNOWLEDGEMENT_TYPE_C_EMAIL_TEMPLATE_ID"
+    })
+    void shouldReturnExpectedEmailTemplateForTypeC(
+        Boolean welshFlagEnabled, String language, String expectedTemplateId) {
+
+        when(featureToggleService.isWelshEnabled()).thenReturn(welshFlagEnabled);
+        claimantHearingPreference.setContactLanguage(language);
+
+        if (WELSH_LANGUAGE.equals(language) && welshFlagEnabled) {
+            when(notificationsProperties.getCyClaimantTseEmailTypeCTemplateId()).thenReturn(expectedTemplateId);
+        } else if (ENGLISH_LANGUAGE.equals(language) || !welshFlagEnabled) {
+            when(notificationsProperties.getClaimantTseEmailTypeCTemplateId()).thenReturn(expectedTemplateId);
+        }
+
+        String emailTemplate = WELSH_LANGUAGE.equals(language) && welshFlagEnabled
+            ? notificationsProperties.getCyClaimantTseEmailTypeCTemplateId()
+            : notificationsProperties.getClaimantTseEmailTypeCTemplateId();
+
+        assertEquals(expectedTemplateId, emailTemplate);
     }
 }
+

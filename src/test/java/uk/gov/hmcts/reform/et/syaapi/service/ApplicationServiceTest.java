@@ -419,7 +419,7 @@ class ApplicationServiceTest {
         @ParameterizedTest
         @MethodSource
         void testNewStateAndResponseRequired(boolean isRespondingToRequestOrOrder, String expectedApplicationState,
-                                    String expectedClaimantResponseRequired) {
+                                             String expectedClaimantResponseRequired) {
             testRequest.setRespondingToRequestOrOrder(isRespondingToRequestOrOrder);
             GenericTseApplicationType application = GenericTseApplicationType.builder()
                 .claimantResponseRequired(YES).applicationState(INITIAL_STATE).build();

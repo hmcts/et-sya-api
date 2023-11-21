@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.AdminDecisionNotificationStateUpdateRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.ClaimantBundlesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
@@ -113,6 +114,11 @@ public final class TestData {
             TribunalResponseViewedRequest.class
         );
 
+    private final ClaimantBundlesRequest claimantBundlesRequest = ResourceLoader.fromString(
+        "requests/claimantBundlesRequest.json",
+        ClaimantBundlesRequest.class
+    );
+
     public static Stream<Arguments> postcodeAddressArguments() {
         return Stream.of(
             Arguments.of("A1 1AA",
@@ -191,6 +197,7 @@ public final class TestData {
         );
 
     }
+
 
     public static Stream<Arguments> generateSubmitCaseConfirmationEmailPdfFilesArguments() {
         return Stream.of(
