@@ -137,7 +137,7 @@ public class ApplicationService {
 
         sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
 
-        Boolean waEnabled = featureToggleService.isWorkAllocationEnabled();
+        boolean waEnabled = featureToggleService.isWorkAllocationEnabled();
         setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService, waEnabled);
 
         createAndAddPdfOfResponse(authorization, request, caseData, appType);

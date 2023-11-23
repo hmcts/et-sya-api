@@ -106,7 +106,7 @@ public final class TseApplicationHelper {
                                                             GenericTseApplicationType appToModify,
                                                             CaseData caseData,
                                                             CaseDocumentService caseDocumentService,
-                                                            Boolean isWorkAllocationEnabled) {
+                                                            boolean isWorkAllocationEnabled) {
         if (CollectionUtils.isEmpty(appToModify.getRespondCollection())) {
             appToModify.setRespondCollection(new ArrayList<>());
         }
