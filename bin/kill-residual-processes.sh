@@ -10,6 +10,6 @@ then
   echo "killing process with Id $processId_4550"
   kill -9 "$processId_4550"
 else
-  echo "There is no process running on port 4453"
+  echo "There is no process running on port 4550"
 fi
 
