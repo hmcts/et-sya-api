@@ -170,8 +170,7 @@ public class PdfService {
             .findFirst();
         String acasName = "";
         if (respondent.isPresent()) {
-            acasName = respondent.get().getValue().getRespondentName();
-            acasName = acasName + " - ";
+            acasName = respondent.get().getValue().getRespondentName() + " - ";
         }
 
         return "ACAS Certificate - "
