@@ -26,6 +26,9 @@ spring:
     multipart:
       max-file-size: 1000MB
       max-request-size: 1000MB
+  datasource:
+    hikari:
+      max-lifetime: 600000
 
 azure:
   application-insights:
