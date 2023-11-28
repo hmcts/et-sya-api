@@ -163,25 +163,20 @@ public class PdfService {
             + ".pdf";
     }
 
-    private static String createPdfDocumentNameFromCaseDataAndAcasCertificate(
-        CaseData caseData, AcasCertificate acasCertificate) {
-        return getRespondentAcasCertificate(caseData, acasCertificate);
-    }
-
-    private static String getRespondentAcasCertificate(CaseData caseData, AcasCertificate acasCertificate) {
+    private static String createPdfDocumentNameFromCaseDataAndAcasCertificate(CaseData caseData,
+                                                                              AcasCertificate acasCertificate) {
         Optional<RespondentSumTypeItem> respondent = caseData.getRespondentCollection().stream()
             .filter(r -> acasCertificate.getCertificateNumber().equals(
                 defaultIfEmpty(r.getValue().getRespondentAcas(), "")))
             .findFirst();
         String acasName = "";
         if (respondent.isPresent()) {
-            acasName = respondent.get().getValue().getRespondentName();
+            acasName = respondent.get().getValue().getRespondentName() + " - ";
         }
+
         return "ACAS Certificate - "
             + acasName
-            + " - "
-            + acasCertificate.getCertificateNumber().replace("/", "_")
-            + ".pdf";
+            + acasCertificate.getCertificateNumber().replace("/", "_");
     }
 
     private static String createPdfDocumentDescriptionFromCaseData(CaseData caseData) {
@@ -189,13 +184,6 @@ public class PdfService {
             + caseData.getClaimantIndType().getClaimantFirstNames()
             + " " + caseData.getClaimantIndType().getClaimantLastName();
     }
-
-    private static String createPdfDocumentDescriptionFromCaseDataAndAcasCertificate(
-        CaseData caseData,
-        AcasCertificate acasCertificate) {
-        return getRespondentAcasCertificate(caseData, acasCertificate);
-    }
-
 
     /**
      * Converts case data to a pdf byte array wrapped in a {@link PdfDecodedMultipartFile} Object.
@@ -261,17 +249,15 @@ public class PdfService {
         for (AcasCertificate acasCertificate : acasCertificates) {
             if (!NOT_FOUND.equals(acasCertificate.getCertificateDocument())) {
                 byte[] pdfData = Base64.getDecoder().decode(acasCertificate.getCertificateDocument());
+                String docName = createPdfDocumentNameFromCaseDataAndAcasCertificate(
+                    caseData,
+                    acasCertificate
+                );
                 pdfDecodedMultipartFiles.add(new PdfDecodedMultipartFile(
                     pdfData,
-                    createPdfDocumentNameFromCaseDataAndAcasCertificate(
-                        caseData,
-                        acasCertificate
-                    ),
+                    docName + ".pdf",
                     PDF_FILE_TIKA_CONTENT_TYPE,
-                    createPdfDocumentDescriptionFromCaseDataAndAcasCertificate(
-                        caseData,
-                        acasCertificate
-                    )
+                    docName
                 ));
             }
         }

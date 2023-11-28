@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.helper;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -22,6 +21,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -39,6 +39,7 @@ import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.CHANGE_OF_P
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.CONTACT_THE_TRIBUNAL_C;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.R_HAS_NOT_COMPLIED_WITH_AN_ORDER_C;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.WITHDRAWAL_OF_ALL_OR_PART_CLAIM;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.setRespondentApplicationWithResponse;
 
 class TseApplicationHelperTest {
     @MockBean
@@ -115,7 +116,7 @@ class TseApplicationHelperTest {
             DocumentTypeItem docType = DocumentTypeItem.builder().id("1").value(new DocumentType()).build();
             when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(docType);
 
-            TseApplicationHelper.setRespondentApplicationWithResponse(request, app, caseData, caseDocumentService);
+            setRespondentApplicationWithResponse(request, app, caseData, caseDocumentService, true);
 
             Assertions.assertEquals("waitingForTheTribunal", app.getApplicationState());
             Assertions.assertEquals("Response to Amend response",

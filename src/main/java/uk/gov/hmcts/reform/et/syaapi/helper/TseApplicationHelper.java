@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,7 @@ import java.util.UUID;
 
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.RESPONDENT_TITLE;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.OLD_DATE_TIME_PATTERN;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UK_LOCAL_DATE_PATTERN;
 
@@ -34,8 +36,20 @@ public final class TseApplicationHelper {
     public static final String CLAIMANT = "Claimant";
     public static final String WAITING_FOR_TRIBUNAL = "waitingForTheTribunal";
 
+    /**
+     * Gives current date in string format.
+     * @return current date in "dd MMM yyyy" format
+     */
     public static String formatCurrentDate(LocalDate date) {
         return date.format(UK_LOCAL_DATE_PATTERN);
+    }
+
+    /**
+     * Gives current datetime in string format.
+     * @return current datetime in "yyyy-MM-dd'T'HH:mm:ss.SSS" format
+     */
+    public static String getCurrentDateTime() {
+        return LocalDateTime.now().format(OLD_DATE_TIME_PATTERN);
     }
 
     /**
@@ -95,13 +109,19 @@ public final class TseApplicationHelper {
     public static void setRespondentApplicationWithResponse(RespondToApplicationRequest request,
                                                             GenericTseApplicationType appToModify,
                                                             CaseData caseData,
-                                                            CaseDocumentService caseDocumentService) {
+                                                            CaseDocumentService caseDocumentService,
+                                                            boolean isWorkAllocationEnabled) {
         if (CollectionUtils.isEmpty(appToModify.getRespondCollection())) {
             appToModify.setRespondCollection(new ArrayList<>());
         }
         TseRespondType responseToAdd = request.getResponse();
         responseToAdd.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
         responseToAdd.setFrom(CLAIMANT);
+
+        if (isWorkAllocationEnabled) {
+            responseToAdd.setDateTime(getCurrentDateTime());
+            responseToAdd.setApplicationType(appToModify.getType());
+        }
 
         if (request.getSupportingMaterialFile() != null) {
             DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(

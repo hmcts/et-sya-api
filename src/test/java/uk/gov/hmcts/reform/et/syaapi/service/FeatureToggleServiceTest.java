@@ -26,7 +26,7 @@ class FeatureToggleServiceTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
-    void shouldReturnCorrectValueWhenAnyFeatureIsEnabled(Boolean toggleStat) {
+    void shouldReturnCorrectValueWhenAnyFeatureIsEnabled(boolean toggleStat) {
         var caseFileKey = "any-feature";
         givenToggle(caseFileKey, toggleStat);
 
@@ -35,7 +35,7 @@ class FeatureToggleServiceTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
-    void shouldReturnCorrectValueWhenCaseFlagsLinkingIsEnabled(Boolean toggleStat) {
+    void shouldReturnCorrectValueWhenCaseFlagsLinkingIsEnabled(boolean toggleStat) {
         givenToggle("case-flags-linking-enabled", toggleStat);
 
         assertThat(featureToggleService.isCaseFlagsEnabled()).isEqualTo(toggleStat);
@@ -43,7 +43,15 @@ class FeatureToggleServiceTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
-    void shouldReturnCorrectValueWhenWelshIsEnabled(Boolean toggleStat) {
+    void shouldReturnCorrectValueWhenWorkAllocationIsEnabled(boolean toggleStat) {
+        givenToggle("work-allocation", toggleStat);
+
+        assertThat(featureToggleService.isWorkAllocationEnabled()).isEqualTo(toggleStat);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldReturnCorrectValueWhenWelshIsEnabled(boolean toggleStat) {
         givenToggle("welsh-language", toggleStat);
 
         assertThat(featureToggleService.isWelshEnabled()).isEqualTo(toggleStat);
