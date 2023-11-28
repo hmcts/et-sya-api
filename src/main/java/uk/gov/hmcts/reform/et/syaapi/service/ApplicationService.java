@@ -37,6 +37,7 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED_STATE;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.setRespondentApplicationWithResponse;
 
 @RequiredArgsConstructor
 @Service
@@ -50,6 +51,7 @@ public class ApplicationService {
     private final NotificationService notificationService;
     private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
+    private final FeatureToggleService featureToggleService;
 
     /**
      * Submit Claimant Application to Tell Something Else.
@@ -139,7 +141,8 @@ public class ApplicationService {
             sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
         }
 
-        TseApplicationHelper.setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService);
+        boolean waEnabled = featureToggleService.isWorkAllocationEnabled();
+        setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService, waEnabled);
 
         if (isStoredPending) {
             NotificationService.CoreEmailDetails details = notificationService.formatCoreEmailDetails(caseData, caseId);
