@@ -151,13 +151,10 @@ public class ApplicationService {
 
         sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
 
-        //keep
         boolean waEnabled = featureToggleService.isWorkAllocationEnabled();
         setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService, waEnabled);
 
-        //before
-//        createAndAddPdfOfResponse(authorization, request, caseData, appType);
-//        TseApplicationHelper.setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService);
+        createAndAddPdfOfResponse(authorization, request, caseData, appType);
 
         return caseService.submitUpdate(
             authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
