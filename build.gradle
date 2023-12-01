@@ -4,7 +4,7 @@ plugins {
   id 'pmd'
   id 'jacoco'
   id 'io.spring.dependency-management' version '1.1.4'
-  id 'org.springframework.boot' version '2.7.17'
+  id 'org.springframework.boot' version '2.7.18'
   id 'org.owasp.dependencycheck' version '8.4.3'
   id 'com.github.ben-manes.versions' version '0.50.0'
   id 'org.sonarqube' version '4.4.1.3373'
@@ -205,7 +205,7 @@ ext {
 }
 
 dependencies {
-  implementation group: 'com.github.hmcts', name: 'et-data-model', version: '3.2.0'
+  implementation group: 'com.github.hmcts', name: 'et-data-model', version: '3.2.2'
   implementation('com.github.hmcts:et-common:1.2.8') { transitive = false }
   implementation group: 'uk.gov.dwp.regex', name: 'postcode-validation', version: '1.1.0'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
@@ -246,7 +246,7 @@ dependencies {
   implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.37.1'
 
   implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.11.1'
-  implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.17'
+  implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.18'
   implementation 'org.json:json:20231013'
   implementation group: 'org.yaml', name: 'snakeyaml', version: '2.2'
 
