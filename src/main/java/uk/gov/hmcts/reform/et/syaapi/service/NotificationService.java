@@ -258,8 +258,11 @@ public class NotificationService {
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
         boolean welshFlagEnabled = featureToggleService.isWelshEnabled();
         log.info("Welsh feature flag is set to " + welshFlagEnabled);
-        boolean isWelsh = welshFlagEnabled && WELSH_LANGUAGE.equals(
-            details.caseData().getClaimantHearingPreference().getContactLanguage());
+        boolean isWelsh = false;
+        if (ObjectUtils.isEmpty(details.caseData().getClaimantHearingPreference() != null)) {
+            isWelsh = welshFlagEnabled && WELSH_LANGUAGE.equals(
+                details.caseData().getClaimantHearingPreference().getContactLanguage());
+        }
         String hearingDate = details.hearingDate;
 
         if (NOT_SET.equals(hearingDate) && isWelsh) {
