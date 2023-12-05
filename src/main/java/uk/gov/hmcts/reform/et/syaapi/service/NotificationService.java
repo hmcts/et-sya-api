@@ -258,7 +258,7 @@ public class NotificationService {
         boolean welshFlagEnabled = featureToggleService.isWelshEnabled();
         log.info("Welsh feature flag is set to " + welshFlagEnabled);
         boolean isWelsh = false;
-        if (ObjectUtils.isEmpty(details.caseData().getClaimantHearingPreference() != null)) {
+        if (ObjectUtils.isNotEmpty(details.caseData().getClaimantHearingPreference())) {
             isWelsh = welshFlagEnabled && WELSH_LANGUAGE.equals(
                 details.caseData().getClaimantHearingPreference().getContactLanguage());
         }
