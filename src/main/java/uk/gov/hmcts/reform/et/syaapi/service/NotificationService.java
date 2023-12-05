@@ -255,7 +255,6 @@ public class NotificationService {
      * @return Gov notify email format
      */
     SendEmailResponse sendAcknowledgementEmailToClaimant(CoreEmailDetails details, ClaimantTse claimantApplication) {
-        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
         boolean welshFlagEnabled = featureToggleService.isWelshEnabled();
         log.info("Welsh feature flag is set to " + welshFlagEnabled);
         boolean isWelsh = false;
@@ -270,7 +269,7 @@ public class NotificationService {
         } else if (isWelsh) {
             hearingDate = translateHearingDateToWelsh(hearingDate);
         }
-
+        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
         claimantParameters.put(HEARING_DATE_KEY, hearingDate);
 
         addCommonParameters(
