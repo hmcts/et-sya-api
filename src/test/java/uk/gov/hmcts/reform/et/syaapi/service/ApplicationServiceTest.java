@@ -16,7 +16,7 @@ import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
-import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
@@ -413,7 +413,7 @@ class ApplicationServiceTest {
 
             MockedStatic<TseApplicationHelper> mockStatic = mockStatic(TseApplicationHelper.class);
             mockStatic.when(() -> TseApplicationHelper.getSelectedApplication(any(), any()))
-                .thenReturn(GenericTseApplicationTypeItem.builder().value(application).build());
+                .thenReturn(TypeItem.<GenericTseApplicationType>builder().value(application).build());
 
             applicationService.respondToApplication(TEST_SERVICE_AUTH_TOKEN, testRequest);
 

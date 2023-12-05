@@ -6,8 +6,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.items.GenericTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.items.PseResponseTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondNotificationType;
@@ -74,12 +73,12 @@ public class SendNotificationService {
         );
     }
 
-    private void setResponsesAsViewed(List<GenericTypeItem<RespondNotificationType>> responses) {
+    private void setResponsesAsViewed(List<TypeItem<RespondNotificationType>> responses) {
         if (CollectionUtils.isEmpty(responses)) {
             return;
         }
 
-        for (GenericTypeItem<RespondNotificationType> item : responses) {
+        for (TypeItem<RespondNotificationType> item : responses) {
             item.getValue().setState(VIEWED);
         }
     }
@@ -126,7 +125,7 @@ public class SendNotificationService {
                 CLAIMANT_CORRESPONDENCE_DOCUMENT,
                 request.getSupportingMaterialFile()
             );
-            var documentTypeItems = new ArrayList<GenericTypeItem<DocumentType>>();
+            var documentTypeItems = new ArrayList<TypeItem<DocumentType>>();
             documentTypeItems.add(documentTypeItem);
             pseResponseType.setSupportingMaterial(documentTypeItems);
             pseResponseType.setHasSupportingMaterial(YES);
@@ -134,8 +133,8 @@ public class SendNotificationService {
             pseResponseType.setHasSupportingMaterial(NO);
         }
 
-        PseResponseTypeItem pseResponseTypeItem =
-            PseResponseTypeItem.builder().id(UUID.randomUUID().toString())
+        TypeItem<PseResponseType> pseResponseTypeItem =
+            TypeItem.<PseResponseType>builder().id(UUID.randomUUID().toString())
                 .value(pseResponseType)
                 .build();
 
@@ -171,12 +170,12 @@ public class SendNotificationService {
 
     }
 
-    private void setResponsesAsRespondedTo(List<GenericTypeItem<RespondNotificationType>> responses) {
+    private void setResponsesAsRespondedTo(List<TypeItem<RespondNotificationType>> responses) {
         if (CollectionUtils.isEmpty(responses)) {
             return;
         }
 
-        for (GenericTypeItem<RespondNotificationType> item : responses) {
+        for (TypeItem<RespondNotificationType> item : responses) {
             item.getValue().setIsClaimantResponseDue(null);
         }
     }

@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
-import uk.gov.hmcts.et.common.model.ccd.items.GenericTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.HearingBundleType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -50,7 +50,7 @@ public class BundlesService {
         if (CollectionUtils.isEmpty(caseData.getBundlesClaimantCollection())) {
             caseData.setBundlesClaimantCollection(new ArrayList<>());
         }
-        GenericTypeItem<HearingBundleType> hearingBundleTypeItem = new GenericTypeItem<>();
+        TypeItem<HearingBundleType> hearingBundleTypeItem = new TypeItem<>();
         hearingBundleTypeItem.setId(String.valueOf(randomUUID()));
         hearingBundleTypeItem.setValue(request.getClaimantBundles());
 

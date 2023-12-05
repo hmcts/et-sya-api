@@ -9,9 +9,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
-import uk.gov.hmcts.et.common.model.ccd.items.GenericTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.ListTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.items.PseResponseTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondNotificationType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationType;
@@ -77,7 +76,7 @@ class SendNotificationServiceTest {
         )).thenReturn(updateCaseEventResponse);
 
         ListTypeItem<RespondNotificationType> from = ListTypeItem.from(
-            GenericTypeItem.from(ID, RespondNotificationType.builder()
+            TypeItem.from(ID, RespondNotificationType.builder()
                 .state(VIEWED).isClaimantResponseDue(YES).build()
             )
         );
@@ -145,12 +144,12 @@ class SendNotificationServiceTest {
         )).thenReturn(testData.getUpdateCaseEventResponse());
 
         ListTypeItem<RespondNotificationType> from = ListTypeItem.from(
-            GenericTypeItem.from(ID, RespondNotificationType.builder()
+            TypeItem.from(ID, RespondNotificationType.builder()
                 .state(VIEWED).isClaimantResponseDue(YES).build()
             )
         );
 
-        PseResponseTypeItem build = PseResponseTypeItem.builder()
+        TypeItem<PseResponseType> build = TypeItem.<PseResponseType>builder()
             .id(ID)
             .value(
                 PseResponseType.builder()
@@ -178,12 +177,12 @@ class SendNotificationServiceTest {
             eq(MOCK_TOKEN), eq("11"), contentCaptor.capture(), eq("1234"));
 
         CaseData data = (CaseData) contentCaptor.getValue().getData();
-        List<PseResponseTypeItem> expectedResponses = items.get(0).getValue().getRespondCollection();
+        List<TypeItem<PseResponseType>> expectedResponses = items.get(0).getValue().getRespondCollection();
 
         PseResponseType expected = expectedResponses.get(0).getValue();
         SendNotificationType notification = data.getSendNotificationCollection().get(0).getValue();
         PseResponseType actual = notification.getRespondCollection().get(0).getValue();
-        GenericTypeItem<RespondNotificationType> tribunalResponse =
+        TypeItem<RespondNotificationType> tribunalResponse =
             notification.getRespondNotificationTypeCollection().get(0);
 
         Assertions.assertEquals(expected.getResponse(), actual.getResponse());

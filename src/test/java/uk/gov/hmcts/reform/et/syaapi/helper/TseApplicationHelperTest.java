@@ -6,15 +6,15 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
-import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.items.TseAdminRecordDecisionTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.ListTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
+import uk.gov.hmcts.et.common.model.ccd.types.TseAdminRecordDecisionType;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 
 import java.time.LocalDate;
-import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,10 +35,10 @@ class TseApplicationHelperTest {
 
         @Test
         void correctApplicationWhenExists() {
-            GenericTseApplicationTypeItem expected = GenericTseApplicationTypeItem.builder().id(ID).build();
-            List<GenericTseApplicationTypeItem> applications = List.of(expected);
+            TypeItem<GenericTseApplicationType> expected = TypeItem.<GenericTseApplicationType>builder().id(ID).build();
+            ListTypeItem<GenericTseApplicationType> applications = ListTypeItem.from(expected);
 
-            GenericTseApplicationTypeItem actual = TseApplicationHelper.getSelectedApplication(applications, ID);
+            TypeItem<GenericTseApplicationType> actual = TseApplicationHelper.getSelectedApplication(applications, ID);
 
             assertThat(actual).isEqualTo(expected);
         }
@@ -46,10 +46,11 @@ class TseApplicationHelperTest {
         @Test
         void nullWhenDoesNotExist() {
             String wrongId = "wrongId";
-            GenericTseApplicationTypeItem expected = GenericTseApplicationTypeItem.builder().id(ID).build();
-            List<GenericTseApplicationTypeItem> applications = List.of(expected);
+            TypeItem<GenericTseApplicationType> expected = TypeItem.<GenericTseApplicationType>builder().id(ID).build();
+            ListTypeItem<GenericTseApplicationType> applications = ListTypeItem.from(expected);
 
-            GenericTseApplicationTypeItem actual = TseApplicationHelper.getSelectedApplication(applications, wrongId);
+            TypeItem<GenericTseApplicationType> actual = TseApplicationHelper
+                        .getSelectedApplication(applications, wrongId);
 
             assertThat(actual).isNull();
         }
@@ -79,20 +80,22 @@ class TseApplicationHelperTest {
     class FindAdminDecisions {
         @Test
         void shouldFindAdminDecision() {
-            GenericTseApplicationTypeItem app = data.getCaseData().getGenericTseApplicationCollection().get(0);
+            TypeItem<GenericTseApplicationType> app = data.getCaseData().getGenericTseApplicationCollection().get(0);
             String decisionId = "777";
 
-            TseAdminRecordDecisionTypeItem result = TseApplicationHelper.findAdminDecision(app, decisionId);
+            TypeItem<TseAdminRecordDecisionType> result = TseApplicationHelper
+                .findAdminDecision(app, decisionId);
 
             assertThat(result.getId()).isEqualTo(decisionId);
         }
 
         @Test
         void shouldReturnNullIfDecisionNotFound() {
-            GenericTseApplicationTypeItem app = data.getCaseData().getGenericTseApplicationCollection().get(0);
+            TypeItem<GenericTseApplicationType> app = data.getCaseData().getGenericTseApplicationCollection().get(0);
             String decisionId = "778";
 
-            TseAdminRecordDecisionTypeItem result = TseApplicationHelper.findAdminDecision(app, decisionId);
+            TypeItem<TseAdminRecordDecisionType> result = TseApplicationHelper
+                .findAdminDecision(app, decisionId);
 
             assertThat(result).isNull();
         }
@@ -102,7 +105,7 @@ class TseApplicationHelperTest {
     class FindResponses {
         @Test
         void shouldFindAdminResponse() {
-            GenericTseApplicationTypeItem app = data.getCaseData().getGenericTseApplicationCollection().get(0);
+            TypeItem<GenericTseApplicationType> app = data.getCaseData().getGenericTseApplicationCollection().get(0);
             String responseId = "777";
 
             var result = TseApplicationHelper.findResponse(app, responseId);
@@ -112,7 +115,7 @@ class TseApplicationHelperTest {
 
         @Test
         void shouldReturnNullIfResponseNotFound() {
-            GenericTseApplicationTypeItem app = data.getCaseData().getGenericTseApplicationCollection().get(0);
+            TypeItem<GenericTseApplicationType> app = data.getCaseData().getGenericTseApplicationCollection().get(0);
             String responseId = "778";
 
             var result = TseApplicationHelper.findResponse(app, responseId);
