@@ -76,7 +76,8 @@ public class ApplicationService {
             );
         }
 
-        if (!request.isTypeC() && YES.equals(claimantTse.getCopyToOtherPartyYesOrNo())) {
+        if (!request.isTypeC() && YES.equals(claimantTse.getCopyToOtherPartyYesOrNo())
+            && !YES.equals(claimantTse.getStoredPending())) {
             try {
                 log.info("Uploading pdf of TSE application");
                 caseService.uploadTseCyaAsPdf(authorization, caseDetails, claimantTse, caseTypeId);

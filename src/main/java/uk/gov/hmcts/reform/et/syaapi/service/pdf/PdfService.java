@@ -296,6 +296,36 @@ public class PdfService {
     }
 
     /**
+     * Converts GenericTseApplicationTypeItem to PdfDecodedMultipartFile.
+     * Firstly by converting to a pdf byte array and then wrapping within the return object.
+     * @param item GenericTseApplicationTypeItem
+     * @param caseReference caseReference
+     * @return {@link PdfDecodedMultipartFile} with the claimant tse CYA page in pdf format.
+     * @throws DocumentGenerationException if there is an error generating the PDF.
+     */
+    public PdfDecodedMultipartFile convertClaimantStoredTseIntoMultipartFile(
+        GenericTseApplicationTypeItem item,
+        String caseReference)
+        throws DocumentGenerationException {
+
+        GenericTseApplication genericTseApplication =
+            ClaimantTseUtil.getCurrentStoredGenericTseApplication(item, caseReference);
+
+        byte[] tseApplicationPdf = documentGenerationService.genPdfDocument(
+            contactTheTribunalPdfTemplate,
+            TSE_FILENAME,
+            genericTseApplication
+        );
+
+        return new PdfDecodedMultipartFile(
+            tseApplicationPdf,
+            TSE_FILENAME,
+            PDF_FILE_TIKA_CONTENT_TYPE,
+            item.getValue().getType()
+        );
+    }
+
+    /**
      * Converts a given object of type {@link RespondToApplicationRequest} to a {@link PdfDecodedMultipartFile}.
      * Firstly by converting to a pdf byte array and then wrapping within the return object.
      *

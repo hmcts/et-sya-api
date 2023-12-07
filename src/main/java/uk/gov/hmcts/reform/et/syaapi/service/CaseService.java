@@ -14,6 +14,7 @@ import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
@@ -606,6 +607,33 @@ public class CaseService {
         ));
 
         caseDetails.getData().put(DOCUMENT_COLLECTION, docList);
+    }
+
+    void uploadStoredTseCyaAsPdf(
+        String authorization,
+        CaseData caseData,
+        GenericTseApplicationTypeItem item,
+        String caseType
+    ) throws DocumentGenerationException, CaseDocumentException {
+
+        List<DocumentTypeItem> docList = caseData.getDocumentCollection();
+
+        if (docList == null) {
+            docList = new ArrayList<>();
+        }
+
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            pdfService.convertClaimantStoredTseIntoMultipartFile(item, caseData.getEthosCaseReference());
+
+        docList.add(caseDocumentService.createDocumentTypeItem(
+            authorization,
+            caseType,
+            CLAIMANT_CORRESPONDENCE_DOCUMENT,
+            CASE_MANAGEMENT_DOC_CATEGORY,
+            pdfDecodedMultipartFile
+        ));
+
+        caseData.setDocumentCollection(docList);
     }
 
     void createResponsePdf(String authorization,

@@ -78,6 +78,9 @@ public class StoredApplicationService {
         appToModify.getValue().setApplicationState(IN_PROGRESS);
         appToModify.getValue().setStatus(OPEN_STATE);
 
+        // Uploading pdf of TSE application
+        uploadPdfTseApplication(authorization, caseData, appToModify, request.getCaseTypeId());
+
         CaseDetails finalCaseDetails =  caseService.submitUpdate(
             authorization,
             request.getCaseId(),
@@ -91,6 +94,16 @@ public class StoredApplicationService {
         }
 
         return finalCaseDetails;
+    }
+
+    private void uploadPdfTseApplication(String authorization, CaseData caseData,
+                                         GenericTseApplicationTypeItem appToModify, String caseTypeId) {
+        try {
+            log.info("Uploading pdf of TSE application");
+            caseService.uploadStoredTseCyaAsPdf(authorization, caseData, appToModify, caseTypeId);
+        } catch (CaseDocumentException | DocumentGenerationException e) {
+            log.error("Couldn't upload pdf of TSE application " + e.getMessage());
+        }
     }
 
     private void sendEmailForApplication(CaseDetails finalCaseDetails, CaseData caseData,
