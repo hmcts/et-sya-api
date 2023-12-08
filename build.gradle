@@ -284,11 +284,10 @@ dependencies {
 
   testImplementation 'com.github.hmcts:fortify-client:1.3.0:all'
 
-  testImplementation("ch.qos.logback:logback-classic:1.2.13")
+  testImplementation("ch.qos.logback:logback-classic:1.4.14")
     {
       version {
         strictly("[1.2.13]")
-        prefer("1.2.13")
       }
     }
 
