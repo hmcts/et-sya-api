@@ -131,7 +131,7 @@ public final class TseApplicationHelper {
                 caseData.setDocumentCollection(new ArrayList<>());
             }
             caseData.getDocumentCollection().add(documentTypeItem);
-            responseToAdd.setSupportingMaterial(new ArrayList<>());
+            responseToAdd.setSupportingMaterial(new ListTypeItem<>());
             responseToAdd.getSupportingMaterial().add(documentTypeItem);
         }
 

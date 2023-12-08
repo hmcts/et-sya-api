@@ -163,7 +163,7 @@ class SendNotificationServiceTest {
             SendNotificationTypeItem.builder()
                 .id(ID)
                 .value(SendNotificationType.builder()
-                           .respondCollection(List.of(build))
+                           .respondCollection(ListTypeItem.from(build))
                            .respondNotificationTypeCollection(from)
                            .build())
                 .build()
