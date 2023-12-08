@@ -63,10 +63,6 @@ sourceSets {
   }
 }
 
-configurations.all {
-
-}
-
 configurations {
   functionalTestImplementation.extendsFrom testImplementation
   functionalTestRuntimeOnly.extendsFrom runtimeOnly
