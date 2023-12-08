@@ -284,13 +284,6 @@ dependencies {
 
   testImplementation 'com.github.hmcts:fortify-client:1.3.0:all'
 
-  testImplementation("ch.qos.logback:logback-classic:1.4.14")
-    {
-      version {
-        strictly("[1.2.13]")
-      }
-    }
-
   // Pact Contract Tests
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: '4.1.41'
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'java8', version: '4.1.41'
