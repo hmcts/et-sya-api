@@ -338,6 +338,28 @@ class PdfServiceTest {
     }
 
     @Test
+    void shouldCreatePdfDecodedMultipartFileFromStoredTseApplication() throws DocumentGenerationException {
+        caseTestData.getCaseData().setClaimantTse(new ClaimantTse());
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            pdfService.convertClaimantStoredTseIntoMultipartFile(
+                caseTestData.getCaseData().getGenericTseApplicationCollection().get(0),
+                caseTestData.getCaseData().getEthosCaseReference());
+
+        assertThat(pdfDecodedMultipartFile).isNotNull();
+    }
+
+    @Test
+    void shouldCreatePdfDecodedMultipartFileFromStoredTseNoSupportingFile() throws DocumentGenerationException {
+        caseTestData.getClaimantTse().setContactApplicationFile(null);
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            pdfService.convertClaimantStoredTseIntoMultipartFile(
+                caseTestData.getCaseData().getGenericTseApplicationCollection().get(0),
+                caseTestData.getCaseData().getEthosCaseReference());
+
+        assertThat(pdfDecodedMultipartFile).isNotNull();
+    }
+
+    @Test
     void shouldCreatePdfDecodedMultipartFileFromClaimantResponse() throws DocumentGenerationException {
         var request = caseTestData.getRespondToApplicationRequest();
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
