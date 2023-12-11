@@ -40,4 +40,30 @@ class ClaimantTseUtilTest {
         assertThat(actualGenericTseApplication.getCopyToOtherPartyText())
             .isEqualTo(expectedGenericTseApplication.getCopyToOtherPartyText());
     }
+
+    @ParameterizedTest
+    @MethodSource(
+        "uk.gov.hmcts.reform.et.syaapi.model.CaseTestData#generateClaimantTseArgumentsForTestingCurrentStoredGenericTseApplication")
+    void getCurrentStoredGenericTseApplication(GenericTseApplicationTypeItem item,
+                                               GenericTseApplication expectedGenericTseApplication,
+                                               String caseReference) {
+        GenericTseApplication actualGenericTseApplication = ClaimantTseUtil.getCurrentStoredGenericTseApplication(
+            item, caseReference);
+        assertThat(actualGenericTseApplication.getCaseNumber())
+            .isEqualTo(expectedGenericTseApplication.getCaseNumber());
+        assertThat(actualGenericTseApplication.getApplicant())
+            .isEqualTo(expectedGenericTseApplication.getApplicant());
+        assertThat(actualGenericTseApplication.getApplicationType())
+            .isEqualTo(expectedGenericTseApplication.getApplicationType());
+        assertThat(actualGenericTseApplication.getApplicationDate())
+            .isEqualTo(expectedGenericTseApplication.getApplicationDate());
+        assertThat(actualGenericTseApplication.getTellOrAskTribunal())
+            .isEqualTo(expectedGenericTseApplication.getTellOrAskTribunal());
+        assertThat(actualGenericTseApplication.getSupportingEvidence())
+            .isEqualTo(expectedGenericTseApplication.getSupportingEvidence());
+        assertThat(actualGenericTseApplication.getCopyToOtherPartyYesOrNo())
+            .isEqualTo(expectedGenericTseApplication.getCopyToOtherPartyYesOrNo());
+        assertThat(actualGenericTseApplication.getCopyToOtherPartyText())
+            .isEqualTo(expectedGenericTseApplication.getCopyToOtherPartyText());
+    }
 }

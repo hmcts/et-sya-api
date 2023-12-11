@@ -49,10 +49,8 @@ public final class ClaimantTseUtil {
         UploadedDocumentType contactApplicationFile = type.getDocumentUpload();
         String supportingEvidence = contactApplicationFile != null
             ? contactApplicationFile.getDocumentFilename() : null;
-        String contactApplicationDate = item != null
-            ? item.getValue().getDate() : null;
-        String contactApplicant = item != null
-            ? item.getValue().getApplicant() : null;
+        String contactApplicationDate = item.getValue().getDate();
+        String contactApplicant = item.getValue().getApplicant();
 
         return GenericTseApplication.builder()
             .caseNumber(caseReference)
