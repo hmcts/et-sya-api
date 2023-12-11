@@ -4,7 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.models.GenericTseApplication;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.data.TestDataProvider;
@@ -84,13 +86,31 @@ class ClaimantTseUtilTest {
 
         GenericTseApplication completeExpectedTseApp = TestDataProvider.generateExpectedTseApp(completeArgumentsList);
 
-        GenericTseApplicationTypeItem completeTseItem =
-            TestDataProvider.generateStoredGenericTseAppTypeItem(completeArgumentsList);
+        GenericTseApplicationTypeItem completeTseItem = generateStoredGenericTseAppTypeItem(completeArgumentsList);
 
         return Stream.of(Arguments.of(
             completeTseItem,
             completeExpectedTseApp,
             caseReference
         ));
+    }
+
+    private static GenericTseApplicationTypeItem generateStoredGenericTseAppTypeItem(List<String> argumentsList) {
+        GenericTseApplicationType tseApplicationType = new GenericTseApplicationType();
+        tseApplicationType.setApplicant(argumentsList.get(0));
+        tseApplicationType.setDetails(argumentsList.get(1));
+        tseApplicationType.setType(argumentsList.get(2));
+        tseApplicationType.setDate(argumentsList.get(3));
+        tseApplicationType.setCopyToOtherPartyYesOrNo(argumentsList.get(4));
+        tseApplicationType.setCopyToOtherPartyText(argumentsList.get(5));
+
+        UploadedDocumentType docType = new UploadedDocumentType();
+        docType.setDocumentFilename(argumentsList.get(6));
+        tseApplicationType.setDocumentUpload(docType);
+
+        GenericTseApplicationTypeItem tseAppTypeItem = new GenericTseApplicationTypeItem();
+        tseAppTypeItem.setValue(tseApplicationType);
+
+        return tseAppTypeItem;
     }
 }

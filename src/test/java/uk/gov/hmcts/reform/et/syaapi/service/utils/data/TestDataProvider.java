@@ -121,25 +121,6 @@ public final class TestDataProvider {
         return claimantTse;
     }
 
-    public static GenericTseApplicationTypeItem generateStoredGenericTseAppTypeItem(List<String> argumentsList) {
-        GenericTseApplicationType tseApplicationType = new GenericTseApplicationType();
-        tseApplicationType.setApplicant(argumentsList.get(0));
-        tseApplicationType.setDetails(argumentsList.get(1));
-        tseApplicationType.setType(argumentsList.get(2));
-        tseApplicationType.setDate(argumentsList.get(3));
-        tseApplicationType.setCopyToOtherPartyYesOrNo(argumentsList.get(4));
-        tseApplicationType.setCopyToOtherPartyText(argumentsList.get(5));
-
-        UploadedDocumentType docType = new UploadedDocumentType();
-        docType.setDocumentFilename(argumentsList.get(6));
-        tseApplicationType.setDocumentUpload(docType);
-
-        GenericTseApplicationTypeItem tseAppTypeItem = new GenericTseApplicationTypeItem();
-        tseAppTypeItem.setValue(tseApplicationType);
-
-        return tseAppTypeItem;
-    }
-
     public static GenericTseApplication generateExpectedTseApp(List<String> argumentsList) {
         return GenericTseApplication.builder()
             .caseNumber(argumentsList.get(7))
