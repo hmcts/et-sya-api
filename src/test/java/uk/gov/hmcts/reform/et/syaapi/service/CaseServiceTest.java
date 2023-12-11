@@ -17,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.JurCodesType;
@@ -728,6 +730,29 @@ class CaseServiceTest {
         type.setJuridictionCodesList(JurisdictionCodesConstants.BOC);
         item.setValue(type);
         return List.of(item);
+    }
+
+    @Test
+    void shouldInvokeStoredTseCyaAsPdf()
+        throws DocumentGenerationException {
+        when(pdfService.convertClaimantStoredTseIntoMultipartFile(any(), any())).thenReturn(
+            tsePdfMultipartFileMock);
+
+        GenericTseApplicationTypeItem genericTseApplicationTypeItem =
+            GenericTseApplicationTypeItem.builder()
+                .id("123")
+                .value(GenericTseApplicationType.builder()
+                           .build())
+                .build();
+
+        assertDoesNotThrow(() ->
+                               caseService.uploadStoredTseCyaAsPdf(
+                                   TEST_SERVICE_AUTH_TOKEN,
+                                   caseTestData.getCaseData(),
+                                   genericTseApplicationTypeItem,
+                                   "TEST"
+                               )
+        );
     }
 
     @Test
