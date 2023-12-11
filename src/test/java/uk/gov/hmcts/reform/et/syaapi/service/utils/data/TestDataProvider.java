@@ -122,7 +122,6 @@ public final class TestDataProvider {
     }
 
     public static GenericTseApplicationTypeItem generateStoredGenericTseAppTypeItem(List<String> argumentsList) {
-        GenericTseApplicationTypeItem tseAppTypeItem = new GenericTseApplicationTypeItem();
         GenericTseApplicationType tseApplicationType = new GenericTseApplicationType();
         tseApplicationType.setApplicant(argumentsList.get(0));
         tseApplicationType.setDetails(argumentsList.get(1));
@@ -130,10 +129,14 @@ public final class TestDataProvider {
         tseApplicationType.setDate(argumentsList.get(3));
         tseApplicationType.setCopyToOtherPartyYesOrNo(argumentsList.get(4));
         tseApplicationType.setCopyToOtherPartyText(argumentsList.get(5));
+
         UploadedDocumentType docType = new UploadedDocumentType();
         docType.setDocumentFilename(argumentsList.get(6));
         tseApplicationType.setDocumentUpload(docType);
+
+        GenericTseApplicationTypeItem tseAppTypeItem = new GenericTseApplicationTypeItem();
         tseAppTypeItem.setValue(tseApplicationType);
+
         return tseAppTypeItem;
     }
 
