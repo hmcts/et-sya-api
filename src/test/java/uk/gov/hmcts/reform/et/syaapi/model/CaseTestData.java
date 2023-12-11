@@ -221,7 +221,7 @@ public final class CaseTestData {
                                      expectedTseAppWithMissingTypeItemDetails, caseReference));
     }
 
-    public static Stream<Arguments> generateClaimantTseArgumentsForTestingCurrentStoredGenericTseApplication() {
+    public static Stream<Arguments> generateClaimantTseArgumentsForTestStoredGenericTseApplication() {
         String caseReference = "1234/456";
         List<String> completeArgumentsList = List.of("Mr Test Applicant",
                                                      "1",

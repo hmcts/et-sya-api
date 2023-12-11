@@ -43,7 +43,7 @@ class ClaimantTseUtilTest {
 
     @ParameterizedTest
     @MethodSource(
-        "uk.gov.hmcts.reform.et.syaapi.model.CaseTestData#generateClaimantTseArgumentsForTestingCurrentStoredGenericTseApplication")
+        "uk.gov.hmcts.reform.et.syaapi.model.CaseTestData#generateClaimantTseArgumentsForTestStoredGenericTseApplication")
     void getCurrentStoredGenericTseApplication(GenericTseApplicationTypeItem item,
                                                GenericTseApplication expectedGenericTseApplication,
                                                String caseReference) {
