@@ -221,27 +221,6 @@ public final class CaseTestData {
                                      expectedTseAppWithMissingTypeItemDetails, caseReference));
     }
 
-    public static Stream<Arguments> generateClaimantTseArgumentsForTestStoredGenericTseApplication() {
-        String caseReference = "1234/456";
-        List<String> completeArgumentsList = List.of("Mr Test Applicant",
-                                                     "1",
-                                                     "test Contact Application Type",
-                                                     "13 Jan 2023",
-                                                     "Yes",
-                                                     "3",
-                                                     "test-Document-Filename.pdf",
-                                                     caseReference);
-
-        GenericTseApplication completeExpectedTseApp = TestDataProvider.generateExpectedTseApp(completeArgumentsList);
-
-        GenericTseApplicationTypeItem completeTseItem =
-            TestDataProvider.generateStoredGenericTseAppTypeItem(completeArgumentsList);
-
-        return Stream.of(Arguments.of(completeTseItem,
-                                      completeExpectedTseApp,
-                                      caseReference));
-    }
-
     public static Stream<Arguments> generateCaseDataUserInfoArgumentsForTestingFirstNames() {
 
         CaseData caseDataNullClaimantIndType =
