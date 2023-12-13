@@ -66,6 +66,8 @@ class ApplicationServiceTest {
     private ApplicationService applicationService;
     @MockBean
     private CaseDetailsConverter caseDetailsConverter;
+    @MockBean
+    private FeatureToggleService featureToggleService;
 
     private final TestData testData;
 
@@ -79,13 +81,17 @@ class ApplicationServiceTest {
         notificationService = mock(NotificationService.class);
         caseDocumentService = mock(CaseDocumentService.class);
         caseDetailsConverter = mock(CaseDetailsConverter.class);
+        featureToggleService = mock(FeatureToggleService.class);
 
         applicationService = new ApplicationService(
             caseService,
             notificationService,
             caseDocumentService,
-            caseDetailsConverter
+            caseDetailsConverter,
+            featureToggleService
         );
+
+        when(featureToggleService.isWorkAllocationEnabled()).thenReturn(true);
 
         when(caseService.getUserCase(
             TEST_SERVICE_AUTH_TOKEN,
@@ -400,7 +406,7 @@ class ApplicationServiceTest {
         @ParameterizedTest
         @MethodSource
         void testNewStateAndResponseRequired(boolean isRespondingToRequestOrOrder, String expectedApplicationState,
-                                    String expectedClaimantResponseRequired) {
+                                             String expectedClaimantResponseRequired) {
             testRequest.setRespondingToRequestOrOrder(isRespondingToRequestOrOrder);
             GenericTseApplicationType application = GenericTseApplicationType.builder()
                 .claimantResponseRequired(YES).applicationState(INITIAL_STATE).build();

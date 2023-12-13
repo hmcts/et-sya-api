@@ -36,6 +36,7 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.setRespondentApplicationWithResponse;
 
 @RequiredArgsConstructor
 @Service
@@ -49,6 +50,7 @@ public class ApplicationService {
     private final NotificationService notificationService;
     private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
+    private final FeatureToggleService featureToggleService;
 
     /**
      * Submit Claimant Application to Tell Something Else.
@@ -135,7 +137,8 @@ public class ApplicationService {
 
         sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
 
-        TseApplicationHelper.setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService);
+        boolean waEnabled = featureToggleService.isWorkAllocationEnabled();
+        setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService, waEnabled);
 
         createAndAddPdfOfResponse(authorization, request, caseData, appType);
 
@@ -250,13 +253,13 @@ public class ApplicationService {
     ) throws NotificationClientException {
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(finalCaseDetails.getData());
         ClaimantIndType claimantIndType = caseData.getClaimantIndType();
-
+        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
         CoreEmailDetails details = new CoreEmailDetails(
             caseData,
             claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName(),
             caseData.getEthosCaseReference(),
             getRespondentNames(caseData),
-            NotificationsHelper.getNearestHearingToReferral(caseData, "Not set"),
+            hearingDate,
             finalCaseDetails.getId().toString()
         );
 

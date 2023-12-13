@@ -15,6 +15,7 @@ import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.ecm.common.helpers.UtilHelper;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
@@ -38,6 +39,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
@@ -113,10 +115,7 @@ public class PdfService {
                             pdfField.setValue(entryValue.get());
                         } catch (Exception e) {
                             GenericServiceUtil.logException("Error while parsing PDF file for entry key \""
-                                                         + entryKey
-                                                         + "\", entry value \""
-                                                         + getEntryValueFromOptionalString(entryValue)
-                                                         + "\"", caseData.getEthosCaseReference(), e.getMessage(),
+                                                         + entryKey, caseData.getEthosCaseReference(), e.getMessage(),
                                                             this.getClass().getName(), "createPdf");
                         }
                     }
@@ -130,10 +129,6 @@ public class PdfService {
         }
         safeClose(stream, caseData);
         return new byte[0];
-    }
-
-    private String getEntryValueFromOptionalString(Optional<String> entryValue) {
-        return ObjectUtils.isEmpty(entryValue) || entryValue.isEmpty() ? "" : entryValue.get();
     }
 
     public static void safeClose(InputStream is, CaseData caseData) {
@@ -167,15 +162,20 @@ public class PdfService {
             + ".pdf";
     }
 
-    private static String createPdfDocumentNameFromCaseDataAndAcasCertificate(
-        CaseData caseData, AcasCertificate acasCertificate) {
-        return "ET1_ACAS_CERTIFICATE_"
-            + caseData.getClaimantIndType().getClaimantFirstNames().replace(" ", "_")
-            + "_"
-            + caseData.getClaimantIndType().getClaimantLastName().replace(" ", "_")
-            + "_"
-            + acasCertificate.getCertificateNumber().replace("/", "_")
-            + ".pdf";
+    private static String createPdfDocumentNameFromCaseDataAndAcasCertificate(CaseData caseData,
+                                                                              AcasCertificate acasCertificate) {
+        Optional<RespondentSumTypeItem> respondent = caseData.getRespondentCollection().stream()
+            .filter(r -> acasCertificate.getCertificateNumber().equals(
+                defaultIfEmpty(r.getValue().getRespondentAcas(), "")))
+            .findFirst();
+        String acasName = "";
+        if (respondent.isPresent()) {
+            acasName = respondent.get().getValue().getRespondentName() + " - ";
+        }
+
+        return "ACAS Certificate - "
+            + acasName
+            + acasCertificate.getCertificateNumber().replace("/", "_");
     }
 
     private static String createPdfDocumentDescriptionFromCaseData(CaseData caseData) {
@@ -183,18 +183,6 @@ public class PdfService {
             + caseData.getClaimantIndType().getClaimantFirstNames()
             + " " + caseData.getClaimantIndType().getClaimantLastName();
     }
-
-    private static String createPdfDocumentDescriptionFromCaseDataAndAcasCertificate(
-        CaseData caseData,
-        AcasCertificate acasCertificate) {
-        return "ACAS Certificate - "
-            + caseData.getClaimantIndType().getClaimantFirstNames()
-            + " "
-            + caseData.getClaimantIndType().getClaimantLastName()
-            + " - "
-            + acasCertificate.getCertificateNumber();
-    }
-
 
     /**
      * Converts case data to a pdf byte array wrapped in a {@link PdfDecodedMultipartFile} Object.
@@ -260,17 +248,15 @@ public class PdfService {
         for (AcasCertificate acasCertificate : acasCertificates) {
             if (!NOT_FOUND.equals(acasCertificate.getCertificateDocument())) {
                 byte[] pdfData = Base64.getDecoder().decode(acasCertificate.getCertificateDocument());
+                String docName = createPdfDocumentNameFromCaseDataAndAcasCertificate(
+                    caseData,
+                    acasCertificate
+                );
                 pdfDecodedMultipartFiles.add(new PdfDecodedMultipartFile(
                     pdfData,
-                    createPdfDocumentNameFromCaseDataAndAcasCertificate(
-                        caseData,
-                        acasCertificate
-                    ),
+                    docName + ".pdf",
                     PDF_FILE_TIKA_CONTENT_TYPE,
-                    createPdfDocumentDescriptionFromCaseDataAndAcasCertificate(
-                        caseData,
-                        acasCertificate
-                    )
+                    docName
                 ));
             }
         }

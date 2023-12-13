@@ -50,13 +50,25 @@ public class NotificationsProperties {
     @NotBlank
     private String claimantTseEmailYesTemplateId;
 
+    @Value("${notifications.cyApplicationAcknowledgementYes}")
+    @NotBlank
+    private String cyClaimantTseEmailYesTemplateId;
+
     @Value("${notifications.applicationAcknowledgementNo}")
     @NotBlank
     private String claimantTseEmailNoTemplateId;
 
+    @Value("${notifications.cyApplicationAcknowledgementNo}")
+    @NotBlank
+    private String cyClaimantTseEmailNoTemplateId;
+
     @Value("${notifications.applicationAcknowledgementTypeC}")
     @NotBlank
     private String claimantTseEmailTypeCTemplateId;
+
+    @Value("${notifications.cyApplicationAcknowledgementTypeC}")
+    @NotBlank
+    private String cyClaimantTseEmailTypeCTemplateId;
 
     @Value("${notifications.respondentCopyTypeA}")
     @NotBlank
@@ -119,4 +131,9 @@ public class NotificationsProperties {
     @Value("${notifications.pse.respondentResponse}")
     @NotBlank
     private String pseRespondentResponseTemplateId;
+
+    // Bundles
+    @Value("${notifications.bundles.claimantSubmitted}")
+    @NotBlank
+    private String bundlesClaimantSubmittedNotificationTemplateId;
 }

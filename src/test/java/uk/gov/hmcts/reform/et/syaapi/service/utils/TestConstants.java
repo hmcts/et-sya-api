@@ -40,6 +40,18 @@ public final class TestConstants {
     public static final String TEST_TEMPLATE_API_KEY =
         "mtd_test-002d2170-e381-4545-8251-5e87dab724e7-ac8ef473-1f28-4bfc-8906-9babd92dc5d8";
     public static final String SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID = "af0b26b7-17b6-4643-bbdc-e296d11e7b0c";
+    public static final String CY_APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID =
+        "bf0b26b7-17b6-4643-bbdc-e296d11e7b0d";
+    public static final String CY_APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID =
+        "cf0b26b7-17b6-4643-bbdc-e296d11e7b0e";
+    public static final String CY_APPLICATION_ACKNOWLEDGEMENT_TYPE_C_EMAIL_TEMPLATE_ID =
+        "df0b26b7-17b6-4643-bbdc-e296d11e7b0f";
+    public static final String APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID =
+        "ef0b26b7-17b6-4643-bbdc-e296d11e7b0g";
+    public static final String APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID =
+        "ff0b26b7-17b6-4643-bbdc-e296d11e7b0h";
+    public static final String APPLICATION_ACKNOWLEDGEMENT_TYPE_C_EMAIL_TEMPLATE_ID =
+        "gf0b26b7-17b6-4643-bbdc-e296d11e7b0i";
     public static final String WELSH_DUMMY_PDF_TEMPLATE_ID = "1234_welsh";
     public static final String UUID_DUMMY_STRING = "8835039a-3544-439b-a3da-882490d959eb";
     public static final String REFERENCE_STRING = "TEST_EMAIL_ALERT";
