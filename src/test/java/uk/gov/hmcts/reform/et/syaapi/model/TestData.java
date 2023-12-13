@@ -52,6 +52,11 @@ public final class TestData {
         StartEventResponse.class
     );
 
+    private final StartEventResponse updateCaseEventResponseWithClaimantResponse = ResourceLoader.fromString(
+        "responses/updateCaseEventResponseWithClaimantResponse.json",
+        StartEventResponse.class
+    );
+
     private final StartEventResponse startEventResponse = ResourceLoader.fromString(
         "responses/startEventResponse.json",
         StartEventResponse.class
