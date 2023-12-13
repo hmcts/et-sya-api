@@ -164,7 +164,7 @@ sonarqube {
     property "sonar.projectName", "Reform :: et-sya-api"
     property "sonar.projectKey", "uk.gov.hmcts.reform:et-sya-api"
     property "sonar.coverage.exclusions", sonarExclusions.join(', ')
-    property "sonar.coverage.jacoco.xmlReportPaths", "${jacocoTestReport.reports.xml.destination.path}"
+    property "sonar.coverage.jacoco.xmlReportPaths", "${project.buildDir}/reports/jacoco/test/jacocoTestReport.xml"
   }
 }
 
@@ -244,13 +244,13 @@ dependencies {
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
   implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.37.3'
 
-  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.11.2'
+  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.11.3'
   implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.18'
   implementation 'org.json:json:20231013'
   implementation group: 'org.yaml', name: 'snakeyaml', version: '2.2'
 
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.83'
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.16'
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.84'
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.17'
 
   implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '6.2.0'
 
