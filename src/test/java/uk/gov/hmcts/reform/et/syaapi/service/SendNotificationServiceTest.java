@@ -31,10 +31,11 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.VIEWED;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_NOTIFICATION_RESPONSE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_NOTIFICATION_STATE;
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT;
-import static uk.gov.hmcts.reform.et.syaapi.service.SendNotificationService.VIEWED;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.YES;
@@ -103,7 +104,7 @@ class SendNotificationServiceTest {
         );
 
         ArgumentCaptor<CaseDataContent> contentCaptor = ArgumentCaptor.forClass(CaseDataContent.class);
-        sendNotificationService.updateSendNotificationState(MOCK_TOKEN, request);
+        sendNotificationService.updateNotificationStateAsViewed(MOCK_TOKEN, request);
 
         verify(caseService, times(1)).submitUpdate(
             eq(MOCK_TOKEN), eq("11"), contentCaptor.capture(), eq("1234"));
@@ -147,7 +148,7 @@ class SendNotificationServiceTest {
         );
 
         ArgumentCaptor<CaseDataContent> contentCaptor = ArgumentCaptor.forClass(CaseDataContent.class);
-        sendNotificationService.updateSendNotificationState(MOCK_TOKEN, request);
+        sendNotificationService.updateNotificationStateAsViewed(MOCK_TOKEN, request);
 
         verify(caseService, times(1)).submitUpdate(
             eq(MOCK_TOKEN), eq("11"), contentCaptor.capture(), eq("1234"));
@@ -213,6 +214,7 @@ class SendNotificationServiceTest {
         Assertions.assertEquals(expected.getFrom(), actual.getFrom());
         Assertions.assertTrue(actual.getDate().matches("^\\d{1,2} [A-Za-z]{3,4} \\d{4}$"));
         Assertions.assertEquals(NO, actual.getHasSupportingMaterial());
+        Assertions.assertEquals(SUBMITTED, notification.getNotificationState());
         Assertions.assertNull(tribunalResponse.getValue().getIsClaimantResponseDue());
     }
 
