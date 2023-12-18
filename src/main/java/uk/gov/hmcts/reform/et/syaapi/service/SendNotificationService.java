@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.NOT_VIEWED_YET;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.VIEWED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
@@ -60,7 +61,9 @@ public class SendNotificationService {
         List<SendNotificationTypeItem> notifications = caseData.getSendNotificationCollection();
         for (SendNotificationTypeItem item : notifications) {
             if (item.getId().equals(request.getSendNotificationId())) {
-                item.getValue().setNotificationState(VIEWED);
+                if (item.getValue().getNotificationState().equals(NOT_VIEWED_YET)) {
+                    item.getValue().setNotificationState(VIEWED);
+                }
                 setResponsesAsViewed(item.getValue().getRespondNotificationTypeCollection());
                 setNonTribunalResponsesAsViewed(item.getValue().getRespondCollection());
                 break;
@@ -101,7 +104,7 @@ public class SendNotificationService {
      * Adds a pseResponse to a notification.
      *
      * @param authorization - authorization
-     * @param request - request containing the response, and the notification details
+     * @param request       - request containing the response, and the notification details
      * @return the associated {@link CaseDetails}
      */
     public CaseDetails addResponseSendNotification(String authorization, SendNotificationAddResponseRequest request) {
