@@ -80,7 +80,7 @@ class SendNotificationControllerTest {
                 .content(ResourceLoader.toJson(request))
         ).andExpect(status().isOk());
 
-        verify(sendNotificationService, times(1)).updateNotificationStateAsViewed(
+        verify(sendNotificationService, times(1)).updateSendNotificationState(
             TEST_SERVICE_AUTH_TOKEN,
             request
         );

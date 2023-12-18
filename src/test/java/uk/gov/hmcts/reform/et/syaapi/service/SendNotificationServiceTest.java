@@ -104,7 +104,7 @@ class SendNotificationServiceTest {
         );
 
         ArgumentCaptor<CaseDataContent> contentCaptor = ArgumentCaptor.forClass(CaseDataContent.class);
-        sendNotificationService.updateNotificationStateAsViewed(MOCK_TOKEN, request);
+        sendNotificationService.updateSendNotificationState(MOCK_TOKEN, request);
 
         verify(caseService, times(1)).submitUpdate(
             eq(MOCK_TOKEN), eq("11"), contentCaptor.capture(), eq("1234"));
@@ -148,7 +148,7 @@ class SendNotificationServiceTest {
         );
 
         ArgumentCaptor<CaseDataContent> contentCaptor = ArgumentCaptor.forClass(CaseDataContent.class);
-        sendNotificationService.updateNotificationStateAsViewed(MOCK_TOKEN, request);
+        sendNotificationService.updateSendNotificationState(MOCK_TOKEN, request);
 
         verify(caseService, times(1)).submitUpdate(
             eq(MOCK_TOKEN), eq("11"), contentCaptor.capture(), eq("1234"));

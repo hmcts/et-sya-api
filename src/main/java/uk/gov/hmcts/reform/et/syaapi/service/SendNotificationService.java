@@ -46,8 +46,7 @@ public class SendNotificationService {
     private final CaseDetailsConverter caseDetailsConverter;
     private final NotificationService notificationService;
 
-    public CaseDetails updateNotificationStateAsViewed(String authorization,
-                                                       SendNotificationStateUpdateRequest request) {
+    public CaseDetails updateSendNotificationState(String authorization, SendNotificationStateUpdateRequest request) {
         StartEventResponse startEventResponse = caseService.startUpdate(
             authorization,
             request.getCaseId(),
