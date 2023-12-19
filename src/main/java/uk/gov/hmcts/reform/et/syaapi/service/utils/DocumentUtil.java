@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -23,7 +24,8 @@ public final class DocumentUtil {
     public static void filterClaimantDocuments(List<CaseDetails> caseDetailsList) {
         for (CaseDetails caseDetails : caseDetailsList) {
             String caseId;
-            if (ObjectUtils.isNotEmpty(caseDetails.getData().get("ethosCaseReference"))) {
+            if (ObjectUtils.isNotEmpty(caseDetails.getData())
+                && ObjectUtils.isNotEmpty(caseDetails.getData().get("ethosCaseReference"))) {
                 caseId = caseDetails.getData().get("ethosCaseReference").toString();
             } else {
                 caseId = ObjectUtils.isNotEmpty(caseDetails.getId()) ? caseDetails.getId().toString() : "";
@@ -34,23 +36,31 @@ public final class DocumentUtil {
 
     @SuppressWarnings("unchecked")
     private static void filterDocumentsForClaimant(CaseDetails caseDetails, String caseId) {
-        if (ObjectUtils.isNotEmpty(caseDetails.getData().get("documentCollection"))) {
+        if (ObjectUtils.isNotEmpty(caseDetails.getData())
+            && ObjectUtils.isNotEmpty(caseDetails.getData().get("documentCollection"))) {
             List<LinkedHashMap<String, Object>> documentCollection =
                 (List<LinkedHashMap<String, Object>>) caseDetails.getData().get("documentCollection");
-            for (LinkedHashMap<String, Object> documentTypeItem : documentCollection) {
-                if (ObjectUtils.isNotEmpty(documentTypeItem.get("value"))) {
-                    try {
-                        DocumentType documentType = GenericServiceUtil
-                            .mapJavaObjectToClass(DocumentType.class, documentTypeItem.get("value"));
-                        if (isDocumentHidden(documentType)) {
-                            documentCollection.remove(documentTypeItem);
-                        }
-                    } catch (JsonProcessingException jpe) {
-                        GenericServiceUtil.logException(
-                            "Exception occurred while processing documents (JSON PARSE PROBLEM)", caseId,
-                            jpe.getMessage(), "filterClaimantDocuments", "DocumentUtil");
-                    }
+            for (Iterator<LinkedHashMap<String, Object>> iterator = documentCollection.iterator();
+                 iterator.hasNext();) {
+                removeHiddenDocumentFromCollection(iterator, caseId);
+            }
+        }
+    }
+
+    private static void removeHiddenDocumentFromCollection(Iterator<LinkedHashMap<String, Object>> iterator,
+                                                           String caseId) {
+        LinkedHashMap<String, Object> documentInfo = iterator.next();
+        if (ObjectUtils.isNotEmpty(documentInfo.get("value"))) {
+            try {
+                DocumentType documentType = GenericServiceUtil
+                    .mapJavaObjectToClass(DocumentType.class, documentInfo.get("value"));
+                if (isDocumentHidden(documentType)) {
+                    iterator.remove();
                 }
+            } catch (JsonProcessingException jpe) {
+                GenericServiceUtil.logException(
+                    "Exception occurred while processing documents (JSON PARSE PROBLEM)", caseId,
+                    jpe.getMessage(), "filterClaimantDocuments", "DocumentUtil");
             }
         }
     }
