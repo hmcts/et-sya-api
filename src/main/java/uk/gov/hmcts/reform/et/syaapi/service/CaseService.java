@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MultiValuedMap;
@@ -37,7 +36,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.DocumentUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -108,7 +107,7 @@ public class CaseService {
      * @param caseId id of the case
      * @return the associated {@link CaseDetails} for the ID provided
      */
-    @Retryable({FeignException.class, RuntimeException.class})
+    @Retryable
     public CaseDetails getUserCase(String authorization, String caseId) {
         return ccdApiClient.getCase(authorization, authTokenGenerator.generate(), caseId);
     }
@@ -120,7 +119,9 @@ public class CaseService {
      * @param authorization is used to get the {@link UserInfo} for the request
      * @return the associated {@link CaseDetails} for the ID provided
      */
-    @Retryable({FeignException.class, RuntimeException.class})
+    // @Retryable({FeignException.class, RuntimeException.class}) --> No need to give exception classes as Retryable
+    // covers all runtime exceptions.
+    @Retryable
     public List<CaseDetails> getAllUserCases(String authorization) {
         // Elasticsearch
         List<CaseDetails> scotlandCases = Optional.ofNullable(ccdApiClient.searchCases(
@@ -135,8 +136,9 @@ public class CaseService {
             authTokenGenerator.generate(),
             ENGLAND_CASE_TYPE,
             ALL_CASES_QUERY).getCases()).orElse(Collections.emptyList());
-
-        return Stream.of(scotlandCases, englandCases).flatMap(Collection::stream).toList();
+        List<CaseDetails> caseDetailsList = Stream.of(scotlandCases, englandCases).flatMap(Collection::stream).toList();
+        DocumentUtil.filterClaimantDocuments(caseDetailsList);
+        return caseDetailsList;
     }
 
     /**
@@ -146,7 +148,7 @@ public class CaseService {
      * @param caseRequest   case data for request
      * @return the associated {@link CaseDetails} if the case is created
      */
-    @Retryable({FeignException.class, RuntimeException.class})
+    @Retryable
     public CaseDetails createCase(String authorization,
                                   CaseRequest caseRequest) {
         String s2sToken = authTokenGenerator.generate();
@@ -213,8 +215,7 @@ public class CaseService {
      * @param caseRequest   is used to provide the caseId, caseTypeId and {@link CaseData} in JSON Format
      * @return the associated {@link CaseData} if the case is submitted
      */
-    public CaseDetails submitCase(String authorization, CaseRequest caseRequest)
-        throws PdfServiceException {
+    public CaseDetails submitCase(String authorization, CaseRequest caseRequest) {
         // Assigning local office to case data
         CaseData caseData = caseOfficeService.convertCaseRequestToCaseDataWithTribunalOffice(caseRequest);
         // Getting user info from IDAM

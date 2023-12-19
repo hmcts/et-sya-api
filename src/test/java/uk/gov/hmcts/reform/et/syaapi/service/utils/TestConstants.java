@@ -2,13 +2,16 @@ package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
 import org.json.JSONObject;
 import uk.gov.hmcts.et.common.model.ccd.Address;
+import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.service.notify.SendEmailResponse;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings("PMD.TestClassWithoutTestCases")
 public final class TestConstants {
@@ -40,18 +43,6 @@ public final class TestConstants {
     public static final String TEST_TEMPLATE_API_KEY =
         "mtd_test-002d2170-e381-4545-8251-5e87dab724e7-ac8ef473-1f28-4bfc-8906-9babd92dc5d8";
     public static final String SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID = "af0b26b7-17b6-4643-bbdc-e296d11e7b0c";
-    public static final String CY_APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID =
-        "bf0b26b7-17b6-4643-bbdc-e296d11e7b0d";
-    public static final String CY_APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID =
-        "cf0b26b7-17b6-4643-bbdc-e296d11e7b0e";
-    public static final String CY_APPLICATION_ACKNOWLEDGEMENT_TYPE_C_EMAIL_TEMPLATE_ID =
-        "df0b26b7-17b6-4643-bbdc-e296d11e7b0f";
-    public static final String APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID =
-        "ef0b26b7-17b6-4643-bbdc-e296d11e7b0g";
-    public static final String APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID =
-        "ff0b26b7-17b6-4643-bbdc-e296d11e7b0h";
-    public static final String APPLICATION_ACKNOWLEDGEMENT_TYPE_C_EMAIL_TEMPLATE_ID =
-        "gf0b26b7-17b6-4643-bbdc-e296d11e7b0i";
     public static final String WELSH_DUMMY_PDF_TEMPLATE_ID = "1234_welsh";
     public static final String UUID_DUMMY_STRING = "8835039a-3544-439b-a3da-882490d959eb";
     public static final String REFERENCE_STRING = "TEST_EMAIL_ALERT";
@@ -83,12 +74,10 @@ public final class TestConstants {
     public static final String WORK_COUNTRY = "WorkCountry";
     public static final String WORK_POSTCODE = "SL6 2DE";
     public static final String TEST_COMPANY_NAME = "Test Company Name";
-    public static final int INTEGER_NUMERIC_ONE = 1;
     public static final int INTEGER_NUMERIC_TWO = 2;
     public static final int INTEGER_NUMERIC_THREE = 3;
     public static final int INTEGER_NUMERIC_FOUR = 4;
     public static final int INTEGER_NUMERIC_FIVE = 5;
-    public static final int INTEGER_NUMERIC_SIX = 6;
     public static final String STRING_NUMERIC_ONE = "1";
     public static final String STRING_NUMERIC_TWO = "2";
     public static final String STRING_NUMERIC_THREE = "3";
@@ -110,7 +99,6 @@ public final class TestConstants {
     public static final String CLAIMANT_IND_TYPE_NULL = "null";
     public static final String CLAIMANT_IND_TYPE_EMPTY = "empty";
     public static final String CLAIMANT_IND_TYPE_FILLED = "filled";
-    public static final String TEST_NAMES = "Test Names";
     public static final String INVALID_LANGUAGE = "Invalid Language";
     public static final boolean TRUE = true;
     public static final boolean FALSE = false;
@@ -133,11 +121,8 @@ public final class TestConstants {
     public static final String PHONE = "Phone";
     public static final String TEST_CASE_DATA_JSON_FILE = "requests/caseData.json";
     public static final String WEEKS = "Weeks";
-    public static final String MONTHS = "Months";
-    public static final String ANNUAL = "Annual";
     public static final String CLAIMANT_EMPLOYED_FROM = "2020-01-01";
     public static final String CLAIMANT_EMPLOYED_TO = "2022-01-01";
-    public static final String TEST_NEW_COMPANY = "Test New Company";
     public static final String CLAIMANT_OCCUPATION = "IT Manager";
     public static final String AVERAGE_WEEKLY_HOURS = "37.5";
     public static final String CLAIMANT_PAY_BEFORE_TAX = "45000";
@@ -237,6 +222,19 @@ public final class TestConstants {
         generateUploadedDocumentTypeByParams(UPLOADED_DOCUMENT_BINARY_URL,
                                              UPLOADED_DOCUMENT_URL,
                                              UPLOADED_DOCUMENT_NAME);
+    public static final String TYPE_OF_DOCUMENT_ET1 = "ET1";
+    public static final String TYPE_OF_DOCUMENT_ET1_VETTING = "ET1 Vetting";
+    public static final String DOCUMENT_OWNER = "Test Owner";
+    public static final Map<String, Object> NOT_EMPTY_UPLOADED_DOCUMENT_TYPE_RAW_HASHMAP =
+        generateUploadedDocumentTypeLinkedHashMap();
+    public static final Map<String, Object> NOT_EMPTY_ET1_DOCUMENT_TYPE_RAW_HASHMAP =
+        generateDocumentTypeLinkedHashMapByDocumentType(TYPE_OF_DOCUMENT_ET1);
+    public static final Map<String, Object> NOT_EMPTY_ET1_VETTING_DOCUMENT_TYPE_RAW_HASHMAP =
+        generateDocumentTypeLinkedHashMapByDocumentType(TYPE_OF_DOCUMENT_ET1_VETTING);
+    public static final DocumentType NOT_EMPTY_ET1_DOCUMENT_TYPE =
+        generateDocumentTypeObjectByDocumentType(TYPE_OF_DOCUMENT_ET1);
+    public static final DocumentType NOT_EMPTY_ET1_VETTING_DOCUMENT_TYPE =
+        generateDocumentTypeObjectByDocumentType(TYPE_OF_DOCUMENT_ET1_VETTING);
     public static final UploadedDocumentType EMPTY_UPLOADED_DOCUMENT_TYPE = new UploadedDocumentType();
     public static final JSONObject PREPARE_PDF_UPLOAD_JSON_OBJECT = new JSONObject("{\"file\":\""
                                                + "RGVhciB0ZXN0LCBQbGVhc2Ugc2VlIHlvdXIgZGV0YWlsIGFzIDEyMzQ1Njc"
@@ -247,7 +245,6 @@ public final class TestConstants {
     public static final String CLAIMANT_MOBILE_NUMBER_FIELD_NAME = "1.7 mobile number";
     public static final String CLAIMANT_EMAIL_FIELD_NAME = "1.9 email";
     public static final String CLAIMANT_CONTACT_EMAIL_FIELD_NAME = "1.8 How should we contact you - Email";
-    public static final String CLAIMANT_CONTACT_POST_FIELD_NAME = "1.8 How should we contact you - Post";
     public static final String OTHER = "Other";
     public static final String OTHER_TITLE = "Other Title";
     public static final String MICHAEL = "Michael";
@@ -270,6 +267,30 @@ public final class TestConstants {
         uploadedDocumentType.setDocumentUrl(documentUrl);
         uploadedDocumentType.setDocumentFilename(fileName);
         return uploadedDocumentType;
+    }
+
+    private static Map<String, Object> generateUploadedDocumentTypeLinkedHashMap() {
+        Map<String, Object> object = new ConcurrentHashMap<>();
+        object.put("document_url", NOT_EMPTY_UPLOADED_DOCUMENT_TYPE_FILE.getDocumentUrl());
+        object.put("document_filename", NOT_EMPTY_UPLOADED_DOCUMENT_TYPE_FILE.getDocumentFilename());
+        object.put("document_binary_url", NOT_EMPTY_UPLOADED_DOCUMENT_TYPE_FILE.getDocumentBinaryUrl());
+        return object;
+    }
+
+    private static Map<String, Object> generateDocumentTypeLinkedHashMapByDocumentType(String documentType) {
+        Map<String, Object> object = new ConcurrentHashMap<>();
+        object.put("typeOfDocument", documentType);
+        object.put("ownerDocument", DOCUMENT_OWNER);
+        object.put("documentType", documentType);
+        object.put("uploadedDocument", NOT_EMPTY_UPLOADED_DOCUMENT_TYPE_RAW_HASHMAP);
+        return object;
+    }
+
+    private static DocumentType generateDocumentTypeObjectByDocumentType(String documentType) {
+        return DocumentType.builder().typeOfDocument(documentType)
+            .documentType(documentType)
+            .ownerDocument(DOCUMENT_OWNER)
+            .uploadedDocument(NOT_EMPTY_UPLOADED_DOCUMENT_TYPE_FILE).build();
     }
 }
 
