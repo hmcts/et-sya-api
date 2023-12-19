@@ -67,13 +67,22 @@ class SendNotificationServiceTest {
     void shouldUpdateSendNotificationState() {
         SendNotificationStateUpdateRequest request = testData.getSendNotificationStateUpdateRequest();
 
-        StartEventResponse updateCaseEventResponse = testData.getUpdateCaseEventResponse();
+        StartEventResponse updateCaseEventResponse = testData.getUpdateCaseEventResponseWithClaimantResponse();
         when(caseService.startUpdate(
             TEST_SERVICE_AUTH_TOKEN,
             request.getCaseId(),
             request.getCaseTypeId(),
             UPDATE_NOTIFICATION_STATE
         )).thenReturn(updateCaseEventResponse);
+
+        List<PseResponseTypeItem> pseResponseItems = List.of(PseResponseTypeItem.builder().id(ID).value(
+            PseResponseType.builder()
+                .from(CLAIMANT)
+                .hasSupportingMaterial(NO)
+                .response("Some response text")
+                .responseState(null)
+                .build()).build()
+        );
 
         ListTypeItem<RespondNotificationType> from = ListTypeItem.from(
             TypeItem.from(ID, RespondNotificationType.builder()
@@ -85,8 +94,9 @@ class SendNotificationServiceTest {
             SendNotificationTypeItem.builder()
                 .id(ID)
                 .value(SendNotificationType.builder()
-                           .notificationState("viewed")
+                           .notificationState(VIEWED)
                            .respondNotificationTypeCollection(from)
+                           .respondCollection(pseResponseItems)
                            .build())
                 .build()
         );
@@ -98,7 +108,20 @@ class SendNotificationServiceTest {
             eq(MOCK_TOKEN), eq("11"), contentCaptor.capture(), eq("1234"));
 
         CaseData data = (CaseData) contentCaptor.getValue().getData();
-        Assertions.assertEquals(items, data.getSendNotificationCollection());
+
+        for (int i = 0; i < items.size(); i++) {
+            SendNotificationTypeItem expectedItem = items.get(i);
+            SendNotificationTypeItem actualItem = data.getSendNotificationCollection().get(i);
+
+            Assertions.assertEquals(expectedItem.getId(), actualItem.getId());
+            Assertions.assertEquals(
+                expectedItem.getValue().getNotificationState(), actualItem.getValue().getNotificationState());
+
+            for (int j = 0; j < actualItem.getValue().getRespondCollection().size(); j++) {
+                PseResponseType actualResponseType = actualItem.getValue().getRespondCollection().get(j).getValue();
+                Assertions.assertEquals(VIEWED, actualResponseType.getResponseState());
+            }
+        }
     }
 
     @Test
