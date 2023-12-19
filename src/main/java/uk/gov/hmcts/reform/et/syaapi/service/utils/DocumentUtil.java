@@ -10,12 +10,20 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 
 @Slf4j
 public final class DocumentUtil {
 
-    private static final String HIDDEN_DOCUMENT_TYPES_FOR_CLAIMANT = "|ET1 Vetting|, ";
-
+    private static final String HIDDEN_DOCUMENT_TYPES_FOR_CLAIMANT = "|ET1 Vetting|, "
+        + "|ET3 Processing|"
+        + "|Referral/Judicial Direction|"
+        + "|App for a Witness Order - R|"
+        + "|App for a Witness Order - R|"
+        + "|Contact the tribunal about something else - C|"
+        + "|Contact the tribunal about something else - R|"
+        + "|COT3|"
+        + "|Tribunal case file|";
 
     private DocumentUtil() {
         // Utility classes should not have a public or default constructor.
@@ -66,10 +74,12 @@ public final class DocumentUtil {
     }
 
     private static boolean isDocumentHidden(DocumentType documentType) {
-        return StringUtils.isNotBlank(documentType.getTypeOfDocument()) && HIDDEN_DOCUMENT_TYPES_FOR_CLAIMANT.contains(
-            "|" + documentType.getTypeOfDocument().trim() + "|")
-            || StringUtils.isNotBlank(documentType.getDocumentType()) && HIDDEN_DOCUMENT_TYPES_FOR_CLAIMANT.contains(
-            "|" + documentType.getDocumentType().trim() + "|");
+        return StringUtils.isNotBlank(documentType.getTypeOfDocument())
+            && HIDDEN_DOCUMENT_TYPES_FOR_CLAIMANT.toLowerCase(Locale.UK).contains(
+            "|" + documentType.getTypeOfDocument().toLowerCase(Locale.UK).trim() + "|")
+            || StringUtils.isNotBlank(documentType.getDocumentType())
+            && HIDDEN_DOCUMENT_TYPES_FOR_CLAIMANT.toLowerCase(Locale.UK).contains(
+            "|" + documentType.getDocumentType().toLowerCase(Locale.UK).trim() + "|");
     }
 
 }
