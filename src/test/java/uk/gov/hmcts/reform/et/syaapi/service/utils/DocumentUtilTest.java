@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
@@ -27,15 +28,15 @@ class DocumentUtilTest {
                                                           emptyCaseDetails,
                                                           caseDetailsWithoutId,
                                                           caseDetailsWithoutDataWithId);
-
-        DocumentUtil.filterClaimantDocuments(caseDetailsList);
-        assertThat((List<LinkedHashMap<String, Object>>)caseDetailsFull.getData().get("documentCollection"))
-            .isNotNull().hasSize(4);
-        assertThat(emptyCaseDetails.getData()).isNull();
-        assertThat((List<LinkedHashMap<String, Object>>)caseDetailsWithoutId.getData().get("documentCollection"))
-            .isNotNull().hasSize(4);
-        assertThat((List<LinkedHashMap<String, Object>>)caseDetailsWithoutId.getData().get("documentCollection"))
-            .isNotNull().hasSize(4);
-
+        DocumentUtil.filterMultipleCasesDocumentsForClaimant(caseDetailsList);
+        assertAll(
+            () -> assertThat((List<LinkedHashMap<String, Object>>)caseDetailsFull.getData()
+                .get("documentCollection")).isNotNull().hasSize(4),
+            () -> assertThat(emptyCaseDetails.getData()).isNull(),
+            () -> assertThat((List<LinkedHashMap<String, Object>>)caseDetailsWithoutId.getData()
+                .get("documentCollection")).isNotNull().hasSize(4),
+            () -> assertThat((List<LinkedHashMap<String, Object>>)caseDetailsWithoutId.getData()
+                .get("documentCollection")).isNotNull().hasSize(4)
+        );
     }
 }

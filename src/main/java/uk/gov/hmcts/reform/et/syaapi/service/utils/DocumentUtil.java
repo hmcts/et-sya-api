@@ -29,7 +29,7 @@ public final class DocumentUtil {
         // Utility classes should not have a public or default constructor.
     }
 
-    public static void filterClaimantDocuments(List<CaseDetails> caseDetailsList) {
+    public static void filterMultipleCasesDocumentsForClaimant(List<CaseDetails> caseDetailsList) {
         for (CaseDetails caseDetails : caseDetailsList) {
             String caseId;
             if (ObjectUtils.isNotEmpty(caseDetails.getData())
@@ -38,12 +38,12 @@ public final class DocumentUtil {
             } else {
                 caseId = ObjectUtils.isNotEmpty(caseDetails.getId()) ? caseDetails.getId().toString() : "";
             }
-            filterDocumentsForClaimant(caseDetails, caseId);
+            filterCaseDocumentsForClaimant(caseDetails, caseId);
         }
     }
 
     @SuppressWarnings("unchecked")
-    private static void filterDocumentsForClaimant(CaseDetails caseDetails, String caseId) {
+    public static void filterCaseDocumentsForClaimant(CaseDetails caseDetails, String caseId) {
         if (ObjectUtils.isNotEmpty(caseDetails.getData())
             && ObjectUtils.isNotEmpty(caseDetails.getData().get("documentCollection"))) {
             List<LinkedHashMap<String, Object>> documentCollection =

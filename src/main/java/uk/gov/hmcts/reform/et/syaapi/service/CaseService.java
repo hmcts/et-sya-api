@@ -109,7 +109,9 @@ public class CaseService {
      */
     @Retryable
     public CaseDetails getUserCase(String authorization, String caseId) {
-        return ccdApiClient.getCase(authorization, authTokenGenerator.generate(), caseId);
+        CaseDetails caseDetails = ccdApiClient.getCase(authorization, authTokenGenerator.generate(), caseId);
+        DocumentUtil.filterCaseDocumentsForClaimant(caseDetails, caseId);
+        return caseDetails;
     }
 
     /**
@@ -137,7 +139,7 @@ public class CaseService {
             ENGLAND_CASE_TYPE,
             ALL_CASES_QUERY).getCases()).orElse(Collections.emptyList());
         List<CaseDetails> caseDetailsList = Stream.of(scotlandCases, englandCases).flatMap(Collection::stream).toList();
-        DocumentUtil.filterClaimantDocuments(caseDetailsList);
+        DocumentUtil.filterMultipleCasesDocumentsForClaimant(caseDetailsList);
         return caseDetailsList;
     }
 
