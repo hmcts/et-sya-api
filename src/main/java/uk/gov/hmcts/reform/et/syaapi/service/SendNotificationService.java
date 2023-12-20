@@ -85,12 +85,12 @@ public class SendNotificationService {
         }
     }
 
-    private void setNonTribunalResponsesAsViewed(List<PseResponseTypeItem> responses) {
+    private void setNonTribunalResponsesAsViewed(List<TypeItem<PseResponseType>> responses) {
         if (CollectionUtils.isEmpty(responses)) {
             return;
         }
 
-        for (PseResponseTypeItem item : responses) {
+        for (TypeItem<PseResponseType> item : responses) {
             item.getValue().setResponseState(VIEWED);
         }
     }

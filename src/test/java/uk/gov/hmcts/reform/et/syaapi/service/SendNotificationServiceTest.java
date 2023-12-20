@@ -75,8 +75,8 @@ class SendNotificationServiceTest {
             UPDATE_NOTIFICATION_STATE
         )).thenReturn(updateCaseEventResponse);
 
-        List<PseResponseTypeItem> pseResponseItems = List.of(PseResponseTypeItem.builder().id(ID).value(
-            PseResponseType.builder()
+        ListTypeItem<PseResponseType> pseResponseItems = ListTypeItem.from(TypeItem.<PseResponseType>builder()
+                .id(ID).value(PseResponseType.builder()
                 .from(CLAIMANT)
                 .hasSupportingMaterial(NO)
                 .response("Some response text")
@@ -90,7 +90,7 @@ class SendNotificationServiceTest {
             )
         );
 
-        List<SendNotificationTypeItem> items = List.of(
+        ListTypeItem<SendNotificationTypeItem> items = ListTypeItem.from(
             SendNotificationTypeItem.builder()
                 .id(ID)
                 .value(SendNotificationType.builder()
@@ -110,7 +110,7 @@ class SendNotificationServiceTest {
         CaseData data = (CaseData) contentCaptor.getValue().getData();
 
         for (int i = 0; i < items.size(); i++) {
-            SendNotificationTypeItem expectedItem = items.get(i);
+            SendNotificationTypeItem expectedItem = items.get(i).getValue();
             SendNotificationTypeItem actualItem = data.getSendNotificationCollection().get(i);
 
             Assertions.assertEquals(expectedItem.getId(), actualItem.getId());
