@@ -19,7 +19,6 @@ public final class DocumentUtil {
         + "|ET3 Processing|"
         + "|Referral/Judicial Direction|"
         + "|App for a Witness Order - R|"
-        + "|App for a Witness Order - R|"
         + "|Contact the tribunal about something else - C|"
         + "|Contact the tribunal about something else - R|"
         + "|COT3|"
