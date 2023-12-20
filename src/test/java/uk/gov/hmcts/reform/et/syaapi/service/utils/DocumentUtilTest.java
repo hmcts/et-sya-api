@@ -9,8 +9,8 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 @Slf4j
 class DocumentUtilTest {
