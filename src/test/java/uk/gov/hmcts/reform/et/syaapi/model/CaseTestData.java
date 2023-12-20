@@ -5,7 +5,9 @@ import org.junit.jupiter.params.provider.Arguments;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
+import uk.gov.hmcts.et.common.model.ccd.items.ListTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -204,20 +206,20 @@ public final class CaseTestData {
         ClaimantTse inCompleteClaimantTseWithMissingItemDetail = TestDataProvider.generateClaimantTse(
             missingTypeItemDetailsArgumentsList);
 
-        GenericTseApplicationTypeItem completeTseItem = TestDataProvider.generateGenericTseAppTypeItem(
+        TypeItem<GenericTseApplicationType> completeTseItem = TestDataProvider.generateGenericTseAppType(
             completeArgumentsList);
-        GenericTseApplicationTypeItem tseItemWithMissingClaimantTse = TestDataProvider.generateGenericTseAppTypeItem(
+        TypeItem<GenericTseApplicationType> tseItemWithMissingClaimantTse = TestDataProvider.generateGenericTseAppType(
             missingClaimantTseDetailsArgumentsList);
-        GenericTseApplicationTypeItem tseItemWithMissingDetails = TestDataProvider.generateGenericTseAppTypeItem(
+        TypeItem<GenericTseApplicationType> tseItemWithMissingDetails = TestDataProvider.generateGenericTseAppType(
             missingTypeItemDetailsArgumentsList);
 
-        return Stream.of(Arguments.of(completeClaimantTse, List.of(completeTseItem),
+        return Stream.of(Arguments.of(completeClaimantTse, ListTypeItem.from(completeTseItem),
                                       completeExpectedTseApp, caseReference),
                          Arguments.of(inCompleteClaimantTseWithMissingClaimantTse,
-                                      List.of(tseItemWithMissingClaimantTse),
+                                      ListTypeItem.from(tseItemWithMissingClaimantTse),
                                       expectedTseAppWithIncompleteClaimantTse, caseReference),
                         Arguments.of(inCompleteClaimantTseWithMissingItemDetail,
-                                     List.of(tseItemWithMissingDetails),
+                                     ListTypeItem.from(tseItemWithMissingDetails),
                                      expectedTseAppWithMissingTypeItemDetails, caseReference));
     }
 

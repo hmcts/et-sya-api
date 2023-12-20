@@ -14,7 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.ecm.common.helpers.UtilHelper;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
-import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
+import uk.gov.hmcts.et.common.model.ccd.items.ListTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
@@ -273,7 +274,7 @@ public class PdfService {
      */
     public PdfDecodedMultipartFile convertClaimantTseIntoMultipartFile(
         ClaimantTse claimantTse,
-        List<GenericTseApplicationTypeItem> tseApplicationTypeItems,
+        ListTypeItem<GenericTseApplicationType> tseApplicationTypeItems,
         String caseReference)
 
         throws DocumentGenerationException {

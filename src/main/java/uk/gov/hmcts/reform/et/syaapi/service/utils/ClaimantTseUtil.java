@@ -1,12 +1,12 @@
 package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
 import lombok.extern.slf4j.Slf4j;
-import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
+import uk.gov.hmcts.et.common.model.ccd.items.ListTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.models.GenericTseApplication;
-
-import java.util.List;
 
 @Slf4j
 public final class ClaimantTseUtil {
@@ -15,7 +15,7 @@ public final class ClaimantTseUtil {
     }
 
     public static GenericTseApplication getCurrentGenericTseApplication(ClaimantTse claimantTse,
-                                                 List<GenericTseApplicationTypeItem> items,  String caseReference) {
+                                                 ListTypeItem<GenericTseApplicationType> items,  String caseReference) {
         if (claimantTse == null || items == null) {
             return null;
         }
@@ -23,11 +23,11 @@ public final class ClaimantTseUtil {
         UploadedDocumentType contactApplicationFile = claimantTse.getContactApplicationFile();
         String supportingEvidence = contactApplicationFile != null
             ? contactApplicationFile.getDocumentFilename() : null;
-        GenericTseApplicationTypeItem tseApplicationTypeItem = getGenericTseApplicationTypeItem(items);
-        String contactApplicationDate = tseApplicationTypeItem != null
-            ? tseApplicationTypeItem.getValue().getDate() : null;
-        String contactApplicant = tseApplicationTypeItem != null
-            ? tseApplicationTypeItem.getValue().getApplicant() : null;
+        TypeItem<GenericTseApplicationType> tseApplicationType = getGenericTseApplicationType(items);
+        String contactApplicationDate = tseApplicationType != null
+            ? tseApplicationType.getValue().getDate() : null;
+        String contactApplicant = tseApplicationType != null
+            ? tseApplicationType.getValue().getApplicant() : null;
 
         return GenericTseApplication.builder()
             .caseNumber(caseReference)
@@ -41,8 +41,8 @@ public final class ClaimantTseUtil {
             .build();
     }
 
-    private static GenericTseApplicationTypeItem getGenericTseApplicationTypeItem(
-        List<GenericTseApplicationTypeItem> genericTseApplications) {
+    private static TypeItem<GenericTseApplicationType> getGenericTseApplicationType(
+        ListTypeItem<GenericTseApplicationType> genericTseApplications) {
         if (genericTseApplications == null) {
             return null;
         }
