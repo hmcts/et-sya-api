@@ -24,8 +24,11 @@ spring:
     allow-bean-definition-overriding: true
   servlet:
     multipart:
-      max-file-size: 300MB
-      max-request-size: 300MB
+      max-file-size: 1000MB
+      max-request-size: 1000MB
+  datasource:
+    hikari:
+      max-lifetime: 600000
 
 azure:
   application-insights:
