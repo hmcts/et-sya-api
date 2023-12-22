@@ -196,7 +196,8 @@ public class SendNotificationService {
         }
 
         for (GenericTypeItem<RespondNotificationType> item : responses) {
-            if (item.getValue().getIsClaimantResponseDue().equals(YES)) {
+            if (!isNullOrEmpty(item.getValue().getIsClaimantResponseDue())
+                && item.getValue().getIsClaimantResponseDue().equals(YES)) {
                 item.getValue().setIsClaimantResponseDue(null);
                 item.getValue().setState(SUBMITTED);
             }
