@@ -215,6 +215,7 @@ class SendNotificationServiceTest {
         Assertions.assertTrue(actual.getDate().matches("^\\d{1,2} [A-Za-z]{3,4} \\d{4}$"));
         Assertions.assertEquals(NO, actual.getHasSupportingMaterial());
         Assertions.assertEquals(SUBMITTED, notification.getNotificationState());
+        Assertions.assertEquals(SUBMITTED, tribunalResponse.getValue().getState());
         Assertions.assertNull(tribunalResponse.getValue().getIsClaimantResponseDue());
     }
 

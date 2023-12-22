@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NOT_VIEWED_YET;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED;
@@ -63,7 +64,7 @@ public class SendNotificationService {
                 if (item.getValue().getNotificationState().equals(NOT_VIEWED_YET)) {
                     item.getValue().setNotificationState(VIEWED);
                 }
-                setResponsesAsViewed(item.getValue().getRespondNotificationTypeCollection());
+                setTribunalResponsesAsViewed(item.getValue().getRespondNotificationTypeCollection());
                 setNonTribunalResponsesAsViewed(item.getValue().getRespondCollection());
                 break;
             }
@@ -79,13 +80,16 @@ public class SendNotificationService {
         );
     }
 
-    private void setResponsesAsViewed(List<GenericTypeItem<RespondNotificationType>> responses) {
+    private void setTribunalResponsesAsViewed(List<GenericTypeItem<RespondNotificationType>> responses) {
         if (CollectionUtils.isEmpty(responses)) {
             return;
         }
 
         for (GenericTypeItem<RespondNotificationType> item : responses) {
-            item.getValue().setState(VIEWED);
+            if (isNullOrEmpty(item.getValue().getState()) || item.getValue().getState().equals(NOT_VIEWED_YET)) {
+                item.getValue().setState(VIEWED);
+            }
+
         }
     }
 
@@ -192,7 +196,11 @@ public class SendNotificationService {
         }
 
         for (GenericTypeItem<RespondNotificationType> item : responses) {
-            item.getValue().setIsClaimantResponseDue(null);
+            if (item.getValue().getIsClaimantResponseDue().equals(YES)) {
+                item.getValue().setIsClaimantResponseDue(null);
+                item.getValue().setState(SUBMITTED);
+            }
+
         }
     }
 
