@@ -61,6 +61,7 @@ public class SendNotificationService {
             if (item.getId().equals(request.getSendNotificationId())) {
                 item.getValue().setNotificationState(VIEWED);
                 setResponsesAsViewed(item.getValue().getRespondNotificationTypeCollection());
+                setNonTribunalResponsesAsViewed(item.getValue().getRespondCollection());
                 break;
             }
         }
@@ -82,6 +83,16 @@ public class SendNotificationService {
 
         for (GenericTypeItem<RespondNotificationType> item : responses) {
             item.getValue().setState(VIEWED);
+        }
+    }
+
+    private void setNonTribunalResponsesAsViewed(List<PseResponseTypeItem> responses) {
+        if (CollectionUtils.isEmpty(responses)) {
+            return;
+        }
+
+        for (PseResponseTypeItem item : responses) {
+            item.getValue().setResponseState(VIEWED);
         }
     }
 
