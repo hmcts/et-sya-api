@@ -558,7 +558,7 @@ public class CaseService {
     }
 
     void uploadTseSupportingDocument(CaseDetails caseDetails, UploadedDocumentType contactApplicationFile,
-                                     String description) {
+                                     String contactApplicationType) {
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
         List<DocumentTypeItem> docList = caseData.getDocumentCollection();
 
@@ -568,16 +568,16 @@ public class CaseService {
 
         String docName = "Application %d - %s - Attachment.pdf".formatted(
             ApplicationService.getNextApplicationNumber(caseData),
-            APP_TYPE_MAP.get(description));
+            APP_TYPE_MAP.get(contactApplicationType));
         String applicationDocMapping =
-            DocumentHelper.claimantApplicationTypeToDocType(description);
+            DocumentHelper.claimantApplicationTypeToDocType(contactApplicationType);
         String topLevel = DocumentHelper.getTopLevelDocument(applicationDocMapping);
         contactApplicationFile.setDocumentFilename(docName);
         DocumentType documentType = DocumentType.builder()
             .topLevelDocuments(topLevel)
             .typeOfDocument(CLAIMANT_CORRESPONDENCE_DOCUMENT)
             .uploadedDocument(contactApplicationFile)
-            .shortDescription(description)
+            .shortDescription(APP_TYPE_MAP.get(contactApplicationType))
             .dateOfCorrespondence(LocalDate.now().toString())
             .build();
         DocumentHelper.setSecondLevelDocumentFromType(documentType, applicationDocMapping);
@@ -607,7 +607,6 @@ public class CaseService {
         String docName = "Application %d - %s.pdf".formatted(
             ApplicationService.getNextApplicationNumber(caseData),
             ClaimantTse.APP_TYPE_MAP.get(claimantTse.getContactApplicationType()));
-
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             pdfService.convertClaimantTseIntoMultipartFile(claimantTse,caseData.getGenericTseApplicationCollection(),
                                                            caseData.getEthosCaseReference(), docName);

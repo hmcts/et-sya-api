@@ -38,7 +38,6 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -404,7 +403,8 @@ class CaseServiceTest {
     }
 
     @Test
-    void submitCaseShouldSendErrorEmail() throws PdfServiceException, CaseDocumentException {
+    @SneakyThrows
+    void submitCaseShouldSendErrorEmail() {
         when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any(), any()))
             .thenThrow(new CaseDocumentException("Failed to upload documents"));
 
@@ -620,11 +620,12 @@ class CaseServiceTest {
         @Test
         void setsShortDescriptionCorrectly() {
             CaseDetails caseDetails = CaseDetails.builder().data(new HashMap<>()).build();
-            String actual = "withdraw";
-            caseService.uploadTseSupportingDocument(caseDetails, new UploadedDocumentType(), actual);
+            String contactApplicationType = "withdraw";
+            caseService.uploadTseSupportingDocument(caseDetails, new UploadedDocumentType(), contactApplicationType);
 
             CaseData caseData = mapRequestCaseDataToCaseData(caseDetails.getData());
-            String expected = caseData.getDocumentCollection().get(0).getValue().getShortDescription();
+            String actual = caseData.getDocumentCollection().get(0).getValue().getShortDescription();
+            String expected = "Withdraw all/part of claim";
             assertThat(actual).isEqualTo(expected);
         }
     }
