@@ -109,9 +109,7 @@ public class CaseService {
      */
     @Retryable
     public CaseDetails getUserCase(String authorization, String caseId) {
-        CaseDetails caseDetails = ccdApiClient.getCase(authorization, authTokenGenerator.generate(), caseId);
-        DocumentUtil.filterCaseDocumentsForClaimant(caseDetails, caseId);
-        return caseDetails;
+        return ccdApiClient.getCase(authorization, authTokenGenerator.generate(), caseId);
     }
 
     /**
