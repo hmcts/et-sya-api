@@ -35,7 +35,6 @@ import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
-import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.setRespondentApplicationWithResponse;
@@ -94,7 +93,7 @@ public class ApplicationService {
         if (contactApplicationFile != null) {
             log.info("Uploading supporting file to document collection");
             caseService.uploadTseSupportingDocument(caseDetails, contactApplicationFile,
-                                                    APP_TYPE_MAP.get(claimantTse.getContactApplicationType())
+                                                    claimantTse.getContactApplicationType()
             );
         }
 
