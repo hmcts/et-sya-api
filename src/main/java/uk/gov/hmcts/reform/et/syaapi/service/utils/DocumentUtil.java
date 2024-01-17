@@ -22,7 +22,7 @@ public final class DocumentUtil {
         + "|Contact the tribunal about something else - R|"
         + "|COT3|"
         + "|Tribunal case file|"
-        + "|Initial Consideration";
+        + "|Initial Consideration|";
 
     private DocumentUtil() {
         // Utility classes should not have a public or default constructor.
