@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 
+import javax.print.attribute.standard.MediaSize;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -22,7 +23,8 @@ public final class DocumentUtil {
         + "|Contact the tribunal about something else - R|"
         + "|COT3|"
         + "|Tribunal case file|"
-        + "|Initial Consideration|";
+        + "|Initial Consideration|"
+        + "|Other|";
 
     private DocumentUtil() {
         // Utility classes should not have a public or default constructor.
