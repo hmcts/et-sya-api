@@ -7,7 +7,6 @@ import org.apache.commons.lang3.StringUtils;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 
-import javax.print.attribute.standard.MediaSize;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -20,6 +19,7 @@ public final class DocumentUtil {
         + "|ET3 Processing|"
         + "|Referral/Judicial Direction|"
         + "|App for a Witness Order - R|"
+        + "|Contact the tribunal about something else - C|"
         + "|Contact the tribunal about something else - R|"
         + "|COT3|"
         + "|Tribunal case file|"
