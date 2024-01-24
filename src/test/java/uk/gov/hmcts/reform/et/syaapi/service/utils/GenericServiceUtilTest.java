@@ -1,17 +1,29 @@
 package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.DOCUMENT_OWNER;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOT_EMPTY_ET1_DOCUMENT_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOT_EMPTY_ET1_DOCUMENT_TYPE_RAW_HASHMAP;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOT_EMPTY_ET1_VETTING_DOCUMENT_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOT_EMPTY_ET1_VETTING_DOCUMENT_TYPE_RAW_HASHMAP;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOT_EMPTY_UPLOADED_DOCUMENT_TYPE_FILE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TYPE_OF_DOCUMENT_ET1;
+
 
 class GenericServiceUtilTest {
 
@@ -78,4 +90,33 @@ class GenericServiceUtilTest {
         assertThat(GenericServiceUtil.findPdfFileBySelectedLanguage(pdfFileList, selectedLanguage))
             .isEqualTo(expectedValue);
     }
+
+    @SneakyThrows
+    @Test
+    void theMapJavaObjectToClass() {
+        DocumentType documentType = GenericServiceUtil.mapJavaObjectToClass(DocumentType.class,
+                                                                            NOT_EMPTY_ET1_DOCUMENT_TYPE_RAW_HASHMAP);
+        assertThat(documentType)
+            .extracting(DocumentType::getTypeOfDocument,
+                        DocumentType::getOwnerDocument,
+                        DocumentType::getDocumentType,
+                        DocumentType::getUploadedDocument)
+            .containsExactly(TYPE_OF_DOCUMENT_ET1, DOCUMENT_OWNER, TYPE_OF_DOCUMENT_ET1,
+                             NOT_EMPTY_UPLOADED_DOCUMENT_TYPE_FILE);
+
+    }
+
+    @SneakyThrows
+    @Test
+    void castList() {
+        List<Map<String, Object>> objects = new ArrayList<>();
+        objects.add(NOT_EMPTY_ET1_DOCUMENT_TYPE_RAW_HASHMAP);
+        objects.add(NOT_EMPTY_ET1_VETTING_DOCUMENT_TYPE_RAW_HASHMAP);
+        List<DocumentType> documentTypes = GenericServiceUtil.castList(DocumentType.class, objects);
+        List<DocumentType> expectedDocumentTypes = new ArrayList<>();
+        expectedDocumentTypes.add(NOT_EMPTY_ET1_DOCUMENT_TYPE);
+        expectedDocumentTypes.add(NOT_EMPTY_ET1_VETTING_DOCUMENT_TYPE);
+        assertThat(documentTypes).hasSameElementsAs(expectedDocumentTypes);
+    }
+
 }

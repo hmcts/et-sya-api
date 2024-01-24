@@ -38,7 +38,6 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -49,7 +48,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -380,10 +378,8 @@ class CaseServiceTest {
     @SneakyThrows
     @Test
     void submitCaseShouldAddSupportingDocumentToDocumentCollection() {
-        when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any()))
-            .thenReturn(new LinkedList<>());
-
-        when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(createDocumentTypeItem("Other"));
+        when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any(), any()))
+            .thenReturn(List.of(createDocumentTypeItem("Other")));
 
         CaseDetails caseDetails = caseService.submitCase(
             TEST_SERVICE_AUTH_TOKEN,
@@ -394,16 +390,22 @@ class CaseServiceTest {
         List<?> docCollection = (List<?>) caseDetails.getData().get("documentCollection");
 
         assertEquals("DocumentType(typeOfDocument="
-                         + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=http://document.url/2333482f-1eb9-44f1"
-                         + "-9b78-f5d8f0c74b15/binary, documentFilename=filename, documentUrl=http://document.binary"
-                         + ".url/2333482f-1eb9-44f1-9b78-f5d8f0c74b15, categoryId=C11, uploadTimestamp=null), "
-                         + "ownerDocument=null, creationDate=null, "
-                         + "shortDescription=null)", ((DocumentTypeItem) docCollection.get(0)).getValue().toString());
+             + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=http://document.url/2333482f-1eb9-44f1"
+             + "-9b78-f5d8f0c74b15/binary, documentFilename=filename, documentUrl=http://document.binary"
+             + ".url/2333482f-1eb9-44f1-9b78-f5d8f0c74b15, categoryId=C11, uploadTimestamp=null), "
+             + "ownerDocument=null, creationDate=null, "
+             + "shortDescription=null, topLevelDocuments=null, startingClaimDocuments=null, "
+             + "responseClaimDocuments=null, initialConsiderationDocuments=null, "
+             + "caseManagementDocuments=null, withdrawalSettledDocuments=null, hearingsDocuments=null, "
+             + "judgmentAndReasonsDocuments=null, reconsiderationDocuments=null, miscDocuments=null, "
+             + "documentType=null, dateOfCorrespondence=null)",
+                     ((DocumentTypeItem) docCollection.get(0)).getValue().toString());
     }
 
     @Test
-    void submitCaseShouldSendErrorEmail() throws PdfServiceException, CaseDocumentException {
-        when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any()))
+    @SneakyThrows
+    void submitCaseShouldSendErrorEmail() {
+        when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any(), any()))
             .thenThrow(new CaseDocumentException("Failed to upload documents"));
 
         when(notificationService.sendDocUploadErrorEmail(any(), any(), any(), any()))
@@ -618,11 +620,12 @@ class CaseServiceTest {
         @Test
         void setsShortDescriptionCorrectly() {
             CaseDetails caseDetails = CaseDetails.builder().data(new HashMap<>()).build();
-            String actual = "description";
-            caseService.uploadTseSupportingDocument(caseDetails, new UploadedDocumentType(), actual);
+            String contactApplicationType = "withdraw";
+            caseService.uploadTseSupportingDocument(caseDetails, new UploadedDocumentType(), contactApplicationType);
 
             CaseData caseData = mapRequestCaseDataToCaseData(caseDetails.getData());
-            String expected = caseData.getDocumentCollection().get(0).getValue().getShortDescription();
+            String actual = caseData.getDocumentCollection().get(0).getValue().getShortDescription();
+            String expected = "Withdraw all/part of claim";
             assertThat(actual).isEqualTo(expected);
         }
     }
@@ -699,7 +702,7 @@ class CaseServiceTest {
     @Test
     void shouldInvokeClaimantTsePdf()
         throws DocumentGenerationException {
-        when(pdfService.convertClaimantTseIntoMultipartFile(any(), any(), any())).thenReturn(
+        when(pdfService.convertClaimantTseIntoMultipartFile(any(), any(), any(), anyString())).thenReturn(
             tsePdfMultipartFileMock);
 
         assertDoesNotThrow(() ->
@@ -715,7 +718,7 @@ class CaseServiceTest {
     @SneakyThrows
     @Test
     void givenPdfServiceErrorProducesDocumentGenerationException() {
-        when(pdfService.convertClaimantTseIntoMultipartFile(any(), any(), any())).thenThrow(
+        when(pdfService.convertClaimantTseIntoMultipartFile(any(), any(), any(), anyString())).thenThrow(
             new DocumentGenerationException(TEST));
 
         assertThrows(DocumentGenerationException.class, () -> caseService.uploadTseCyaAsPdf(
