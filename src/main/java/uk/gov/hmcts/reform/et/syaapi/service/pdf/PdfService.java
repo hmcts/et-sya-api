@@ -65,7 +65,7 @@ public class PdfService {
     @Value("${pdf.claimant_response_template}")
     public String claimantResponsePdfTemplate;
 
-    private static final String TSE_FILENAME = "Contact the tribunal.pdf";
+    private static final String TSE_FILENAME = "Contact the tribunal - ";
     private static final String CLAIMANT_TITLE = "Claimant";
     private static final String CLAIMANT_RESPONSE = "ClaimantResponse.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
@@ -155,11 +155,11 @@ public class PdfService {
         if (Strings.isNullOrEmpty(claimantLastName)) {
             claimantLastName = userInfo.getFamilyName();
         }
-        return "ET1_CASE_DOCUMENT_"
-            + claimantFirstName.replace(" ", "_")
-            + "_"
-            + claimantLastName.replace(" ", "_")
-            + (ENGLISH_LANGUAGE.equals(documentLanguage) ? "" : "_" + documentLanguage)
+        return "ET1 - "
+            + claimantFirstName
+            + " "
+            + claimantLastName
+            + (ENGLISH_LANGUAGE.equals(documentLanguage) ? "" : " " + documentLanguage)
             + ".pdf";
     }
 
@@ -180,7 +180,7 @@ public class PdfService {
     }
 
     private static String createPdfDocumentDescriptionFromCaseData(CaseData caseData) {
-        return "Case Details - "
+        return "ET1 - "
             + caseData.getClaimantIndType().getClaimantFirstNames()
             + " " + caseData.getClaimantIndType().getClaimantLastName();
     }
@@ -275,7 +275,8 @@ public class PdfService {
     public PdfDecodedMultipartFile convertClaimantTseIntoMultipartFile(
         ClaimantTse claimantTse,
         List<TypeItem<GenericTseApplicationType>> tseApplicationTypeItems,
-        String caseReference)
+        String caseReference,
+        String docName)
 
         throws DocumentGenerationException {
 
@@ -284,15 +285,15 @@ public class PdfService {
                                                                                                       caseReference);
         byte[] tseApplicationPdf = documentGenerationService.genPdfDocument(
             contactTheTribunalPdfTemplate,
-            TSE_FILENAME,
+            docName,
             genericTseApplication
         );
 
         return new PdfDecodedMultipartFile(
             tseApplicationPdf,
-            TSE_FILENAME,
+            docName,
             PDF_FILE_TIKA_CONTENT_TYPE,
-            APP_TYPE_MAP.get(claimantTse.getContactApplicationType())
+            TSE_FILENAME + APP_TYPE_MAP.get(claimantTse.getContactApplicationType())
         );
     }
 
@@ -306,18 +307,25 @@ public class PdfService {
      */
     public PdfDecodedMultipartFile convertClaimantResponseIntoMultipartFile(RespondToApplicationRequest request,
                                                                             String description,
-                                                                            String ethosCaseReference)
+                                                                            String ethosCaseReference,
+                                                                            GenericTseApplicationType application)
         throws DocumentGenerationException {
+
+        String documentName = "Application %s  - %s - Claimant Response.pdf".formatted(
+            application.getNumber(),
+            application.getType()
+        );
+
         return new PdfDecodedMultipartFile(
-            convertClaimantResponseToPdf(request, ethosCaseReference, description),
-            CLAIMANT_RESPONSE,
+            convertClaimantResponseToPdf(request, ethosCaseReference, description, documentName),
+            documentName,
             PDF_FILE_TIKA_CONTENT_TYPE,
             description
         );
     }
 
     private byte[] convertClaimantResponseToPdf(RespondToApplicationRequest request, String ethosCaseReference,
-                                                String appTypeDescription)
+                                                String appTypeDescription, String documentName)
         throws DocumentGenerationException {
         TseRespondType claimantResponse = request.getResponse();
         String fileName = claimantResponse.getSupportingMaterial() != null
@@ -335,7 +343,7 @@ public class PdfService {
 
         return documentGenerationService.genPdfDocument(
             claimantResponsePdfTemplate,
-            CLAIMANT_RESPONSE,
+            documentName,
             claimantResponseCya
         );
     }

@@ -31,16 +31,29 @@ public final class ClaimantTseUtil {
         String contactApplicant = tseApplicationTypeItem != null
             ? tseApplicationTypeItem.getValue().getApplicant() : null;
 
-        return GenericTseApplication.builder()
-            .caseNumber(caseReference)
-            .applicant(contactApplicant)
-            .applicationType(claimantTse.getContactApplicationType())
-            .applicationDate(contactApplicationDate)
-            .tellOrAskTribunal(claimantTse.getContactApplicationText())
-            .supportingEvidence(supportingEvidence)
-            .copyToOtherPartyYesOrNo(claimantTse.getCopyToOtherPartyYesOrNo())
-            .copyToOtherPartyText(claimantTse.getCopyToOtherPartyText())
-            .build();
+        if (claimantTse != null) {
+            return GenericTseApplication.builder()
+                .caseNumber(caseReference)
+                .applicant(contactApplicant)
+                .applicationType(claimantTse.getContactApplicationType())
+                .applicationDate(contactApplicationDate)
+                .tellOrAskTribunal(claimantTse.getContactApplicationText())
+                .supportingEvidence(supportingEvidence)
+                .copyToOtherPartyYesOrNo(claimantTse.getCopyToOtherPartyYesOrNo())
+                .copyToOtherPartyText(claimantTse.getCopyToOtherPartyText())
+                .build();
+        } else {
+            return GenericTseApplication.builder()
+                .caseNumber(caseReference)
+                .applicant(contactApplicant)
+                .applicationType("")
+                .applicationDate(contactApplicationDate)
+                .tellOrAskTribunal("")
+                .supportingEvidence("")
+                .copyToOtherPartyYesOrNo("")
+                .copyToOtherPartyText("")
+                .build();
+        }
     }
 
     private static TypeItem<GenericTseApplicationType> getGenericTseApplicationTypeItem(

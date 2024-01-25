@@ -23,9 +23,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.test.util.ReflectionTestUtils;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
+import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationException;
 import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationService;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
@@ -320,7 +322,8 @@ class PdfServiceTest {
             pdfService.convertClaimantTseIntoMultipartFile(
                 caseTestData.getClaimantTse(),
                 caseTestData.getCaseData().getGenericTseApplicationCollection(),
-                caseTestData.getCaseData().getEthosCaseReference());
+                caseTestData.getCaseData().getEthosCaseReference(),
+                "customDocName.pdf");
 
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
@@ -332,27 +335,32 @@ class PdfServiceTest {
             pdfService.convertClaimantTseIntoMultipartFile(
                 caseTestData.getClaimantTse(),
                 caseTestData.getCaseData().getGenericTseApplicationCollection(),
-                caseTestData.getCaseData().getEthosCaseReference());
+                caseTestData.getCaseData().getEthosCaseReference(),
+                "customDocName.pdf");
 
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
 
     @Test
     void shouldCreatePdfDecodedMultipartFileFromClaimantResponse() throws DocumentGenerationException {
-        var request = caseTestData.getRespondToApplicationRequest();
+        RespondToApplicationRequest request = caseTestData.getRespondToApplicationRequest();
+        GenericTseApplicationType application =
+            caseTestData.getCaseData().getGenericTseApplicationCollection().get(0).getValue();
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             pdfService.convertClaimantResponseIntoMultipartFile(request, "Response to app",
-                                                                "6000001/2023");
+                                                                "6000001/2023", application);
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
 
     @Test
     void shouldCreatePdfDecodedMultipartFileFromClaimantResponseNoSupportingFile() throws DocumentGenerationException {
-        var request = caseTestData.getRespondToApplicationRequest();
+        RespondToApplicationRequest request = caseTestData.getRespondToApplicationRequest();
+        GenericTseApplicationType application =
+            caseTestData.getCaseData().getGenericTseApplicationCollection().get(0).getValue();
         request.getResponse().setHasSupportingMaterial("No");
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             pdfService.convertClaimantResponseIntoMultipartFile(request, "Response to app",
-                                                                "6000001/2023");
+                                                                "6000001/2023", application);
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
 

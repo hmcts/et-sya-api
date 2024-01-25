@@ -1,7 +1,11 @@
 package uk.gov.hmcts.reform.et.syaapi.helper;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
@@ -15,12 +19,26 @@ import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 
 import java.time.LocalDate;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_FOR_A_JUDGMENT_TO_BE_RECONSIDERED_C;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_FOR_A_WITNESS_ORDER_C;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_TO_AMEND_CLAIM;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_TO_HAVE_A_LEGAL_OFFICER_DECISION_CONSIDERED_AFRESH_C;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_TO_ORDER_THE_R_TO_DO_SOMETHING;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_TO_POSTPONE_C;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_TO_RESTRICT_PUBLICITY_C;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_TO_STRIKE_OUT_ALL_OR_PART_OF_THE_RESPONSE;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_TO_VARY_OR_REVOKE_AN_ORDER_C;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.CHANGE_OF_PARTYS_DETAILS;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.CONTACT_THE_TRIBUNAL_C;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.R_HAS_NOT_COMPLIED_WITH_AN_ORDER_C;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.WITHDRAWAL_OF_ALL_OR_PART_CLAIM;
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.setRespondentApplicationWithResponse;
 
 class TseApplicationHelperTest {
@@ -28,6 +46,35 @@ class TseApplicationHelperTest {
     private CaseDocumentService caseDocumentService;
 
     TestData data = new TestData();
+
+    private static Stream<Arguments> checkApplicationDocMapping() {
+        return Stream.of(
+            Arguments.of("Withdraw all/part of claim", WITHDRAWAL_OF_ALL_OR_PART_CLAIM),
+            Arguments.of("Change my personal details", CHANGE_OF_PARTYS_DETAILS),
+            Arguments.of("Postpone a hearing", APP_TO_POSTPONE_C),
+            Arguments.of("Vary/revoke an order", APP_TO_VARY_OR_REVOKE_AN_ORDER_C),
+            Arguments.of("Consider a decision afresh", APP_TO_HAVE_A_LEGAL_OFFICER_DECISION_CONSIDERED_AFRESH_C),
+            Arguments.of("Amend my claim", APP_TO_AMEND_CLAIM),
+            Arguments.of("Order respondent to do something", APP_TO_ORDER_THE_R_TO_DO_SOMETHING),
+            Arguments.of("Order a witness to attend", APP_FOR_A_WITNESS_ORDER_C),
+            Arguments.of("Tell tribunal respondent not complied", R_HAS_NOT_COMPLIED_WITH_AN_ORDER_C),
+            Arguments.of("Restrict publicity", APP_TO_RESTRICT_PUBLICITY_C),
+            Arguments.of("Strike out all/part of response", APP_TO_STRIKE_OUT_ALL_OR_PART_OF_THE_RESPONSE),
+            Arguments.of("Reconsider judgement", APP_FOR_A_JUDGMENT_TO_BE_RECONSIDERED_C),
+            Arguments.of("Contact about something else", CONTACT_THE_TRIBUNAL_C)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource()
+    void checkApplicationDocMapping(String applicationType, String documentType) {
+        CaseData caseData = data.getCaseData();
+        caseData.getGenericTseApplicationCollection().get(0).getValue().setApplicant(CLAIMANT_TITLE);
+        caseData.getGenericTseApplicationCollection().get(0).getValue().setType(applicationType);
+        String expected = TseApplicationHelper.getApplicationDoc(caseData.getGenericTseApplicationCollection()
+                                                                     .get(0).getValue());
+        assertThat(expected).isEqualTo(documentType);
+    }
 
     @Nested
     class GetSelectedApplication {
@@ -61,7 +108,10 @@ class TseApplicationHelperTest {
         @Test
         void applicationStatusWaitingForTheTribunal() {
             RespondToApplicationRequest request = data.getRespondToApplicationRequest();
-            GenericTseApplicationType app = GenericTseApplicationType.builder().type("Amend response").build();
+            GenericTseApplicationType app = GenericTseApplicationType.builder()
+                .type("Amend response")
+                .applicant("Respondent")
+                .build();
             CaseData caseData = data.getCaseData();
             caseDocumentService = mock(CaseDocumentService.class);
             DocumentTypeItem docType = DocumentTypeItem.builder().id("1").value(new DocumentType()).build();
@@ -69,10 +119,10 @@ class TseApplicationHelperTest {
 
             setRespondentApplicationWithResponse(request, app, caseData, caseDocumentService, true);
 
-            assertEquals("waitingForTheTribunal", app.getApplicationState());
-            String actualShortDescription = caseData.getDocumentCollection().get(0).getValue().getShortDescription();
-            assertEquals("Response to Amend response", actualShortDescription);
-            assertEquals("Amend response", app.getRespondCollection().get(0).getValue().getApplicationType());
+            Assertions.assertEquals("waitingForTheTribunal", app.getApplicationState());
+            Assertions.assertEquals("Response to Amend response",
+                caseData.getDocumentCollection().get(0).getValue().getShortDescription()
+            );
         }
     }
 

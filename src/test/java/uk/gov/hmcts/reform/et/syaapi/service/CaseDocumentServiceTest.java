@@ -16,10 +16,13 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.et.syaapi.config.interceptors.ResourceNotFoundException;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
@@ -27,6 +30,7 @@ import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceUtil;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -40,6 +44,11 @@ import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.ET1;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.STARTING_A_CLAIM;
+import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.ET1_PDF_DOC_CATEGORY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.RESOURCE_NOT_FOUND;
 
 @SuppressWarnings({"PMD"})
@@ -432,8 +441,9 @@ class CaseDocumentServiceTest {
                             .body(MOCK_RESPONSE_WITH_DOCUMENT));
 
         List<PdfDecodedMultipartFile> acasCertificates = new ArrayList<>();
+        CaseData caseData = new CaseTestData().getCaseData();
         caseDocumentService.uploadAllDocuments(MOCK_TOKEN, CASE_TYPE, MOCK_PDF_DECODED_MULTIPART_FILE_LIST,
-                                               acasCertificates
+                                               acasCertificates, caseData
         );
     }
 
@@ -448,7 +458,7 @@ class CaseDocumentServiceTest {
         List<PdfDecodedMultipartFile> acasCertificates = new ArrayList<>();
         acasCertificates.add(MOCK_PDF_DECODED_MULTIPART_FILE);
         caseDocumentService.uploadAllDocuments(MOCK_TOKEN, CASE_TYPE, null,
-                                               acasCertificates
+                                               acasCertificates, new CaseData()
         );
     }
 
@@ -467,4 +477,35 @@ class CaseDocumentServiceTest {
         assertEquals(uploadedDocumentType, createdDoc.getValue().getUploadedDocument());
     }
 
+    @Test
+    void createDocumentTypeItemLevels() throws CaseDocumentException {
+        mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_API_URL))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(withStatus(HttpStatus.OK)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .body(MOCK_RESPONSE_WITH_DOCUMENT));
+
+        DocumentTypeItem documentTypeItem = DocumentTypeItem.builder()
+            .value(DocumentType.builder()
+                       .topLevelDocuments(STARTING_A_CLAIM)
+                       .documentType(ET1)
+                       .shortDescription("Test Document Description")
+                       .dateOfCorrespondence(LocalDate.now().toString())
+                       .build())
+            .build();
+
+        DocumentTypeItem createdDoc = caseDocumentService.createDocumentTypeItemLevels(
+            AUTHORIZATION,
+            ENGLAND_CASE_TYPE,
+            STARTING_A_CLAIM,
+            ET1,
+            ET1_PDF_DOC_CATEGORY,
+            MOCK_PDF_DECODED_MULTIPART_FILE);
+
+        assertEquals(createdDoc.getValue().getTopLevelDocuments(), documentTypeItem.getValue().getTopLevelDocuments());
+        assertEquals(createdDoc.getValue().getDocumentType(), documentTypeItem.getValue().getDocumentType());
+        assertEquals(createdDoc.getValue().getShortDescription(), documentTypeItem.getValue().getShortDescription());
+        assertEquals(createdDoc.getValue().getDateOfCorrespondence(),
+                     documentTypeItem.getValue().getDateOfCorrespondence());
+    }
 }
