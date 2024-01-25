@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -563,10 +564,11 @@ public class CaseService {
         if (docList == null) {
             docList = new ArrayList<>();
         }
-
-        String docName = "Application %d - %s - Attachment.pdf".formatted(
+        String extension = FilenameUtils.getExtension(contactApplicationFile.getDocumentFilename());
+        String docName = "Application %d - %s - Attachment.%s".formatted(
             ApplicationService.getNextApplicationNumber(caseData),
-            APP_TYPE_MAP.get(contactApplicationType));
+            APP_TYPE_MAP.get(contactApplicationType),
+            extension);
         String applicationDocMapping =
             DocumentHelper.claimantApplicationTypeToDocType(contactApplicationType);
         String topLevel = DocumentHelper.getTopLevelDocument(applicationDocMapping);

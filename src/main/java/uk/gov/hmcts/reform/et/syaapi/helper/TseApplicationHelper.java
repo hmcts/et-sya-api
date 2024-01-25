@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.FilenameUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
@@ -134,9 +135,11 @@ public final class TseApplicationHelper {
             responseToAdd.getSupportingMaterial().add(documentTypeItem);
 
             String applicationDoc = getApplicationDoc(appToModify);
-            String docName = "Application %s - %s - Attachment.pdf".formatted(
+            String extension = FilenameUtils.getExtension(request.getSupportingMaterialFile().getDocumentFilename());
+            String docName = "Application %s - %s - Attachment.%s".formatted(
                 appToModify.getNumber(),
-                appToModify.getType()
+                appToModify.getType(),
+                extension
             );
             request.getSupportingMaterialFile().setDocumentFilename(docName);
             documentTypeItem = caseDocumentService.createDocumentTypeItem(applicationDoc,
