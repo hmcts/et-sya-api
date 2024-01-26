@@ -131,7 +131,7 @@ public final class TseApplicationHelper {
             );
             documentTypeItem.getValue().setShortDescription("Response to " + appToModify.getType());
 
-            responseToAdd.setSupportingMaterial(new ArrayList<>());
+            responseToAdd.setSupportingMaterial(new ListTypeItem<>());
             responseToAdd.getSupportingMaterial().add(documentTypeItem);
 
             String applicationDoc = getApplicationDoc(appToModify);
