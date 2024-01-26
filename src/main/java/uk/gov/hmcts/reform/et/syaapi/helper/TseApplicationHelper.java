@@ -113,7 +113,7 @@ public final class TseApplicationHelper {
                                                             CaseDocumentService caseDocumentService,
                                                             boolean isWorkAllocationEnabled) {
         if (CollectionUtils.isEmpty(appToModify.getRespondCollection())) {
-            appToModify.setRespondCollection(new ListTypeItem<TseRespondType>());
+            appToModify.setRespondCollection(new ListTypeItem<>());
         }
         TseRespondType responseToAdd = request.getResponse();
         responseToAdd.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));

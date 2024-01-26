@@ -18,11 +18,12 @@ public final class ClaimantTseUtil {
     public static GenericTseApplication getCurrentGenericTseApplication(ClaimantTse claimantTse,
                                                                         List<TypeItem<GenericTseApplicationType>>
                                                                             items, String caseReference) {
-        if (claimantTse == null || items == null) {
+        if (claimantTse == null && items == null) {
             return null;
         }
 
-        UploadedDocumentType contactApplicationFile = claimantTse.getContactApplicationFile();
+        UploadedDocumentType contactApplicationFile =
+            claimantTse != null ? claimantTse.getContactApplicationFile() : null;
         String supportingEvidence = contactApplicationFile != null
             ? contactApplicationFile.getDocumentFilename() : null;
         TypeItem<GenericTseApplicationType> tseApplicationTypeItem = getGenericTseApplicationTypeItem(items);
