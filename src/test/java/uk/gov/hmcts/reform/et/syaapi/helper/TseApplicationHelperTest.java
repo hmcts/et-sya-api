@@ -13,7 +13,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.ListTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
-import uk.gov.hmcts.et.common.model.ccd.types.TseAdminRecordDecisionType;
+import uk.gov.hmcts.et.common.model.ccd.types.TseAdminRecordDecision;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
@@ -133,7 +133,7 @@ class TseApplicationHelperTest {
             TypeItem<GenericTseApplicationType> app = data.getCaseData().getGenericTseApplicationCollection().get(0);
             String decisionId = "777";
 
-            TypeItem<TseAdminRecordDecisionType> result = TseApplicationHelper
+            TypeItem<TseAdminRecordDecision> result = TseApplicationHelper
                 .findAdminDecision(app, decisionId);
 
             assertThat(result.getId()).isEqualTo(decisionId);
@@ -144,7 +144,7 @@ class TseApplicationHelperTest {
             TypeItem<GenericTseApplicationType> app = data.getCaseData().getGenericTseApplicationCollection().get(0);
             String decisionId = "778";
 
-            TypeItem<TseAdminRecordDecisionType> result = TseApplicationHelper
+            TypeItem<TseAdminRecordDecision> result = TseApplicationHelper
                 .findAdminDecision(app, decisionId);
 
             assertThat(result).isNull();

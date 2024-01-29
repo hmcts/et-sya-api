@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
-import uk.gov.hmcts.et.common.model.ccd.types.HearingBundleType;
+import uk.gov.hmcts.et.common.model.ccd.types.HearingBundle;
 
 @Data
 @Builder
@@ -16,5 +16,5 @@ public class ClaimantBundlesRequest {
     @JsonProperty("case_type_id")
     private String caseTypeId;
     @JsonProperty("claimant_bundles")
-    private HearingBundleType claimantBundles;
+    private HearingBundle claimantBundles;
 }

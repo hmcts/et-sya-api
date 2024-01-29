@@ -18,7 +18,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantHearingPreference;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
-import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
+import uk.gov.hmcts.et.common.model.ccd.types.TseRespond;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.HubLinksStatuses;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
@@ -243,7 +243,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .caseId(caseId.toString())
             .caseTypeId(CASE_TYPE)
             .applicationId(appId)
-            .response(new TseRespondType())
+            .response(new TseRespond())
             .build();
 
         RestAssured.given()

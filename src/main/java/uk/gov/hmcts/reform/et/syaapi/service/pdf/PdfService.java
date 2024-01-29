@@ -17,7 +17,7 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
-import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
+import uk.gov.hmcts.et.common.model.ccd.types.TseRespond;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantResponseCya;
@@ -327,7 +327,7 @@ public class PdfService {
     private byte[] convertClaimantResponseToPdf(RespondToApplicationRequest request, String ethosCaseReference,
                                                 String appTypeDescription, String documentName)
         throws DocumentGenerationException {
-        TseRespondType claimantResponse = request.getResponse();
+        TseRespond claimantResponse = request.getResponse();
         String fileName = claimantResponse.getSupportingMaterial() != null
             ? request.getSupportingMaterialFile().getDocumentFilename() : null;
 

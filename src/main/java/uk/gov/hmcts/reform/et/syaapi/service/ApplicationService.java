@@ -10,7 +10,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
-import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
+import uk.gov.hmcts.et.common.model.ccd.types.TseRespond;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -219,7 +219,7 @@ public class ApplicationService {
             request.getAppId()
         );
 
-        TypeItem<TseRespondType> responseToUpdate = TseApplicationHelper.findResponse(
+        TypeItem<TseRespond> responseToUpdate = TseApplicationHelper.findResponse(
             selectedApplication,
             request.getResponseId()
         );

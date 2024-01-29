@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
+import uk.gov.hmcts.et.common.model.ccd.types.PseResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
@@ -94,7 +94,7 @@ class SendNotificationControllerTest {
             .caseTypeId(CASE_TYPE)
             .caseId(CASE_ID)
             .sendNotificationId("1")
-            .pseResponseType(PseResponseType.builder().build())
+            .pseResponse(PseResponse.builder().build())
             .build();
 
         // when

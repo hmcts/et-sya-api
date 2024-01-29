@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
-import uk.gov.hmcts.et.common.model.ccd.types.TseAdminRecordDecisionType;
+import uk.gov.hmcts.et.common.model.ccd.types.TseAdminRecordDecision;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
@@ -42,7 +42,7 @@ public class AdminDecisionNotificationService {
             caseData.getGenericTseApplicationCollection(), request.getAppId()
         );
 
-        TypeItem<TseAdminRecordDecisionType> decisionToUpdate = findAdminDecision(
+        TypeItem<TseAdminRecordDecision> decisionToUpdate = findAdminDecision(
             selectedApplication,
             request.getAdminDecisionId()
         );

@@ -18,7 +18,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
-import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
+import uk.gov.hmcts.et.common.model.ccd.types.TseRespond;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
@@ -288,7 +288,7 @@ class ApplicationServiceTest {
         void shouldSubmitResponseToApplicationWhenOptionalFileNotProvided()
             throws CaseDocumentException, DocumentGenerationException {
             testRequest.setSupportingMaterialFile(null);
-            TseRespondType response = testRequest.getResponse();
+            TseRespond response = testRequest.getResponse();
             response.setSupportingMaterial(null);
             response.setCopyToOtherParty(YES);
             response.setCopyNoGiveDetails(null);

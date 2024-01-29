@@ -9,9 +9,9 @@ import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.ListTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
-import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
+import uk.gov.hmcts.et.common.model.ccd.types.PseResponse;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondNotificationType;
-import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationType;
+import uk.gov.hmcts.et.common.model.ccd.types.SendNotification;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationTypeItem;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -85,12 +85,12 @@ public class SendNotificationService {
         }
     }
 
-    private void setNonTribunalResponsesAsViewed(List<TypeItem<PseResponseType>> responses) {
+    private void setNonTribunalResponsesAsViewed(List<TypeItem<PseResponse>> responses) {
         if (CollectionUtils.isEmpty(responses)) {
             return;
         }
 
-        for (TypeItem<PseResponseType> item : responses) {
+        for (TypeItem<PseResponse> item : responses) {
             item.getValue().setResponseState(VIEWED);
         }
     }
@@ -121,16 +121,16 @@ public class SendNotificationService {
             throw new IllegalArgumentException("SendNotification Id is incorrect");
         }
 
-        SendNotificationType sendNotificationType = sendNotificationTypeItem.get().getValue();
+        SendNotification sendNotification = sendNotificationTypeItem.get().getValue();
 
-        var pseRespondCollection = sendNotificationType.getRespondCollection();
+        var pseRespondCollection = sendNotification.getRespondCollection();
         if (CollectionUtils.isEmpty(pseRespondCollection)) {
             sendNotificationTypeItem.get().getValue().setRespondCollection(new ListTypeItem<>());
         }
 
-        PseResponseType pseResponseType = request.getPseResponseType();
-        pseResponseType.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
-        pseResponseType.setFrom(CLAIMANT);
+        PseResponse pseResponse = request.getPseResponse();
+        pseResponse.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
+        pseResponse.setFrom(CLAIMANT);
 
         if (request.getSupportingMaterialFile() != null) {
             DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(
@@ -139,28 +139,28 @@ public class SendNotificationService {
             );
             var documentTypeItems = new ArrayList<TypeItem<DocumentType>>();
             documentTypeItems.add(documentTypeItem);
-            pseResponseType.setSupportingMaterial(documentTypeItems);
-            pseResponseType.setHasSupportingMaterial(YES);
+            pseResponse.setSupportingMaterial(documentTypeItems);
+            pseResponse.setHasSupportingMaterial(YES);
         } else {
-            pseResponseType.setHasSupportingMaterial(NO);
+            pseResponse.setHasSupportingMaterial(NO);
         }
 
-        TypeItem<PseResponseType> pseResponseTypeItem =
-            TypeItem.<PseResponseType>builder().id(UUID.randomUUID().toString())
-                .value(pseResponseType)
+        TypeItem<PseResponse> pseResponseTypeItem =
+            TypeItem.<PseResponse>builder().id(UUID.randomUUID().toString())
+                .value(pseResponse)
                 .build();
 
-        sendNotificationType.getRespondCollection().add(pseResponseTypeItem);
-        sendNotificationType.setSendNotificationResponsesCount(String.valueOf(
-            sendNotificationType.getRespondCollection().size()));
-        sendNotificationType.setNotificationState(VIEWED);
-        setResponsesAsRespondedTo(sendNotificationType.getRespondNotificationTypeCollection());
+        sendNotification.getRespondCollection().add(pseResponseTypeItem);
+        sendNotification.setSendNotificationResponsesCount(String.valueOf(
+            sendNotification.getRespondCollection().size()));
+        sendNotification.setNotificationState(VIEWED);
+        setResponsesAsRespondedTo(sendNotification.getRespondNotificationTypeCollection());
 
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
         sendAddResponseSendNotificationEmails(
             caseData,
             request.getCaseId(),
-            request.getPseResponseType().getCopyToOtherParty()
+            request.getPseResponse().getCopyToOtherParty()
         );
         return caseService.submitUpdate(
             authorization,

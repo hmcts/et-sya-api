@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
-import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
+import uk.gov.hmcts.et.common.model.ccd.types.TseRespond;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 
 @Data
@@ -21,7 +21,7 @@ public class RespondToApplicationRequest {
     @JsonProperty("supportingMaterialFile")
     private UploadedDocumentType supportingMaterialFile;
     @JsonProperty("response")
-    private TseRespondType response;
+    private TseRespond response;
     @JsonProperty("isRespondingToRequestOrOrder")
     private boolean isRespondingToRequestOrOrder;
 }

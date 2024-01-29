@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
-import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
+import uk.gov.hmcts.et.common.model.ccd.types.PseResponse;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 
 @Data
@@ -20,8 +20,8 @@ public class SendNotificationAddResponseRequest {
     private String sendNotificationId;
     @JsonProperty("supportingMaterialFile")
     private UploadedDocumentType supportingMaterialFile;
-    @JsonProperty("pseResponseType")
-    private PseResponseType pseResponseType;
+    @JsonProperty("pseResponse")
+    private PseResponse pseResponse;
 
 
 }

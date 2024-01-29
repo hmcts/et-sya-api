@@ -10,8 +10,8 @@ import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.ListTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
-import uk.gov.hmcts.et.common.model.ccd.types.TseAdminRecordDecisionType;
-import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
+import uk.gov.hmcts.et.common.model.ccd.types.TseAdminRecordDecision;
+import uk.gov.hmcts.et.common.model.ccd.types.TseRespond;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
@@ -74,9 +74,9 @@ public final class TseApplicationHelper {
      *
      * @param selectedApplication - application to update
      * @param adminDecisionId     - id of decision we're trying to find
-     * @return the {@link TseAdminRecordDecisionType} to be updated
+     * @return the {@link TseAdminRecordDecision} to be updated
      */
-    public static TypeItem<TseAdminRecordDecisionType> findAdminDecision(TypeItem<GenericTseApplicationType>
+    public static TypeItem<TseAdminRecordDecision> findAdminDecision(TypeItem<GenericTseApplicationType>
                                                                              selectedApplication,
                                                                                    String adminDecisionId) {
         return selectedApplication.getValue().getAdminDecision().stream()
@@ -90,9 +90,9 @@ public final class TseApplicationHelper {
      *
      * @param selectedApplication - application to update
      * @param responseId          - id of decision we're trying to find
-     * @return the {@link TseRespondType} to be updated
+     * @return the {@link TseRespond} to be updated
      */
-    public static TypeItem<TseRespondType> findResponse(TypeItem<GenericTseApplicationType> selectedApplication,
+    public static TypeItem<TseRespond> findResponse(TypeItem<GenericTseApplicationType> selectedApplication,
                                                                   String responseId) {
         return selectedApplication.getValue().getRespondCollection().stream()
             .filter(a -> a.getId().equals(responseId))
@@ -116,7 +116,7 @@ public final class TseApplicationHelper {
         if (CollectionUtils.isEmpty(appToModify.getRespondCollection())) {
             appToModify.setRespondCollection(new ListTypeItem<>());
         }
-        TseRespondType responseToAdd = request.getResponse();
+        TseRespond responseToAdd = request.getResponse();
         responseToAdd.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
         responseToAdd.setFrom(CLAIMANT);
 
@@ -155,7 +155,7 @@ public final class TseApplicationHelper {
             responseToAdd.getSupportingMaterial().add(documentTypeItem);
         }
 
-        appToModify.getRespondCollection().add(TypeItem.<TseRespondType>builder()
+        appToModify.getRespondCollection().add(TypeItem.<TseRespond>builder()
                                                    .id(UUID.randomUUID().toString())
                                                    .value(responseToAdd).build());
         appToModify.setResponsesCount(
