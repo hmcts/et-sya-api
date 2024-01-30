@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.et.syaapi.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
@@ -24,7 +22,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.HubLinkService;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.DocumentUtil;
 import uk.gov.service.notify.NotificationClientException;
 
 import java.util.List;
@@ -60,6 +58,7 @@ public class ManageCaseController {
         @RequestHeader(AUTHORIZATION) String authorization,
         @RequestBody CaseRequest caseRequest) {
         CaseDetails caseDetails = caseService.getUserCase(authorization, caseRequest.getCaseId());
+        DocumentUtil.filterCaseDocumentsForClaimant(caseDetails, caseRequest.getCaseId());
         return ok(caseDetails);
     }
 
@@ -137,11 +136,7 @@ public class ManageCaseController {
         log.info("Received submit-case request - caseTypeId: {} caseId: {}",
                  caseRequest.getCaseTypeId(), caseRequest.getCaseId()
         );
-        try {
-            return ok(caseService.submitCase(authorization, caseRequest));
-        } catch (PdfServiceException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
-        }
+        return ok(caseService.submitCase(authorization, caseRequest));
     }
 
     /**

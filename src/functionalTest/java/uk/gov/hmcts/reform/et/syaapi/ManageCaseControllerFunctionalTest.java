@@ -122,7 +122,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
     @Test
     @Order(3)
     void getAllCaseDetails() {
-        TimeUnit.SECONDS.sleep(2);
+        TimeUnit.SECONDS.sleep(5);
         RestAssured.given()
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))

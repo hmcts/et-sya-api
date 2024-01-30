@@ -28,12 +28,10 @@ import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.HubLinkService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
@@ -276,40 +274,6 @@ class ManageCaseControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(ResourceLoader.toJson(caseRequest))
         ).andExpect(status().isOk());
-    }
-
-    @SneakyThrows
-    @Test
-    void shouldSubmitCaseThrowExceptionWhenAnyError() {
-        CaseRequest caseRequest = CaseRequest.builder()
-            .caseTypeId(CASE_TYPE)
-            .caseId("12")
-            .build();
-
-        // given
-        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
-            null,
-            "12",
-            TEST_NAME,
-            TEST_FIRST_NAME,
-            TEST_SURNAME,
-            null
-        ));
-
-        when(caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseRequest))
-            .thenThrow(new PdfServiceException("Failed to convert to PDF", new IOException()));
-
-        // when
-        mockMvc.perform(put(
-                            "/cases/submit-case",
-                            CASE_ID
-                        )
-                            .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(ResourceLoader.toJson(caseRequest))
-            )
-            .andExpect(status().isInternalServerError());
     }
 
     @SneakyThrows

@@ -17,29 +17,43 @@ public final class ClaimantTseUtil {
 
     public static GenericTseApplication getCurrentGenericTseApplication(ClaimantTse claimantTse,
                                                  List<GenericTseApplicationTypeItem> items,  String caseReference) {
-        if (claimantTse == null || items == null) {
+        if (claimantTse == null && items == null) {
             return null;
         }
 
-        UploadedDocumentType contactApplicationFile = claimantTse.getContactApplicationFile();
-        String supportingEvidence = contactApplicationFile != null
-            ? contactApplicationFile.getDocumentFilename() : null;
+        UploadedDocumentType contactApplicationFile =
+            claimantTse != null ? claimantTse.getContactApplicationFile() : null;
+        String supportingEvidence =
+            contactApplicationFile != null ? contactApplicationFile.getDocumentFilename() : null;
         GenericTseApplicationTypeItem tseApplicationTypeItem = getGenericTseApplicationTypeItem(items);
         String contactApplicationDate = tseApplicationTypeItem != null
             ? tseApplicationTypeItem.getValue().getDate() : null;
         String contactApplicant = tseApplicationTypeItem != null
             ? tseApplicationTypeItem.getValue().getApplicant() : null;
 
-        return GenericTseApplication.builder()
-            .caseNumber(caseReference)
-            .applicant(contactApplicant)
-            .applicationType(claimantTse.getContactApplicationType())
-            .applicationDate(contactApplicationDate)
-            .tellOrAskTribunal(claimantTse.getContactApplicationText())
-            .supportingEvidence(supportingEvidence)
-            .copyToOtherPartyYesOrNo(claimantTse.getCopyToOtherPartyYesOrNo())
-            .copyToOtherPartyText(claimantTse.getCopyToOtherPartyText())
-            .build();
+        if (claimantTse != null) {
+            return GenericTseApplication.builder()
+                .caseNumber(caseReference)
+                .applicant(contactApplicant)
+                .applicationType(claimantTse.getContactApplicationType())
+                .applicationDate(contactApplicationDate)
+                .tellOrAskTribunal(claimantTse.getContactApplicationText())
+                .supportingEvidence(supportingEvidence)
+                .copyToOtherPartyYesOrNo(claimantTse.getCopyToOtherPartyYesOrNo())
+                .copyToOtherPartyText(claimantTse.getCopyToOtherPartyText())
+                .build();
+        } else {
+            return GenericTseApplication.builder()
+                .caseNumber(caseReference)
+                .applicant(contactApplicant)
+                .applicationType("")
+                .applicationDate(contactApplicationDate)
+                .tellOrAskTribunal("")
+                .supportingEvidence("")
+                .copyToOtherPartyYesOrNo("")
+                .copyToOtherPartyText("")
+                .build();
+        }
     }
 
     public static GenericTseApplication getCurrentStoredGenericTseApplication(GenericTseApplicationTypeItem item,
