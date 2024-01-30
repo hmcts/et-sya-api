@@ -188,7 +188,7 @@ public class StoredApplicationService {
             RespondToApplicationRequest respondRequest = RespondToApplicationRequest.builder()
                 .caseId(request.getCaseId())
                 .caseTypeId(request.getCaseTypeId())
-                .applicationId("")
+                .applicationId(request.getApplicationId())
                 .supportingMaterialFile(
                     tseRespond.getSupportingMaterial() != null
                         ? tseRespond.getSupportingMaterial().get(0).getValue().getUploadedDocument()
