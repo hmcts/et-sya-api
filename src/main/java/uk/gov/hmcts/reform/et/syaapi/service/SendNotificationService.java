@@ -24,7 +24,6 @@ import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -137,8 +136,9 @@ public class SendNotificationService {
                 CLAIMANT_CORRESPONDENCE_DOCUMENT,
                 request.getSupportingMaterialFile()
             );
-            var documentTypeItems = new ArrayList<TypeItem<DocumentType>>();
+            ListTypeItem<DocumentType> documentTypeItems = new ListTypeItem<>();
             documentTypeItems.add(documentTypeItem);
+
             pseResponse.setSupportingMaterial(documentTypeItems);
             pseResponse.setHasSupportingMaterial(YES);
         } else {
