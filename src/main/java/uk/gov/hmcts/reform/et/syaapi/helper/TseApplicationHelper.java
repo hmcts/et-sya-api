@@ -19,7 +19,6 @@ import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -56,12 +55,12 @@ public final class TseApplicationHelper {
     /**
      * Finds the application by ID.
      *
-     * @param applications - list of all applications attached to the case
+     * @param applications  - list of all applications attached to the case
      * @param applicationId - id of application we're trying to find
      * @return the {@link GenericTseApplicationType} to be updated
      */
     public static TypeItem<GenericTseApplicationType> getSelectedApplication(
-        List<TypeItem<GenericTseApplicationType>> applications,
+        ListTypeItem<GenericTseApplicationType> applications,
         String applicationId) {
         return applications.stream()
             .filter(a -> a.getId().equals(applicationId))
@@ -150,9 +149,6 @@ public final class TseApplicationHelper {
                 caseData.setDocumentCollection(new ArrayList<>());
             }
             caseData.getDocumentCollection().add(documentTypeItem);
-
-            responseToAdd.setSupportingMaterial(new ListTypeItem<>());
-            responseToAdd.getSupportingMaterial().add(documentTypeItem);
         }
 
         appToModify.getRespondCollection().add(TypeItem.<TseRespond>builder()

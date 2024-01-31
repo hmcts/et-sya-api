@@ -200,7 +200,7 @@ class SendNotificationServiceTest {
             eq(MOCK_TOKEN), eq("11"), contentCaptor.capture(), eq("1234"));
 
         CaseData data = (CaseData) contentCaptor.getValue().getData();
-        List<TypeItem<PseResponse>> expectedResponses = items.get(0).getValue().getRespondCollection();
+        ListTypeItem<PseResponse> expectedResponses = items.get(0).getValue().getRespondCollection();
 
         PseResponse expected = expectedResponses.get(0).getValue();
         SendNotification notification = data.getSendNotificationCollection().get(0).getValue();

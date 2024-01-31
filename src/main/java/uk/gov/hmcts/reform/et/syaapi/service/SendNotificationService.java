@@ -75,7 +75,7 @@ public class SendNotificationService {
         );
     }
 
-    private void setResponsesAsViewed(List<TypeItem<RespondNotificationType>> responses) {
+    private void setResponsesAsViewed(ListTypeItem<RespondNotificationType> responses) {
         if (CollectionUtils.isEmpty(responses)) {
             return;
         }
@@ -85,7 +85,7 @@ public class SendNotificationService {
         }
     }
 
-    private void setNonTribunalResponsesAsViewed(List<TypeItem<PseResponse>> responses) {
+    private void setNonTribunalResponsesAsViewed(ListTypeItem<PseResponse> responses) {
         if (CollectionUtils.isEmpty(responses)) {
             return;
         }
@@ -182,7 +182,7 @@ public class SendNotificationService {
 
     }
 
-    private void setResponsesAsRespondedTo(List<TypeItem<RespondNotificationType>> responses) {
+    private void setResponsesAsRespondedTo(ListTypeItem<RespondNotificationType> responses) {
         if (CollectionUtils.isEmpty(responses)) {
             return;
         }
