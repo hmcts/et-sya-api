@@ -6,6 +6,7 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
+import uk.gov.hmcts.et.common.model.ccd.items.ListTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
@@ -15,7 +16,6 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.GenericTseApplication;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceUtil;
@@ -193,33 +193,36 @@ public final class CaseTestData {
                                                                    caseReference);
         List<String> missingClaimantTseDetailsArgumentsList = List.of("Mr Test Applicant", "1", "",
                                                                       "13 Jan 2023", "Yes", "3", "", caseReference);
-        GenericTseApplication  completeExpectedTseApp = TestDataProvider.generateExpectedTseApp(completeArgumentsList);
-        GenericTseApplication  expectedTseAppWithIncompleteClaimantTse = TestDataProvider.generateExpectedTseApp(
-            missingClaimantTseDetailsArgumentsList);
-        GenericTseApplication  expectedTseAppWithMissingTypeItemDetails = TestDataProvider.generateExpectedTseApp(
-            missingTypeItemDetailsArgumentsList);
 
-        ClaimantTse completeClaimantTse = TestDataProvider.generateClaimantTse(completeArgumentsList);
-        ClaimantTse inCompleteClaimantTseWithMissingClaimantTse = TestDataProvider.generateClaimantTse(
-            missingClaimantTseDetailsArgumentsList);
-        ClaimantTse inCompleteClaimantTseWithMissingItemDetail = TestDataProvider.generateClaimantTse(
-            missingTypeItemDetailsArgumentsList);
+        return Stream.of(
+            Arguments.of(
+                TestDataProvider.generateClaimantTse(completeArgumentsList),
+                generateListTypeItem(TestDataProvider.generateGenericTseAppTypeItem(completeArgumentsList)),
+                TestDataProvider.generateExpectedTseApp(completeArgumentsList),
+                caseReference
+            ),
+            Arguments.of(
+                TestDataProvider.generateClaimantTse(missingClaimantTseDetailsArgumentsList),
+                generateListTypeItem(TestDataProvider.generateGenericTseAppTypeItem(
+                    missingClaimantTseDetailsArgumentsList)),
+                TestDataProvider.generateExpectedTseApp(missingClaimantTseDetailsArgumentsList),
+                caseReference
+            ),
+            Arguments.of(
+                TestDataProvider.generateClaimantTse(missingTypeItemDetailsArgumentsList),
+                generateListTypeItem(TestDataProvider.generateGenericTseAppTypeItem(
+                    missingTypeItemDetailsArgumentsList)),
+                TestDataProvider.generateExpectedTseApp(missingTypeItemDetailsArgumentsList),
+                caseReference
+            )
+        );
+    }
 
-        TypeItem<GenericTseApplicationType> completeTseItem = TestDataProvider.generateGenericTseAppTypeItem(
-            completeArgumentsList);
-        TypeItem<GenericTseApplicationType> tseItemWithMissingClaimantTse =
-                TestDataProvider.generateGenericTseAppTypeItem(missingClaimantTseDetailsArgumentsList);
-        TypeItem<GenericTseApplicationType> tseItemWithMissingDetails = TestDataProvider.generateGenericTseAppTypeItem(
-            missingTypeItemDetailsArgumentsList);
-
-        return Stream.of(Arguments.of(completeClaimantTse, List.of(completeTseItem),
-                                      completeExpectedTseApp, caseReference),
-                         Arguments.of(inCompleteClaimantTseWithMissingClaimantTse,
-                                      List.of(tseItemWithMissingClaimantTse),
-                                      expectedTseAppWithIncompleteClaimantTse, caseReference),
-                        Arguments.of(inCompleteClaimantTseWithMissingItemDetail,
-                                     List.of(tseItemWithMissingDetails),
-                                     expectedTseAppWithMissingTypeItemDetails, caseReference));
+    private static ListTypeItem<GenericTseApplicationType> generateListTypeItem(
+        TypeItem<GenericTseApplicationType> item) {
+        ListTypeItem<GenericTseApplicationType> itemList = new ListTypeItem<>();
+        itemList.add(item);
+        return itemList;
     }
 
     public static Stream<Arguments> generateCaseDataUserInfoArgumentsForTestingFirstNames() {
