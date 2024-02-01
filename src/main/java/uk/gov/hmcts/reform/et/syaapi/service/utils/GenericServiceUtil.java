@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -9,6 +11,8 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +22,8 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGU
 
 @Slf4j
 public final class GenericServiceUtil {
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private GenericServiceUtil() {
         // Utility classes should not have a public or default constructor.
@@ -87,5 +93,37 @@ public final class GenericServiceUtil {
     public static String getStringValueFromStringMap(Map<String, String> parameters, String key) {
         return ObjectUtils.isEmpty(parameters.get(key)) ? "" :
             parameters.get(key);
+    }
+
+    /**
+     * Converts any collection to a List of target class.
+     * @param clazz Target class
+     * @param rawCollection source collection
+     * @param <T> Type of return list
+     * @return List of given clazz type objects
+     * @throws JsonProcessingException exception may occur while converting object to
+     *                                 json string in mapJavaObjectToClass method
+     */
+    public static <T> List<T> castList(Class<? extends T> clazz, Collection<?> rawCollection)
+        throws JsonProcessingException {
+        List<T> result = new ArrayList<>(rawCollection.size());
+        for (Object o : rawCollection) {
+            result.add(mapJavaObjectToClass(clazz, o));
+        }
+        return result;
+    }
+
+    /**
+     * Converts any object to target class.
+     * @param clazz Target class
+     * @param object source object
+     * @param <T> Type of return object
+     * @return object of given class type
+     * @throws JsonProcessingException exception may occur while converting object to json string
+     */
+    public static <T> T mapJavaObjectToClass(Class<? extends T> clazz, Object object)
+        throws JsonProcessingException {
+        return OBJECT_MAPPER.readValue(OBJECT_MAPPER.writeValueAsString(object),
+                                       OBJECT_MAPPER.getTypeFactory().constructType(clazz));
     }
 }
