@@ -92,10 +92,23 @@ public class PdfMapperService {
     private static void putMultipleClaimsDetails(
         CaseData caseData,
         ConcurrentMap<String, Optional<String>> printFields) {
-        if ("Multiple".equals(caseData.getEcmCaseType())) {
-            printFields.put(PdfMapperConstants.Q3_MORE_CLAIMS_YES, Optional.of(YES));
+
+        if (caseData.getClaimantRequests() != null) {
+            if (caseData.getClaimantRequests().getLinkedCases() != null
+                && YES.equals(caseData.getClaimantRequests().getLinkedCases())) {
+
+                printFields.put(PdfMapperConstants.Q3_MORE_CLAIMS_YES, Optional.of(YES));
+                printFields.put(
+                    PdfMapperConstants.Q3_MORE_CLAIMS_TEXT_AREA,
+                    ofNullable(caseData.getClaimantRequests().getLinkedCasesDetail())
+                );
+            }
         } else {
-            printFields.put(PdfMapperConstants.Q3_MORE_CLAIMS_NO, Optional.of(NO));
+            if ("Multiple".equals(caseData.getEcmCaseType())) {
+                printFields.put(PdfMapperConstants.Q3_MORE_CLAIMS_YES, Optional.of(YES));
+            } else {
+                printFields.put(PdfMapperConstants.Q3_MORE_CLAIMS_NO, Optional.of(NO));
+            }
         }
     }
 
