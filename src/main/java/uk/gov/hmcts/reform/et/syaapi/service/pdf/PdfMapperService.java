@@ -104,12 +104,6 @@ public class PdfMapperService {
             } else if (NO.equals(caseData.getClaimantRequests().getLinkedCases())) {
                 printFields.put(PdfMapperConstants.Q3_MORE_CLAIMS_NO, Optional.of(NO));
             }
-        } else {
-            if ("Multiple".equals(caseData.getEcmCaseType())) {
-                printFields.put(PdfMapperConstants.Q3_MORE_CLAIMS_YES, Optional.of(YES));
-            } else if ("Single".equals(caseData.getEcmCaseType())) {
-                printFields.put(PdfMapperConstants.Q3_MORE_CLAIMS_NO, Optional.of(NO));
-            }
         }
     }
 
