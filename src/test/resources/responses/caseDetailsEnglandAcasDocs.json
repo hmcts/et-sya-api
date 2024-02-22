@@ -46,7 +46,7 @@
         {
           "id":  "3",
           "value": {
-            "typeOfDocument": "Tribunal Case File",
+            "typeOfDocument": "Tribunal case file",
             "uploadedDocument": {
               "document_binary_url": "https://tribunal_case_file.binary.url/532f826c-ac5c-11ed-afa1-0242ac120002/binary",
               "document_filename": "Mribunal Case File.pdf",

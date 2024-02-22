@@ -25,10 +25,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ACAS_VISIBLE_DOCS;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ACAS_HIDDEN_DOCS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ATTACHMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET3;
@@ -137,13 +138,13 @@ public class AcasCaseService {
                                    List<DocumentTypeItem> documentTypeItemList) {
         for (DocumentTypeItem documentTypeItem : documentTypeItemList) {
             boolean duplicatedDoc = false;
-            if (POSSIBLE_DUPLICATED_DOCS.contains(documentTypeItem.getValue().getTypeOfDocument())) {
+            String documentType = getDocumentType(documentTypeItem);
+            if (POSSIBLE_DUPLICATED_DOCS.contains(documentType)) {
                 duplicatedDoc = isDuplicatedDoc(documentIds, documentTypeItem);
             }
 
             if (!duplicatedDoc) {
-                documentIds.put(documentTypeItem.getValue().getTypeOfDocument(),
-                                caseDocumentAcasResponseBuilder(documentTypeItem, authorisation, null));
+                documentIds.put(documentType, caseDocumentAcasResponseBuilder(documentTypeItem, authorisation, null));
             }
         }
     }
@@ -166,19 +167,19 @@ public class AcasCaseService {
     private List<DocumentTypeItem> getAllCaseDocuments(String authorisation, MultiValuedMap<String,
         CaseDocumentAcasResponse> documentIds, CaseData caseData) {
         if (CollectionUtils.isNotEmpty(caseData.getRespondentCollection())) {
-            for (RespondentSumTypeItem respondent : caseData.getRespondentCollection()) {
+            caseData.getRespondentCollection().forEach(respondent -> {
                 List<DocumentTypeItem> respondentDocs = getRespondentDocs(respondent);
                 for (DocumentTypeItem documentTypeItem : respondentDocs) {
-                    documentIds.put(documentTypeItem.getValue().getTypeOfDocument(),
-                                    caseDocumentAcasResponseBuilder(documentTypeItem, authorisation,
-                                                                    respondent.getId()));
+                    String documentType = getDocumentType(documentTypeItem);
+                    documentIds.put(documentType,
+                        caseDocumentAcasResponseBuilder(documentTypeItem, authorisation, respondent.getId()));
                 }
-            }
+            });
         }
 
         List<DocumentTypeItem> documentTypeItemList = caseData.getDocumentCollection()
             .stream()
-            .filter(d -> ACAS_VISIBLE_DOCS.contains(defaultIfEmpty(d.getValue().getTypeOfDocument(), "")))
+            .filter(d -> !isNullOrEmpty(getDocumentType(d)) && !ACAS_HIDDEN_DOCS.contains(getDocumentType(d)))
             .collect(toList());
 
         if (caseData.getClaimantRequests() != null
@@ -188,6 +189,11 @@ public class AcasCaseService {
             ));
         }
         return documentTypeItemList;
+    }
+
+    private static String getDocumentType(DocumentTypeItem d) {
+        return defaultIfEmpty(d.getValue().getDocumentType(),
+                              defaultIfEmpty(d.getValue().getTypeOfDocument(), ""));
     }
 
     private List<DocumentTypeItem> getRespondentDocs(RespondentSumTypeItem respondent) {

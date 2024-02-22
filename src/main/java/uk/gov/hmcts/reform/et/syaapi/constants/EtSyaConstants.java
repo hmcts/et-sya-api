@@ -5,6 +5,25 @@ import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.ANONYMITY_ORDER;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_FOR_A_JUDGMENT_TO_BE_RECONSIDERED_C;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_FOR_A_JUDGMENT_TO_BE_RECONSIDERED_R;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_FOR_A_WITNESS_ORDER_C;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_FOR_A_WITNESS_ORDER_R;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_TO_RESTRICT_PUBLICITY_C;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_TO_RESTRICT_PUBLICITY_R;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.COT3;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.COUNTER_SCHEDULE_OF_LOSS;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.ET1_VETTING;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.ET3_PROCESSING;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.EXTRACT_OF_JUDGMENT;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.HEARING_BUNDLE;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.INITIAL_CONSIDERATION;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.OTHER;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.REFERRAL_JUDICIAL_DIRECTION;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.SCHEDULE_OF_LOSS;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.TRIBUNAL_CASE_FILE;
+
 /**
  * Defines attributes used by et-sya-api as constants.
  */
@@ -62,13 +81,11 @@ public final class EtSyaConstants {
 
     public static final String ET1_ONLINE_SUBMISSION = "et1OnlineSubmission";
 
-    public static final List<String> ACAS_VISIBLE_DOCS = List.of("ET1", "ACAS Certificate", "Notice of a claim",
-                                                                 ET3, CLAIMANT_CORRESPONDENCE_DOCUMENT,
-                                                                 "Respondent correspondence", "Notice of Hearing",
-                                                                 "Tribunal correspondence",
-                                                                 "Tribunal Order/Deposit Order",
-                                                                 "Tribunal Judgment/Reasons", ET1_ATTACHMENT,
-                                                                 ET3_ATTACHMENT);
+    public static final List<String> ACAS_HIDDEN_DOCS = List.of(ET1_VETTING, ET3_PROCESSING, INITIAL_CONSIDERATION,
+        APP_FOR_A_WITNESS_ORDER_C, APP_FOR_A_WITNESS_ORDER_R, REFERRAL_JUDICIAL_DIRECTION, COT3,
+        APP_TO_RESTRICT_PUBLICITY_C, APP_TO_RESTRICT_PUBLICITY_R, ANONYMITY_ORDER, HEARING_BUNDLE, SCHEDULE_OF_LOSS,
+        COUNTER_SCHEDULE_OF_LOSS, EXTRACT_OF_JUDGMENT, APP_FOR_A_JUDGMENT_TO_BE_RECONSIDERED_C,
+        APP_FOR_A_JUDGMENT_TO_BE_RECONSIDERED_R, TRIBUNAL_CASE_FILE, OTHER);
 
     public static final List<String> POSSIBLE_DUPLICATED_DOCS = List.of(ET3, ET3_ATTACHMENT, ET1_ATTACHMENT);
 
