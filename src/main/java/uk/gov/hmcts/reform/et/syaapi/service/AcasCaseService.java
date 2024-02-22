@@ -191,9 +191,9 @@ public class AcasCaseService {
         return documentTypeItemList;
     }
 
-    private static String getDocumentType(DocumentTypeItem d) {
-        return defaultIfEmpty(d.getValue().getDocumentType(),
-                              defaultIfEmpty(d.getValue().getTypeOfDocument(), ""));
+    private static String getDocumentType(DocumentTypeItem documentTypeItem) {
+        return defaultIfEmpty(documentTypeItem.getValue().getDocumentType(),
+                              defaultIfEmpty(documentTypeItem.getValue().getTypeOfDocument(), ""));
     }
 
     private List<DocumentTypeItem> getRespondentDocs(RespondentSumTypeItem respondent) {
