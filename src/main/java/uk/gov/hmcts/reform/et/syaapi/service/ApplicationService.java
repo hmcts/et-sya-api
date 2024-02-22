@@ -8,9 +8,9 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
-import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.items.TseRespondTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
+import uk.gov.hmcts.et.common.model.ccd.types.TseRespond;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -131,7 +131,7 @@ public class ApplicationService {
         CaseData caseData = EmployeeObjectMapper
             .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
 
-        GenericTseApplicationTypeItem appToModify = TseApplicationHelper.getSelectedApplication(
+        TypeItem<GenericTseApplicationType> appToModify = TseApplicationHelper.getSelectedApplication(
             caseData.getGenericTseApplicationCollection(), request.getApplicationId()
         );
 
@@ -177,7 +177,7 @@ public class ApplicationService {
         CaseData caseData = EmployeeObjectMapper
             .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
 
-        GenericTseApplicationTypeItem appToModify = TseApplicationHelper.getSelectedApplication(
+        TypeItem<GenericTseApplicationType> appToModify = TseApplicationHelper.getSelectedApplication(
             caseData.getGenericTseApplicationCollection(),
             request.getApplicationId()
         );
@@ -214,12 +214,12 @@ public class ApplicationService {
         CaseData caseData = EmployeeObjectMapper
             .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
 
-        GenericTseApplicationTypeItem selectedApplication = TseApplicationHelper.getSelectedApplication(
+        TypeItem<GenericTseApplicationType> selectedApplication = TseApplicationHelper.getSelectedApplication(
             caseData.getGenericTseApplicationCollection(),
             request.getAppId()
         );
 
-        TseRespondTypeItem responseToUpdate = TseApplicationHelper.findResponse(
+        TypeItem<TseRespond> responseToUpdate = TseApplicationHelper.findResponse(
             selectedApplication,
             request.getResponseId()
         );

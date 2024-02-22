@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
+import uk.gov.hmcts.et.common.model.ccd.types.TseRespond;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.HubLinksStatuses;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -344,7 +344,7 @@ class ManageCaseControllerTest {
             .caseTypeId(CASE_TYPE)
             .caseId(CASE_ID)
             .applicationId("1234")
-            .response(new TseRespondType())
+            .response(new TseRespond())
             .build();
 
         // when

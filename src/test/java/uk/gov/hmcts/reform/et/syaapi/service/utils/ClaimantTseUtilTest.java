@@ -3,11 +3,10 @@ package uk.gov.hmcts.reform.et.syaapi.service.utils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
+import uk.gov.hmcts.et.common.model.ccd.items.ListTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.models.GenericTseApplication;
-
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,7 +17,7 @@ class ClaimantTseUtilTest {
     @MethodSource(
         "uk.gov.hmcts.reform.et.syaapi.model.CaseTestData#generateClaimantTseArgumentsForTestingCurrentTseApplication")
     void theGetCurrentGenericTseApplication(ClaimantTse claimantTse,
-                                            List<GenericTseApplicationTypeItem> items,
+                                            ListTypeItem<GenericTseApplicationType> items,
                                             GenericTseApplication expectedGenericTseApplication,
                                             String caseReference) {
         GenericTseApplication actualGenericTseApplication = ClaimantTseUtil.getCurrentGenericTseApplication(

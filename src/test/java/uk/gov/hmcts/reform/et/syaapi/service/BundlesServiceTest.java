@@ -7,17 +7,15 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
-import uk.gov.hmcts.et.common.model.ccd.items.GenericTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.types.HearingBundleType;
+import uk.gov.hmcts.et.common.model.ccd.items.ListTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.HearingBundle;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantBundlesRequest;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -104,13 +102,13 @@ class BundlesServiceTest {
             SUBMIT_CLAIMANT_BUNDLES
         )).thenReturn(updateCaseEventResponse);
 
-        List<GenericTypeItem<HearingBundleType>> collection = new ArrayList<>();
+        ListTypeItem<HearingBundle> collection = new ListTypeItem<>();
         UploadedDocumentType file = UploadedDocumentType.builder()
             .documentFilename("filename.pdf").documentBinaryUrl("url").documentUrl("url").build();
 
         collection.add(
-            GenericTypeItem.from(
-                HearingBundleType.builder()
+            TypeItem.from(
+                HearingBundle.builder()
                     .agreedDocWith("text")
                     .hearing("122333-abc-1122333")
                     .whatDocuments("supplementary")

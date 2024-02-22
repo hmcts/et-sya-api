@@ -9,12 +9,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
-import uk.gov.hmcts.et.common.model.ccd.items.GenericTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.ListTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.items.PseResponseTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
+import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.PseResponse;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondNotificationType;
-import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationType;
+import uk.gov.hmcts.et.common.model.ccd.types.SendNotification;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationTypeItem;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
@@ -76,8 +75,8 @@ class SendNotificationServiceTest {
             UPDATE_NOTIFICATION_STATE
         )).thenReturn(updateCaseEventResponse);
 
-        List<PseResponseTypeItem> pseResponseItems = List.of(PseResponseTypeItem.builder().id(ID).value(
-            PseResponseType.builder()
+        ListTypeItem<PseResponse> pseResponseItems = ListTypeItem.from(TypeItem.<PseResponse>builder()
+                .id(ID).value(PseResponse.builder()
                 .from(CLAIMANT)
                 .hasSupportingMaterial(NO)
                 .response("Some response text")
@@ -86,15 +85,15 @@ class SendNotificationServiceTest {
         );
 
         ListTypeItem<RespondNotificationType> from = ListTypeItem.from(
-            GenericTypeItem.from(ID, RespondNotificationType.builder()
+            TypeItem.from(ID, RespondNotificationType.builder()
                 .state(VIEWED).isClaimantResponseDue(YES).build()
             )
         );
 
-        List<SendNotificationTypeItem> items = List.of(
+        ListTypeItem<SendNotificationTypeItem> items = ListTypeItem.from(
             SendNotificationTypeItem.builder()
                 .id(ID)
-                .value(SendNotificationType.builder()
+                .value(SendNotification.builder()
                            .notificationState(VIEWED)
                            .respondNotificationTypeCollection(from)
                            .respondCollection(pseResponseItems)
@@ -111,7 +110,7 @@ class SendNotificationServiceTest {
         CaseData data = (CaseData) contentCaptor.getValue().getData();
 
         for (int i = 0; i < items.size(); i++) {
-            SendNotificationTypeItem expectedItem = items.get(i);
+            SendNotificationTypeItem expectedItem = items.get(i).getValue();
             SendNotificationTypeItem actualItem = data.getSendNotificationCollection().get(i);
 
             Assertions.assertEquals(expectedItem.getId(), actualItem.getId());
@@ -119,7 +118,7 @@ class SendNotificationServiceTest {
                 expectedItem.getValue().getNotificationState(), actualItem.getValue().getNotificationState());
 
             for (int j = 0; j < actualItem.getValue().getRespondCollection().size(); j++) {
-                PseResponseType actualResponseType = actualItem.getValue().getRespondCollection().get(j).getValue();
+                PseResponse actualResponseType = actualItem.getValue().getRespondCollection().get(j).getValue();
                 Assertions.assertEquals(VIEWED, actualResponseType.getResponseState());
             }
         }
@@ -140,7 +139,7 @@ class SendNotificationServiceTest {
         List<SendNotificationTypeItem> items = List.of(
             SendNotificationTypeItem.builder()
                 .id(ID)
-                .value(SendNotificationType.builder()
+                .value(SendNotification.builder()
                            .notificationState("viewed")
                            .build())
                 .build()
@@ -168,15 +167,15 @@ class SendNotificationServiceTest {
         )).thenReturn(testData.getUpdateCaseEventResponse());
 
         ListTypeItem<RespondNotificationType> from = ListTypeItem.from(
-            GenericTypeItem.from(ID, RespondNotificationType.builder()
+            TypeItem.from(ID, RespondNotificationType.builder()
                 .state(VIEWED).isClaimantResponseDue(YES).build()
             )
         );
 
-        PseResponseTypeItem build = PseResponseTypeItem.builder()
+        TypeItem<PseResponse> build = TypeItem.<PseResponse>builder()
             .id(ID)
             .value(
-                PseResponseType.builder()
+                PseResponse.builder()
                     .from(CLAIMANT)
                     .hasSupportingMaterial(NO)
                     .response("RESPONSE")
@@ -186,8 +185,8 @@ class SendNotificationServiceTest {
         List<SendNotificationTypeItem> items = List.of(
             SendNotificationTypeItem.builder()
                 .id(ID)
-                .value(SendNotificationType.builder()
-                           .respondCollection(List.of(build))
+                .value(SendNotification.builder()
+                           .respondCollection(ListTypeItem.from(build))
                            .respondNotificationTypeCollection(from)
                            .build())
                 .build()
@@ -201,12 +200,12 @@ class SendNotificationServiceTest {
             eq(MOCK_TOKEN), eq("11"), contentCaptor.capture(), eq("1234"));
 
         CaseData data = (CaseData) contentCaptor.getValue().getData();
-        List<PseResponseTypeItem> expectedResponses = items.get(0).getValue().getRespondCollection();
+        ListTypeItem<PseResponse> expectedResponses = items.get(0).getValue().getRespondCollection();
 
-        PseResponseType expected = expectedResponses.get(0).getValue();
-        SendNotificationType notification = data.getSendNotificationCollection().get(0).getValue();
-        PseResponseType actual = notification.getRespondCollection().get(0).getValue();
-        GenericTypeItem<RespondNotificationType> tribunalResponse =
+        PseResponse expected = expectedResponses.get(0).getValue();
+        SendNotification notification = data.getSendNotificationCollection().get(0).getValue();
+        PseResponse actual = notification.getRespondCollection().get(0).getValue();
+        TypeItem<RespondNotificationType> tribunalResponse =
             notification.getRespondNotificationTypeCollection().get(0);
 
         Assertions.assertEquals(expected.getResponse(), actual.getResponse());

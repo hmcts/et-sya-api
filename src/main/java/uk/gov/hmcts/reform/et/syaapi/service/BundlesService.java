@@ -5,8 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
-import uk.gov.hmcts.et.common.model.ccd.items.GenericTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.types.HearingBundleType;
+import uk.gov.hmcts.et.common.model.ccd.items.ListTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.TypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.HearingBundle;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
@@ -14,8 +15,6 @@ import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantBundlesRequest;
-
-import java.util.ArrayList;
 
 import static java.util.UUID.randomUUID;
 
@@ -48,9 +47,9 @@ public class BundlesService {
             .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
 
         if (CollectionUtils.isEmpty(caseData.getBundlesClaimantCollection())) {
-            caseData.setBundlesClaimantCollection(new ArrayList<>());
+            caseData.setBundlesClaimantCollection(new ListTypeItem<>());
         }
-        GenericTypeItem<HearingBundleType> hearingBundleTypeItem = new GenericTypeItem<>();
+        TypeItem<HearingBundle> hearingBundleTypeItem = new TypeItem<>();
         hearingBundleTypeItem.setId(String.valueOf(randomUUID()));
         hearingBundleTypeItem.setValue(request.getClaimantBundles());
 
