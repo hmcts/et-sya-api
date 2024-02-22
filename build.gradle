@@ -201,7 +201,7 @@ repositories {
 
 ext {
   reformLoggingVersion = "5.1.9"
-  log4JVersion = "2.22.0"
+  log4JVersion = "2.23.0"
 }
 
 dependencies {
@@ -251,7 +251,7 @@ dependencies {
   implementation group: 'org.yaml', name: 'snakeyaml', version: '2.2'
 
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.86'
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.18'
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.19'
 
   implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '6.2.2'
 
@@ -280,7 +280,7 @@ dependencies {
   testImplementation group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version: '3.15.4'
   testImplementation('org.assertj:assertj-core:3.25.3')
   testImplementation group: 'io.rest-assured', name: 'rest-assured'
-  testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit', version: '3.2.4'
+  testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit', version: '3.2.5'
 
   testImplementation 'com.github.hmcts:fortify-client:1.4.1:all'
 
