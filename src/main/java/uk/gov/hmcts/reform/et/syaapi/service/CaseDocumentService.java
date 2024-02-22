@@ -13,10 +13,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import uk.gov.hmcts.ecm.common.helpers.DocumentHelper;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
@@ -26,6 +29,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -34,9 +38,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.ACAS_CERTIFICATE;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.ET1;
 import static uk.gov.hmcts.reform.ccd.client.model.Classification.PUBLIC;
 import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.ACAS_DOC_CATEGORY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.ET1_PDF_DOC_CATEGORY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ATTACHMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.RESOURCE_NOT_FOUND;
 
@@ -62,8 +69,6 @@ public class CaseDocumentService {
     private static final Pattern FILE_NAME_PATTERN = Pattern.compile(FILE_NAME_REGEX_PATTERN);
     private static final String UPLOAD_FILE_EXCEPTION_MESSAGE = "Document management failed uploading file: ";
     private static final String VALIDATE_FILE_EXCEPTION_MESSAGE = "File does not pass validation";
-    private static final String TYPE_OF_DOCUMENT_ET1_CASE_PDF = "ET1";
-    private static final String TYPE_OF_DOCUMENT_ET1_ACAS_CERTIFICATE = "ACAS Certificate";
     private final Integer maxApiRetries;
     private final RestTemplate restTemplate;
     private final AuthTokenGenerator authTokenGenerator;
@@ -289,7 +294,7 @@ public class CaseDocumentService {
      * Files are uploaded one at a file via this service and then returned as a list of {@link DocumentTypeItem}
      *
      * @param authToken                jwt token used to call this service
-     * @param caseType                 defines the juridiction of the case e.g. ET_EnglandWales
+     * @param caseType                 defines the jurisdiction of the case e.g. ET_EnglandWales
      * @param pdfDecodedMultipartFiles The pdf files that are generated for the case upon submittion
      * @param acasCertificates         The acas certificates that are converted to pdf format for a case
      * @return a complete list of each successfully uploaded file passed to the function
@@ -298,7 +303,8 @@ public class CaseDocumentService {
     public List<DocumentTypeItem> uploadAllDocuments(String authToken,
                                                      String caseType,
                                                      List<PdfDecodedMultipartFile> pdfDecodedMultipartFiles,
-                                                     List<PdfDecodedMultipartFile> acasCertificates)
+                                                     List<PdfDecodedMultipartFile> acasCertificates,
+                                                     CaseData caseData)
         throws CaseDocumentException {
         List<DocumentTypeItem> documentTypeItems = new ArrayList<>();
         if (pdfDecodedMultipartFiles != null) {
@@ -306,18 +312,33 @@ public class CaseDocumentService {
                 documentTypeItems.add(createDocumentTypeItem(
                     authToken,
                     caseType,
-                    TYPE_OF_DOCUMENT_ET1_CASE_PDF,
+                    ET1,
                     ET1_PDF_DOC_CATEGORY,
                     casePdf
                 ));
             }
         }
+
+        if (!ObjectUtils.isEmpty(caseData.getClaimantRequests())
+            && !ObjectUtils.isEmpty(caseData.getClaimantRequests().getClaimDescriptionDocument())) {
+            caseData.getClaimantRequests().getClaimDescriptionDocument().setDocumentFilename(
+                ET1_ATTACHMENT
+                    + " - "
+                    + caseData.getClaimantIndType().getClaimantFirstNames()
+                    + " "
+                    + caseData.getClaimantIndType().getClaimantLastName());
+            documentTypeItems.add(createDocumentTypeItem(
+                ET1_ATTACHMENT,
+                caseData.getClaimantRequests().getClaimDescriptionDocument()
+            ));
+        }
+
         if (acasCertificates != null) {
             for (PdfDecodedMultipartFile acasCertificate : acasCertificates) {
                 documentTypeItems.add(createDocumentTypeItem(
                     authToken,
                     caseType,
-                    TYPE_OF_DOCUMENT_ET1_ACAS_CERTIFICATE,
+                    ACAS_CERTIFICATE,
                     ACAS_DOC_CATEGORY,
                     acasCertificate
                 ));
@@ -340,7 +361,10 @@ public class CaseDocumentService {
         DocumentType documentType = new DocumentType();
         documentType.setTypeOfDocument(typeOfDocument);
         documentType.setUploadedDocument(uploadedDoc);
-
+        documentType.setDateOfCorrespondence(LocalDate.now().toString());
+        documentType.setTopLevelDocuments(DocumentHelper.getTopLevelDocument(typeOfDocument));
+        DocumentHelper.setSecondLevelDocumentFromType(documentType, typeOfDocument);
+        DocumentHelper.setDocumentTypeForDocument(documentType);
         documentTypeItem.setValue(documentType);
 
         return documentTypeItem;
@@ -365,13 +389,60 @@ public class CaseDocumentService {
                                                                     String categoryId) {
         DocumentType documentType = new DocumentType();
         documentType.setTypeOfDocument(typeOfDocument);
+        documentType.setTopLevelDocuments(DocumentHelper.getTopLevelDocument(typeOfDocument));
         documentType.setShortDescription(shortDescription);
+        documentType.setDateOfCorrespondence(LocalDate.now().toString());
+        DocumentHelper.setSecondLevelDocumentFromType(documentType, typeOfDocument);
+        DocumentHelper.setDocumentTypeForDocument(documentType);
+        return getDocumentTypeItem(caseDocument, documentType, categoryId);
+    }
+
+
+    /**
+     * Accepts a {@link PdfDecodedMultipartFile} and wraps it in a {@link DocumentTypeItem} and assigns a random UUID.
+     * @param authToken is the jwt token used to call this service
+     * @param caseType is the jurisdiction of the case e.g. ET_EnglandWales
+     * @param topLevel is the top level document type e.g. Starting a claim
+     * @param secondLevel is the second level document type e.g. ET1
+     * @param pdfDecodedMultipartFile is the pdf file to be uploaded
+     * @return DocumentTypeItem
+     * @throws CaseDocumentException ds
+     */
+    public DocumentTypeItem createDocumentTypeItemLevels(String authToken,
+                                                         String caseType,
+                                                         String topLevel,
+                                                         String secondLevel,
+                                                         String categoryId,
+                                                         PdfDecodedMultipartFile pdfDecodedMultipartFile)
+        throws CaseDocumentException {
+        CaseDocument caseDocument = uploadDocument(authToken, caseType, pdfDecodedMultipartFile);
+        return createDocumentTypeItemLevels(caseDocument, topLevel, secondLevel,
+                                            pdfDecodedMultipartFile.getDocumentDescription(),
+                                            categoryId);
+    }
+
+    private DocumentTypeItem createDocumentTypeItemLevels(CaseDocument caseDocument,
+                                                          String topLevel,
+                                                          String secondLevel,
+                                                          String shortDescription,
+                                                          String categoryId) {
+        DocumentType documentType = new DocumentType();
+        documentType.setTopLevelDocuments(topLevel);
+        documentType.setShortDescription(shortDescription);
+        documentType.setDateOfCorrespondence(LocalDate.now().toString());
+        DocumentHelper.setSecondLevelDocumentFromType(documentType, secondLevel);
+        DocumentHelper.setDocumentTypeForDocument(documentType);
+        return getDocumentTypeItem(caseDocument, documentType, categoryId);
+    }
+
+    private static DocumentTypeItem getDocumentTypeItem(CaseDocument caseDocument, DocumentType documentType,
+                                                        String categoryId) {
         UploadedDocumentType uploadedDocumentType = new UploadedDocumentType();
+        uploadedDocumentType.setCategoryId(categoryId);
         uploadedDocumentType.setDocumentFilename(caseDocument.getOriginalDocumentName());
         uploadedDocumentType.setDocumentUrl(caseDocument.getLinks().get("self").get("href"));
         uploadedDocumentType.setDocumentBinaryUrl(caseDocument.getLinks().get("binary") == null ? null :
                                                       caseDocument.getLinks().get("binary").get("href"));
-        uploadedDocumentType.setCategoryId(categoryId);
         documentType.setUploadedDocument(uploadedDocumentType);
         DocumentTypeItem documentTypeItem = new DocumentTypeItem();
         documentTypeItem.setId(UUID.randomUUID().toString());

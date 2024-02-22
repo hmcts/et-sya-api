@@ -27,7 +27,7 @@
           "id": "1xx567",
           "value": {
             "number": "1234",
-            "type": "Amend response",
+            "type": "Amend details",
             "applicant": "Respondent",
             "date": "2023-05-01",
             "details": "Need to amend",
@@ -58,6 +58,16 @@
           "id": "777",
           "value": {
             "notificationState": "notViewed",
+            "respondCollection": [
+              {
+                "id": "777",
+                "value": {
+                  "from": "Claimant",
+                  "hasSupportingMaterial": "No",
+                  "response": "Some response text"
+                }
+              }
+            ],
             "respondNotificationTypeCollection": [
               {
                 "id": "777",
