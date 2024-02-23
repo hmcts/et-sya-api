@@ -205,7 +205,7 @@ ext {
 }
 
 dependencies {
-  implementation group: 'com.github.hmcts', name: 'et-data-model', version: 'd9c39a60bc'
+  implementation group: 'com.github.hmcts', name: 'et-data-model', version: '3.3.6'
   implementation('com.github.hmcts:et-common:1.4.0') { transitive = false }
 
   implementation group: 'uk.gov.dwp.regex', name: 'postcode-validation', version: '1.1.0'
@@ -245,7 +245,7 @@ dependencies {
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
   implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.37.3'
 
-  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.12.1'
+  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.12.2'
   implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.18'
   implementation 'org.json:json:20240205'
   implementation group: 'org.yaml', name: 'snakeyaml', version: '2.2'
@@ -280,7 +280,7 @@ dependencies {
   testImplementation group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version: '3.15.4'
   testImplementation('org.assertj:assertj-core:3.25.3')
   testImplementation group: 'io.rest-assured', name: 'rest-assured'
-  testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit', version: '3.2.5'
+  testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit', version: '3.2.7'
 
   testImplementation 'com.github.hmcts:fortify-client:1.4.1:all'
 
