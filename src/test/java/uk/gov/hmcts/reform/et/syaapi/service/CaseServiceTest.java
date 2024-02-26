@@ -400,7 +400,7 @@ class CaseServiceTest {
              + "responseClaimDocuments=null, initialConsiderationDocuments=null, "
              + "caseManagementDocuments=null, withdrawalSettledDocuments=null, hearingsDocuments=null, "
              + "judgmentAndReasonsDocuments=null, reconsiderationDocuments=null, miscDocuments=null, "
-             + "documentType=null, dateOfCorrespondence=null)",
+             + "documentType=null, dateOfCorrespondence=null, docNumber=null, excludeFromDcf=null)",
                      ((DocumentTypeItem) docCollection.get(0)).getValue().toString());
     }
 
