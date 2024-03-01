@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED_STATE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
@@ -155,6 +156,9 @@ public class SendNotificationService {
         sendNotificationType.setSendNotificationResponsesCount(String.valueOf(
             sendNotificationType.getRespondCollection().size()));
         sendNotificationType.setNotificationState(VIEWED);
+        if (STORED_STATE.equals(pseResponseType.getStatus())) {
+            sendNotificationType.setNotificationState(STORED);
+        }
         setResponsesAsRespondedTo(sendNotificationType.getRespondNotificationTypeCollection());
 
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
