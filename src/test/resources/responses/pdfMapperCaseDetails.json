@@ -151,6 +151,8 @@
         "claimant_tribunal_recommendation": null,
         "whistleblowing": "Yes",
         "whistleblowing_authority": "Random",
+        "linked_cases": "Yes",
+        "linked_cases_detail": "Test Detail",
         "claim_description_document": null,
         "other_claim": null
       },
