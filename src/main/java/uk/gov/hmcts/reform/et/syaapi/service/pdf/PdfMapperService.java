@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
@@ -92,10 +93,17 @@ public class PdfMapperService {
     private static void putMultipleClaimsDetails(
         CaseData caseData,
         ConcurrentMap<String, Optional<String>> printFields) {
-        if ("Multiple".equals(caseData.getEcmCaseType())) {
-            printFields.put(PdfMapperConstants.Q3_MORE_CLAIMS_YES, Optional.of(YES));
-        } else {
-            printFields.put(PdfMapperConstants.Q3_MORE_CLAIMS_NO, Optional.of(NO));
+        if (ObjectUtils.isNotEmpty(caseData.getClaimantRequests())
+            && StringUtils.isNotBlank(caseData.getClaimantRequests().getLinkedCases())) {
+            if (YES.equals(caseData.getClaimantRequests().getLinkedCases())) {
+                printFields.put(PdfMapperConstants.Q3_MORE_CLAIMS_YES, Optional.of(YES));
+                printFields.put(
+                    PdfMapperConstants.Q3_MORE_CLAIMS_TEXT_AREA,
+                    ofNullable(caseData.getClaimantRequests().getLinkedCasesDetail())
+                );
+            } else if (NO.equals(caseData.getClaimantRequests().getLinkedCases())) {
+                printFields.put(PdfMapperConstants.Q3_MORE_CLAIMS_NO, Optional.of(NO));
+            }
         }
     }
 
