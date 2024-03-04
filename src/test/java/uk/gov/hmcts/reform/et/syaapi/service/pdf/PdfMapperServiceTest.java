@@ -34,7 +34,7 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.Q2_
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 class PdfMapperServiceTest {
-    private static final Integer TOTAL_VALUES = 71;
+    private static final Integer TOTAL_VALUES = 72;
     private PdfMapperService pdfMapperService;
     private CaseData caseData;
     private static final String ACAS_PREFIX = "2.3";
