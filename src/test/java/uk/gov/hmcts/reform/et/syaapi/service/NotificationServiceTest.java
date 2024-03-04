@@ -21,9 +21,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.PseResponseTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantHearingPreference;
+import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
+import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationType;
+import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
@@ -644,6 +648,42 @@ class NotificationServiceTest {
                 eq(caseTestData.getExpectedDetails().getId().toString())
             );
         }
+
+        @Test
+        void shouldNotSendEmailToRespondentForClaimantEccResponse() throws NotificationClientException {
+
+            List<PseResponseTypeItem> pseResponseItem = List.of(PseResponseTypeItem.builder().id("12345").value(
+                PseResponseType.builder()
+                    .from(CLAIMANT)
+                    .hasSupportingMaterial(TestConstants.NO)
+                    .response("Some response text")
+                    .responseState(null)
+                    .copyToOtherParty(null)
+                    .build()).build()
+            );
+            List<SendNotificationTypeItem> notificationItem = new ArrayList<>();
+            notificationItem.add(
+                SendNotificationTypeItem.builder()
+                    .id("12345")
+                    .value(SendNotificationType.builder()
+                               .respondCollection(pseResponseItem)
+                               .build())
+                    .build()
+            );
+            caseTestData.getCaseData().setSendNotificationCollection(notificationItem);
+            notificationService.sendAcknowledgementEmailToRespondents(
+                details,
+                null,
+                caseTestData.getClaimantApplication()
+            );
+
+            verify(notificationClient, times(0)).sendEmail(
+                any(),
+                eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            );
+        }
     }
 
     @Nested
@@ -1154,7 +1194,7 @@ class NotificationServiceTest {
         given(notificationsProperties.getBundlesClaimantSubmittedNotificationTemplateId()
         ).willReturn("bundlesClaimantSubmittedNotificationTemplateId");
 
-        CaseData caseData =  caseTestData.getCaseData();
+        CaseData caseData = caseTestData.getCaseData();
         String futureDate = LocalDateTime.now().plusDays(5).toString();
         caseData.getHearingCollection().get(0).getValue().getHearingDateCollection().get(0).getValue().setListedDate(
             futureDate);
