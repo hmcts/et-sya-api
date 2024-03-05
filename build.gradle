@@ -128,7 +128,7 @@ task contract(type: Test) {
 
 checkstyle {
   maxWarnings = 0
-  toolVersion = '10.12.5'
+  toolVersion = '10.14.0'
   getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
 
@@ -205,7 +205,7 @@ ext {
 }
 
 dependencies {
-  implementation group: 'com.github.hmcts', name: 'et-data-model', version:'3.4.2'
+  implementation group: 'com.github.hmcts', name: 'et-data-model', version:'3.4.5'
   implementation('com.github.hmcts:et-common:1.4.0') { transitive = false }
   implementation group: 'uk.gov.dwp.regex', name: 'postcode-validation', version: '1.1.0'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
@@ -276,7 +276,7 @@ dependencies {
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     exclude group: 'com.vaadin.external.google', module: 'android-json'
   }
-  testImplementation group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version: '3.15.7'
+  testImplementation group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version: '3.15.8'
   testImplementation('org.assertj:assertj-core:3.25.3')
   testImplementation group: 'io.rest-assured', name: 'rest-assured'
   testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit', version: '3.2.7'
