@@ -21,8 +21,8 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.SyaApiApplication;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
+import uk.gov.hmcts.reform.et.syaapi.service.AcasCaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
-import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 
@@ -58,7 +58,7 @@ class AcasControllerTest {
     private VerifyTokenService verifyTokenService;
 
     @MockBean
-    private CaseService caseService;
+    private AcasCaseService acasCaseService;
 
     @MockBean
     private CaseDocumentService caseDocumentService;
@@ -71,7 +71,7 @@ class AcasControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        when(caseService.getCaseData(anyString(), any())).thenReturn(new ArrayList<>());
+        when(acasCaseService.getCaseData(anyString(), any())).thenReturn(new ArrayList<>());
     }
 
     @Test
@@ -85,7 +85,7 @@ class AcasControllerTest {
 
     @Test
     void getLastModifiedCaseListWhenSuccessCasesFoundReturnList() throws Exception {
-        when(caseService.getLastModifiedCasesId(
+        when(acasCaseService.getLastModifiedCasesId(
             AUTH_TOKEN, LocalDateTime.parse("2022-09-01T12:34:00", DateTimeFormatter.ISO_LOCAL_DATE_TIME)))
             .thenReturn(List.of(1_646_225_213_651_598L, 1_646_225_213_651_533L, 1_646_225_213_651_512L));
         when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
@@ -127,7 +127,7 @@ class AcasControllerTest {
             .caseTypeId(EtSyaConstants.SCOTLAND_CASE_TYPE)
             .id(123_456_789L)
             .build();
-        when(caseService.getCaseData(AUTH_TOKEN, caseIds)).thenReturn(List.of(caseDetails));
+        when(acasCaseService.getCaseData(AUTH_TOKEN, caseIds)).thenReturn(List.of(caseDetails));
         when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
         mockMvc.perform(get(GET_CASE_DATA_URL)
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
@@ -160,7 +160,7 @@ class AcasControllerTest {
             .modifiedOn("2023-02-06T12:41:47.000+00:00")
             .build();
         acasResponseMultiValuedMap.put("ET1", caseDocumentAcasResponse);
-        when(caseService.retrieveAcasDocuments(anyString())).thenReturn(acasResponseMultiValuedMap);
+        when(acasCaseService.retrieveAcasDocuments(anyString())).thenReturn(acasResponseMultiValuedMap);
         when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
 
         mockMvc.perform(get(GET_ACAS_DOCUMENTS_URL)

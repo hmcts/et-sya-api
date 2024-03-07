@@ -13,5 +13,7 @@ public class CaseDocumentAcasResponse {
     String documentId;
     @JsonProperty("modifiedOn")
     String modifiedOn;
+    @JsonProperty("respondent")
+    String respondent;
 
 }
