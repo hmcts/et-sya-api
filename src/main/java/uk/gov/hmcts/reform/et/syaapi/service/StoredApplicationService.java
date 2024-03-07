@@ -28,6 +28,7 @@ import java.util.List;
 
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.OPEN_STATE;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.VIEWED;
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.WAITING_FOR_TRIBUNAL;
 
 @RequiredArgsConstructor
@@ -172,7 +173,7 @@ public class StoredApplicationService {
                                                       GenericTseApplicationTypeItem appToModify) {
         TseRespondType tseRespondType = responseToModify.getValue();
         tseRespondType.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
-        tseRespondType.setStatus(null);
+        tseRespondType.setResponseState(null);
         appToModify.getValue().setApplicationState(WAITING_FOR_TRIBUNAL);
     }
 
@@ -263,7 +264,7 @@ public class StoredApplicationService {
 
         // Update response details and SendNotificationType status
         responseToModify.getValue().setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
-        responseToModify.getValue().setStatus(null);
+        responseToModify.getValue().setResponseState(VIEWED);
 
         // Send confirmation emails
         sendEmailForRespondToTribunal(caseData, caseId, responseToModify.getValue().getResponse());
