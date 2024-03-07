@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
+import org.apache.commons.collections4.MultiValuedMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
@@ -30,6 +34,8 @@ import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.constants.JurisdictionCodesConstants;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
@@ -39,14 +45,19 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.service.notify.SendEmailResponse;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -57,6 +68,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.ENGLANDWALES_CASE_TYPE_ID;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.ET1_PDF_DOC_CATEGORY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ONLINE_SUBMISSION;
@@ -388,7 +400,8 @@ class CaseServiceTest {
              + "responseClaimDocuments=null, initialConsiderationDocuments=null, "
              + "caseManagementDocuments=null, withdrawalSettledDocuments=null, hearingsDocuments=null, "
              + "judgmentAndReasonsDocuments=null, reconsiderationDocuments=null, miscDocuments=null, "
-             + "documentType=null, dateOfCorrespondence=null, docNumber=null, excludeFromDcf=null)",
+             + "documentType=null, dateOfCorrespondence=null, docNumber=null, tornadoEmbeddedPdfUrl=null, "
+             + "excludeFromDcf=null)",
             ((DocumentTypeItem) docCollection.get(0)).getValue().toString());
     }
 
@@ -436,6 +449,173 @@ class CaseServiceTest {
 
         documentTypeItem.setValue(documentType);
         return documentTypeItem;
+    }
+
+    @Test
+    void shouldLastModifiedCasesIdWhenCaseFoundThenCaseId() {
+        LocalDateTime requestDateTime =
+            LocalDateTime.parse("2022-09-01T12:34:00", DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+
+        SearchResult englandWalesSearchResult = SearchResult.builder()
+            .total(1)
+            .cases(caseTestData.getRequestCaseDataListEngland())
+            .build();
+        SearchResult scotlandSearchResult = SearchResult.builder()
+            .total(2)
+            .cases(caseTestData.getRequestCaseDataListScotland())
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.ENGLAND_CASE_TYPE,
+            generateCaseDataEsQueryWithDate(requestDateTime)
+        )).thenReturn(englandWalesSearchResult);
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            generateCaseDataEsQueryWithDate(requestDateTime)
+        )).thenReturn(scotlandSearchResult);
+
+        assertThat(caseService.getLastModifiedCasesId(TEST_SERVICE_AUTH_TOKEN, requestDateTime))
+            .hasSize(3)
+            .isEqualTo(List.of(1_646_225_213_651_598L, 1_646_225_213_651_533L, 1_646_225_213_651_512L));
+    }
+
+    @Test
+    void shouldLastModifiedCasesIdWhenNoCaseFoundThenEmpty() {
+        LocalDateTime requestDateTime =
+            LocalDateTime.parse("2022-09-01T12:34:00", DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+
+        SearchResult englandWalesSearchResult = SearchResult.builder()
+            .total(0)
+            .cases(null)
+            .build();
+        SearchResult scotlandSearchResult = SearchResult.builder()
+            .total(0)
+            .cases(null)
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.ENGLAND_CASE_TYPE,
+            generateCaseDataEsQueryWithDate(requestDateTime)
+        )).thenReturn(englandWalesSearchResult);
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            generateCaseDataEsQueryWithDate(requestDateTime)
+        )).thenReturn(scotlandSearchResult);
+
+        assertThat(caseService.getLastModifiedCasesId(TEST_SERVICE_AUTH_TOKEN, requestDateTime))
+            .isEmpty();
+    }
+
+    private String generateCaseDataEsQueryWithDate(LocalDateTime requestDateTime) {
+        return """
+            {
+              "size": %d,
+              "query": {
+                "bool": {
+                  "filter": [
+                    {
+                      "range": {
+                        "last_modified": {
+                          "gte": "%s",
+                          "boost": 1.0
+                        }
+                      }
+                    }
+                  ],
+                  "boost": 1.0
+                }
+              }
+            }
+            """.formatted(MAX_ES_SIZE, requestDateTime.toString());
+    }
+
+    @Test
+    void shouldReturnCaseData() {
+        List<String> caseIds = List.of("1646225213651598", "1646225213651533", "1646225213651512");
+        SearchResult englandWalesSearchResult = SearchResult.builder()
+            .total(1)
+            .cases(caseTestData.getRequestCaseDataListEngland())
+            .build();
+        SearchResult scotlandSearchResult = SearchResult.builder()
+            .total(2)
+            .cases(caseTestData.getRequestCaseDataListScotland())
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.ENGLAND_CASE_TYPE, generateCaseDataEsQuery(caseIds)
+        )).thenReturn(englandWalesSearchResult);
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.SCOTLAND_CASE_TYPE, generateCaseDataEsQuery(caseIds)
+        )).thenReturn(scotlandSearchResult);
+
+        List<CaseDetails> caseDetailsList = caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, caseIds);
+        assertThat(caseDetailsList)
+            .hasSize(3)
+            .isEqualTo(caseTestData.getExpectedCaseDataListCombined());
+    }
+
+    @Test
+    void shouldReturnCaseDataNoCasesFound() {
+        List<String> caseIds = List.of("1646225213651598", "1646225213651533");
+        SearchResult englandWalesSearchResult = SearchResult.builder()
+            .total(0)
+            .cases(null)
+            .build();
+        SearchResult scotlandSearchResult = SearchResult.builder()
+            .total(0)
+            .cases(null)
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.ENGLAND_CASE_TYPE, generateCaseDataEsQuery(caseIds)
+        )).thenReturn(englandWalesSearchResult);
+        when(ccdApiClient.searchCases(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            EtSyaConstants.SCOTLAND_CASE_TYPE, generateCaseDataEsQuery(caseIds)
+        )).thenReturn(scotlandSearchResult);
+
+        List<CaseDetails> caseDetailsList = caseService.getCaseData(TEST_SERVICE_AUTH_TOKEN, caseIds);
+        assertThat(caseDetailsList).isEmpty();
+    }
+
+    private String generateCaseDataEsQuery(List<String> caseIds) {
+        return """
+            {
+              "size": %d,
+              "query": {
+                "bool": {
+                  "filter": [
+                    {
+                      "terms": {
+                        "reference.keyword": %s,
+                        "boost": 1.0
+                      }
+                    }
+                  ],
+                  "boost": 1.0
+                }
+              }
+            }
+            """.formatted(MAX_ES_SIZE, caseIds);
     }
 
     @Nested
@@ -609,7 +789,7 @@ class CaseServiceTest {
         when(caseDocumentService.getDocumentDetails(anyString(), any())).thenReturn(getDocumentDetails());
         MultiValuedMap<String, CaseDocumentAcasResponse> documents = caseService.retrieveAcasDocuments(caseId);
         assertNotNull(documents);
-        assertThat(documents.size()).isEqualTo(3);
+        assertThat(documents.size()).isEqualTo(4);
     }
 
     private ResponseEntity<CaseDocument> getDocumentDetails() {
