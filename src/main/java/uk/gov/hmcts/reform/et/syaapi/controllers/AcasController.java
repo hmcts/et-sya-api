@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MultiValuedMap;
@@ -16,8 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
+import uk.gov.hmcts.reform.et.syaapi.service.AcasCaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
-import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 import java.time.LocalDateTime;
@@ -36,7 +35,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 @SuppressWarnings({"PMD.UnnecessaryAnnotationValueElement"})
 public class AcasController {
 
-    private final CaseService caseService;
+    private final AcasCaseService acasCaseService;
     private final CaseDocumentService caseDocumentService;
     private final IdamClient idamClient;
 
@@ -60,7 +59,7 @@ public class AcasController {
         @RequestHeader(value = HttpHeaders.AUTHORIZATION) String userToken,
         @RequestParam(name = "datetime")
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime requestDateTime) {
-        return ok(caseService.getLastModifiedCasesId(userToken, requestDateTime));
+        return ok(acasCaseService.getLastModifiedCasesId(userToken, requestDateTime));
     }
 
     /**
@@ -76,7 +75,7 @@ public class AcasController {
     public ResponseEntity<Object> getCaseData(
         @RequestHeader(value = HttpHeaders.AUTHORIZATION) String authorisation,
         @RequestParam(name = "caseIds") List<String> caseIds) {
-        return ok(caseService.getCaseData(authorisation, caseIds));
+        return ok(acasCaseService.getCaseData(authorisation, caseIds));
     }
 
     /**
@@ -92,7 +91,7 @@ public class AcasController {
     public ResponseEntity<Object> getAcasDocuments(
         @RequestHeader(value = HttpHeaders.AUTHORIZATION) String authorisation,
         @RequestParam(name = "caseId") String caseId) {
-        MultiValuedMap<String, CaseDocumentAcasResponse> body = caseService.retrieveAcasDocuments(caseId);
+        MultiValuedMap<String, CaseDocumentAcasResponse> body = acasCaseService.retrieveAcasDocuments(caseId);
         return ok(body.asMap());
     }
 
@@ -106,8 +105,7 @@ public class AcasController {
      */
     @GetMapping("/downloadAcasDocuments")
     @Operation(summary = "Get a document from CDAM in binary format")
-    @ApiResponse(responseCode = "200", description = "OK")
-    @ApiResponse(responseCode = "404", description = "Case document not found")
+    @ApiResponseGroup
     public ResponseEntity<ByteArrayResource> getDocumentBinaryContent(
         @RequestParam(name = "documentId") final UUID documentId,
         @RequestHeader(AUTHORIZATION) String authToken) {

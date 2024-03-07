@@ -3,10 +3,7 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.MultiValuedMap;
-import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.apache.commons.io.FilenameUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import uk.gov.dwp.regex.InvalidPostcodeException;
@@ -24,15 +21,12 @@ import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
-import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
-import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
-import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
@@ -52,17 +46,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static org.springframework.util.CollectionUtils.isEmpty;
-import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.CASE_MANAGEMENT_DOC_CATEGORY;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ACAS_VISIBLE_DOCS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
@@ -96,11 +85,6 @@ public class CaseService {
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
     private final CaseOfficeService caseOfficeService;
     private static final String ALL_CASES_QUERY = "{\"size\":10000,\"query\":{\"match_all\": {}}}";
-
-    @Value("${caseWorkerUserName}")
-    private String caseWorkerUserName;
-    @Value("${caseWorkerPassword}")
-    private String caseWorkerPassword;
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
@@ -137,7 +121,8 @@ public class CaseService {
             authTokenGenerator.generate(),
             ENGLAND_CASE_TYPE,
             ALL_CASES_QUERY).getCases()).orElse(Collections.emptyList());
-        List<CaseDetails> caseDetailsList = Stream.of(scotlandCases, englandCases).flatMap(Collection::stream).toList();
+        List<CaseDetails> caseDetailsList = Stream.of(scotlandCases, englandCases)
+            .flatMap(Collection::stream).toList();
         DocumentUtil.filterMultipleCasesDocumentsForClaimant(caseDetailsList);
         return caseDetailsList;
     }
@@ -388,167 +373,6 @@ public class CaseService {
             true,
             caseDataContent
         );
-    }
-
-    /**
-     * Given a datetime, this method will return a list of caseIds which have been modified since the datetime
-     * provided.
-     *
-     * @param authorisation   used for IDAM authentication for the query
-     * @param requestDateTime used as the query parameter
-     * @return a list of caseIds
-     */
-    public List<Long> getLastModifiedCasesId(String authorisation, LocalDateTime requestDateTime) {
-        String query = """
-             {
-               "size": %d,
-               "query": {
-                 "bool": {
-                   "filter": [
-                     {
-                       "range": {
-                         "last_modified": {
-                           "gte": "%s",
-                           "boost": 1.0
-                         }
-                       }
-                     }
-                   ],
-                   "boost": 1.0
-                 }
-               }
-             }
-             """.formatted(MAX_ES_SIZE, requestDateTime.toString());
-        return searchEnglandScotlandCases(authorisation, query)
-            .stream()
-            .map(CaseDetails::getId)
-            .toList();
-    }
-
-    /**
-     * Given a caseId, return a list of document IDs which are visible to ACAS.
-     *
-     * @param caseId 16 digit CCD id
-     * @return a MultiValuedMap containing a list of document ids and timestamps
-     */
-    public MultiValuedMap<String, CaseDocumentAcasResponse> retrieveAcasDocuments(String caseId) {
-        String query = """
-             {
-               "size": %d,
-               "query": {
-                 "bool": {
-                   "filter": [
-                     {
-                       "terms": {
-                         "reference.keyword": [%s],
-                         "boost": 1.0
-                       }
-                     }
-                   ],
-                   "boost": 1.0
-                 }
-               }
-             }
-             """.formatted(MAX_ES_SIZE, caseId);
-        return getDocumentUuids(query);
-    }
-
-    private MultiValuedMap<String, CaseDocumentAcasResponse> getDocumentUuids(String query) {
-        String authorisation = idamClient.getAccessToken(caseWorkerUserName, caseWorkerPassword);
-        List<CaseData> caseDataList = searchAndReturnCaseDataList(authorisation, query);
-
-        List<DocumentTypeItem> documentTypeItemList = new ArrayList<>();
-
-        for (CaseData caseData : caseDataList) {
-            documentTypeItemList.addAll(caseData.getDocumentCollection().stream()
-                                            .filter(d -> ACAS_VISIBLE_DOCS.contains(defaultIfEmpty(
-                                                d.getValue().getTypeOfDocument(),
-                                                ""
-                                            )))
-                                            .toList());
-
-            if (caseData.getClaimantRequests() != null
-                && caseData.getClaimantRequests().getClaimDescriptionDocument() != null) {
-                documentTypeItemList.add(caseDocumentService.createDocumentTypeItem("ET1 Attachment",
-                                                    caseData.getClaimantRequests().getClaimDescriptionDocument()
-                ));
-            }
-        }
-
-        MultiValuedMap<String, CaseDocumentAcasResponse> documentIds = new ArrayListValuedHashMap<>();
-        Pattern pattern = Pattern.compile(".{36}$");
-
-        for (DocumentTypeItem documentTypeItem : documentTypeItemList) {
-            Matcher matcher = pattern.matcher(documentTypeItem.getValue().getUploadedDocument().getDocumentUrl());
-            if (matcher.find()) {
-                CaseDocument caseDocument = caseDocumentService.getDocumentDetails(
-                    authorisation, UUID.fromString(matcher.group())).getBody();
-                if (caseDocument != null) {
-                    CaseDocumentAcasResponse caseDocumentAcasResponse = CaseDocumentAcasResponse.builder()
-                        .documentId(matcher.group())
-                        .modifiedOn(caseDocument.getModifiedOn())
-                        .build();
-                    documentIds.put(documentTypeItem.getValue().getTypeOfDocument(), caseDocumentAcasResponse);
-                }
-            }
-        }
-        return documentIds;
-    }
-
-    /**
-     * Given a list of caseIds, this method will return a list of case details.
-     *
-     * @param authorisation used for IDAM authentication for the query
-     * @param caseIds       used as the query parameter
-     * @return a list of case details
-     */
-    public List<CaseDetails> getCaseData(String authorisation, List<String> caseIds) {
-        String query = """
-             {
-               "size": %d,
-               "query": {
-                 "bool": {
-                   "filter": [
-                     {
-                       "terms": {
-                         "reference.keyword": %s,
-                         "boost": 1.0
-                       }
-                     }
-                   ],
-                   "boost": 1.0
-                 }
-               }
-             }
-             """.formatted(MAX_ES_SIZE, caseIds);
-        return searchEnglandScotlandCases(authorisation, query);
-    }
-
-    private List<CaseData> searchAndReturnCaseDataList(String authorisation, String query) {
-        List<CaseDetails> searchResults = searchEnglandScotlandCases(authorisation, query);
-        List<CaseData> caseDataList = new ArrayList<>();
-        for (CaseDetails caseDetails : searchResults) {
-            caseDataList.add(EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData()));
-        }
-        return caseDataList;
-    }
-
-    private List<CaseDetails> searchEnglandScotlandCases(String authorisation, String query) {
-        List<CaseDetails> caseDetailsList = new ArrayList<>();
-        caseDetailsList.addAll(searchCaseType(authorisation, ENGLAND_CASE_TYPE, query));
-        caseDetailsList.addAll(searchCaseType(authorisation, SCOTLAND_CASE_TYPE, query));
-        return caseDetailsList;
-    }
-
-    private List<CaseDetails> searchCaseType(String authorisation, String caseTypeId, String query) {
-        List<CaseDetails> caseDetailsList = new ArrayList<>();
-        SearchResult searchResult = ccdApiClient.searchCases(authorisation, authTokenGenerator.generate(),
-                                                             caseTypeId, query
-        );
-        if (searchResult != null && !isEmpty(searchResult.getCases())) {
-            caseDetailsList.addAll(searchResult.getCases());
-        }
-        return caseDetailsList;
     }
 
     private void enrichCaseDataWithJurisdictionCodes(CaseData caseData) {

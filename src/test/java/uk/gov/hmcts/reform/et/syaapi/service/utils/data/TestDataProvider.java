@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.et.syaapi.service.utils.data;
 
-
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.et.common.model.ccd.Address;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
@@ -9,10 +11,12 @@ import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantWorkAddressType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.models.GenericTseApplication;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 
 import java.util.List;
+import java.util.Map;
 
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_CASE_DATA_JSON_FILE;
 
@@ -98,6 +102,21 @@ public final class TestDataProvider {
         caseData.setClaimantWorkAddress(claimantWorkAddressType);
 
         return caseData;
+    }
+
+    public static ResponseEntity<CaseDocument> getDocumentDetailsFromCdam() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json; charset=utf-8");
+        return new ResponseEntity<>(
+            CaseDocument.builder()
+                .size("size").mimeType("mimeType").hashToken("token").createdOn("createdOn").createdBy("createdBy")
+                .lastModifiedBy("lastModifiedBy").modifiedOn("modifiedOn").ttl("ttl")
+                .metadata(Map.of("test", "test"))
+                .originalDocumentName("docName.txt").classification("PUBLIC")
+                .links(Map.of("self", Map.of("href", "TestURL.com"))).build(),
+            headers,
+            HttpStatus.OK
+        );
     }
 
     public static GenericTseApplicationTypeItem generateGenericTseAppTypeItem(List<String> argumentsList) {
