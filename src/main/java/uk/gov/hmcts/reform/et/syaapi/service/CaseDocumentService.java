@@ -62,6 +62,8 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.RESOURCE_NO
 @SuppressWarnings("PMD.TooManyMethods")
 public class CaseDocumentService {
     private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
+    private static final String DOCUMENT_UUID_REGEX_PATTERN =
+        "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$";
     private static final String FILE_NAME_REGEX_PATTERN =
         "^(?!\\.)[^\\|*\\?\\:<>\\/$\"]{1,150}$";
     private static final Pattern FILE_NAME_PATTERN = Pattern.compile(FILE_NAME_REGEX_PATTERN);
@@ -446,5 +448,14 @@ public class CaseDocumentService {
         documentTypeItem.setId(UUID.randomUUID().toString());
         documentTypeItem.setValue(documentType);
         return documentTypeItem;
+    }
+
+    public UUID getDocumentUuid(String url) {
+        Pattern pattern = Pattern.compile(DOCUMENT_UUID_REGEX_PATTERN);
+        Matcher matcher = pattern.matcher(url);
+        if (matcher.find()) {
+            return UUID.fromString(matcher.group());
+        }
+        return null;
     }
 }

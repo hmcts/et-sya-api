@@ -478,6 +478,14 @@ class CaseDocumentServiceTest {
     }
 
     @Test
+    void shouldReturnUuid() {
+        UUID uuid = UUID.randomUUID();
+        String url = "http://document.url/documents/" + uuid;
+        UUID returnedValue = caseDocumentService.getDocumentUuid(url);
+        assertEquals(uuid, returnedValue);
+    }
+
+    @Test
     void createDocumentTypeItemLevels() throws CaseDocumentException {
         mockServer.expect(ExpectedCount.once(), requestTo(DOCUMENT_API_URL))
             .andExpect(method(HttpMethod.POST))
