@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MultiValuedMap;
@@ -52,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -202,7 +205,7 @@ public class CaseService {
      * @return the newly updated case wrapped in a {@link CaseDetails} object.
      */
     public CaseDetails updateCase(String authorization,
-                                  CaseRequest caseRequest) {
+                                  CaseRequest caseRequest) throws JsonProcessingException {
         return triggerEvent(authorization, caseRequest.getCaseId(), CaseEvent.UPDATE_CASE_DRAFT,
                             caseRequest.getCaseTypeId(), caseRequest.getCaseData()
         );
@@ -239,18 +242,37 @@ public class CaseService {
         // Uploading all documents to document store
         List<DocumentTypeItem> documentList = uploadAllDocuments(authorization, caseRequest, caseData, casePdfFiles,
                                                                  acasCertificates);
-        // Setting claimantPcqId and documentCollection to case details
-        caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
-        caseDetails.getData().put(DOCUMENT_COLLECTION, documentList);
-        // For determining the case is submitted via ET1
-        caseDetails.getData().put(ET1_ONLINE_SUBMISSION, YES);
 
-        // Updating case with ClaimantPcqId and Document collection
-        triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
-                     caseDetails.getData()
+        Map<String, Object> request = new ConcurrentHashMap<>();
+        request.put("ClaimantPcqId", caseData.getClaimantPcqId());
+        request.put(DOCUMENT_COLLECTION, documentList);
+        request.put(ET1_ONLINE_SUBMISSION, YES);
+
+        caseDetails = addMappedDataToCase(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED,
+                              caseRequest.getCaseTypeId(),
+                            request
         );
 
         return caseDetails;
+    }
+
+    public CaseDetails addMappedDataToCase(String authorization, String caseId, CaseEvent eventName,
+                                    String caseType, Map<String, Object> caseData) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
+        StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
+        Map<String, Object> startEventCaseData = startEventResponse.getCaseDetails().getData();
+
+        startEventCaseData.putAll(caseData);
+        CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(startEventCaseData);
+
+
+        return submitUpdate(
+            authorization,
+            caseId,
+            caseDetailsConverter.et1ToCaseDataContent(startEventResponse, caseData1),
+            caseType
+        );
     }
 
     private List<DocumentTypeItem> uploadAllDocuments(String authorization,
@@ -290,24 +312,32 @@ public class CaseService {
      * @param caseId        used to retrieve get case details
      * @param caseType      is used to determine if the case is for ET_EnglandWales or ET_Scotland
      * @param eventName     is used to determine INITIATE_CASE_DRAFT or UPDATE_CASE_DRAFT
-     * @param caseData      is used to provide the {@link Et1CaseData} in json format
+     * @param frontendReq      is used to provide the {@link Et1CaseData} in json format
      * @return the associated {@link CaseData} if the case is updated
      */
     public CaseDetails triggerEvent(String authorization, String caseId, CaseEvent eventName,
-                                    String caseType, Map<String, Object> caseData) {
+                                    String caseType, Map<String, Object> frontendReq) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
-        CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseData);
+
+        Map<String, Object> startEventCaseData = startEventResponse.getCaseDetails().getData();
+
+
+        ObjectReader objectReader = objectMapper.readerForUpdating(startEventCaseData);
+
+        Map<String, Object> newMap = objectReader.readValue(objectMapper.writeValueAsString(frontendReq));
+
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(newMap);
 
         if (SUBMIT_CASE_DRAFT == eventName) {
-            enrichCaseDataWithJurisdictionCodes(caseData1);
+            enrichCaseDataWithJurisdictionCodes(caseData);
         }
 
         return submitUpdate(
             authorization,
             caseId,
-            caseDetailsConverter.et1ToCaseDataContent(startEventResponse, caseData1),
+            caseDetailsConverter.et1ToCaseDataContent(startEventResponse, caseData),
             caseType
         );
     }

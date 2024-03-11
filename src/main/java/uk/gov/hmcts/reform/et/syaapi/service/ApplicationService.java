@@ -76,7 +76,14 @@ public class ApplicationService {
         throws NotificationClientException {
 
         String caseTypeId = request.getCaseTypeId();
-        CaseDetails caseDetails = caseService.getUserCase(authorization, request.getCaseId());
+        StartEventResponse startEventResponse = caseService.startUpdate(
+            authorization,
+            request.getCaseId(),
+            caseTypeId,
+            CaseEvent.SUBMIT_CLAIMANT_TSE
+        );
+        CaseDetails caseDetails = startEventResponse.getCaseDetails();
+
         ClaimantTse claimantTse = request.getClaimantTse();
         caseDetails.getData().put("claimantTse", claimantTse);
 
@@ -97,12 +104,12 @@ public class ApplicationService {
             );
         }
 
-        CaseDetails finalCaseDetails = caseService.triggerEvent(
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        CaseDetails finalCaseDetails = caseService.submitUpdate(
             authorization,
             request.getCaseId(),
-            CaseEvent.SUBMIT_CLAIMANT_TSE,
-            caseTypeId,
-            caseDetails.getData()
+            caseDetailsConverter.caseDataContent(startEventResponse, caseData),
+            caseTypeId
         );
 
         sendAcknowledgementEmails(authorization, request, finalCaseDetails);

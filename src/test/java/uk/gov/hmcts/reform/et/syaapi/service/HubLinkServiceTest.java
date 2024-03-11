@@ -1,10 +1,10 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.HubLinksStatuses;
-import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
@@ -28,8 +28,6 @@ class HubLinkServiceTest {
     CaseDetailsConverter caseDetailsConverter;
     @MockBean
     private HubLinkService hubLinkService;
-    @MockBean
-    private FeatureToggleService featureToggleService;
 
     private final TestData testData;
     private HubLinksStatusesRequest hubLinksStatusesRequest;
@@ -42,8 +40,7 @@ class HubLinkServiceTest {
     void before() {
         caseService = mock(CaseService.class);
         caseDetailsConverter = mock(CaseDetailsConverter.class);
-        featureToggleService = mock(FeatureToggleService.class);
-        hubLinkService = new HubLinkService(caseService, caseDetailsConverter, featureToggleService);
+        hubLinkService = new HubLinkService(caseService, caseDetailsConverter);
         HubLinksStatuses hubLinksStatuses = new HubLinksStatuses();
         hubLinksStatusesRequest = HubLinksStatusesRequest.builder()
             .caseTypeId(CASE_TYPE)
@@ -61,8 +58,7 @@ class HubLinkServiceTest {
     }
 
     @Test
-    void shouldUpdateHubLinks() {
-        when(featureToggleService.isCaseFlagsEnabled()).thenReturn(true);
+    void shouldUpdateHubLinks() throws JsonProcessingException {
         when(caseService.triggerEvent(
             eq(TEST_SERVICE_AUTH_TOKEN),
             any(),
@@ -79,29 +75,4 @@ class HubLinkServiceTest {
         );
     }
 
-    @Test
-    void shouldStartUpdateSubmittedCaseWhenToggleIsFalse() {
-        when(caseService.triggerEvent(
-            TEST_SERVICE_AUTH_TOKEN,
-            CASE_ID,
-            CaseEvent.valueOf("UPDATE_CASE_SUBMITTED"),
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
-            null
-        )).thenReturn(testData.getCaseDetailsWithData());
-        when(featureToggleService.isCaseFlagsEnabled()).thenReturn(false);
-        when(caseService.getUserCase(TEST_SERVICE_AUTH_TOKEN, CASE_ID))
-            .thenReturn(testData.getCaseDetailsWithData());
-
-        hubLinkService.updateHubLinkStatuses(hubLinksStatusesRequest, TEST_SERVICE_AUTH_TOKEN);
-
-        verify(caseService, times(1)).getUserCase(
-            TEST_SERVICE_AUTH_TOKEN,
-            hubLinksStatusesRequest.getCaseId()
-        );
-        verify(caseService, times(1)).triggerEvent(
-            TEST_SERVICE_AUTH_TOKEN, hubLinksStatusesRequest.getCaseId(),
-            CaseEvent.valueOf("UPDATE_CASE_SUBMITTED"),
-            hubLinksStatusesRequest.getCaseTypeId(),
-            testData.getCaseDetailsWithData().getData());
-    }
 }

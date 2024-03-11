@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 public class HubLinkService {
     private final CaseService caseService;
     private final CaseDetailsConverter caseDetailsConverter;
-    private final FeatureToggleService featureToggleService;
 
     /**
      * Updates case data with hub link statuses {@link CaseDetails}.
@@ -29,37 +28,23 @@ public class HubLinkService {
      */
     public CaseDetails updateHubLinkStatuses(HubLinksStatusesRequest request, String authorization) {
 
-        if (featureToggleService.isCaseFlagsEnabled()) {
-            log.info("Case flags enabled - calling UPDATE_HUBLINK_STATUS");
-            StartEventResponse startEventResponse = caseService.startUpdate(
-                authorization,
-                request.getCaseId(),
-                request.getCaseTypeId(),
-                CaseEvent.UPDATE_HUBLINK_STATUS
-            );
+        StartEventResponse startEventResponse = caseService.startUpdate(
+            authorization,
+            request.getCaseId(),
+            request.getCaseTypeId(),
+            CaseEvent.UPDATE_HUBLINK_STATUS
+        );
 
-            CaseData caseData = EmployeeObjectMapper
-                .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
-            caseData.setHubLinksStatuses(request.getHubLinksStatuses());
+        CaseData caseData = EmployeeObjectMapper
+            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
+        caseData.setHubLinksStatuses(request.getHubLinksStatuses());
 
-            return caseService.submitUpdate(
-                authorization,
-                request.getCaseId(),
-                caseDetailsConverter.caseDataContent(startEventResponse, caseData),
-                request.getCaseTypeId()
-            );
-        } else {
-            log.info("Case flags disabled - calling UPDATE_CASE_SUBMITTED");
-            CaseDetails caseDetails = caseService.getUserCase(authorization, request.getCaseId());
-            caseDetails.getData().put("hubLinksStatuses", request.getHubLinksStatuses());
+        return caseService.submitUpdate(
+            authorization,
+            request.getCaseId(),
+            caseDetailsConverter.caseDataContent(startEventResponse, caseData),
+            request.getCaseTypeId()
+        );
 
-            return caseService.triggerEvent(
-                authorization,
-                request.getCaseId(),
-                CaseEvent.UPDATE_CASE_SUBMITTED,
-                request.getCaseTypeId(),
-                caseDetails.getData()
-            );
-        }
     }
 }

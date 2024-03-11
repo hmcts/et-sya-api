@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,8 +26,8 @@ import uk.gov.hmcts.reform.et.syaapi.service.HubLinkService;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.DocumentUtil;
 import uk.gov.service.notify.NotificationClientException;
 
-import java.util.List;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 import static org.springframework.http.ResponseEntity.ok;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
@@ -110,7 +111,7 @@ public class ManageCaseController {
     public ResponseEntity<CaseDetails> updateDraftCase(
         @RequestHeader(AUTHORIZATION) String authorization,
         @NotNull @RequestBody CaseRequest caseRequest
-    ) {
+    ) throws JsonProcessingException {
         log.info("Received update-case request - caseTypeId: {} caseId: {}",
                  caseRequest.getCaseTypeId(), caseRequest.getCaseId()
         );

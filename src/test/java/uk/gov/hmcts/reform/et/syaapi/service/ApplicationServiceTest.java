@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -76,7 +77,7 @@ class ApplicationServiceTest {
     }
 
     @BeforeEach
-    void before() throws CaseDocumentException, DocumentGenerationException {
+    void before() throws CaseDocumentException, DocumentGenerationException, JsonProcessingException {
         caseService = mock(CaseService.class);
         notificationService = mock(NotificationService.class);
         caseDocumentService = mock(CaseDocumentService.class);
