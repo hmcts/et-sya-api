@@ -148,12 +148,12 @@ public class ApplicationService {
             appType.setClaimantResponseRequired(NO);
         }
 
-        sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
-
         boolean waEnabled = featureToggleService.isWorkAllocationEnabled();
         setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService, waEnabled);
 
         createAndAddPdfOfResponse(authorization, request, caseData, appType);
+
+        sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
 
         return caseService.submitUpdate(
             authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
