@@ -151,9 +151,9 @@ public class ApplicationService {
         boolean waEnabled = featureToggleService.isWorkAllocationEnabled();
         setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService, waEnabled);
 
-        createAndAddPdfOfResponse(authorization, request, caseData, appType);
-
         sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
+
+        createAndAddPdfOfResponse(authorization, request, caseData, appType);
 
         return caseService.submitUpdate(
             authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
