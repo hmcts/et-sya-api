@@ -119,9 +119,12 @@ public final class TseApplicationHelper {
         responseToAdd.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
         responseToAdd.setFrom(CLAIMANT);
 
+        log.info("Updating Response");
+
         if (isWorkAllocationEnabled) {
             responseToAdd.setDateTime(getCurrentDateTime());
             responseToAdd.setApplicationType(appToModify.getType());
+            log.info("Add WA Values");
         }
 
         if (request.getSupportingMaterialFile() != null) {
