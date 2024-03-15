@@ -44,7 +44,7 @@ class FeatureToggleServiceTest {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void shouldReturnCorrectValueWhenWorkAllocationIsEnabled(boolean toggleStat) {
-        givenToggle("work-allocation", toggleStat);
+        givenToggleAndDefault("work-allocation", toggleStat, true);
 
         assertThat(featureToggleService.isWorkAllocationEnabled()).isEqualTo(toggleStat);
     }
@@ -59,5 +59,9 @@ class FeatureToggleServiceTest {
 
     private void givenToggle(String feature, boolean state) {
         when(featureToggleApi.isFeatureEnabled(feature)).thenReturn(state);
+    }
+
+    private void givenToggleAndDefault(String feature, boolean state, boolean defaultValue) {
+        when(featureToggleApi.isFeatureEnabled(feature, defaultValue)).thenReturn(state);
     }
 }

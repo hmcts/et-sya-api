@@ -148,6 +148,7 @@ public class ApplicationService {
             appType.setClaimantResponseRequired(NO);
         }
 
+        log.info("WA Value 1: " + featureToggleService.isWorkAllocationEnabled());
         boolean waEnabled = featureToggleService.isWorkAllocationEnabled();
         setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService, waEnabled);
 

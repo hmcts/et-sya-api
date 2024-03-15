@@ -29,7 +29,7 @@ public class FeatureToggleService {
     }
 
     public boolean isWorkAllocationEnabled() {
-        return this.featureToggleApi.isFeatureEnabled("work-allocation");
+        return this.featureToggleApi.isFeatureEnabled("work-allocation", true);
     }
 
     public boolean isWelshEnabled() {
