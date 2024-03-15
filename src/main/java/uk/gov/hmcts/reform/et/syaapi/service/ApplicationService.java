@@ -139,7 +139,6 @@ public class ApplicationService {
             throw new IllegalArgumentException("Application id provided is incorrect");
         }
 
-        String copyToOtherParty = request.getResponse().getCopyToOtherParty();
         GenericTseApplicationType appType = appToModify.getValue();
 
         boolean isRespondingToTribunal = request.isRespondingToRequestOrOrder();
@@ -152,6 +151,7 @@ public class ApplicationService {
         boolean waEnabled = featureToggleService.isWorkAllocationEnabled();
         setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService, waEnabled);
 
+        String copyToOtherParty = request.getResponse().getCopyToOtherParty();
         sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
 
         createAndAddPdfOfResponse(authorization, request, caseData, appType);
