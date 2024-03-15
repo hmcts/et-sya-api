@@ -11,10 +11,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
+import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationService;
+import uk.gov.service.notify.NotificationClientException;
 
 import javax.validation.constraints.NotNull;
 
@@ -28,6 +30,29 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 public class StoreCaseController {
 
     private final StoredApplicationService storedApplicationService;
+
+    /**
+     * Store a Claimant Application.
+     *
+     * @param authorization jwt of the user
+     * @param request       the request object which contains the claimant application passed from sya-frontend
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    @PutMapping("/store-claimant-application")
+    @Operation(summary = "Submit a claimant application")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> submitClaimantApplication(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody ClaimantApplicationRequest request
+    ) {
+        log.info("Received store claimant application request - caseTypeId: {} caseId: {}",
+                 request.getCaseTypeId(), request.getCaseId()
+        );
+
+        CaseDetails finalCaseDetails = storedApplicationService.storeApplication(authorization, request);
+
+        return ok(finalCaseDetails);
+    }
 
     /**
      * Submits a stored Claimant Application.

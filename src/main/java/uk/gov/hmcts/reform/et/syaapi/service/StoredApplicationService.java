@@ -10,24 +10,33 @@ import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.PseResponseTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.TseRespondTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationType;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
+import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
+import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
+import uk.gov.service.notify.NotificationClientException;
 
 import java.time.LocalDate;
 import java.util.List;
 
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.OPEN_STATE;
+import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.WAITING_FOR_TRIBUNAL;
 
 @RequiredArgsConstructor
@@ -43,6 +52,72 @@ public class StoredApplicationService {
     private static final String RESPOND_ID_INCORRECT = "Respond id provided is incorrect";
     private static final String SEND_NOTIFICATION_ID_INCORRECT = "SendNotification Id is incorrect";
     private static final String RESPOND_EMPTY = "Respond collection is empty";
+
+    /**
+     * Store Claimant Application to Tell Something Else.
+     *
+     * @param authorization - authorization
+     * @param request - application request from the claimant
+     * @return the associated {@link CaseDetails} for the ID provided in request
+     */
+    public CaseDetails storeApplication(String authorization, ClaimantApplicationRequest request) {
+
+        String caseTypeId = request.getCaseTypeId();
+        CaseDetails caseDetails = caseService.getUserCase(authorization, request.getCaseId());
+        ClaimantTse claimantTse = request.getClaimantTse();
+        caseDetails.getData().put("claimantTse", claimantTse);
+
+        if (!request.isTypeC() && YES.equals(claimantTse.getCopyToOtherPartyYesOrNo())) {
+            try {
+                log.info("Uploading pdf of TSE application");
+                caseService.uploadTseCyaAsPdf(authorization, caseDetails, claimantTse, caseTypeId);
+            } catch (CaseDocumentException | DocumentGenerationException e) {
+                log.error("Couldn't upload pdf of TSE application " + e.getMessage());
+            }
+        }
+
+        UploadedDocumentType contactApplicationFile = claimantTse.getContactApplicationFile();
+        if (contactApplicationFile != null) {
+            log.info("Uploading supporting file to document collection");
+            caseService.uploadTseSupportingDocument(caseDetails, contactApplicationFile,
+                                                    claimantTse.getContactApplicationType()
+            );
+        }
+
+        CaseDetails finalCaseDetails = caseService.triggerEvent(
+            authorization,
+            request.getCaseId(),
+            CaseEvent.STORE_CLAIMANT_TSE,
+            caseTypeId,
+            caseDetails.getData()
+        );
+
+        sendAcknowledgementEmails(request, finalCaseDetails);
+
+        return finalCaseDetails;
+    }
+
+    private void sendAcknowledgementEmails(
+        ClaimantApplicationRequest request,
+        CaseDetails finalCaseDetails
+    ) {
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(finalCaseDetails.getData());
+        ClaimantIndType claimantIndType = caseData.getClaimantIndType();
+        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
+        NotificationService.CoreEmailDetails details = new NotificationService.CoreEmailDetails(
+            caseData,
+            claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName(),
+            caseData.getEthosCaseReference(),
+            getRespondentNames(caseData),
+            hearingDate,
+            finalCaseDetails.getId().toString()
+        );
+
+        ClaimantTse claimantTse = request.getClaimantTse();
+
+        notificationService.sendStoredEmailToClaimant(
+            details, APP_TYPE_MAP.get(claimantTse.getContactApplicationType()));
+    }
 
     /**
      * Submits a stored Claimant Application:
