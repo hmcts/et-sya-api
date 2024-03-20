@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationService;
+import uk.gov.hmcts.reform.et.syaapi.service.StoredTribunalRequestService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 
@@ -41,6 +42,8 @@ class StoreCaseControllerTest {
     private VerifyTokenService verifyTokenService;
     @MockBean
     private StoredApplicationService storedApplicationService;
+    @MockBean
+    private StoredTribunalRequestService storedTribunalRequestService;
 
     StoreCaseControllerTest() {
         // Default constructor
@@ -117,7 +120,7 @@ class StoreCaseControllerTest {
 
         // when
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(storedApplicationService.submitRespondToTribunal(any(), any())).thenReturn(expectedDetails);
+        when(storedTribunalRequestService.submitRespondToTribunal(any(), any())).thenReturn(expectedDetails);
 
         mockMvc.perform(
             put("/store/submit-stored-respond-to-tribunal", CASE_ID)
@@ -126,7 +129,7 @@ class StoreCaseControllerTest {
                 .content(ResourceLoader.toJson(caseRequest))
         ).andExpect(status().isOk());
 
-        verify(storedApplicationService, times(1)).submitRespondToTribunal(
+        verify(storedTribunalRequestService, times(1)).submitRespondToTribunal(
             TEST_SERVICE_AUTH_TOKEN,
             caseRequest
         );

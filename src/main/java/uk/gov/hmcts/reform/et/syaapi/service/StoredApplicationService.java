@@ -49,8 +49,6 @@ public class StoredApplicationService {
 
     private static final String APP_ID_INCORRECT = "Application id provided is incorrect";
     private static final String RESPOND_ID_INCORRECT = "Respond id provided is incorrect";
-    private static final String SEND_NOTIFICATION_ID_INCORRECT = "SendNotification Id is incorrect";
-    private static final String RESPOND_EMPTY = "Respond collection is empty";
 
     /**
      * Store Claimant Application to Tell Something Else.
@@ -290,73 +288,5 @@ public class StoredApplicationService {
         notificationService.sendResponseEmailToTribunal(
             details, appToModify.getValue().getType(), isRespondingToRequestOrOrder);
         notificationService.sendSubmitStoredEmailToClaimant(details, appToModify.getValue().getType());
-    }
-
-    /**
-     * Submit stored Claimant Response to Tribunal Send Notification.
-     *
-     * @param authorization - authorization
-     * @param request - response from the claimant
-     * @return the associated {@link CaseDetails} for the ID provided in request
-     */
-    public CaseDetails submitRespondToTribunal(String authorization, UpdateStoredRespondToTribunalRequest request) {
-        String caseId = request.getCaseId();
-        String caseTypeId = request.getCaseTypeId();
-
-        StartEventResponse startEventResponse = caseService.startUpdate(
-            authorization,
-            caseId,
-            caseTypeId,
-            CaseEvent.CLAIMANT_TSE_RESPOND
-        );
-
-        CaseData caseData = EmployeeObjectMapper
-            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
-
-        // get selected SendNotificationType
-        var sendNotificationTypeItem =
-            caseData.getSendNotificationCollection()
-                .stream()
-                .filter(notification -> notification.getId().equals(request.getOrderId()))
-                .findFirst();
-        if (sendNotificationTypeItem.isEmpty()) {
-            throw new IllegalArgumentException(SEND_NOTIFICATION_ID_INCORRECT);
-        }
-        SendNotificationType selectedSendNotificationType = sendNotificationTypeItem.get().getValue();
-
-        // get selected PseResponseTypeItem
-        if (CollectionUtils.isEmpty(selectedSendNotificationType.getRespondCollection())) {
-            throw new IllegalArgumentException(RESPOND_EMPTY);
-        }
-        PseResponseTypeItem responseToModify = getResponseInSelectedSendNotification(
-            selectedSendNotificationType.getRespondCollection(), request.getRespondId()
-        );
-        if (responseToModify == null) {
-            throw new IllegalArgumentException(RESPOND_ID_INCORRECT);
-        }
-
-        // Update response details and SendNotificationType status
-        responseToModify.getValue().setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
-        responseToModify.getValue().setStatus(null);
-
-        // Send confirmation emails
-        sendEmailForRespondToTribunal(caseData, caseId, responseToModify.getValue().getResponse());
-
-        return caseService.submitUpdate(
-            authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
-    }
-
-    private static PseResponseTypeItem getResponseInSelectedSendNotification(List<PseResponseTypeItem> responds,
-                                                                             String respondId) {
-        return responds.stream()
-            .filter(a -> a.getId().equals(respondId))
-            .findAny()
-            .orElse(null);
-    }
-
-    private void sendEmailForRespondToTribunal(CaseData caseData, String caseId, String shortText) {
-        notificationService.sendResponseNotificationEmailToTribunal(caseData, caseId);
-        notificationService.sendSubmitStoredEmailToClaimant(
-            notificationService.formatCoreEmailDetails(caseData, caseId), shortText);
     }
 }

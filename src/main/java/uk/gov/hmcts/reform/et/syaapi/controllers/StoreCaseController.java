@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationService;
+import uk.gov.hmcts.reform.et.syaapi.service.StoredTribunalRequestService;
 
 import javax.validation.constraints.NotNull;
 
@@ -29,6 +30,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 public class StoreCaseController {
 
     private final StoredApplicationService storedApplicationService;
+    private final StoredTribunalRequestService storedTribunalRequestService;
 
     /**
      * Store a Claimant Application.
@@ -112,7 +114,7 @@ public class StoreCaseController {
         log.info("Received submit respond to application request - caseTypeId: {} caseId: {}",
             request.getCaseTypeId(), request.getCaseId()
         );
-        CaseDetails finalCaseDetails = storedApplicationService.submitRespondToTribunal(authorization, request);
+        CaseDetails finalCaseDetails = storedTribunalRequestService.submitRespondToTribunal(authorization, request);
         return ok(finalCaseDetails);
     }
 }
