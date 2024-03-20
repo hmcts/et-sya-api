@@ -561,7 +561,20 @@ public class CaseService {
                                      String contactApplicationType) {
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
         List<DocumentTypeItem> docList = caseData.getDocumentCollection();
+        docList = getDocumentTypeItems(contactApplicationFile, contactApplicationType, docList, caseData);
+        caseDetails.getData().put(DOCUMENT_COLLECTION, docList);
+    }
 
+    void uploadTseSupportingDocumentCaseData(CaseData caseData, UploadedDocumentType contactApplicationFile,
+                                     String contactApplicationType) {
+        List<DocumentTypeItem> docList = caseData.getDocumentCollection();
+        docList = getDocumentTypeItems(contactApplicationFile, contactApplicationType, docList, caseData);
+        caseData.setDocumentCollection(docList);
+    }
+
+    private List<DocumentTypeItem> getDocumentTypeItems(UploadedDocumentType contactApplicationFile,
+                                                               String contactApplicationType,
+                                                               List<DocumentTypeItem> docList, CaseData caseData) {
         if (docList == null) {
             docList = new ArrayList<>();
         }
@@ -588,7 +601,7 @@ public class CaseService {
                         .id(UUID.randomUUID().toString())
                         .value(documentType)
                         .build());
-        caseDetails.getData().put(DOCUMENT_COLLECTION, docList);
+        return docList;
     }
 
     void uploadTseCyaAsPdf(
