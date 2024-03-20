@@ -36,7 +36,6 @@ import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED_STATE;
-import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.setRespondentApplicationWithResponse;
@@ -82,8 +81,7 @@ public class ApplicationService {
         ClaimantTse claimantTse = request.getClaimantTse();
         caseDetails.getData().put("claimantTse", claimantTse);
 
-        if (!request.isTypeC() && YES.equals(claimantTse.getCopyToOtherPartyYesOrNo())
-            && !YES.equals(claimantTse.getStoredPending())) {
+        if (!request.isTypeC() && YES.equals(claimantTse.getCopyToOtherPartyYesOrNo())) {
             try {
                 log.info("Uploading pdf of TSE application");
                 caseService.uploadTseCyaAsPdf(authorization, caseDetails, claimantTse, caseTypeId);
@@ -290,14 +288,9 @@ public class ApplicationService {
         ClaimantTse claimantTse = request.getClaimantTse();
         JSONObject documentJson = getDocumentDownload(authorization, caseData);
 
-        if (YES.equals(claimantTse.getStoredPending())) {
-            notificationService.sendStoredEmailToClaimant(
-                details, APP_TYPE_MAP.get(claimantTse.getContactApplicationType()));
-        } else {
-            notificationService.sendAcknowledgementEmailToClaimant(details, claimantTse);
-            notificationService.sendAcknowledgementEmailToRespondents(details, documentJson, claimantTse);
-            notificationService.sendAcknowledgementEmailToTribunal(details, claimantTse.getContactApplicationType());
-        }
+        notificationService.sendAcknowledgementEmailToClaimant(details, claimantTse);
+        notificationService.sendAcknowledgementEmailToRespondents(details, documentJson, claimantTse);
+        notificationService.sendAcknowledgementEmailToTribunal(details, claimantTse.getContactApplicationType());
     }
 
     private void sendResponseToApplicationEmails(
