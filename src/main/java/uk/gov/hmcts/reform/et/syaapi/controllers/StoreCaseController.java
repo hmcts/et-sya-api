@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationRespondService;
 import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.StoredTribunalRequestService;
 
@@ -29,6 +30,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 public class StoreCaseController {
 
     private final StoredApplicationService storedApplicationService;
+    private final StoredApplicationRespondService storedApplicationRespondService;
     private final StoredTribunalRequestService storedTribunalRequestService;
 
     /**
@@ -69,7 +71,8 @@ public class StoreCaseController {
         log.info("Received submit respond to application request - caseTypeId: {} caseId: {}",
                  request.getCaseTypeId(), request.getCaseId()
         );
-        CaseDetails finalCaseDetails = storedApplicationService.submitRespondToApplication(authorization, request);
+        CaseDetails finalCaseDetails =
+            storedApplicationRespondService.submitRespondToApplication(authorization, request);
         return ok(finalCaseDetails);
     }
 
