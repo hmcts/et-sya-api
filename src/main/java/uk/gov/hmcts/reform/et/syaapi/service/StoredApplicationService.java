@@ -27,7 +27,6 @@ import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
-import uk.gov.service.notify.NotificationClientException;
 
 import java.time.LocalDate;
 import java.util.List;
