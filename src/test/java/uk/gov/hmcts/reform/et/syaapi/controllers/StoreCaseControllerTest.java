@@ -10,7 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.RemoveStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationRespondService;
@@ -59,7 +59,7 @@ class StoreCaseControllerTest {
     @SneakyThrows
     @Test
     void shouldSubmitStoredClaimantApplication() {
-        SubmitStoredApplicationRequest caseRequest = SubmitStoredApplicationRequest.builder()
+        RemoveStoredApplicationRequest caseRequest = RemoveStoredApplicationRequest.builder()
             .caseTypeId(CASE_TYPE)
             .caseId(CASE_ID)
             .applicationId("123")
@@ -67,7 +67,7 @@ class StoreCaseControllerTest {
 
         // when
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(storedApplicationService.submitStoredApplication(any(), any())).thenReturn(expectedDetails);
+        when(storedApplicationService.removeStoredApplication(any(), any())).thenReturn(expectedDetails);
 
         mockMvc.perform(
             put("/store/submit-stored-claimant-application", CASE_ID)
@@ -76,7 +76,7 @@ class StoreCaseControllerTest {
                 .content(ResourceLoader.toJson(caseRequest))
         ).andExpect(status().isOk());
 
-        verify(storedApplicationService, times(1)).submitStoredApplication(
+        verify(storedApplicationService, times(1)).removeStoredApplication(
             TEST_SERVICE_AUTH_TOKEN,
             caseRequest
         );

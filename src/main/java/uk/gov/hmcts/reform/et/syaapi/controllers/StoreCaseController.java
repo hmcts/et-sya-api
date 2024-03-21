@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.RemoveStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationRespondService;
@@ -62,17 +62,17 @@ public class StoreCaseController {
      * @param request       the request object which contains the claimant application passed from sya-frontend
      * @return the new updated case wrapped in a {@link CaseDetails}
      */
-    @PutMapping("/submit-stored-claimant-application")
-    @Operation(summary = "Submit a stored claimant application")
+    @PutMapping("/remove-stored-claimant-application")
+    @Operation(summary = "Remove a stored claimant application")
     @ApiResponseGroup
-    public ResponseEntity<CaseDetails> submitStoredClaimantApplication(
+    public ResponseEntity<CaseDetails> removeStoredClaimantApplication(
         @RequestHeader(AUTHORIZATION) String authorization,
-        @NotNull @RequestBody SubmitStoredApplicationRequest request
+        @NotNull @RequestBody RemoveStoredApplicationRequest request
     ) {
         log.info("Received submit the stored claimant application request - caseTypeId: {} caseId: {}",
                  request.getCaseTypeId(), request.getCaseId()
         );
-        CaseDetails finalCaseDetails = storedApplicationService.submitStoredApplication(authorization, request);
+        CaseDetails finalCaseDetails = storedApplicationService.removeStoredApplication(authorization, request);
         return ok(finalCaseDetails);
     }
 

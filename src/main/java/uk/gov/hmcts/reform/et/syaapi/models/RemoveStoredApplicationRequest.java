@@ -8,7 +8,7 @@ import lombok.extern.jackson.Jacksonized;
 @Data
 @Builder
 @Jacksonized
-public class SubmitStoredApplicationRequest {
+public class RemoveStoredApplicationRequest {
     @JsonProperty("case_id")
     private String caseId;
     @JsonProperty("case_type_id")

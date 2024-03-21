@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
-import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.RemoveStoredApplicationRequest;
 
 import java.time.LocalDate;
 
@@ -74,7 +74,7 @@ class StoredApplicationServiceTest {
 
     @Test
     void shouldSubmitStoredApplicationShouldReturnCaseDetails() {
-        SubmitStoredApplicationRequest testRequest = SubmitStoredApplicationRequest.builder()
+        RemoveStoredApplicationRequest testRequest = RemoveStoredApplicationRequest.builder()
             .caseId(String.valueOf(CASE_ID))
             .caseTypeId(CASE_TYPE_ID)
             .applicationId(APP_ID)
@@ -84,7 +84,7 @@ class StoredApplicationServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             testRequest.getCaseId(),
             testRequest.getCaseTypeId(),
-            CaseEvent.SUBMIT_STORED_CLAIMANT_TSE
+            CaseEvent.REMOVE_STORED_CLAIMANT_TSE
         )).thenReturn(startEventResponse);
 
         when(caseService.submitUpdate(
@@ -94,7 +94,7 @@ class StoredApplicationServiceTest {
             eq(testRequest.getCaseTypeId())
         )).thenReturn(CaseDetails.builder().id(CASE_ID).build());
 
-        storedApplicationService.submitStoredApplication(TEST_SERVICE_AUTH_TOKEN, testRequest);
+        storedApplicationService.removeStoredApplication(TEST_SERVICE_AUTH_TOKEN, testRequest);
 
         verify(caseService, times(1)).submitUpdate(
             any(),
@@ -116,14 +116,14 @@ class StoredApplicationServiceTest {
 
     @Test
     void shouldSubmitStoredApplicationShouldApplicationIdException() {
-        SubmitStoredApplicationRequest testRequest = SubmitStoredApplicationRequest.builder()
+        RemoveStoredApplicationRequest testRequest = RemoveStoredApplicationRequest.builder()
             .caseId(String.valueOf(CASE_ID))
             .caseTypeId(CASE_TYPE_ID)
             .applicationId(TEST)
             .build();
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-            storedApplicationService.submitStoredApplication(TEST_SERVICE_AUTH_TOKEN, testRequest));
+            storedApplicationService.removeStoredApplication(TEST_SERVICE_AUTH_TOKEN, testRequest));
         assertThat(exception.getMessage())
             .isEqualTo(APP_ID_INCORRECT);
     }

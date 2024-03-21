@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.ClaimantBundlesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.RemoveStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
@@ -89,9 +89,9 @@ public final class TestData {
         ChangeApplicationStatusRequest.class
     );
 
-    private final SubmitStoredApplicationRequest submitStoredApplicationRequest = ResourceLoader.fromString(
+    private final RemoveStoredApplicationRequest removeStoredApplicationRequest = ResourceLoader.fromString(
         "requests/submitStoredApplication.json",
-        SubmitStoredApplicationRequest.class
+        RemoveStoredApplicationRequest.class
     );
 
     private final ClaimantApplicationRequest claimantApplicationRequest = ResourceLoader.fromString(
