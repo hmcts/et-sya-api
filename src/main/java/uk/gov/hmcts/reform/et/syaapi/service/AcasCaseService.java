@@ -154,7 +154,7 @@ public class AcasCaseService {
 
     private List<DocumentTypeItem> getAllCaseDocuments(String authorisation, List<CaseDocumentAcasResponse> documentIds,
                                                        CaseData caseData) {
-        getAllRespondentDocuments(authorisation, documentIds, caseData);
+        retrieveRespondentDocuments(authorisation, documentIds, caseData);
 
         List<DocumentTypeItem> documentTypeItemList = new ArrayList<>();
         documentTypeItemList.addAll(getDocumentCollectionDocs(caseData));
@@ -178,8 +178,8 @@ public class AcasCaseService {
             .toList();
     }
 
-    private void getAllRespondentDocuments(String authorisation, List<CaseDocumentAcasResponse> documentIds,
-                                           CaseData caseData) {
+    private void retrieveRespondentDocuments(String authorisation, List<CaseDocumentAcasResponse> documentIds,
+                                             CaseData caseData) {
         if (CollectionUtils.isEmpty(caseData.getRespondentCollection())) {
             return;
         }
