@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.EqualsAndHashCode;
-import org.apache.commons.collections4.MultiValuedMap;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -245,11 +244,12 @@ class AcasCaseServiceTest {
         )).thenReturn(scotlandSearchResult);
         doCallRealMethod().when(caseDocumentService).createDocumentTypeItem(
             isA(String.class), isA(UploadedDocumentType.class));
+
         doCallRealMethod().when(caseDocumentService).getDocumentUuid(isA(String.class));
         when(caseDocumentService.getDocumentDetails(any(), any()))
             .thenReturn(TestDataProvider.getDocumentDetailsFromCdam());
-        MultiValuedMap<String, CaseDocumentAcasResponse> documents = acasCaseService.retrieveAcasDocuments(caseId);
+        List<CaseDocumentAcasResponse> documents = acasCaseService.retrieveAcasDocuments(caseId);
         assertNotNull(documents);
-        assertThat(documents.size()).isEqualTo(5);
+        assertThat(documents).hasSize(5);
     }
 }
