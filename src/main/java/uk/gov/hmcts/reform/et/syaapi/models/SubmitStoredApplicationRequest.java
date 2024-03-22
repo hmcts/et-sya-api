@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
+import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 
 @Data
 @Builder
@@ -15,4 +16,8 @@ public class SubmitStoredApplicationRequest {
     private String caseTypeId;
     @JsonProperty("application_id")
     private String applicationId;
+    @JsonProperty("type_c")
+    private boolean typeC;
+    @JsonProperty("claimant_tse")
+    private ClaimantTse claimantTse;
 }

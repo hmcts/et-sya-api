@@ -56,9 +56,8 @@ class StoredApplicationSubmitServiceTest {
     void before() {
         storedApplicationSubmitService = new StoredApplicationSubmitService(
             mock(CaseService.class),
-            mock(CaseDetailsConverter.class),
-            mock(NotificationService.class),
-            mock(ApplicationService.class)
+            mock(ApplicationService.class),
+            mock(CaseDetailsConverter.class)
         );
 
         startEventResponse = testData.getSendNotificationCollectionResponse();
