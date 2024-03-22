@@ -17,10 +17,11 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
-import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationService;
+import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationSubmitService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.service.notify.NotificationClientException;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,7 +56,7 @@ class StoreCaseControllerIntegrationTest {
     @MockBean
     private IdamClient idamClient;
     @MockBean
-    private StoredApplicationService storedApplicationService;
+    private StoredApplicationSubmitService storedApplicationSubmitService;
 
     @Autowired
     private ResourceLoader resourceLoader;
@@ -69,11 +70,11 @@ class StoreCaseControllerIntegrationTest {
     }
 
     @BeforeEach
-    void setUpBeforeEach() {
+    void setUpBeforeEach() throws NotificationClientException {
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(authTokenGenerator.generate()).thenReturn("token");
         when(idamClient.getUserInfo(any())).thenReturn(UserInfo.builder().uid("1234").build());
-        when(storedApplicationService.submitStoredApplication(any(),any())).thenReturn(caseDetailsResponse);
+        when(storedApplicationSubmitService.submitStoredApplication(any(), any())).thenReturn(caseDetailsResponse);
     }
 
     @DisplayName("Should submit stored application request")

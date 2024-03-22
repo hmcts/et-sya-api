@@ -11,10 +11,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
+import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
-import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationService;
+import uk.gov.hmcts.reform.et.syaapi.service.StoreApplicationService;
+import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationSubmitService;
+import uk.gov.hmcts.reform.et.syaapi.service.StoredRespondToApplicationSubmitService;
+import uk.gov.hmcts.reform.et.syaapi.service.StoredRespondToTribunalSubmitService;
+import uk.gov.service.notify.NotificationClientException;
 
 import javax.validation.constraints.NotNull;
 
@@ -27,7 +32,31 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 @RequestMapping("/store")
 public class StoreCaseController {
 
-    private final StoredApplicationService storedApplicationService;
+    private final StoreApplicationService storeApplicationService;
+    private final StoredApplicationSubmitService storedApplicationSubmitService;
+    private final StoredRespondToApplicationSubmitService storedRespondToApplicationSubmitService;
+    private final StoredRespondToTribunalSubmitService storedRespondToTribunalSubmitService;
+
+    /**
+     * Store a Claimant Application.
+     *
+     * @param authorization jwt of the user
+     * @param request       the request object which contains the claimant application passed from sya-frontend
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    @PutMapping("/store-claimant-application")
+    @Operation(summary = "Store a claimant application")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> storeClaimantApplication(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody ClaimantApplicationRequest request
+    ) {
+        log.info("Received store claimant application request - caseTypeId: {} caseId: {}",
+                 request.getCaseTypeId(), request.getCaseId()
+        );
+        CaseDetails finalCaseDetails = storeApplicationService.storeApplication(authorization, request);
+        return ok(finalCaseDetails);
+    }
 
     /**
      * Submits a stored Claimant Application.
@@ -42,11 +71,11 @@ public class StoreCaseController {
     public ResponseEntity<CaseDetails> submitStoredClaimantApplication(
         @RequestHeader(AUTHORIZATION) String authorization,
         @NotNull @RequestBody SubmitStoredApplicationRequest request
-    ) {
+    ) throws NotificationClientException {
         log.info("Received submit the stored claimant application request - caseTypeId: {} caseId: {}",
                  request.getCaseTypeId(), request.getCaseId()
         );
-        CaseDetails finalCaseDetails = storedApplicationService.submitStoredApplication(authorization, request);
+        CaseDetails finalCaseDetails = storedApplicationSubmitService.submitStoredApplication(authorization, request);
         return ok(finalCaseDetails);
     }
 
@@ -67,7 +96,8 @@ public class StoreCaseController {
         log.info("Received submit respond to application request - caseTypeId: {} caseId: {}",
                  request.getCaseTypeId(), request.getCaseId()
         );
-        CaseDetails finalCaseDetails = storedApplicationService.submitRespondToApplication(authorization, request);
+        CaseDetails finalCaseDetails =
+            storedRespondToApplicationSubmitService.submitRespondToApplication(authorization, request);
         return ok(finalCaseDetails);
     }
 
@@ -88,7 +118,8 @@ public class StoreCaseController {
         log.info("Received submit respond to application request - caseTypeId: {} caseId: {}",
             request.getCaseTypeId(), request.getCaseId()
         );
-        CaseDetails finalCaseDetails = storedApplicationService.submitRespondToTribunal(authorization, request);
+        CaseDetails finalCaseDetails =
+            storedRespondToTribunalSubmitService.submitRespondToTribunal(authorization, request);
         return ok(finalCaseDetails);
     }
 }
