@@ -21,7 +21,6 @@ import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
 
 import java.util.List;
@@ -146,10 +145,10 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
     @Test
     @Order(4)
     void submitStoredClaimantApplicationShouldReturnCaseDetails() {
-        SubmitStoredApplicationRequest caseRequest = SubmitStoredApplicationRequest.builder()
+        ClaimantApplicationRequest caseRequest = ClaimantApplicationRequest.builder()
             .caseId(String.valueOf(caseId))
             .caseTypeId(CASE_TYPE)
-            .applicationId(appId)
+            .storedApplicationId(appId)
             .build();
 
         RestAssured.given()

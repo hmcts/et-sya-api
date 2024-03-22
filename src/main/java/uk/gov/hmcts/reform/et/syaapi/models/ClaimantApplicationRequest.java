@@ -17,6 +17,8 @@ public class ClaimantApplicationRequest {
     private String caseTypeId;
     @JsonProperty("type_c")
     private boolean typeC;
+    @JsonProperty("stored_application_id")
+    private String storedApplicationId;
     @JsonProperty("claimant_tse")
     private ClaimantTse claimantTse;
 }

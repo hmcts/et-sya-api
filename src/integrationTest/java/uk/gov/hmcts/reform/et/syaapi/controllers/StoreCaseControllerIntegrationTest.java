@@ -14,7 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationService;
@@ -73,16 +73,16 @@ class StoreCaseControllerIntegrationTest {
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(authTokenGenerator.generate()).thenReturn("token");
         when(idamClient.getUserInfo(any())).thenReturn(UserInfo.builder().uid("1234").build());
-        when(storedApplicationService.submitStoredApplication(any(),any())).thenReturn(caseDetailsResponse);
+        when(storedApplicationService.storeApplication(any(),any())).thenReturn(caseDetailsResponse);
     }
 
     @DisplayName("Should submit stored application request")
     @Test
     void submitStoredApplicationRequest() throws Exception {
-        SubmitStoredApplicationRequest caseRequest = SubmitStoredApplicationRequest.builder()
+        ClaimantApplicationRequest caseRequest = ClaimantApplicationRequest.builder()
             .caseId(CASE_ID)
             .caseTypeId(SCOTLAND_CASE_TYPE)
-            .applicationId(APP_ID)
+            .storedApplicationId(APP_ID)
             .build();
 
         mockMvc.perform(
