@@ -37,6 +37,8 @@ public class StoredApplicationService {
     private final CaseDetailsConverter caseDetailsConverter;
     private final NotificationService notificationService;
 
+    private static final String FINAL_CASE_DETAILS_NOT_FOUND = "submitUpdate finalCaseDetails not found";
+
     /**
      * Store Claimant Application.
      *
@@ -76,7 +78,7 @@ public class StoredApplicationService {
 
         // Send Acknowledgement Emails
         if (finalCaseDetails == null) {
-            throw new IllegalArgumentException("submitUpdate finalCaseDetails not found");
+            throw new IllegalArgumentException(FINAL_CASE_DETAILS_NOT_FOUND);
         }
         sendAcknowledgementEmails(request, finalCaseDetails);
 
