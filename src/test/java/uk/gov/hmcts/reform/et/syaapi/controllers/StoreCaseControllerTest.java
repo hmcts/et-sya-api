@@ -68,7 +68,8 @@ class StoreCaseControllerTest {
 
         // when
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(storedRespondToApplicationSubmitService.submitRespondToApplication(any(), any())).thenReturn(expectedDetails);
+        when(storedRespondToApplicationSubmitService.submitRespondToApplication(any(), any()))
+            .thenReturn(expectedDetails);
 
         mockMvc.perform(
             put("/store/submit-stored-respond-to-application", CASE_ID)

@@ -101,7 +101,8 @@ class StoreCaseControllerIntegrationTest {
     @DisplayName("Should submit stored respond to application request")
     @Test
     void submitStoredRespondToApplicationRequest() throws Exception {
-        when(storedRespondToApplicationSubmitService.submitRespondToApplication(any(), any())).thenReturn(caseDetailsResponse);
+        when(storedRespondToApplicationSubmitService.submitRespondToApplication(any(), any()))
+            .thenReturn(caseDetailsResponse);
         UpdateStoredRespondToApplicationRequest caseRequest = UpdateStoredRespondToApplicationRequest.builder()
             .caseId(CASE_ID)
             .caseTypeId(SCOTLAND_CASE_TYPE)
@@ -122,7 +123,8 @@ class StoreCaseControllerIntegrationTest {
     @DisplayName("Should submit stored respond to send notification request")
     @Test
     void submitStoredRespondToTribunalRequest() throws Exception {
-        when(storedRespondToTribunalSubmitService.submitRespondToTribunal(any(), any())).thenReturn(caseDetailsResponse);
+        when(storedRespondToTribunalSubmitService.submitRespondToTribunal(any(), any()))
+            .thenReturn(caseDetailsResponse);
         UpdateStoredRespondToTribunalRequest caseRequest = UpdateStoredRespondToTribunalRequest.builder()
             .caseId(CASE_ID)
             .caseTypeId(SCOTLAND_CASE_TYPE)

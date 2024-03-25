@@ -10,12 +10,10 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
-import uk.gov.service.notify.NotificationClientException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -39,8 +37,6 @@ class StoredApplicationServiceTest {
     private CaseService caseService;
     @MockBean
     private CaseDetailsConverter caseDetailsConverter;
-    @MockBean
-    private NotificationService notificationService;
     @InjectMocks
     private StoredApplicationService storedApplicationService;
 
@@ -58,12 +54,11 @@ class StoredApplicationServiceTest {
     void before() {
         caseService = mock(CaseService.class);
         caseDetailsConverter = mock(CaseDetailsConverter.class);
-        notificationService = mock(NotificationService.class);
 
         storedApplicationService = new StoredApplicationService(
             caseService,
             caseDetailsConverter,
-            notificationService
+            mock(NotificationService.class)
         );
     }
 
