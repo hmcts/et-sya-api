@@ -23,7 +23,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.WAITING_FOR_TRIBUNAL;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.WAITING_FOR_THE_TRIBUNAL;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 class StoredRespondToApplicationSubmitServiceTest {
@@ -60,6 +60,7 @@ class StoredRespondToApplicationSubmitServiceTest {
         storedRespondToApplicationSubmitService = new StoredRespondToApplicationSubmitService(
             caseService,
             mock(NotificationService.class),
+            mock(CaseDocumentService.class),
             caseDetailsConverter
         );
 
@@ -97,7 +98,7 @@ class StoredRespondToApplicationSubmitServiceTest {
 
         GenericTseApplicationType actual =
             argumentCaptor.getValue().getGenericTseApplicationCollection().get(0).getValue();
-        assertThat(actual.getApplicationState()).isEqualTo(WAITING_FOR_TRIBUNAL);
+        assertThat(actual.getApplicationState()).isEqualTo(WAITING_FOR_THE_TRIBUNAL);
 
         TseRespondType actualRespond = actual.getRespondCollection().get(1).getValue();
         assertThat(actualRespond.getDate()).isEqualTo(TseApplicationHelper.formatCurrentDate(LocalDate.now()));

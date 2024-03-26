@@ -28,11 +28,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED_STATE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
-import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT;
 
 @Service
 @Slf4j
@@ -131,7 +131,7 @@ public class SendNotificationService {
 
         PseResponseType pseResponseType = request.getPseResponseType();
         pseResponseType.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
-        pseResponseType.setFrom(CLAIMANT);
+        pseResponseType.setFrom(CLAIMANT_TITLE);
 
         if (request.getSupportingMaterialFile() != null) {
             DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(
