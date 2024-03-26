@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
-import org.apache.commons.collections4.MultiValuedMap;
-import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -154,13 +152,14 @@ class AcasControllerTest {
 
     @Test
     void getAcasDocumentsDocumentsFound() throws Exception {
-        MultiValuedMap<String, CaseDocumentAcasResponse> acasResponseMultiValuedMap = new ArrayListValuedHashMap<>();
+        List<CaseDocumentAcasResponse> acasDocs = new ArrayList<>();
         CaseDocumentAcasResponse caseDocumentAcasResponse = CaseDocumentAcasResponse.builder()
+            .documentType("ET1")
             .documentId(UUID.randomUUID().toString())
             .modifiedOn("2023-02-06T12:41:47.000+00:00")
             .build();
-        acasResponseMultiValuedMap.put("ET1", caseDocumentAcasResponse);
-        when(acasCaseService.retrieveAcasDocuments(anyString())).thenReturn(acasResponseMultiValuedMap);
+        acasDocs.add(caseDocumentAcasResponse);
+        when(acasCaseService.retrieveAcasDocuments(anyString())).thenReturn(acasDocs);
         when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
 
         mockMvc.perform(get(GET_ACAS_DOCUMENTS_URL)

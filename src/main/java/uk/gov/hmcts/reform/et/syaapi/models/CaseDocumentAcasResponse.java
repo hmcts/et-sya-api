@@ -9,6 +9,8 @@ import lombok.extern.jackson.Jacksonized;
 @Builder
 @Jacksonized
 public class CaseDocumentAcasResponse {
+    @JsonProperty("documentType")
+    String documentType;
     @JsonProperty("documentId")
     String documentId;
     @JsonProperty("modifiedOn")
