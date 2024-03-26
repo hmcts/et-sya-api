@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.et.syaapi.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.MultiValuedMap;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -91,13 +90,13 @@ public class AcasController {
     public ResponseEntity<Object> getAcasDocuments(
         @RequestHeader(value = HttpHeaders.AUTHORIZATION) String authorisation,
         @RequestParam(name = "caseId") String caseId) {
-        MultiValuedMap<String, CaseDocumentAcasResponse> body = acasCaseService.retrieveAcasDocuments(caseId);
-        return ok(body.asMap());
+        List<CaseDocumentAcasResponse> body = acasCaseService.retrieveAcasDocuments(caseId);
+        return ok(body);
     }
 
     /**
      * This method downloads documents for ACAS. Due to permissions, we retrieve a new token which can view the document
-     * and use that to retireve the document
+     * and use that to retrieve the document
      *
      * @param documentId UUID for the document in DM Store
      * @param authToken  idam token of ACAS to initially verify access to the API
