@@ -130,31 +130,31 @@ public class AcasCaseService {
         return documents;
     }
 
-    private void addDocumentsToMap(String authorisation, List<CaseDocumentAcasResponse> documentIds,
+    private void addDocumentsToMap(String authorisation, List<CaseDocumentAcasResponse> documents,
                                    List<DocumentTypeItem> documentTypeItemList) {
         documentTypeItemList.stream()
-            .filter(documentTypeItem -> !isDuplicatedDoc(documentIds, documentTypeItem))
-            .forEach(documentTypeItem -> documentIds.add(caseDocumentAcasResponseBuilder(
+            .filter(documentTypeItem -> !isDuplicatedDoc(documents, documentTypeItem))
+            .forEach(documentTypeItem -> documents.add(caseDocumentAcasResponseBuilder(
                 documentTypeItem,
                 authorisation,
                 null
             )));
     }
 
-    private boolean isDuplicatedDoc(List<CaseDocumentAcasResponse> documentIds, DocumentTypeItem documentTypeItem) {
+    private boolean isDuplicatedDoc(List<CaseDocumentAcasResponse> documents, DocumentTypeItem documentTypeItem) {
         String documentUrl = documentTypeItem.getValue().getUploadedDocument().getDocumentUrl();
         UUID uuid = caseDocumentService.getDocumentUuid(documentUrl);
         if (uuid == null) {
             return false;
         }
-        return documentIds.stream()
+        return documents.stream()
             .anyMatch(caseDocumentAcasResponse -> uuid.toString()
             .equals(defaultIfEmpty(caseDocumentAcasResponse.getDocumentId(), "")));
     }
 
-    private List<DocumentTypeItem> getAllCaseDocuments(String authorisation, List<CaseDocumentAcasResponse> documentIds,
+    private List<DocumentTypeItem> getAllCaseDocuments(String authorisation, List<CaseDocumentAcasResponse> documents,
                                                        CaseData caseData) {
-        retrieveRespondentDocuments(authorisation, documentIds, caseData);
+        retrieveRespondentDocuments(authorisation, documents, caseData);
 
         List<DocumentTypeItem> documentTypeItemList = new ArrayList<>();
         documentTypeItemList.addAll(getDocumentCollectionDocs(caseData));
@@ -178,7 +178,7 @@ public class AcasCaseService {
             .toList();
     }
 
-    private void retrieveRespondentDocuments(String authorisation, List<CaseDocumentAcasResponse> documentIds,
+    private void retrieveRespondentDocuments(String authorisation, List<CaseDocumentAcasResponse> documents,
                                              CaseData caseData) {
         if (CollectionUtils.isEmpty(caseData.getRespondentCollection())) {
             return;
@@ -189,7 +189,7 @@ public class AcasCaseService {
             respondentDocs.stream()
                 .map(documentTypeItem ->
                          caseDocumentAcasResponseBuilder(documentTypeItem, authorisation, respondent.getId()))
-                .forEach(documentIds::add);
+                .forEach(documents::add);
         });
     }
 
