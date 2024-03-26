@@ -149,7 +149,7 @@ public class ApplicationService {
             appType.setClaimantResponseRequired(NO);
         }
 
-        boolean isStoredPending = STORED_STATE.equals(request.getResponse().getStatus());
+        boolean isStoredPending = STORED_STATE.equals(request.getResponse().getStoreState());
         if (!isStoredPending) {
             sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
         }

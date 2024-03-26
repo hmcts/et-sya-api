@@ -89,7 +89,7 @@ public class StoredRespondToApplicationSubmitService {
                                                       GenericTseApplicationTypeItem appToModify) {
         TseRespondType tseRespondType = responseToModify.getValue();
         tseRespondType.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
-        tseRespondType.setStatus(null);
+        tseRespondType.setStoreState(null);
         appToModify.getValue().setApplicationState(WAITING_FOR_TRIBUNAL);
     }
 

@@ -76,7 +76,7 @@ public class StoredRespondToTribunalSubmitService {
 
         // Update response details and SendNotificationType status
         responseToModify.getValue().setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
-        responseToModify.getValue().setStatus(null);
+        responseToModify.getValue().setStoreState(null);
 
         // Send confirmation emails
         sendEmailForRespondToTribunal(caseData, caseId, responseToModify.getValue().getResponse());

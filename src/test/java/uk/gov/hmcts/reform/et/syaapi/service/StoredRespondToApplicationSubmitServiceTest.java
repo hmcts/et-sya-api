@@ -101,7 +101,7 @@ class StoredRespondToApplicationSubmitServiceTest {
 
         TseRespondType actualRespond = actual.getRespondCollection().get(1).getValue();
         assertThat(actualRespond.getDate()).isEqualTo(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
-        assertThat(actualRespond.getStatus()).isNull();
+        assertThat(actualRespond.getStoreState()).isNull();
     }
 
     @Test

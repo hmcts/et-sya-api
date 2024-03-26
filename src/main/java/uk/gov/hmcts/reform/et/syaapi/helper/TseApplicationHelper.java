@@ -175,7 +175,7 @@ public final class TseApplicationHelper {
         appToModify.setResponsesCount(
             String.valueOf(appToModify.getRespondCollection().size()));
 
-        if (STORED_STATE.equals(request.getResponse().getStatus())) {
+        if (STORED_STATE.equals(request.getResponse().getStoreState())) {
             appToModify.setApplicationState(STORED);
         } else {
             appToModify.setApplicationState(WAITING_FOR_TRIBUNAL);

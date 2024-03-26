@@ -159,7 +159,7 @@ public class SendNotificationService {
 
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
 
-        if (STORED_STATE.equals(pseResponseType.getStatus())) {
+        if (STORED_STATE.equals(pseResponseType.getStoreState())) {
             NotificationService.CoreEmailDetails details =
                 notificationService.formatCoreEmailDetails(caseData, request.getCaseId());
             notificationService.sendStoredEmailToClaimant(
