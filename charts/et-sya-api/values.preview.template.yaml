@@ -22,7 +22,8 @@ java:
           alias: ET1_ECM_DTS_CORE_TEAM_SLACK_NOTIFICATION_EMAIL
     et:
       secrets:
-        - AppInsightsInstrumentationKey
+        - name: app-insights-connection-string
+          alias: app-insights-connection-string
         - name: gov-notify-api-key
           alias: GOV_NOTIFY_API_KEY
         - name: launch-darkly-sdk-key
