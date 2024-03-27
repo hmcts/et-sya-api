@@ -10,7 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredRespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.StoredRespondToApplicationSubmitService;
@@ -58,11 +58,11 @@ class StoreCaseControllerTest {
     @SneakyThrows
     @Test
     void submitStoredRespondToApplication() {
-        UpdateStoredRespondToApplicationRequest caseRequest = UpdateStoredRespondToApplicationRequest.builder()
+        SubmitStoredRespondToApplicationRequest caseRequest = SubmitStoredRespondToApplicationRequest.builder()
             .caseTypeId(CASE_TYPE)
             .caseId(CASE_ID)
             .applicationId("123")
-            .respondId("456")
+            .storedRespondId("456")
             .isRespondingToRequestOrOrder(true)
             .build();
 

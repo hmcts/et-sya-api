@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
-import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredRespondToApplicationRequest;
 
 import java.time.LocalDate;
 
@@ -76,11 +76,11 @@ class StoredRespondToApplicationSubmitServiceTest {
 
     @Test
     void submitRespondToApplicationShouldReturnCaseDetails() {
-        UpdateStoredRespondToApplicationRequest testRequest = UpdateStoredRespondToApplicationRequest.builder()
+        SubmitStoredRespondToApplicationRequest testRequest = SubmitStoredRespondToApplicationRequest.builder()
             .caseId(String.valueOf(CASE_ID))
             .caseTypeId(CASE_TYPE_ID)
             .applicationId(APP_ID)
-            .respondId(APP_RESPOND_ID)
+            .storedRespondId(APP_RESPOND_ID)
             .isRespondingToRequestOrOrder(true)
             .build();
 
@@ -107,7 +107,7 @@ class StoredRespondToApplicationSubmitServiceTest {
 
     @Test
     void submitRespondToApplicationShouldApplicationIdException() {
-        UpdateStoredRespondToApplicationRequest testRequest = UpdateStoredRespondToApplicationRequest.builder()
+        SubmitStoredRespondToApplicationRequest testRequest = SubmitStoredRespondToApplicationRequest.builder()
             .caseId(String.valueOf(CASE_ID))
             .caseTypeId(CASE_TYPE_ID)
             .applicationId(TEST)
@@ -128,11 +128,11 @@ class StoredRespondToApplicationSubmitServiceTest {
 
     @Test
     void submitRespondToApplicationShouldRespondIdError() {
-        UpdateStoredRespondToApplicationRequest testRequest = UpdateStoredRespondToApplicationRequest.builder()
+        SubmitStoredRespondToApplicationRequest testRequest = SubmitStoredRespondToApplicationRequest.builder()
             .caseId(String.valueOf(CASE_ID))
             .caseTypeId(CASE_TYPE_ID)
             .applicationId(APP_ID)
-            .respondId(TEST)
+            .storedRespondId(TEST)
             .build();
 
         when(caseService.startUpdate(

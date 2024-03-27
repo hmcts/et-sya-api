@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredRespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.StoredRespondToApplicationSubmitService;
@@ -89,7 +89,7 @@ public class StoreCaseController {
     @ApiResponseGroup
     public ResponseEntity<CaseDetails> submitStoredRespondToApplication(
         @RequestHeader(AUTHORIZATION) String authorization,
-        @NotNull @RequestBody UpdateStoredRespondToApplicationRequest request
+        @NotNull @RequestBody SubmitStoredRespondToApplicationRequest request
     ) {
         log.info("Received submit respond to application request - caseTypeId: {} caseId: {}",
                  request.getCaseTypeId(), request.getCaseId()

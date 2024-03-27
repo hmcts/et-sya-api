@@ -17,7 +17,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredRespondToApplicationRequest;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -126,7 +126,7 @@ public class StoredRespondToApplicationSubmitService {
      * @return the associated {@link CaseDetails} for the ID provided in request
      */
     public CaseDetails submitRespondToApplication(String authorization,
-                                                  UpdateStoredRespondToApplicationRequest request) {
+                                                  SubmitStoredRespondToApplicationRequest request) {
         String caseId = request.getCaseId();
         String caseTypeId = request.getCaseTypeId();
 
@@ -150,7 +150,7 @@ public class StoredRespondToApplicationSubmitService {
 
         // Get selected TseRespondTypeItem
         TseRespondTypeItem responseToModify = TseApplicationHelper.getResponseInSelectedApplication(
-            appToModify.getValue().getRespondStoredCollection(), request.getRespondId()
+            appToModify.getValue().getRespondStoredCollection(), request.getStoredRespondId()
         );
         if (responseToModify == null) {
             throw new IllegalArgumentException(RESPOND_ID_INCORRECT);
@@ -180,7 +180,7 @@ public class StoredRespondToApplicationSubmitService {
 
     private void createAndAddPdfOfResponse(
         String authorization,
-        UpdateStoredRespondToApplicationRequest request,
+        SubmitStoredRespondToApplicationRequest request,
         CaseData caseData,
         GenericTseApplicationType application,
         TseRespondType tseRespond) {
