@@ -73,7 +73,7 @@ public class StoreCaseController {
                  request.getCaseTypeId(), request.getCaseId()
         );
         CaseDetails finalCaseDetails =
-            storedRespondToApplicationService.respondToApplication(authorization, request);
+            storedRespondToApplicationService.storeRespondToApplication(authorization, request);
         return ok(finalCaseDetails);
     }
 

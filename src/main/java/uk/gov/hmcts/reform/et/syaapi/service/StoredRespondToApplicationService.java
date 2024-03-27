@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
@@ -52,7 +53,7 @@ public class StoredRespondToApplicationService {
      * @param request - response from the claimant
      * @return the associated {@link CaseDetails} for the ID provided in request
      */
-    public CaseDetails respondToApplication(String authorization, RespondToApplicationRequest request) {
+    public CaseDetails storeRespondToApplication(String authorization, RespondToApplicationRequest request) {
         String caseId = request.getCaseId();
         String caseTypeId = request.getCaseTypeId();
 
@@ -174,7 +175,8 @@ public class StoredRespondToApplicationService {
         createAndAddPdfOfResponse(authorization, respondRequest, caseData, appType);
 
         // Remove Stored Response
-        if (request.getStoredRespondId() != null) {
+        if (isNotEmpty(appType.getRespondStoredCollection())
+            && request.getStoredRespondId() != null) {
             appType.getRespondStoredCollection().removeIf(item -> item.getId().equals(request.getStoredRespondId()));
         }
 
