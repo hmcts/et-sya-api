@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredRespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationService;
-import uk.gov.hmcts.reform.et.syaapi.service.StoredRespondToApplicationSubmitService;
+import uk.gov.hmcts.reform.et.syaapi.service.StoredRespondToApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.StoredRespondToTribunalSubmitService;
 
 import javax.validation.constraints.NotNull;
@@ -31,7 +31,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 public class StoreCaseController {
 
     private final StoredApplicationService storedApplicationService;
-    private final StoredRespondToApplicationSubmitService storedRespondToApplicationSubmitService;
+    private final StoredRespondToApplicationService storedRespondToApplicationService;
     private final StoredRespondToTribunalSubmitService storedRespondToTribunalSubmitService;
 
     /**
@@ -73,7 +73,7 @@ public class StoreCaseController {
                  request.getCaseTypeId(), request.getCaseId()
         );
         CaseDetails finalCaseDetails =
-            storedRespondToApplicationSubmitService.respondToApplication(authorization, request);
+            storedRespondToApplicationService.respondToApplication(authorization, request);
         return ok(finalCaseDetails);
     }
 
@@ -95,7 +95,7 @@ public class StoreCaseController {
                  request.getCaseTypeId(), request.getCaseId()
         );
         CaseDetails finalCaseDetails =
-            storedRespondToApplicationSubmitService.submitRespondToApplication(authorization, request);
+            storedRespondToApplicationService.submitRespondToApplication(authorization, request);
         return ok(finalCaseDetails);
     }
 

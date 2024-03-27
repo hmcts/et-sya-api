@@ -33,7 +33,7 @@ import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.getCurre
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class StoredRespondToApplicationSubmitService {
+public class StoredRespondToApplicationService {
 
     private final CaseService caseService;
     private final NotificationService notificationService;

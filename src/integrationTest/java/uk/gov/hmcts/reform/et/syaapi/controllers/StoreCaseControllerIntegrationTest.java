@@ -18,7 +18,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredRespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationService;
-import uk.gov.hmcts.reform.et.syaapi.service.StoredRespondToApplicationSubmitService;
+import uk.gov.hmcts.reform.et.syaapi.service.StoredRespondToApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.StoredRespondToTribunalSubmitService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
@@ -51,7 +51,7 @@ class StoreCaseControllerIntegrationTest {
     @MockBean
     private StoredApplicationService storedApplicationService;
     @MockBean
-    private StoredRespondToApplicationSubmitService storedRespondToApplicationSubmitService;
+    private StoredRespondToApplicationService storedRespondToApplicationService;
     @MockBean
     private StoredRespondToTribunalSubmitService storedRespondToTribunalSubmitService;
     @Autowired
@@ -101,7 +101,7 @@ class StoreCaseControllerIntegrationTest {
     @DisplayName("Should submit stored respond to application request")
     @Test
     void submitStoredRespondToApplicationRequest() throws Exception {
-        when(storedRespondToApplicationSubmitService.submitRespondToApplication(any(), any()))
+        when(storedRespondToApplicationService.submitRespondToApplication(any(), any()))
             .thenReturn(caseDetailsResponse);
         SubmitStoredRespondToApplicationRequest caseRequest = SubmitStoredRespondToApplicationRequest.builder()
             .caseId(CASE_ID)
