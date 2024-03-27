@@ -55,7 +55,33 @@
                   "hasSupportingMaterial": "No"
                 }
               }
+            ],
+            "respondStoredCollection": [
+              {
+                "id": "dee74336-ca55-4856-b208-fad0d418e88b",
+                "value": {
+                  "date": "14 Feb 2024",
+                  "from": "Claimant",
+                  "response": "response stored",
+                  "copyToOtherParty": "Yes",
+                  "hasSupportingMaterial": "No"
+                }
+              }
             ]
+          }
+        }
+      ],
+      "tseApplicationStoredCollection":[
+        {
+          "id": "219c1aa9-cdf6-4b9e-a5fd-5882d6b7e170",
+          "value": {
+            "date": "1 February 2024",
+            "type": "Change my personal details",
+            "number": "1",
+            "status": "Stored",
+            "details": "Test",
+            "applicant": "Claimant",
+            "applicationState": "stored"
           }
         }
       ],
@@ -82,8 +108,6 @@
         }
       ]
     },
-    "security_classification": "PUBLIC",
-    "callback_response_status": null,
     "security_classification": null,
     "callback_response_status": null
   }

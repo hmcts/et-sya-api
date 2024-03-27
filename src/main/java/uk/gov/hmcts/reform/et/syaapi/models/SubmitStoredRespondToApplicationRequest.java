@@ -4,11 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
+import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 
 @Data
 @Builder
 @Jacksonized
-public class UpdateStoredRespondToApplicationRequest {
+public class SubmitStoredRespondToApplicationRequest {
 
     @JsonProperty("case_id")
     private String caseId;
@@ -16,8 +18,12 @@ public class UpdateStoredRespondToApplicationRequest {
     private String caseTypeId;
     @JsonProperty("application_id")
     private String applicationId;
-    @JsonProperty("response_id")
-    private String respondId;
+    @JsonProperty("stored_response_id")
+    private String storedRespondId;
+    @JsonProperty("supporting_material_file")
+    private UploadedDocumentType supportingMaterialFile;
+    @JsonProperty("response")
+    private TseRespondType response;
     @JsonProperty("isRespondingToRequestOrOrder")
     private boolean isRespondingToRequestOrOrder;
 }

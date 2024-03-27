@@ -31,9 +31,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_NOTIFICATION_RESPONSE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_NOTIFICATION_STATE;
-import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT;
 import static uk.gov.hmcts.reform.et.syaapi.service.SendNotificationService.VIEWED;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
@@ -78,7 +78,7 @@ class SendNotificationServiceTest {
 
         List<PseResponseTypeItem> pseResponseItems = List.of(PseResponseTypeItem.builder().id(ID).value(
             PseResponseType.builder()
-                .from(CLAIMANT)
+                .from(CLAIMANT_TITLE)
                 .hasSupportingMaterial(NO)
                 .response("Some response text")
                 .responseState(null)
@@ -177,7 +177,7 @@ class SendNotificationServiceTest {
             .id(ID)
             .value(
                 PseResponseType.builder()
-                    .from(CLAIMANT)
+                    .from(CLAIMANT_TITLE)
                     .hasSupportingMaterial(NO)
                     .response("RESPONSE")
                     .build()

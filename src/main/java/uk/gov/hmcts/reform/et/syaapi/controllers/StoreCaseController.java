@@ -12,10 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredRespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationService;
-import uk.gov.hmcts.reform.et.syaapi.service.StoredRespondToApplicationSubmitService;
+import uk.gov.hmcts.reform.et.syaapi.service.StoredRespondToApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.StoredRespondToTribunalSubmitService;
 
 import javax.validation.constraints.NotNull;
@@ -30,7 +31,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 public class StoreCaseController {
 
     private final StoredApplicationService storedApplicationService;
-    private final StoredRespondToApplicationSubmitService storedRespondToApplicationSubmitService;
+    private final StoredRespondToApplicationService storedRespondToApplicationService;
     private final StoredRespondToTribunalSubmitService storedRespondToTribunalSubmitService;
 
     /**
@@ -55,6 +56,28 @@ public class StoreCaseController {
     }
 
     /**
+     * Store response to an Application.
+     *
+     * @param authorization jwt of the user
+     * @param request       the request object which contains the appId and claimant response passed from sya-frontend
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    @PutMapping("/store-respond-to-application")
+    @Operation(summary = "Submit Stored Respond to an application")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> storedRespondToApplication(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody RespondToApplicationRequest request
+    ) {
+        log.info("Received store respond to application request - caseTypeId: {} caseId: {}",
+                 request.getCaseTypeId(), request.getCaseId()
+        );
+        CaseDetails finalCaseDetails =
+            storedRespondToApplicationService.storeRespondToApplication(authorization, request);
+        return ok(finalCaseDetails);
+    }
+
+    /**
      * Respond to an Application.
      *
      * @param authorization jwt of the user
@@ -66,13 +89,13 @@ public class StoreCaseController {
     @ApiResponseGroup
     public ResponseEntity<CaseDetails> submitStoredRespondToApplication(
         @RequestHeader(AUTHORIZATION) String authorization,
-        @NotNull @RequestBody UpdateStoredRespondToApplicationRequest request
+        @NotNull @RequestBody SubmitStoredRespondToApplicationRequest request
     ) {
         log.info("Received submit respond to application request - caseTypeId: {} caseId: {}",
                  request.getCaseTypeId(), request.getCaseId()
         );
         CaseDetails finalCaseDetails =
-            storedRespondToApplicationSubmitService.submitRespondToApplication(authorization, request);
+            storedRespondToApplicationService.submitRespondToApplication(authorization, request);
         return ok(finalCaseDetails);
     }
 
