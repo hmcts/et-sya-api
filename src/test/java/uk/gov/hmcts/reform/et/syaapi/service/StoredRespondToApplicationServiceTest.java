@@ -61,7 +61,8 @@ class StoredRespondToApplicationServiceTest {
             caseService,
             mock(NotificationService.class),
             mock(CaseDocumentService.class),
-            caseDetailsConverter
+            caseDetailsConverter,
+            mock(FeatureToggleService.class)
         );
 
         startEventResponse = testData.getSendNotificationCollectionResponse();
