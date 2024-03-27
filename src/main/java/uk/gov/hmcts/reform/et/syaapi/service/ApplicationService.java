@@ -35,6 +35,7 @@ import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED_STATE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.setRespondentApplicationWithResponse;
@@ -148,12 +149,20 @@ public class ApplicationService {
             appType.setClaimantResponseRequired(NO);
         }
 
-        sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
+        boolean isStoredPending = STORED_STATE.equals(request.getResponse().getStatus());
+        if (!isStoredPending) {
+            sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
+        }
 
         boolean waEnabled = featureToggleService.isWorkAllocationEnabled();
         setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService, waEnabled);
 
-        createAndAddPdfOfResponse(authorization, request, caseData, appType);
+        if (isStoredPending) {
+            NotificationService.CoreEmailDetails details = notificationService.formatCoreEmailDetails(caseData, caseId);
+            notificationService.sendStoredEmailToClaimant(details, appToModify.getValue().getType());
+        } else {
+            createAndAddPdfOfResponse(authorization, request, caseData, appType);
+        }
 
         return caseService.submitUpdate(
             authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);

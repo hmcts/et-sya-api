@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
 import lombok.extern.slf4j.Slf4j;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
@@ -53,6 +54,28 @@ public final class ClaimantTseUtil {
                 .copyToOtherPartyText("")
                 .build();
         }
+    }
+
+    public static GenericTseApplication getCurrentStoredGenericTseApplication(GenericTseApplicationTypeItem item,
+                                                                        String caseReference) {
+        GenericTseApplicationType type = item.getValue();
+
+        UploadedDocumentType contactApplicationFile = type.getDocumentUpload();
+        String supportingEvidence = contactApplicationFile != null
+            ? contactApplicationFile.getDocumentFilename() : null;
+        String contactApplicationDate = item.getValue().getDate();
+        String contactApplicant = item.getValue().getApplicant();
+
+        return GenericTseApplication.builder()
+            .caseNumber(caseReference)
+            .applicant(contactApplicant)
+            .applicationType(type.getType())
+            .applicationDate(contactApplicationDate)
+            .tellOrAskTribunal(type.getDetails())
+            .supportingEvidence(supportingEvidence)
+            .copyToOtherPartyYesOrNo(type.getCopyToOtherPartyYesOrNo())
+            .copyToOtherPartyText(type.getCopyToOtherPartyText())
+            .build();
     }
 
     private static GenericTseApplicationTypeItem getGenericTseApplicationTypeItem(

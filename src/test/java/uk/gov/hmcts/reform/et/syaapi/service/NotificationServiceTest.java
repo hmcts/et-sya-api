@@ -142,6 +142,10 @@ class NotificationServiceTest {
             .willReturn("tseClaimantResponseToRequestYesTemplateId");
         given(notificationsProperties.getTseClaimantResponseToRequestNoTemplateId())
             .willReturn("tseClaimantResponseToRequestNoTemplateId");
+        given(notificationsProperties.getClaimantTseEmailStoredTemplateId())
+            .willReturn("claimantTseEmailStoredTemplateId");
+        given(notificationsProperties.getClaimantTseEmailSubmitStoredTemplateId())
+            .willReturn("claimantTseEmailSubmitStoredTemplateId");
         caseTestData = new CaseTestData();
     }
 
@@ -1147,6 +1151,51 @@ class NotificationServiceTest {
             any(),
             any()
         );
+    }
+
+    @Nested
+    class SendStoreAcknowledgementEmail {
+        @BeforeEach
+        void setUp() {
+            details = new CoreEmailDetails(
+                caseTestData.getCaseData(),
+                CLAIMANT,
+                "1",
+                "Test Respondent Organisation -1-, Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez",
+                NOT_SET,
+                caseTestData.getExpectedDetails().getId().toString()
+            );
+        }
+
+        @Test
+        void sendStoredEmailToClaimant() throws NotificationClientException {
+            notificationService.sendStoredEmailToClaimant(
+                details,
+                "shortText"
+            );
+
+            verify(notificationClient, times(1)).sendEmail(
+                eq("claimantTseEmailStoredTemplateId"),
+                eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            );
+        }
+
+        @Test
+        void sendSubmitStoredEmailToClaimant() throws NotificationClientException {
+            notificationService.sendSubmitStoredEmailToClaimant(
+                details,
+                "shortText"
+            );
+
+            verify(notificationClient, times(1)).sendEmail(
+                eq("claimantTseEmailSubmitStoredTemplateId"),
+                eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            );
+        }
     }
 
     @Test
