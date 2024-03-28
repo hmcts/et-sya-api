@@ -638,7 +638,7 @@ public class NotificationService {
         String copyToOtherParty
     ) {
 
-        if (DONT_SEND_COPY.equals(copyToOtherParty)) {
+        if (DONT_SEND_COPY.equals(copyToOtherParty) || copyToOtherParty == null) {
             log.info("Acknowledgement email not sent to respondents");
             return;
         }

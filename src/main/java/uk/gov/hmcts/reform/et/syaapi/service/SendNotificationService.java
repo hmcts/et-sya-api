@@ -28,7 +28,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.NOT_VIEWED_YET;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.VIEWED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT;
@@ -42,7 +46,6 @@ public class SendNotificationService {
     private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final NotificationService notificationService;
-    static final String VIEWED = "viewed";
 
     public CaseDetails updateSendNotificationState(String authorization, SendNotificationStateUpdateRequest request) {
         StartEventResponse startEventResponse = caseService.startUpdate(
@@ -58,8 +61,10 @@ public class SendNotificationService {
         List<SendNotificationTypeItem> notifications = caseData.getSendNotificationCollection();
         for (SendNotificationTypeItem item : notifications) {
             if (item.getId().equals(request.getSendNotificationId())) {
-                item.getValue().setNotificationState(VIEWED);
-                setResponsesAsViewed(item.getValue().getRespondNotificationTypeCollection());
+                if (item.getValue().getNotificationState().equals(NOT_VIEWED_YET)) {
+                    item.getValue().setNotificationState(VIEWED);
+                }
+                setTribunalResponsesAsViewed(item.getValue().getRespondNotificationTypeCollection());
                 setNonTribunalResponsesAsViewed(item.getValue().getRespondCollection());
                 break;
             }
@@ -75,13 +80,16 @@ public class SendNotificationService {
         );
     }
 
-    private void setResponsesAsViewed(List<GenericTypeItem<RespondNotificationType>> responses) {
+    private void setTribunalResponsesAsViewed(List<GenericTypeItem<RespondNotificationType>> responses) {
         if (CollectionUtils.isEmpty(responses)) {
             return;
         }
 
         for (GenericTypeItem<RespondNotificationType> item : responses) {
-            item.getValue().setState(VIEWED);
+            if (isNullOrEmpty(item.getValue().getState()) || item.getValue().getState().equals(NOT_VIEWED_YET)) {
+                item.getValue().setState(VIEWED);
+            }
+
         }
     }
 
@@ -99,7 +107,7 @@ public class SendNotificationService {
      * Adds a pseResponse to a notification.
      *
      * @param authorization - authorization
-     * @param request - request containing the response, and the notification details
+     * @param request       - request containing the response, and the notification details
      * @return the associated {@link CaseDetails}
      */
     public CaseDetails addResponseSendNotification(String authorization, SendNotificationAddResponseRequest request) {
@@ -153,7 +161,7 @@ public class SendNotificationService {
         sendNotificationType.getRespondCollection().add(pseResponseTypeItem);
         sendNotificationType.setSendNotificationResponsesCount(String.valueOf(
             sendNotificationType.getRespondCollection().size()));
-        sendNotificationType.setNotificationState(VIEWED);
+        sendNotificationType.setNotificationState(SUBMITTED);
         setResponsesAsRespondedTo(sendNotificationType.getRespondNotificationTypeCollection());
 
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
@@ -188,7 +196,12 @@ public class SendNotificationService {
         }
 
         for (GenericTypeItem<RespondNotificationType> item : responses) {
-            item.getValue().setIsClaimantResponseDue(null);
+            if (!isNullOrEmpty(item.getValue().getIsClaimantResponseDue())
+                && item.getValue().getIsClaimantResponseDue().equals(YES)) {
+                item.getValue().setIsClaimantResponseDue(null);
+                item.getValue().setState(SUBMITTED);
+            }
+
         }
     }
 

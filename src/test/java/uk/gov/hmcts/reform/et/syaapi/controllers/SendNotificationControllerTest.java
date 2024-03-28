@@ -67,7 +67,6 @@ class SendNotificationControllerTest {
             .caseTypeId(CASE_TYPE)
             .caseId(CASE_ID)
             .sendNotificationId("1")
-            .notificationState("viewed")
             .build();
 
         // when

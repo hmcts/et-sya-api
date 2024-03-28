@@ -15,6 +15,4 @@ public class SendNotificationStateUpdateRequest {
     private String caseTypeId;
     @JsonProperty("send_notification_id")
     private String sendNotificationId;
-    @JsonProperty("notification_state")
-    private String notificationState;
 }
