@@ -10,6 +10,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.TseRespondTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
@@ -45,6 +46,7 @@ public class StoredRespondToApplicationService {
     private final FeatureToggleService featureToggleService;
 
     private static final String APP_ID_INCORRECT = "Application id provided is incorrect";
+    private static final String RESPOND_ID_INCORRECT = "Respond id provided is incorrect";
 
     /**
      * Store Claimant Response to Application.
@@ -154,20 +156,29 @@ public class StoredRespondToApplicationService {
         }
         GenericTseApplicationType appType = appToModify.getValue();
 
-        // Update application and Add response to RespondCollection
-        boolean isRespondingToTribunal = request.isRespondingToRequestOrOrder();
-        if (isRespondingToTribunal) {
-            appType.setApplicationState(IN_PROGRESS);
-            appType.setClaimantResponseRequired(NO);
+        // Get selected TseRespondTypeItem
+        TseRespondTypeItem responseToAdd = TseApplicationHelper.getResponseInSelectedApplication(
+            appToModify.getValue().getRespondStoredCollection(), request.getStoredRespondId()
+        );
+        if (responseToAdd == null) {
+            throw new IllegalArgumentException(RESPOND_ID_INCORRECT);
         }
+        TseRespondType respondType = responseToAdd.getValue();
+
+        // Update application and Add response to RespondCollection
+        boolean isRespondingToTribunal = true;
+        appType.setApplicationState(IN_PROGRESS);
+        appType.setClaimantResponseRequired(NO);
 
         RespondToApplicationRequest respondRequest = RespondToApplicationRequest.builder()
             .caseId(request.getCaseId())
             .caseTypeId(request.getCaseTypeId())
             .applicationId(request.getApplicationId())
-            .supportingMaterialFile(request.getSupportingMaterialFile())
-            .response(request.getResponse())
-            .isRespondingToRequestOrOrder(request.isRespondingToRequestOrOrder())
+            .supportingMaterialFile(respondType.getSupportingMaterial().isEmpty()
+                                        ? null
+                                        : respondType.getSupportingMaterial().get(0).getValue().getUploadedDocument())
+            .response(respondType)
+            .isRespondingToRequestOrOrder(isRespondingToTribunal)
             .build();
 
         boolean waEnabled = featureToggleService.isWorkAllocationEnabled();

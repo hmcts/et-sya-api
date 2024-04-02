@@ -20,10 +20,4 @@ public class SubmitStoredRespondToApplicationRequest {
     private String applicationId;
     @JsonProperty("stored_response_id")
     private String storedRespondId;
-    @JsonProperty("supporting_material_file")
-    private UploadedDocumentType supportingMaterialFile;
-    @JsonProperty("response")
-    private TseRespondType response;
-    @JsonProperty("isRespondingToRequestOrOrder")
-    private boolean isRespondingToRequestOrOrder;
 }
