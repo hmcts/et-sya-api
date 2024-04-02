@@ -111,7 +111,7 @@ class StoredRespondToApplicationSubmitServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             testRequest.getCaseId(),
             testRequest.getCaseTypeId(),
-            CaseEvent.CLAIMANT_TSE_RESPOND
+            CaseEvent.SUBMIT_STORED_CLAIMANT_TSE_RESPOND
         )).thenReturn(testData.getSendNotificationCollectionResponse());
 
         storedRespondToApplicationSubmitService.submitRespondToApplication(TEST_SERVICE_AUTH_TOKEN, testRequest);
@@ -121,10 +121,12 @@ class StoredRespondToApplicationSubmitServiceTest {
 
         GenericTseApplicationType actual =
             argumentCaptor.getValue().getGenericTseApplicationCollection().get(0).getValue();
+        assertThat(actual.getRespondCollection()).hasSize(3);
+        assertThat(actual.getResponsesCount()).isEqualTo("3");
+
         int responseIndex = actual.getRespondCollection().size() - 1;
         TseRespondType actualRespond = actual.getRespondCollection().get(responseIndex).getValue();
         assertThat(actualRespond.getDate()).isEqualTo(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
-        assertThat(actualRespond.getStatus()).isNull();
     }
 
     @Test
@@ -139,7 +141,7 @@ class StoredRespondToApplicationSubmitServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             testRequest.getCaseId(),
             testRequest.getCaseTypeId(),
-            CaseEvent.CLAIMANT_TSE_RESPOND
+            CaseEvent.SUBMIT_STORED_CLAIMANT_TSE_RESPOND
         )).thenReturn(testData.getSendNotificationCollectionResponse());
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->

@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
@@ -201,9 +202,15 @@ public class StoredRespondToApplicationSubmitService {
             throw new IllegalArgumentException(RESPOND_ID_INCORRECT);
         }
 
+        // Update response
+        responseToAdd.getValue().setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
+        responseToAdd.getValue().setDateTime(getCurrentDateTime());
+
         // Add response to RespondCollection
         GenericTseApplicationType appType = appToModify.getValue();
         appType.getRespondCollection().add(responseToAdd);
+        appType.setResponsesCount(String.valueOf(appType.getRespondCollection().size()));
+        appType.setApplicationState(IN_PROGRESS);
 
         // Remove Stored Response
         if (isNotEmpty(appType.getRespondStoredCollection())) {
