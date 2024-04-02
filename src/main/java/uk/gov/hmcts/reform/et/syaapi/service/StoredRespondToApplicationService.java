@@ -10,7 +10,6 @@ import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.TseRespondTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
-import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
@@ -154,7 +153,6 @@ public class StoredRespondToApplicationService {
         if (appToModify == null) {
             throw new IllegalArgumentException(APP_ID_INCORRECT);
         }
-        GenericTseApplicationType appType = appToModify.getValue();
 
         // Get selected TseRespondTypeItem
         TseRespondTypeItem responseToAdd = TseApplicationHelper.getResponseInSelectedApplication(
@@ -163,20 +161,21 @@ public class StoredRespondToApplicationService {
         if (responseToAdd == null) {
             throw new IllegalArgumentException(RESPOND_ID_INCORRECT);
         }
-        TseRespondType respondType = responseToAdd.getValue();
 
         // Update application and Add response to RespondCollection
         boolean isRespondingToTribunal = true;
+        GenericTseApplicationType appType = appToModify.getValue();
         appType.setApplicationState(IN_PROGRESS);
         appType.setClaimantResponseRequired(NO);
 
+        TseRespondType respondType = responseToAdd.getValue();
         RespondToApplicationRequest respondRequest = RespondToApplicationRequest.builder()
             .caseId(request.getCaseId())
             .caseTypeId(request.getCaseTypeId())
             .applicationId(request.getApplicationId())
-            .supportingMaterialFile(respondType.getSupportingMaterial().isEmpty()
-                                        ? null
-                                        : respondType.getSupportingMaterial().get(0).getValue().getUploadedDocument())
+            .supportingMaterialFile(respondType.getSupportingMaterial() != null
+                                        ? respondType.getSupportingMaterial().get(0).getValue().getUploadedDocument()
+                                        : null)
             .response(respondType)
             .isRespondingToRequestOrOrder(isRespondingToTribunal)
             .build();

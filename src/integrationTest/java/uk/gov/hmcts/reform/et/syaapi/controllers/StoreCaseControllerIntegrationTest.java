@@ -108,7 +108,6 @@ class StoreCaseControllerIntegrationTest {
             .caseTypeId(SCOTLAND_CASE_TYPE)
             .applicationId(APP_ID)
             .storedRespondId(RESPOND_ID)
-            .isRespondingToRequestOrOrder(true)
             .build();
 
         mockMvc.perform(

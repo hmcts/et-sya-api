@@ -106,8 +106,6 @@ class StoredRespondToApplicationServiceTest {
             .caseTypeId(CASE_TYPE_ID)
             .applicationId(APP_ID)
             .storedRespondId(APP_RESPOND_ID)
-            .response(new TseRespondType())
-            .isRespondingToRequestOrOrder(true)
             .build();
 
         when(caseService.startUpdate(
