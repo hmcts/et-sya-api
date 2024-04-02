@@ -57,8 +57,9 @@ class StoredRespondToTribunalSubmitServiceTest {
 
         storedRespondToTribunalSubmitService = new StoredRespondToTribunalSubmitService(
             caseService,
-            mock(NotificationService.class),
-            caseDetailsConverter
+            mock(CaseDocumentService.class),
+            caseDetailsConverter,
+            mock(NotificationService.class)
         );
 
         startEventResponse = testData.getSendNotificationCollectionResponse();
