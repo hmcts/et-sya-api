@@ -205,8 +205,7 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
             .caseId(String.valueOf(caseId))
             .caseTypeId(CASE_TYPE)
             .applicationId(appId)
-            .respondId(responseId)
-            .isRespondingToRequestOrOrder(true)
+            .storedRespondId(responseId)
             .build();
 
         RestAssured.given()

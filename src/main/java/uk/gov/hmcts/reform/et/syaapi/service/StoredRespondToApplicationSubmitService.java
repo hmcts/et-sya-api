@@ -2,8 +2,11 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.TseRespondTypeItem;
@@ -18,8 +21,17 @@ import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.UUID;
 
-import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.WAITING_FOR_TRIBUNAL;
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.getApplicationDoc;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.getCurrentDateTime;
 
 @RequiredArgsConstructor
 @Service
@@ -28,10 +40,128 @@ public class StoredRespondToApplicationSubmitService {
 
     private final CaseService caseService;
     private final NotificationService notificationService;
+    private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
 
     private static final String APP_ID_INCORRECT = "Application id provided is incorrect";
     private static final String RESPOND_ID_INCORRECT = "Respond id provided is incorrect";
+
+    /**
+     * Store Claimant Response to Application.
+     *
+     * @param authorization - authorization
+     * @param request - response from the claimant
+     * @return the associated {@link CaseDetails} for the ID provided in request
+     */
+    public CaseDetails storeRespondToApplication(String authorization, RespondToApplicationRequest request) {
+        String caseId = request.getCaseId();
+        String caseTypeId = request.getCaseTypeId();
+
+        StartEventResponse startEventResponse = caseService.startUpdate(
+            authorization,
+            caseId,
+            caseTypeId,
+            CaseEvent.STORE_CLAIMANT_TSE_RESPOND
+        );
+
+        CaseData caseData = EmployeeObjectMapper
+            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
+
+        // Update application
+        GenericTseApplicationTypeItem appToModify = TseApplicationHelper.getSelectedApplication(
+            caseData.getGenericTseApplicationCollection(), request.getApplicationId()
+        );
+        if (appToModify == null) {
+            throw new IllegalArgumentException(APP_ID_INCORRECT);
+        }
+
+        GenericTseApplicationType appType = appToModify.getValue();
+        appType.setClaimantResponseRequired(NO);
+        appType.setResponsesCount(String.valueOf(appType.getRespondCollection().size()));
+        appType.setApplicationState(STORED);
+
+        // Add response to RespondStoredCollection
+        setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService);
+
+        // Update pdf
+        createAndAddPdfOfResponse(authorization, request, caseData, appType);
+
+        // Send email
+        NotificationService.CoreEmailDetails details = notificationService.formatCoreEmailDetails(caseData, caseId);
+        notificationService.sendStoredEmailToClaimant(details, appType.getType());
+
+        return caseService.submitUpdate(
+            authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
+    }
+
+    private void setRespondentApplicationWithResponse(RespondToApplicationRequest request,
+                                                            GenericTseApplicationType appType,
+                                                            CaseData caseData,
+                                                            CaseDocumentService caseDocumentService) {
+        if (CollectionUtils.isEmpty(appType.getRespondStoredCollection())) {
+            appType.setRespondStoredCollection(new ArrayList<>());
+        }
+
+        TseRespondType responseToAdd = request.getResponse();
+        responseToAdd.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
+        responseToAdd.setFrom(CLAIMANT_TITLE);
+        responseToAdd.setDateTime(getCurrentDateTime());
+        responseToAdd.setApplicationType(appType.getType());
+
+        // Supporting Material File
+        if (request.getSupportingMaterialFile() != null) {
+            DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(
+                CLAIMANT_CORRESPONDENCE_DOCUMENT,
+                request.getSupportingMaterialFile()
+            );
+            documentTypeItem.getValue().setShortDescription("Response to " + appType.getType());
+
+            responseToAdd.setSupportingMaterial(new ArrayList<>());
+            responseToAdd.getSupportingMaterial().add(documentTypeItem);
+
+            String applicationDoc = getApplicationDoc(appType);
+            String extension = FilenameUtils.getExtension(request.getSupportingMaterialFile().getDocumentFilename());
+            String docName = "Application %s - %s - Attachment.%s".formatted(
+                appType.getNumber(),
+                appType.getType(),
+                extension
+            );
+            request.getSupportingMaterialFile().setDocumentFilename(docName);
+            documentTypeItem = caseDocumentService.createDocumentTypeItem(applicationDoc,
+                                                                          request.getSupportingMaterialFile());
+
+            if (caseData.getDocumentCollection() == null) {
+                caseData.setDocumentCollection(new ArrayList<>());
+            }
+            caseData.getDocumentCollection().add(documentTypeItem);
+        }
+
+        // Add to RespondStoredCollection
+        appType.getRespondStoredCollection().add(TseRespondTypeItem.builder()
+                                                   .id(UUID.randomUUID().toString())
+                                                   .value(responseToAdd).build());
+    }
+
+    private void createAndAddPdfOfResponse(
+        String authorization,
+        RespondToApplicationRequest request,
+        CaseData caseData,
+        GenericTseApplicationType application
+    ) {
+        if (YES.equals(request.getResponse().getCopyToOtherParty())) {
+            try {
+                log.info("Uploading pdf of claimant response to application");
+                caseService.createResponsePdf(
+                    authorization,
+                    caseData,
+                    request,
+                    application.getType()
+                );
+            } catch (CaseDocumentException | DocumentGenerationException e) {
+                log.error("Couldn't upload pdf of TSE application " + e.getMessage());
+            }
+        }
+    }
 
     /**
      * Submit stored claimant response to Tribunal response.
@@ -49,7 +179,7 @@ public class StoredRespondToApplicationSubmitService {
             authorization,
             caseId,
             caseTypeId,
-            CaseEvent.CLAIMANT_TSE_RESPOND
+            CaseEvent.SUBMIT_STORED_CLAIMANT_TSE_RESPOND
         );
 
         CaseData caseData = EmployeeObjectMapper
@@ -64,74 +194,39 @@ public class StoredRespondToApplicationSubmitService {
         }
 
         // Get selected TseRespondTypeItem
-        TseRespondTypeItem responseToModify = TseApplicationHelper.getResponseInSelectedApplication(
-            appToModify.getValue().getRespondCollection(), request.getRespondId()
+        TseRespondTypeItem responseToAdd = TseApplicationHelper.getResponseInSelectedApplication(
+            appToModify.getValue().getRespondStoredCollection(), request.getStoredRespondId()
         );
-        if (responseToModify == null) {
+        if (responseToAdd == null) {
             throw new IllegalArgumentException(RESPOND_ID_INCORRECT);
         }
 
-        // Update response details and application status
-        updateResponseForSubmitStored(responseToModify, appToModify);
+        // Add response to RespondCollection
+        GenericTseApplicationType appType = appToModify.getValue();
+        appType.getRespondCollection().add(responseToAdd);
 
-        // Update pdf
-        createAndAddPdfOfResponse(authorization, request, caseData, appToModify.getValue(),
-                                  responseToModify.getValue());
+        // Remove Stored Response
+        if (isNotEmpty(appType.getRespondStoredCollection())) {
+            appType.getRespondStoredCollection().removeIf(item -> item.getId().equals(request.getStoredRespondId()));
+        }
 
         // Send confirmation email
-        sendEmailForRespondToApplication(caseData, caseId, appToModify, request.isRespondingToRequestOrOrder());
+        boolean isRespondingToRequestOrOrder = true;
+        sendResponseToApplicationEmails(appType, caseData, caseId, isRespondingToRequestOrOrder);
 
         return caseService.submitUpdate(
             authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
     }
 
-    private static void updateResponseForSubmitStored(TseRespondTypeItem responseToModify,
-                                                      GenericTseApplicationTypeItem appToModify) {
-        TseRespondType tseRespondType = responseToModify.getValue();
-        tseRespondType.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
-        tseRespondType.setStatus(null);
-        appToModify.getValue().setApplicationState(WAITING_FOR_TRIBUNAL);
-    }
-
-    private void createAndAddPdfOfResponse(
-        String authorization,
-        UpdateStoredRespondToApplicationRequest request,
-        CaseData caseData,
+    private void sendResponseToApplicationEmails(
         GenericTseApplicationType application,
-        TseRespondType tseRespond) {
-        try {
-            log.info("Uploading pdf of claimant response to application");
-
-            RespondToApplicationRequest respondRequest = RespondToApplicationRequest.builder()
-                .caseId(request.getCaseId())
-                .caseTypeId(request.getCaseTypeId())
-                .applicationId(request.getApplicationId())
-                .supportingMaterialFile(
-                    tseRespond.getSupportingMaterial() != null
-                        ? tseRespond.getSupportingMaterial().get(0).getValue().getUploadedDocument()
-                        : null
-                )
-                .response(tseRespond)
-                .isRespondingToRequestOrOrder(request.isRespondingToRequestOrOrder())
-                .build();
-
-            caseService.createResponsePdf(
-                authorization,
-                caseData,
-                respondRequest,
-                application.getType()
-            );
-        } catch (CaseDocumentException | DocumentGenerationException e) {
-            log.error("Couldn't upload pdf of TSE application " + e.getMessage());
-        }
-    }
-
-    private void sendEmailForRespondToApplication(CaseData caseData, String caseId,
-                                                  GenericTseApplicationTypeItem appToModify,
-                                                  boolean isRespondingToRequestOrOrder) {
+        CaseData caseData,
+        String caseId,
+        boolean isRespondingToRequestOrOrder
+    ) {
+        String type = application.getType();
         NotificationService.CoreEmailDetails details = notificationService.formatCoreEmailDetails(caseData, caseId);
-        notificationService.sendResponseEmailToTribunal(
-            details, appToModify.getValue().getType(), isRespondingToRequestOrOrder);
-        notificationService.sendSubmitStoredEmailToClaimant(details, appToModify.getValue().getType());
+        notificationService.sendResponseEmailToTribunal(details, type, isRespondingToRequestOrOrder);
+        notificationService.sendSubmitStoredEmailToClaimant(details, type);
     }
 }
