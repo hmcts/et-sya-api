@@ -77,6 +77,18 @@
                   "hasSupportingMaterial": "No"
                 }
               }
+            ],
+            "respondStoredCollection": [
+              {
+                "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+                "value": {
+                  "date": "12 Feb 2024",
+                  "from": "Claimant",
+                  "response": "response stored",
+                  "copyToOtherParty": "Yes",
+                  "hasSupportingMaterial": "No"
+                }
+              }
             ]
           }
         }

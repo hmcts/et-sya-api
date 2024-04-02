@@ -60,7 +60,7 @@ public class StoredRespondToTribunalSubmitService {
             authorization,
             request.getCaseId(),
             request.getCaseTypeId(),
-            CaseEvent.UPDATE_NOTIFICATION_RESPONSE
+            CaseEvent.STORE_PSE_RESPONSE
         );
 
         CaseData caseData = EmployeeObjectMapper
@@ -159,7 +159,7 @@ public class StoredRespondToTribunalSubmitService {
             authorization,
             caseId,
             caseTypeId,
-            CaseEvent.CLAIMANT_TSE_RESPOND
+            CaseEvent.SUBMIT_STORED_PSE_RESPONSE
         );
 
         CaseData caseData = EmployeeObjectMapper
@@ -202,7 +202,8 @@ public class StoredRespondToTribunalSubmitService {
         sendNotificationType.setNotificationState(VIEWED);
 
         // Remove Stored Response
-        sendNotificationType.getRespondStoredCollection().removeIf(item -> item.getId().equals(request.getStoredRespondId()));
+        sendNotificationType.getRespondStoredCollection()
+            .removeIf(item -> item.getId().equals(request.getStoredRespondId()));
 
         // Send confirmation emails
         sendEmailForRespondToTribunal(caseData, caseId, responseToModify.getValue().getResponse());
