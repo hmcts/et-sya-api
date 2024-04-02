@@ -92,12 +92,14 @@ public class StoredRespondToApplicationService {
                 .build()
         );
 
+        CaseDetails submitUpdate = caseService.submitUpdate(
+            authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
+
         // Send email
         NotificationService.CoreEmailDetails details = notificationService.formatCoreEmailDetails(caseData, caseId);
         notificationService.sendStoredEmailToClaimant(details, appType.getType());
 
-        return caseService.submitUpdate(
-            authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
+        return submitUpdate;
     }
 
     private TseRespondType getRespondToStore(RespondToApplicationRequest request,
@@ -180,11 +182,13 @@ public class StoredRespondToApplicationService {
             appType.getRespondStoredCollection().removeIf(item -> item.getId().equals(request.getStoredRespondId()));
         }
 
+        CaseDetails submitUpdate = caseService.submitUpdate(
+            authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
+
         // Send confirmation email
         sendResponseToApplicationEmails(appType, caseData, caseId, isRespondingToTribunal);
 
-        return caseService.submitUpdate(
-            authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
+        return submitUpdate;
     }
 
     private void createAndAddPdfOfResponse(
