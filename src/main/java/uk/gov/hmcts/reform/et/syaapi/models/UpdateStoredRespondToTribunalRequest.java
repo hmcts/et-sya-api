@@ -16,8 +16,6 @@ public class UpdateStoredRespondToTribunalRequest {
     private String caseTypeId;
     @JsonProperty("order_id")
     private String orderId;
-    @JsonProperty("response_id")
-    private String respondId;
-    @JsonProperty("isRespondingToRequestOrOrder")
-    private boolean isRespondingToRequestOrOrder;
+    @JsonProperty("stored_response_id")
+    private String storedRespondId;
 }

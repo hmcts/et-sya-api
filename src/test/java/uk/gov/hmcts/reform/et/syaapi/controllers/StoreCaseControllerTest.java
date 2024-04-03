@@ -90,8 +90,7 @@ class StoreCaseControllerTest {
             .caseTypeId(CASE_TYPE)
             .caseId(CASE_ID)
             .orderId("123")
-            .respondId("456")
-            .isRespondingToRequestOrOrder(true)
+            .storedRespondId("456")
             .build();
 
         // when
