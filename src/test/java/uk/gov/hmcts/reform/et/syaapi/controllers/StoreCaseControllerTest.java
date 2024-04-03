@@ -10,11 +10,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredRespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredRespondToTribunalRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationService;
-import uk.gov.hmcts.reform.et.syaapi.service.StoredRespondToApplicationSubmitService;
-import uk.gov.hmcts.reform.et.syaapi.service.StoredRespondToTribunalSubmitService;
+import uk.gov.hmcts.reform.et.syaapi.service.StoredRespondToApplicationService;
+import uk.gov.hmcts.reform.et.syaapi.service.StoredRespondToTribunalService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 
@@ -43,9 +43,9 @@ class StoreCaseControllerTest {
     @MockBean
     private StoredApplicationService storedApplicationService;
     @MockBean
-    private StoredRespondToApplicationSubmitService storedRespondToApplicationSubmitService;
+    private StoredRespondToApplicationService storedRespondToApplicationService;
     @MockBean
-    private StoredRespondToTribunalSubmitService storedRespondToTribunalSubmitService;
+    private StoredRespondToTribunalService storedRespondToTribunalService;
 
     StoreCaseControllerTest() {
         // Default constructor
@@ -58,7 +58,7 @@ class StoreCaseControllerTest {
     @SneakyThrows
     @Test
     void submitStoredRespondToApplication() {
-        UpdateStoredRespondToApplicationRequest caseRequest = UpdateStoredRespondToApplicationRequest.builder()
+        SubmitStoredRespondToApplicationRequest caseRequest = SubmitStoredRespondToApplicationRequest.builder()
             .caseTypeId(CASE_TYPE)
             .caseId(CASE_ID)
             .applicationId("123")
@@ -67,7 +67,7 @@ class StoreCaseControllerTest {
 
         // when
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(storedRespondToApplicationSubmitService.submitRespondToApplication(any(), any()))
+        when(storedRespondToApplicationService.submitRespondToApplication(any(), any()))
             .thenReturn(expectedDetails);
 
         mockMvc.perform(
@@ -77,7 +77,7 @@ class StoreCaseControllerTest {
                 .content(ResourceLoader.toJson(caseRequest))
         ).andExpect(status().isOk());
 
-        verify(storedRespondToApplicationSubmitService, times(1)).submitRespondToApplication(
+        verify(storedRespondToApplicationService, times(1)).submitRespondToApplication(
             TEST_SERVICE_AUTH_TOKEN,
             caseRequest
         );
@@ -86,7 +86,7 @@ class StoreCaseControllerTest {
     @SneakyThrows
     @Test
     void submitStoredRespondToTribunal() {
-        UpdateStoredRespondToTribunalRequest caseRequest = UpdateStoredRespondToTribunalRequest.builder()
+        SubmitStoredRespondToTribunalRequest caseRequest = SubmitStoredRespondToTribunalRequest.builder()
             .caseTypeId(CASE_TYPE)
             .caseId(CASE_ID)
             .orderId("123")
@@ -95,7 +95,7 @@ class StoreCaseControllerTest {
 
         // when
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(storedRespondToTribunalSubmitService.submitRespondToTribunal(any(), any())).thenReturn(expectedDetails);
+        when(storedRespondToTribunalService.submitRespondToTribunal(any(), any())).thenReturn(expectedDetails);
 
         mockMvc.perform(
             put("/store/submit-stored-respond-to-tribunal", CASE_ID)
@@ -104,7 +104,7 @@ class StoreCaseControllerTest {
                 .content(ResourceLoader.toJson(caseRequest))
         ).andExpect(status().isOk());
 
-        verify(storedRespondToTribunalSubmitService, times(1)).submitRespondToTribunal(
+        verify(storedRespondToTribunalService, times(1)).submitRespondToTribunal(
             TEST_SERVICE_AUTH_TOKEN,
             caseRequest
         );

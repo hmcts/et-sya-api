@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredRespondToApplicationRequest;
 
 import java.time.LocalDate;
 
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.YES;
 
-class StoredRespondToApplicationSubmitServiceTest {
+class StoredRespondToApplicationServiceTest {
 
     @MockBean
     private CaseService caseService;
@@ -40,7 +40,7 @@ class StoredRespondToApplicationSubmitServiceTest {
     @MockBean
     private CaseDetailsConverter caseDetailsConverter;
     @InjectMocks
-    private StoredRespondToApplicationSubmitService storedRespondToApplicationSubmitService;
+    private StoredRespondToApplicationService storedRespondToApplicationService;
 
     private final TestData testData;
 
@@ -53,7 +53,7 @@ class StoredRespondToApplicationSubmitServiceTest {
     private static final String APP_RESPOND_ID = "dee74336-ca55-4856-b208-fad0d418e88b";
     private static final String TEST = "Test";
 
-    StoredRespondToApplicationSubmitServiceTest() {
+    StoredRespondToApplicationServiceTest() {
         testData = new TestData();
     }
 
@@ -64,7 +64,7 @@ class StoredRespondToApplicationSubmitServiceTest {
         caseDocumentService = mock(CaseDocumentService.class);
         caseDetailsConverter = mock(CaseDetailsConverter.class);
 
-        storedRespondToApplicationSubmitService = new StoredRespondToApplicationSubmitService(
+        storedRespondToApplicationService = new StoredRespondToApplicationService(
             caseService,
             notificationService,
             caseDocumentService,
@@ -88,7 +88,7 @@ class StoredRespondToApplicationSubmitServiceTest {
         DocumentTypeItem docType = DocumentTypeItem.builder().id("1").value(new DocumentType()).build();
         when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(docType);
 
-        storedRespondToApplicationSubmitService.storeRespondToApplication(TEST_SERVICE_AUTH_TOKEN, request);
+        storedRespondToApplicationService.storeRespondToApplication(TEST_SERVICE_AUTH_TOKEN, request);
 
         ArgumentCaptor<NotificationService.CoreEmailDetails> argument =
             ArgumentCaptor.forClass(NotificationService.CoreEmailDetails.class);
@@ -118,7 +118,7 @@ class StoredRespondToApplicationSubmitServiceTest {
         )).thenReturn(testData.getSendNotificationCollectionResponse());
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-            storedRespondToApplicationSubmitService.storeRespondToApplication(TEST_SERVICE_AUTH_TOKEN, testRequest));
+            storedRespondToApplicationService.storeRespondToApplication(TEST_SERVICE_AUTH_TOKEN, testRequest));
 
         assertThat(exception.getMessage())
             .isEqualTo(APP_ID_INCORRECT);
@@ -126,7 +126,7 @@ class StoredRespondToApplicationSubmitServiceTest {
 
     @Test
     void submitRespondToApplicationShouldReturnCaseDetails() {
-        UpdateStoredRespondToApplicationRequest testRequest = UpdateStoredRespondToApplicationRequest.builder()
+        SubmitStoredRespondToApplicationRequest testRequest = SubmitStoredRespondToApplicationRequest.builder()
             .caseId(String.valueOf(CASE_ID))
             .caseTypeId(CASE_TYPE_ID)
             .applicationId(APP_ID)
@@ -140,7 +140,7 @@ class StoredRespondToApplicationSubmitServiceTest {
             CaseEvent.SUBMIT_STORED_CLAIMANT_TSE_RESPOND
         )).thenReturn(testData.getSendNotificationCollectionResponse());
 
-        storedRespondToApplicationSubmitService.submitRespondToApplication(TEST_SERVICE_AUTH_TOKEN, testRequest);
+        storedRespondToApplicationService.submitRespondToApplication(TEST_SERVICE_AUTH_TOKEN, testRequest);
 
         ArgumentCaptor<CaseData> argumentCaptor = ArgumentCaptor.forClass(CaseData.class);
         verify(caseDetailsConverter).caseDataContent(any(), argumentCaptor.capture());
@@ -157,7 +157,7 @@ class StoredRespondToApplicationSubmitServiceTest {
 
     @Test
     void submitRespondToApplicationShouldApplicationIdException() {
-        UpdateStoredRespondToApplicationRequest testRequest = UpdateStoredRespondToApplicationRequest.builder()
+        SubmitStoredRespondToApplicationRequest testRequest = SubmitStoredRespondToApplicationRequest.builder()
             .caseId(String.valueOf(CASE_ID))
             .caseTypeId(CASE_TYPE_ID)
             .applicationId(TEST)
@@ -171,7 +171,7 @@ class StoredRespondToApplicationSubmitServiceTest {
         )).thenReturn(testData.getSendNotificationCollectionResponse());
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-            storedRespondToApplicationSubmitService.submitRespondToApplication(TEST_SERVICE_AUTH_TOKEN, testRequest));
+            storedRespondToApplicationService.submitRespondToApplication(TEST_SERVICE_AUTH_TOKEN, testRequest));
 
         assertThat(exception.getMessage())
             .isEqualTo(APP_ID_INCORRECT);
@@ -179,7 +179,7 @@ class StoredRespondToApplicationSubmitServiceTest {
 
     @Test
     void submitRespondToTribunalShouldRespondIdError() {
-        UpdateStoredRespondToApplicationRequest testRequest = UpdateStoredRespondToApplicationRequest.builder()
+        SubmitStoredRespondToApplicationRequest testRequest = SubmitStoredRespondToApplicationRequest.builder()
             .caseId(String.valueOf(CASE_ID))
             .caseTypeId(CASE_TYPE_ID)
             .applicationId(APP_ID)
@@ -194,7 +194,7 @@ class StoredRespondToApplicationSubmitServiceTest {
         )).thenReturn(testData.getSendNotificationCollectionResponse());
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-            storedRespondToApplicationSubmitService.submitRespondToApplication(TEST_SERVICE_AUTH_TOKEN, testRequest));
+            storedRespondToApplicationService.submitRespondToApplication(TEST_SERVICE_AUTH_TOKEN, testRequest));
 
         assertThat(exception.getMessage())
             .isEqualTo(RESPOND_ID_INCORRECT);

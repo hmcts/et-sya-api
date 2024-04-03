@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredRespondToTribunalRequest;
 
 import java.time.LocalDate;
 
@@ -28,14 +28,14 @@ import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.YES;
 
-class StoredRespondToTribunalSubmitServiceTest {
+class StoredRespondToTribunalServiceTest {
 
     @MockBean
     private CaseService caseService;
     @MockBean
     private CaseDetailsConverter caseDetailsConverter;
     @InjectMocks
-    private StoredRespondToTribunalSubmitService storedRespondToTribunalSubmitService;
+    private StoredRespondToTribunalService storedRespondToTribunalService;
 
     private final TestData testData;
 
@@ -48,7 +48,7 @@ class StoredRespondToTribunalSubmitServiceTest {
     private static final String STORED_RESPOND_ID = "f47ac10b-58cc-4372-a567-0e02b2c3d479";
     private static final String TEST = "Test";
 
-    StoredRespondToTribunalSubmitServiceTest() {
+    StoredRespondToTribunalServiceTest() {
         testData = new TestData();
     }
 
@@ -57,7 +57,7 @@ class StoredRespondToTribunalSubmitServiceTest {
         caseService = mock(CaseService.class);
         caseDetailsConverter = mock(CaseDetailsConverter.class);
 
-        storedRespondToTribunalSubmitService = new StoredRespondToTribunalSubmitService(
+        storedRespondToTribunalService = new StoredRespondToTribunalService(
             caseService,
             mock(CaseDocumentService.class),
             caseDetailsConverter,
@@ -95,7 +95,7 @@ class StoredRespondToTribunalSubmitServiceTest {
             CaseEvent.STORE_PSE_RESPONSE
         )).thenReturn(testData.getSendNotificationCollectionResponse());
 
-        storedRespondToTribunalSubmitService.storeResponseSendNotification(TEST_SERVICE_AUTH_TOKEN, request);
+        storedRespondToTribunalService.storeResponseSendNotification(TEST_SERVICE_AUTH_TOKEN, request);
 
         ArgumentCaptor<CaseData> argumentCaptor = ArgumentCaptor.forClass(CaseData.class);
         verify(caseDetailsConverter).caseDataContent(any(), argumentCaptor.capture());
@@ -128,7 +128,7 @@ class StoredRespondToTribunalSubmitServiceTest {
         )).thenReturn(testData.getSendNotificationCollectionResponse());
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-            storedRespondToTribunalSubmitService.storeResponseSendNotification(TEST_SERVICE_AUTH_TOKEN, request));
+            storedRespondToTribunalService.storeResponseSendNotification(TEST_SERVICE_AUTH_TOKEN, request));
 
         assertThat(exception.getMessage())
             .isEqualTo(SEND_NOTIFICATION_ID_INCORRECT);
@@ -136,7 +136,7 @@ class StoredRespondToTribunalSubmitServiceTest {
 
     @Test
     void submitRespondToTribunalShouldReturnCaseDetails() {
-        UpdateStoredRespondToTribunalRequest request = UpdateStoredRespondToTribunalRequest.builder()
+        SubmitStoredRespondToTribunalRequest request = SubmitStoredRespondToTribunalRequest.builder()
             .caseId(String.valueOf(CASE_ID))
             .caseTypeId(CASE_TYPE_ID)
             .orderId(ORDER_ID)
@@ -150,7 +150,7 @@ class StoredRespondToTribunalSubmitServiceTest {
             CaseEvent.SUBMIT_STORED_PSE_RESPONSE
         )).thenReturn(testData.getSendNotificationCollectionResponse());
 
-        storedRespondToTribunalSubmitService.submitRespondToTribunal(TEST_SERVICE_AUTH_TOKEN, request);
+        storedRespondToTribunalService.submitRespondToTribunal(TEST_SERVICE_AUTH_TOKEN, request);
 
         ArgumentCaptor<CaseData> argumentCaptor = ArgumentCaptor.forClass(CaseData.class);
         verify(caseDetailsConverter).caseDataContent(any(), argumentCaptor.capture());
@@ -165,7 +165,7 @@ class StoredRespondToTribunalSubmitServiceTest {
 
     @Test
     void submitRespondToTribunalShouldOrderIdException() {
-        UpdateStoredRespondToTribunalRequest request = UpdateStoredRespondToTribunalRequest.builder()
+        SubmitStoredRespondToTribunalRequest request = SubmitStoredRespondToTribunalRequest.builder()
             .caseId(String.valueOf(CASE_ID))
             .caseTypeId(CASE_TYPE_ID)
             .orderId(TEST)
@@ -179,7 +179,7 @@ class StoredRespondToTribunalSubmitServiceTest {
         )).thenReturn(testData.getSendNotificationCollectionResponse());
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-            storedRespondToTribunalSubmitService.submitRespondToTribunal(TEST_SERVICE_AUTH_TOKEN, request));
+            storedRespondToTribunalService.submitRespondToTribunal(TEST_SERVICE_AUTH_TOKEN, request));
 
         assertThat(exception.getMessage())
             .isEqualTo(SEND_NOTIFICATION_ID_INCORRECT);
@@ -187,7 +187,7 @@ class StoredRespondToTribunalSubmitServiceTest {
 
     @Test
     void submitRespondToTribunalShouldRespondIdError() {
-        UpdateStoredRespondToTribunalRequest request = UpdateStoredRespondToTribunalRequest.builder()
+        SubmitStoredRespondToTribunalRequest request = SubmitStoredRespondToTribunalRequest.builder()
             .caseId(String.valueOf(CASE_ID))
             .caseTypeId(CASE_TYPE_ID)
             .orderId(ORDER_ID)
@@ -202,7 +202,7 @@ class StoredRespondToTribunalSubmitServiceTest {
         )).thenReturn(testData.getSendNotificationCollectionResponse());
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-            storedRespondToTribunalSubmitService.submitRespondToTribunal(TEST_SERVICE_AUTH_TOKEN, request));
+            storedRespondToTribunalService.submitRespondToTribunal(TEST_SERVICE_AUTH_TOKEN, request));
 
         assertThat(exception.getMessage())
             .isEqualTo(RESPOND_ID_INCORRECT);

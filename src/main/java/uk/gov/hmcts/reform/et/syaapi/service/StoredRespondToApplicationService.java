@@ -18,7 +18,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredRespondToApplicationRequest;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.getCurre
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class StoredRespondToApplicationSubmitService {
+public class StoredRespondToApplicationService {
 
     private final CaseService caseService;
     private final NotificationService notificationService;
@@ -173,7 +173,7 @@ public class StoredRespondToApplicationSubmitService {
      * @return the associated {@link CaseDetails} for the ID provided in request
      */
     public CaseDetails submitRespondToApplication(String authorization,
-                                                  UpdateStoredRespondToApplicationRequest request) {
+                                                  SubmitStoredRespondToApplicationRequest request) {
         String caseId = request.getCaseId();
         String caseTypeId = request.getCaseTypeId();
 

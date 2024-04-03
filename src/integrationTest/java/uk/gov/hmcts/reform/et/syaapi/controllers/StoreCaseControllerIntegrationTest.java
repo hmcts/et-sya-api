@@ -15,11 +15,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredRespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredRespondToTribunalRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.StoredApplicationService;
-import uk.gov.hmcts.reform.et.syaapi.service.StoredRespondToApplicationSubmitService;
-import uk.gov.hmcts.reform.et.syaapi.service.StoredRespondToTribunalSubmitService;
+import uk.gov.hmcts.reform.et.syaapi.service.StoredRespondToApplicationService;
+import uk.gov.hmcts.reform.et.syaapi.service.StoredRespondToTribunalService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -51,9 +51,9 @@ class StoreCaseControllerIntegrationTest {
     @MockBean
     private StoredApplicationService storedApplicationService;
     @MockBean
-    private StoredRespondToApplicationSubmitService storedRespondToApplicationSubmitService;
+    private StoredRespondToApplicationService storedRespondToApplicationService;
     @MockBean
-    private StoredRespondToTribunalSubmitService storedRespondToTribunalSubmitService;
+    private StoredRespondToTribunalService storedRespondToTribunalService;
     @Autowired
     private ResourceLoader resourceLoader;
 
@@ -101,9 +101,9 @@ class StoreCaseControllerIntegrationTest {
     @DisplayName("Should submit stored respond to application request")
     @Test
     void submitStoredRespondToApplicationRequest() throws Exception {
-        when(storedRespondToApplicationSubmitService.submitRespondToApplication(any(), any()))
+        when(storedRespondToApplicationService.submitRespondToApplication(any(), any()))
             .thenReturn(caseDetailsResponse);
-        UpdateStoredRespondToApplicationRequest caseRequest = UpdateStoredRespondToApplicationRequest.builder()
+        SubmitStoredRespondToApplicationRequest caseRequest = SubmitStoredRespondToApplicationRequest.builder()
             .caseId(CASE_ID)
             .caseTypeId(SCOTLAND_CASE_TYPE)
             .applicationId(APP_ID)
@@ -122,9 +122,9 @@ class StoreCaseControllerIntegrationTest {
     @DisplayName("Should submit stored respond to send notification request")
     @Test
     void submitStoredRespondToTribunalRequest() throws Exception {
-        when(storedRespondToTribunalSubmitService.submitRespondToTribunal(any(), any()))
+        when(storedRespondToTribunalService.submitRespondToTribunal(any(), any()))
             .thenReturn(caseDetailsResponse);
-        UpdateStoredRespondToTribunalRequest caseRequest = UpdateStoredRespondToTribunalRequest.builder()
+        SubmitStoredRespondToTribunalRequest caseRequest = SubmitStoredRespondToTribunalRequest.builder()
             .caseId(CASE_ID)
             .caseTypeId(SCOTLAND_CASE_TYPE)
             .orderId(APP_ID)
