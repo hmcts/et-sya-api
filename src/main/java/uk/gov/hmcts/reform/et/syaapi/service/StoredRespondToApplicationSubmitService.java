@@ -77,7 +77,6 @@ public class StoredRespondToApplicationSubmitService {
 
         GenericTseApplicationType appType = appToModify.getValue();
         appType.setClaimantResponseRequired(NO);
-        appType.setResponsesCount(String.valueOf(appType.getRespondCollection().size()));
         appType.setApplicationState(STORED);
 
         // Add response to RespondStoredCollection
