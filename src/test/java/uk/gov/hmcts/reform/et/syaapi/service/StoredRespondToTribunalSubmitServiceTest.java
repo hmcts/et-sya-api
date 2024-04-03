@@ -8,10 +8,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationType;
+import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
+import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
 
 import java.time.LocalDate;
@@ -22,7 +24,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.YES;
 
 class StoredRespondToTribunalSubmitServiceTest {
 
@@ -69,8 +73,69 @@ class StoredRespondToTribunalSubmitServiceTest {
     }
 
     @Test
+    void storeRespondToTribunalShouldReturnCaseDetails() {
+        PseResponseType pseResponseType = PseResponseType.builder()
+            .from(CLAIMANT)
+            .hasSupportingMaterial(YES)
+            .response("Response Text")
+            .build();
+
+        SendNotificationAddResponseRequest request = SendNotificationAddResponseRequest.builder()
+            .caseId(String.valueOf(CASE_ID))
+            .caseTypeId(CASE_TYPE_ID)
+            .sendNotificationId(ORDER_ID)
+            .pseResponseType(pseResponseType)
+            .supportingMaterialFile(UploadedDocumentType.builder().build())
+            .build();
+
+        when(caseService.startUpdate(
+            TEST_SERVICE_AUTH_TOKEN,
+            request.getCaseId(),
+            request.getCaseTypeId(),
+            CaseEvent.STORE_PSE_RESPONSE
+        )).thenReturn(testData.getSendNotificationCollectionResponse());
+
+        storedRespondToTribunalSubmitService.storeResponseSendNotification(TEST_SERVICE_AUTH_TOKEN, request);
+
+        ArgumentCaptor<CaseData> argumentCaptor = ArgumentCaptor.forClass(CaseData.class);
+        verify(caseDetailsConverter).caseDataContent(any(), argumentCaptor.capture());
+
+        SendNotificationType notification = argumentCaptor.getValue().getSendNotificationCollection().get(0).getValue();
+        int responseIndex = notification.getRespondStoredCollection().size() - 1;
+        PseResponseType actual = notification.getRespondStoredCollection().get(responseIndex).getValue();
+
+        assertThat(actual.getDate()).isEqualTo(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
+        assertThat(actual.getResponse()).isEqualTo("Response Text");
+        assertThat(actual.getFrom()).isEqualTo(CLAIMANT);
+        assertThat(notification.getRespondNotificationTypeCollection().get(0).getValue().getIsClaimantResponseDue()).isNull();
+    }
+
+    @Test
+    void storeRespondToTribunalShouldOrderIdException() {
+        SendNotificationAddResponseRequest request = SendNotificationAddResponseRequest.builder()
+            .caseId(String.valueOf(CASE_ID))
+            .caseTypeId(CASE_TYPE_ID)
+            .sendNotificationId(TEST)
+            .pseResponseType(PseResponseType.builder().build())
+            .build();
+
+        when(caseService.startUpdate(
+            TEST_SERVICE_AUTH_TOKEN,
+            request.getCaseId(),
+            request.getCaseTypeId(),
+            CaseEvent.STORE_PSE_RESPONSE
+        )).thenReturn(testData.getSendNotificationCollectionResponse());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+            storedRespondToTribunalSubmitService.storeResponseSendNotification(TEST_SERVICE_AUTH_TOKEN, request));
+
+        assertThat(exception.getMessage())
+            .isEqualTo(SEND_NOTIFICATION_ID_INCORRECT);
+    }
+
+    @Test
     void submitRespondToTribunalShouldReturnCaseDetails() {
-        UpdateStoredRespondToTribunalRequest testRequest = UpdateStoredRespondToTribunalRequest.builder()
+        UpdateStoredRespondToTribunalRequest request = UpdateStoredRespondToTribunalRequest.builder()
             .caseId(String.valueOf(CASE_ID))
             .caseTypeId(CASE_TYPE_ID)
             .orderId(ORDER_ID)
@@ -79,12 +144,12 @@ class StoredRespondToTribunalSubmitServiceTest {
 
         when(caseService.startUpdate(
             TEST_SERVICE_AUTH_TOKEN,
-            testRequest.getCaseId(),
-            testRequest.getCaseTypeId(),
+            request.getCaseId(),
+            request.getCaseTypeId(),
             CaseEvent.SUBMIT_STORED_PSE_RESPONSE
         )).thenReturn(testData.getSendNotificationCollectionResponse());
 
-        storedRespondToTribunalSubmitService.submitRespondToTribunal(TEST_SERVICE_AUTH_TOKEN, testRequest);
+        storedRespondToTribunalSubmitService.submitRespondToTribunal(TEST_SERVICE_AUTH_TOKEN, request);
 
         ArgumentCaptor<CaseData> argumentCaptor = ArgumentCaptor.forClass(CaseData.class);
         verify(caseDetailsConverter).caseDataContent(any(), argumentCaptor.capture());
@@ -99,7 +164,7 @@ class StoredRespondToTribunalSubmitServiceTest {
 
     @Test
     void submitRespondToTribunalShouldOrderIdException() {
-        UpdateStoredRespondToTribunalRequest testRequest = UpdateStoredRespondToTribunalRequest.builder()
+        UpdateStoredRespondToTribunalRequest request = UpdateStoredRespondToTribunalRequest.builder()
             .caseId(String.valueOf(CASE_ID))
             .caseTypeId(CASE_TYPE_ID)
             .orderId(TEST)
@@ -107,20 +172,21 @@ class StoredRespondToTribunalSubmitServiceTest {
 
         when(caseService.startUpdate(
             TEST_SERVICE_AUTH_TOKEN,
-            testRequest.getCaseId(),
-            testRequest.getCaseTypeId(),
+            request.getCaseId(),
+            request.getCaseTypeId(),
             CaseEvent.SUBMIT_STORED_PSE_RESPONSE
         )).thenReturn(testData.getSendNotificationCollectionResponse());
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-            storedRespondToTribunalSubmitService.submitRespondToTribunal(TEST_SERVICE_AUTH_TOKEN, testRequest));
+            storedRespondToTribunalSubmitService.submitRespondToTribunal(TEST_SERVICE_AUTH_TOKEN, request));
+
         assertThat(exception.getMessage())
             .isEqualTo(SEND_NOTIFICATION_ID_INCORRECT);
     }
 
     @Test
     void submitRespondToTribunalShouldRespondIdError() {
-        UpdateStoredRespondToTribunalRequest testRequest = UpdateStoredRespondToTribunalRequest.builder()
+        UpdateStoredRespondToTribunalRequest request = UpdateStoredRespondToTribunalRequest.builder()
             .caseId(String.valueOf(CASE_ID))
             .caseTypeId(CASE_TYPE_ID)
             .orderId(ORDER_ID)
@@ -129,13 +195,14 @@ class StoredRespondToTribunalSubmitServiceTest {
 
         when(caseService.startUpdate(
             TEST_SERVICE_AUTH_TOKEN,
-            testRequest.getCaseId(),
-            testRequest.getCaseTypeId(),
+            request.getCaseId(),
+            request.getCaseTypeId(),
             CaseEvent.SUBMIT_STORED_PSE_RESPONSE
         )).thenReturn(testData.getSendNotificationCollectionResponse());
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
-            storedRespondToTribunalSubmitService.submitRespondToTribunal(TEST_SERVICE_AUTH_TOKEN, testRequest));
+            storedRespondToTribunalSubmitService.submitRespondToTribunal(TEST_SERVICE_AUTH_TOKEN, request));
+
         assertThat(exception.getMessage())
             .isEqualTo(RESPOND_ID_INCORRECT);
     }

@@ -115,6 +115,14 @@
                   "hasSupportingMaterial": "No"
                 }
               }
+            ],
+            "respondNotificationTypeCollection": [
+              {
+                "id": "777",
+                "value": {
+                  "isClaimantResponseDue": "Yes"
+                }
+              }
             ]
           }
         }
