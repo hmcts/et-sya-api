@@ -63,7 +63,7 @@ class StoredApplicationServiceTest {
     }
 
     @Test
-    void shouldSubmitStoredApplicationShouldReturnCaseDetails() {
+    void storeApplicationShouldReturnCaseDetails() {
         ClaimantTse claimantTse = new ClaimantTse();
         claimantTse.setContactApplicationType("withdraw");
 
@@ -102,9 +102,9 @@ class StoredApplicationServiceTest {
         List<GenericTseApplicationTypeItem> actualCollection =
             argumentCaptor.getValue().getTseApplicationStoredCollection();
         assertThat(actualCollection.toArray())
-            .hasSize(1);
+            .hasSize(2);
 
-        GenericTseApplicationType actual = actualCollection.get(0).getValue();
+        GenericTseApplicationType actual = actualCollection.get(1).getValue();
         assertThat(actual.getDate())
             .isEqualTo(UtilHelper.formatCurrentDate(LocalDate.now()));
         assertThat(actual.getApplicant())
@@ -116,7 +116,7 @@ class StoredApplicationServiceTest {
     }
 
     @Test
-    void shouldSubmitStoredApplicationShouldFinalCaseDetailsException() {
+    void storeApplicationShouldFinalCaseDetailsException() {
         ClaimantTse claimantTse = new ClaimantTse();
         claimantTse.setContactApplicationType("withdraw");
 

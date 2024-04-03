@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
@@ -52,6 +53,28 @@ public class StoreCaseController {
                  request.getCaseTypeId(), request.getCaseId()
         );
         CaseDetails finalCaseDetails = storedApplicationService.storeApplication(authorization, request);
+        return ok(finalCaseDetails);
+    }
+
+    /**
+     * Store response to an Application.
+     *
+     * @param authorization jwt of the user
+     * @param request       the request object which contains the appId and claimant response passed from sya-frontend
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    @PutMapping("/store-respond-to-application")
+    @Operation(summary = "Submit Stored Respond to an application")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> storedRespondToApplication(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody RespondToApplicationRequest request
+    ) {
+        log.info("Received store respond to application request - caseTypeId: {} caseId: {}",
+                 request.getCaseTypeId(), request.getCaseId()
+        );
+        CaseDetails finalCaseDetails =
+            storedRespondToApplicationSubmitService.storeRespondToApplication(authorization, request);
         return ok(finalCaseDetails);
     }
 

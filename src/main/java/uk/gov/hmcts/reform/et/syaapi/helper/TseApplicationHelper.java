@@ -26,8 +26,6 @@ import java.util.UUID;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.OLD_DATE_TIME_PATTERN;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.RESPONDENT_TITLE;
-import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED;
-import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED_STATE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UK_LOCAL_DATE_PATTERN;
 
@@ -174,12 +172,7 @@ public final class TseApplicationHelper {
                                                    .value(responseToAdd).build());
         appToModify.setResponsesCount(
             String.valueOf(appToModify.getRespondCollection().size()));
-
-        if (STORED_STATE.equals(request.getResponse().getStatus())) {
-            appToModify.setApplicationState(STORED);
-        } else {
-            appToModify.setApplicationState(WAITING_FOR_TRIBUNAL);
-        }
+        appToModify.setApplicationState(WAITING_FOR_TRIBUNAL);
     }
 
     /**
