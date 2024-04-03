@@ -27,6 +27,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.YES;
 
 class StoredRespondToApplicationSubmitServiceTest {
 
@@ -44,6 +45,7 @@ class StoredRespondToApplicationSubmitServiceTest {
     private final TestData testData;
 
     private static final String APP_ID_INCORRECT = "Application id provided is incorrect";
+    private static final String RESPOND_ID_INCORRECT = "Respond id provided is incorrect";
 
     private static final long CASE_ID = 1_646_225_213_651_590L;
     private static final String CASE_TYPE_ID = "ET_EnglandWales";
@@ -80,6 +82,8 @@ class StoredRespondToApplicationSubmitServiceTest {
     @Test
     void storeRespondToApplicationShouldReturnCaseDetails() {
         RespondToApplicationRequest request = testData.getRespondToApplicationRequest();
+        request.getResponse().setCopyToOtherParty(YES);
+        request.getResponse().setCopyNoGiveDetails(null);
 
         DocumentTypeItem docType = DocumentTypeItem.builder().id("1").value(new DocumentType()).build();
         when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(docType);
@@ -96,6 +100,28 @@ class StoredRespondToApplicationSubmitServiceTest {
             argument.capture(),
             any()
         );
+    }
+
+    @Test
+    void storeRespondToApplicationShouldApplicationIdException() {
+        RespondToApplicationRequest testRequest = RespondToApplicationRequest.builder()
+            .caseId(String.valueOf(CASE_ID))
+            .caseTypeId(CASE_TYPE_ID)
+            .applicationId(TEST)
+            .build();
+
+        when(caseService.startUpdate(
+            TEST_SERVICE_AUTH_TOKEN,
+            testRequest.getCaseId(),
+            testRequest.getCaseTypeId(),
+            CaseEvent.STORE_CLAIMANT_TSE_RESPOND
+        )).thenReturn(testData.getSendNotificationCollectionResponse());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+            storedRespondToApplicationSubmitService.storeRespondToApplication(TEST_SERVICE_AUTH_TOKEN, testRequest));
+
+        assertThat(exception.getMessage())
+            .isEqualTo(APP_ID_INCORRECT);
     }
 
     @Test
@@ -146,7 +172,32 @@ class StoredRespondToApplicationSubmitServiceTest {
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
             storedRespondToApplicationSubmitService.submitRespondToApplication(TEST_SERVICE_AUTH_TOKEN, testRequest));
+
         assertThat(exception.getMessage())
             .isEqualTo(APP_ID_INCORRECT);
     }
+
+    @Test
+    void submitRespondToTribunalShouldRespondIdError() {
+        UpdateStoredRespondToApplicationRequest testRequest = UpdateStoredRespondToApplicationRequest.builder()
+            .caseId(String.valueOf(CASE_ID))
+            .caseTypeId(CASE_TYPE_ID)
+            .applicationId(APP_ID)
+            .storedRespondId(TEST)
+            .build();
+
+        when(caseService.startUpdate(
+            TEST_SERVICE_AUTH_TOKEN,
+            testRequest.getCaseId(),
+            testRequest.getCaseTypeId(),
+            CaseEvent.SUBMIT_STORED_CLAIMANT_TSE_RESPOND
+        )).thenReturn(testData.getSendNotificationCollectionResponse());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+            storedRespondToApplicationSubmitService.submitRespondToApplication(TEST_SERVICE_AUTH_TOKEN, testRequest));
+
+        assertThat(exception.getMessage())
+            .isEqualTo(RESPOND_ID_INCORRECT);
+    }
+
 }
