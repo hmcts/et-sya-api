@@ -129,7 +129,7 @@ public class StoredRespondToApplicationSubmitService {
             documentTypeItem = caseDocumentService.createDocumentTypeItem(applicationDoc,
                                                                           request.getSupportingMaterialFile());
 
-            if (caseData.getDocumentCollection() == null) {
+            if (CollectionUtils.isEmpty(caseData.getDocumentCollection())) {
                 caseData.setDocumentCollection(new ArrayList<>());
             }
             caseData.getDocumentCollection().add(documentTypeItem);
