@@ -213,9 +213,7 @@ public class StoredRespondToApplicationSubmitService {
         appType.setApplicationState(IN_PROGRESS);
 
         // Remove Stored Response
-        if (isNotEmpty(appType.getRespondStoredCollection())) {
-            appType.getRespondStoredCollection().removeIf(item -> item.getId().equals(request.getStoredRespondId()));
-        }
+        appType.getRespondStoredCollection().removeIf(item -> item.getId().equals(request.getStoredRespondId()));
 
         // Send confirmation email
         boolean isRespondingToRequestOrOrder = true;

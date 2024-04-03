@@ -38,9 +38,9 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
 
     public static final String CASES_INITIATE_CASE = "/cases/initiate-case";
     public static final String CASES_SUBMIT_CASE = "/cases/submit-case";
-    public static final String CASES_SUBMIT_CLAIMANT_APPLICATION = "/cases/submit-claimant-application";
-    public static final String CASES_RESPOND_TO_APPLICATION = "/cases/respond-to-application";
     public static final String CASES_STORE_CLAIMANT_APPLICATION = "/store/store-claimant-application";
+    public static final String CASES_SUBMIT_CLAIMANT_APPLICATION = "/cases/submit-claimant-application";
+    public static final String CASES_STORE_RESPOND_TO_APPLICATION = "/store/store-respond-to-application";
     public static final String CASES_SUBMIT_STORED_RESPOND_TO_APPLICATION =
         "/store/submit-stored-respond-to-application";
     public static final String RESPONDENT_NAME = "Boris Johnson";
@@ -175,7 +175,7 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
 
     @Test
     @Order(5)
-    void respondToApplicationShouldReturnCaseDetailsWithTseAppWithResponse() {
+    void storeRespondToApplicationShouldReturnCaseDetailsWithTseAppWithResponse() {
         RespondToApplicationRequest caseRequest = RespondToApplicationRequest.builder()
             .caseId(caseId.toString())
             .caseTypeId(CASE_TYPE)
@@ -187,7 +187,7 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
             .contentType(ContentType.JSON)
             .header(new Header(AUTHORIZATION, userToken))
             .body(caseRequest)
-            .put(CASES_RESPOND_TO_APPLICATION)
+            .put(CASES_STORE_RESPOND_TO_APPLICATION)
             .then()
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
@@ -195,7 +195,7 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
 
         CaseData caseDataWithTse = objectMapper.convertValue(body.get(CASE_DATA), CaseData.class);
         responseId = caseDataWithTse.getGenericTseApplicationCollection()
-            .get(0).getValue().getRespondCollection().get(0).getId();
+            .get(0).getValue().getRespondStoredCollection().get(0).getId();
     }
 
     @Test
