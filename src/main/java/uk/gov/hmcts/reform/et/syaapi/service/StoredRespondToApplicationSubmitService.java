@@ -136,6 +136,9 @@ public class StoredRespondToApplicationSubmitService {
         }
 
         // Add to RespondStoredCollection
+        if (CollectionUtils.isEmpty(appType.getRespondStoredCollection())) {
+            appType.setRespondStoredCollection(new ArrayList<>());
+        }
         appType.getRespondStoredCollection().add(TseRespondTypeItem.builder()
                                                    .id(UUID.randomUUID().toString())
                                                    .value(responseToAdd).build());
@@ -206,6 +209,9 @@ public class StoredRespondToApplicationSubmitService {
 
         // Add response to RespondCollection
         GenericTseApplicationType appType = appToModify.getValue();
+        if (CollectionUtils.isEmpty(appType.getRespondCollection())) {
+            appType.setRespondCollection(new ArrayList<>());
+        }
         appType.getRespondCollection().add(responseToAdd);
         appType.setResponsesCount(String.valueOf(appType.getRespondCollection().size()));
         appType.setApplicationState(IN_PROGRESS);
