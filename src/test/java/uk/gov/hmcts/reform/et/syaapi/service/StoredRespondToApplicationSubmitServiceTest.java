@@ -176,6 +176,7 @@ class StoredRespondToApplicationSubmitServiceTest {
         assertThat(exception.getMessage())
             .isEqualTo(APP_ID_INCORRECT);
     }
+
     @Test
     void submitRespondToTribunalShouldRespondIdError() {
         UpdateStoredRespondToApplicationRequest testRequest = UpdateStoredRespondToApplicationRequest.builder()

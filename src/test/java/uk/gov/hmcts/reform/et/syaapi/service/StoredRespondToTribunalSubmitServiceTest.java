@@ -107,7 +107,8 @@ class StoredRespondToTribunalSubmitServiceTest {
         assertThat(actual.getDate()).isEqualTo(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
         assertThat(actual.getResponse()).isEqualTo("Response Text");
         assertThat(actual.getFrom()).isEqualTo(CLAIMANT);
-        assertThat(notification.getRespondNotificationTypeCollection().get(0).getValue().getIsClaimantResponseDue()).isNull();
+        assertThat(notification.getRespondNotificationTypeCollection().get(0).getValue().getIsClaimantResponseDue())
+            .isNull();
     }
 
     @Test
