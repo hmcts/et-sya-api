@@ -235,7 +235,7 @@ dependencies {
   implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.5'
   implementation group: 'com.google.guava', name: 'guava', version: '33.1.0-jre'
 
-  implementation 'org.apache.tika:tika-core:2.9.1'
+  implementation 'org.apache.tika:tika-core:2.9.2'
 
   implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '3.0.0-RC1'
   // Log4J core added to remove startup error message
