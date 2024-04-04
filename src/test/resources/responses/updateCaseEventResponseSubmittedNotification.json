@@ -57,23 +57,11 @@
         {
           "id": "777",
           "value": {
-            "notificationState": "notViewedYet",
-            "respondCollection": [
-              {
-                "id": "777",
-                "value": {
-                  "from": "Claimant",
-                  "hasSupportingMaterial": "No",
-                  "response": "Some response text"
-                }
-              }
-            ],
+            "notificationState": "submitted",
             "respondNotificationTypeCollection": [
               {
                 "id": "777",
                 "value": {
-                  "state": "notViewedYet",
-                  "isClaimantResponseDue": "Yes"
                 }
               }
             ]
