@@ -8,14 +8,14 @@ import lombok.extern.jackson.Jacksonized;
 @Data
 @Builder
 @Jacksonized
-public class UpdateStoredRespondToApplicationRequest {
+public class SubmitStoredRespondToTribunalRequest {
 
     @JsonProperty("case_id")
     private String caseId;
     @JsonProperty("case_type_id")
     private String caseTypeId;
-    @JsonProperty("application_id")
-    private String applicationId;
+    @JsonProperty("order_id")
+    private String orderId;
     @JsonProperty("stored_response_id")
     private String storedRespondId;
 }

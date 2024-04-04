@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.UpdateStoredRespondToTribunalRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredRespondToTribunalRequest;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class StoredRespondToTribunalSubmitService {
+public class StoredRespondToTribunalService {
 
     private final CaseService caseService;
     private final CaseDocumentService caseDocumentService;
@@ -151,7 +151,7 @@ public class StoredRespondToTribunalSubmitService {
      * @param request - response from the claimant
      * @return the associated {@link CaseDetails} for the ID provided in request
      */
-    public CaseDetails submitRespondToTribunal(String authorization, UpdateStoredRespondToTribunalRequest request) {
+    public CaseDetails submitRespondToTribunal(String authorization, SubmitStoredRespondToTribunalRequest request) {
         String caseId = request.getCaseId();
         String caseTypeId = request.getCaseTypeId();
 
