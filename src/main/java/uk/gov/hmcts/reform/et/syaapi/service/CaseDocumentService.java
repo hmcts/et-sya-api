@@ -40,13 +40,13 @@ import java.util.regex.Pattern;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.ACAS_CERTIFICATE;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.ET1;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.TYPE_OF_DOCUMENT;
 import static uk.gov.hmcts.reform.ccd.client.model.Classification.PUBLIC;
 import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.ACAS_DOC_CATEGORY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.ET1_PDF_DOC_CATEGORY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ATTACHMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.RESOURCE_NOT_FOUND;
-import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.TYPE_OF_DOCUMENT;
 
 /**
  * CaseDocumentService provides access to the document upload service API, used to upload documents that are
@@ -371,13 +371,6 @@ public class CaseDocumentService {
         return documentTypeItem;
     }
 
-    private static String setTypeOfDocumentOrNull(String document) {
-        return TYPE_OF_DOCUMENT.stream()
-            .filter(type -> type.equals(document))
-            .findFirst()
-            .orElse(null);
-    }
-
     public DocumentTypeItem createDocumentTypeItem(String authToken,
                                                    String caseType,
                                                    String documentType,
@@ -403,6 +396,13 @@ public class CaseDocumentService {
         DocumentHelper.setSecondLevelDocumentFromType(documentType, typeOfDocument);
         DocumentHelper.setDocumentTypeForDocument(documentType);
         return getDocumentTypeItem(caseDocument, documentType, categoryId);
+    }
+
+    private static String setTypeOfDocumentOrNull(String document) {
+        return TYPE_OF_DOCUMENT.stream()
+            .filter(type -> type.equals(document))
+            .findFirst()
+            .orElse(null);
     }
 
 
