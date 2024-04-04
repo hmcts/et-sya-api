@@ -60,7 +60,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.RESOURCE_NO
  */
 @Slf4j
 @Service
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 public class CaseDocumentService {
     private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
     private static final String DOCUMENT_UUID_REGEX_PATTERN =
@@ -360,7 +360,7 @@ public class CaseDocumentService {
         documentTypeItem.setId(UUID.randomUUID().toString());
 
         DocumentType documentType = new DocumentType();
-        documentType.setTypeOfDocument(setTypeOfDocumentOrNull(typeOfDocument));
+        documentType.setTypeOfDocument(typeOfDocumentOrNull(typeOfDocument));
         documentType.setUploadedDocument(uploadedDoc);
         documentType.setDateOfCorrespondence(LocalDate.now().toString());
         documentType.setTopLevelDocuments(DocumentHelper.getTopLevelDocument(typeOfDocument));
@@ -398,7 +398,7 @@ public class CaseDocumentService {
         return getDocumentTypeItem(caseDocument, documentType, categoryId);
     }
 
-    private static String setTypeOfDocumentOrNull(String document) {
+    private static String typeOfDocumentOrNull(String document) {
         return TYPE_OF_DOCUMENT.stream()
             .filter(type -> type.equals(document))
             .findFirst()
