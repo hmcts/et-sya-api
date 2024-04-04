@@ -46,6 +46,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ATTACHMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.RESOURCE_NOT_FOUND;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.TYPE_OF_DOCUMENT;
 
 /**
  * CaseDocumentService provides access to the document upload service API, used to upload documents that are
@@ -359,7 +360,7 @@ public class CaseDocumentService {
         documentTypeItem.setId(UUID.randomUUID().toString());
 
         DocumentType documentType = new DocumentType();
-        documentType.setTypeOfDocument(typeOfDocument);
+        documentType.setTypeOfDocument(setTypeOfDocumentOrNull(typeOfDocument));
         documentType.setUploadedDocument(uploadedDoc);
         documentType.setDateOfCorrespondence(LocalDate.now().toString());
         documentType.setTopLevelDocuments(DocumentHelper.getTopLevelDocument(typeOfDocument));
@@ -368,6 +369,13 @@ public class CaseDocumentService {
         documentTypeItem.setValue(documentType);
 
         return documentTypeItem;
+    }
+
+    private static String setTypeOfDocumentOrNull(String document) {
+        return TYPE_OF_DOCUMENT.stream()
+            .filter(type -> type.equals(document))
+            .findFirst()
+            .orElse(null);
     }
 
     public DocumentTypeItem createDocumentTypeItem(String authToken,
