@@ -179,7 +179,8 @@ public final class TseApplicationHelper {
     private static String getClaimantApplicationType(GenericTseApplicationType applicationType) {
         return ClaimantTse.APP_TYPE_MAP.entrySet()
             .stream()
-            .filter(entry -> entry.getValue().equals(applicationType.getType()))
+            .filter(entry -> entry.getValue().equals(applicationType.getType())
+                || entry.getKey().equals(applicationType.getType()))
             .map(Map.Entry::getKey)
             .findFirst()
             .orElse("");
