@@ -40,6 +40,7 @@ import java.util.regex.Pattern;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.ACAS_CERTIFICATE;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.ET1;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.TYPE_OF_DOCUMENT;
 import static uk.gov.hmcts.reform.ccd.client.model.Classification.PUBLIC;
 import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.ACAS_DOC_CATEGORY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.ET1_PDF_DOC_CATEGORY;
@@ -59,7 +60,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.RESOURCE_NO
  */
 @Slf4j
 @Service
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 public class CaseDocumentService {
     private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
     private static final String DOCUMENT_UUID_REGEX_PATTERN =
@@ -359,7 +360,7 @@ public class CaseDocumentService {
         documentTypeItem.setId(UUID.randomUUID().toString());
 
         DocumentType documentType = new DocumentType();
-        documentType.setTypeOfDocument(typeOfDocument);
+        documentType.setTypeOfDocument(typeOfDocumentOrNull(typeOfDocument));
         documentType.setUploadedDocument(uploadedDoc);
         documentType.setDateOfCorrespondence(LocalDate.now().toString());
         documentType.setTopLevelDocuments(DocumentHelper.getTopLevelDocument(typeOfDocument));
@@ -395,6 +396,13 @@ public class CaseDocumentService {
         DocumentHelper.setSecondLevelDocumentFromType(documentType, typeOfDocument);
         DocumentHelper.setDocumentTypeForDocument(documentType);
         return getDocumentTypeItem(caseDocument, documentType, categoryId);
+    }
+
+    private static String typeOfDocumentOrNull(String document) {
+        return TYPE_OF_DOCUMENT.stream()
+            .filter(type -> type.equals(document))
+            .findFirst()
+            .orElse(null);
     }
 
 

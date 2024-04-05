@@ -45,6 +45,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.ET1;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.OTHER_SPACE;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.STARTING_A_CLAIM;
 import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.ET1_PDF_DOC_CATEGORY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
@@ -469,7 +470,7 @@ class CaseDocumentServiceTest {
         uploadedDocumentType.setDocumentUrl("https://document.url");
         uploadedDocumentType.setDocumentBinaryUrl("https://document.binary.url");
 
-        String typeOfDocument = "Other";
+        String typeOfDocument = OTHER_SPACE;
         DocumentTypeItem createdDoc = caseDocumentService
             .createDocumentTypeItem(typeOfDocument, uploadedDocumentType);
 
