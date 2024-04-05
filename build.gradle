@@ -133,7 +133,7 @@ checkstyle {
 }
 
 pmd {
-  toolVersion = "6.55.0"
+  toolVersion = "7.0.0"
   sourceSets = [sourceSets.main, sourceSets.test, sourceSets.functionalTest, sourceSets.integrationTest,
                 sourceSets.smokeTest, sourceSets.contractTest]
   reportsDir = file("$project.buildDir/reports/pmd")
