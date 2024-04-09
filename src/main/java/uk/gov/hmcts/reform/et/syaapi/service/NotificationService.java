@@ -784,7 +784,7 @@ public class NotificationService {
 
         emailParameters.put(
             SEND_EMAIL_PARAMS_EXUI_HEARING_DOCUMENTS_LINK,
-            notificationsProperties.getExuiHearingDocumentsLink()
+            notificationsProperties.getExuiCaseDetailsLink() + caseId + "#Hearing%20Documents"
         );
 
         sendTribunalEmail(
