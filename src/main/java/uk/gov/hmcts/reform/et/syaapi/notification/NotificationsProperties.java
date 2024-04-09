@@ -34,6 +34,10 @@ public class NotificationsProperties {
     @NotBlank
     private String exuiCaseDetailsLink;
 
+    @Value("")
+    @NotBlank
+    private String exuiHearingDocumentsLink;
+
     @Value("${notifications.submitCaseDocUploadErrorEmailTemplateId}")
     @NotBlank
     private String submitCaseDocUploadErrorEmailTemplateId;
