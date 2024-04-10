@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.ClaimantHearingPreference;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
@@ -31,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import static org.hamcrest.Matchers.equalTo;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.OPEN_STATE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
 
 @Slf4j
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -64,10 +66,15 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
         caseData.put("claimant", "claimant");
         caseData.put("receiptDate", "1970-04-02");
 
+        ClaimantHearingPreference claimantHearingPreference = new ClaimantHearingPreference();
+        claimantHearingPreference.setContactLanguage(ENGLISH_LANGUAGE);
+        caseData.put("claimantHearingPreference", claimantHearingPreference);
+
         ClaimantIndType claimantIndType = new ClaimantIndType();
         claimantIndType.setClaimantFirstNames("Boris");
         claimantIndType.setClaimantLastName("Johnson");
         caseData.put("claimantIndType", claimantIndType);
+
         caseData.put("respondentCollection", List.of(createRespondentType()));
         caseData.put("claimantType", Map.of("claimant_email_address", CLAIMANT_EMAIL));
 
