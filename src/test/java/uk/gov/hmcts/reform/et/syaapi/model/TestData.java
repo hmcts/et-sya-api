@@ -41,6 +41,7 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WORK_POS
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.YES;
 
 @Data
+@SuppressWarnings("PMD.TooManyFields")
 public final class TestData {
     private final CaseDataContent submitCaseDataContent = ResourceLoader.fromString(
         "requests/submitCaseDataContent.json",
@@ -59,6 +60,11 @@ public final class TestData {
 
     private final StartEventResponse startEventResponse = ResourceLoader.fromString(
         "responses/startEventResponse.json",
+        StartEventResponse.class
+    );
+
+    private final StartEventResponse sendNotificationCollectionResponse = ResourceLoader.fromString(
+        "responses/sendNotificationCollectionResponse.json",
         StartEventResponse.class
     );
 
