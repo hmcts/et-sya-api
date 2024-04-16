@@ -97,10 +97,6 @@ public class StoredRespondToApplicationService {
                                                             GenericTseApplicationType appType,
                                                             CaseData caseData,
                                                             CaseDocumentService caseDocumentService) {
-        if (CollectionUtils.isEmpty(appType.getRespondStoredCollection())) {
-            appType.setRespondStoredCollection(new ArrayList<>());
-        }
-
         TseRespondType responseToAdd = request.getResponse();
         responseToAdd.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
         responseToAdd.setFrom(CLAIMANT_TITLE);
