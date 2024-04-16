@@ -1,0 +1,134 @@
+{
+  "event_id": "UPDATE_CASE_SUBMITTED",
+  "token": "123",
+  "case_details": {
+    "id": 1646225213651590,
+    "jurisdiction": "EMPLOYMENT",
+    "state": "ACCEPTED",
+    "case_type_id": "ET_EnglandWales",
+    "created_date": "2022-04-02T12:46:53.673626",
+    "last_modified": "2022-04-02T12:46:53.676743",
+    "locked_by_user_id": null,
+    "security_level": null,
+    "case_data": {
+      "caseType": "Single",
+      "caseSource": "Manually Created",
+      "claimantIndType": {
+        "claimant_first_names": "Michael",
+        "claimant_last_name": "Jackson"
+      },
+      "ethosCaseReference": "1646225213651590",
+      "claimantType": {
+        "claimant_email_address": "test@gmail.com"
+      },
+      "documentCollection": [],
+      "genericTseApplicationCollection": [
+        {
+          "id": "3be1ea83-06ef-40ff-bda5-e2ae88998a18",
+          "value": {
+            "number": "2",
+            "type": "Amend details",
+            "applicant": "Claimant",
+            "date": "18 October 2023",
+            "details": "Need to amend",
+            "copyToOtherPartyYesOrNo": "Yes",
+            "dueDate": "25 October 2023",
+            "responsesCount": 0,
+            "status": "Open",
+            "applicationState": "notStartedYet",
+            "respondCollection": [
+              {
+                "id": "2c17c4f8-55c8-409f-a08b-bfbd48e8e7d6",
+                "value": {
+                  "date": "18 October 2023",
+                  "from": "Admin",
+                  "cmoMadeBy": "Legal officer"
+                }
+              },
+              {
+                "id": "a0d58d55-bfe1-421a-b80f-c3843ae18be8",
+                "value": {
+                  "date": "18 Oct 2023",
+                  "from": "Claimant",
+                  "response": "response details",
+                  "copyToOtherParty": "Yes",
+                  "hasSupportingMaterial": "No"
+                }
+              }
+            ],
+            "respondStoredCollection": [
+              {
+                "id": "dee74336-ca55-4856-b208-fad0d418e88b",
+                "value": {
+                  "date": "14 Feb 2024",
+                  "from": "Claimant",
+                  "response": "response stored",
+                  "copyToOtherParty": "Yes",
+                  "hasSupportingMaterial": "No"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "tseApplicationStoredCollection":[
+        {
+          "id": "219c1aa9-cdf6-4b9e-a5fd-5882d6b7e170",
+          "value": {
+            "date": "1 February 2024",
+            "type": "Change my personal details",
+            "number": "1",
+            "status": "Stored",
+            "details": "Test",
+            "applicant": "Claimant",
+            "applicationState": "stored"
+          }
+        }
+      ],
+      "sendNotificationCollection": [
+        {
+          "id": "d20bbe0e-66a1-46e2-8073-727b5dd08b45",
+          "value": {
+            "date": "17 October 2023",
+            "number": "1",
+            "notificationState": "notViewed",
+            "respondCollection": [
+              {
+                "id": "667affe6-0de5-46b8-8ba9-8d695b6f8368",
+                "value": {
+                  "date": "20 Oct 2023",
+                  "from": "Claimant",
+                  "response": "response test",
+                  "copyToOtherParty": "Yes",
+                  "hasSupportingMaterial": "No"
+                }
+              }
+            ],
+            "respondStoredCollection": [
+              {
+                "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+                "value": {
+                  "date": "12 Feb 2024",
+                  "from": "Claimant",
+                  "response": "response stored",
+                  "copyToOtherParty": "Yes",
+                  "hasSupportingMaterial": "No"
+                }
+              }
+            ],
+            "respondNotificationTypeCollection": [
+              {
+                "id": "777",
+                "value": {
+                  "isClaimantResponseDue": "Yes"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "security_classification": null,
+    "callback_response_status": null
+  }
+}

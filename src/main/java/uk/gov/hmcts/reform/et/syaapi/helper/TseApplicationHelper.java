@@ -70,6 +70,22 @@ public final class TseApplicationHelper {
     }
 
     /**
+     * Finds the response by ID.
+     *
+     * @param responds - list of all applications attached to the case
+     * @param respondId - id of application we're trying to find
+     * @return the {@link GenericTseApplicationTypeItem} to be updated
+     */
+    public static TseRespondTypeItem getResponseInSelectedApplication(
+        List<TseRespondTypeItem> responds,
+        String respondId) {
+        return responds.stream()
+            .filter(a -> a.getId().equals(respondId))
+            .findAny()
+            .orElse(null);
+    }
+
+    /**
      * Finds the admin decision by ID.
      *
      * @param selectedApplication - application to update
