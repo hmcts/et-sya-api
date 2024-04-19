@@ -24,9 +24,13 @@ import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -44,17 +48,24 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.YES;
 @SuppressWarnings({"PMD.TooManyMethods"})
 @ExtendWith(MockitoExtension.class)
 class SendNotificationServiceTest {
+    private TestData testData;
+    private static final String MOCK_TOKEN = "Bearer TestServiceAuth";
+    private static final String ID = "777";
     private static final String CASE_ID = "1234";
+    private static final List<String> NOTIFICATION_SUBJECT =
+        Arrays.asList("Employer Contract Claim", "Case management orders / requests");
+    DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+
     @Mock
     private CaseService caseService;
     @Mock
     private CaseDocumentService caseDocumentService;
     @Mock
     private NotificationService notificationService;
+    @Mock
+    private FeatureToggleService featureToggleService;
+
     private SendNotificationService sendNotificationService;
-    private TestData testData;
-    private static final String MOCK_TOKEN = "Bearer TestServiceAuth";
-    private static final String ID = "777";
 
     @BeforeEach
     void beforeEach() {
@@ -63,7 +74,8 @@ class SendNotificationServiceTest {
             caseService,
             caseDocumentService,
             new CaseDetailsConverter(objectMapper),
-            notificationService
+            notificationService,
+            featureToggleService
         );
         testData = new TestData();
     }
@@ -225,12 +237,17 @@ class SendNotificationServiceTest {
     void shouldUpdateAddResponseSendNotification() {
         SendNotificationAddResponseRequest request = testData.getSendNotificationAddResponseRequest();
 
+        StartEventResponse startEventResponse = testData.getUpdateCaseEventResponse();
+        addNotificationSubject(startEventResponse);
+
         when(caseService.startUpdate(
             TEST_SERVICE_AUTH_TOKEN,
             request.getCaseId(),
             request.getCaseTypeId(),
             UPDATE_NOTIFICATION_RESPONSE
-        )).thenReturn(testData.getUpdateCaseEventResponse());
+        )).thenReturn(startEventResponse);
+
+        when(featureToggleService.isWorkAllocationEnabled()).thenReturn(true);
 
         ListTypeItem<RespondNotificationType> from = ListTypeItem.from(
             GenericTypeItem.from(ID, RespondNotificationType.builder()
@@ -238,13 +255,13 @@ class SendNotificationServiceTest {
             )
         );
 
-        PseResponseTypeItem build = PseResponseTypeItem.builder()
+        PseResponseTypeItem buildResponse = PseResponseTypeItem.builder()
             .id(ID)
             .value(
                 PseResponseType.builder()
                     .from(CLAIMANT)
-                    .hasSupportingMaterial(NO)
                     .response("RESPONSE")
+                    .hasSupportingMaterial(NO)
                     .build()
             ).build();
 
@@ -252,7 +269,8 @@ class SendNotificationServiceTest {
             SendNotificationTypeItem.builder()
                 .id(ID)
                 .value(SendNotificationType.builder()
-                           .respondCollection(List.of(build))
+                           .sendNotificationSubject(NOTIFICATION_SUBJECT)
+                           .respondCollection(List.of(buildResponse))
                            .respondNotificationTypeCollection(from)
                            .build())
                 .build()
@@ -267,8 +285,8 @@ class SendNotificationServiceTest {
 
         CaseData data = (CaseData) contentCaptor.getValue().getData();
         List<PseResponseTypeItem> expectedResponses = items.get(0).getValue().getRespondCollection();
-
         PseResponseType expected = expectedResponses.get(0).getValue();
+
         SendNotificationType notification = data.getSendNotificationCollection().get(0).getValue();
         PseResponseType actual = notification.getRespondCollection().get(0).getValue();
         GenericTypeItem<RespondNotificationType> tribunalResponse =
@@ -281,18 +299,26 @@ class SendNotificationServiceTest {
         Assertions.assertEquals(SUBMITTED, notification.getNotificationState());
         Assertions.assertEquals(SUBMITTED, tribunalResponse.getValue().getState());
         Assertions.assertNull(tribunalResponse.getValue().getIsClaimantResponseDue());
+
+        Assertions.assertEquals(NOTIFICATION_SUBJECT, actual.getSendNotificationSubject());
+        assertDoesNotThrow(() -> LocalDateTime.parse(actual.getDateTime(), formatter));
     }
 
     @Test
     void shouldUpdateAddResponseSendNotificationNoResponsesOutstanding() {
         SendNotificationAddResponseRequest request = testData.getSendNotificationAddResponseRequest();
 
+        StartEventResponse startEventResponse = updateCaseEventResponseSubmittedNotification();
+        addNotificationSubject(startEventResponse);
+
         when(caseService.startUpdate(
             TEST_SERVICE_AUTH_TOKEN,
             request.getCaseId(),
             request.getCaseTypeId(),
             UPDATE_NOTIFICATION_RESPONSE
-        )).thenReturn(updateCaseEventResponseSubmittedNotification());
+        )).thenReturn(startEventResponse);
+
+        when(featureToggleService.isWorkAllocationEnabled()).thenReturn(true);
 
         ListTypeItem<RespondNotificationType> from = ListTypeItem.from(
             GenericTypeItem.from(ID, RespondNotificationType.builder()
@@ -300,7 +326,7 @@ class SendNotificationServiceTest {
             )
         );
 
-        PseResponseTypeItem build = PseResponseTypeItem.builder()
+        PseResponseTypeItem buildResponse = PseResponseTypeItem.builder()
             .id(ID)
             .value(
                 PseResponseType.builder()
@@ -314,7 +340,8 @@ class SendNotificationServiceTest {
             SendNotificationTypeItem.builder()
                 .id(ID)
                 .value(SendNotificationType.builder()
-                           .respondCollection(List.of(build))
+                           .sendNotificationSubject(NOTIFICATION_SUBJECT)
+                           .respondCollection(List.of(buildResponse))
                            .respondNotificationTypeCollection(from)
                            .build())
                 .build()
@@ -329,8 +356,8 @@ class SendNotificationServiceTest {
 
         CaseData data = (CaseData) contentCaptor.getValue().getData();
         List<PseResponseTypeItem> expectedResponses = items.get(0).getValue().getRespondCollection();
-
         PseResponseType expected = expectedResponses.get(0).getValue();
+
         SendNotificationType notification = data.getSendNotificationCollection().get(0).getValue();
         PseResponseType actual = notification.getRespondCollection().get(0).getValue();
         GenericTypeItem<RespondNotificationType> tribunalResponse =
@@ -342,6 +369,9 @@ class SendNotificationServiceTest {
         Assertions.assertEquals(NO, actual.getHasSupportingMaterial());
         Assertions.assertEquals(SUBMITTED, notification.getNotificationState());
         Assertions.assertNull(tribunalResponse.getValue().getIsClaimantResponseDue());
+
+        Assertions.assertEquals(NOTIFICATION_SUBJECT, actual.getSendNotificationSubject());
+        assertDoesNotThrow(() -> LocalDateTime.parse(actual.getDateTime(), formatter));
     }
 
     @Test
@@ -354,6 +384,8 @@ class SendNotificationServiceTest {
             request.getCaseTypeId(),
             UPDATE_NOTIFICATION_RESPONSE
         )).thenReturn(updateCaseEventResponse);
+
+        when(featureToggleService.isWorkAllocationEnabled()).thenReturn(true);
 
         List<SendNotificationTypeItem> items = List.of(
             SendNotificationTypeItem.builder()
@@ -403,5 +435,12 @@ class SendNotificationServiceTest {
         Object notifications = startEventResponse1.getCaseDetails().getData().get("sendNotificationCollection");
         ((List<LinkedHashMap<String, LinkedHashMap<String, Object>>>) notifications).get(0).get("value")
             .remove("respondNotificationTypeCollection");
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void addNotificationSubject(StartEventResponse startEventResponse1) {
+        Object notifications = startEventResponse1.getCaseDetails().getData().get("sendNotificationCollection");
+        ((List<LinkedHashMap<String, LinkedHashMap<String, Object>>>) notifications).get(0).get("value")
+            .put("sendNotificationSubject",NOTIFICATION_SUBJECT);
     }
 }
