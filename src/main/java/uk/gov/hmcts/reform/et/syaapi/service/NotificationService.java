@@ -299,28 +299,21 @@ public class NotificationService {
             details.caseNumber
         );
 
-        SendEmailResponse claimantEmail;
-        String emailToClaimantTemplate;
         String citizenPortalLink = notificationsProperties.getCitizenPortalLink() + details.caseId
             + (isWelsh ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
-
-        if (TYPE_C.equals(claimantApplication.getContactApplicationType())) {
-            emailToClaimantTemplate = isWelsh
-                ? notificationsProperties.getCyClaimantTseEmailTypeCTemplateId()
-                : notificationsProperties.getClaimantTseEmailTypeCTemplateId();
-        } else {
-            emailToClaimantTemplate = getAndSetRule92EmailTemplate(
-                claimantApplication,
-                hearingDate,
-                claimantParameters,
-                isWelsh
-            );
-        }
         claimantParameters.put(
             SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
             citizenPortalLink
         );
 
+        String emailToClaimantTemplate = getAndSetRule92EmailTemplate(
+            claimantApplication,
+            hearingDate,
+            claimantParameters,
+            isWelsh
+        );
+
+        SendEmailResponse claimantEmail;
         try {
             claimantEmail = notificationClient.sendEmail(
                 emailToClaimantTemplate,
@@ -903,65 +896,44 @@ public class NotificationService {
                                         String hearingDate,
                                         Map<String, Object> parameters,
                                         boolean isWelsh) {
-        String emailTemplate;
+        // Type C
+        if (TYPE_C.equals(claimantApplication.getContactApplicationType())) {
+            return isWelsh
+                ? notificationsProperties.getCyClaimantTseEmailTypeCTemplateId()
+                : notificationsProperties.getClaimantTseEmailTypeCTemplateId();
+        }
+
         parameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, hearingDate);
         Map<String, String> selectedMap = isWelsh ? CY_APP_TYPE_MAP : APP_TYPE_MAP;
         String shortText = selectedMap.get(claimantApplication.getContactApplicationType());
+        parameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
 
+        // CopyToOtherParty = No
         if (DONT_SEND_COPY.equals(claimantApplication.getCopyToOtherPartyYesOrNo())) {
-            parameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
-            emailTemplate = isWelsh
+            return isWelsh
                 ? notificationsProperties.getCyClaimantTseEmailNoTemplateId()
                 : notificationsProperties.getClaimantTseEmailNoTemplateId();
-        } else {
-            String abText = getCustomTextForAOrBApplication(
-                claimantApplication, shortText, isWelsh);
-            parameters.put("abText", abText);
-            emailTemplate = isWelsh
-                ? notificationsProperties.getCyClaimantTseEmailYesTemplateId()
-                : notificationsProperties.getClaimantTseEmailYesTemplateId();
         }
-        return emailTemplate;
-    }
 
-    private String getCustomTextForAOrBApplication(
-        ClaimantTse claimantApplication,
-        String shortText,
-        boolean isWelsh) {
-        String abText = "";
+        // Type B
+        if (Stream.of(typeB).anyMatch(appType -> Objects
+            .equals(appType, claimantApplication.getContactApplicationType())
+        )) {
+            return isWelsh
+                ? notificationsProperties.getCyClaimantTseEmailTypeBTemplateId()
+                : notificationsProperties.getClaimantTseEmailTypeBTemplateId();
+        }
+
+        // Type A
         if (Stream.of(typeA).anyMatch(appType -> Objects.equals(
             appType,
             claimantApplication.getContactApplicationType()
         ))) {
-            if (isWelsh) {
-                abText = "Bydd y parti arall yn cael gwybod y dylid anfon unrhyw wrthwynebiadau i'ch cais "
-                    + shortText
-                    + " i'r tribiwnlys cyn gynted â phosibl, "
-                    + "a fan bellaf o fewn 7 diwrnod.";
-            } else {
-                abText = "The other party will be notified that any objections to your "
-                    + shortText
-                    + " application should be sent to the tribunal as soon as possible, "
-                    + "and in any event within 7 days.";
-            }
-        } else if (Stream.of(typeB).anyMatch(appType -> Objects.equals(
-            appType,
-            claimantApplication.getContactApplicationType()
-        ))) {
-            if (isWelsh) {
-                abText = "Nid oes disgwyl i'r parti arall ymateb i'r cais hwn.\n\n "
-                    + "Fodd bynnag, fe'i hysbyswyd y dylid anfon unrhyw wrthwynebiadau i'ch cais "
-                    + shortText
-                    + " i'r tribiwnlys cyn gynted â phosibl, "
-                    + "a fan bellaf o fewn 7 diwrnod.";
-            } else {
-                abText = "The other party is not expected to respond to this application. "
-                    + "However, they have been notified that any objections to your "
-                    + shortText
-                    + " application should be sent to the tribunal as soon as possible, "
-                    + "and in any event within 7 days.";
-            }
+            return isWelsh
+                ? notificationsProperties.getCyClaimantTseEmailTypeATemplateId()
+                : notificationsProperties.getClaimantTseEmailTypeATemplateId();
         }
-        return abText;
+
+        return null;
     }
 }
