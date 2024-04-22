@@ -52,8 +52,10 @@ class SendNotificationServiceTest {
     private static final String MOCK_TOKEN = "Bearer TestServiceAuth";
     private static final String ID = "777";
     private static final String CASE_ID = "1234";
-    private static final List<String> NOTIFICATION_SUBJECT =
+    private static final List<String> NOTIFICATION_SUBJECT_IS_ECC =
         Arrays.asList("Employer Contract Claim", "Case management orders / requests");
+    private static final List<String> NOTIFICATION_SUBJECT_IS_NOT_ECC =
+        Arrays.asList("Case management orders / requests");
     DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     @Mock
@@ -238,7 +240,7 @@ class SendNotificationServiceTest {
         SendNotificationAddResponseRequest request = testData.getSendNotificationAddResponseRequest();
 
         StartEventResponse startEventResponse = testData.getUpdateCaseEventResponse();
-        addNotificationSubject(startEventResponse);
+        addNotificationSubject(startEventResponse, NOTIFICATION_SUBJECT_IS_ECC);
 
         when(caseService.startUpdate(
             TEST_SERVICE_AUTH_TOKEN,
@@ -269,7 +271,7 @@ class SendNotificationServiceTest {
             SendNotificationTypeItem.builder()
                 .id(ID)
                 .value(SendNotificationType.builder()
-                           .sendNotificationSubject(NOTIFICATION_SUBJECT)
+                           .sendNotificationSubject(NOTIFICATION_SUBJECT_IS_ECC)
                            .respondCollection(List.of(buildResponse))
                            .respondNotificationTypeCollection(from)
                            .build())
@@ -300,7 +302,7 @@ class SendNotificationServiceTest {
         Assertions.assertEquals(SUBMITTED, tribunalResponse.getValue().getState());
         Assertions.assertNull(tribunalResponse.getValue().getIsClaimantResponseDue());
 
-        Assertions.assertEquals(NOTIFICATION_SUBJECT, actual.getSendNotificationSubject());
+        Assertions.assertEquals(YES, actual.getIsECC());
         assertDoesNotThrow(() -> LocalDateTime.parse(actual.getDateTime(), formatter));
     }
 
@@ -309,7 +311,7 @@ class SendNotificationServiceTest {
         SendNotificationAddResponseRequest request = testData.getSendNotificationAddResponseRequest();
 
         StartEventResponse startEventResponse = updateCaseEventResponseSubmittedNotification();
-        addNotificationSubject(startEventResponse);
+        addNotificationSubject(startEventResponse, NOTIFICATION_SUBJECT_IS_NOT_ECC);
 
         when(caseService.startUpdate(
             TEST_SERVICE_AUTH_TOKEN,
@@ -340,7 +342,7 @@ class SendNotificationServiceTest {
             SendNotificationTypeItem.builder()
                 .id(ID)
                 .value(SendNotificationType.builder()
-                           .sendNotificationSubject(NOTIFICATION_SUBJECT)
+                           .sendNotificationSubject(NOTIFICATION_SUBJECT_IS_NOT_ECC)
                            .respondCollection(List.of(buildResponse))
                            .respondNotificationTypeCollection(from)
                            .build())
@@ -370,7 +372,7 @@ class SendNotificationServiceTest {
         Assertions.assertEquals(SUBMITTED, notification.getNotificationState());
         Assertions.assertNull(tribunalResponse.getValue().getIsClaimantResponseDue());
 
-        Assertions.assertEquals(NOTIFICATION_SUBJECT, actual.getSendNotificationSubject());
+        Assertions.assertEquals(NO, actual.getIsECC());
         assertDoesNotThrow(() -> LocalDateTime.parse(actual.getDateTime(), formatter));
     }
 
@@ -438,9 +440,10 @@ class SendNotificationServiceTest {
     }
 
     @SuppressWarnings("unchecked")
-    private static void addNotificationSubject(StartEventResponse startEventResponse1) {
+    private static void addNotificationSubject(
+        StartEventResponse startEventResponse1, List<String> notificationSubject) {
         Object notifications = startEventResponse1.getCaseDetails().getData().get("sendNotificationCollection");
         ((List<LinkedHashMap<String, LinkedHashMap<String, Object>>>) notifications).get(0).get("value")
-            .put("sendNotificationSubject",NOTIFICATION_SUBJECT);
+            .put("sendNotificationSubject", notificationSubject);
     }
 }

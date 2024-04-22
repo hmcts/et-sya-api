@@ -49,6 +49,8 @@ public class SendNotificationService {
     private final NotificationService notificationService;
     private final FeatureToggleService featureToggleService;
 
+    private static final String EMPLOYER_CONTRACT_CLAIM = "Employer Contract Claim";
+
     public CaseDetails updateSendNotificationState(String authorization, SendNotificationStateUpdateRequest request) {
         StartEventResponse startEventResponse = caseService.startUpdate(
             authorization,
@@ -159,7 +161,13 @@ public class SendNotificationService {
 
         if (featureToggleService.isWorkAllocationEnabled()) {
             pseResponseType.setDateTime(getCurrentDateTime());
-            pseResponseType.setSendNotificationSubject(sendNotificationType.getSendNotificationSubject());
+
+            if (!CollectionUtils.isEmpty(sendNotificationType.getSendNotificationSubject())
+            && sendNotificationType.getSendNotificationSubject().contains(EMPLOYER_CONTRACT_CLAIM)) {
+                pseResponseType.setIsECC(YES);
+            } else {
+                pseResponseType.setIsECC(NO);
+            }
         }
 
         PseResponseTypeItem pseResponseTypeItem =
