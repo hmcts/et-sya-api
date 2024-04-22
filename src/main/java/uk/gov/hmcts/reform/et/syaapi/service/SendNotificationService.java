@@ -163,7 +163,7 @@ public class SendNotificationService {
             pseResponseType.setDateTime(getCurrentDateTime());
 
             if (!CollectionUtils.isEmpty(sendNotificationType.getSendNotificationSubject())
-            && sendNotificationType.getSendNotificationSubject().contains(EMPLOYER_CONTRACT_CLAIM)) {
+                && sendNotificationType.getSendNotificationSubject().contains(EMPLOYER_CONTRACT_CLAIM)) {
                 pseResponseType.setIsECC(YES);
             } else {
                 pseResponseType.setIsECC(NO);
