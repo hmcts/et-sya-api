@@ -162,20 +162,12 @@ public class SendNotificationService {
         if (featureToggleService.isWorkAllocationEnabled()) {
             pseResponseType.setDateTime(getCurrentDateTime());
 
-            log.info("Update isECC");
-
             if (!CollectionUtils.isEmpty(sendNotificationType.getSendNotificationSubject())
                 && sendNotificationType.getSendNotificationSubject().contains(EMPLOYER_CONTRACT_CLAIM)) {
                 pseResponseType.setIsECC(YES);
-
-                log.info("Update isECC should = YES");
             } else {
                 pseResponseType.setIsECC(NO);
-
-                log.info("Update isECC should = NO");
             }
-
-            log.info("Update isECC: {}", pseResponseType.getIsECC());
         }
 
         PseResponseTypeItem pseResponseTypeItem =
