@@ -432,8 +432,7 @@ public class CaseService {
             ApplicationService.getNextApplicationNumber(caseData),
             ClaimantTse.APP_TYPE_MAP.get(claimantTse.getContactApplicationType()));
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            pdfService.convertClaimantTseIntoMultipartFile(claimantTse,caseData.getGenericTseApplicationCollection(),
-                                                           caseData.getEthosCaseReference(), docName);
+            pdfService.convertClaimantTseIntoMultipartFile(claimantTse, caseData.getEthosCaseReference(), docName);
         String applicationDocMapping =
             DocumentHelper.claimantApplicationTypeToDocType(claimantTse.getContactApplicationType());
         String topLevel = DocumentHelper.getTopLevelDocument(applicationDocMapping);
