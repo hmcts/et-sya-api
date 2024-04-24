@@ -9,6 +9,7 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DateListedTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.HearingTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
+import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 
@@ -27,6 +28,9 @@ import java.util.stream.Collectors;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.HEARING_STATUS_LISTED;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.getCurrentDateTime;
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -34,6 +38,7 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.HEARING_STATUS_LIST
 public final class NotificationsHelper {
 
     private static final String INVALID_DATE = "Invalid date";
+    private static final String EMPLOYER_CONTRACT_CLAIM = "Employer Contract Claim";
 
     /**
      * Format all respondent names into one string.
@@ -115,6 +120,28 @@ public final class NotificationsHelper {
             throw new IllegalArgumentException("Hearing does not have any future dates");
         }
         throw new IllegalArgumentException("Hearing does not exist in hearing collection");
+    }
+
+    /**
+     * Update Work Allocation Fields.
+     *
+     * @param isWorkAllocationEnabled is Work Allocation Enabled
+     * @param responseToUpdate        Claimant Response to update
+     * @param notificationSubject     Notification Subjects
+     */
+    public static void updateWorkAllocationFields(boolean isWorkAllocationEnabled,
+                                                    PseResponseType responseToUpdate,
+                                                    List<String> notificationSubject) {
+        if (isWorkAllocationEnabled) {
+            responseToUpdate.setDateTime(getCurrentDateTime());
+
+            if (!CollectionUtils.isEmpty(notificationSubject)
+                && notificationSubject.contains(EMPLOYER_CONTRACT_CLAIM)) {
+                responseToUpdate.setIsECC(YES);
+            } else {
+                responseToUpdate.setIsECC(NO);
+            }
+        }
     }
 
     private static String formatToSimpleDate(String defaultValue, String earliestFutureHearingDate) {

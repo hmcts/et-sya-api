@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
+import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
@@ -36,7 +37,6 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.VIEWED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT;
-import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.getCurrentDateTime;
 
 @Service
 @Slf4j
@@ -48,8 +48,6 @@ public class SendNotificationService {
     private final CaseDetailsConverter caseDetailsConverter;
     private final NotificationService notificationService;
     private final FeatureToggleService featureToggleService;
-
-    private static final String EMPLOYER_CONTRACT_CLAIM = "Employer Contract Claim";
 
     public CaseDetails updateSendNotificationState(String authorization, SendNotificationStateUpdateRequest request) {
         StartEventResponse startEventResponse = caseService.startUpdate(
@@ -159,16 +157,10 @@ public class SendNotificationService {
             pseResponseType.setHasSupportingMaterial(NO);
         }
 
-        if (featureToggleService.isWorkAllocationEnabled()) {
-            pseResponseType.setDateTime(getCurrentDateTime());
-
-            if (!CollectionUtils.isEmpty(sendNotificationType.getSendNotificationSubject())
-                && sendNotificationType.getSendNotificationSubject().contains(EMPLOYER_CONTRACT_CLAIM)) {
-                pseResponseType.setIsECC(YES);
-            } else {
-                pseResponseType.setIsECC(NO);
-            }
-        }
+        NotificationsHelper.updateWorkAllocationFields(
+            featureToggleService.isWorkAllocationEnabled(),
+            pseResponseType,
+            sendNotificationType.getSendNotificationSubject());
 
         PseResponseTypeItem pseResponseTypeItem =
             PseResponseTypeItem.builder()

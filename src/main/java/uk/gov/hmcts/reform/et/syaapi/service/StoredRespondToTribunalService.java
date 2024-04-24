@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
+import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredRespondToTribunalRequest;
@@ -43,6 +44,7 @@ public class StoredRespondToTribunalService {
     private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final NotificationService notificationService;
+    private final FeatureToggleService featureToggleService;
 
     private static final String RESPOND_ID_INCORRECT = "Respond id provided is incorrect";
     private static final String SEND_NOTIFICATION_ID_INCORRECT = "SendNotification Id is incorrect";
@@ -189,6 +191,11 @@ public class StoredRespondToTribunalService {
 
         // Update response details
         responseToModify.getValue().setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
+
+        NotificationsHelper.updateWorkAllocationFields(
+            featureToggleService.isWorkAllocationEnabled(),
+            responseToModify.getValue(),
+            sendNotificationType.getSendNotificationSubject());
 
         // add response
         if (CollectionUtils.isEmpty(sendNotificationType.getRespondCollection())) {
