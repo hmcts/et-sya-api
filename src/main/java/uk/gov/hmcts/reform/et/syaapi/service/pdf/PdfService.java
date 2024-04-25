@@ -15,7 +15,6 @@ import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.ecm.common.helpers.UtilHelper;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
-import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
@@ -274,15 +273,14 @@ public class PdfService {
      */
     public PdfDecodedMultipartFile convertClaimantTseIntoMultipartFile(
         ClaimantTse claimantTse,
-        List<GenericTseApplicationTypeItem> tseApplicationTypeItems,
         String caseReference,
         String docName)
 
         throws DocumentGenerationException {
 
-        GenericTseApplication genericTseApplication = ClaimantTseUtil.getCurrentGenericTseApplication(claimantTse,
-                                                                                              tseApplicationTypeItems,
-                                                                                                      caseReference);
+        GenericTseApplication genericTseApplication =
+            ClaimantTseUtil.getGenericTseApplicationFromClaimantTse(claimantTse, caseReference);
+
         byte[] tseApplicationPdf = documentGenerationService.genPdfDocument(
             contactTheTribunalPdfTemplate,
             docName,
