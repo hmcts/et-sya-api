@@ -1,12 +1,14 @@
 package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
 import lombok.extern.slf4j.Slf4j;
-import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
+import uk.gov.hmcts.ecm.common.helpers.UtilHelper;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.models.GenericTseApplication;
 
-import java.util.List;
+import java.time.LocalDate;
+
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
 
 @Slf4j
 public final class ClaimantTseUtil {
@@ -14,53 +16,27 @@ public final class ClaimantTseUtil {
     private ClaimantTseUtil() {
     }
 
-    public static GenericTseApplication getCurrentGenericTseApplication(ClaimantTse claimantTse,
-                                                 List<GenericTseApplicationTypeItem> items,  String caseReference) {
-        if (claimantTse == null && items == null) {
+    public static GenericTseApplication getGenericTseApplicationFromClaimantTse(ClaimantTse claimantTse,
+                                                                                String caseReference) {
+        if (claimantTse == null) {
             return null;
         }
 
-        UploadedDocumentType contactApplicationFile =
-            claimantTse != null ? claimantTse.getContactApplicationFile() : null;
+        UploadedDocumentType contactApplicationFile = claimantTse.getContactApplicationFile();
         String supportingEvidence =
-            contactApplicationFile != null ? contactApplicationFile.getDocumentFilename() : null;
-        GenericTseApplicationTypeItem tseApplicationTypeItem = getGenericTseApplicationTypeItem(items);
-        String contactApplicationDate = tseApplicationTypeItem != null
-            ? tseApplicationTypeItem.getValue().getDate() : null;
-        String contactApplicant = tseApplicationTypeItem != null
-            ? tseApplicationTypeItem.getValue().getApplicant() : null;
+            contactApplicationFile != null
+                ? contactApplicationFile.getDocumentFilename()
+                : null;
 
-        if (claimantTse != null) {
-            return GenericTseApplication.builder()
-                .caseNumber(caseReference)
-                .applicant(contactApplicant)
-                .applicationType(claimantTse.getContactApplicationType())
-                .applicationDate(contactApplicationDate)
-                .tellOrAskTribunal(claimantTse.getContactApplicationText())
-                .supportingEvidence(supportingEvidence)
-                .copyToOtherPartyYesOrNo(claimantTse.getCopyToOtherPartyYesOrNo())
-                .copyToOtherPartyText(claimantTse.getCopyToOtherPartyText())
-                .build();
-        } else {
-            return GenericTseApplication.builder()
-                .caseNumber(caseReference)
-                .applicant(contactApplicant)
-                .applicationType("")
-                .applicationDate(contactApplicationDate)
-                .tellOrAskTribunal("")
-                .supportingEvidence("")
-                .copyToOtherPartyYesOrNo("")
-                .copyToOtherPartyText("")
-                .build();
-        }
-    }
-
-    private static GenericTseApplicationTypeItem getGenericTseApplicationTypeItem(
-        List<GenericTseApplicationTypeItem> genericTseApplications) {
-        if (genericTseApplications == null) {
-            return null;
-        }
-
-        return genericTseApplications.get(genericTseApplications.size() - 1);
+        return GenericTseApplication.builder()
+            .caseNumber(caseReference)
+            .applicant(CLAIMANT_TITLE)
+            .applicationType(ClaimantTse.APP_TYPE_MAP.get(claimantTse.getContactApplicationType()))
+            .applicationDate(UtilHelper.formatCurrentDate(LocalDate.now()))
+            .tellOrAskTribunal(claimantTse.getContactApplicationText())
+            .supportingEvidence(supportingEvidence)
+            .copyToOtherPartyYesOrNo(claimantTse.getCopyToOtherPartyYesOrNo())
+            .copyToOtherPartyText(claimantTse.getCopyToOtherPartyText())
+            .build();
     }
 }
