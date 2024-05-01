@@ -133,7 +133,9 @@ public final class NotificationsHelper {
     public static void updateWorkAllocationFields(boolean isEccEnabled,
                                                 PseResponseType responseToUpdate,
                                                 List<String> notificationSubject) {
-        if (!isEccEnabled) { return; }
+        if (!isEccEnabled) {
+            return;
+        }
 
         responseToUpdate.setDateTime(getCurrentDateTime());
 
