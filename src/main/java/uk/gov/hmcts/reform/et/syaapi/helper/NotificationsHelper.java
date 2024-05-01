@@ -133,15 +133,15 @@ public final class NotificationsHelper {
     public static void updateWorkAllocationFields(boolean isEccEnabled,
                                                 PseResponseType responseToUpdate,
                                                 List<String> notificationSubject) {
-        if (isEccEnabled) {
-            responseToUpdate.setDateTime(getCurrentDateTime());
+        if (!isEccEnabled) { return; }
 
-            if (!CollectionUtils.isEmpty(notificationSubject)
-                && notificationSubject.contains(EMPLOYER_CONTRACT_CLAIM)) {
-                responseToUpdate.setIsECC(YES);
-            } else {
-                responseToUpdate.setIsECC(NO);
-            }
+        responseToUpdate.setDateTime(getCurrentDateTime());
+
+        if (!CollectionUtils.isEmpty(notificationSubject)
+            && notificationSubject.contains(EMPLOYER_CONTRACT_CLAIM)) {
+            responseToUpdate.setIsECC(YES);
+        } else {
+            responseToUpdate.setIsECC(NO);
         }
     }
 

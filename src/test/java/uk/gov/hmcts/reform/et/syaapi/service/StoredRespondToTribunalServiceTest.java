@@ -172,7 +172,7 @@ class StoredRespondToTribunalServiceTest {
             CaseEvent.SUBMIT_STORED_PSE_RESPONSE
         )).thenReturn(startEventResponse);
 
-        when(featureToggleService.isWorkAllocationEnabled()).thenReturn(true);
+        when(featureToggleService.isEccEnabled()).thenReturn(true);
 
         storedRespondToTribunalService.submitRespondToTribunal(TEST_SERVICE_AUTH_TOKEN, request);
 
@@ -209,7 +209,7 @@ class StoredRespondToTribunalServiceTest {
             CaseEvent.SUBMIT_STORED_PSE_RESPONSE
         )).thenReturn(startEventResponse);
 
-        when(featureToggleService.isWorkAllocationEnabled()).thenReturn(true);
+        when(featureToggleService.isEccEnabled()).thenReturn(true);
 
         storedRespondToTribunalService.submitRespondToTribunal(TEST_SERVICE_AUTH_TOKEN, request);
 

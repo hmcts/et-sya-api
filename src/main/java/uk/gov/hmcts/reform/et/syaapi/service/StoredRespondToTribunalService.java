@@ -193,7 +193,7 @@ public class StoredRespondToTribunalService {
         responseToModify.getValue().setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
 
         NotificationsHelper.updateWorkAllocationFields(
-            featureToggleService.isWorkAllocationEnabled(),
+            featureToggleService.isEccEnabled(),
             responseToModify.getValue(),
             sendNotificationType.getSendNotificationSubject());
 
