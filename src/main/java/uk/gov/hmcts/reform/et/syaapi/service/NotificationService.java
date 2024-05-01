@@ -938,15 +938,8 @@ public class NotificationService {
         }
 
         // Type A
-        if (Stream.of(typeA).anyMatch(appType -> Objects.equals(
-            appType,
-            claimantApplication.getContactApplicationType()
-        ))) {
-            return isWelsh
-                ? notificationsProperties.getCyClaimantTseEmailTypeATemplateId()
-                : notificationsProperties.getClaimantTseEmailTypeATemplateId();
-        }
-
-        return null;
+        return isWelsh
+            ? notificationsProperties.getCyClaimantTseEmailTypeATemplateId()
+            : notificationsProperties.getClaimantTseEmailTypeATemplateId();
     }
 }
