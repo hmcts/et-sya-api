@@ -35,4 +35,8 @@ public class FeatureToggleService {
     public boolean isWelshEnabled() {
         return this.featureToggleApi.isFeatureEnabled("welsh-language");
     }
+
+    public boolean isEccEnabled() {
+        return this.featureToggleApi.isFeatureEnabled("ecc");
+    }
 }
