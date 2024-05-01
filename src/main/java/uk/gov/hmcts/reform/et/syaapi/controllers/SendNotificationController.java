@@ -50,7 +50,6 @@ public class SendNotificationController {
         return ok(finalCaseDetails);
     }
 
-
     /**
      * Adds pseResponse to a sendNotification object.
      *
@@ -71,7 +70,4 @@ public class SendNotificationController {
         CaseDetails finalCaseDetails = sendNotificationService.addResponseSendNotification(authorization, request);
         return ok(finalCaseDetails);
     }
-
-
-
 }
