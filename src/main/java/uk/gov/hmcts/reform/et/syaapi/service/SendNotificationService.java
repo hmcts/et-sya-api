@@ -158,7 +158,7 @@ public class SendNotificationService {
         }
 
         NotificationsHelper.updateWorkAllocationFields(
-            featureToggleService.isWorkAllocationEnabled(),
+            featureToggleService.isEccEnabled(),
             pseResponseType,
             sendNotificationType.getSendNotificationSubject());
 

@@ -249,7 +249,7 @@ class SendNotificationServiceTest {
             UPDATE_NOTIFICATION_RESPONSE
         )).thenReturn(startEventResponse);
 
-        when(featureToggleService.isWorkAllocationEnabled()).thenReturn(true);
+        when(featureToggleService.isEccEnabled()).thenReturn(true);
 
         ListTypeItem<RespondNotificationType> from = ListTypeItem.from(
             GenericTypeItem.from(ID, RespondNotificationType.builder()
@@ -320,7 +320,7 @@ class SendNotificationServiceTest {
             UPDATE_NOTIFICATION_RESPONSE
         )).thenReturn(startEventResponse);
 
-        when(featureToggleService.isWorkAllocationEnabled()).thenReturn(true);
+        when(featureToggleService.isEccEnabled()).thenReturn(true);
 
         ListTypeItem<RespondNotificationType> from = ListTypeItem.from(
             GenericTypeItem.from(ID, RespondNotificationType.builder()
@@ -387,7 +387,7 @@ class SendNotificationServiceTest {
             UPDATE_NOTIFICATION_RESPONSE
         )).thenReturn(updateCaseEventResponse);
 
-        when(featureToggleService.isWorkAllocationEnabled()).thenReturn(true);
+        when(featureToggleService.isEccEnabled()).thenReturn(true);
 
         List<SendNotificationTypeItem> items = List.of(
             SendNotificationTypeItem.builder()

@@ -123,16 +123,17 @@ public final class NotificationsHelper {
     }
 
     /**
-     * Update Work Allocation Fields.
+     * The ECC Event (UPDATE_NOTIFICATION_RESPONSE) can trigger Work Allocation tasks,
+     * so we need to update some WA Enablers for the DMNs to read.
      *
-     * @param isWorkAllocationEnabled is Work Allocation Enabled
-     * @param responseToUpdate        Claimant Response to update
-     * @param notificationSubject     Notification Subjects
+     * @param isEccEnabled          is ECC Enabled
+     * @param responseToUpdate      Claimant Response to update
+     * @param notificationSubject   Notification Subjects
      */
-    public static void updateWorkAllocationFields(boolean isWorkAllocationEnabled,
-                                                    PseResponseType responseToUpdate,
-                                                    List<String> notificationSubject) {
-        if (isWorkAllocationEnabled) {
+    public static void updateWorkAllocationFields(boolean isEccEnabled,
+                                                PseResponseType responseToUpdate,
+                                                List<String> notificationSubject) {
+        if (isEccEnabled) {
             responseToUpdate.setDateTime(getCurrentDateTime());
 
             if (!CollectionUtils.isEmpty(notificationSubject)
