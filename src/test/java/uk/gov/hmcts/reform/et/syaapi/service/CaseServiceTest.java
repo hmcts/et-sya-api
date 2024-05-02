@@ -386,7 +386,8 @@ class CaseServiceTest {
              + "responseClaimDocuments=null, initialConsiderationDocuments=null, "
              + "caseManagementDocuments=null, withdrawalSettledDocuments=null, hearingsDocuments=null, "
              + "judgmentAndReasonsDocuments=null, reconsiderationDocuments=null, miscDocuments=null, "
-             + "documentType=null, dateOfCorrespondence=null, docNumber=null, excludeFromDcf=null, documentIndex=null)",
+             + "documentType=null, dateOfCorrespondence=null, docNumber=null, tornadoEmbeddedPdfUrl=null, "
+             + "excludeFromDcf=null, documentIndex=null)",
             ((DocumentTypeItem) docCollection.get(0)).getValue().toString());
     }
 
@@ -523,7 +524,7 @@ class CaseServiceTest {
     @Test
     void shouldInvokeClaimantTsePdf()
         throws DocumentGenerationException {
-        when(pdfService.convertClaimantTseIntoMultipartFile(any(), any(), any(), anyString())).thenReturn(
+        when(pdfService.convertClaimantTseIntoMultipartFile(any(), any(), anyString())).thenReturn(
             tsePdfMultipartFileMock);
 
         assertDoesNotThrow(() ->
@@ -539,7 +540,7 @@ class CaseServiceTest {
     @SneakyThrows
     @Test
     void givenPdfServiceErrorProducesDocumentGenerationException() {
-        when(pdfService.convertClaimantTseIntoMultipartFile(any(), any(), any(), anyString())).thenThrow(
+        when(pdfService.convertClaimantTseIntoMultipartFile(any(), any(), anyString())).thenThrow(
             new DocumentGenerationException(TEST));
 
         assertThrows(DocumentGenerationException.class, () -> caseService.uploadTseCyaAsPdf(

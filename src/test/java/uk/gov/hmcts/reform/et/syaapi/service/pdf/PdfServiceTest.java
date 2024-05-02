@@ -321,7 +321,6 @@ class PdfServiceTest {
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             pdfService.convertClaimantTseIntoMultipartFile(
                 caseTestData.getClaimantTse(),
-                caseTestData.getCaseData().getGenericTseApplicationCollection(),
                 caseTestData.getCaseData().getEthosCaseReference(),
                 "customDocName.pdf");
 
@@ -334,7 +333,6 @@ class PdfServiceTest {
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             pdfService.convertClaimantTseIntoMultipartFile(
                 caseTestData.getClaimantTse(),
-                caseTestData.getCaseData().getGenericTseApplicationCollection(),
                 caseTestData.getCaseData().getEthosCaseReference(),
                 "customDocName.pdf");
 

@@ -5,7 +5,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -14,7 +13,6 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.GenericTseApplication;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceUtil;
@@ -181,44 +179,6 @@ public final class CaseTestData {
         requestCaseData.put("claimantHearingPreference", et1CaseData.getClaimantHearingPreference());
         requestCaseData.put("claimantTaskListChecks", et1CaseData.getClaimantTaskListChecks());
         return requestCaseData;
-    }
-
-    public static Stream<Arguments> generateClaimantTseArgumentsForTestingCurrentTseApplication() {
-        String caseReference = "1234/456";
-        List<String> completeArgumentsList = List.of("Mr Test Applicant", "1", "test Contact Application Type",
-                                             "13 Jan 2023", "Yes", "3", "test-Document-Filename.pdf", caseReference);
-        List<String> missingTypeItemDetailsArgumentsList = List.of("", "1", "test Contact Application Type", "",
-                                                                   "Yes", "3", "test-Document-Filename.pdf",
-                                                                   caseReference);
-        List<String> missingClaimantTseDetailsArgumentsList = List.of("Mr Test Applicant", "1", "",
-                                                                      "13 Jan 2023", "Yes", "3", "", caseReference);
-        GenericTseApplication  completeExpectedTseApp = TestDataProvider.generateExpectedTseApp(completeArgumentsList);
-        GenericTseApplication  expectedTseAppWithIncompleteClaimantTse = TestDataProvider.generateExpectedTseApp(
-            missingClaimantTseDetailsArgumentsList);
-        GenericTseApplication  expectedTseAppWithMissingTypeItemDetails = TestDataProvider.generateExpectedTseApp(
-            missingTypeItemDetailsArgumentsList);
-
-        ClaimantTse completeClaimantTse = TestDataProvider.generateClaimantTse(completeArgumentsList);
-        ClaimantTse inCompleteClaimantTseWithMissingClaimantTse = TestDataProvider.generateClaimantTse(
-            missingClaimantTseDetailsArgumentsList);
-        ClaimantTse inCompleteClaimantTseWithMissingItemDetail = TestDataProvider.generateClaimantTse(
-            missingTypeItemDetailsArgumentsList);
-
-        GenericTseApplicationTypeItem completeTseItem = TestDataProvider.generateGenericTseAppTypeItem(
-            completeArgumentsList);
-        GenericTseApplicationTypeItem tseItemWithMissingClaimantTse = TestDataProvider.generateGenericTseAppTypeItem(
-            missingClaimantTseDetailsArgumentsList);
-        GenericTseApplicationTypeItem tseItemWithMissingDetails = TestDataProvider.generateGenericTseAppTypeItem(
-            missingTypeItemDetailsArgumentsList);
-
-        return Stream.of(Arguments.of(completeClaimantTse, List.of(completeTseItem),
-                                      completeExpectedTseApp, caseReference),
-                         Arguments.of(inCompleteClaimantTseWithMissingClaimantTse,
-                                      List.of(tseItemWithMissingClaimantTse),
-                                      expectedTseAppWithIncompleteClaimantTse, caseReference),
-                        Arguments.of(inCompleteClaimantTseWithMissingItemDetail,
-                                     List.of(tseItemWithMissingDetails),
-                                     expectedTseAppWithMissingTypeItemDetails, caseReference));
     }
 
     public static Stream<Arguments> generateCaseDataUserInfoArgumentsForTestingFirstNames() {

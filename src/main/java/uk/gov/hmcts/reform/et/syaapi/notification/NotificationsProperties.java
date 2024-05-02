@@ -66,6 +66,14 @@ public class NotificationsProperties {
     @NotBlank
     private String claimantTseEmailTypeCTemplateId;
 
+    @Value("${notifications.applicationAcknowledgementStored}")
+    @NotBlank
+    private String claimantTseEmailStoredTemplateId;
+
+    @Value("${notifications.applicationAcknowledgementSubmitStored}")
+    @NotBlank
+    private String claimantTseEmailSubmitStoredTemplateId;
+  
     @Value("${notifications.cyApplicationAcknowledgementTypeC}")
     @NotBlank
     private String cyClaimantTseEmailTypeCTemplateId;

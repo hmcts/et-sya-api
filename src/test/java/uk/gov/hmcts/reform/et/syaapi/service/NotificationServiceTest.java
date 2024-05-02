@@ -22,9 +22,11 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.PseResponseTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantHearingPreference;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
+import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationTypeItem;
@@ -146,7 +148,19 @@ class NotificationServiceTest {
             .willReturn("tseClaimantResponseToRequestYesTemplateId");
         given(notificationsProperties.getTseClaimantResponseToRequestNoTemplateId())
             .willReturn("tseClaimantResponseToRequestNoTemplateId");
+        given(notificationsProperties.getClaimantTseEmailStoredTemplateId())
+            .willReturn("claimantTseEmailStoredTemplateId");
+        given(notificationsProperties.getClaimantTseEmailSubmitStoredTemplateId())
+            .willReturn("claimantTseEmailSubmitStoredTemplateId");
         caseTestData = new CaseTestData();
+        caseTestData.getCaseData().setRepCollection(List.of(
+            RepresentedTypeRItem.builder()
+                .value(RepresentedTypeR.builder()
+                           .myHmctsYesNo(YES)
+                           .respRepName("RespRepName")
+                           .build())
+                .build()
+        ));
     }
 
     @SneakyThrows
@@ -912,7 +926,10 @@ class NotificationServiceTest {
         void setUp() {
             caseData = caseTestData.getCaseData();
             RespondentSumTypeItem respondent = new RespondentSumTypeItem();
-            respondent.setValue(RespondentSumType.builder().respondentEmail("email").build());
+            respondent.setValue(RespondentSumType.builder()
+                                    .respondentEmail("email")
+                                    .respondentName("RespondentName")
+                                    .build());
             caseData.setRespondentCollection(List.of(respondent));
         }
 
@@ -999,11 +1016,11 @@ class NotificationServiceTest {
 
         @Test
         void shouldSendResponseEmailToRespondentResp() throws NotificationClientException {
-            RespondentSumType respondentSumType = new RespondentSumType();
-            respondentSumType.setRespondentEmail("test@resRep.com");
-
             RespondentSumTypeItem respondentSumTypeItem = new RespondentSumTypeItem();
-            respondentSumTypeItem.setValue(respondentSumType);
+            respondentSumTypeItem.setValue(RespondentSumType.builder()
+                                               .respondentEmail("test@resRep.com")
+                                               .respondentName("RespondentName")
+                                               .build());
             respondentSumTypeItem.setId(String.valueOf(UUID.randomUUID()));
 
             CaseData caseData = caseTestData.getCaseData();
@@ -1106,6 +1123,19 @@ class NotificationServiceTest {
     }
 
     @Test
+    void sendResponseNotificationEmailToRespondentNotSystemUser() throws NotificationClientException {
+        caseTestData.getCaseData().setRepCollection(null);
+
+        notificationService.sendResponseNotificationEmailToRespondent(
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString(),
+            YES
+        );
+
+        verify(notificationClient, times(0)).sendEmail(any(), any(), any(), any());
+    }
+
+    @Test
     void sendNotResponseNotificationEmailToRespondentDoNotCopy() throws NotificationClientException {
         notificationService.sendResponseNotificationEmailToRespondent(
             caseTestData.getCaseData(),
@@ -1187,6 +1217,51 @@ class NotificationServiceTest {
             any(),
             any()
         );
+    }
+
+    @Nested
+    class SendStoreAcknowledgementEmail {
+        @BeforeEach
+        void setUp() {
+            details = new CoreEmailDetails(
+                caseTestData.getCaseData(),
+                CLAIMANT,
+                "1",
+                "Test Respondent Organisation -1-, Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez",
+                NOT_SET,
+                caseTestData.getExpectedDetails().getId().toString()
+            );
+        }
+
+        @Test
+        void sendStoredEmailToClaimant() throws NotificationClientException {
+            notificationService.sendStoredEmailToClaimant(
+                details,
+                "shortText"
+            );
+
+            verify(notificationClient, times(1)).sendEmail(
+                eq("claimantTseEmailStoredTemplateId"),
+                eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            );
+        }
+
+        @Test
+        void sendSubmitStoredEmailToClaimant() throws NotificationClientException {
+            notificationService.sendSubmitStoredEmailToClaimant(
+                details,
+                "shortText"
+            );
+
+            verify(notificationClient, times(1)).sendEmail(
+                eq("claimantTseEmailSubmitStoredTemplateId"),
+                eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            );
+        }
     }
 
     @Test

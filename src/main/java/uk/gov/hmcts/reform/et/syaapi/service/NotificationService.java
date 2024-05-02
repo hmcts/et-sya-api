@@ -6,7 +6,9 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
@@ -63,6 +65,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 import static uk.gov.service.notify.NotificationClient.prepareUpload;
 
@@ -73,7 +76,7 @@ import static uk.gov.service.notify.NotificationClient.prepareUpload;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.CyclomaticComplexity"})
 public class NotificationService {
     static final String NOT_SET = "Not set";
 
@@ -87,6 +90,8 @@ public class NotificationService {
     private static final String TYPE_C = "witness";
     private static final String DONT_SEND_COPY = "No";
     public static final String HEARING_DATE_KEY = "hearingDate";
+    private static final String NO_CLAIMANT_EMAIL_FOUND =
+        "No claimant email found - Application response acknowledgment not being sent";
 
     /**
      * Record containing core details of an email.
@@ -504,7 +509,7 @@ public class NotificationService {
         }
         String claimantEmailAddress = details.caseData.getClaimantType().getClaimantEmailAddress();
         if (isBlank(claimantEmailAddress)) {
-            log.info("No claimant email found - Application response acknowledgment not being sent");
+            log.info(NO_CLAIMANT_EMAIL_FOUND);
             return;
         }
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
@@ -669,7 +674,7 @@ public class NotificationService {
     ) {
 
         if (isBlank(caseData.getClaimantType().getClaimantEmailAddress())) {
-            log.info("No claimant email found - Application response acknowledgment not being sent");
+            log.info(NO_CLAIMANT_EMAIL_FOUND);
             return;
         }
 
@@ -699,6 +704,34 @@ public class NotificationService {
         } catch (NotificationClientException ne) {
             throw new NotificationException(ne);
         }
+    }
+
+    void sendStoredEmailToClaimant(CoreEmailDetails details, String shortText) {
+        sendStoreConfirmationEmail(
+            notificationsProperties.getClaimantTseEmailStoredTemplateId(),
+            details,
+            shortText
+        );
+    }
+
+    void sendSubmitStoredEmailToClaimant(CoreEmailDetails details, String shortText) {
+        sendStoreConfirmationEmail(
+            notificationsProperties.getClaimantTseEmailSubmitStoredTemplateId(),
+            details,
+            shortText
+        );
+    }
+
+    CoreEmailDetails formatCoreEmailDetails(CaseData caseData, String caseId) {
+        return new CoreEmailDetails(
+            caseData,
+            caseData.getClaimantIndType().getClaimantFirstNames() + " "
+                + caseData.getClaimantIndType().getClaimantLastName(),
+            caseData.getEthosCaseReference(),
+            getRespondentNames(caseData),
+            NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET),
+            caseId
+        );
     }
 
     private void sendTribunalEmail(CaseData caseData,
@@ -731,6 +764,11 @@ public class NotificationService {
 
     private void sendRespondentEmails(CaseData caseData, String caseId, Map<String, Object> respondentParameters,
                                       String emailToRespondentTemplate) {
+        if (!isSystemUser(caseData.getRepCollection())) {
+            log.info("No email sent to respondents as no representative is using the system");
+            return;
+        }
+
         caseData.getRespondentCollection()
             .forEach(resp -> {
                 String respondentEmailAddress = NotificationsHelper.getEmailAddressForRespondent(
@@ -757,6 +795,47 @@ public class NotificationService {
                     }
                 }
             });
+    }
+
+    private boolean isSystemUser(List<RepresentedTypeRItem> repCollection) {
+        return !CollectionUtils.isEmpty(repCollection)
+            && repCollection.stream().anyMatch(rep -> YES.equals(rep.getValue().getMyHmctsYesNo()));
+    }
+
+    private void sendStoreConfirmationEmail(String emailToClaimantTemplate, CoreEmailDetails details,
+                                            String shortText) {
+        String claimantEmailAddress = details.caseData.getClaimantType().getClaimantEmailAddress();
+        if (isBlank(claimantEmailAddress)) {
+            log.info(NO_CLAIMANT_EMAIL_FOUND);
+            return;
+        }
+
+        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
+
+        addCommonParameters(
+            claimantParameters,
+            details.claimant,
+            details.respondentNames,
+            details.caseId,
+            details.caseNumber
+        );
+        claimantParameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, details.hearingDate);
+        claimantParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
+        claimantParameters.put(
+            SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
+            notificationsProperties.getCitizenPortalLink() + details.caseId
+        );
+
+        try {
+            notificationClient.sendEmail(
+                emailToClaimantTemplate,
+                claimantEmailAddress,
+                claimantParameters,
+                details.caseId
+            );
+        } catch (NotificationClientException ne) {
+            throw new NotificationException(ne);
+        }
     }
 
     /**
