@@ -3,7 +3,7 @@ plugins {
   id 'checkstyle'
   id 'pmd'
   id 'jacoco'
-  id 'io.spring.dependency-management' version '1.1.4'
+  id 'io.spring.dependency-management' version '1.1.5'
   id 'org.springframework.boot' version '2.7.18'
   id 'org.owasp.dependencycheck' version '9.1.0'
   id 'com.github.ben-manes.versions' version '0.51.0'
@@ -220,7 +220,7 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-json'
   implementation group: 'org.springframework.boot', name: 'spring-boot-configuration-processor'
   implementation group: 'org.springframework.retry', name: 'spring-retry', version: '2.0.5'
-  implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.17.0'
+  implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.17.1'
   implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.2'
 
   implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.8.0'
