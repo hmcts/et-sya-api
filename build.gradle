@@ -205,7 +205,7 @@ ext {
 }
 
 dependencies {
-  implementation group: 'com.github.hmcts', name: 'et-data-model', version:'3.7.1'
+  implementation group: 'com.github.hmcts', name: 'et-data-model', version:'3.8.0'
   implementation('com.github.hmcts:et-common:1.5.9') { transitive = false }
   implementation group: 'uk.gov.dwp.regex', name: 'postcode-validation', version: '1.1.0'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
@@ -242,21 +242,21 @@ dependencies {
   implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: log4JVersion
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4JVersion
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
-  implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.37.3'
+  implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.39'
 
-  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.13.3'
+  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.13.4'
   implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.18'
   implementation 'org.json:json:20240303'
   implementation group: 'org.yaml', name: 'snakeyaml', version: '2.2'
 
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.89'
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.23'
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.24'
 
   implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '6.2.4'
 
   implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
 
-  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '7.4.0'
+  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '7.4.1'
 
   implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.13'
   implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.13'
