@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
+import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
@@ -46,6 +47,7 @@ public class SendNotificationService {
     private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final NotificationService notificationService;
+    private final FeatureToggleService featureToggleService;
 
     public CaseDetails updateSendNotificationState(String authorization, SendNotificationStateUpdateRequest request) {
         StartEventResponse startEventResponse = caseService.startUpdate(
@@ -111,10 +113,13 @@ public class SendNotificationService {
      * @return the associated {@link CaseDetails}
      */
     public CaseDetails addResponseSendNotification(String authorization, SendNotificationAddResponseRequest request) {
+        String caseId = request.getCaseId();
+        String caseTypeId = request.getCaseTypeId();
+
         StartEventResponse startEventResponse = caseService.startUpdate(
             authorization,
-            request.getCaseId(),
-            request.getCaseTypeId(),
+            caseId,
+            caseTypeId,
             CaseEvent.UPDATE_NOTIFICATION_RESPONSE
         );
 
@@ -135,7 +140,6 @@ public class SendNotificationService {
         if (CollectionUtils.isEmpty(pseRespondCollection)) {
             sendNotificationTypeItem.get().getValue().setRespondCollection(new ArrayList<>());
         }
-
         PseResponseType pseResponseType = request.getPseResponseType();
         pseResponseType.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
         pseResponseType.setFrom(CLAIMANT);
@@ -153,8 +157,14 @@ public class SendNotificationService {
             pseResponseType.setHasSupportingMaterial(NO);
         }
 
+        NotificationsHelper.updateWorkAllocationFields(
+            featureToggleService.isEccEnabled(),
+            pseResponseType,
+            sendNotificationType.getSendNotificationSubject());
+
         PseResponseTypeItem pseResponseTypeItem =
-            PseResponseTypeItem.builder().id(UUID.randomUUID().toString())
+            PseResponseTypeItem.builder()
+                .id(UUID.randomUUID().toString())
                 .value(pseResponseType)
                 .build();
 
@@ -167,27 +177,23 @@ public class SendNotificationService {
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
         sendAddResponseSendNotificationEmails(
             caseData,
-            request.getCaseId(),
+            caseId,
             request.getPseResponseType().getCopyToOtherParty()
         );
         return caseService.submitUpdate(
             authorization,
-            request.getCaseId(),
+            caseId,
             content,
-            request.getCaseTypeId()
+            caseTypeId
         );
     }
 
     private void sendAddResponseSendNotificationEmails(CaseData caseData,
                                                        String caseId,
                                                        String copyToOtherParty) {
-
-
         notificationService.sendResponseNotificationEmailToTribunal(caseData, caseId);
         notificationService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty);
         notificationService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty);
-
-
     }
 
     private void setResponsesAsRespondedTo(List<GenericTypeItem<RespondNotificationType>> responses) {
@@ -201,8 +207,6 @@ public class SendNotificationService {
                 item.getValue().setIsClaimantResponseDue(null);
                 item.getValue().setState(SUBMITTED);
             }
-
         }
     }
-
 }
