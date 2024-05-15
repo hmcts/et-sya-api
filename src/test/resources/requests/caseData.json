@@ -391,6 +391,8 @@
       "anotherJob"
     ],
     "claimant_compensation_text": "I would like to have test compensation. This is a test compensation.",
+    "linked_cases": "Yes",
+    "linked_cases_detail": "Test linked cases detail",
     "claimant_compensation_amount": "2000",
     "claimant_tribunal_recommendation": "I would like to have test claimant recommendation. This is a test recommendation",
     "whistleblowing": "Yes",
