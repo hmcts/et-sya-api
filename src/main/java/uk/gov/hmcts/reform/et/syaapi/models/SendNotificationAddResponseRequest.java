@@ -11,7 +11,6 @@ import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 @Builder
 @Jacksonized
 public class SendNotificationAddResponseRequest {
-
     @JsonProperty("case_id")
     private String caseId;
     @JsonProperty("case_type_id")
@@ -22,6 +21,4 @@ public class SendNotificationAddResponseRequest {
     private UploadedDocumentType supportingMaterialFile;
     @JsonProperty("pseResponseType")
     private PseResponseType pseResponseType;
-
-
 }
