@@ -250,13 +250,13 @@ dependencies {
   implementation group: 'org.yaml', name: 'snakeyaml', version: '2.2'
 
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.89'
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.23'
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.24'
 
   implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '6.2.4'
 
   implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
 
-  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '7.4.0'
+  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '7.4.1'
 
   implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.13'
   implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.13'
