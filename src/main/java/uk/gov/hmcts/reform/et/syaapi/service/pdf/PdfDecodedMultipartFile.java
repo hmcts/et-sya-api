@@ -1,18 +1,21 @@
 package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.Arrays;
 
 /**
  * Trivial implementation of the {@link MultipartFile} interface to wrap a byte[] decoded from a PDF encoded String.
  **/
-@SuppressWarnings({"NullableProblems", "resource"})
+@SuppressWarnings({"NullableProblems"})
+@Slf4j
 public class PdfDecodedMultipartFile implements MultipartFile {
     private final byte[] fileContent;
 
@@ -76,7 +79,11 @@ public class PdfDecodedMultipartFile implements MultipartFile {
     }
 
     @Override
-    public void transferTo(File dest) throws IOException {
-        Files.newOutputStream(dest.toPath()).write(fileContent);
+    public void transferTo(File dest) {
+        try (OutputStream os = Files.newOutputStream(dest.toPath())) {
+            os.write(fileContent);
+        } catch (IOException e) {
+            log.error("Error closing output stream");
+        }
     }
 }
