@@ -14,11 +14,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpStatus.OK;
 
-@PactTestFor(providerName = "ccdDataStoreAPI_Cases", port = "8890")
+
 class CcdGetCasesByCaseIdPactTest extends SpringBootContractTestBase {
     private static final String CCD_CASE_URL = "/cases/" + CASE_ID;
 
-    @Pact(provider = "ccdDataStoreAPI_Cases", consumer = "et_sya_api_service")
+    @Pact(provider = "ccd_data_store_api_cases", consumer = "et_sya_api_service")
     RequestResponsePact executeCcdGetCasesByCaseId(PactDslWithProvider builder) {
 
         return builder
