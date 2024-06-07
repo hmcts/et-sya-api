@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
@@ -69,6 +70,8 @@ public class PdfService {
     private static final String CLAIMANT_RESPONSE = "ClaimantResponse.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private static final String NOT_FOUND = "not found";
+    private static final List<String> DOCUMENT_CHARS_TO_REPLACE = List.of("@", "/", "\\", "'");
+
 
     /**
      * Converts a {@link CaseData} class object into a pdf document
@@ -155,9 +158,9 @@ public class PdfService {
             claimantLastName = userInfo.getFamilyName();
         }
         return "ET1 - "
-            + claimantFirstName
+            + sanitizePartyName(claimantFirstName)
             + " "
-            + claimantLastName
+            + sanitizePartyName(claimantLastName)
             + (ENGLISH_LANGUAGE.equals(documentLanguage) ? "" : " " + documentLanguage)
             + ".pdf";
     }
@@ -170,7 +173,7 @@ public class PdfService {
             .findFirst();
         String acasName = "";
         if (respondent.isPresent()) {
-            acasName = respondent.get().getValue().getRespondentName() + " - ";
+            acasName = sanitizePartyName(respondent.get().getValue().getRespondentName()) + " - ";
         }
 
         return "ACAS Certificate - "
@@ -344,5 +347,17 @@ public class PdfService {
             documentName,
             claimantResponseCya
         );
+    }
+
+    private static String sanitizePartyName(String partyName) {
+        if (isNullOrEmpty(partyName)) {
+            return "";
+        }
+
+        String sanitizedName = partyName;
+        for (String charToReplace : DOCUMENT_CHARS_TO_REPLACE) {
+            sanitizedName = sanitizedName.replace(charToReplace, " ");
+        }
+        return sanitizedName;
     }
 }
