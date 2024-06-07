@@ -8,7 +8,6 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
-import org.elasticsearch.common.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -151,10 +150,10 @@ public class PdfService {
                                                             UserInfo userInfo) {
         String claimantFirstName = caseData.getClaimantIndType().getClaimantFirstNames();
         String claimantLastName = caseData.getClaimantIndType().getClaimantLastName();
-        if (Strings.isNullOrEmpty(claimantFirstName)) {
+        if (isNullOrEmpty(claimantFirstName)) {
             claimantFirstName = userInfo.getGivenName();
         }
-        if (Strings.isNullOrEmpty(claimantLastName)) {
+        if (isNullOrEmpty(claimantLastName)) {
             claimantLastName = userInfo.getFamilyName();
         }
         return "ET1 - "
