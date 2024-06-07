@@ -97,7 +97,6 @@ class NotificationServiceTest {
     @InjectMocks
     private NotificationService notificationService;
     private Map<String, Object> params;
-    @Mock
     private CaseData caseData;
     @Mock
     private ClaimantTse claimantApplication;
@@ -163,6 +162,7 @@ class NotificationServiceTest {
             .willReturn("claimantTseEmailStoredTemplateId");
         given(notificationsProperties.getClaimantTseEmailSubmitStoredTemplateId())
             .willReturn("claimantTseEmailSubmitStoredTemplateId");
+        caseData = new CaseData();
         caseTestData = new CaseTestData();
         caseTestData.getCaseData().setRepCollection(List.of(
             RepresentedTypeRItem.builder()
@@ -1307,7 +1307,7 @@ class NotificationServiceTest {
 
         String hearingDate = "12 Jan 2023";
         when(details.hearingDate()).thenReturn(hearingDate);
-        when(caseData.getClaimantHearingPreference()).thenReturn(claimantHearingPreference);
+        caseData.setClaimantHearingPreference(claimantHearingPreference);
     }
 
     @ParameterizedTest
