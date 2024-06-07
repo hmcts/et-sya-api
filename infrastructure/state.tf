@@ -2,6 +2,6 @@ terraform {
   backend "azurerm" {}
 
   required_providers {
-    azurerm = "3.106.1"
+    azurerm = "3.107.0"
   }
 }
