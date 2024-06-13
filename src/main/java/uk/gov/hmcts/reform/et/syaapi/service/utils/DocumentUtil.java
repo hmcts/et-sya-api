@@ -11,19 +11,34 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Stream;
+
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_FOR_A_WITNESS_ORDER_R;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.CLAIMANT_APPLICATION_DOC_TYPE;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.CONTACT_THE_TRIBUNAL_R;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.COT3;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.ET1_VETTING;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.ET3_PROCESSING;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.INITIAL_CONSIDERATION;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.OTHER;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.REFERRAL_JUDICIAL_DIRECTION;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.RESPONDENT_APPLICATION_DOC_TYPE;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.TRIBUNAL_CASE_FILE;
 
 @Slf4j
 public final class DocumentUtil {
 
-    private static final String HIDDEN_DOCUMENT_TYPES_FOR_CLAIMANT = "|ET1 Vetting|, "
-        + "|ET3 Processing|"
-        + "|Referral/Judicial Direction|"
-        + "|App for a Witness Order - R|"
-        + "|Contact the tribunal about something else - R|"
-        + "|COT3|"
-        + "|Tribunal case file|"
-        + "|Initial Consideration|"
-        + "|Other|";
+    private static final List<String> HIDDEN_DOCUMENT_TYPES_FOR_CLAIMANT = List.of(
+        ET1_VETTING,
+        ET3_PROCESSING,
+        REFERRAL_JUDICIAL_DIRECTION,
+        APP_FOR_A_WITNESS_ORDER_R,
+        CONTACT_THE_TRIBUNAL_R,
+        COT3,
+        TRIBUNAL_CASE_FILE,
+        INITIAL_CONSIDERATION,
+        OTHER
+    );
 
     private DocumentUtil() {
         // Utility classes should not have a public or default constructor.
@@ -74,12 +89,30 @@ public final class DocumentUtil {
     }
 
     private static boolean isDocumentHidden(DocumentType documentType) {
-        return StringUtils.isNotBlank(documentType.getTypeOfDocument())
-            && HIDDEN_DOCUMENT_TYPES_FOR_CLAIMANT.toLowerCase(Locale.UK).contains(
-            "|" + documentType.getTypeOfDocument().toLowerCase(Locale.UK).trim() + "|")
-            || StringUtils.isNotBlank(documentType.getDocumentType())
-            && HIDDEN_DOCUMENT_TYPES_FOR_CLAIMANT.toLowerCase(Locale.UK).contains(
-            "|" + documentType.getDocumentType().toLowerCase(Locale.UK).trim() + "|");
+        return isHiddenDocumentType(documentType.getTypeOfDocument())
+            || isHiddenDocumentType(documentType.getDocumentType());
+    }
+
+    private static boolean isHiddenDocumentType(String documentType) {
+        if (StringUtils.isNotBlank(documentType)) {
+            String lowerCaseDocumentType = documentType.toLowerCase(Locale.UK).trim();
+            List<String> mergedList = getMergedList();
+            return mergedList.stream()
+                .map(type -> type.toLowerCase(Locale.UK))
+                .anyMatch(type -> type.equals(lowerCaseDocumentType));
+        }
+        return false;
+    }
+
+    private static List<String> getMergedList() {
+        return Stream.of(
+                HIDDEN_DOCUMENT_TYPES_FOR_CLAIMANT,
+                RESPONDENT_APPLICATION_DOC_TYPE,
+                CLAIMANT_APPLICATION_DOC_TYPE
+            )
+            .flatMap(List::stream)
+            .distinct()
+            .toList();
     }
 
 }

@@ -39,4 +39,15 @@ class DocumentUtilTest {
                 .get("documentCollection")).isNotNull().hasSize(4)
         );
     }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void filterCaseDocumentsForClaimant() {
+        CaseDetails caseDetails = new TestData().getCaseDetailsWithData();
+        DocumentUtil.filterCaseDocumentsForClaimant(caseDetails, "123");
+        List<LinkedHashMap<String, Object>> documentCollection =
+            (List<LinkedHashMap<String, Object>>) caseDetails.getData().get("documentCollection");
+        assertThat(documentCollection).isNotNull().hasSize(4);
+    }
+
 }
