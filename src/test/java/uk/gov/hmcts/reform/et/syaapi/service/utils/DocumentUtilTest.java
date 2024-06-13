@@ -15,6 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 @Slf4j
 class DocumentUtilTest {
 
+    private static final String DOCUMENT_COLLECTION = "documentCollection";
+
     @Test
     @SuppressWarnings("unchecked")
     void theFilterClaimantDocuments() {
@@ -31,12 +33,12 @@ class DocumentUtilTest {
         DocumentUtil.filterMultipleCasesDocumentsForClaimant(caseDetailsList);
         assertAll(
             () -> assertThat((List<LinkedHashMap<String, Object>>)caseDetailsFull.getData()
-                .get("documentCollection")).isNotNull().hasSize(4),
+                .get(DOCUMENT_COLLECTION)).isNotNull().hasSize(4),
             () -> assertThat(emptyCaseDetails.getData()).isNull(),
             () -> assertThat((List<LinkedHashMap<String, Object>>)caseDetailsWithoutId.getData()
-                .get("documentCollection")).isNotNull().hasSize(4),
+                .get(DOCUMENT_COLLECTION)).isNotNull().hasSize(4),
             () -> assertThat((List<LinkedHashMap<String, Object>>)caseDetailsWithoutId.getData()
-                .get("documentCollection")).isNotNull().hasSize(4)
+                .get(DOCUMENT_COLLECTION)).isNotNull().hasSize(4)
         );
     }
 
@@ -46,7 +48,7 @@ class DocumentUtilTest {
         CaseDetails caseDetails = new TestData().getCaseDetailsWithData();
         DocumentUtil.filterCaseDocumentsForClaimant(caseDetails, "123");
         List<LinkedHashMap<String, Object>> documentCollection =
-            (List<LinkedHashMap<String, Object>>) caseDetails.getData().get("documentCollection");
+            (List<LinkedHashMap<String, Object>>) caseDetails.getData().get(DOCUMENT_COLLECTION);
         assertThat(documentCollection).isNotNull().hasSize(4);
     }
 
