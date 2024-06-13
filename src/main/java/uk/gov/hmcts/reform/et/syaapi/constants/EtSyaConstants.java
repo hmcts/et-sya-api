@@ -90,7 +90,8 @@ public final class EtSyaConstants {
         APP_FOR_A_JUDGMENT_TO_BE_RECONSIDERED_R, TRIBUNAL_CASE_FILE, OTHER);
 
     public static final List<String> POSSIBLE_DUPLICATED_DOCS = List.of(ET3, ET3_ATTACHMENT, ET1_ATTACHMENT);
-
+    public static final String TIMES_NEW_ROMAN_PDFBOX_CODE = "TiRo";
+    public static final String HELVETICA_PDFBOX_CODE = "Helvetica";
 
     private EtSyaConstants() {
         // restrict instantiation

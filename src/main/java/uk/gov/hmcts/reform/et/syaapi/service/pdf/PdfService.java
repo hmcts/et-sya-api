@@ -4,8 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
+import org.apache.pdfbox.pdmodel.PDResources;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,6 +45,8 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.HELVETICA_PDFBOX_CODE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.TIMES_NEW_ROMAN_PDFBOX_CODE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 
 /**
@@ -50,7 +55,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGU
 @Slf4j
 @Service
 @RequiredArgsConstructor()
-@SuppressWarnings({"PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 public class PdfService {
 
     private final PdfMapperService pdfMapperService;
@@ -66,7 +71,6 @@ public class PdfService {
 
     private static final String TSE_FILENAME = "Contact the tribunal - ";
     private static final String CLAIMANT_TITLE = "Claimant";
-    private static final String CLAIMANT_RESPONSE = "ClaimantResponse.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private static final String NOT_FOUND = "not found";
     private static final List<String> DOCUMENT_CHARS_TO_REPLACE = List.of("@", "/", "\\", "'");
@@ -106,7 +110,11 @@ public class PdfService {
             try (PDDocument pdfDocument = Loader.loadPDF(
                 Objects.requireNonNull(stream))) {
                 PDDocumentCatalog pdDocumentCatalog = pdfDocument.getDocumentCatalog();
+                PDResources resources = new PDResources();
+                resources.put(COSName.getPDFName(TIMES_NEW_ROMAN_PDFBOX_CODE), PDType1Font.TIMES_ROMAN);
+                resources.put(COSName.getPDFName(HELVETICA_PDFBOX_CODE), PDType1Font.HELVETICA);
                 PDAcroForm pdfForm = pdDocumentCatalog.getAcroForm();
+                pdfForm.setDefaultResources(resources);
                 for (Map.Entry<String, Optional<String>> entry : this.pdfMapperService.mapHeadersToPdf(caseData)
                     .entrySet()) {
                     String entryKey = entry.getKey();
