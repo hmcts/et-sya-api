@@ -45,8 +45,9 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.HELVETICA_PDFBOX_CODE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.TIMES_NEW_ROMAN_PDFBOX_CODE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.HELVETICA_PDFBOX_CHARACTER_CODE_1;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.HELVETICA_PDFBOX_CHARACTER_CODE_2;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.TIMES_NEW_ROMAN_PDFBOX_CHARACTER_CODE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 
 /**
@@ -111,8 +112,9 @@ public class PdfService {
                 Objects.requireNonNull(stream))) {
                 PDDocumentCatalog pdDocumentCatalog = pdfDocument.getDocumentCatalog();
                 PDResources resources = new PDResources();
-                resources.put(COSName.getPDFName(TIMES_NEW_ROMAN_PDFBOX_CODE), PDType1Font.TIMES_ROMAN);
-                resources.put(COSName.getPDFName(HELVETICA_PDFBOX_CODE), PDType1Font.HELVETICA);
+                resources.put(COSName.getPDFName(TIMES_NEW_ROMAN_PDFBOX_CHARACTER_CODE), PDType1Font.TIMES_ROMAN);
+                resources.put(COSName.getPDFName(HELVETICA_PDFBOX_CHARACTER_CODE_1), PDType1Font.HELVETICA);
+                resources.put(COSName.getPDFName(HELVETICA_PDFBOX_CHARACTER_CODE_2), PDType1Font.HELVETICA);
                 PDAcroForm pdfForm = pdDocumentCatalog.getAcroForm();
                 pdfForm.setDefaultResources(resources);
                 for (Map.Entry<String, Optional<String>> entry : this.pdfMapperService.mapHeadersToPdf(caseData)
