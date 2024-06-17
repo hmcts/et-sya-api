@@ -130,7 +130,18 @@ class NotificationServiceTest {
             .willReturn(TestConstants.SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID);
         given(notificationsProperties.getCitizenPortalLink()).willReturn(TestConstants.REFERENCE_STRING);
         given(notificationsProperties.getClaimantTseEmailNoTemplateId()).willReturn("No");
-        given(notificationsProperties.getClaimantTseEmailYesTemplateId()).willReturn(YES);
+        given(notificationsProperties.getCyClaimantTseEmailTypeATemplateId())
+            .willReturn("CY_APPLICATION_ACKNOWLEDGEMENT_TYPE_A_EMAIL_TEMPLATE_ID");
+        given(notificationsProperties.getCyClaimantTseEmailTypeBTemplateId())
+            .willReturn("CY_APPLICATION_ACKNOWLEDGEMENT_TYPE_B_EMAIL_TEMPLATE_ID");
+        given(notificationsProperties.getCyClaimantTseEmailNoTemplateId())
+            .willReturn("CY_APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID");
+        given(notificationsProperties.getClaimantTseEmailTypeATemplateId())
+            .willReturn("APPLICATION_ACKNOWLEDGEMENT_TYPE_A_EMAIL_TEMPLATE_ID");
+        given(notificationsProperties.getClaimantTseEmailTypeBTemplateId())
+            .willReturn("APPLICATION_ACKNOWLEDGEMENT_TYPE_B_EMAIL_TEMPLATE_ID");
+        given(notificationsProperties.getClaimantTseEmailNoTemplateId())
+            .willReturn("APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID");
         given(notificationsProperties.getClaimantTseEmailTypeCTemplateId()).willReturn("C");
         given(notificationsProperties.getTribunalAcknowledgementTemplateId()).willReturn("Tribunal");
         given(notificationsProperties.getRespondentTseEmailTypeATemplateId()).willReturn("A");
@@ -1301,15 +1312,11 @@ class NotificationServiceTest {
 
     @ParameterizedTest
     @CsvSource({
-        "true, strike, Yes, CY_APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
-        "false, strike, Yes, APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
-        "true, withdraw, Yes, CY_APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
-        "false, withdraw, Yes, APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
+        "true, strike, Yes, CY_APPLICATION_ACKNOWLEDGEMENT_TYPE_A_EMAIL_TEMPLATE_ID",
+        "false, strike, Yes, APPLICATION_ACKNOWLEDGEMENT_TYPE_A_EMAIL_TEMPLATE_ID",
+        "true, withdraw, Yes, CY_APPLICATION_ACKNOWLEDGEMENT_TYPE_B_EMAIL_TEMPLATE_ID",
+        "false, withdraw, Yes, APPLICATION_ACKNOWLEDGEMENT_TYPE_B_EMAIL_TEMPLATE_ID",
         "true, strike, No, CY_APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID",
-        "false, strike, No, APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID",
-        "false, strike, Yes, APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
-        "false, strike, Yes, APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID",
-        "false, strike, No, APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID",
         "false, strike, No, APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID"
     })
     void shouldReturnExpectedEmailTemplateForRule92(
@@ -1317,14 +1324,6 @@ class NotificationServiceTest {
 
         when(claimantApplication.getContactApplicationType()).thenReturn(contactType);
         when(claimantApplication.getCopyToOtherPartyYesOrNo()).thenReturn(copyTo);
-        when(notificationsProperties.getCyClaimantTseEmailYesTemplateId()).thenReturn(
-            "CY_APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID");
-        when(notificationsProperties.getCyClaimantTseEmailNoTemplateId()).thenReturn(
-            "CY_APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID");
-        when(notificationsProperties.getClaimantTseEmailYesTemplateId()).thenReturn(
-            "APPLICATION_ACKNOWLEDGEMENT_YES_EMAIL_TEMPLATE_ID");
-        when(notificationsProperties.getClaimantTseEmailNoTemplateId()).thenReturn(
-            "APPLICATION_ACKNOWLEDGEMENT_NO_EMAIL_TEMPLATE_ID");
 
         String emailTemplate = notificationService.getAndSetRule92EmailTemplate(
             claimantApplication, details.hearingDate(), params, isWelsh);

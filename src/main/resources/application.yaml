@@ -77,10 +77,12 @@ notifications:
   submitCaseEmailTemplateId: ${SUBMIT_CASE_EMAIL_TEMPLATE_ID:a4045b26-3914-4c13-a06e-6fb64a99ee2f}
   cySubmitCaseEmailTemplateId: ${CY_SUBMIT_CASE_EMAIL_TEMPLATE_ID:17ff79da-3bbf-4c82-ab44-48038c792d23}
   submitCaseDocUploadErrorEmailTemplateId: ${SUBMIT_CASE_DOC_UPLOAD_ERROR_EMAIL_TEMPLATE_ID:10a82e6a-5020-4756-9512-eb391b8c46e3}
+  applicationAcknowledgementTypeA: ${APPLICATION_ACKNOWLEDGEMENT_TYPE_A:1892837f-2a5e-47b9-9d73-29ccffbac8d8}
+  cyApplicationAcknowledgementTypeA: ${CY_APPLICATION_ACKNOWLEDGEMENT_TYPE_A:aa5c5e79-bb2b-49b7-a0d3-42a1ca2ab412}
+  applicationAcknowledgementTypeB: ${APPLICATION_ACKNOWLEDGEMENT_TYPE_B:59ea1be0-882c-4059-8a9b-229f2ec2cd96}
+  cyApplicationAcknowledgementTypeB: ${CY_APPLICATION_ACKNOWLEDGEMENT_TYPE_B:bfb67eb6-49e6-4b78-8bd4-6c616f6f2e38}
   applicationAcknowledgementTypeC: ${APPLICATION_ACKNOWLEDGEMENT_TYPE_C:197c69b6-254c-4f8d-8909-e85549496d8b}
   cyApplicationAcknowledgementTypeC: ${CY_APPLICATION_ACKNOWLEDGEMENT_TYPE_C:64c6a5da-454b-479a-a279-862f2bcfd140}
-  applicationAcknowledgementYes: ${APPLICATION_ACKNOWLEDGEMENT_YES:d5f319f1-229f-4dcb-9293-f164bb327601}
-  cyApplicationAcknowledgementYes: ${CY_APPLICATION_ACKNOWLEDGEMENT_YES:f58fbf9b-2640-4e3f-ba16-4657ece7cd42}
   applicationAcknowledgementNo: ${APPLICATION_ACKNOWLEDGEMENT_NO:e6c8b8c4-e58b-4bae-a8ec-cca68bca0c4e}
   applicationAcknowledgementStored: ${APPLICATION_ACKNOWLEDGEMENT_STORED:a1e220ed-6d75-4df4-92c4-6d31b1eb9dfb}
   applicationAcknowledgementSubmitStored: ${APPLICATION_ACKNOWLEDGEMENT_SUBMIT_STORED:b5420148-b18b-4a17-a149-ed98d823b2d9}
