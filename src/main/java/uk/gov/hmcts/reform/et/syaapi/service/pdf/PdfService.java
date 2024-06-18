@@ -116,7 +116,8 @@ public class PdfService {
                 resources.put(COSName.getPDFName(TIMES_NEW_ROMAN_PDFBOX_CHARACTER_CODE), PDType1Font.TIMES_ROMAN);
                 resources.put(COSName.getPDFName(HELVETICA_PDFBOX_CHARACTER_CODE_1), PDType1Font.HELVETICA);
                 resources.put(COSName.getPDFName(HELVETICA_PDFBOX_CHARACTER_CODE_2), PDType1Font.HELVETICA);
-                final PDAcroForm pdfForm = pdDocumentCatalog.getAcroForm();
+                PDAcroForm pdfForm = pdDocumentCatalog.getAcroForm();
+                pdfForm.setDefaultResources(resources);
                 for (Map.Entry<String, Optional<String>> entry : this.pdfMapperService.mapHeadersToPdf(caseData)
                     .entrySet()) {
                     String entryKey = entry.getKey();
