@@ -281,7 +281,7 @@ dependencies {
   testImplementation group: 'io.rest-assured', name: 'rest-assured'
   testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit', version: '3.2.7'
 
-  testImplementation 'com.github.hmcts:fortify-client:1.4.2:all'
+  testImplementation 'com.github.hmcts:fortify-client:1.4.3:all'
 
   // Pact Contract Tests
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: '4.1.41'
