@@ -112,11 +112,11 @@ public class PdfService {
             try (PDDocument pdfDocument = Loader.loadPDF(
                 Objects.requireNonNull(stream))) {
                 PDDocumentCatalog pdDocumentCatalog = pdfDocument.getDocumentCatalog();
-                PDAcroForm pdfForm = pdDocumentCatalog.getAcroForm();
                 PDResources resources = new PDResources();
                 resources.put(COSName.getPDFName(TIMES_NEW_ROMAN_PDFBOX_CHARACTER_CODE), PDType1Font.TIMES_ROMAN);
                 resources.put(COSName.getPDFName(HELVETICA_PDFBOX_CHARACTER_CODE_1), PDType1Font.HELVETICA);
                 resources.put(COSName.getPDFName(HELVETICA_PDFBOX_CHARACTER_CODE_2), PDType1Font.HELVETICA);
+                PDAcroForm pdfForm = pdDocumentCatalog.getAcroForm();
                 for (Map.Entry<String, Optional<String>> entry : this.pdfMapperService.mapHeadersToPdf(caseData)
                     .entrySet()) {
                     String entryKey = entry.getKey();
