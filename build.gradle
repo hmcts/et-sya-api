@@ -8,7 +8,7 @@ plugins {
   id 'org.owasp.dependencycheck' version '9.2.0'
   id 'com.github.ben-manes.versions' version '0.51.0'
   id 'org.sonarqube' version '5.0.0.4638'
-  id 'hmcts.ccd.sdk' version '5.5.4'
+  id 'hmcts.ccd.sdk' version '5.5.10-test1'
   id 'au.com.dius.pact' version '4.3.15'
 }
 
@@ -205,7 +205,7 @@ ext {
 }
 
 dependencies {
-  implementation group: 'com.github.hmcts', name: 'et-data-model', version:'3.9.0'
+  implementation group: 'com.github.hmcts', name: 'et-data-model', version:'3.15.0'
   implementation('com.github.hmcts:et-common:1.5.9') { transitive = false }
   implementation group: 'uk.gov.dwp.regex', name: 'postcode-validation', version: '1.1.0'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
@@ -225,7 +225,7 @@ dependencies {
 
   implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.8.0'
 
-  implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.1.4'
+  implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.1.5'
 
   implementation group: 'com.github.hmcts', name: 'ccd-client', version: '4.9.2'
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.3'
@@ -242,17 +242,17 @@ dependencies {
   implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: log4JVersion
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4JVersion
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
-  implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.39.3'
+  implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.40'
 
-  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.13.4'
+  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.14.1'
   implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.18'
   implementation 'org.json:json:20240303'
   implementation group: 'org.yaml', name: 'snakeyaml', version: '2.2'
 
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.89'
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.24'
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.90'
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.25'
 
-  implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '6.3.0'
+  implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '6.3.1'
 
   implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
 
@@ -281,7 +281,7 @@ dependencies {
   testImplementation group: 'io.rest-assured', name: 'rest-assured'
   testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit', version: '3.2.7'
 
-  testImplementation 'com.github.hmcts:fortify-client:1.4.2:all'
+  testImplementation 'com.github.hmcts:fortify-client:1.4.3:all'
 
   // Pact Contract Tests
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: '4.1.41'

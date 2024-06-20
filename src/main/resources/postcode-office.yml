@@ -78,6 +78,7 @@ tribunal-offices:
     SS: London East
     EC: London Central
     N1: London Central
+    N1C: London Central
     NW1: London Central
     NW3: London Central
     NW5: London Central
@@ -92,6 +93,7 @@ tribunal-offices:
     SW6: London Central
     SW7: London Central
     W: London Central
+    WC: London Central
     AL: Watford
     CB: Watford
     EN: Watford
