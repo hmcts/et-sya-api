@@ -4,11 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
+import org.apache.pdfbox.pdmodel.PDResources;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
-import org.elasticsearch.common.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -39,9 +41,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.HELVETICA_PDFBOX_CHARACTER_CODE_1;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.HELVETICA_PDFBOX_CHARACTER_CODE_2;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.TIMES_NEW_ROMAN_PDFBOX_CHARACTER_CODE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 
 /**
@@ -50,7 +56,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGU
 @Slf4j
 @Service
 @RequiredArgsConstructor()
-@SuppressWarnings({"PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 public class PdfService {
 
     private final PdfMapperService pdfMapperService;
@@ -66,9 +72,10 @@ public class PdfService {
 
     private static final String TSE_FILENAME = "Contact the tribunal - ";
     private static final String CLAIMANT_TITLE = "Claimant";
-    private static final String CLAIMANT_RESPONSE = "ClaimantResponse.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private static final String NOT_FOUND = "not found";
+    private static final List<String> DOCUMENT_CHARS_TO_REPLACE = List.of("@", "/", "\\", "'");
+
 
     /**
      * Converts a {@link CaseData} class object into a pdf document
@@ -103,8 +110,13 @@ public class PdfService {
         if (!ObjectUtils.isEmpty(stream)) {
             try (PDDocument pdfDocument = Loader.loadPDF(
                 Objects.requireNonNull(stream))) {
+                PDResources resources = new PDResources();
+                resources.put(COSName.getPDFName(TIMES_NEW_ROMAN_PDFBOX_CHARACTER_CODE), PDType1Font.TIMES_ROMAN);
+                resources.put(COSName.getPDFName(HELVETICA_PDFBOX_CHARACTER_CODE_1), PDType1Font.HELVETICA);
+                resources.put(COSName.getPDFName(HELVETICA_PDFBOX_CHARACTER_CODE_2), PDType1Font.HELVETICA);
                 PDDocumentCatalog pdDocumentCatalog = pdfDocument.getDocumentCatalog();
                 PDAcroForm pdfForm = pdDocumentCatalog.getAcroForm();
+                pdfForm.setDefaultResources(resources);
                 for (Map.Entry<String, Optional<String>> entry : this.pdfMapperService.mapHeadersToPdf(caseData)
                     .entrySet()) {
                     String entryKey = entry.getKey();
@@ -148,16 +160,16 @@ public class PdfService {
                                                             UserInfo userInfo) {
         String claimantFirstName = caseData.getClaimantIndType().getClaimantFirstNames();
         String claimantLastName = caseData.getClaimantIndType().getClaimantLastName();
-        if (Strings.isNullOrEmpty(claimantFirstName)) {
+        if (isNullOrEmpty(claimantFirstName)) {
             claimantFirstName = userInfo.getGivenName();
         }
-        if (Strings.isNullOrEmpty(claimantLastName)) {
+        if (isNullOrEmpty(claimantLastName)) {
             claimantLastName = userInfo.getFamilyName();
         }
         return "ET1 - "
-            + claimantFirstName
+            + sanitizePartyName(claimantFirstName)
             + " "
-            + claimantLastName
+            + sanitizePartyName(claimantLastName)
             + (ENGLISH_LANGUAGE.equals(documentLanguage) ? "" : " " + documentLanguage)
             + ".pdf";
     }
@@ -170,7 +182,7 @@ public class PdfService {
             .findFirst();
         String acasName = "";
         if (respondent.isPresent()) {
-            acasName = respondent.get().getValue().getRespondentName() + " - ";
+            acasName = sanitizePartyName(respondent.get().getValue().getRespondentName()) + " - ";
         }
 
         return "ACAS Certificate - "
@@ -344,5 +356,17 @@ public class PdfService {
             documentName,
             claimantResponseCya
         );
+    }
+
+    private static String sanitizePartyName(String partyName) {
+        if (isNullOrEmpty(partyName)) {
+            return "";
+        }
+
+        String sanitizedName = partyName;
+        for (String charToReplace : DOCUMENT_CHARS_TO_REPLACE) {
+            sanitizedName = sanitizedName.replace(charToReplace, " ");
+        }
+        return sanitizedName;
     }
 }
