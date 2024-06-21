@@ -205,7 +205,7 @@ ext {
 }
 
 dependencies {
-  implementation group: 'com.github.hmcts', name: 'et-data-model', version:'3.15.0'
+  implementation group: 'com.github.hmcts', name: 'et-data-model', version:'3.15.2'
   implementation('com.github.hmcts:et-common:1.5.9') { transitive = false }
   implementation group: 'uk.gov.dwp.regex', name: 'postcode-validation', version: '1.1.0'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
@@ -267,7 +267,7 @@ dependencies {
   functionalTestAnnotationProcessor group: 'org.projectlombok', name: 'lombok'
   integrationTestAnnotationProcessor group: 'org.projectlombok', name: 'lombok'
 
-  testImplementation group: 'io.github.openfeign', name: 'feign-jackson', version: '13.2.1'
+  testImplementation group: 'io.github.openfeign', name: 'feign-jackson', version: '13.3'
   testImplementation group: 'org.mockito', name: 'mockito-inline', version: '5.2.0'
   testImplementation(platform('org.junit:junit-bom:5.10.2'))
   testImplementation group: 'org.projectlombok', name: 'lombok'
