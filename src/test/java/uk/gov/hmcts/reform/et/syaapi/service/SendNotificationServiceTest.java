@@ -23,10 +23,10 @@ import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -53,19 +53,19 @@ class SendNotificationServiceTest {
     private static final String ID = "777";
     private static final String CASE_ID = "1234";
     private static final List<String> NOTIFICATION_SUBJECT_IS_ECC =
-        Arrays.asList("Employer Contract Claim", "Case management orders / requests");
+        List.of("Employer Contract Claim", "Case management orders / requests");
     private static final List<String> NOTIFICATION_SUBJECT_IS_NOT_ECC =
-        Arrays.asList("Case management orders / requests");
+        List.of("Case management orders / requests");
     DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     @Mock
     private CaseService caseService;
     @Mock
-    private CaseDocumentService caseDocumentService;
-    @Mock
     private NotificationService notificationService;
     @Mock
     private FeatureToggleService featureToggleService;
+    @Mock
+    IdamClient idamClient;
 
     private SendNotificationService sendNotificationService;
 
@@ -74,10 +74,10 @@ class SendNotificationServiceTest {
         ObjectMapper objectMapper = new ObjectMapper();
         sendNotificationService = new SendNotificationService(
             caseService,
-            caseDocumentService,
             new CaseDetailsConverter(objectMapper),
             notificationService,
-            featureToggleService
+            featureToggleService,
+            idamClient
         );
         testData = new TestData();
     }
