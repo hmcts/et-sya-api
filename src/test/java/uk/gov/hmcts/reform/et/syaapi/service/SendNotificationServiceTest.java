@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +23,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -31,6 +31,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -45,9 +48,10 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.YES;
 
-@SuppressWarnings({"PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 @ExtendWith(MockitoExtension.class)
 class SendNotificationServiceTest {
+    private static final String AUTHOR = "Barry White";
     private TestData testData;
     private static final String MOCK_TOKEN = "Bearer TestServiceAuth";
     private static final String ID = "777";
@@ -135,13 +139,13 @@ class SendNotificationServiceTest {
             SendNotificationTypeItem expectedItem = items.get(i);
             SendNotificationTypeItem actualItem = data.getSendNotificationCollection().get(i);
 
-            Assertions.assertEquals(expectedItem.getId(), actualItem.getId());
-            Assertions.assertEquals(
+            assertEquals(expectedItem.getId(), actualItem.getId());
+            assertEquals(
                 expectedItem.getValue().getNotificationState(), actualItem.getValue().getNotificationState());
 
             for (int j = 0; j < actualItem.getValue().getRespondCollection().size(); j++) {
                 PseResponseType actualResponseType = actualItem.getValue().getRespondCollection().get(j).getValue();
-                Assertions.assertEquals(VIEWED, actualResponseType.getResponseState());
+                assertEquals(VIEWED, actualResponseType.getResponseState());
             }
         }
     }
@@ -174,7 +178,7 @@ class SendNotificationServiceTest {
             eq(MOCK_TOKEN), eq("11"), contentCaptor.capture(), eq(CASE_ID));
 
         CaseData data = (CaseData) contentCaptor.getValue().getData();
-        Assertions.assertEquals(items, data.getSendNotificationCollection());
+        assertEquals(items, data.getSendNotificationCollection());
     }
 
     @Test
@@ -205,7 +209,7 @@ class SendNotificationServiceTest {
             eq(MOCK_TOKEN), eq("11"), contentCaptor.capture(), eq(CASE_ID));
 
         CaseData data = (CaseData) contentCaptor.getValue().getData();
-        Assertions.assertEquals(items, data.getSendNotificationCollection());
+        assertEquals(items, data.getSendNotificationCollection());
     }
 
     @Test
@@ -235,13 +239,18 @@ class SendNotificationServiceTest {
             eq(MOCK_TOKEN), eq("11"), contentCaptor.capture(), eq(CASE_ID));
 
         CaseData data = (CaseData) contentCaptor.getValue().getData();
-        Assertions.assertEquals(items, data.getSendNotificationCollection());
+        assertEquals(items, data.getSendNotificationCollection());
     }
 
     @Test
     void shouldUpdateAddResponseSendNotification() {
-        SendNotificationAddResponseRequest request = testData.getSendNotificationAddResponseRequest();
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(
+            UserInfo.builder()
+                .name(AUTHOR)
+                .build());
+        when(featureToggleService.isMultiplesEnabled()).thenReturn(true);
 
+        SendNotificationAddResponseRequest request = testData.getSendNotificationAddResponseRequest();
         StartEventResponse startEventResponse = testData.getUpdateCaseEventResponse();
         addNotificationSubject(startEventResponse, NOTIFICATION_SUBJECT_IS_ECC);
 
@@ -294,18 +303,21 @@ class SendNotificationServiceTest {
 
         SendNotificationType notification = data.getSendNotificationCollection().get(0).getValue();
         PseResponseType actual = notification.getRespondCollection().get(0).getValue();
+
+
+        assertEquals(expected.getResponse(), actual.getResponse());
+        assertEquals(expected.getFrom(), actual.getFrom());
+        assertTrue(actual.getDate().matches("^\\d{1,2} [A-Za-z]{3,4} \\d{4}$"));
+        assertEquals(NO, actual.getHasSupportingMaterial());
+        assertEquals(SUBMITTED, notification.getNotificationState());
+
         GenericTypeItem<RespondNotificationType> tribunalResponse =
             notification.getRespondNotificationTypeCollection().get(0);
+        assertEquals(SUBMITTED, tribunalResponse.getValue().getState());
+        assertNull(tribunalResponse.getValue().getIsClaimantResponseDue());
+        assertEquals(AUTHOR, actual.getAuthor());
 
-        Assertions.assertEquals(expected.getResponse(), actual.getResponse());
-        Assertions.assertEquals(expected.getFrom(), actual.getFrom());
-        Assertions.assertTrue(actual.getDate().matches("^\\d{1,2} [A-Za-z]{3,4} \\d{4}$"));
-        Assertions.assertEquals(NO, actual.getHasSupportingMaterial());
-        Assertions.assertEquals(SUBMITTED, notification.getNotificationState());
-        Assertions.assertEquals(SUBMITTED, tribunalResponse.getValue().getState());
-        Assertions.assertNull(tribunalResponse.getValue().getIsClaimantResponseDue());
-
-        Assertions.assertEquals(YES, actual.getIsECC());
+        assertEquals(YES, actual.getIsECC());
         assertDoesNotThrow(() -> LocalDateTime.parse(actual.getDateTime(), formatter));
     }
 
@@ -336,7 +348,7 @@ class SendNotificationServiceTest {
             .value(
                 PseResponseType.builder()
                     .from(CLAIMANT)
-                    .hasSupportingMaterial(NO)
+                    .hasSupportingMaterial(YES)
                     .response("RESPONSE")
                     .build()
             ).build();
@@ -365,17 +377,18 @@ class SendNotificationServiceTest {
 
         SendNotificationType notification = data.getSendNotificationCollection().get(0).getValue();
         PseResponseType actual = notification.getRespondCollection().get(0).getValue();
+
+        assertEquals(expected.getResponse(), actual.getResponse());
+        assertEquals(expected.getFrom(), actual.getFrom());
+        assertTrue(actual.getDate().matches("^\\d{1,2} [A-Za-z]{3,4} \\d{4}$"));
+        assertEquals(NO, actual.getHasSupportingMaterial());
+        assertEquals(SUBMITTED, notification.getNotificationState());
+
         GenericTypeItem<RespondNotificationType> tribunalResponse =
             notification.getRespondNotificationTypeCollection().get(0);
+        assertNull(tribunalResponse.getValue().getIsClaimantResponseDue());
 
-        Assertions.assertEquals(expected.getResponse(), actual.getResponse());
-        Assertions.assertEquals(expected.getFrom(), actual.getFrom());
-        Assertions.assertTrue(actual.getDate().matches("^\\d{1,2} [A-Za-z]{3,4} \\d{4}$"));
-        Assertions.assertEquals(NO, actual.getHasSupportingMaterial());
-        Assertions.assertEquals(SUBMITTED, notification.getNotificationState());
-        Assertions.assertNull(tribunalResponse.getValue().getIsClaimantResponseDue());
-
-        Assertions.assertEquals(NO, actual.getIsECC());
+        assertEquals(NO, actual.getIsECC());
         assertDoesNotThrow(() -> LocalDateTime.parse(actual.getDateTime(), formatter));
     }
 
@@ -409,7 +422,7 @@ class SendNotificationServiceTest {
 
         List<PseResponseTypeItem> expectedResponses = items.get(0).getValue().getRespondCollection();
 
-        Assertions.assertNull(expectedResponses);
+        assertNull(expectedResponses);
     }
 
 

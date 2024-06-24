@@ -244,8 +244,7 @@ class NotificationServiceTest {
     @MethodSource("retrieveSubmitCaseConfirmationEmailPdfFilesArguments")
     void shouldTestSubmitCaseConfirmationWithGivenPdfFilesArguments(List<PdfDecodedMultipartFile> pdfFiles,
                                                                     String expectedValue) {
-        NotificationService notificationService = new NotificationService(
-            notificationClient, notificationsProperties, featureToggleService);
+
         caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(null);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
             caseTestData.getCaseRequest(),
@@ -272,8 +271,6 @@ class NotificationServiceTest {
         caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(null);
         List<PdfDecodedMultipartFile> casePdfFiles = new ArrayList<>();
         casePdfFiles.add(TestConstants.PDF_DECODED_MULTIPART_FILE1);
-        NotificationService notificationService = new NotificationService(
-            notificationClient, notificationsProperties, featureToggleService);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
             caseTestData.getCaseRequest(),
             caseTestData.getCaseData(),
@@ -306,8 +303,6 @@ class NotificationServiceTest {
         caseTestData.getCaseData().getClaimantHearingPreference().setContactLanguage(selectedLanguage);
         List<PdfDecodedMultipartFile> casePdfFiles = new ArrayList<>();
         casePdfFiles.add(TestConstants.PDF_DECODED_MULTIPART_FILE1);
-        NotificationService notificationService = new NotificationService(
-            notificationClient, notificationsProperties, featureToggleService);
         SendEmailResponse response = notificationService.sendSubmitCaseConfirmationEmail(
             caseTestData.getCaseRequest(),
             caseTestData.getCaseData(),
@@ -338,8 +333,6 @@ class NotificationServiceTest {
                 .thenReturn(caseTestData.getCaseData().getClaimantIndType().getClaimantLastName());
             mockedServiceUtil.when(() -> GenericServiceUtil.findPdfFileBySelectedLanguage(any(), anyString()))
                 .thenReturn(TEST_SUBMIT_CASE_PDF_FILE_RESPONSE.getBytes());
-            NotificationService notificationService =
-                new NotificationService(notificationClient, notificationsProperties, featureToggleService);
             notificationService.sendSubmitCaseConfirmationEmail(
                 caseTestData.getCaseRequest(),
                 caseTestData.getCaseData(),
@@ -1023,7 +1016,7 @@ class NotificationServiceTest {
                                                .build());
             respondentSumTypeItem.setId(String.valueOf(UUID.randomUUID()));
 
-            CaseData caseData = caseTestData.getCaseData();
+            caseData = caseTestData.getCaseData();
             caseData.getRespondentCollection().add(respondentSumTypeItem);
 
             notificationService.sendResponseEmailToRespondent(
@@ -1269,7 +1262,7 @@ class NotificationServiceTest {
         given(notificationsProperties.getBundlesClaimantSubmittedNotificationTemplateId()
         ).willReturn("bundlesClaimantSubmittedNotificationTemplateId");
 
-        CaseData caseData = caseTestData.getCaseData();
+        caseData = caseTestData.getCaseData();
         String futureDate = LocalDateTime.now().plusDays(5).toString();
         caseData.getHearingCollection().get(0).getValue().getHearingDateCollection().get(0).getValue().setListedDate(
             futureDate);
