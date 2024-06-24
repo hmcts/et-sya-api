@@ -61,6 +61,8 @@ class SendNotificationServiceTest {
     @Mock
     private CaseService caseService;
     @Mock
+    private CaseDocumentService caseDocumentService;
+    @Mock
     private NotificationService notificationService;
     @Mock
     private FeatureToggleService featureToggleService;
@@ -74,6 +76,7 @@ class SendNotificationServiceTest {
         ObjectMapper objectMapper = new ObjectMapper();
         sendNotificationService = new SendNotificationService(
             caseService,
+            caseDocumentService,
             new CaseDetailsConverter(objectMapper),
             notificationService,
             featureToggleService,

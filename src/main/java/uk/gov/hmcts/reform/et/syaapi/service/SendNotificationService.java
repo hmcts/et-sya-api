@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.PseResponseTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondNotificationType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationType;
@@ -33,7 +35,9 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.NOT_VIEWED_YET;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.VIEWED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.PdfMapperConstants.NO;
 
 @Service
 @Slf4j
@@ -41,6 +45,7 @@ import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT
 public class SendNotificationService {
 
     private final CaseService caseService;
+    private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final NotificationService notificationService;
     private final FeatureToggleService featureToggleService;
@@ -142,6 +147,19 @@ public class SendNotificationService {
         pseResponseType.setFrom(CLAIMANT);
         if (featureToggleService.isMultiplesEnabled()) {
             pseResponseType.setAuthor(idamClient.getUserInfo(authorization).getName());
+        }
+
+        if (request.getSupportingMaterialFile() != null) {
+            DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(
+                CLAIMANT_CORRESPONDENCE_DOCUMENT,
+                request.getSupportingMaterialFile()
+            );
+            var documentTypeItems = new ArrayList<GenericTypeItem<DocumentType>>();
+            documentTypeItems.add(documentTypeItem);
+            pseResponseType.setSupportingMaterial(documentTypeItems);
+            pseResponseType.setHasSupportingMaterial(YES);
+        } else {
+            pseResponseType.setHasSupportingMaterial(NO);
         }
 
         NotificationsHelper.updateWorkAllocationFields(
