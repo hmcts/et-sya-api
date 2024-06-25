@@ -56,7 +56,7 @@ case_document_am:
 
 acas:
   api:
-    url: ${ACAS_BASE_URL:https://api-dev-acas-01.azure-api.net/ECCLDev}
+    url: ${ACAS_BASE_URL:https://api-dev-acas-01.azure-api.net/ECCLUAT}
     key: ${ACAS_KEY:AAAAAAAAAAAAAAAAAAAA}
     # This environment variable can be set in your local environment. Do not change this value.
 
@@ -66,7 +66,7 @@ tornado:
     key: ${TORNADO_ACCESS_KEY:ignored_default_value}
 
 notifications:
-  govNotifyApiKey: ${GOV_NOTIFY_API_KEY:miketest-002d2170-e381-4545-8251-5e87dab724e7-6ac92d29-7698-4748-b346-4bfc5c7b2d7d}
+  govNotifyApiKey: ${GOV_NOTIFY_API_KEY:AAAAAAAAAAAAAAAAA}
 
   citizenPortalLink: ${CITIZEN_PORTAL_LINK:https://localhost:3001/citizen-hub/}
   exuiCaseDetailsLink: ${EXUI_CASE_DETAILS_URL:http://localhost:3455/cases/case-details/}
@@ -119,10 +119,10 @@ pdf:
   claimant_response_template: "EM-TRB-EGW-ENG-00069.docx"
 
 
-caseWorkerUserName: ${CASEWORKER_USER_NAME:englandwales@hmcts.net}
+caseWorkerUserName: ${CASEWORKER_USER_NAME:user_name}
 caseWorkerPassword: ${CASEWORKER_PASSWORD:password}
 
 launchdarkly:
-  sdk-key: ${LAUNCH_DARKLY_SDK_KEY:sdk-33e26490-a665-4612-929b-7a1b202963d5}
+  sdk-key: ${LAUNCH_DARKLY_SDK_KEY:sdk-key}
   offline-mode: false
   env: ${LAUNCH_DARKLY_ENV:default}
