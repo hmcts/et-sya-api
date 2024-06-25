@@ -28,7 +28,7 @@ public class JurisdictionCodesMapper {
         Map.entry(ClaimTypesConstants.AGE, JurisdictionCodesConstants.DAG),
         Map.entry(ClaimTypesConstants.DISABILITY, JurisdictionCodesConstants.DDA),
         Map.entry(ClaimTypesConstants.ETHNICITY, JurisdictionCodesConstants.RRD),
-        Map.entry(ClaimTypesConstants.GENDER_REASSIGNMENT, JurisdictionCodesConstants.GRA),
+        Map.entry(ClaimTypesConstants.GENDER_REASSIGNMENT, JurisdictionCodesConstants.SXD),
         Map.entry(ClaimTypesConstants.MARRIAGE_OR_CIVIL_PARTNERSHIP, JurisdictionCodesConstants.SXD),
         Map.entry(ClaimTypesConstants.PREGNANCY_OR_MATERNITY, JurisdictionCodesConstants.MAT),
         Map.entry(ClaimTypesConstants.RACE, JurisdictionCodesConstants.RRD),

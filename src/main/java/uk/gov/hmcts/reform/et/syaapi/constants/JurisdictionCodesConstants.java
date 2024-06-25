@@ -9,7 +9,6 @@ public final class JurisdictionCodesConstants {
     public static final String PID = "PID";
     public static final String DAG = "DAG";
     public static final String DDA = "DDA";
-    public static final String GRA = "GRA";
     public static final String RRD = "RRD";
     public static final String SXD = "SXD";
     public static final String MAT = "MAT";
