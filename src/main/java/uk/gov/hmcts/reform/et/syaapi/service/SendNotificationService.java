@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -48,6 +49,7 @@ public class SendNotificationService {
     private final CaseDetailsConverter caseDetailsConverter;
     private final NotificationService notificationService;
     private final FeatureToggleService featureToggleService;
+    private final IdamClient idamClient;
 
     public CaseDetails updateSendNotificationState(String authorization, SendNotificationStateUpdateRequest request) {
         StartEventResponse startEventResponse = caseService.startUpdate(
@@ -143,6 +145,9 @@ public class SendNotificationService {
         PseResponseType pseResponseType = request.getPseResponseType();
         pseResponseType.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
         pseResponseType.setFrom(CLAIMANT);
+        if (featureToggleService.isMultiplesEnabled()) {
+            pseResponseType.setAuthor(idamClient.getUserInfo(authorization).getName());
+        }
 
         if (request.getSupportingMaterialFile() != null) {
             DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(
