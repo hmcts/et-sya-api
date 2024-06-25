@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfServiceException;
 import uk.gov.hmcts.reform.idam.client.IdamApi;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -108,8 +107,7 @@ class CaseServiceBootTest {
     }
 
     @Test
-    void theSubmitCaseProducesCaseDetails()
-        throws PdfServiceException {
+    void theSubmitCaseProducesCaseDetails() {
         when(acasService.getAcasCertificatesByCaseData(caseTestData.getCaseData())).thenReturn(
             new ArrayList<>()
         );
