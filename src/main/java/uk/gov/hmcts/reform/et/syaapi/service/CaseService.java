@@ -431,9 +431,12 @@ public class CaseService {
 
         String docName = "Application %d - %s.pdf".formatted(
             ApplicationService.getNextApplicationNumber(caseData),
-            ClaimantTse.APP_TYPE_MAP.get(claimantTse.getContactApplicationType()).replace("/", " or "));
+            ClaimantTse.APP_TYPE_MAP.get(claimantTse.getContactApplicationType())
+                .replace("/", " or "));
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            pdfUploadService.convertClaimantTseIntoMultipartFile(claimantTse, caseData.getEthosCaseReference(), docName);
+            pdfUploadService.convertClaimantTseIntoMultipartFile(claimantTse,
+                                                                 caseData.getEthosCaseReference(),
+                                                                 docName);
         String applicationDocMapping =
             DocumentHelper.claimantApplicationTypeToDocType(claimantTse.getContactApplicationType());
         String topLevel = DocumentHelper.getTopLevelDocument(applicationDocMapping);

@@ -83,7 +83,7 @@ class CaseServiceTest {
     @Mock
     private JurisdictionCodesMapper jurisdictionCodesMapper;
     @Mock
-    private PdfUploadService pdfService;
+    private PdfUploadService pdfUploadService;
     @Mock
     private AcasService acasService;
     @Mock
@@ -163,10 +163,10 @@ class CaseServiceTest {
                 TEST
             );
 
-        when(pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(any(), any()))
+        when(pdfUploadService.convertAcasCertificatesToPdfDecodedMultipartFiles(any(), any()))
             .thenReturn(List.of(pdfDecodedMultipartFile));
 
-        when(pdfService.convertCaseDataToPdfDecodedMultipartFile(any(), any()))
+        when(pdfUploadService.convertCaseDataToPdfDecodedMultipartFile(any(), any()))
             .thenReturn(List.of(pdfDecodedMultipartFile));
 
         when(acasService.getAcasCertificatesByCaseData(any())).thenReturn(List.of());
@@ -525,7 +525,7 @@ class CaseServiceTest {
     @Test
     void shouldInvokeClaimantTsePdf()
         throws DocumentGenerationException {
-        when(pdfService.convertClaimantTseIntoMultipartFile(any(), any(), anyString())).thenReturn(
+        when(pdfUploadService.convertClaimantTseIntoMultipartFile(any(), any(), anyString())).thenReturn(
             tsePdfMultipartFileMock);
 
         assertDoesNotThrow(() ->
@@ -541,7 +541,7 @@ class CaseServiceTest {
     @SneakyThrows
     @Test
     void givenPdfServiceErrorProducesDocumentGenerationException() {
-        when(pdfService.convertClaimantTseIntoMultipartFile(any(), any(), anyString())).thenThrow(
+        when(pdfUploadService.convertClaimantTseIntoMultipartFile(any(), any(), anyString())).thenThrow(
             new DocumentGenerationException(TEST));
 
         assertThrows(DocumentGenerationException.class, () -> caseService.uploadTseCyaAsPdf(
