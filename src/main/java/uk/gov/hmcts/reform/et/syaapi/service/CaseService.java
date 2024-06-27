@@ -465,7 +465,9 @@ public class CaseService {
             .getValue();
 
         PdfDecodedMultipartFile multipartResponsePdf =
-            pdfUploadService.convertClaimantResponseIntoMultipartFile(request, description, caseData.getEthosCaseReference(),
+            pdfUploadService.convertClaimantResponseIntoMultipartFile(request,
+                                                                      description,
+                                                                      caseData.getEthosCaseReference(),
                                                                       application);
 
         String applicationDoc = TseApplicationHelper.getApplicationDoc(application);
