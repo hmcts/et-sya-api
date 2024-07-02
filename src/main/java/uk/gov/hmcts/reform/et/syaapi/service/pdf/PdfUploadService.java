@@ -59,7 +59,7 @@ public class PdfUploadService {
     private static final String CLAIMANT_TITLE = "Claimant";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private static final String NOT_FOUND = "not found";
-    private static final List<String> DOCUMENT_CHARS_TO_REPLACE = List.of("@", "/", "\\", "'");
+    private static final List<String> DOCUMENT_CHARS_TO_REPLACE = List.of("@", "/", "\\", "'", ":");
 
     private static String createPdfDocumentNameFromCaseData(CaseData caseData,
                                                             String documentLanguage,

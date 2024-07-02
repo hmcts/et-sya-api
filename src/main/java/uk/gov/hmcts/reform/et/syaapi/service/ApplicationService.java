@@ -80,13 +80,11 @@ public class ApplicationService {
         ClaimantTse claimantTse = request.getClaimantTse();
         caseDetails.getData().put("claimantTse", claimantTse);
 
-        if (!request.isTypeC() && YES.equals(claimantTse.getCopyToOtherPartyYesOrNo())) {
-            try {
-                log.info("Uploading pdf of TSE application");
-                caseService.uploadTseCyaAsPdf(authorization, caseDetails, claimantTse, caseTypeId);
-            } catch (CaseDocumentException | DocumentGenerationException e) {
-                log.error("Couldn't upload pdf of TSE application " + e.getMessage());
-            }
+        try {
+            log.info("Uploading pdf of TSE application");
+            caseService.uploadTseCyaAsPdf(authorization, caseDetails, claimantTse, caseTypeId);
+        } catch (CaseDocumentException | DocumentGenerationException e) {
+            log.error("Couldn't upload pdf of TSE application " + e.getMessage());
         }
 
         UploadedDocumentType contactApplicationFile = claimantTse.getContactApplicationFile();
