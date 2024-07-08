@@ -8,6 +8,8 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.ecm.common.helpers.DocumentHelper;
+import uk.gov.hmcts.ecm.common.service.PostcodeToOfficeService;
+import uk.gov.hmcts.ecm.common.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
@@ -29,8 +31,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfUploadService;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.DocumentUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
@@ -81,7 +82,7 @@ public class CaseService {
     private final AcasService acasService;
     private final CaseDocumentService caseDocumentService;
     private final NotificationService notificationService;
-    private final PdfService pdfService;
+    private final PdfUploadService pdfUploadService;
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
     private final CaseOfficeService caseOfficeService;
     private static final String ALL_CASES_QUERY = "{\"size\":10000,\"query\":{\"match_all\": {}}}";
@@ -213,13 +214,13 @@ public class CaseService {
         // Create case pdf file(s). If the user selected language is Welsh, we also create Welsh pdf file
         // and add it to our pdf files list
         List<PdfDecodedMultipartFile> casePdfFiles =
-            pdfService.convertCaseDataToPdfDecodedMultipartFile(caseData, userInfo);
+            pdfUploadService.convertCaseDataToPdfDecodedMultipartFile(caseData, userInfo);
         // Submit e-mail to the user with attached ET1 pdf file according to selected contact language
         // (Welsh or English)
         notificationService.sendSubmitCaseConfirmationEmail(caseRequest, caseData, userInfo, casePdfFiles);
         // Creating acas certificates for each respondent
         List<PdfDecodedMultipartFile> acasCertificates =
-            pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(
+            pdfUploadService.convertAcasCertificatesToPdfDecodedMultipartFiles(
                 caseData, acasService.getAcasCertificatesByCaseData(caseData));
         // Uploading all documents to document store
         List<DocumentTypeItem> documentList = uploadAllDocuments(authorization, caseRequest, caseData, casePdfFiles,
@@ -430,9 +431,12 @@ public class CaseService {
 
         String docName = "Application %d - %s.pdf".formatted(
             ApplicationService.getNextApplicationNumber(caseData),
-            ClaimantTse.APP_TYPE_MAP.get(claimantTse.getContactApplicationType()).replace("/", " or "));
+            ClaimantTse.APP_TYPE_MAP.get(claimantTse.getContactApplicationType())
+                .replace("/", " or "));
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            pdfService.convertClaimantTseIntoMultipartFile(claimantTse, caseData.getEthosCaseReference(), docName);
+            pdfUploadService.convertClaimantTseIntoMultipartFile(claimantTse,
+                                                                 caseData.getEthosCaseReference(),
+                                                                 docName);
         String applicationDocMapping =
             DocumentHelper.claimantApplicationTypeToDocType(claimantTse.getContactApplicationType());
         String topLevel = DocumentHelper.getTopLevelDocument(applicationDocMapping);
@@ -461,8 +465,10 @@ public class CaseService {
             .getValue();
 
         PdfDecodedMultipartFile multipartResponsePdf =
-            pdfService.convertClaimantResponseIntoMultipartFile(request, description, caseData.getEthosCaseReference(),
-                                                                application);
+            pdfUploadService.convertClaimantResponseIntoMultipartFile(request,
+                                                                      description,
+                                                                      caseData.getEthosCaseReference(),
+                                                                      application);
 
         String applicationDoc = TseApplicationHelper.getApplicationDoc(application);
         String topLevel = DocumentHelper.getTopLevelDocument(applicationDoc);

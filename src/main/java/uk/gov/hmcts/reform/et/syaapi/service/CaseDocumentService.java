@@ -19,6 +19,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import uk.gov.hmcts.ecm.common.helpers.DocumentHelper;
+import uk.gov.hmcts.ecm.common.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
@@ -26,7 +27,6 @@ import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.et.syaapi.config.interceptors.ResourceNotFoundException;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;

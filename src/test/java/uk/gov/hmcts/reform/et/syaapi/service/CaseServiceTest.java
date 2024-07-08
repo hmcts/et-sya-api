@@ -11,6 +11,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ecm.common.service.PostcodeToOfficeService;
+import uk.gov.hmcts.ecm.common.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
@@ -30,8 +32,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfDecodedMultipartFile;
-import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfService;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfUploadService;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -82,7 +83,7 @@ class CaseServiceTest {
     @Mock
     private JurisdictionCodesMapper jurisdictionCodesMapper;
     @Mock
-    private PdfService pdfService;
+    private PdfUploadService pdfUploadService;
     @Mock
     private AcasService acasService;
     @Mock
@@ -162,10 +163,10 @@ class CaseServiceTest {
                 TEST
             );
 
-        when(pdfService.convertAcasCertificatesToPdfDecodedMultipartFiles(any(), any()))
+        when(pdfUploadService.convertAcasCertificatesToPdfDecodedMultipartFiles(any(), any()))
             .thenReturn(List.of(pdfDecodedMultipartFile));
 
-        when(pdfService.convertCaseDataToPdfDecodedMultipartFile(any(), any()))
+        when(pdfUploadService.convertCaseDataToPdfDecodedMultipartFile(any(), any()))
             .thenReturn(List.of(pdfDecodedMultipartFile));
 
         when(acasService.getAcasCertificatesByCaseData(any())).thenReturn(List.of());
@@ -524,7 +525,7 @@ class CaseServiceTest {
     @Test
     void shouldInvokeClaimantTsePdf()
         throws DocumentGenerationException {
-        when(pdfService.convertClaimantTseIntoMultipartFile(any(), any(), anyString())).thenReturn(
+        when(pdfUploadService.convertClaimantTseIntoMultipartFile(any(), any(), anyString())).thenReturn(
             tsePdfMultipartFileMock);
 
         assertDoesNotThrow(() ->
@@ -540,7 +541,7 @@ class CaseServiceTest {
     @SneakyThrows
     @Test
     void givenPdfServiceErrorProducesDocumentGenerationException() {
-        when(pdfService.convertClaimantTseIntoMultipartFile(any(), any(), anyString())).thenThrow(
+        when(pdfUploadService.convertClaimantTseIntoMultipartFile(any(), any(), anyString())).thenThrow(
             new DocumentGenerationException(TEST));
 
         assertThrows(DocumentGenerationException.class, () -> caseService.uploadTseCyaAsPdf(
