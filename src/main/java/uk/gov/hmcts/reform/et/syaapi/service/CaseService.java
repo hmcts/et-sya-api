@@ -281,21 +281,33 @@ public class CaseService {
      */
     public CaseDetails triggerEvent(String authorization, String caseId, CaseEvent eventName,
                                     String caseType, Map<String, Object> caseData) {
+        if (authorization == null || caseId == null || caseType == null || eventName == null || caseData == null) {
+            log.error("Invalid input parameters for triggerEvent");
+            return null;
+        }
+
         ObjectMapper objectMapper = new ObjectMapper();
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
-        CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseData);
+        CaseDetails latestCaseDetails = startEventResponse.getCaseDetails();
 
-        if (SUBMIT_CASE_DRAFT == eventName) {
-            enrichCaseDataWithJurisdictionCodes(caseData1);
+        if (latestCaseDetails != null) {
+            CaseData latestCaseData = caseDetailsConverter.mapRequestCaseDataToLatestCaseData(
+                caseData, latestCaseDetails.getData());
+            if (SUBMIT_CASE_DRAFT == eventName) {
+                enrichCaseDataWithJurisdictionCodes(latestCaseData);
+            }
+
+            return submitUpdate(
+                authorization,
+                caseId,
+                caseDetailsConverter.et1ToCaseDataContent(startEventResponse, latestCaseData),
+                caseType
+            );
         }
 
-        return submitUpdate(
-            authorization,
-            caseId,
-            caseDetailsConverter.et1ToCaseDataContent(startEventResponse, caseData1),
-            caseType
-        );
+        log.info("Case details not found in CCD for caseId: {}", caseId);
+        return null;
     }
 
     /**
@@ -307,8 +319,7 @@ public class CaseService {
      */
     public CaseDetails triggerEventForSubmitCase(String authorization, CaseRequest caseRequest) {
         StartEventResponse startEventResponse = startUpdate(authorization, caseRequest.getCaseId(),
-                                                            caseRequest.getCaseTypeId(), SUBMIT_CASE_DRAFT
-        );
+                                                            caseRequest.getCaseTypeId(), SUBMIT_CASE_DRAFT);
         CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(
             startEventResponse.getCaseDetails().getData());
         enrichCaseDataWithJurisdictionCodes(caseData1);
@@ -340,7 +351,6 @@ public class CaseService {
                                           String caseType, CaseEvent eventName) {
         String s2sToken = authTokenGenerator.generate();
         UserInfo userInfo = idamClient.getUserInfo(authorization);
-
         return ccdApiClient.startEventForCitizen(
             authorization,
             s2sToken,
