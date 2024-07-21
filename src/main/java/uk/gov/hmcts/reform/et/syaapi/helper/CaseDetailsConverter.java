@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.helper;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
@@ -11,12 +12,14 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseState;
 
+import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Converts {@link CaseDetails} to other case related classes using {@link ObjectMapper}.
  */
+@Slf4j
 @Service
 public class CaseDetailsConverter {
 
@@ -75,5 +78,39 @@ public class CaseDetailsConverter {
             .event(Event.builder().id(startEventResponse.getEventId()).build())
             .data(caseData)
             .build();
+    }
+
+    /**
+     * Converts Request caseData field map to CaseData which is used to create CaseDataContent and save in CCD.
+     *
+     * @param requestData map object that contains the data field values of the request case details
+     * @param latestData map object that contains the data field values of the updated case details
+     *                   obtained from CCD api call
+     * @return {@link CaseData} which returns latest CaseData object representing the contents of the Case Data
+     */
+    public CaseData mapRequestCaseDataToLatestCaseData(Map<String, Object> requestData,
+                                                       Map<String, Object> latestData) {
+        CaseData requestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(requestData);
+        CaseData latestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(latestData);
+        copyNonNullProperties(requestCaseData, latestCaseData);
+        return latestCaseData;
+    }
+
+    private void copyNonNullProperties(CaseData source, CaseData target) {
+        Class<?> sourceClass = source.getClass();
+        try {
+            for (Field field : sourceClass.getDeclaredFields()) {
+                field.setAccessible(true);
+                Object value = field.get(source);
+                if (value != null) {
+                    field.set(target, value);
+                }
+                //reset accessibility to prevent illegal access
+                field.setAccessible(false);
+            }
+        } catch (IllegalAccessException e) {
+            log.error("Failed to copy the Non-Null field values of the request CaseData to the latest CaseData: {}",
+                      e.getMessage());
+        }
     }
 }

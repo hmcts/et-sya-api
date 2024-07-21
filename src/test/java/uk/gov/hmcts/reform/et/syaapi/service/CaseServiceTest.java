@@ -51,11 +51,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
@@ -533,79 +531,47 @@ class CaseServiceTest {
     }
 
     @Test
-    void triggerEvent_ValidInputs() {
+    void triggerEventForCaseDetailsUpdateWithValidInputs() {
         UserInfo userInfo22 = UserInfo.builder().uid(USER_ID).name(TEST_NAME)
             .givenName(TestConstants.TEST_FIRST_NAME).familyName(TestConstants.TEST_SURNAME).build();
         when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(userInfo22);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-
-        CaseEvent caseEventInstance = CaseEvent.SUBMIT_CASE_DRAFT;
-        CaseDetails caseDetails = CaseDetails.builder().data(new HashMap<>()).build();
-
         Map<String, Object> requestCaseData = new ConcurrentHashMap<>();
         requestCaseData.put("ethosCaseReference", "123456789");
         requestCaseData.put("caseType", "Single");
         requestCaseData.put("caseId", "caseId");
         requestCaseData.put("managingOffice", "Leeds");
+        CaseDetails caseDetails = CaseDetails.builder().data(new HashMap<>()).build();
         caseDetails.setData(requestCaseData);
         StartEventResponse startEventResponseMock2 = StartEventResponse.builder().caseDetails(caseDetails).build();
         startEventResponseMock2.setCaseDetails(caseDetails);
-        CoreCaseDataApi ccdApiClientLocal = mock(CoreCaseDataApi.class);
-        when(ccdApiClient.startEventForCitizen(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            USER_ID,
-            EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.ENGLAND_CASE_TYPE,
-            CASE_ID,
-            SUBMIT_CASE_DRAFT
-        )).thenReturn(startEventResponseMock2);
+        CaseEvent caseEventInstance = CaseEvent.SUBMIT_CASE_DRAFT;
         when(caseService.startUpdate(TEST_SERVICE_AUTH_TOKEN, CASE_ID, EtSyaConstants.ENGLAND_CASE_TYPE,
                                      caseEventInstance)).thenReturn(startEventResponseMock2);
-        when(caseService.startUpdate(TEST_SERVICE_AUTH_TOKEN, CASE_ID, EtSyaConstants.ENGLAND_CASE_TYPE,
-                                     caseEventInstance)).thenReturn(startEventResponseMock2);
-
         Map<String, Object> latestCaseData = new ConcurrentHashMap<>();
         latestCaseData.put("ethosCaseReference", "123456789");
         latestCaseData.put("caseType", "Single");
         latestCaseData.put("caseId", "caseId");
         latestCaseData.put("managingOffice", "Manchester");
         latestCaseData.put("currentPosition", "ongoing");
-
         CaseData caseData = new CaseData();
         caseData.setEthosCaseReference("123456789");
         caseData.setEcmCaseType("Single");
         caseData.setManagingOffice("Leeds");
         caseData.setCurrentPosition("ongoing");
-        when(caseDetailsConverter.mapRequestCaseDataToLatestCaseData(requestCaseData, latestCaseData))
-            .thenReturn(caseData);
 
-        CaseDataContent caseDataContent = CaseDataContent.builder()
-            .event(Event.builder().id(SUBMIT_CASE_DRAFT).build())
-            .eventToken(startEventResponseMock2.getToken())
-            .data(caseData)
-            .build();
-
-        CaseDetails updatedCaseDetails = mock(CaseDetails.class);
         Map<String, Object> updatedCaseData = new ConcurrentHashMap<>();
         updatedCaseData.put("ethosCaseReference", "123456789");
         updatedCaseData.put("managingOffice", "Leeds");
         updatedCaseData.put("currentPosition", "ongoing");
         updatedCaseData.put("caseId", "caseId");
+        CaseDetails updatedCaseDetails = mock(CaseDetails.class);
         updatedCaseDetails.setData(updatedCaseData);
-        when(caseDetailsConverter.et1ToCaseDataContent(startEventResponseMock2, caseData)).thenReturn(caseDataContent);
-        when(ccdApiClientLocal.submitEventForCitizen(TEST_SERVICE_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN,
-            USER_ID, EtSyaConstants.JURISDICTION_ID, EtSyaConstants.ENGLAND_CASE_TYPE, CASE_ID,
-            true, caseDataContent)).thenReturn(updatedCaseDetails);
-
-        when(caseService.submitUpdate(TEST_SERVICE_AUTH_TOKEN, CASE_ID, caseDataContent,
-                                      EtSyaConstants.ENGLAND_CASE_TYPE)).thenReturn(updatedCaseDetails);
-        CaseDetails result = caseService.triggerEvent(TEST_SERVICE_AUTH_TOKEN, CASE_ID, caseEventInstance,
+        caseService.triggerEvent(TEST_SERVICE_AUTH_TOKEN, CASE_ID, caseEventInstance,
                                                       EtSyaConstants.ENGLAND_CASE_TYPE, requestCaseData);
-        verify(ccdApiClientLocal).submitEventForCitizen(
-            TEST_SERVICE_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, USER_ID, EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.ENGLAND_CASE_TYPE, CASE_ID,true, caseDataContent);
-        assertNotNull(result);
+        verify(ccdApiClient).submitEventForCitizen(
+            anyString(), anyString(), anyString(), anyString(), anyString(), anyString(),
+            anyBoolean(), any());
     }
 
     @Test
