@@ -3,7 +3,7 @@ plugins {
   id 'checkstyle'
   id 'pmd'
   id 'jacoco'
-  id 'io.spring.dependency-management' version '1.1.5'
+  id 'io.spring.dependency-management' version '1.1.6'
   id 'org.springframework.boot' version '2.7.18'
   id 'org.owasp.dependencycheck' version '9.2.0'
   id 'com.github.ben-manes.versions' version '0.51.0'
@@ -205,8 +205,8 @@ ext {
 }
 
 dependencies {
-  implementation group: 'com.github.hmcts', name: 'et-data-model', version:'3.16.2'
-  implementation('com.github.hmcts:et-common:2.2.5') { transitive = false }
+  implementation group: 'com.github.hmcts', name: 'et-data-model', version:'3.17.0'
+  implementation('com.github.hmcts:et-common:2.3.0') { transitive = false }
   implementation group: 'uk.gov.dwp.regex', name: 'postcode-validation', version: '1.1.0'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '3.1.9', {
@@ -219,7 +219,7 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-json'
   implementation group: 'org.springframework.boot', name: 'spring-boot-configuration-processor'
-  implementation group: 'org.springframework.retry', name: 'spring-retry', version: '2.0.6'
+  implementation group: 'org.springframework.retry', name: 'spring-retry', version: '2.0.7'
   implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.17.2'
   implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.2'
 
@@ -244,13 +244,13 @@ dependencies {
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
   implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.40'
 
-  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.14.2'
+  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.14.3'
   implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.18'
   implementation 'org.json:json:20240303'
   implementation group: 'org.yaml', name: 'snakeyaml', version: '2.2'
 
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.91'
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.25'
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.26'
 
   implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '6.3.1'
 
@@ -277,9 +277,9 @@ dependencies {
     exclude group: 'com.vaadin.external.google', module: 'android-json'
   }
   testImplementation group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version: '3.16.1'
-  testImplementation('org.assertj:assertj-core:3.26.0')
+  testImplementation('org.assertj:assertj-core:3.26.3')
   testImplementation group: 'io.rest-assured', name: 'rest-assured'
-  testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit', version: '3.4.0'
+  testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit', version: '3.4.1'
 
   testImplementation 'com.github.hmcts:fortify-client:1.4.3:all'
 
