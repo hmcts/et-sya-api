@@ -43,4 +43,9 @@ public class FeatureToggleService {
     public boolean isMultiplesEnabled() {
         return this.featureToggleApi.isFeatureEnabled("multiples");
     }
+
+    public boolean citizenEt1Generation() {
+        return this.featureToggleApi.isFeatureEnabled("citizen-et1-generation");
+    }
+
 }

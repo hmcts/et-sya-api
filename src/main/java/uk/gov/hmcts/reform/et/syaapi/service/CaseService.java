@@ -56,7 +56,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ONLINE_SUBMISSION;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
@@ -86,6 +85,7 @@ public class CaseService {
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
     private final CaseOfficeService caseOfficeService;
     private static final String ALL_CASES_QUERY = "{\"size\":10000,\"query\":{\"match_all\": {}}}";
+    private final FeatureToggleService featureToggleService;
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
@@ -210,32 +210,38 @@ public class CaseService {
         // Submitting the case to CCD, receiving caseDetails and setting ethosCaseReference,
         // receiptDate, feeGroupReference with the received details.
         CaseDetails caseDetails = triggerEventForSubmitCase(authorization, caseRequest);
-        setCaseDataWithSubmittedCaseDetails(caseDetails, caseData);
-        // Create case pdf file(s). If the user selected language is Welsh, we also create Welsh pdf file
-        // and add it to our pdf files list
-        List<PdfDecodedMultipartFile> casePdfFiles =
-            pdfUploadService.convertCaseDataToPdfDecodedMultipartFile(caseData, userInfo);
-        // Submit e-mail to the user with attached ET1 pdf file according to selected contact language
-        // (Welsh or English)
-        notificationService.sendSubmitCaseConfirmationEmail(caseRequest, caseData, userInfo, casePdfFiles);
-        // Creating acas certificates for each respondent
-        List<PdfDecodedMultipartFile> acasCertificates =
-            pdfUploadService.convertAcasCertificatesToPdfDecodedMultipartFiles(
-                caseData, acasService.getAcasCertificatesByCaseData(caseData));
-        // Uploading all documents to document store
-        List<DocumentTypeItem> documentList = uploadAllDocuments(authorization, caseRequest, caseData, casePdfFiles,
-                                                                 acasCertificates);
-        // Setting claimantPcqId and documentCollection to case details
-        caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
-        caseDetails.getData().put(DOCUMENT_COLLECTION, documentList);
-        // For determining the case is submitted via ET1
-        caseDetails.getData().put(ET1_ONLINE_SUBMISSION, YES);
 
-        // Updating case with ClaimantPcqId and Document collection
-        triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
-                     caseDetails.getData()
-        );
+        if (!featureToggleService.citizenEt1Generation()) {
+            setCaseDataWithSubmittedCaseDetails(caseDetails, caseData);
+            // Create case pdf file(s). If the user selected language is Welsh, we also create Welsh pdf file
+            // and add it to our pdf files list
+            List<PdfDecodedMultipartFile> casePdfFiles =
+                pdfUploadService.convertCaseDataToPdfDecodedMultipartFile(caseData, userInfo);
+            // Submit e-mail to the user with attached ET1 pdf file according to selected contact language
+            // (Welsh or English)
+            notificationService.sendSubmitCaseConfirmationEmail(caseRequest, caseData, userInfo, casePdfFiles);
+            // Creating acas certificates for each respondent
+            List<PdfDecodedMultipartFile> acasCertificates =
+                pdfUploadService.convertAcasCertificatesToPdfDecodedMultipartFiles(
+                    caseData, acasService.getAcasCertificatesByCaseData(caseData)
+            );
+            // Uploading all documents to document store
+            List<DocumentTypeItem> documentList = uploadAllDocuments(authorization,
+                                                                     caseRequest,
+                                                                     caseData,
+                                                                     casePdfFiles,
+                                                                     acasCertificates
+            );
 
+            caseDetails.getData().put(DOCUMENT_COLLECTION, documentList);
+
+            triggerEvent(authorization,
+                         caseRequest.getCaseId(),
+                         UPDATE_CASE_SUBMITTED,
+                         caseDetails.getCaseTypeId(),
+                         caseDetails.getData()
+            );
+        }
         return caseDetails;
     }
 
@@ -317,6 +323,9 @@ public class CaseService {
         caseData1.setReceiptDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         caseData1.setFeeGroupReference(caseRequest.getCaseId());
         caseData1.setPositionType("ET1 Online submission");
+        caseData1.setClaimantPcqId(caseRequest.getCaseData().get("claimantPcqId") == null ? "" :
+                                      caseRequest.getCaseData().get("claimantPcqId").toString());
+        caseData1.setEt1OnlineSubmission(YES);
         ObjectMapper objectMapper = new ObjectMapper();
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         return submitUpdate(
