@@ -65,6 +65,14 @@ class FeatureToggleServiceTest {
         assertThat(featureToggleService.isEccEnabled()).isEqualTo(toggleStat);
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldReturnCorrectValueWhenCitizenEt1GenerationIsEnabled(boolean toggleStat) {
+        givenToggle("citizen-et1-generation", toggleStat);
+
+        assertThat(featureToggleService.isEccEnabled()).isEqualTo(toggleStat);
+    }
+
     private void givenToggle(String feature, boolean state) {
         when(featureToggleApi.isFeatureEnabled(feature)).thenReturn(state);
     }
