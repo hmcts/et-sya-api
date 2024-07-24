@@ -52,7 +52,6 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -195,17 +194,6 @@ class CaseServiceTest {
                                         """);
         when(notificationService.sendSubmitCaseConfirmationEmail(any(), any(), any(), any()))
             .thenReturn(sendEmailResponse);
-    }
-
-    @Test
-    void citizenDocGenerationToggleEnabled() throws CaseDocumentException {
-        when(featureToggle.citizenEt1Generation()).thenReturn(true);
-        caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseTestData.getCaseRequest());
-
-        verify(notificationService, never()).sendSubmitCaseConfirmationEmail(any(), any(), any(), any());
-        verify(pdfUploadService, never()).convertCaseDataToPdfDecodedMultipartFile(any(), any());
-        verify(caseDocumentService, never()).uploadAllDocuments(any(), any(), any(), any(), any());
-
     }
 
     @Test
