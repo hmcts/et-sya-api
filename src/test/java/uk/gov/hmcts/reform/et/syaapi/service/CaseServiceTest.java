@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +11,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import uk.gov.hmcts.ecm.common.service.PostcodeToOfficeService;
 import uk.gov.hmcts.ecm.common.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -30,7 +31,6 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.constants.JurisdictionCodesConstants;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
-import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
@@ -76,6 +76,7 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.USER_ID;
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.AvoidDuplicateLiterals", "PMD.TooManyFields"})
 class CaseServiceTest {
 
@@ -96,29 +97,16 @@ class CaseServiceTest {
     @Mock
     private CaseDocumentService caseDocumentService;
     @Mock
-    private CaseDetailsConverter caseDetailsConverter;
-    @Mock
     private DocumentGenerationService documentGenerationService;
     @Mock
     private NotificationService notificationService;
     @Mock
     private CaseOfficeService assignCaseToLocalOfficeService;
     @Mock
-    IdamClient idamClientMock;
-    @Mock
-    UserInfo userInfo;
-    @Mock
-    private StartEventResponse startEventResponseMock;
-
-    @Mock
-    private ObjectMapper objectMapper;
-    @Mock
-    private StartEventResponse startEventResponse;
-
+    private FeatureToggleService featureToggle;
     @Spy
     private NotificationsProperties notificationsProperties;
     @InjectMocks
-    @Spy
     private CaseService caseService;
     private SendEmailResponse sendEmailResponse;
     private final CaseTestData caseTestData;
@@ -127,6 +115,7 @@ class CaseServiceTest {
     private static final String TSE_PDF_NAME = "contact_about_something_else.pdf";
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private static final String TSE_PDF_DESCRIPTION = "Test description";
+
     private static final String ALL_CASES_QUERY = "{\"size\":10000,\"query\":{\"match_all\": {}}}";
     private final PdfDecodedMultipartFile tsePdfMultipartFileMock = new PdfDecodedMultipartFile(
         TSE_PDF_BYTES,
@@ -140,11 +129,11 @@ class CaseServiceTest {
     }
 
     @BeforeEach
-    void setUpForSubmitCaseTests(TestInfo testInfo) {
+    void setUp(TestInfo testInfo) {
         if (!testInfo.getDisplayName().startsWith("submitCase")) {
             return;
         }
-
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
             null,
             USER_ID,
@@ -355,10 +344,15 @@ class CaseServiceTest {
 
     @Test
     void shouldSubmitUpdateCaseInCcd() {
-        UserInfo userInfo = mock(UserInfo.class);
-        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(userInfo);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(userInfo.getUid()).thenReturn(USER_ID);
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
+            USER_ID,
+            TEST_NAME,
+            caseTestData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
+            caseTestData.getCaseData().getClaimantIndType().getClaimantLastName(),
+            null
+        ));
         when(ccdApiClient.submitEventForCitizen(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
@@ -395,42 +389,33 @@ class CaseServiceTest {
         List<?> docCollection = (List<?>) caseDetails.getData().get("documentCollection");
 
         assertEquals("DocumentType(typeOfDocument="
-             + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=http://document.url/2333482f-1eb9-44f1"
-             + "-9b78-f5d8f0c74b15/binary, documentFilename=filename, documentUrl=http://document.binary"
-             + ".url/2333482f-1eb9-44f1-9b78-f5d8f0c74b15, categoryId=C11, uploadTimestamp=null), "
-             + "ownerDocument=null, creationDate=null, "
-             + "shortDescription=null, topLevelDocuments=null, startingClaimDocuments=null, "
-             + "responseClaimDocuments=null, initialConsiderationDocuments=null, "
-             + "caseManagementDocuments=null, withdrawalSettledDocuments=null, hearingsDocuments=null, "
-             + "judgmentAndReasonsDocuments=null, reconsiderationDocuments=null, miscDocuments=null, "
-             + "documentType=null, dateOfCorrespondence=null, docNumber=null, tornadoEmbeddedPdfUrl=null, "
-             + "excludeFromDcf=null, documentIndex=null)",
-            ((DocumentTypeItem) docCollection.get(0)).getValue().toString());
+                         + "Other, uploadedDocument=UploadedDocumentType(documentBinaryUrl=http://document.url/2333482f-1eb9-44f1"
+                         + "-9b78-f5d8f0c74b15/binary, documentFilename=filename, documentUrl=http://document.binary"
+                         + ".url/2333482f-1eb9-44f1-9b78-f5d8f0c74b15, categoryId=C11, uploadTimestamp=null), "
+                         + "ownerDocument=null, creationDate=null, "
+                         + "shortDescription=null, topLevelDocuments=null, startingClaimDocuments=null, "
+                         + "responseClaimDocuments=null, initialConsiderationDocuments=null, "
+                         + "caseManagementDocuments=null, withdrawalSettledDocuments=null, hearingsDocuments=null, "
+                         + "judgmentAndReasonsDocuments=null, reconsiderationDocuments=null, miscDocuments=null, "
+                         + "documentType=null, dateOfCorrespondence=null, docNumber=null, tornadoEmbeddedPdfUrl=null, "
+                         + "excludeFromDcf=null, documentIndex=null)",
+                     ((DocumentTypeItem) docCollection.get(0)).getValue().toString());
     }
 
     @Test
     @SneakyThrows
     void submitCaseShouldSendErrorEmail() {
-        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(userInfo);
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        userInfo = mock(UserInfo.class);
-        when(userInfo.getUid()).thenReturn(USER_ID);
-        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(userInfo);
-        when(ccdApiClient.startEventForCitizen(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            USER_ID,
-            EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
-            caseTestData.getCaseRequest().getCaseId(),
-            SUBMIT_CASE_DRAFT
-        )).thenReturn(caseTestData.getStartEventResponse());
         when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any(), any()))
             .thenThrow(new CaseDocumentException("Failed to upload documents"));
+
         when(notificationService.sendDocUploadErrorEmail(any(), any(), any(), any()))
             .thenReturn(sendEmailResponse);
 
-        caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseTestData.getCaseRequest());
+        caseService.submitCase(
+            TEST_SERVICE_AUTH_TOKEN,
+            caseTestData.getCaseRequest()
+        );
+
         verify(notificationService, times(1))
             .sendDocUploadErrorEmail(any(), any(), any(), any());
     }
@@ -438,14 +423,6 @@ class CaseServiceTest {
     @SneakyThrows
     @Test
     void submitCaseShouldSetEt1OnlineSubmission() {
-        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
-            null,
-            USER_ID,
-            TEST_NAME,
-            TestConstants.TEST_FIRST_NAME,
-            TestConstants.TEST_SURNAME,
-            null
-        ));
         CaseDetails caseDetails = caseService.submitCase(
             TEST_SERVICE_AUTH_TOKEN,
             caseTestData.getCaseRequest()
@@ -508,15 +485,7 @@ class CaseServiceTest {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(userInfo.getUid()).thenReturn(USER_ID);
 
-        when(ccdApiClient.startEventForCitizen(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            USER_ID,
-            EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.ENGLAND_CASE_TYPE,
-            CASE_ID,
-            SUBMIT_CASE_DRAFT
-        )).thenReturn(startEventResponseMock);
+        StartEventResponse startEventResponseMock = mock(StartEventResponse.class);
         when(startEventResponseMock.getCaseDetails()).thenReturn(null);
         CaseEvent caseEventInstance = CaseEvent.SUBMIT_CASE_DRAFT;
         when(caseService.startUpdate(TEST_SERVICE_AUTH_TOKEN, CASE_ID, EtSyaConstants.ENGLAND_CASE_TYPE,
@@ -531,10 +500,7 @@ class CaseServiceTest {
     }
 
     @Test
-    void triggerEventForCaseDetailsUpdateWithValidInputs() {
-        UserInfo userInfo22 = UserInfo.builder().uid(USER_ID).name(TEST_NAME)
-            .givenName(TestConstants.TEST_FIRST_NAME).familyName(TestConstants.TEST_SURNAME).build();
-        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(userInfo22);
+    void submitCaseTriggerEventForCaseDetailsUpdateWithValidInputs() {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         Map<String, Object> requestCaseData = new ConcurrentHashMap<>();
         requestCaseData.put("ethosCaseReference", "123456789");
@@ -548,12 +514,7 @@ class CaseServiceTest {
         CaseEvent caseEventInstance = CaseEvent.SUBMIT_CASE_DRAFT;
         when(caseService.startUpdate(TEST_SERVICE_AUTH_TOKEN, CASE_ID, EtSyaConstants.ENGLAND_CASE_TYPE,
                                      caseEventInstance)).thenReturn(startEventResponseMock2);
-        Map<String, Object> latestCaseData = new ConcurrentHashMap<>();
-        latestCaseData.put("ethosCaseReference", "123456789");
-        latestCaseData.put("caseType", "Single");
-        latestCaseData.put("caseId", "caseId");
-        latestCaseData.put("managingOffice", "Manchester");
-        latestCaseData.put("currentPosition", "ongoing");
+
         CaseData caseData = new CaseData();
         caseData.setEthosCaseReference("123456789");
         caseData.setEcmCaseType("Single");
@@ -568,7 +529,7 @@ class CaseServiceTest {
         CaseDetails updatedCaseDetails = mock(CaseDetails.class);
         updatedCaseDetails.setData(updatedCaseData);
         caseService.triggerEvent(TEST_SERVICE_AUTH_TOKEN, CASE_ID, caseEventInstance,
-                                                      EtSyaConstants.ENGLAND_CASE_TYPE, requestCaseData);
+                                 EtSyaConstants.ENGLAND_CASE_TYPE, requestCaseData);
         verify(ccdApiClient).submitEventForCitizen(
             anyString(), anyString(), anyString(), anyString(), anyString(), anyString(),
             anyBoolean(), any());
@@ -579,7 +540,7 @@ class CaseServiceTest {
         List<JurCodesTypeItem> expectedItems = mockJurCodesTypeItems();
         caseTestData.getStartEventResponse().setEventId(SUBMIT_CASE_DRAFT);
         CaseData caseData = mapRequestCaseDataToCaseData(caseTestData.getCaseDataWithClaimTypes()
-                                                                                  .getCaseData());
+                                                             .getCaseData());
         caseData.setJurCodesCollection(expectedItems);
         caseData.setFeeGroupReference(CASE_ID);
 
