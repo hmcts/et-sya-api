@@ -70,7 +70,7 @@ class FeatureToggleServiceTest {
     void shouldReturnCorrectValueWhenCitizenEt1GenerationIsEnabled(boolean toggleStat) {
         givenToggle("citizen-et1-generation", toggleStat);
 
-        assertThat(featureToggleService.isEccEnabled()).isEqualTo(toggleStat);
+        assertThat(featureToggleService.citizenEt1Generation()).isEqualTo(toggleStat);
     }
 
     private void givenToggle(String feature, boolean state) {
