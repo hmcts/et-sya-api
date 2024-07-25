@@ -212,6 +212,7 @@ public class CaseService {
         CaseDetails caseDetails = triggerEventForSubmitCase(authorization, caseRequest);
 
         if (!featureToggleService.citizenEt1Generation()) {
+            log.info("Citizen ET1 generation feature is disabled");
             setCaseDataWithSubmittedCaseDetails(caseDetails, caseData);
             // Create case pdf file(s). If the user selected language is Welsh, we also create Welsh pdf file
             // and add it to our pdf files list
