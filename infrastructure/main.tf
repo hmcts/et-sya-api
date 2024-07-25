@@ -6,12 +6,12 @@ locals {
   tagEnv = var.env == "aat" ? "staging" : var.env == "perftest" ? "testing" : var.env
   tags = merge(var.common_tags,
     tomap({
-      "environment" = local.tagEnv,
-      "managedBy" = var.team_name,
+      "environment"  = local.tagEnv,
+      "managedBy"    = var.team_name,
       "Team Contact" = var.team_contact,
-      "application" = "employment-tribunals",
+      "application"  = "employment-tribunals",
       "businessArea" = "CFT",
-      "builtFrom" = "et-sya-api"
+      "builtFrom"    = "et-sya-api"
     })
   )
 
@@ -79,7 +79,7 @@ resource "azurerm_api_management_user" "et_api_management_user" {
 }
 
 data "azurerm_key_vault" "et-msg-handler-vault" {
-  name = "et-msg-handler-${var.env}"
+  name                = "et-msg-handler-${var.env}"
   resource_group_name = "et-msg-handler-${var.env}"
 }
 
