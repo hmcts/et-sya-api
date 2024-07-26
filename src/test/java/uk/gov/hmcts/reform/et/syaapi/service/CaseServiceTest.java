@@ -479,7 +479,7 @@ class CaseServiceTest {
     }
 
     @Test
-    void triggerEvenCaseDetailsNotFound() {
+    void triggerEventCaseDetailsNotFound() {
         UserInfo userInfo = mock(UserInfo.class);
         when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(userInfo);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
