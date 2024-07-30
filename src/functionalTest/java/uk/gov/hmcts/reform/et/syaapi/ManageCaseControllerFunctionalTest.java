@@ -140,7 +140,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
         TimeUnit.SECONDS.sleep(5);
 
         CaseRequest caseRequest = CaseRequest.builder()
-            .caseId(caseId.toString())
+            .caseId(String.valueOf(caseId))
             .caseTypeId(CASE_TYPE)
             .caseData(caseData)
             .build();
@@ -163,7 +163,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
     void submitCaseShouldReturnSubmittedCaseDetails() {
         TimeUnit.SECONDS.sleep(5);
         CaseRequest caseRequest = CaseRequest.builder()
-            .caseId(caseId.toString())
+            .caseId(String.valueOf(caseId))
             .caseTypeId(CASE_TYPE)
             .caseData(caseData)
             .build();
@@ -189,7 +189,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
         caseData.put("hubLinksStatuses", hubLinksStatuses);
 
         HubLinksStatusesRequest hubLinksStatusesRequest = HubLinksStatusesRequest.builder()
-            .caseId(caseId.toString())
+            .caseId(String.valueOf(caseId))
             .caseTypeId(CASE_TYPE)
             .hubLinksStatuses(hubLinksStatuses)
             .build();
@@ -213,7 +213,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
         claimantTse.setContactApplicationType("withdraw");
 
         ClaimantApplicationRequest claimantApplicationRequest = ClaimantApplicationRequest.builder()
-            .caseId(caseId.toString())
+            .caseId(String.valueOf(caseId))
             .caseTypeId(CASE_TYPE)
             .claimantTse(claimantTse)
             .build();
@@ -240,7 +240,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
     @Order(8)
     void respondToApplicationShouldReturnCaseDetailsWithTseAppWithResponse() {
         RespondToApplicationRequest respondToApplicationRequest = RespondToApplicationRequest.builder()
-            .caseId(caseId.toString())
+            .caseId(String.valueOf(caseId))
             .caseTypeId(CASE_TYPE)
             .applicationId(appId)
             .response(new TseRespondType())
@@ -263,7 +263,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
     @Order(9)
     void changeApplicationStatusShouldReturnCaseDetailsWithTseAppWithStatusUpdated() {
         ChangeApplicationStatusRequest changeApplicationStatusRequest = ChangeApplicationStatusRequest.builder()
-            .caseId(caseId.toString())
+            .caseId(String.valueOf(caseId))
             .caseTypeId(CASE_TYPE)
             .applicationId(appId)
             .newStatus(NEW_STATUS)
@@ -291,7 +291,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
     @Order(10)
     void updateResponseAsViewedShouldReturnCaseDetailsWithTseResponseAsViewed() {
         TribunalResponseViewedRequest tribunalResponseViewedRequest = TribunalResponseViewedRequest.builder()
-            .caseId(caseId.toString())
+            .caseId(String.valueOf(caseId))
             .caseTypeId(CASE_TYPE)
             .appId(appId)
             .responseId(responseId)
