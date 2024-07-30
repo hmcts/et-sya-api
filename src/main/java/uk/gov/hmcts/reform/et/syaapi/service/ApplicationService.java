@@ -317,6 +317,10 @@ public class ApplicationService {
     }
 
     private JSONObject getDocumentDownload(String authorization, CaseData caseData) throws NotificationClientException {
+        if (caseData.getDocumentCollection().isEmpty()) {
+            return null;
+        }
+
         List<DocumentTypeItem> tseFiles = caseData.getDocumentCollection().stream()
             .filter(n -> defaultIfEmpty(n.getValue().getShortDescription(), "").startsWith(TSE_FILENAME))
             .toList();
