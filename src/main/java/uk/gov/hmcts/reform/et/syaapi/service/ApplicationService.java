@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.json.JSONObject;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
@@ -318,7 +317,7 @@ public class ApplicationService {
     }
 
     private JSONObject getDocumentDownload(String authorization, CaseData caseData) throws NotificationClientException {
-        if (CollectionUtils.isEmpty(caseData.getDocumentCollection())) {
+        if (isEmpty(caseData.getDocumentCollection())) {
             return null;
         }
 
@@ -326,7 +325,7 @@ public class ApplicationService {
             .filter(n -> defaultIfEmpty(n.getValue().getShortDescription(), "").startsWith(TSE_FILENAME))
             .toList();
 
-        if (CollectionUtils.isEmpty(tseFiles)) {
+        if (isEmpty(tseFiles)) {
             return null;
         }
 
