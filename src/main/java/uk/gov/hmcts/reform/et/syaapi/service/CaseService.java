@@ -394,9 +394,6 @@ public class CaseService {
     void uploadTseSupportingDocument(CaseDetails caseDetails, UploadedDocumentType contactApplicationFile,
                                      String contactApplicationType) {
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
-        if (caseData.getDocumentCollection() == null) {
-            return;
-        }
 
         List<DocumentTypeItem> docList = caseData.getDocumentCollection();
 
