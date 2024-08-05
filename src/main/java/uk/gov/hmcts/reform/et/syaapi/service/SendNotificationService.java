@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.UpdateCaseStatusRequest;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 import java.time.LocalDate;
@@ -105,6 +106,34 @@ public class SendNotificationService {
         for (PseResponseTypeItem item : responses) {
             item.getValue().setResponseState(VIEWED);
         }
+    }
+
+    /**
+     * Update Hearing Notification View State.
+     * @param authorization - authorization
+     * @param request       - request containing the response, and the notification details
+     * @return the associated {@link CaseDetails}
+     */
+    public CaseDetails updateHearingNotificationState(String authorization, UpdateCaseStatusRequest request) {
+        StartEventResponse startEventResponse = caseService.startUpdate(
+            authorization,
+            request.getCaseId(),
+            request.getCaseTypeId(),
+            CaseEvent.UPDATE_NOTIFICATION_STATE
+        );
+
+        CaseData caseData = EmployeeObjectMapper
+            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
+        caseData.setHearingClaimantViewState(VIEWED);
+
+        CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
+
+        return caseService.submitUpdate(
+            authorization,
+            request.getCaseId(),
+            content,
+            request.getCaseTypeId()
+        );
     }
 
     /**
