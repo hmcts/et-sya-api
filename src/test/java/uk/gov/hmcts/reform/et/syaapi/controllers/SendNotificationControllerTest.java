@@ -13,6 +13,7 @@ import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.UpdateCaseStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.SendNotificationService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
@@ -81,6 +82,31 @@ class SendNotificationControllerTest {
         ).andExpect(status().isOk());
 
         verify(sendNotificationService, times(1)).updateSendNotificationState(
+            TEST_SERVICE_AUTH_TOKEN,
+            request
+        );
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldUpdateHearingNotificationState() {
+        UpdateCaseStatusRequest request = UpdateCaseStatusRequest.builder()
+            .caseTypeId(CASE_TYPE)
+            .caseId(CASE_ID)
+            .build();
+
+        // when
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+
+        when(applicationService.submitApplication(any(), any())).thenReturn(expectedDetails);
+        mockMvc.perform(
+            put("/sendNotification/update-hearing-notification-state", CASE_ID)
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ResourceLoader.toJson(request))
+        ).andExpect(status().isOk());
+
+        verify(sendNotificationService, times(1)).updateHearingNotificationState(
             TEST_SERVICE_AUTH_TOKEN,
             request
         );

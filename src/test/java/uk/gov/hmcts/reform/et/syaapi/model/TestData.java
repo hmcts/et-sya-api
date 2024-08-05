@@ -42,6 +42,11 @@ public final class TestData {
         StartEventResponse.class
     );
 
+    private final StartEventResponse updateCaseEventResponseWithHearingNotification = ResourceLoader.fromString(
+        "responses/updateClaimantHearingNotificationState.json",
+        StartEventResponse.class
+    );
+
     private final StartEventResponse startEventResponse = ResourceLoader.fromString(
         "responses/startEventResponse.json",
         StartEventResponse.class

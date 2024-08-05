@@ -1,0 +1,240 @@
+{
+  "event_id": "UPDATE_CASE_SUBMITTED",
+  "token": "123",
+  "case_details": {
+    "id": 1646225213651590,
+    "jurisdiction": "EMPLOYMENT",
+    "state": "ACCEPTED",
+    "case_type_id": "ET_EnglandWales",
+    "created_date": "2000-01-01T12:00:00.673626",
+    "last_modified": "2000-01-01T12:00:00.676743",
+    "locked_by_user_id": null,
+    "security_level": null,
+    "case_data": {
+      "caseType": "Single",
+      "caseSource": "Manually Created",
+      "claimantIndType": {
+        "claimant_first_names": "Michael",
+        "claimant_last_name": "Jackson"
+      },
+      "ethosCaseReference": "1646225213651590",
+      "claimantType": {
+        "claimant_email_address": "test@gmail.com"
+      },
+      "documentCollection": [],
+      "hearingCollection": [
+        {
+          "id": "887952c2-9187-4a8b-897c-6657d35769ce",
+          "value": {
+            "judge": {
+              "value": {
+                "code": "23 Leeds Judge 2",
+                "label": "Leeds Judge 2"
+              },
+              "selectedCode": "23 Leeds Judge 2",
+              "selectedLabel": "Leeds Judge 2"
+            },
+            "Hearing_type": "Costs Hearing",
+            "Hearing_notes": "Hearing Notes",
+            "Hearing_venue": {
+              "value": {
+                "code": "Harrogate CJC",
+                "label": "Harrogate CJC"
+              },
+              "selectedCode": "Harrogate CJC",
+              "selectedLabel": "Harrogate CJC"
+            },
+            "hearingFormat": [
+              "In person",
+              "Telephone"
+            ],
+            "hearingNumber": "1",
+            "hearingSitAlone": "Sit Alone",
+            "hearingEstLengthNum": "2",
+            "hearingDateCollection": [
+              {
+                "id": "4d84a85e-3a01-45e7-97d9-df969bdf6378",
+                "value": {
+                  "listedDate": "2000-09-05T12:12:00.000",
+                  "Hearing_status": "Withdrawn",
+                  "hearingVenueDay": {
+                    "value": {
+                      "code": "Harrogate CJC",
+                      "label": "Harrogate CJC"
+                    },
+                    "selectedCode": "Harrogate CJC",
+                    "selectedLabel": "Harrogate CJC"
+                  },
+                  "hearingTimingStart": "2000-08-05T12:12:00.000",
+                  "hearingTimingFinish": "2000-08-05T12:12:00.000"
+                }
+              },
+              {
+                "id": "7dd5b30c-6284-458b-a0b6-bbf7ac0dcd9b",
+                "value": {
+                  "listedDate": "2000-09-06T23:23:00.000",
+                  "Hearing_status": "Listed",
+                  "hearingVenueDay": {
+                    "value": {
+                      "code": "Harrogate CJC",
+                      "label": "Harrogate CJC"
+                    },
+                    "selectedCode": "Harrogate CJC",
+                    "selectedLabel": "Harrogate CJC"
+                  },
+                  "hearingTimingStart": "2000-08-06T23:23:00.000",
+                  "hearingTimingFinish": "2000-08-06T23:23:00.000"
+                }
+              }
+            ],
+            "hearingEstLengthNumType": "Days"
+          }
+        },
+        {
+          "id": "fb39448c-826e-40e2-8d75-9098c0cfeac9",
+          "value": {
+            "Hearing_type": "Costs Hearing",
+            "Hearing_venue": {
+              "value": {
+                "code": "Harrogate CJC",
+                "label": "Harrogate CJC"
+              },
+              "selectedCode": "Harrogate CJC",
+              "selectedLabel": "Harrogate CJC"
+            },
+            "hearingFormat": [
+              "In person",
+              "Telephone"
+            ],
+            "hearingNumber": "2",
+            "hearingSitAlone": "Sit Alone",
+            "hearingEstLengthNum": "3",
+            "hearingDateCollection": [
+              {
+                "id": "810b9671-c0c7-4c3c-93f7-8ed3f01d097f",
+                "value": {
+                  "listedDate": "2000-01-01T11:11:00.000",
+                  "Hearing_status": "Heard",
+                  "hearingVenueDay": {
+                    "value": {
+                      "code": "Harrogate CJC",
+                      "label": "Harrogate CJC"
+                    },
+                    "selectedCode": "Harrogate CJC",
+                    "selectedLabel": "Harrogate CJC"
+                  },
+                  "hearingTimingStart": "2000-01-01T11:11:00.000",
+                  "hearingTimingFinish": "2000-01-01T11:11:00.000"
+                }
+              },
+              {
+                "id": "5a91f528-28d9-4447-b18d-d4b8d15d5b79",
+                "value": {
+                  "listedDate": "2000-09-10T12:12:00.000",
+                  "Hearing_status": "Listed",
+                  "hearingVenueDay": {
+                    "value": {
+                      "code": "Harrogate CJC",
+                      "label": "Harrogate CJC"
+                    },
+                    "selectedCode": "Harrogate CJC",
+                    "selectedLabel": "Harrogate CJC"
+                  },
+                  "hearingTimingStart": "2000-08-08T12:12:00.000",
+                  "hearingTimingFinish": "2000-08-08T12:12:00.000"
+                }
+              },
+              {
+                "id": "73d5a504-6525-40b1-944b-5a34f6aed7cb",
+                "value": {
+                  "listedDate": "2000-10-10T13:13:00.000",
+                  "Hearing_status": "Listed",
+                  "hearingVenueDay": {
+                    "value": {
+                      "code": "Harrogate CJC",
+                      "label": "Harrogate CJC"
+                    },
+                    "selectedCode": "Harrogate CJC",
+                    "selectedLabel": "Harrogate CJC"
+                  },
+                  "hearingTimingStart": "2000-10-10T13:13:00.000",
+                  "hearingTimingFinish": "2000-10-10T13:13:00.000"
+                }
+              }
+            ],
+            "hearingEstLengthNumType": "Days"
+          }
+        }
+      ],
+      "sendNotificationCollection": [
+        {
+          "id": "1ae52b64-f2b9-4b97-bcc7-460eb64aa497",
+          "value": {
+            "date": "21 July 2000",
+            "number": "1",
+            "sendNotificationTitle": "Title 1",
+            "sendNotificationLetter": "No",
+            "sendNotificationNotify": "Claimant only",
+            "sendNotificationSentBy": "Tribunal",
+            "sendNotificationSubject": [
+              "Claimant / Respondent details"
+            ],
+            "sendNotificationSubjectString": "Claimant / Respondent details",
+            "sendNotificationResponsesCount": "0",
+            "sendNotificationResponseTribunalTable": "Yes"
+          }
+        },
+        {
+          "id": "f731b34f-507a-46f2-8318-a145ee338fc1",
+          "value": {
+            "date": "22 July 2000",
+            "number": "2",
+            "sendNotificationTitle": "Title 2",
+            "sendNotificationLetter": "No",
+            "sendNotificationNotify": "Respondent only",
+            "sendNotificationSentBy": "Tribunal",
+            "sendNotificationSubject": [
+              "Hearing"
+            ],
+            "sendNotificationSelectHearing": {
+              "value": {
+                "code": "5a91f528-28d9-4447-b18d-d4b8d15d5b79",
+                "label": "4: Costs Hearing - Harrogate CJC - 10 September 2024 12:12"
+              },
+              "selectedCode": "5a91f528-28d9-4447-b18d-d4b8d15d5b79",
+              "selectedLabel": "4: Costs Hearing - Harrogate CJC - 10 September 2024 12:12"
+            },
+            "sendNotificationSubjectString": "Hearing",
+            "sendNotificationResponsesCount": "0",
+            "sendNotificationResponseTribunalTable": "Yes"
+          }
+        },
+        {
+          "id": "53e93ac5-0261-41ac-a649-dfa3277bab4e",
+          "value": {
+            "date": "23 July 2000",
+            "number": "3",
+            "sendNotificationTitle": "Title 3",
+            "sendNotificationLetter": "No",
+            "sendNotificationNotify": "Both parties",
+            "sendNotificationSentBy": "Tribunal",
+            "sendNotificationSubject": [
+              "Hearing"
+            ],
+            "sendNotificationSelectHearing": {
+              "value": {
+                "code": "7dd5b30c-6284-458b-a0b6-bbf7ac0dcd9b",
+                "label": "3: Costs Hearing - Harrogate CJC - 6 September 2024 23:23"
+              },
+              "selectedCode": "7dd5b30c-6284-458b-a0b6-bbf7ac0dcd9b",
+              "selectedLabel": "3: Costs Hearing - Harrogate CJC - 6 September 2024 23:23"
+            },
+            "sendNotificationSubjectString": "Hearing",
+            "sendNotificationResponsesCount": "0",
+            "sendNotificationResponseTribunalTable": "Yes"
+          }
+        }
+      ]
+    }
+  }
+}

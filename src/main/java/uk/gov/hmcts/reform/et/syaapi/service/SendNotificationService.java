@@ -129,8 +129,7 @@ public class SendNotificationService {
         for (SendNotificationTypeItem item : notifications) {
             if (!"Respondent only".equals(item.getValue().getSendNotificationNotify())
                 && item.getValue().getSendNotificationSubject() != null
-                && item.getValue().getSendNotificationSubject().contains("Hearing")
-                && !VIEWED.equals(item.getValue().getHearingClaimantViewState())) {
+                && item.getValue().getSendNotificationSubject().contains("Hearing")) {
                 item.getValue().setHearingClaimantViewState(VIEWED);
             }
         }

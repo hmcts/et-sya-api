@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.UpdateCaseStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -240,6 +241,34 @@ class SendNotificationServiceTest {
 
         CaseData data = (CaseData) contentCaptor.getValue().getData();
         assertEquals(items, data.getSendNotificationCollection());
+    }
+
+    @Test
+    void shouldUpdateHearingNotificationState() {
+        UpdateCaseStatusRequest request = UpdateCaseStatusRequest.builder()
+            .caseId("11")
+            .caseTypeId("1234")
+            .build();
+
+        StartEventResponse updateCaseEventResponse = testData.getUpdateCaseEventResponseWithHearingNotification();
+        when(caseService.startUpdate(
+            TEST_SERVICE_AUTH_TOKEN,
+            request.getCaseId(),
+            request.getCaseTypeId(),
+            UPDATE_NOTIFICATION_STATE
+        )).thenReturn(updateCaseEventResponse);
+
+        ArgumentCaptor<CaseDataContent> contentCaptor = ArgumentCaptor.forClass(CaseDataContent.class);
+        sendNotificationService.updateHearingNotificationState(MOCK_TOKEN, request);
+
+        verify(caseService, times(1)).submitUpdate(
+            eq(MOCK_TOKEN), eq("11"), contentCaptor.capture(), eq(CASE_ID));
+
+        CaseData data = (CaseData) contentCaptor.getValue().getData();
+        List<SendNotificationTypeItem> notification = data.getSendNotificationCollection();
+        assertNull(notification.get(0).getValue().getHearingClaimantViewState());
+        assertNull(notification.get(1).getValue().getHearingClaimantViewState());
+        assertEquals(VIEWED, notification.get(2).getValue().getHearingClaimantViewState());
     }
 
     @Test
