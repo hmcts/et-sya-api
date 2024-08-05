@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.UpdateCaseStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.SendNotificationService;
 
 import javax.validation.constraints.NotNull;
@@ -47,6 +48,28 @@ public class SendNotificationController {
                  request.getCaseTypeId(), request.getCaseId()
         );
         CaseDetails finalCaseDetails = sendNotificationService.updateSendNotificationState(authorization, request);
+        return ok(finalCaseDetails);
+    }
+
+    /**
+     * Updates Hearing SendNotification status.
+     *
+     * @param authorization jwt of the user
+     * @param request       the request object which contains sendNotification id and new status value passed
+     *                      from sya-frontend
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    @PutMapping("/update-hearing-notification-state")
+    @Operation(summary = "Update notification state")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> updateHearingNotificationState(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody UpdateCaseStatusRequest request
+    ) {
+        log.info("Received update Hearing view state request - caseTypeId: {} caseId: {}",
+                 request.getCaseTypeId(), request.getCaseId()
+        );
+        CaseDetails finalCaseDetails = sendNotificationService.updateHearingNotificationState(authorization, request);
         return ok(finalCaseDetails);
     }
 
