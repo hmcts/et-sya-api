@@ -90,7 +90,6 @@ public class CaseDetailsConverter {
      */
     public CaseData mapRequestCaseDataToLatestCaseData(Map<String, Object> requestData,
                                                        Map<String, Object> latestData) {
-        log.error("Mapping Request CaseData To LatestCaseData for case ref {}", requestData.get("ethosCaseReference"));
         CaseData requestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(requestData);
         log.error("Request CaseData: {}", requestData.toString());
         CaseData latestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(latestData);
@@ -99,19 +98,21 @@ public class CaseDetailsConverter {
         return latestCaseData;
     }
 
-    private void copyNonNullProperties(CaseData source, CaseData target) {
-        Class<?> sourceClass = source.getClass();
+    private void copyNonNullProperties(CaseData sourceCaseData, CaseData targetCaseData) {
+        Class<?> sourceClass = sourceCaseData.getClass();
         try {
-            log.error("in try block to copy copyNonNullProperties for case ref {}", source.getEthosCaseReference());
+            log.error("in try block to copy copyNonNullProperties - sourceClass: {}", sourceCaseData);
+            log.error("in try block to copy copyNonNullProperties - targetClass: {}", targetCaseData);
             for (Field field : sourceClass.getDeclaredFields()) {
                 field.setAccessible(true);
-                Object value = field.get(source);
+                Object value = field.get(sourceCaseData);
                 if (value != null) {
-                    field.set(target, value);
+                    field.set(targetCaseData, value);
                 }
                 //reset accessibility to prevent illegal access
                 field.setAccessible(false);
             }
+            log.error("in try block to copy copyNonNullProperties - copied targetClass: {}", targetCaseData);
         } catch (IllegalAccessException e) {
             log.error("Failed to copy the Non-Null field values of the request CaseData to the latest CaseData: {}",
                       e.getMessage());
