@@ -90,9 +90,11 @@ public class CaseDetailsConverter {
      */
     public CaseData mapRequestCaseDataToLatestCaseData(Map<String, Object> requestData,
                                                        Map<String, Object> latestData) {
-        log.error("Mapping Request CaseData To LatestCaseData for case ref {}", requestData.get("ccdCaseReference"));
+        log.error("Mapping Request CaseData To LatestCaseData for case ref {}", requestData.get("ethosCaseReference"));
         CaseData requestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(requestData);
+        log.error("Request CaseData: {}", requestData.toString());
         CaseData latestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(latestData);
+        log.error("Latest CaseData: {}", latestData.toString());
         copyNonNullProperties(requestCaseData, latestCaseData);
         return latestCaseData;
     }
@@ -100,6 +102,7 @@ public class CaseDetailsConverter {
     private void copyNonNullProperties(CaseData source, CaseData target) {
         Class<?> sourceClass = source.getClass();
         try {
+            log.error("in try block to copy copyNonNullProperties for case ref {}", source.getEthosCaseReference());
             for (Field field : sourceClass.getDeclaredFields()) {
                 field.setAccessible(true);
                 Object value = field.get(source);
