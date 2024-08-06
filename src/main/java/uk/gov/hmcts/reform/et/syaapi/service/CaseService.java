@@ -292,6 +292,7 @@ public class CaseService {
         CaseDetails latestCaseDetails = startEventResponse.getCaseDetails();
 
         if (latestCaseDetails != null) {
+            log.error("latestCaseDetails in triggerEvent for case id of {}", latestCaseDetails.getId());
             CaseData latestCaseData = caseDetailsConverter.mapRequestCaseDataToLatestCaseData(
                 caseData, latestCaseDetails.getData());
             if (SUBMIT_CASE_DRAFT == eventName) {

@@ -90,6 +90,7 @@ public class CaseDetailsConverter {
      */
     public CaseData mapRequestCaseDataToLatestCaseData(Map<String, Object> requestData,
                                                        Map<String, Object> latestData) {
+        log.error("Mapping Request CaseData To LatestCaseData for case ref {}", requestData.get("ccdCaseReference"));
         CaseData requestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(requestData);
         CaseData latestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(latestData);
         copyNonNullProperties(requestCaseData, latestCaseData);
