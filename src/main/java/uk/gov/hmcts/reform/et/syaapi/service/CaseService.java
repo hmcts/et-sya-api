@@ -286,29 +286,25 @@ public class CaseService {
             return null;
         }
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
+        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(new ObjectMapper());
         StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
         CaseDetails latestCaseDetails = startEventResponse.getCaseDetails();
 
-        if (latestCaseDetails != null) {
-            log.error("latestCaseDetails in triggerEvent for case id of {}", latestCaseDetails.getId());
-            CaseData latestCaseData = caseDetailsConverter.mapRequestCaseDataToLatestCaseData(
-                caseData, latestCaseDetails.getData());
-            if (SUBMIT_CASE_DRAFT == eventName) {
-                enrichCaseDataWithJurisdictionCodes(latestCaseData);
-            }
+        CaseData latestCaseData = caseDetailsConverter.toCaseData(latestCaseDetails);
+        CaseData requestCaseData = caseDetailsConverter.getCaseData(caseData);
 
-            return submitUpdate(
-                authorization,
-                caseId,
-                caseDetailsConverter.et1ToCaseDataContent(startEventResponse, latestCaseData),
-                caseType
-            );
+        caseDetailsConverter.copyNonNullProperties(requestCaseData, latestCaseData);
+
+        if (SUBMIT_CASE_DRAFT == eventName) {
+            enrichCaseDataWithJurisdictionCodes(latestCaseData);
         }
 
-        log.info("Case details not found in CCD for caseId: {}", caseId);
-        return null;
+        return submitUpdate(
+            authorization,
+            caseId,
+            caseDetailsConverter.et1ToCaseDataContent(startEventResponse, latestCaseData),
+            caseType
+        );
     }
 
     /**
@@ -388,6 +384,9 @@ public class CaseService {
     }
 
     private void enrichCaseDataWithJurisdictionCodes(CaseData caseData) {
+        if (caseData == null) {
+            return;
+        }
         List<JurCodesTypeItem> jurCodesTypeItems = jurisdictionCodesMapper.mapToJurCodes(caseData);
         caseData.setJurCodesCollection(jurCodesTypeItems);
     }
