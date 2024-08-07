@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseState;
 
 import java.lang.reflect.Field;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -58,7 +59,7 @@ public class CaseDetailsConverter {
         }
 
         if (caseDetails.getState() != null) {
-            data.put("ccdState", CaseState.valueOf(caseDetails.getState()));
+            data.put("ccdState", CaseState.valueOf(caseDetails.getState().toUpperCase(Locale.ROOT)));
         }
         return objectMapper.convertValue(data, CaseData.class);
     }
