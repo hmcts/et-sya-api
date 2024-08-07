@@ -177,7 +177,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
             .assertThat().body("id", equalTo(caseId))
-            .assertThat().body(STATE, equalTo(SUBMITTED))
+            .assertThat().body(STATE, equalTo(SUBMITTED.toUpperCase()))
             .assertThat().body("case_data.noticeOfChangeAnswers0.respondentName", equalTo(RESPONDENT_NAME));
     }
 
