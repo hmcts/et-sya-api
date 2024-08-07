@@ -65,7 +65,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
     private static final String CASE_TYPE = "ET_EnglandWales";
     private static final String CLAIMANT_EMAIL = "citizen-user-test@test.co.uk";
     private static final String AUTHORIZATION = "Authorization";
-    public static final String SUBMITTED = "Submitted";
+    public static final String SUBMITTED = "SUBMITTED";
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<String, Object> caseData = new ConcurrentHashMap<>();
     private String appId;
@@ -177,7 +177,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
             .assertThat().body("id", equalTo(caseId))
-            .assertThat().body(STATE, equalTo(SUBMITTED.toUpperCase()))
+            .assertThat().body(STATE, equalTo(SUBMITTED))
             .assertThat().body("case_data.noticeOfChangeAnswers0.respondentName", equalTo(RESPONDENT_NAME));
     }
 
