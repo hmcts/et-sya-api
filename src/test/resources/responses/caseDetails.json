@@ -18,6 +18,7 @@
     "claimantType": {
       "claimant_email_address": "test@gmail.com"
     },
+    "et1OnlineSubmission": "Yes",
     "documentCollection": []
   },
   "security_classification": "PUBLIC",
