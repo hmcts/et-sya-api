@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.helper;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -32,6 +33,7 @@ public class CaseDetailsConverter {
      */
     public CaseDetailsConverter(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
+        this.objectMapper.registerModule(new JavaTimeModule());
         this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
     }
 
@@ -42,12 +44,27 @@ public class CaseDetailsConverter {
      * @return caseData represent cases in java object model
      */
     public CaseData toCaseData(CaseDetails caseDetails) {
-        Map<String, Object> data = new ConcurrentHashMap<>(caseDetails.getData());
-        data.put("ccdCaseReference", caseDetails.getId());
+        if (caseDetails == null) {
+            return null;
+        }
+
+        Map<String, Object> data = new ConcurrentHashMap<>();
+        if (caseDetails.getData() != null) {
+            data.putAll(caseDetails.getData());
+        }
+
+        if (caseDetails.getId() != null) {
+            data.put("ccdCaseReference", caseDetails.getId());
+        }
+
         if (caseDetails.getState() != null) {
             data.put("ccdState", CaseState.valueOf(caseDetails.getState()));
         }
         return objectMapper.convertValue(data, CaseData.class);
+    }
+
+    public CaseData getCaseData(Map<String, Object> caseData) {
+        return objectMapper.convertValue(caseData, CaseData.class);
     }
 
     /**
@@ -98,7 +115,7 @@ public class CaseDetailsConverter {
         return latestCaseData;
     }
 
-    private void copyNonNullProperties(CaseData sourceCaseData, CaseData targetCaseData) {
+    public void copyNonNullProperties(CaseData sourceCaseData, CaseData targetCaseData) {
         Class<?> sourceClass = sourceCaseData.getClass();
         try {
             log.error("in try block to copy copyNonNullProperties - sourceClass: {}", sourceCaseData);
@@ -118,4 +135,5 @@ public class CaseDetailsConverter {
                       e.getMessage());
         }
     }
+
 }

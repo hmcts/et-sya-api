@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.constants.JurisdictionCodesConstants;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
+import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
@@ -96,6 +97,8 @@ class CaseServiceTest {
     private AcasService acasService;
     @Mock
     private CaseDocumentService caseDocumentService;
+    @Mock
+    private CaseDetailsConverter caseDetailsConverter;
     @Mock
     private DocumentGenerationService documentGenerationService;
     @Mock
@@ -410,7 +413,7 @@ class CaseServiceTest {
 
         when(notificationService.sendDocUploadErrorEmail(any(), any(), any(), any()))
             .thenReturn(sendEmailResponse);
-
+        caseTestData.getCaseRequest().setCaseId("1668421480426211");
         caseService.submitCase(
             TEST_SERVICE_AUTH_TOKEN,
             caseTestData.getCaseRequest()
@@ -490,10 +493,19 @@ class CaseServiceTest {
         CaseEvent caseEventInstance = CaseEvent.SUBMIT_CASE_DRAFT;
         when(caseService.startUpdate(TEST_SERVICE_AUTH_TOKEN, CASE_ID, EtSyaConstants.ENGLAND_CASE_TYPE,
                                      caseEventInstance)).thenReturn(startEventResponseMock);
+
         CaseDetails requestCaseDetails = mock(CaseDetails.class);
         Map<String, Object> requestCaseData = new ConcurrentHashMap<>();
         requestCaseData.put("ethosCaseReference", "123456789");
         requestCaseDetails.setData(requestCaseData);
+        CaseData caseData = new CaseData();
+        caseData.setEthosCaseReference("123456789");
+        caseData.setEcmCaseType("Single");
+        caseData.setManagingOffice("Leeds");
+        caseData.setCurrentPosition("ongoing");
+        when(caseDetailsConverter.toCaseData(requestCaseDetails)).thenReturn(caseData);
+        when(caseDetailsConverter.getCaseData(requestCaseData)).thenReturn(caseData);
+
         CaseDetails result = caseService.triggerEvent(TEST_SERVICE_AUTH_TOKEN, CASE_ID, caseEventInstance,
                                                       EtSyaConstants.ENGLAND_CASE_TYPE, requestCaseDetails.getData());
         assertNull("When the startEventResponse returns null, triggerEvent should return null too", result);
