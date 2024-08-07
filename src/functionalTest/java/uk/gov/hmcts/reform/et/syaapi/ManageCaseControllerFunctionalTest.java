@@ -30,6 +30,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.FeatureToggleService;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -177,7 +178,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
             .assertThat().body("id", equalTo(caseId))
-            .assertThat().body(STATE, equalTo(SUBMITTED))
+            .assertThat().body(STATE, equalTo(SUBMITTED.toLowerCase(Locale.ROOT)))
             .assertThat().body("case_data.noticeOfChangeAnswers0.respondentName", equalTo(RESPONDENT_NAME));
     }
 
@@ -306,7 +307,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
             .statusCode(HttpStatus.SC_OK)
             .log().all(true)
             .assertThat().body("id", equalTo(caseId))
-            .assertThat().body(STATE, equalTo(SUBMITTED))
+            .assertThat().body(STATE, equalTo(SUBMITTED.toLowerCase(Locale.ROOT)))
             .assertThat().body("case_data.genericTseApplicationCollection[0]"
                                    + ".value.respondCollection[0].value.viewedByClaimant",
                                equalTo(YES.getValue()))
