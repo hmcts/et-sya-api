@@ -294,9 +294,7 @@ public class CaseService {
         }
 
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(new ObjectMapper());
-        CaseData latestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(latestCaseDetails.getData());
-        caseDetailsConverter.copyNonNullProperties(EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseData),
-                                                   latestCaseData);
+        CaseData latestCaseData = caseDetailsConverter.getUpdatedCaseData(caseData, latestCaseDetails.getData());
 
         if (SUBMIT_CASE_DRAFT == eventName) {
             enrichCaseDataWithJurisdictionCodes(latestCaseData);
