@@ -290,6 +290,13 @@ public class CaseService {
         StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
         CaseDetails latestCaseDetails = startEventResponse.getCaseDetails();
 
+        log.error("in triggerEvent - sourceClass: {} \n", caseData);
+        log.error("in triggerEvent - targetClass: {} \n", latestCaseDetails.getData());
+        CaseData reCaseData = caseDetailsConverter.mapRequestCaseDataToLatestCaseData(caseData,
+                                                                                      latestCaseDetails.getData());
+        log.error("Request CaseData - option 1: {}", reCaseData.toString());
+        log.error("Option 2 ----- \n");
+
         CaseData latestCaseData = caseDetailsConverter.toCaseData(latestCaseDetails);
         CaseData requestCaseData = caseDetailsConverter.getCaseData(caseData);
 
