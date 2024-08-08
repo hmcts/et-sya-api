@@ -302,7 +302,9 @@ public class CaseService {
         log.error("Option 2 ----- \n");
 
         CaseData latestCaseData = caseDetailsConverter.toCaseData(latestCaseDetails);
+        log.error("in triggerEvent - latestCaseData from caseDetailsConverter.toCaseData : {} \n", latestCaseData);
         CaseData requestCaseData = caseDetailsConverter.getCaseData(caseData);
+        log.error("in triggerEvent - requestCaseData from caseDetailsConverter.getCaseData : {} \n", requestCaseData);
 
         caseDetailsConverter.copyNonNullProperties(requestCaseData, latestCaseData);
 

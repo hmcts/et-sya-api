@@ -48,11 +48,7 @@ public class CaseDetailsConverter {
         if (caseDetails == null) {
             return null;
         }
-
-        Map<String, Object> data = new ConcurrentHashMap<>();
-        if (caseDetails.getData() != null) {
-            data.putAll(caseDetails.getData());
-        }
+        Map<String, Object> data = new ConcurrentHashMap<>(caseDetails.getData());
 
         if (caseDetails.getId() != null) {
             data.put("ccdCaseReference", caseDetails.getId());
@@ -110,9 +106,9 @@ public class CaseDetailsConverter {
                                                        Map<String, Object> latestData) {
 
         CaseData requestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(requestData);
-        log.error("Re-CaseData: {}", requestData.toString());
+        log.error("Re-CaseData: {}", requestCaseData.toString());
         CaseData latestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(latestData);
-        log.error("La-CaseData: {}", latestData.toString());
+        log.error("La-CaseData: {}", latestCaseData.toString());
         copyNonNullProperties(requestCaseData, latestCaseData);
         return latestCaseData;
     }
