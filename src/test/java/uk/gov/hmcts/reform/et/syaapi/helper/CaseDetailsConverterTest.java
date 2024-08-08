@@ -4,12 +4,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 class CaseDetailsConverterTest {
@@ -24,6 +27,8 @@ class CaseDetailsConverterTest {
         StartEventResponse.class
     );
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @Autowired
     private Et1CaseData et1CaseData;
 
@@ -36,7 +41,6 @@ class CaseDetailsConverterTest {
 
     @Test
     void shouldGetCaseDetailsConverter() {
-        ObjectMapper objectMapper = new ObjectMapper();
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         caseDetailsConverter.et1ToCaseDataContent(startEventResponse, et1CaseData);
         assertThat(caseDetailsConverter.toCaseData(expectedDetails).getCaseSource())
@@ -44,10 +48,23 @@ class CaseDetailsConverterTest {
     }
 
     @Test
-    void shouldGetCaseDataNull() {
-        ObjectMapper objectMapper = new ObjectMapper();
+    void shouldConvertDataToCaseDataWithNullCaseDetails() {
+        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
+        assertNull(caseDetailsConverter.toCaseData(null));
+    }
+
+    @Test
+    void shouldConvertCaseDetailsDataToCaseData() {
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         caseDetailsConverter.et1ToCaseDataContent(startEventResponse, et1CaseData);
-        assertNull(caseDetailsConverter.toCaseData(null));
+        assertNotNull(caseDetailsConverter.toCaseData(expectedDetails));
+    }
+
+    @Test
+    void shouldGetCaseDataNull() {
+        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
+        caseDetailsConverter.getCaseData(expectedDetails.getData());
+        assertNotNull(caseDetailsConverter.getCaseData(expectedDetails.getData()));
+        assertEquals(caseDetailsConverter.getCaseData(expectedDetails.getData()).getClass(), CaseData.class);
     }
 }
