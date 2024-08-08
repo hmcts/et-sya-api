@@ -102,34 +102,27 @@ public class CaseDetailsConverter {
      *                   obtained from CCD api call
      * @return {@link CaseData} which returns latest CaseData object representing the contents of the Case Data
      */
-    public CaseData mapRequestCaseDataToLatestCaseData(Map<String, Object> requestData,
-                                                       Map<String, Object> latestData) {
-
+    public CaseData getUpdatedCaseData(Map<String, Object> requestData, Map<String, Object> latestData) {
         CaseData requestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(requestData);
         log.error("Re-CaseData: {}", requestCaseData.toString());
         CaseData latestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(latestData);
         log.error("La-CaseData: {}", latestCaseData.toString());
-        copyNonNullProperties(requestCaseData, latestCaseData);
-        return latestCaseData;
-    }
 
-    public void copyNonNullProperties(CaseData sourceCaseData, CaseData targetCaseData) {
-        Class<?> sourceClass = sourceCaseData.getClass();
+        Class<?> sourceClass = requestData.getClass();
         try {
             for (Field field : sourceClass.getDeclaredFields()) {
-                field.setAccessible(true);
-                Object value = field.get(sourceCaseData);
+                Object value = field.get(requestData);
                 if (value != null) {
-                    field.set(targetCaseData, value);
+                    field.set(latestData, value);
                 }
-                //reset accessibility to prevent illegal access
-                field.setAccessible(false);
             }
-            log.error("in try block to copy copyNonNullProperties - copied targetClass: {}", targetCaseData);
+            log.error("in try block to copy copyNonNullProperties - copied targetClass: {}", latestData);
         } catch (IllegalAccessException e) {
-            log.error("Failed to copy the Non-Null field values of the request CaseData to the latest CaseData: {}",
-                      e.getMessage());
+            log.error(
+                "Failed to copy the Non-Null field values of the request CaseData to the latest CaseData: {}",
+                e.getMessage()
+            );
         }
+        return latestCaseData;
     }
-
 }
