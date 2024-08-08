@@ -286,12 +286,16 @@ public class CaseService {
             return null;
         }
 
-        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(new ObjectMapper());
         StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
         CaseDetails latestCaseDetails = startEventResponse.getCaseDetails();
-
+        if (latestCaseDetails == null) {
+            log.error("Failed to retrieve case details from startEventResponse for caseId: {}", caseId);
+            return null;
+        }
         log.error("in triggerEvent - sourceClass: {} \n", caseData);
         log.error("in triggerEvent - targetClass: {} \n", latestCaseDetails.getData());
+
+        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(new ObjectMapper());
         CaseData reCaseData = caseDetailsConverter.mapRequestCaseDataToLatestCaseData(caseData,
                                                                                       latestCaseDetails.getData());
         log.error("Request CaseData - option 1: {}", reCaseData.toString());
