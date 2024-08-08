@@ -116,7 +116,6 @@ public class CaseDetailsConverter {
                     field.set(latestData, value);
                 }
             }
-            log.error("in try block to copy copyNonNullProperties - copied targetClass: {}", latestData);
         } catch (IllegalAccessException e) {
             log.error(
                 "Failed to copy the Non-Null field values of the request CaseData to the latest CaseData: {}",
