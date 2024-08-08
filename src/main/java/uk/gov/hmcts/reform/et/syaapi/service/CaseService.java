@@ -293,17 +293,10 @@ public class CaseService {
             return null;
         }
 
-        CaseData caseDataEoMRequest = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseData);
-        log.error("Request CaseData - caseDataEoMRequest: {} \n", caseDataEoMRequest.toString());
-        CaseData caseDataEoMLatest = EmployeeObjectMapper.mapRequestCaseDataToCaseData(latestCaseDetails.getData());
-        log.error("Request CaseData - caseDataEoMLatest: {} \n", caseDataEoMLatest.toString());
-
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(new ObjectMapper());
-
-        CaseData latestCaseData = caseDetailsConverter.toCaseData(latestCaseDetails);
-        CaseData requestCaseData = caseDetailsConverter.getCaseData(caseData);
-
-        caseDetailsConverter.copyNonNullProperties(requestCaseData, latestCaseData);
+        CaseData latestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(latestCaseDetails.getData());
+        caseDetailsConverter.copyNonNullProperties(EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseData),
+                                                   latestCaseData);
 
         if (SUBMIT_CASE_DRAFT == eventName) {
             enrichCaseDataWithJurisdictionCodes(latestCaseData);
