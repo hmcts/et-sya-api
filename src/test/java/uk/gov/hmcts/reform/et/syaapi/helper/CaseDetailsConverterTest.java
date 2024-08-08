@@ -28,6 +28,7 @@ class CaseDetailsConverterTest {
     );
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private CaseDetailsConverter caseDetailsConverter;
 
     @Autowired
     private Et1CaseData et1CaseData;
@@ -37,11 +38,11 @@ class CaseDetailsConverterTest {
         et1CaseData = new Et1CaseData();
         et1CaseData.setCaseNotes("TEST_STRING");
         et1CaseData.setCaseSource("MANUALLY_CREATED");
+        caseDetailsConverter = new CaseDetailsConverter(objectMapper);
     }
 
     @Test
     void shouldGetCaseDetailsConverter() {
-        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         caseDetailsConverter.et1ToCaseDataContent(startEventResponse, et1CaseData);
         assertThat(caseDetailsConverter.toCaseData(expectedDetails).getCaseSource())
             .isEqualToIgnoringCase("Manually Created");
@@ -49,20 +50,17 @@ class CaseDetailsConverterTest {
 
     @Test
     void shouldConvertDataToCaseDataWithNullCaseDetails() {
-        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         assertNull(caseDetailsConverter.toCaseData(null));
     }
 
     @Test
     void shouldConvertCaseDetailsDataToCaseData() {
-        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         caseDetailsConverter.et1ToCaseDataContent(startEventResponse, et1CaseData);
         assertNotNull(caseDetailsConverter.toCaseData(expectedDetails));
     }
 
     @Test
     void shouldGetCaseDataNull() {
-        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         caseDetailsConverter.getCaseData(expectedDetails.getData());
         assertNotNull(caseDetailsConverter.getCaseData(expectedDetails.getData()));
         assertEquals(caseDetailsConverter.getCaseData(expectedDetails.getData()).getClass(), CaseData.class);

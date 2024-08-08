@@ -11,12 +11,9 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
-import uk.gov.hmcts.reform.et.syaapi.enums.CaseState;
 
 import java.lang.reflect.Field;
-import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Converts {@link CaseDetails} to other case related classes using {@link ObjectMapper}.
@@ -48,16 +45,8 @@ public class CaseDetailsConverter {
         if (caseDetails == null) {
             return null;
         }
-        Map<String, Object> data = new ConcurrentHashMap<>(caseDetails.getData());
 
-        if (caseDetails.getId() != null) {
-            data.put("ccdCaseReference", caseDetails.getId());
-        }
-
-        if (caseDetails.getState() != null) {
-            data.put("ccdState", CaseState.valueOf(caseDetails.getState().toUpperCase(Locale.ROOT)));
-        }
-        return objectMapper.convertValue(data, CaseData.class);
+        return objectMapper.convertValue(caseDetails.getData(), CaseData.class);
     }
 
     public CaseData getCaseData(Map<String, Object> caseData) {
