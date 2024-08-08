@@ -92,18 +92,24 @@ public class CaseDetailsConverter {
      * @return {@link CaseData} which returns latest CaseData object representing the contents of the Case Data
      */
     public CaseData getUpdatedCaseData(Map<String, Object> requestData, Map<String, Object> latestData) {
+        if (requestData == null || latestData == null) {
+            return null;
+        }
         CaseData requestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(requestData);
         log.error("Re-CaseData: {}", requestCaseData.toString());
         CaseData latestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(latestData);
         log.error("La-CaseData: {}", latestCaseData.toString());
 
-        Class<?> sourceClass = requestData.getClass();
+        Class<?> sourceClass = requestCaseData.getClass();
         try {
             for (Field field : sourceClass.getDeclaredFields()) {
-                Object value = field.get(requestData);
-                if (value != null) {
-                    field.set(latestData, value);
+                field.setAccessible(true);
+                Object requestValue = field.get(requestCaseData);
+
+                if (requestValue != null) {
+                    field.set(latestCaseData, requestValue);
                 }
+                field.setAccessible(false);
             }
         } catch (IllegalAccessException e) {
             log.error(
