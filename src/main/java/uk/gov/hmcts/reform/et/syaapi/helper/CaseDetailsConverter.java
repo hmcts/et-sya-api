@@ -116,8 +116,6 @@ public class CaseDetailsConverter {
     public void copyNonNullProperties(CaseData sourceCaseData, CaseData targetCaseData) {
         Class<?> sourceClass = sourceCaseData.getClass();
         try {
-            log.error("in try block to copy copyNonNullProperties - sourceClass: {}", sourceCaseData);
-            log.error("in try block to copy copyNonNullProperties - targetClass: {}", targetCaseData);
             for (Field field : sourceClass.getDeclaredFields()) {
                 field.setAccessible(true);
                 Object value = field.get(sourceCaseData);
