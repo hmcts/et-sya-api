@@ -292,19 +292,16 @@ public class CaseService {
             log.error("Failed to retrieve case details from startEventResponse for caseId: {}", caseId);
             return null;
         }
-        log.error("in triggerEvent - sourceClass: {} \n", caseData);
-        log.error("in triggerEvent - targetClass: {} \n", latestCaseDetails.getData());
+
+        CaseData caseDataEoMRequest = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseData);
+        log.error("Request CaseData - caseDataEoMRequest: {} \n", caseDataEoMRequest.toString());
+        CaseData caseDataEoMLatest = EmployeeObjectMapper.mapRequestCaseDataToCaseData(latestCaseDetails.getData());
+        log.error("Request CaseData - caseDataEoMLatest: {} \n", caseDataEoMLatest.toString());
 
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(new ObjectMapper());
-        CaseData reCaseData = caseDetailsConverter.mapRequestCaseDataToLatestCaseData(caseData,
-                                                                                      latestCaseDetails.getData());
-        log.error("Request CaseData - option 1: {}", reCaseData.toString());
-        log.error("Option 2 ----- \n");
 
         CaseData latestCaseData = caseDetailsConverter.toCaseData(latestCaseDetails);
-        log.error("in triggerEvent - latestCaseData from caseDetailsConverter.toCaseData : {} \n", latestCaseData);
         CaseData requestCaseData = caseDetailsConverter.getCaseData(caseData);
-        log.error("in triggerEvent - requestCaseData from caseDetailsConverter.getCaseData : {} \n", requestCaseData);
 
         caseDetailsConverter.copyNonNullProperties(requestCaseData, latestCaseData);
 
