@@ -108,10 +108,11 @@ public class CaseDetailsConverter {
      */
     public CaseData mapRequestCaseDataToLatestCaseData(Map<String, Object> requestData,
                                                        Map<String, Object> latestData) {
+
         CaseData requestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(requestData);
-        log.error("Request CaseData: {}", requestData.toString());
+        log.error("Re-CaseData: {}", requestData.toString());
         CaseData latestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(latestData);
-        log.error("Latest CaseData: {}", latestData.toString());
+        log.error("La-CaseData: {}", latestData.toString());
         copyNonNullProperties(requestCaseData, latestCaseData);
         return latestCaseData;
     }
