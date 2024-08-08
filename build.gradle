@@ -249,8 +249,8 @@ dependencies {
   implementation 'org.json:json:20240303'
   implementation group: 'org.yaml', name: 'snakeyaml', version: '2.2'
 
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.91'
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.26'
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.93'
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.28'
 
   implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '6.3.1'
 
