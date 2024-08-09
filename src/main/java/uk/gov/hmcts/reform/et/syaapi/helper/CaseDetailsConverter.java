@@ -95,10 +95,12 @@ public class CaseDetailsConverter {
         if (requestData == null || latestData == null) {
             return null;
         }
+        log.info("Request data map: {} \n", requestData.toString());
+        log.info("Latest data map: {} \n", latestData.toString());
         CaseData requestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(requestData);
-        log.error("Re-CaseData: {}", requestCaseData.toString());
+        log.error("Re-CaseData: {} \n", requestCaseData.toString());
         CaseData latestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(latestData);
-        log.error("La-CaseData: {}", latestCaseData.toString());
+        log.error("La-CaseData: {} \n", latestCaseData.toString());
 
         Class<?> sourceClass = requestCaseData.getClass();
         try {
