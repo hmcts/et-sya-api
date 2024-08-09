@@ -243,6 +243,78 @@ class SendNotificationServiceTest {
     }
 
     @Test
+    void shouldNotUpdateHearingNotificationStateNotHearing() {
+        SendNotificationStateUpdateRequest request = testData.getSendNotificationStateUpdateRequest();
+        request.setSendNotificationId("1ae52b64-f2b9-4b97-bcc7-460eb64aa497");
+
+        StartEventResponse updateCaseEventResponse = testData.getUpdateCaseEventResponseWithHearingNotification();
+        when(caseService.startUpdate(
+            TEST_SERVICE_AUTH_TOKEN,
+            request.getCaseId(),
+            request.getCaseTypeId(),
+            UPDATE_NOTIFICATION_STATE
+        )).thenReturn(updateCaseEventResponse);
+
+        ArgumentCaptor<CaseDataContent> contentCaptor = ArgumentCaptor.forClass(CaseDataContent.class);
+        sendNotificationService.updateSendNotificationState(MOCK_TOKEN, request);
+
+        verify(caseService, times(1)).submitUpdate(
+            eq(MOCK_TOKEN), eq("11"), contentCaptor.capture(), eq(CASE_ID));
+
+        CaseData data = (CaseData) contentCaptor.getValue().getData();
+        SendNotificationType notification = data.getSendNotificationCollection().get(0).getValue();
+        assertNull(notification.getHearingClaimantViewState());
+    }
+
+    @Test
+    void shouldNotUpdateHearingNotificationStateRespondentOnly() {
+        SendNotificationStateUpdateRequest request = testData.getSendNotificationStateUpdateRequest();
+        request.setSendNotificationId("f731b34f-507a-46f2-8318-a145ee338fc1");
+
+        StartEventResponse updateCaseEventResponse = testData.getUpdateCaseEventResponseWithHearingNotification();
+        when(caseService.startUpdate(
+            TEST_SERVICE_AUTH_TOKEN,
+            request.getCaseId(),
+            request.getCaseTypeId(),
+            UPDATE_NOTIFICATION_STATE
+        )).thenReturn(updateCaseEventResponse);
+
+        ArgumentCaptor<CaseDataContent> contentCaptor = ArgumentCaptor.forClass(CaseDataContent.class);
+        sendNotificationService.updateSendNotificationState(MOCK_TOKEN, request);
+
+        verify(caseService, times(1)).submitUpdate(
+            eq(MOCK_TOKEN), eq("11"), contentCaptor.capture(), eq(CASE_ID));
+
+        CaseData data = (CaseData) contentCaptor.getValue().getData();
+        SendNotificationType notification = data.getSendNotificationCollection().get(1).getValue();
+        assertNull(notification.getHearingClaimantViewState());
+    }
+
+    @Test
+    void shouldUpdateHearingNotificationState() {
+        SendNotificationStateUpdateRequest request = testData.getSendNotificationStateUpdateRequest();
+        request.setSendNotificationId("53e93ac5-0261-41ac-a649-dfa3277bab4e");
+
+        StartEventResponse updateCaseEventResponse = testData.getUpdateCaseEventResponseWithHearingNotification();
+        when(caseService.startUpdate(
+            TEST_SERVICE_AUTH_TOKEN,
+            request.getCaseId(),
+            request.getCaseTypeId(),
+            UPDATE_NOTIFICATION_STATE
+        )).thenReturn(updateCaseEventResponse);
+
+        ArgumentCaptor<CaseDataContent> contentCaptor = ArgumentCaptor.forClass(CaseDataContent.class);
+        sendNotificationService.updateSendNotificationState(MOCK_TOKEN, request);
+
+        verify(caseService, times(1)).submitUpdate(
+            eq(MOCK_TOKEN), eq("11"), contentCaptor.capture(), eq(CASE_ID));
+
+        CaseData data = (CaseData) contentCaptor.getValue().getData();
+        SendNotificationType notification = data.getSendNotificationCollection().get(2).getValue();
+        assertEquals(VIEWED, notification.getHearingClaimantViewState());
+    }
+
+    @Test
     void shouldUpdateAddResponseSendNotification() {
         when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(
             UserInfo.builder()

@@ -33,6 +33,7 @@ import java.util.UUID;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NOT_VIEWED_YET;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.RESPONDENT_ONLY;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.VIEWED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
@@ -51,6 +52,8 @@ public class SendNotificationService {
     private final FeatureToggleService featureToggleService;
     private final IdamClient idamClient;
 
+    private static final String HEARING = "Hearing";
+
     public CaseDetails updateSendNotificationState(String authorization, SendNotificationStateUpdateRequest request) {
         StartEventResponse startEventResponse = caseService.startUpdate(
             authorization,
@@ -67,6 +70,11 @@ public class SendNotificationService {
             if (item.getId().equals(request.getSendNotificationId())) {
                 if (item.getValue().getNotificationState().equals(NOT_VIEWED_YET)) {
                     item.getValue().setNotificationState(VIEWED);
+                }
+                if (!RESPONDENT_ONLY.equals(item.getValue().getSendNotificationNotify())
+                    && item.getValue().getSendNotificationSubject() != null
+                    && item.getValue().getSendNotificationSubject().contains(HEARING)) {
+                    item.getValue().setHearingClaimantViewState(VIEWED);
                 }
                 setTribunalResponsesAsViewed(item.getValue().getRespondNotificationTypeCollection());
                 setNonTribunalResponsesAsViewed(item.getValue().getRespondCollection());
