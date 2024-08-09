@@ -53,6 +53,7 @@ public class EmployeeObjectMapper {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        mapper.coercionConfigDefaults();
         return mapper.convertValue(caseData, CaseData.class);
     }
 

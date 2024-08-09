@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.et.syaapi.helper;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +34,7 @@ public class CaseDetailsConverter {
     public CaseDetailsConverter(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
         this.objectMapper.registerModule(new JavaTimeModule());
+        this.objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
     }
 
@@ -97,6 +100,11 @@ public class CaseDetailsConverter {
         }
         log.info("Request data map: {} \n", requestData.toString());
         log.info("Latest data map: {} \n", latestData.toString());
+        CaseData requestCaseData1 = getCaseData(requestData);
+        log.info("Local Request-CaseData: {} \n", requestCaseData1.toString());
+        CaseData latestCaseData1 = getCaseData(latestData);
+        log.info("Local Latest-CaseData: {} \n", latestCaseData1.toString());
+
         CaseData requestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(requestData);
         log.error("Re-CaseData: {} \n", requestCaseData.toString());
         CaseData latestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(latestData);
