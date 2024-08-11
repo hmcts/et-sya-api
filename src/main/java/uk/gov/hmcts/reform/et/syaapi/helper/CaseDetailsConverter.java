@@ -100,9 +100,9 @@ public class CaseDetailsConverter {
         }
         log.info("Request data map: {} \n", requestData.toString());
         log.info("Latest data map: {} \n", latestData.toString());
-        CaseData requestCaseData1 = getCaseData(requestData);
+        Et1CaseData requestCaseData1 = EmployeeObjectMapper.getEmploymentCaseData(requestData);
         log.info("Local Request-CaseData: {} \n", requestCaseData1.toString());
-        CaseData latestCaseData1 = getCaseData(latestData);
+        Et1CaseData latestCaseData1 = EmployeeObjectMapper.getEmploymentCaseData(latestData);
         log.info("Local Latest-CaseData: {} \n", latestCaseData1.toString());
 
         CaseData requestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(requestData);

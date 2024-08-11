@@ -43,7 +43,7 @@ public class EmployeeObjectMapper {
      * @param caseData to be converted
      * @return case data wrapped in {@link Et1CaseData} format
      */
-    public Et1CaseData getEmploymentCaseData(Map<String, Object> caseData) {
+    public static Et1CaseData getEmploymentCaseData(Map<String, Object> caseData) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         return mapper.convertValue(caseData, Et1CaseData.class);
