@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 
-import java.lang.reflect.Field;
 import java.util.Map;
 
 /**
@@ -84,54 +83,5 @@ public class CaseDetailsConverter {
             .event(Event.builder().id(startEventResponse.getEventId()).build())
             .data(caseData)
             .build();
-    }
-
-    /**
-     * Converts Request caseData field map to CaseData which is used to create CaseDataContent and save in CCD.
-     *
-     * @param requestData map object that contains the data field values of the request case details
-     * @param latestData map object that contains the data field values of the updated case details
-     *                   obtained from CCD api call
-     * @return {@link CaseData} which returns latest CaseData object representing the contents of the Case Data
-     */
-    public CaseData getUpdatedCaseData(Map<String, Object> requestData, Map<String, Object> latestData) {
-        if (requestData == null || latestData == null) {
-            return null;
-        }
-        log.info("Request data map: {} \n", requestData.toString());
-        log.info("Latest data map: {} \n", latestData.toString());
-        Et1CaseData requestEt1CaseData = EmployeeObjectMapper.getEmploymentCaseData(requestData);
-        log.info("Local Request-Et1CaseData: {} \n", requestEt1CaseData.toString());
-        CaseData requestCaseData1 = getCaseData(requestData);
-        log.info("Local Request-CaseData: {} \n", requestCaseData1.toString());
-
-        Et1CaseData latestEt1CaseData = EmployeeObjectMapper.getEmploymentCaseData(latestData);
-        log.info("Local Latest-Et1CaseData: {} \n", latestEt1CaseData.toString());
-        CaseData latestCaseData1 = getCaseData(latestData);
-        log.info("Local Latest-CaseData: {} \n", latestCaseData1.toString());
-
-        CaseData requestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(requestData);
-        log.error("Re-CaseData: {} \n", requestCaseData.toString());
-        CaseData latestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(latestData);
-        log.error("La-CaseData: {} \n", latestCaseData.toString());
-
-        Class<?> sourceClass = requestCaseData.getClass();
-        try {
-            for (Field field : sourceClass.getDeclaredFields()) {
-                field.setAccessible(true);
-                Object requestValue = field.get(requestCaseData);
-
-                if (requestValue != null) {
-                    field.set(latestCaseData, requestValue);
-                }
-                field.setAccessible(false);
-            }
-        } catch (IllegalAccessException e) {
-            log.error(
-                "Failed to copy the Non-Null field values of the request CaseData to the latest CaseData: {}",
-                e.getMessage()
-            );
-        }
-        return latestCaseData;
     }
 }

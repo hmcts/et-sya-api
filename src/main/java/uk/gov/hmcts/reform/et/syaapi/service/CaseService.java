@@ -43,6 +43,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -71,7 +72,7 @@ import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTE
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.UseConcurrentHashMap"})
 public class CaseService {
 
     public static final String DOCUMENT_COLLECTION = "documentCollection";
@@ -293,12 +294,13 @@ public class CaseService {
             return null;
         }
 
-        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(new ObjectMapper());
-        CaseData latestCaseData = caseDetailsConverter.getUpdatedCaseData(caseData, latestCaseDetails.getData());
+        Map<String, Object> mergedCaseData = mergeCasedata(caseData, latestCaseDetails.getData());
 
+        CaseData latestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(mergedCaseData);
         if (SUBMIT_CASE_DRAFT == eventName) {
             enrichCaseDataWithJurisdictionCodes(latestCaseData);
         }
+        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(new ObjectMapper());
 
         return submitUpdate(
             authorization,
@@ -306,6 +308,21 @@ public class CaseService {
             caseDetailsConverter.et1ToCaseDataContent(startEventResponse, latestCaseData),
             caseType
         );
+    }
+
+    private Map<String, Object> mergeCasedata(Map<String, Object> caseData, Map<String, Object> latestCaseData) {
+        Map<String, Object> mergedCaseData = new HashMap<>();
+        mergedCaseData.putAll(caseData);
+        for (Map.Entry<String, Object> entry : latestCaseData.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+
+            // Add entry from the latestCase map if it does not exist in the request caseData map
+            if (!caseData.containsKey(key)) {
+                caseData.put(key, value);
+            }
+        }
+        return mergedCaseData;
     }
 
     /**
