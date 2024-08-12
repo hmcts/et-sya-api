@@ -76,41 +76,41 @@ class CaseDetailsConverterTest {
     void testGetUpdatedCaseDataWithEmptyMaps() {
         Map<String, Object> requestData = new ConcurrentHashMap<>();
         Map<String, Object> latestData = new ConcurrentHashMap<>();
-        CaseData result = caseDetailsConverter.getUpdatedCaseData(requestData, latestData);
+        Et1CaseData result = caseDetailsConverter.getUpdatedCaseData(requestData, latestData);
         assertNotNull(result);
     }
 
     @Test
     void testGetUpdatedCaseDataWithNullFieldsInRequestData() {
         Map<String, Object> requestData = new HashMap<>();
-        requestData.put(CORE_CASE_DATA_ID, "123");
-        requestData.put(ETHOS_CASE_REFERENCE, null); // This should not overwrite latestData
+        requestData.put("caseSource", "Manually created");
+        requestData.put("caseNotes", null); // This should not overwrite latestData
 
         Map<String, Object> latestData = new ConcurrentHashMap<>();
-        latestData.put(CORE_CASE_DATA_ID, "456");
-        latestData.put(ETHOS_CASE_REFERENCE, "Original Name");
+        latestData.put("caseSource", "ET1 Online");
+        requestData.put("caseNotes", "test case notes");
 
-        CaseData result = caseDetailsConverter.getUpdatedCaseData(requestData, latestData);
+        Et1CaseData result = caseDetailsConverter.getUpdatedCaseData(requestData, latestData);
         assertNotNull(result);
-        assertEquals("123", result.getCcdID());
-        assertEquals("Original Name", result.getEthosCaseReference());
+        assertEquals("Manually created", result.getCaseSource());
+        assertEquals("test case notes", result.getCaseNotes());
     }
 
     @Test
     void testGetUpdatedCaseDataWithNullValues() {
         // Handle null requestData and latestData
         Map<String, Object> requestData2 = new HashMap<>();
-        requestData2.put(CORE_CASE_DATA_ID, null);  // Should not overwrite latestData
-        requestData2.put(ETHOS_CASE_REFERENCE, "2002/998083");
+        requestData2.put("caseSource", null); // Should not overwrite latestData
+        requestData2.put("caseNotes", "original test notes");
 
         Map<String, Object> latestData2 = new ConcurrentHashMap<>();
-        latestData2.put(CORE_CASE_DATA_ID, "456");
-        latestData2.put(ETHOS_CASE_REFERENCE, "18002/99808003");
+        latestData2.put("caseSource", "ET1 Online");
+        latestData2.put("caseNotes", "test Case Notes");
 
-        CaseData result = caseDetailsConverter.getUpdatedCaseData(requestData2, latestData2);
+        Et1CaseData result = caseDetailsConverter.getUpdatedCaseData(requestData2, latestData2);
 
-        assertEquals("456", result.getCcdID());
-        assertEquals("2002/998083", result.getEthosCaseReference());
+        assertEquals("ET1 Online", result.getCaseSource());
+        assertEquals("original test notes", result.getCaseNotes());
     }
 
 }

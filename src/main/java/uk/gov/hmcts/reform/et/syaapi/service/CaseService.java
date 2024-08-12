@@ -294,11 +294,11 @@ public class CaseService {
         }
 
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(new ObjectMapper());
-        CaseData latestCaseData = caseDetailsConverter.getUpdatedCaseData(caseData, latestCaseDetails.getData());
+        Et1CaseData latestCaseData = caseDetailsConverter.getUpdatedCaseData(caseData, latestCaseDetails.getData());
 
-        if (SUBMIT_CASE_DRAFT == eventName) {
-            enrichCaseDataWithJurisdictionCodes(latestCaseData);
-        }
+        //if (SUBMIT_CASE_DRAFT == eventName) {
+           // enrichCaseDataWithJurisdictionCodes(latestCaseData);
+        //}
 
         return submitUpdate(
             authorization,
