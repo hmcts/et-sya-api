@@ -296,6 +296,10 @@ public class CaseService {
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(new ObjectMapper());
         Et1CaseData latestCaseData = caseDetailsConverter.getUpdatedCaseData(caseData, latestCaseDetails.getData());
 
+        //if (SUBMIT_CASE_DRAFT == eventName) {
+           // enrichCaseDataWithJurisdictionCodes(latestCaseData);
+        //}
+
         return submitUpdate(
             authorization,
             caseId,

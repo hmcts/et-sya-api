@@ -21,8 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 @SuppressWarnings({"PMD.UseConcurrentHashMap"})
 class CaseDetailsConverterTest {
-    private static final String CASE_SOURCE = "caseSource";
-    private static final String CASE_NOTES = "caseNotes";
+    private static final String CORE_CASE_DATA_ID = "ccdID";
+    private static final String ETHOS_CASE_REFERENCE = "ethosCaseReference";
     private final CaseDetails expectedDetails = ResourceLoader.fromString(
         "responses/caseDetails.json",
         CaseDetails.class
@@ -83,12 +83,12 @@ class CaseDetailsConverterTest {
     @Test
     void testGetUpdatedCaseDataWithNullFieldsInRequestData() {
         Map<String, Object> requestData = new HashMap<>();
-        requestData.put(CASE_SOURCE, "Manually created");
-        requestData.put(CASE_NOTES, null); // This should not overwrite latestData
+        requestData.put("caseSource", "Manually created");
+        requestData.put("caseNotes", null); // This should not overwrite latestData
 
         Map<String, Object> latestData = new ConcurrentHashMap<>();
-        latestData.put(CASE_SOURCE, "ET1 Online");
-        requestData.put(CASE_NOTES, "test case notes");
+        latestData.put("caseSource", "ET1 Online");
+        requestData.put("caseNotes", "test case notes");
 
         Et1CaseData result = caseDetailsConverter.getUpdatedCaseData(requestData, latestData);
         assertNotNull(result);
@@ -100,12 +100,12 @@ class CaseDetailsConverterTest {
     void testGetUpdatedCaseDataWithNullValues() {
         // Handle null requestData and latestData
         Map<String, Object> requestData2 = new HashMap<>();
-        requestData2.put(CASE_SOURCE, null); // Should not overwrite latestData
-        requestData2.put(CASE_NOTES, "original test notes");
+        requestData2.put("caseSource", null); // Should not overwrite latestData
+        requestData2.put("caseNotes", "original test notes");
 
         Map<String, Object> latestData2 = new ConcurrentHashMap<>();
-        latestData2.put(CASE_SOURCE, "ET1 Online");
-        latestData2.put(CASE_NOTES, "test Case Notes");
+        latestData2.put("caseSource", "ET1 Online");
+        latestData2.put("caseNotes", "test Case Notes");
 
         Et1CaseData result = caseDetailsConverter.getUpdatedCaseData(requestData2, latestData2);
 
