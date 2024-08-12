@@ -94,27 +94,35 @@ public class CaseDetailsConverter {
      *                   obtained from CCD api call
      * @return {@link CaseData} which returns latest CaseData object representing the contents of the Case Data
      */
-    public Et1CaseData getUpdatedCaseData(Map<String, Object> requestData, Map<String, Object> latestData) {
+    public CaseData getUpdatedCaseData(Map<String, Object> requestData, Map<String, Object> latestData) {
         if (requestData == null || latestData == null) {
             return null;
         }
         log.info("Request data map: {} \n", requestData.toString());
         log.info("Latest data map: {} \n", latestData.toString());
-
         Et1CaseData requestEt1CaseData = EmployeeObjectMapper.getEmploymentCaseData(requestData);
         log.info("Local Request-Et1CaseData: {} \n", requestEt1CaseData.toString());
+        CaseData requestCaseData1 = getCaseData(requestData);
+        log.info("Local Request-CaseData: {} \n", requestCaseData1.toString());
 
         Et1CaseData latestEt1CaseData = EmployeeObjectMapper.getEmploymentCaseData(latestData);
         log.info("Local Latest-Et1CaseData: {} \n", latestEt1CaseData.toString());
+        CaseData latestCaseData1 = getCaseData(latestData);
+        log.info("Local Latest-CaseData: {} \n", latestCaseData1.toString());
 
-        Class<?> sourceClass = requestEt1CaseData.getClass();
+        CaseData requestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(requestData);
+        log.error("Re-CaseData: {} \n", requestCaseData.toString());
+        CaseData latestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(latestData);
+        log.error("La-CaseData: {} \n", latestCaseData.toString());
+
+        Class<?> sourceClass = requestCaseData.getClass();
         try {
             for (Field field : sourceClass.getDeclaredFields()) {
                 field.setAccessible(true);
-                Object requestValue = field.get(requestEt1CaseData);
+                Object requestValue = field.get(requestCaseData);
 
                 if (requestValue != null) {
-                    field.set(latestEt1CaseData, requestValue);
+                    field.set(latestCaseData, requestValue);
                 }
                 field.setAccessible(false);
             }
@@ -124,6 +132,6 @@ public class CaseDetailsConverter {
                 e.getMessage()
             );
         }
-        return latestEt1CaseData;
+        return latestCaseData;
     }
 }
