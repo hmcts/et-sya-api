@@ -284,7 +284,9 @@ public class CaseService {
         ObjectMapper objectMapper = new ObjectMapper();
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
+        //testing if the derived casedata instance populates the base type ET1CaseData fields
         CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseData);
+
 
         if (SUBMIT_CASE_DRAFT == eventName) {
             enrichCaseDataWithJurisdictionCodes(caseData1);
