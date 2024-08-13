@@ -295,7 +295,6 @@ public class CaseService {
         }
 
         Map<String, Object> mergedCaseData = mergeCasedata(caseData, latestCaseDetails.getData());
-
         CaseData latestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(mergedCaseData);
         if (SUBMIT_CASE_DRAFT == eventName) {
             enrichCaseDataWithJurisdictionCodes(latestCaseData);
@@ -318,8 +317,8 @@ public class CaseService {
             Object value = entry.getValue();
 
             // Add entry from the latestCase map if it does not exist in the request caseData map
-            if (!caseData.containsKey(key)) {
-                caseData.put(key, value);
+            if (!mergedCaseData.containsKey(key)) {
+                mergedCaseData.put(key, value);
             }
         }
         log.info("\n request and latest casedata maps merged successfully: \n {} \n", mergedCaseData);
@@ -491,8 +490,7 @@ public class CaseService {
         String description = "Response to " + appType;
         GenericTseApplicationType application = TseApplicationHelper.getSelectedApplication(
                 caseData.getGenericTseApplicationCollection(),
-                request.getApplicationId())
-            .getValue();
+                request.getApplicationId()).getValue();
 
         PdfDecodedMultipartFile multipartResponsePdf =
             pdfUploadService.convertClaimantResponseIntoMultipartFile(request,
