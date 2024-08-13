@@ -322,6 +322,7 @@ public class CaseService {
                 caseData.put(key, value);
             }
         }
+        log.info("\n request and latest casedata maps merged successfully: \n {} \n", mergedCaseData);
         return mergedCaseData;
     }
 
