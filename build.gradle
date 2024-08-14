@@ -284,7 +284,7 @@ dependencies {
   testImplementation 'com.github.hmcts:fortify-client:1.4.4:all'
 
   // Pact Contract Tests
-  contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: '4.1.41'
+  contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: '4.6.13'
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'java8', version: '4.1.41'
   contractTestImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.10.3'
   contractTestRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.10.3'
