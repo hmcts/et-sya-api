@@ -310,13 +310,15 @@ public class CaseService {
     }
 
     private Map<String, Object> mergeCasedata(Map<String, Object> caseData, Map<String, Object> latestCaseData) {
+        log.info("\n request casedata map entries: \n {}", caseData);
+        log.info("\n latest casedata map entries: \n {} \n", latestCaseData);
         Map<String, Object> mergedCaseData = new HashMap<>();
         mergedCaseData.putAll(caseData);
         for (Map.Entry<String, Object> entry : latestCaseData.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
 
-            // Add entry from the latestCase map if it does not exist in the request caseData map
+            // Add entry from the latestCase map if it does not exist in the request mergedCaseData map
             if (!mergedCaseData.containsKey(key)) {
                 mergedCaseData.put(key, value);
             }
