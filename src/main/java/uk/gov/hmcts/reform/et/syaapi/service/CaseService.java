@@ -47,6 +47,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -329,12 +331,19 @@ public class CaseService {
         caseData1.setEt1OnlineSubmission(YES);
         ObjectMapper objectMapper = new ObjectMapper();
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
-        return submitUpdate(
-            authorization,
-            caseRequest.getCaseId(),
-            caseDetailsConverter.caseDataContent(startEventResponse, caseData1),
-            caseRequest.getCaseTypeId()
-        );
+        try {
+            return CompletableFuture.supplyAsync(() -> submitUpdate(
+                authorization,
+                caseRequest.getCaseId(),
+                caseDetailsConverter.et1ToCaseDataContent(startEventResponse, caseData1),
+                caseRequest.getCaseTypeId()
+            )).get();
+        } catch (ExecutionException | InterruptedException e) {
+            log.error("Failed to submit case for caseId: {}", caseRequest.getCaseId());
+            Thread.currentThread().interrupt();
+            return null;
+        }
+
     }
 
     /**
