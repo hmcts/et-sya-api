@@ -47,11 +47,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 import static org.springframework.util.CollectionUtils.isEmpty;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED_STATE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.CASE_MANAGEMENT_DOC_CATEGORY;
@@ -332,18 +331,23 @@ public class CaseService {
         ObjectMapper objectMapper = new ObjectMapper();
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         try {
-            return CompletableFuture.supplyAsync(() -> submitUpdate(
+            return submitUpdate(
                 authorization,
                 caseRequest.getCaseId(),
                 caseDetailsConverter.et1ToCaseDataContent(startEventResponse, caseData1),
                 caseRequest.getCaseTypeId()
-            )).get();
-        } catch (ExecutionException | InterruptedException e) {
-            log.error("Failed to submit case for caseId: {}", caseRequest.getCaseId());
-            Thread.currentThread().interrupt();
-            return null;
+            );
+        } catch (Exception e) {
+            CaseDetails esCaseDetails = ccdApiClient.getCase(authorization, authTokenGenerator.generate(),
+                                                             caseRequest.getCaseId());
+            // In case it has submitted but CCD has failed for some reason
+            if (SUBMITTED_STATE.equals(esCaseDetails.getState())) {
+                return esCaseDetails;
+            } else {
+                log.error("Failed to submit case with caseId: {}", caseRequest.getCaseId(), e);
+                throw e;
+            }
         }
-
     }
 
     /**
