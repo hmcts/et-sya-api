@@ -59,6 +59,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.ENGLANDWALES_CASE_TYPE_ID;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.ET1_PDF_DOC_CATEGORY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ONLINE_SUBMISSION;
@@ -563,6 +564,33 @@ class CaseServiceTest {
         verify(pdfUploadService, never()).convertCaseDataToPdfDecodedMultipartFile(any(), any());
         verify(caseDocumentService, never()).uploadAllDocuments(any(), any(), any(), any(), any());
 
+    }
+
+    @Test
+    @SneakyThrows
+    void submitCaseCcdFailsButStillSubmits() {
+        when(featureToggle.citizenEt1Generation()).thenReturn(true);
+        when(ccdApiClient.submitEventForCitizen(
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyBoolean(),
+            any())).thenThrow(new RuntimeException("Submission failed"));
+        when(ccdApiClient.getCase(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            caseTestData.getCaseRequest().getCaseId()
+        )).thenReturn(caseTestData.getExpectedDetails());
+        caseTestData.getExpectedDetails().setState(SUBMITTED);
+        try {
+            caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseTestData.getCaseRequest());
+        } catch (Exception e) {
+            verify(ccdApiClient, times(1)).getCase(any(), any(), any());
+
+        }
     }
 
     private List<JurCodesTypeItem> mockJurCodesTypeItems() {

@@ -338,11 +338,11 @@ public class CaseService {
                 caseRequest.getCaseTypeId()
             );
         } catch (Exception e) {
-            CaseDetails esCaseDetails = ccdApiClient.getCase(authorization, authTokenGenerator.generate(),
-                                                             caseRequest.getCaseId());
             // In case it has submitted but CCD has failed for some reason
-            if (SUBMITTED_STATE.equals(esCaseDetails.getState())) {
-                return esCaseDetails;
+            CaseDetails ccdCaseDetails = ccdApiClient.getCase(authorization, authTokenGenerator.generate(),
+                                                             caseRequest.getCaseId());
+            if (SUBMITTED_STATE.equals(ccdCaseDetails.getState())) {
+                return ccdCaseDetails;
             } else {
                 log.error("Failed to submit case with caseId: {}", caseRequest.getCaseId(), e);
                 throw e;
