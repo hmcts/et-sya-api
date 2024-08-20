@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -9,7 +10,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
@@ -17,9 +17,19 @@ import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesResponse;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.exception.CaseRoleManagementException;
+import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
+import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 
 /**
  * Provides read and write access to cases stored by ET.
@@ -42,15 +52,55 @@ public class CaseRoleManagementService {
     private static final String EXCEPTION_INVALID_MODIFICATION_TYPE = "Invalid modification type";
     private static final String MODIFICATION_TYPE_ASSIGNMENT = "Assignment";
     private static final String MODIFICATION_TYPE_REVOKE = "Revoke";
+    private static final int FIRST_INDEX = 0;
 
     private String roleList;
 
     private final AdminUserService adminUserService;
     private final RestTemplate restTemplate;
     private final AuthTokenGenerator authTokenGenerator;
+    private final CoreCaseDataApi ccdApi;
 
     @Value("${core_case_data.api.url}")
     private String ccdDataStoreUrl;
+
+    public CaseDetails findCaseForRoleModification(
+        FindCaseForRoleModificationRequest findCaseForRoleModificationRequest) {
+        log.info(
+            "Trying to receive case for role modification. Submission Reference: {}",
+            findCaseForRoleModificationRequest.getCaseSubmissionReference()
+        );
+        String adminUserToken = adminUserService.getAdminUserToken();
+
+        List<CaseDetails> englandCases = Optional.ofNullable(ccdApi.searchCases(
+            adminUserToken,
+            authTokenGenerator.generate(),
+            ENGLAND_CASE_TYPE,
+            ElasticSearchQueryBuilder.buildElasticSearchQueryForRoleModification(findCaseForRoleModificationRequest)
+        ).getCases()).orElse(Collections.emptyList());
+        if (CollectionUtils.isNotEmpty(englandCases)) {
+            return englandCases.get(FIRST_INDEX);
+        }
+
+        List<CaseDetails> scotlandCases = Optional.ofNullable(ccdApi.searchCases(
+            adminUserToken,
+            authTokenGenerator.generate(),
+            SCOTLAND_CASE_TYPE,
+            ElasticSearchQueryBuilder.buildElasticSearchQueryForRoleModification(findCaseForRoleModificationRequest)
+        ).getCases()).orElse(Collections.emptyList());
+        if (CollectionUtils.isNotEmpty(scotlandCases)) {
+            return scotlandCases.get(FIRST_INDEX);
+        }
+        log.info(
+            "Case not found for the parameters, submission reference: {}, respondent name: {}, claimant name: {}"
+                + StringUtils.SPACE + "{}",
+            findCaseForRoleModificationRequest.getCaseSubmissionReference(),
+            findCaseForRoleModificationRequest.getRespondentName(),
+            findCaseForRoleModificationRequest.getClaimantFirstNames(),
+            findCaseForRoleModificationRequest.getClaimantLastName()
+        );
+        return null;
+    }
 
     public void modifyUserCaseRoles(CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest,
                                     String modificationType) throws IOException {

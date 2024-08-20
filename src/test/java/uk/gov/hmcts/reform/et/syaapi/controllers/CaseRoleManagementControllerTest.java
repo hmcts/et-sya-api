@@ -15,7 +15,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.SyaApiApplication;
+import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseRoleManagementService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
@@ -27,6 +29,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest({CaseRoleManagementController.class})
@@ -36,9 +39,15 @@ class CaseRoleManagementControllerTest {
     private static final String USER_ID = "1234564789";
     private static final String CASE_ROLE = "[DEFENDANT]";
     private static final String AUTH_TOKEN = "some-token";
-    private static final String POST_MODIFY_CASE_USER_ROLE_URL = "/caseRoleManagement/modify-case-user-roles";
+    private static final String POST_MODIFY_CASE_USER_ROLE_URL = "/caseRoleManagement/modifyCaseUserRoles";
+    private static final String POST_FIND_CASE_FOR_ROLE_MODIFICATION
+        = "/caseRoleManagement/findCaseForRoleModification";
     private static final String MODIFICATION_TYPE_PARAMETER_NAME = "modificationType";
     private static final String MODIFICATION_TYPE_PARAMETER_VALUE_REVOKE = "Revoke";
+    private static final String CASE_SUBMISSION_REFERENCE = "1234567890123456";
+    private static final String RESPONDENT_NAME = "Respondent Name";
+    private static final String CLAIMANT_FIRST_NAMES = "Claimant First Names";
+    private static final String CLAIMANT_LAST_NAME = "Claimant Last Name";
 
     @Autowired
     private WebApplicationContext webApplicationContext;
@@ -57,19 +66,41 @@ class CaseRoleManagementControllerTest {
     }
 
     @Test
-    void testModifyUserRoles() throws Exception {
+    void modifyUserRoles() throws Exception {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
         CaseAssignmentUserRole caseAssignmentUserRole = CaseAssignmentUserRole
             .builder().caseRole(CASE_ROLE).caseDataId(CASE_ID).userId(USER_ID).build();
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest = CaseAssignmentUserRolesRequest.builder()
             .caseAssignmentUserRoles(List.of(caseAssignmentUserRole))
             .build();
         doNothing().when(caseRoleManagementService).modifyUserCaseRoles(any(), any());
-        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
         mockMvc.perform(post(POST_MODIFY_CASE_USER_ROLE_URL)
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                             .param(MODIFICATION_TYPE_PARAMETER_NAME, MODIFICATION_TYPE_PARAMETER_VALUE_REVOKE)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(ResourceLoader.toJson(caseAssignmentUserRolesRequest)))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void findCaseForRoleModification() throws Exception {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+        FindCaseForRoleModificationRequest findCaseForRoleModificationRequest = FindCaseForRoleModificationRequest
+            .builder()
+            .caseSubmissionReference(CASE_SUBMISSION_REFERENCE)
+            .respondentName(RESPONDENT_NAME)
+            .claimantFirstNames(CLAIMANT_FIRST_NAMES)
+            .claimantLastName(CLAIMANT_LAST_NAME)
+            .build();
+        when(caseRoleManagementService.findCaseForRoleModification(findCaseForRoleModificationRequest))
+            .thenReturn(CaseDetails.builder()
+                            .id(Long.parseLong(CASE_ID))
+                            .caseTypeId(ENGLAND_CASE_TYPE)
+                            .build());
+        mockMvc.perform(post(POST_FIND_CASE_FOR_ROLE_MODIFICATION)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(ResourceLoader.toJson(findCaseForRoleModificationRequest)))
             .andExpect(status().isOk());
     }
 }

@@ -10,8 +10,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.exception.CaseRoleManagementException;
+import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseRoleManagementService;
 
 import javax.validation.constraints.NotNull;
@@ -30,12 +32,23 @@ public class CaseRoleManagementController {
     private static final String CASE_USER_ROLE_SUCCESSFULLY_MODIFIED = "Successfully modified case user role";
     private final CaseRoleManagementService caseRoleManagementService;
 
+    @PostMapping("/findCaseForRoleModification")
+    @Operation(summary = "Modifies user roles of the case")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> findCaseForRoleModification(
+        @NotNull @RequestBody FindCaseForRoleModificationRequest findCaseForRoleModificationRequest
+    ) {
+        CaseDetails caseDetails =
+            caseRoleManagementService.findCaseForRoleModification(findCaseForRoleModificationRequest);
+        return ok(caseDetails);
+    }
+
     /**
      * Modifies user role(s) of the case.
      * @param caseAssignmentUserRolesRequest the request object which contains user case roles list
      * @return the modification status of the case
      */
-    @PostMapping("/modify-case-user-roles")
+    @PostMapping("/modifyCaseUserRoles")
     @Operation(summary = "Modifies user roles of the case")
     @ApiResponseGroup
     public ResponseEntity<String> modifyCaseUserRoles(
