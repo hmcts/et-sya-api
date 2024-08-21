@@ -122,6 +122,11 @@ pdf:
 caseWorkerUserName: ${CASEWORKER_USER_NAME:user_name}
 caseWorkerPassword: ${CASEWORKER_PASSWORD:password}
 
+etcos:
+  system:
+    username: ${ET_COS_SYSTEM_USER:system_user}
+    password: ${ET_COS_SYSTEM_USER_PASSWORD:password}
+
 launchdarkly:
   sdk-key: ${LAUNCH_DARKLY_SDK_KEY:sdk-key}
   offline-mode: false
