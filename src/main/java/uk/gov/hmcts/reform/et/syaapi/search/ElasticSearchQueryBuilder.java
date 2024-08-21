@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.et.syaapi.search;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
-import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 
@@ -12,14 +11,14 @@ import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 public final class ElasticSearchQueryBuilder {
 
     private static final String FIELD_NAME_RESPONDENT_ORGANISATION
-        = "data.respondentCollection.value.respondentOrganisation";
+        = "data.respondentCollection.value.respondentOrganisation.keyword";
     private static final String FIELD_NAME_RESPONDENT_NAME
-        = "data.respondentCollection.value.respondent_name";
-    private static final String FIELD_NAME_RESPONDENT = "data.respondent";
+        = "data.respondentCollection.value.respondent_name.keyword";
+    private static final String FIELD_NAME_RESPONDENT = "data.respondent.keyword";
     private static final String FIELD_NAME_SUBMISSION_REFERENCE = "reference.keyword";
-    private static final String FIELD_NAME_CLAIMANT_FIRST_NAMES = "data.claimantIndType.claimant_first_names";
-    private static final String FIELD_NAME_CLAIMANT_LAST_NAME = "data.claimantIndType.claimant_last_name";
-    private static final String FIELD_NAME_CLAIMANT_FULL_NAME = "data.claimant";
+    private static final String FIELD_NAME_CLAIMANT_FIRST_NAMES = "data.claimantIndType.claimant_first_names.keyword";
+    private static final String FIELD_NAME_CLAIMANT_LAST_NAME = "data.claimantIndType.claimant_last_name.keyword";
+    private static final String FIELD_NAME_CLAIMANT_FULL_NAME = "data.claimant.keyword";
     private static final int ES_SIZE = 1;
 
     private ElasticSearchQueryBuilder() {
@@ -30,13 +29,16 @@ public final class ElasticSearchQueryBuilder {
         FindCaseForRoleModificationRequest findCaseForRoleModificationRequest
     ) {
         // Respondent Queries
+
         BoolQueryBuilder boolQueryForRespondentOrganisationName = boolQuery().filter(
-            new TermsQueryBuilder(FIELD_NAME_RESPONDENT_ORGANISATION,
+            new MatchQueryBuilder(FIELD_NAME_RESPONDENT_ORGANISATION,
                                   findCaseForRoleModificationRequest.getRespondentName()));
         BoolQueryBuilder boolQueryForRespondentName = boolQuery().filter(
-            new TermsQueryBuilder(FIELD_NAME_RESPONDENT_NAME, findCaseForRoleModificationRequest.getRespondentName()));
+            new MatchQueryBuilder(FIELD_NAME_RESPONDENT_NAME, findCaseForRoleModificationRequest.getRespondentName()));
         BoolQueryBuilder boolQueryForRespondent = boolQuery().filter(
-            new TermsQueryBuilder(FIELD_NAME_RESPONDENT, findCaseForRoleModificationRequest.getRespondentName()));
+            new MatchQueryBuilder(FIELD_NAME_RESPONDENT, findCaseForRoleModificationRequest.getRespondentName()));
+
+
         // Claimant Queries
         BoolQueryBuilder boolQueryForClaimantFirstNames = boolQuery().filter(
             new MatchQueryBuilder(FIELD_NAME_CLAIMANT_FIRST_NAMES,
@@ -58,8 +60,9 @@ public final class ElasticSearchQueryBuilder {
                         .should(boolQueryForRespondentName)
                         .should(boolQueryForRespondent))
             .filter(boolQuery()
-                        .must(boolQueryForClaimantFirstNames)
-                        .must(boolQueryForClaimantLastName)
+                        .should(boolQuery()
+                                    .must(boolQueryForClaimantFirstNames)
+                                    .must(boolQueryForClaimantLastName))
                         .should(boolQueryForClaimantFullName));
         return new SearchSourceBuilder()
             .size(ES_SIZE)

@@ -44,7 +44,8 @@ public class CaseRoleManagementController {
     }
 
     /**
-     * Modifies user role(s) of the case.
+     * Modifies user role(s) of the case. Modification Type Assignment for assigning a role and
+     * modification type Revoke for revoking a role for users.
      * @param caseAssignmentUserRolesRequest the request object which contains user case roles list
      * @return the modification status of the case
      */
