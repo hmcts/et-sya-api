@@ -83,6 +83,23 @@ class CaseRoleManagementControllerTest {
     }
 
     @Test
+    void modifyUserRolesWithoutUserId() throws Exception {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+        CaseAssignmentUserRole caseAssignmentUserRole = CaseAssignmentUserRole
+            .builder().caseRole(CASE_ROLE).caseDataId(CASE_ID).userId(null).build();
+        CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest = CaseAssignmentUserRolesRequest.builder()
+            .caseAssignmentUserRoles(List.of(caseAssignmentUserRole))
+            .build();
+        doNothing().when(caseRoleManagementService).modifyUserCaseRoles(any(), any());
+        mockMvc.perform(post(POST_MODIFY_CASE_USER_ROLE_URL)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                            .param(MODIFICATION_TYPE_PARAMETER_NAME, MODIFICATION_TYPE_PARAMETER_VALUE_REVOKE)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(ResourceLoader.toJson(caseAssignmentUserRolesRequest)))
+            .andExpect(status().isOk());
+    }
+
+    @Test
     void findCaseForRoleModification() throws Exception {
         when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
         FindCaseForRoleModificationRequest findCaseForRoleModificationRequest = FindCaseForRoleModificationRequest

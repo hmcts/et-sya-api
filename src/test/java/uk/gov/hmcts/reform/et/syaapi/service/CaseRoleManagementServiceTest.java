@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.et.syaapi.exception.CaseRoleManagementException;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -54,6 +55,8 @@ class CaseRoleManagementServiceTest {
     CoreCaseDataApi ccdApi;
     @Mock
     AuthTokenGenerator authTokenGenerator;
+    @Mock
+    IdamClient idamClient;
 
     private CaseRoleManagementService caseRoleManagementService;
 
@@ -73,7 +76,7 @@ class CaseRoleManagementServiceTest {
     @BeforeEach
     void setup() {
         caseRoleManagementService = new CaseRoleManagementService(
-            adminUserService, restTemplate, authTokenGenerator, ccdApi);
+            adminUserService, restTemplate,authTokenGenerator,ccdApi, idamClient);
     }
 
     @ParameterizedTest

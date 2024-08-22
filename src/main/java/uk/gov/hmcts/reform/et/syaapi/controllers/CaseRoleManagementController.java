@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
@@ -16,9 +17,11 @@ import uk.gov.hmcts.reform.et.syaapi.exception.CaseRoleManagementException;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseRoleManagementService;
 
+import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import static org.springframework.http.ResponseEntity.ok;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
 
 /**
  * Rest Controller to modify case user roles.
@@ -43,6 +46,18 @@ public class CaseRoleManagementController {
         return ok(caseDetails);
     }
 
+    @PostMapping("/findAllUserCases")
+    @Operation(summary = "Modifies user roles of the case")
+    @ApiResponseGroup
+    public ResponseEntity<List<CaseDetails>> findCaseForRoleModification(
+        @RequestHeader(AUTHORIZATION) String authToken
+    ) {
+        List<CaseDetails> caseDetails =
+            caseRoleManagementService.findAllUserCases(authToken);
+        return ok(caseDetails);
+    }
+
+
     /**
      * Modifies user role(s) of the case. Modification Type Assignment for assigning a role and
      * modification type Revoke for revoking a role for users.
@@ -53,11 +68,15 @@ public class CaseRoleManagementController {
     @Operation(summary = "Modifies user roles of the case")
     @ApiResponseGroup
     public ResponseEntity<String> modifyCaseUserRoles(
+        @RequestHeader(AUTHORIZATION) String authorisation,
         @NotNull @Parameter String modificationType,
         @NotNull @RequestBody CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest
     ) {
         try {
-            caseRoleManagementService.modifyUserCaseRoles(caseAssignmentUserRolesRequest, modificationType);
+            caseRoleManagementService.modifyUserCaseRoles(
+                caseRoleManagementService.generateCaseAssignmentUserRolesRequestWithUserIds(
+                    authorisation, caseAssignmentUserRolesRequest),
+                modificationType);
         } catch (Exception e) {
             throw new CaseRoleManagementException(e);
         }

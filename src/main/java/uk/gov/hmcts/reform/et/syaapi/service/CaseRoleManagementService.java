@@ -9,6 +9,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestClientResponseException;
@@ -22,13 +23,21 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.exception.CaseRoleManagementException;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.DocumentUtil;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 
 /**
@@ -60,6 +69,7 @@ public class CaseRoleManagementService {
     private final RestTemplate restTemplate;
     private final AuthTokenGenerator authTokenGenerator;
     private final CoreCaseDataApi ccdApi;
+    private final IdamClient idamClient;
 
     @Value("${core_case_data.api.url}")
     private String ccdDataStoreUrl;
@@ -100,6 +110,35 @@ public class CaseRoleManagementService {
             findCaseForRoleModificationRequest.getClaimantLastName()
         );
         return null;
+    }
+
+    @Retryable
+    public List<CaseDetails> findAllUserCases(String authorization) {
+        UserInfo userInfo = idamClient.getUserInfo(authorization);
+        // Elasticsearch
+        List<CaseDetails> scotlandCases = ccdApi.searchForCitizen(
+            authorization,
+            authTokenGenerator.generate(),
+            userInfo.getUid(),
+            JURISDICTION_ID,
+            SCOTLAND_CASE_TYPE,
+            new HashMap<>()
+        );
+
+        // Elasticsearch
+        List<CaseDetails> englandCases = ccdApi.searchForCitizen(
+            authorization,
+            authTokenGenerator.generate(),
+            userInfo.getUid(),
+            JURISDICTION_ID,
+            ENGLAND_CASE_TYPE,
+            new HashMap<>()
+        );
+
+        List<CaseDetails> caseDetailsList = Stream.of(scotlandCases, englandCases)
+            .flatMap(Collection::stream).toList();
+        DocumentUtil.filterMultipleCasesDocumentsForClaimant(caseDetailsList);
+        return caseDetailsList;
     }
 
     public void modifyUserCaseRoles(CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest,
@@ -168,4 +207,21 @@ public class CaseRoleManagementService {
         }
     }
 
+    public CaseAssignmentUserRolesRequest generateCaseAssignmentUserRolesRequestWithUserIds(
+        String authorisation, CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest) {
+        UserInfo userInfo = idamClient.getUserInfo(authorisation);
+        List<CaseAssignmentUserRole> tmpCaseAssignmentUserRoles = new ArrayList<>();
+        for (CaseAssignmentUserRole caseAssignmentUserRole :
+            caseAssignmentUserRolesRequest.getCaseAssignmentUserRoles()) {
+            CaseAssignmentUserRole tmpCaseAssignmentUserRole = CaseAssignmentUserRole.builder()
+                .caseDataId(caseAssignmentUserRole.getCaseDataId())
+                .userId(StringUtils.isBlank(caseAssignmentUserRole.getUserId())
+                            ? userInfo.getUid()
+                            : caseAssignmentUserRole.getUserId())
+                .caseRole(caseAssignmentUserRole.getCaseRole())
+                .build();
+            tmpCaseAssignmentUserRoles.add(tmpCaseAssignmentUserRole);
+        }
+        return CaseAssignmentUserRolesRequest.builder().caseAssignmentUserRoles(tmpCaseAssignmentUserRoles).build();
+    }
 }
