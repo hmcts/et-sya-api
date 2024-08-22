@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.et.syaapi.exception.CaseRoleManagementException;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseRoleManagementService;
 
-import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import static org.springframework.http.ResponseEntity.ok;
@@ -45,18 +44,6 @@ public class CaseRoleManagementController {
             caseRoleManagementService.findCaseForRoleModification(findCaseForRoleModificationRequest);
         return ok(caseDetails);
     }
-
-    @PostMapping("/findAllUserCases")
-    @Operation(summary = "Modifies user roles of the case")
-    @ApiResponseGroup
-    public ResponseEntity<List<CaseDetails>> findCaseForRoleModification(
-        @RequestHeader(AUTHORIZATION) String authToken
-    ) {
-        List<CaseDetails> caseDetails =
-            caseRoleManagementService.findAllUserCases(authToken);
-        return ok(caseDetails);
-    }
-
 
     /**
      * Modifies user role(s) of the case. Modification Type Assignment for assigning a role and
