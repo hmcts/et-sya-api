@@ -43,6 +43,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -71,7 +72,7 @@ import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTE
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.UseConcurrentHashMap"})
 public class CaseService {
 
     public static final String DOCUMENT_COLLECTION = "documentCollection";
@@ -281,21 +282,49 @@ public class CaseService {
      */
     public CaseDetails triggerEvent(String authorization, String caseId, CaseEvent eventName,
                                     String caseType, Map<String, Object> caseData) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
-        StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
-        CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseData);
-
-        if (SUBMIT_CASE_DRAFT == eventName) {
-            enrichCaseDataWithJurisdictionCodes(caseData1);
+        if (authorization == null || caseId == null || caseType == null || eventName == null || caseData == null) {
+            log.error("Invalid input parameters for triggerEvent");
+            return null;
         }
+
+        StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
+        CaseDetails latestCaseDetails = startEventResponse.getCaseDetails();
+        if (latestCaseDetails == null) {
+            log.error("Failed to retrieve case details from startEventResponse for caseId: {}", caseId);
+            return null;
+        }
+
+        Map<String, Object> mergedCaseData = mergeCasedata(caseData, latestCaseDetails.getData());
+        CaseData latestCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(mergedCaseData);
+        if (SUBMIT_CASE_DRAFT == eventName) {
+            enrichCaseDataWithJurisdictionCodes(latestCaseData);
+        }
+        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(new ObjectMapper());
 
         return submitUpdate(
             authorization,
             caseId,
-            caseDetailsConverter.et1ToCaseDataContent(startEventResponse, caseData1),
+            caseDetailsConverter.et1ToCaseDataContent(startEventResponse, latestCaseData),
             caseType
         );
+    }
+
+    private Map<String, Object> mergeCasedata(Map<String, Object> caseData, Map<String, Object> latestCaseData) {
+        log.info("\n request casedata map entries: \n {}", caseData);
+        log.info("\n latest casedata map entries: \n {} \n", latestCaseData);
+        Map<String, Object> mergedCaseData = new HashMap<>();
+        mergedCaseData.putAll(caseData);
+        for (Map.Entry<String, Object> entry : latestCaseData.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+
+            // Add entry from the latestCase map if it does not exist in the request mergedCaseData map
+            if (!mergedCaseData.containsKey(key)) {
+                mergedCaseData.put(key, value);
+            }
+        }
+        log.info("\n request and latest casedata maps merged successfully: \n {} \n", mergedCaseData);
+        return mergedCaseData;
     }
 
     /**
@@ -307,8 +336,7 @@ public class CaseService {
      */
     public CaseDetails triggerEventForSubmitCase(String authorization, CaseRequest caseRequest) {
         StartEventResponse startEventResponse = startUpdate(authorization, caseRequest.getCaseId(),
-                                                            caseRequest.getCaseTypeId(), SUBMIT_CASE_DRAFT
-        );
+                                                            caseRequest.getCaseTypeId(), SUBMIT_CASE_DRAFT);
         CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(
             startEventResponse.getCaseDetails().getData());
         enrichCaseDataWithJurisdictionCodes(caseData1);
@@ -340,7 +368,6 @@ public class CaseService {
                                           String caseType, CaseEvent eventName) {
         String s2sToken = authTokenGenerator.generate();
         UserInfo userInfo = idamClient.getUserInfo(authorization);
-
         return ccdApiClient.startEventForCitizen(
             authorization,
             s2sToken,
@@ -377,6 +404,9 @@ public class CaseService {
     }
 
     private void enrichCaseDataWithJurisdictionCodes(CaseData caseData) {
+        if (caseData == null) {
+            return;
+        }
         List<JurCodesTypeItem> jurCodesTypeItems = jurisdictionCodesMapper.mapToJurCodes(caseData);
         caseData.setJurCodesCollection(jurCodesTypeItems);
     }
@@ -384,6 +414,7 @@ public class CaseService {
     void uploadTseSupportingDocument(CaseDetails caseDetails, UploadedDocumentType contactApplicationFile,
                                      String contactApplicationType) {
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+
         List<DocumentTypeItem> docList = caseData.getDocumentCollection();
 
         if (docList == null) {
@@ -461,8 +492,7 @@ public class CaseService {
         String description = "Response to " + appType;
         GenericTseApplicationType application = TseApplicationHelper.getSelectedApplication(
                 caseData.getGenericTseApplicationCollection(),
-                request.getApplicationId())
-            .getValue();
+                request.getApplicationId()).getValue();
 
         PdfDecodedMultipartFile multipartResponsePdf =
             pdfUploadService.convertClaimantResponseIntoMultipartFile(request,

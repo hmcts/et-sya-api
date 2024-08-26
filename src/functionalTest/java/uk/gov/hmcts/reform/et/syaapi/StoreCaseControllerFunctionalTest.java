@@ -110,7 +110,7 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
     void submitCaseShouldReturnSubmittedCaseDetails() {
         TimeUnit.SECONDS.sleep(5);
         CaseRequest caseRequest = CaseRequest.builder()
-            .caseId(caseId.toString())
+            .caseId(String.valueOf(caseId))
             .caseTypeId(CASE_TYPE)
             .caseData(caseData)
             .build();
@@ -133,7 +133,7 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
         storedClaimantTse = claimantTse;
 
         ClaimantApplicationRequest caseRequest = ClaimantApplicationRequest.builder()
-            .caseId(caseId.toString())
+            .caseId(String.valueOf(caseId))
             .caseTypeId(CASE_TYPE)
             .claimantTse(claimantTse)
             .build();
@@ -184,7 +184,7 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
     @Order(5)
     void storeRespondToApplicationShouldReturnCaseDetailsWithTseAppWithResponse() {
         RespondToApplicationRequest caseRequest = RespondToApplicationRequest.builder()
-            .caseId(caseId.toString())
+            .caseId(String.valueOf(caseId))
             .caseTypeId(CASE_TYPE)
             .applicationId(appId)
             .response(new TseRespondType())

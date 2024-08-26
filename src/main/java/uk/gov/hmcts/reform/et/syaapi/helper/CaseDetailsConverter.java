@@ -1,7 +1,11 @@
 package uk.gov.hmcts.reform.et.syaapi.helper;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
@@ -9,14 +13,13 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
-import uk.gov.hmcts.reform.et.syaapi.enums.CaseState;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Converts {@link CaseDetails} to other case related classes using {@link ObjectMapper}.
  */
+@Slf4j
 @Service
 public class CaseDetailsConverter {
 
@@ -29,6 +32,8 @@ public class CaseDetailsConverter {
      */
     public CaseDetailsConverter(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
+        this.objectMapper.registerModule(new JavaTimeModule());
+        this.objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
     }
 
@@ -39,12 +44,15 @@ public class CaseDetailsConverter {
      * @return caseData represent cases in java object model
      */
     public CaseData toCaseData(CaseDetails caseDetails) {
-        Map<String, Object> data = new ConcurrentHashMap<>(caseDetails.getData());
-        data.put("ccdCaseReference", caseDetails.getId());
-        if (caseDetails.getState() != null) {
-            data.put("ccdState", CaseState.valueOf(caseDetails.getState()));
+        if (caseDetails == null) {
+            return null;
         }
-        return objectMapper.convertValue(data, CaseData.class);
+
+        return objectMapper.convertValue(caseDetails.getData(), CaseData.class);
+    }
+
+    public CaseData getCaseData(Map<String, Object> caseData) {
+        return objectMapper.convertValue(caseData, CaseData.class);
     }
 
     /**

@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.helper;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -41,7 +43,7 @@ public class EmployeeObjectMapper {
      * @param caseData to be converted
      * @return case data wrapped in {@link Et1CaseData} format
      */
-    public Et1CaseData getEmploymentCaseData(Map<String, Object> caseData) {
+    public static Et1CaseData getEmploymentCaseData(Map<String, Object> caseData) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         return mapper.convertValue(caseData, Et1CaseData.class);
@@ -50,14 +52,16 @@ public class EmployeeObjectMapper {
     private static CaseData getCaseData(Map<String, Object> caseData) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
+        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        mapper.coercionConfigDefaults();
         return mapper.convertValue(caseData, CaseData.class);
     }
 
     /**
-     * Converts caseData to {@link CaseData} object.
+     * Converts caseData map to {@link CaseData} model object.
      *
-     * @param caseData to be converted
-     * @return case data wrapped in {@link CaseData} format
+     * @param caseData String-Object map to be converted
+     * @return case data wrapped in {@link CaseData} model instance format
      */
     public static CaseData mapRequestCaseDataToCaseData(Map<String, Object> caseData) {
         return getCaseData(caseData);
