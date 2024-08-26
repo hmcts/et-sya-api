@@ -187,6 +187,11 @@ public final class TestConstants {
                                                + "\"confirm_email_before_download\":null,\"retention_period\""
                                                + ":null,\"is_csv\":false}");
     public static final String MICHAEL = "Michael";
+    public static final String JACKSON = "Jackson";
+    public static final String DUMMY_CASE_SUBMISSION_REFERENCE = "1234567890123456";
+    public static final String DUMMY_USER_ID = "123456789012345678901234567890";
+    public static final String DUMMY_AUTHORISATION_TOKEN = "dummy_authorisation_token";
+    public static final String DUMMY_SERVICE_AUTHORISATION_TOKEN = "dummy_service_authorisation_token";
 
     private TestConstants() {
 

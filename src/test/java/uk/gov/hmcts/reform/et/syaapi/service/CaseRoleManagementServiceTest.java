@@ -20,14 +20,20 @@ import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesResponse;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
+import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.exception.CaseRoleManagementException;
+import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.NotifyUserCaseRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -39,9 +45,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
@@ -57,8 +61,14 @@ class CaseRoleManagementServiceTest {
     AuthTokenGenerator authTokenGenerator;
     @Mock
     IdamClient idamClient;
+    @Mock
+    CaseDetailsConverter caseDetailsConverter;
+    @Mock
+    CaseService caseService;
 
     private CaseRoleManagementService caseRoleManagementService;
+    private NotifyUserCaseRoleModificationRequest notifyUserCaseRoleModificationRequest;
+    private UserInfo userInfo;
 
     private static final String INVALID_MODIFICATION_TYPE_EXPECTED_EXCEPTION_MESSAGE = "Invalid modification type";
     private static final String INVALID_CASE_ROLE_REQUEST_EXCEPTION_MESSAGE =
@@ -72,11 +82,25 @@ class CaseRoleManagementServiceTest {
     private static final String RESPONDENT_NAME = "Respondent Name";
     private static final String CLAIMANT_FIRST_NAMES = "Claimant First Names";
     private static final String CLAIMANT_LAST_NAME = "Claimant Last Name";
+    private static final String DUMMY_CASE_SUBMISSION_REFERENCE = "1234567890123456";
+    private static final String DUMMY_USER_ID = "123456789012345678901234567890";
+    private static final String DUMMY_AUTHORISATION_TOKEN = "dummy_authorisation_token";
+    private static final String TEST_SERVICE_AUTH_TOKEN = "Bearer TestServiceAuth";
+    private static final String USER_CASE_ROLE_DEFENDANT = "[DEFENDANT]";
+    private static final String ENGLAND_CASE_TYPE = "ET_EnglandWales";
+    private static final String SCOTLAND_CASE_TYPE = "ET_Scotland";
 
     @BeforeEach
     void setup() {
         caseRoleManagementService = new CaseRoleManagementService(
-            adminUserService, restTemplate,authTokenGenerator,ccdApi, idamClient);
+            adminUserService, restTemplate, authTokenGenerator, ccdApi, idamClient, caseService, caseDetailsConverter);
+        userInfo = new CaseTestData().getUserInfo();
+        notifyUserCaseRoleModificationRequest = NotifyUserCaseRoleModificationRequest.builder()
+            .role("[DEFENDANT]")
+            .caseSubmissionReference(DUMMY_CASE_SUBMISSION_REFERENCE)
+            .modificationType(MODIFICATION_TYPE_ASSIGNMENT)
+            .caseType(ENGLAND_CASE_TYPE)
+            .build();
     }
 
     @ParameterizedTest
@@ -222,4 +246,75 @@ class CaseRoleManagementServiceTest {
             .isNull();
     }
 
+    @Test
+    void generateCaseAssignmentUserRolesRequestWithUserIds() {
+        UserInfo userInfo = new CaseTestData().getUserInfo();
+        CaseAssignmentUserRole caseAssignmentUserRoleWithoutUserId = CaseAssignmentUserRole.builder()
+            .userId(null)
+            .caseRole(USER_CASE_ROLE_DEFENDANT).caseDataId(DUMMY_CASE_SUBMISSION_REFERENCE)
+            .build();
+        CaseAssignmentUserRole caseAssignmentUserRoleWithUserId = CaseAssignmentUserRole.builder()
+            .userId(DUMMY_USER_ID)
+            .caseRole(USER_CASE_ROLE_DEFENDANT).caseDataId(DUMMY_CASE_SUBMISSION_REFERENCE)
+            .build();
+        CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest = CaseAssignmentUserRolesRequest.builder()
+            .caseAssignmentUserRoles(List.of(caseAssignmentUserRoleWithoutUserId, caseAssignmentUserRoleWithUserId))
+            .build();
+        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
+        CaseAssignmentUserRolesRequest  actualCaseAssignmentUserRolesRequest = caseRoleManagementService
+            .generateCaseAssignmentUserRolesRequestWithUserIds(
+                DUMMY_AUTHORISATION_TOKEN, caseAssignmentUserRolesRequest);
+        assertThat(actualCaseAssignmentUserRolesRequest.getCaseAssignmentUserRoles()).hasSize(2);
+        assertThat(actualCaseAssignmentUserRolesRequest.getCaseAssignmentUserRoles().get(0).getUserId())
+            .isEqualTo(DUMMY_USER_ID);
+        assertThat(actualCaseAssignmentUserRolesRequest.getCaseAssignmentUserRoles().get(1).getUserId())
+            .isEqualTo(userInfo.getUid());
+    }
+
+    @Test
+    void theGetCaseDataWithModifiedCaseRoleNotification() {
+        when(caseService.getUserCase(DUMMY_AUTHORISATION_TOKEN, DUMMY_CASE_SUBMISSION_REFERENCE)).thenReturn(
+            new CaseTestData().getCaseDetails()
+        );
+        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
+        CaseData caseData = caseRoleManagementService
+            .getCaseDataWithModifiedCaseRoleNotification(DUMMY_AUTHORISATION_TOKEN,
+                                                         notifyUserCaseRoleModificationRequest);
+        assertThat(caseData.getSendNotificationCollection()).hasSize(1);
+    }
+
+    @Test
+    void theGetCaseDataWithModifiedCaseRoleNotificationThrowsExceptionWhenCaseDataNotFound() {
+        when(caseService.getUserCase(DUMMY_AUTHORISATION_TOKEN, DUMMY_CASE_SUBMISSION_REFERENCE)).thenReturn(
+            null
+        );
+        assertThrows(CaseRoleManagementException.class, () -> caseRoleManagementService
+            .getCaseDataWithModifiedCaseRoleNotification(DUMMY_AUTHORISATION_TOKEN,
+                                                         notifyUserCaseRoleModificationRequest));
+    }
+
+    @Test
+    void updateCaseSubmitted() {
+        CaseDetails caseDetails = new CaseTestData().getCaseDetails();
+        caseDetails.setId(Long.parseLong(DUMMY_CASE_SUBMISSION_REFERENCE));
+        caseDetails.setCaseTypeId(ENGLAND_CASE_TYPE);
+        StartEventResponse startEventResponse = new CaseTestData().getStartEventResponse();
+        startEventResponse.setCaseDetails(caseDetails);
+        startEventResponse.setEventId("1");
+        startEventResponse.setToken(DUMMY_AUTHORISATION_TOKEN);
+        when(caseService.startUpdate(DUMMY_AUTHORISATION_TOKEN,
+                                     notifyUserCaseRoleModificationRequest.getCaseSubmissionReference(),
+                                     notifyUserCaseRoleModificationRequest.getCaseType(),
+                                     UPDATE_CASE_SUBMITTED)).thenReturn(startEventResponse);
+        CaseData caseData = new CaseTestData().getCaseData();
+        when(caseService.submitUpdate(DUMMY_AUTHORISATION_TOKEN,
+                                      notifyUserCaseRoleModificationRequest.getCaseSubmissionReference(),
+                                      caseDetailsConverter.et1ToCaseDataContent(startEventResponse, caseData),
+                                      notifyUserCaseRoleModificationRequest.getCaseType())).thenReturn(caseDetails);
+        CaseDetails actualCaseDetails =
+            caseRoleManagementService.updateCaseSubmitted(DUMMY_AUTHORISATION_TOKEN,
+                                                          caseData,
+                                                          notifyUserCaseRoleModificationRequest);
+        assertThat(actualCaseDetails).isEqualTo(caseDetails);
+    }
 }

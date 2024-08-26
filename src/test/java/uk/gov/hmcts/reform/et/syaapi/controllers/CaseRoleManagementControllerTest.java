@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -15,9 +16,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.SyaApiApplication;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.NotifyUserCaseRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseRoleManagementService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
@@ -25,6 +28,7 @@ import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -42,8 +46,11 @@ class CaseRoleManagementControllerTest {
     private static final String POST_MODIFY_CASE_USER_ROLE_URL = "/caseRoleManagement/modifyCaseUserRoles";
     private static final String POST_FIND_CASE_FOR_ROLE_MODIFICATION
         = "/caseRoleManagement/findCaseForRoleModification";
+    private static final String POST_NOTIFY_USER_CASE_ROLE_MODIFICATION
+        = "/caseRoleManagement/notifyUserCaseRoleModification";
     private static final String MODIFICATION_TYPE_PARAMETER_NAME = "modificationType";
     private static final String MODIFICATION_TYPE_PARAMETER_VALUE_REVOKE = "Revoke";
+    private static final String MODIFICATION_TYPE_PARAMETER_VALUE_ASSIGNMENT = "Assignment";
     private static final String CASE_SUBMISSION_REFERENCE = "1234567890123456";
     private static final String RESPONDENT_NAME = "Respondent Name";
     private static final String CLAIMANT_FIRST_NAMES = "Claimant First Names";
@@ -118,6 +125,31 @@ class CaseRoleManagementControllerTest {
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(ResourceLoader.toJson(findCaseForRoleModificationRequest)))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @SneakyThrows
+    void notifyUserCaseRoleModification() {
+        NotifyUserCaseRoleModificationRequest notifyUserCaseRoleModificationRequest =
+            NotifyUserCaseRoleModificationRequest.builder()
+                .role(CASE_ROLE)
+                .modificationType(MODIFICATION_TYPE_PARAMETER_VALUE_ASSIGNMENT)
+                .caseType(ENGLAND_CASE_TYPE)
+                .caseSubmissionReference(CASE_SUBMISSION_REFERENCE)
+                .build();
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+        when(caseRoleManagementService.updateCaseSubmitted(eq(AUTH_TOKEN),
+                                                           any(CaseData.class),
+                                                           eq(notifyUserCaseRoleModificationRequest)))
+            .thenReturn(CaseDetails.builder()
+                            .id(Long.parseLong(CASE_ID))
+                            .caseTypeId(ENGLAND_CASE_TYPE)
+                            .build());
+        mockMvc.perform(post(POST_NOTIFY_USER_CASE_ROLE_MODIFICATION)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(ResourceLoader.toJson(notifyUserCaseRoleModificationRequest)))
             .andExpect(status().isOk());
     }
 }

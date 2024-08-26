@@ -3,24 +3,27 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesResponse;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.exception.CaseRoleManagementException;
+import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.NotifyUserCaseRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -31,31 +34,26 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.CASE_DETAILS_NOT_FOUND_EXCEPTION;
+import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.EXCEPTION_INVALID_MODIFICATION_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.FIRST_INDEX;
+import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.MODIFY_CASE_ROLE_EMPTY_REQUEST;
+import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.MODIFY_CASE_ROLE_POST_WORDING;
+import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.MODIFY_CASE_ROLE_PRE_WORDING;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.CaseRoleManagementServiceUtil.buildHeaders;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.CaseRoleManagementServiceUtil.generateCaseDataByUserInfoCaseDetails;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.CaseRoleManagementServiceUtil.getHttpMethodByModificationType;
 
 /**
  * Provides read and write access to cases stored by ET.
  */
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class CaseRoleManagementService {
-
-    private static final String MODIFY_CASE_ROLE_PRE_WORDING = "Received a request to modify roles:" + StringUtils.CR;
-    private static final String MODIFY_CASE_ROLE_POST_WORDING = "Modified roles:" + StringUtils.CR;
-    private static final String MODIFY_CASE_ROLE_EMPTY_REQUEST = "Request to modify roles is empty";
-    private static final String HEADER_AUTHORIZATION = "Authorization";
-    private static final String HEADER_CONTENT_TYPE = "Content-Type";
-    private static final String HEADER_SERVICE_AUTHORIZATION = "ServiceAuthorization";
-    private static final String HEADER_VALUE_APPLICATION_JSON = "application/json";
-    private static final String AUTHORISATION_TOKEN_REGEX = "[a-zA-Z0-9._\\s\\S]+$";
-    private static final String EXCEPTION_AUTHORISATION_TOKEN_REGEX = "authToken regex exception";
-    private static final String EXCEPTION_INVALID_MODIFICATION_TYPE = "Invalid modification type";
-    private static final String MODIFICATION_TYPE_ASSIGNMENT = "Assignment";
-    private static final String MODIFICATION_TYPE_REVOKE = "Revoke";
-    private static final int FIRST_INDEX = 0;
 
     private String roleList;
 
@@ -64,10 +62,21 @@ public class CaseRoleManagementService {
     private final AuthTokenGenerator authTokenGenerator;
     private final CoreCaseDataApi ccdApi;
     private final IdamClient idamClient;
+    private final CaseService caseService;
+    private final CaseDetailsConverter caseDetailsConverter;
 
     @Value("${core_case_data.api.url}")
     private String ccdDataStoreUrl;
 
+    /**
+     * Gets case with the user entered details, caseId, respondentName, claimantFirstNames and claimantSurname.
+     * Returns null when case not found. It searches for the cases with administrator user to find if the case
+     * exists with the given parameters. Also makes a security check if the user entered valid values.
+     * @param findCaseForRoleModificationRequest It has the values caseId, respondentName, claimantFirstNames and
+     *                                           claimantSurname values given by the respondent.
+     * @return null if no case is found, CaseDetails if any case is found in both scotland and england wales case
+     *              types.
+     */
     public CaseDetails findCaseForRoleModification(
         FindCaseForRoleModificationRequest findCaseForRoleModificationRequest) {
         log.info(
@@ -106,6 +115,15 @@ public class CaseRoleManagementService {
         return null;
     }
 
+    /**
+     * Modifies user case roles by the given modification type. Gets case assignment user roles request which has
+     * a list of case_users that contains case id, user id and case role to modify the case. For assigning a new role
+     * to the case modification type should be Assignment, to revoke an existing role modification type should be
+     * Revoke
+     * @param caseAssignmentUserRolesRequest This is the list of case roles that should be Revoked or Assigned
+     * @param modificationType this value could be Assignment or Revoke.
+     * @throws IOException Exception when any problem occurs while calling case assignment api (/case-users)
+     */
     public void modifyUserCaseRoles(CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest,
                                     String modificationType) throws IOException {
         HttpMethod httpMethod = getHttpMethodByModificationType(modificationType);
@@ -121,7 +139,8 @@ public class CaseRoleManagementService {
         ResponseEntity<CaseAssignmentUserRolesResponse> response;
         try {
             HttpEntity<CaseAssignmentUserRolesRequest> requestEntity =
-                new HttpEntity<>(caseAssignmentUserRolesRequest, buildHeaders(userToken));
+                new HttpEntity<>(caseAssignmentUserRolesRequest,
+                                 buildHeaders(userToken, this.authTokenGenerator.generate()));
             response = restTemplate.exchange(ccdDataStoreUrl + "/case-users",
                                              httpMethod,
                                              requestEntity,
@@ -154,24 +173,15 @@ public class CaseRoleManagementService {
 
     }
 
-    private HttpMethod getHttpMethodByModificationType(String modificationType) {
-        return MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType) ? HttpMethod.POST
-            : MODIFICATION_TYPE_REVOKE.equals(modificationType) ? HttpMethod.DELETE
-            : null;
-    }
-
-    private HttpHeaders buildHeaders(String authToken) throws IOException {
-        if (authToken.matches(AUTHORISATION_TOKEN_REGEX)) {
-            HttpHeaders headers = new HttpHeaders();
-            headers.add(HEADER_AUTHORIZATION, authToken);
-            headers.add(HEADER_SERVICE_AUTHORIZATION, this.authTokenGenerator.generate());
-            headers.add(HEADER_CONTENT_TYPE, HEADER_VALUE_APPLICATION_JSON);
-            return headers;
-        } else {
-            throw new IOException(EXCEPTION_AUTHORISATION_TOKEN_REGEX);
-        }
-    }
-
+    /**
+     * It generates new CaseAssignmentUserRolesRequest that has the CaseUserRoles which has caseId, userId, role fields.
+     * Reason to implement this method is, if userId is not received from the client, it automatically gets userId
+     * from IDAM and sets that id to all CaseAssignmentUserRoles' userId fields.
+     * @param authorisation Authorisation token to receive user information from IDAM.
+     * @param caseAssignmentUserRolesRequest CaseAssignmentUserRolesRequest that contains CaseUserRoles received from
+     *                                       client.
+     * @return new CaseAssignmentUserRolesRequest that has userId which is received from IDAM.
+     */
     public CaseAssignmentUserRolesRequest generateCaseAssignmentUserRolesRequestWithUserIds(
         String authorisation, CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest) {
         UserInfo userInfo = idamClient.getUserInfo(authorisation);
@@ -188,5 +198,48 @@ public class CaseRoleManagementService {
             tmpCaseAssignmentUserRoles.add(tmpCaseAssignmentUserRole);
         }
         return CaseAssignmentUserRolesRequest.builder().caseAssignmentUserRoles(tmpCaseAssignmentUserRoles).build();
+    }
+
+    /**
+     * Generates case role modification notification item with the given authorisation token and notify user case
+     * role modification request which has case submission reference, modification type and role values.
+     * @param authorisation authorisation token to receive user info from idam
+     * @param notifyUserCaseRoleModificationRequest notify user case role modification request
+     *                                              which has role, modification type and,
+     *                                              submission reference id and case data values.
+     * @return case data with added case role modification notification item.
+     */
+    public CaseData getCaseDataWithModifiedCaseRoleNotification(
+        String authorisation, NotifyUserCaseRoleModificationRequest notifyUserCaseRoleModificationRequest) {
+        CaseDetails caseDetails =
+            caseService.getUserCase(authorisation, notifyUserCaseRoleModificationRequest.getCaseSubmissionReference());
+        if (ObjectUtils.isEmpty(caseDetails)) {
+            throw new CaseRoleManagementException(new RuntimeException(CASE_DETAILS_NOT_FOUND_EXCEPTION));
+        }
+        UserInfo userInfo = idamClient.getUserInfo(authorisation);
+        return generateCaseDataByUserInfoCaseDetails(userInfo, caseDetails, notifyUserCaseRoleModificationRequest);
+    }
+
+    /**
+     * Updates case with the event name UPDATE_CASE_SUBMITTED because case has already been submitted by the claimant.
+     * @param authorisation authorisation token to get user info from IDAM
+     * @param caseData case data to be updated
+     * @return case details of the updated case
+     */
+    public CaseDetails updateCaseSubmitted(
+        String authorisation,
+        CaseData caseData,
+        NotifyUserCaseRoleModificationRequest notifyUserCaseRoleModificationRequest) {
+        StartEventResponse startEventResponse =
+            caseService.startUpdate(authorisation,
+                                    notifyUserCaseRoleModificationRequest.getCaseSubmissionReference(),
+                                    notifyUserCaseRoleModificationRequest.getCaseType(),
+                                    UPDATE_CASE_SUBMITTED);
+        return caseService.submitUpdate(
+            authorisation,
+            notifyUserCaseRoleModificationRequest.getCaseSubmissionReference(),
+            caseDetailsConverter.et1ToCaseDataContent(startEventResponse, caseData),
+            notifyUserCaseRoleModificationRequest.getCaseType()
+        );
     }
 }

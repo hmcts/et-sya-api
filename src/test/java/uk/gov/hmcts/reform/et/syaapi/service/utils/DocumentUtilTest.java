@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
@@ -12,7 +11,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-@Slf4j
 class DocumentUtilTest {
 
     private static final String DOCUMENT_COLLECTION = "documentCollection";

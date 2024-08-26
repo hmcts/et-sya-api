@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -18,7 +17,6 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 
-@Slf4j
 class ClaimantTseUtilTest {
 
     private static Stream<Arguments> checkGetGenericTseApplicationFromClaimantTse() {
