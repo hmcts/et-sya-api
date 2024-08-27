@@ -486,4 +486,18 @@ public class CaseService {
         }
         caseData.getDocumentCollection().add(responsePdf);
     }
+
+    /**
+     * Will accept a {@link CaseRequest} trigger an event to update a submitted case in ET.
+     *
+     * @param authorization jwt of the user
+     * @param caseRequest   case to be updated
+     * @return the newly updated case wrapped in a {@link CaseDetails} object.
+     */
+    public CaseDetails updateCaseSubmitted(String authorization,
+                                           CaseRequest caseRequest) {
+        return triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED,
+                            caseRequest.getCaseTypeId(), caseRequest.getCaseData()
+        );
+    }
 }

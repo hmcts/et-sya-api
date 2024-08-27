@@ -16,8 +16,8 @@ import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.HubLinksStatuses;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
@@ -46,6 +46,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_FIRST_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
@@ -60,7 +61,8 @@ class ManageCaseControllerTest {
 
     private static final String CASE_ID = "1646225213651590";
     private static final String USER_ID = "1234";
-    private static final String CASE_TYPE = "ET_Scotland";
+
+    private static final String UPDATE_CASE_SUBMITTED_API_URL = "/cases/update-case-submitted";
 
     private final CaseDetails expectedDetails;
 
@@ -96,8 +98,8 @@ class ManageCaseControllerTest {
         );
     }
 
-    @SneakyThrows
     @Test
+    @SneakyThrows
     void shouldGetCaseDetails() {
         CaseRequest caseRequest = CaseRequest.builder()
             .caseId(CASE_ID).build();
@@ -121,8 +123,8 @@ class ManageCaseControllerTest {
             .andExpect(jsonPath("$.last_modified").exists());
     }
 
-    @SneakyThrows
     @Test
+    @SneakyThrows
     void shouldGetCaseDetailsByUser() {
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(UserInfo.builder().uid(USER_ID).build());
@@ -132,7 +134,7 @@ class ManageCaseControllerTest {
 
         // when
         mockMvc.perform(
-                get("/cases/user-cases", CASE_TYPE)
+                get("/cases/user-cases", SCOTLAND_CASE_TYPE)
                     .contentType(MediaType.APPLICATION_JSON)
                     .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
             // then
@@ -145,8 +147,8 @@ class ManageCaseControllerTest {
             .andExpect(jsonPath("[1].case_type_id").value(requestCaseDataList.get(1).getCaseTypeId()));
     }
 
-    @SneakyThrows
     @Test
+    @SneakyThrows
     void shouldReturnBadRequestForNonExistingItem() {
         CaseRequest caseRequest = CaseRequest.builder()
             .caseId(CASE_ID).build();
@@ -169,8 +171,8 @@ class ManageCaseControllerTest {
             .andExpect(jsonPath("$.message").value("Bad request - incorrect payload"));
     }
 
-    @SneakyThrows
     @Test
+    @SneakyThrows
     void shouldCreateDraftCase() {
 
         CaseRequest caseRequest = CaseRequest.builder()
@@ -204,11 +206,11 @@ class ManageCaseControllerTest {
             .andExpect(jsonPath("$.last_modified").exists());
     }
 
-    @SneakyThrows
     @Test
+    @SneakyThrows
     void shouldStartUpdateCase() {
         CaseRequest caseRequest = CaseRequest.builder()
-            .caseTypeId(CASE_TYPE)
+            .caseTypeId(SCOTLAND_CASE_TYPE)
             .caseId("12")
             .build();
 
@@ -226,7 +228,7 @@ class ManageCaseControllerTest {
             TEST_SERVICE_AUTH_TOKEN,
             CASE_ID,
             CaseEvent.valueOf("UPDATE_CASE_DRAFT"),
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            SCOTLAND_CASE_TYPE,
             null
         )).thenReturn(expectedDetails);
 
@@ -239,11 +241,11 @@ class ManageCaseControllerTest {
         ).andExpect(status().isOk());
     }
 
-    @SneakyThrows
     @Test
+    @SneakyThrows
     void shouldStartSubmitCase() {
         CaseRequest caseRequest = CaseRequest.builder()
-            .caseTypeId(CASE_TYPE)
+            .caseTypeId(SCOTLAND_CASE_TYPE)
             .caseId("12")
             .caseData(new HashMap<>())
             .build();
@@ -263,7 +265,7 @@ class ManageCaseControllerTest {
             TEST_SERVICE_AUTH_TOKEN,
             CASE_ID,
             CaseEvent.valueOf("SUBMIT_CASE_DRAFT"),
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            SCOTLAND_CASE_TYPE,
             null
         )).thenReturn(expectedDetails);
 
@@ -276,12 +278,12 @@ class ManageCaseControllerTest {
         ).andExpect(status().isOk());
     }
 
-    @SneakyThrows
     @Test
+    @SneakyThrows
     void shouldUpdateHubLinkStatus() {
         HubLinksStatuses hubLinksStatuses = new HubLinksStatuses();
         HubLinksStatusesRequest hubLinksStatusesRequest = HubLinksStatusesRequest.builder()
-            .caseTypeId(CASE_TYPE)
+            .caseTypeId(SCOTLAND_CASE_TYPE)
             .caseId(CASE_ID)
             .hubLinksStatuses(hubLinksStatuses)
             .build();
@@ -310,13 +312,13 @@ class ManageCaseControllerTest {
         );
     }
 
-    @SneakyThrows
     @Test
+    @SneakyThrows
     void shouldSubmitClaimantApplication() {
         ClaimantTse claimantTse = new ClaimantTse();
         ClaimantApplicationRequest claimantApplicationRequest = ClaimantApplicationRequest.builder()
             .caseId(CASE_ID)
-            .caseTypeId(CASE_TYPE)
+            .caseTypeId(SCOTLAND_CASE_TYPE)
             .claimantTse(claimantTse)
             .build();
 
@@ -337,11 +339,11 @@ class ManageCaseControllerTest {
         );
     }
 
-    @SneakyThrows
     @Test
+    @SneakyThrows
     void shouldRespondToRespondentApplication() {
         RespondToApplicationRequest caseRequest = RespondToApplicationRequest.builder()
-            .caseTypeId(CASE_TYPE)
+            .caseTypeId(SCOTLAND_CASE_TYPE)
             .caseId(CASE_ID)
             .applicationId("1234")
             .response(new TseRespondType())
@@ -364,11 +366,11 @@ class ManageCaseControllerTest {
         );
     }
 
-    @SneakyThrows
     @Test
+    @SneakyThrows
     void shouldChangeApplicationStatus() {
         ChangeApplicationStatusRequest caseRequest = ChangeApplicationStatusRequest.builder()
-            .caseTypeId(CASE_TYPE)
+            .caseTypeId(SCOTLAND_CASE_TYPE)
             .caseId(CASE_ID)
             .applicationId("1234")
             .newStatus("viewed")
@@ -391,11 +393,11 @@ class ManageCaseControllerTest {
         );
     }
 
-    @SneakyThrows
     @Test
+    @SneakyThrows
     void shouldUpdateTribunalResponse() {
         TribunalResponseViewedRequest caseRequest = TribunalResponseViewedRequest.builder()
-            .caseTypeId(CASE_TYPE)
+            .caseTypeId(SCOTLAND_CASE_TYPE)
             .caseId(CASE_ID)
             .appId("123")
             .responseId("777")
@@ -416,5 +418,19 @@ class ManageCaseControllerTest {
             TEST_SERVICE_AUTH_TOKEN,
             caseRequest
         );
+    }
+
+    @Test
+    @SneakyThrows
+    void updateCaseSubmitted() {
+        CaseRequest caseRequest = new CaseTestData().getCaseRequest();
+        CaseDetails caseDetails = new CaseTestData().getCaseDetails();
+        when(verifyTokenService.verifyTokenSignature(TEST_SERVICE_AUTH_TOKEN)).thenReturn(true);
+        when(caseService.updateCaseSubmitted(TEST_SERVICE_AUTH_TOKEN, caseRequest)).thenReturn(caseDetails);
+        mockMvc.perform(post(UPDATE_CASE_SUBMITTED_API_URL)
+                            .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(ResourceLoader.toJson(caseRequest)))
+            .andExpect(status().isOk());
     }
 }

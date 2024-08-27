@@ -26,7 +26,6 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
-import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.constants.JurisdictionCodesConstants;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
@@ -58,8 +57,13 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.ENGLANDWALES_CASE_TYPE_ID;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.ET1_PDF_DOC_CATEGORY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DRAFT_EVENT_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ONLINE_SUBMISSION;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper.mapRequestCaseDataToCaseData;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CASE_ID;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.SUBMIT_CASE_DRAFT;
@@ -138,8 +142,8 @@ class CaseServiceTest {
             eq(TEST_SERVICE_AUTH_TOKEN),
             eq(TEST_SERVICE_AUTH_TOKEN),
             eq(USER_ID),
-            eq(EtSyaConstants.JURISDICTION_ID),
-            eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
+            eq(JURISDICTION_ID),
+            eq(SCOTLAND_CASE_TYPE),
             any(String.class),
             eq(true),
             any(CaseDataContent.class)
@@ -149,8 +153,8 @@ class CaseServiceTest {
             eq(TEST_SERVICE_AUTH_TOKEN),
             eq(TEST_SERVICE_AUTH_TOKEN),
             eq(USER_ID),
-            eq(EtSyaConstants.JURISDICTION_ID),
-            eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
+            eq(JURISDICTION_ID),
+            eq(SCOTLAND_CASE_TYPE),
             any(String.class),
             any(String.class)
         )).thenReturn(caseTestData.getStartEventResponse());
@@ -217,14 +221,14 @@ class CaseServiceTest {
         when(ccdApiClient.searchCases(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            SCOTLAND_CASE_TYPE,
             ALL_CASES_QUERY
         )).thenReturn(caseTestData.requestCaseDataListSearchResult());
 
         when(ccdApiClient.searchCases(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
-            EtSyaConstants.ENGLAND_CASE_TYPE,
+            ENGLAND_CASE_TYPE,
             ALL_CASES_QUERY
         )).thenReturn(SearchResult.builder().build());
 
@@ -240,14 +244,14 @@ class CaseServiceTest {
         when(ccdApiClient.searchCases(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            SCOTLAND_CASE_TYPE,
             ALL_CASES_QUERY
         )).thenReturn(caseTestData.getSearchResultRequestCaseDataListScotland());
 
         when(ccdApiClient.searchCases(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
-            EtSyaConstants.ENGLAND_CASE_TYPE,
+            ENGLAND_CASE_TYPE,
             ALL_CASES_QUERY
         )).thenReturn(caseTestData.getSearchResultRequestCaseDataListEngland());
 
@@ -273,9 +277,9 @@ class CaseServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
             USER_ID,
-            EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.ENGLAND_CASE_TYPE,
-            EtSyaConstants.DRAFT_EVENT_TYPE
+            JURISDICTION_ID,
+            ENGLAND_CASE_TYPE,
+            DRAFT_EVENT_TYPE
         )).thenReturn(
             caseTestData.getStartEventResponse());
 
@@ -283,8 +287,8 @@ class CaseServiceTest {
             eq(TEST_SERVICE_AUTH_TOKEN),
             eq(TEST_SERVICE_AUTH_TOKEN),
             eq(USER_ID),
-            eq(EtSyaConstants.JURISDICTION_ID),
-            eq(EtSyaConstants.ENGLAND_CASE_TYPE),
+            eq(JURISDICTION_ID),
+            eq(ENGLAND_CASE_TYPE),
             eq(true),
             any(CaseDataContent.class)
         )).thenReturn(caseTestData.getExpectedDetails());
@@ -315,8 +319,8 @@ class CaseServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
             USER_ID,
-            EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            JURISDICTION_ID,
+            SCOTLAND_CASE_TYPE,
             caseTestData.getCaseRequest().getCaseId(),
             String.valueOf(UPDATE_CASE_DRAFT)
         )).thenReturn(
@@ -325,11 +329,11 @@ class CaseServiceTest {
         StartEventResponse eventResponse = caseService.startUpdate(
             TEST_SERVICE_AUTH_TOKEN,
             caseTestData.getCaseRequest().getCaseId(),
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            SCOTLAND_CASE_TYPE,
             UPDATE_CASE_DRAFT
         );
 
-        assertEquals(EtSyaConstants.SCOTLAND_CASE_TYPE, eventResponse.getCaseDetails().getCaseTypeId());
+        assertEquals(SCOTLAND_CASE_TYPE, eventResponse.getCaseDetails().getCaseTypeId());
     }
 
     @Test
@@ -347,8 +351,8 @@ class CaseServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
             USER_ID,
-            EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            JURISDICTION_ID,
+            SCOTLAND_CASE_TYPE,
             caseTestData.getCaseRequest().getCaseId(),
             true,
             caseTestData.getUpdateCaseDataContent()
@@ -358,7 +362,7 @@ class CaseServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             caseTestData.getCaseRequest().getCaseId(),
             caseTestData.getUpdateCaseDataContent(),
-            EtSyaConstants.SCOTLAND_CASE_TYPE
+            SCOTLAND_CASE_TYPE
         );
 
         assertEquals(caseDetails, caseTestData.getExpectedDetails());
@@ -368,7 +372,7 @@ class CaseServiceTest {
     @Test
     void submitCaseShouldAddSupportingDocumentToDocumentCollection() {
         when(caseDocumentService.uploadAllDocuments(any(), any(), any(), any(), any()))
-            .thenReturn(List.of(createDocumentTypeItem("Other")));
+            .thenReturn(List.of(createDocumentTypeItem()));
 
         CaseDetails caseDetails = caseService.submitCase(
             TEST_SERVICE_AUTH_TOKEN,
@@ -421,7 +425,7 @@ class CaseServiceTest {
         assertEquals(YES, caseDetails.getData().get(ET1_ONLINE_SUBMISSION));
     }
 
-    private DocumentTypeItem createDocumentTypeItem(String typeOfDocument) {
+    private DocumentTypeItem createDocumentTypeItem() {
         UploadedDocumentType uploadedDocumentType = new UploadedDocumentType();
         uploadedDocumentType.setDocumentFilename("filename");
         uploadedDocumentType.setDocumentUrl("http://document.binary.url/2333482f-1eb9-44f1-9b78-f5d8f0c74b15");
@@ -431,7 +435,7 @@ class CaseServiceTest {
         documentTypeItem.setId(UUID.randomUUID().toString());
 
         DocumentType documentType = new DocumentType();
-        documentType.setTypeOfDocument(typeOfDocument);
+        documentType.setTypeOfDocument("Other");
         documentType.setUploadedDocument(uploadedDocumentType);
 
         documentTypeItem.setValue(documentType);
@@ -482,8 +486,8 @@ class CaseServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
             USER_ID,
-            EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.ENGLAND_CASE_TYPE,
+            JURISDICTION_ID,
+            ENGLAND_CASE_TYPE,
             CASE_ID,
             SUBMIT_CASE_DRAFT
         )).thenReturn(caseTestData.getStartEventResponse());
@@ -492,8 +496,8 @@ class CaseServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
             USER_ID,
-            EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.ENGLAND_CASE_TYPE,
+            JURISDICTION_ID,
+            ENGLAND_CASE_TYPE,
             CASE_ID,
             true,
             expectedEnrichedData
@@ -556,4 +560,38 @@ class CaseServiceTest {
         return List.of(item);
     }
 
+    @Test
+    void theUpdateCaseSubmitted() {
+        CaseRequest caseRequest = new CaseTestData().getCaseRequest();
+        CaseDetails caseDetails = new CaseTestData().getCaseDetails();
+        StartEventResponse startEventResponse = new CaseTestData().getStartEventResponse();
+        UserInfo userInfo = new CaseTestData().getUserInfo();
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(userInfo);
+        when(ccdApiClient.startEventForCitizen(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            userInfo.getUid(),
+            JURISDICTION_ID,
+            SCOTLAND_CASE_TYPE,
+            caseRequest.getCaseId(),
+            UPDATE_CASE_SUBMITTED.name()
+        )).thenReturn(startEventResponse);
+        when(ccdApiClient.submitEventForCitizen(
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(userInfo.getUid()),
+            eq(JURISDICTION_ID),
+            eq(SCOTLAND_CASE_TYPE),
+            eq(null),
+            eq(true),
+            any(CaseDataContent.class)
+            )).thenReturn(caseDetails);
+        when(caseService.triggerEvent(TEST_SERVICE_AUTH_TOKEN,
+                                      caseRequest.getCaseId(),
+                                      UPDATE_CASE_SUBMITTED,
+                                      SCOTLAND_CASE_TYPE,
+                                      caseRequest.getCaseData())).thenReturn(caseDetails);
+        assertThat(caseService.updateCaseSubmitted(TEST_SERVICE_AUTH_TOKEN, caseRequest)).isEqualTo(caseDetails);
+    }
 }

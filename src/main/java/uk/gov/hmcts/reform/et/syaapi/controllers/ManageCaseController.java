@@ -248,4 +248,21 @@ public class ManageCaseController {
         CaseDetails finalCaseDetails = applicationService.updateTribunalResponseAsViewed(authorization, request);
         return ok(finalCaseDetails);
     }
+
+    /**
+     * Updates case with the new case details.
+     * @param authorization authorisation token which is used to get user info from idam.
+     * @param caseRequest has new case details to update existing one
+     * @return updated case details
+     */
+    @PostMapping("/update-case-submitted")
+    @Operation(summary = "Updates submitted case")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> updateCaseSubmitted(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody CaseRequest caseRequest
+    ) {
+        var caseDetails = caseService.updateCaseSubmitted(authorization, caseRequest);
+        return ok(caseDetails);
+    }
 }

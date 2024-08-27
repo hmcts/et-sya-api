@@ -11,12 +11,10 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
-import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.exception.CaseRoleManagementException;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.NotifyUserCaseRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseRoleManagementService;
 
 import javax.validation.constraints.NotNull;
@@ -26,7 +24,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstant
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
 
 /**
- * Rest Controller to modify case user roles.
+ * Rest Controller to modify user case user roles.
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -70,28 +68,5 @@ public class CaseRoleManagementController {
             throw new CaseRoleManagementException(e);
         }
         return ok(CASE_USER_ROLE_SUCCESSFULLY_MODIFIED);
-    }
-
-    /**
-     * Creates a new notification item in case data, notification collection to be shown as a notification in
-     * response hub and Notifies client about updated case user role.
-     * @param authorisation authorisation token which is used to get user info from idam.
-     * @param notifyUserCaseRoleModificationRequest notify user case role modification request
-     *                                              which has role, modification type and,
-     *                                              submission reference id and case type values.
-     * @return updated case details
-     */
-    @PostMapping("/notifyUserCaseRoleModification")
-    @Operation(summary = "Modifies user roles of the case")
-    @ApiResponseGroup
-    public ResponseEntity<CaseDetails> notifyUserCaseRoleModification(
-        @RequestHeader(AUTHORIZATION) String authorisation,
-        @NotNull @RequestBody NotifyUserCaseRoleModificationRequest notifyUserCaseRoleModificationRequest
-    ) {
-        CaseData caseData = caseRoleManagementService
-            .getCaseDataWithModifiedCaseRoleNotification(authorisation, notifyUserCaseRoleModificationRequest);
-        return ok(caseRoleManagementService.updateCaseSubmitted(authorisation,
-                                                                caseData,
-                                                                notifyUserCaseRoleModificationRequest));
     }
 }

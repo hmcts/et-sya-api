@@ -15,15 +15,11 @@ import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesResponse;
-import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.exception.CaseRoleManagementException;
-import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.NotifyUserCaseRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -34,7 +30,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.CASE_DETAILS_NOT_FOUND_EXCEPTION;
 import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.EXCEPTION_INVALID_MODIFICATION_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.FIRST_INDEX;
 import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.MODIFY_CASE_ROLE_EMPTY_REQUEST;
@@ -42,9 +37,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstant
 import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.MODIFY_CASE_ROLE_PRE_WORDING;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.CaseRoleManagementServiceUtil.buildHeaders;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.CaseRoleManagementServiceUtil.generateCaseDataByUserInfoCaseDetails;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.CaseRoleManagementServiceUtil.getHttpMethodByModificationType;
 
 /**
@@ -62,8 +55,6 @@ public class CaseRoleManagementService {
     private final AuthTokenGenerator authTokenGenerator;
     private final CoreCaseDataApi ccdApi;
     private final IdamClient idamClient;
-    private final CaseService caseService;
-    private final CaseDetailsConverter caseDetailsConverter;
 
     @Value("${core_case_data.api.url}")
     private String ccdDataStoreUrl;
@@ -195,48 +186,5 @@ public class CaseRoleManagementService {
             tmpCaseAssignmentUserRoles.add(tmpCaseAssignmentUserRole);
         }
         return CaseAssignmentUserRolesRequest.builder().caseAssignmentUserRoles(tmpCaseAssignmentUserRoles).build();
-    }
-
-    /**
-     * Generates case role modification notification item with the given authorisation token and notify user case
-     * role modification request which has case submission reference, modification type and role values.
-     * @param authorisation authorisation token to receive user info from idam
-     * @param notifyUserCaseRoleModificationRequest notify user case role modification request
-     *                                              which has role, modification type and,
-     *                                              submission reference id and case data values.
-     * @return case data with added case role modification notification item.
-     */
-    public CaseData getCaseDataWithModifiedCaseRoleNotification(
-        String authorisation, NotifyUserCaseRoleModificationRequest notifyUserCaseRoleModificationRequest) {
-        CaseDetails caseDetails =
-            caseService.getUserCase(authorisation, notifyUserCaseRoleModificationRequest.getCaseSubmissionReference());
-        if (ObjectUtils.isEmpty(caseDetails)) {
-            throw new CaseRoleManagementException(new RuntimeException(CASE_DETAILS_NOT_FOUND_EXCEPTION));
-        }
-        UserInfo userInfo = idamClient.getUserInfo(authorisation);
-        return generateCaseDataByUserInfoCaseDetails(userInfo, caseDetails, notifyUserCaseRoleModificationRequest);
-    }
-
-    /**
-     * Updates case with the event name UPDATE_CASE_SUBMITTED because case has already been submitted by the claimant.
-     * @param authorisation authorisation token to get user info from IDAM
-     * @param caseData case data to be updated
-     * @return case details of the updated case
-     */
-    public CaseDetails updateCaseSubmitted(
-        String authorisation,
-        CaseData caseData,
-        NotifyUserCaseRoleModificationRequest notifyUserCaseRoleModificationRequest) {
-        StartEventResponse startEventResponse =
-            caseService.startUpdate(authorisation,
-                                    notifyUserCaseRoleModificationRequest.getCaseSubmissionReference(),
-                                    notifyUserCaseRoleModificationRequest.getCaseType(),
-                                    UPDATE_CASE_SUBMITTED);
-        return caseService.submitUpdate(
-            authorisation,
-            notifyUserCaseRoleModificationRequest.getCaseSubmissionReference(),
-            caseDetailsConverter.et1ToCaseDataContent(startEventResponse, caseData),
-            notifyUserCaseRoleModificationRequest.getCaseType()
-        );
     }
 }
