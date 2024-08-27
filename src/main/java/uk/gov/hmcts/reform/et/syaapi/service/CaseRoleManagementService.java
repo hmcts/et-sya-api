@@ -84,12 +84,13 @@ public class CaseRoleManagementService {
             findCaseForRoleModificationRequest.getCaseSubmissionReference()
         );
         String adminUserToken = adminUserService.getAdminUserToken();
-
+        String elasticSearchQuery = ElasticSearchQueryBuilder
+            .buildElasticSearchQueryForRoleModification(findCaseForRoleModificationRequest);
         List<CaseDetails> englandCases = Optional.ofNullable(ccdApi.searchCases(
             adminUserToken,
             authTokenGenerator.generate(),
             ENGLAND_CASE_TYPE,
-            ElasticSearchQueryBuilder.buildElasticSearchQueryForRoleModification(findCaseForRoleModificationRequest)
+            elasticSearchQuery
         ).getCases()).orElse(Collections.emptyList());
         if (CollectionUtils.isNotEmpty(englandCases)) {
             return englandCases.get(FIRST_INDEX);
@@ -99,14 +100,14 @@ public class CaseRoleManagementService {
             adminUserToken,
             authTokenGenerator.generate(),
             SCOTLAND_CASE_TYPE,
-            ElasticSearchQueryBuilder.buildElasticSearchQueryForRoleModification(findCaseForRoleModificationRequest)
+            elasticSearchQuery
         ).getCases()).orElse(Collections.emptyList());
         if (CollectionUtils.isNotEmpty(scotlandCases)) {
             return scotlandCases.get(FIRST_INDEX);
         }
         log.info(
-            "Case not found for the parameters, submission reference: {},
-            findCaseForRoleModificationRequest.getCaseSubmissionReference(
+            "Case not found for the parameters, submission reference: {}",
+            findCaseForRoleModificationRequest.getCaseSubmissionReference()
         );
         return null;
     }
