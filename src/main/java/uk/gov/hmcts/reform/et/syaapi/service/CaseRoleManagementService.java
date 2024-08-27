@@ -105,12 +105,8 @@ public class CaseRoleManagementService {
             return scotlandCases.get(FIRST_INDEX);
         }
         log.info(
-            "Case not found for the parameters, submission reference: {}, respondent name: {}, claimant name: {}"
-                + StringUtils.SPACE + "{}",
-            findCaseForRoleModificationRequest.getCaseSubmissionReference(),
-            findCaseForRoleModificationRequest.getRespondentName(),
-            findCaseForRoleModificationRequest.getClaimantFirstNames(),
-            findCaseForRoleModificationRequest.getClaimantLastName()
+            "Case not found for the parameters, submission reference: {},
+            findCaseForRoleModificationRequest.getCaseSubmissionReference(
         );
         return null;
     }
