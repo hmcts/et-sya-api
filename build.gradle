@@ -128,7 +128,7 @@ task contract(type: Test) {
 
 checkstyle {
   maxWarnings = 0
-  toolVersion = '10.17.0'
+  toolVersion = '10.18.0'
   getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
 
@@ -205,8 +205,8 @@ ext {
 }
 
 dependencies {
-  implementation group: 'com.github.hmcts', name: 'et-data-model', version:'3.17.1'
-  implementation('com.github.hmcts:et-common:2.3.0') { transitive = false }
+  implementation group: 'com.github.hmcts', name: 'et-data-model', version:'3.17.2'
+  implementation('com.github.hmcts:et-common:2.4.0') { transitive = false }
   implementation group: 'uk.gov.dwp.regex', name: 'postcode-validation', version: '1.1.0'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '3.1.9', {
@@ -219,7 +219,7 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-json'
   implementation group: 'org.springframework.boot', name: 'spring-boot-configuration-processor'
-  implementation group: 'org.springframework.retry', name: 'spring-retry', version: '2.0.7'
+  implementation group: 'org.springframework.retry', name: 'spring-retry', version: '2.0.8'
   implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.17.2'
   implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.2'
 
@@ -233,7 +233,7 @@ dependencies {
 
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '4.1.1-RELEASE'
   implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.5'
-  implementation group: 'com.google.guava', name: 'guava', version: '33.2.1-jre'
+  implementation group: 'com.google.guava', name: 'guava', version: '33.3.0-jre'
 
   implementation 'org.apache.tika:tika-core:2.9.2'
 
@@ -252,7 +252,7 @@ dependencies {
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.93'
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.28'
 
-  implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '6.3.1'
+  implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '6.3.3'
 
   implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
 
@@ -269,14 +269,14 @@ dependencies {
 
   testImplementation group: 'io.github.openfeign', name: 'feign-jackson', version: '13.3'
   testImplementation group: 'org.mockito', name: 'mockito-inline', version: '5.2.0'
-  testImplementation(platform('org.junit:junit-bom:5.10.3'))
+  testImplementation(platform('org.junit:junit-bom:5.11.0'))
   testImplementation group: 'org.projectlombok', name: 'lombok'
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
     exclude group: 'junit', module: 'junit'
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     exclude group: 'com.vaadin.external.google', module: 'android-json'
   }
-  testImplementation group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version: '3.16.1'
+  testImplementation group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version: '3.16.2'
   testImplementation('org.assertj:assertj-core:3.26.3')
   testImplementation group: 'io.rest-assured', name: 'rest-assured'
   testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit', version: '3.4.1'
@@ -286,10 +286,10 @@ dependencies {
   // Pact Contract Tests
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: '4.1.41'
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'java8', version: '4.1.41'
-  contractTestImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.10.3'
-  contractTestRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.10.3'
-  contractTestImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.10.3'
-  contractTestRuntimeOnly group: 'org.junit.platform', name: 'junit-platform-commons', version: '1.10.3'
+  contractTestImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.11.0'
+  contractTestRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.11.0'
+  contractTestImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.11.0'
+  contractTestRuntimeOnly group: 'org.junit.platform', name: 'junit-platform-commons', version: '1.11.0'
 
   contractTestImplementation sourceSets.main.runtimeClasspath
   contractTestImplementation sourceSets.test.runtimeClasspath
