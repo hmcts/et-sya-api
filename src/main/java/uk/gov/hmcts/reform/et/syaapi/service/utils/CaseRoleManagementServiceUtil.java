@@ -1,11 +1,8 @@
 package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.IOException;
 
@@ -22,24 +19,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstant
 public final class CaseRoleManagementServiceUtil {
     private CaseRoleManagementServiceUtil() {
         // restrict instantiation
-    }
-
-    /**
-     * returns user's full name by the given user info object which has name, given name family name attributes.
-     * First checks for username if it exists puts username if not checks given name if it doesn't exist puts an
-     * empty string for first name. For user's last name puts family name if exists. If not puts empty string for
-     * the family name.
-     * @param userInfo user info object that has name, family name and
-     * @return user's full name
-     */
-    public static String getRespondentFullNameByUserInfo(UserInfo userInfo) {
-        if (ObjectUtils.isEmpty(userInfo)) {
-            return StringUtils.EMPTY;
-        }
-        return ((StringUtils.isNotBlank(userInfo.getName()) ? userInfo.getName()
-            : StringUtils.isNotBlank(userInfo.getGivenName()) ? userInfo.getGivenName() : StringUtils.EMPTY)
-            + StringUtils.SPACE
-            + (StringUtils.isNotBlank(userInfo.getFamilyName()) ? userInfo.getFamilyName() : StringUtils.EMPTY)).trim();
     }
 
     /**
