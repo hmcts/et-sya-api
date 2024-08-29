@@ -11,12 +11,14 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestTemplate;
+import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignedUserRolesResponse;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesResponse;
@@ -253,5 +255,27 @@ class CaseRoleManagementServiceTest {
             .isEqualTo(DUMMY_USER_ID);
         assertThat(actualCaseAssignmentUserRolesRequest.getCaseAssignmentUserRoles().get(1).getUserId())
             .isEqualTo(userInfo.getUid());
+    }
+
+    @Test
+    @SneakyThrows
+    void getUserRolesByCaseAndUserIds() {
+        CaseAssignmentUserRole caseAssignmentUserRole = CaseAssignmentUserRole.builder()
+            .userId(DUMMY_USER_ID)
+            .caseRole(USER_CASE_ROLE_DEFENDANT).caseDataId(DUMMY_CASE_SUBMISSION_REFERENCE)
+            .build();
+        CaseAssignedUserRolesResponse expectedCaseAssignedUserRolesResponse = CaseAssignedUserRolesResponse.builder()
+            .caseAssignedUserRoles(List.of(caseAssignmentUserRole))
+            .build();
+        when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(restTemplate.exchange(
+            anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(CaseAssignedUserRolesResponse.class)))
+            .thenReturn(new ResponseEntity<>(expectedCaseAssignedUserRolesResponse, HttpStatus.OK));
+        CaseAssignedUserRolesResponse actualCaseAssignedUserRolesResponse =
+            caseRoleManagementService.getUserRolesByCaseAndUserIds(
+                List.of(DUMMY_CASE_SUBMISSION_REFERENCE), List.of(DUMMY_USER_ID));
+        assertThat(actualCaseAssignedUserRolesResponse.getCaseAssignedUserRoles()).isNotNull();
+        assertThat(actualCaseAssignedUserRolesResponse.getCaseAssignedUserRoles()).hasSize(1);
+        assertThat(actualCaseAssignedUserRolesResponse).isEqualTo(expectedCaseAssignedUserRolesResponse);
     }
 }

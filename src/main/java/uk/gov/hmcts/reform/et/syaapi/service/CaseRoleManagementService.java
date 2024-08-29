@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
+import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignedUserRolesResponse;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesResponse;
@@ -186,5 +187,32 @@ public class CaseRoleManagementService {
             tmpCaseAssignmentUserRoles.add(tmpCaseAssignmentUserRole);
         }
         return CaseAssignmentUserRolesRequest.builder().caseAssignmentUserRoles(tmpCaseAssignmentUserRoles).build();
+    }
+
+    /**
+     * Gets list of case user roles with the given caseIds and userIds.
+     * @param caseIds Case Ids to search for case user roles.
+     * @param userIds User Ids to search for case user roles.
+     * @return list of case user roles.
+     * @throws IOException throws when any error occurs while receiving case user roles.
+     */
+    public CaseAssignedUserRolesResponse getUserRolesByCaseAndUserIds(List<String> caseIds, List<String> userIds)
+        throws IOException {
+        String userToken = adminUserService.getAdminUserToken();
+        ResponseEntity<CaseAssignedUserRolesResponse> response;
+        try {
+            HttpEntity<Object> requestEntity =
+                new HttpEntity<>(buildHeaders(userToken, this.authTokenGenerator.generate()));
+            String httpRequestUrl = ccdDataStoreUrl + "/case-users?case_ids=" + caseIds + "&user_ids=" + userIds;
+            response = restTemplate.exchange(
+                httpRequestUrl,
+                HttpMethod.GET,
+                requestEntity,
+                CaseAssignedUserRolesResponse.class);
+        } catch (RestClientResponseException | IOException exception) {
+            log.info("Error while getting user roles from CCD - {}", exception.getMessage());
+            throw exception;
+        }
+        return response.getBody();
     }
 }
