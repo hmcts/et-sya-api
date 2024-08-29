@@ -128,7 +128,7 @@ class ManageCaseControllerTest {
     void shouldGetCaseDetailsByUser() {
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(UserInfo.builder().uid(USER_ID).build());
-        when(caseService.getAllUserCases(
+        when(caseService.getClaimantCases(
             TEST_SERVICE_AUTH_TOKEN
         )).thenReturn(requestCaseDataList);
 

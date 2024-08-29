@@ -109,7 +109,7 @@ public class CaseService {
     // @Retryable({FeignException.class, RuntimeException.class}) --> No need to give exception classes as Retryable
     // covers all runtime exceptions.
     @Retryable
-    public List<CaseDetails> getAllUserCases(String authorization) {
+    private List<CaseDetails> getAllUserCases(String authorization) {
         // Elasticsearch
         List<CaseDetails> scotlandCases = Optional.ofNullable(ccdApiClient.searchCases(
             authorization,
@@ -123,8 +123,23 @@ public class CaseService {
             authTokenGenerator.generate(),
             ENGLAND_CASE_TYPE,
             ALL_CASES_QUERY).getCases()).orElse(Collections.emptyList());
-        List<CaseDetails> caseDetailsList = Stream.of(scotlandCases, englandCases)
+        return Stream.of(scotlandCases, englandCases)
             .flatMap(Collection::stream).toList();
+    }
+
+    /**
+     * Given a user derived from the authorisation token in the request,
+     * this will get all cases {@link CaseDetails} for that user.
+     *
+     * @param authorization is used to get the {@link UserInfo} for the request
+     * @return the associated {@link CaseDetails} for the ID provided
+     */
+    // @Retryable({FeignException.class, RuntimeException.class}) --> No need to give exception classes as Retryable
+    // covers all runtime exceptions.
+    @Retryable
+    public List<CaseDetails> getClaimantCases(String authorization) {
+        // Elasticsearch
+        List<CaseDetails> caseDetailsList = getAllUserCases(authorization);
         DocumentUtil.filterMultipleCasesDocumentsForClaimant(caseDetailsList);
         return caseDetailsList;
     }

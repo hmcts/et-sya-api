@@ -239,7 +239,7 @@ class CaseServiceTest {
             ALL_CASES_QUERY
         )).thenReturn(SearchResult.builder().build());
 
-        List<CaseDetails> caseDetails = caseService.getAllUserCases(TEST_SERVICE_AUTH_TOKEN);
+        List<CaseDetails> caseDetails = caseService.getClaimantCases(TEST_SERVICE_AUTH_TOKEN);
 
         assertEquals(caseTestData.getRequestCaseDataList(), caseDetails);
     }
@@ -262,7 +262,7 @@ class CaseServiceTest {
             ALL_CASES_QUERY
         )).thenReturn(caseTestData.getSearchResultRequestCaseDataListEngland());
 
-        List<CaseDetails> caseDetails = caseService.getAllUserCases(TEST_SERVICE_AUTH_TOKEN);
+        List<CaseDetails> caseDetails = caseService.getClaimantCases(TEST_SERVICE_AUTH_TOKEN);
 
         assertThat(caseTestData.getExpectedCaseDataListCombined())
             .hasSize(caseDetails.size()).hasSameElementsAs(caseDetails);

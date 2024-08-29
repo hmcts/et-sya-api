@@ -92,7 +92,7 @@ class CaseRoleManagementServiceTest {
     @ParameterizedTest
     @MethodSource("provideModifyUserCaseRolesTestData")
     @SneakyThrows
-    void modifyUserCaseRoles(CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest,
+    void theModifyUserCaseRoles(CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest,
                                  String modificationType) {
         if (StringUtils.isEmpty(modificationType)
             || !MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)
@@ -142,7 +142,7 @@ class CaseRoleManagementServiceTest {
     }
 
     @Test
-    void findCaseForRoleModificationForEnglandWales() {
+    void theFindCaseForRoleModificationForEnglandWales() {
         FindCaseForRoleModificationRequest findCaseForRoleModificationRequest =
             FindCaseForRoleModificationRequest.builder()
                 .caseSubmissionReference(CASE_SUBMISSION_REFERENCE)
@@ -173,7 +173,7 @@ class CaseRoleManagementServiceTest {
     }
 
     @Test
-    void findCaseForRoleModificationForScotland() {
+    void theFindCaseForRoleModificationForScotland() {
         FindCaseForRoleModificationRequest findCaseForRoleModificationRequest =
             FindCaseForRoleModificationRequest.builder()
                 .caseSubmissionReference(CASE_SUBMISSION_REFERENCE)
@@ -207,7 +207,7 @@ class CaseRoleManagementServiceTest {
     }
 
     @Test
-    void findCaseForRoleModificationNotFound() {
+    void theFindCaseForRoleModificationNotFound() {
         FindCaseForRoleModificationRequest findCaseForRoleModificationRequest =
             FindCaseForRoleModificationRequest.builder()
                 .caseSubmissionReference(CASE_SUBMISSION_REFERENCE)
@@ -233,7 +233,7 @@ class CaseRoleManagementServiceTest {
     }
 
     @Test
-    void generateCaseAssignmentUserRolesRequestWithUserIds() {
+    void theGenerateCaseAssignmentUserRolesRequestWithUserIds() {
         UserInfo userInfo = new CaseTestData().getUserInfo();
         CaseAssignmentUserRole caseAssignmentUserRoleWithoutUserId = CaseAssignmentUserRole.builder()
             .userId(null)
@@ -259,7 +259,7 @@ class CaseRoleManagementServiceTest {
 
     @Test
     @SneakyThrows
-    void getUserRolesByCaseAndUserIds() {
+    void theGetCaseUserRolesByCaseAndUserIds() {
         CaseAssignmentUserRole caseAssignmentUserRole = CaseAssignmentUserRole.builder()
             .userId(DUMMY_USER_ID)
             .caseRole(USER_CASE_ROLE_DEFENDANT).caseDataId(DUMMY_CASE_SUBMISSION_REFERENCE)
@@ -272,7 +272,7 @@ class CaseRoleManagementServiceTest {
             anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(CaseAssignedUserRolesResponse.class)))
             .thenReturn(new ResponseEntity<>(expectedCaseAssignedUserRolesResponse, HttpStatus.OK));
         CaseAssignedUserRolesResponse actualCaseAssignedUserRolesResponse =
-            caseRoleManagementService.getUserRolesByCaseAndUserIds(
+            caseRoleManagementService.getCaseUserRolesByCaseAndUserIds(
                 List.of(DUMMY_CASE_SUBMISSION_REFERENCE), List.of(DUMMY_USER_ID));
         assertThat(actualCaseAssignedUserRolesResponse.getCaseAssignedUserRoles()).isNotNull();
         assertThat(actualCaseAssignedUserRolesResponse.getCaseAssignedUserRoles()).hasSize(1);

@@ -71,9 +71,9 @@ public class ManageCaseController {
     @GetMapping("/user-cases")
     @Operation(summary = "Return list of case details for a given user")
     @ApiResponseGroup
-    public ResponseEntity<List<CaseDetails>> getUserCasesDetails(
+    public ResponseEntity<List<CaseDetails>> getClaimantCases(
         @RequestHeader(AUTHORIZATION) String authorization) {
-        var caseDetails = caseService.getAllUserCases(authorization);
+        var caseDetails = caseService.getClaimantCases(authorization);
         return ok(caseDetails);
     }
 

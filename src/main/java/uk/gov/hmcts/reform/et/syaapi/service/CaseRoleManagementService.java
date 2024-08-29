@@ -196,7 +196,7 @@ public class CaseRoleManagementService {
      * @return list of case user roles.
      * @throws IOException throws when any error occurs while receiving case user roles.
      */
-    public CaseAssignedUserRolesResponse getUserRolesByCaseAndUserIds(List<String> caseIds, List<String> userIds)
+    public CaseAssignedUserRolesResponse getCaseUserRolesByCaseAndUserIds(List<String> caseIds, List<String> userIds)
         throws IOException {
         String userToken = adminUserService.getAdminUserToken();
         ResponseEntity<CaseAssignedUserRolesResponse> response;
