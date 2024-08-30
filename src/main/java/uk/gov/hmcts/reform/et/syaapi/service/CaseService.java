@@ -8,6 +8,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.ecm.common.helpers.DocumentHelper;
+import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignedUserRolesResponse;
 import uk.gov.hmcts.ecm.common.service.PostcodeToOfficeService;
 import uk.gov.hmcts.ecm.common.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -25,6 +26,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
+import uk.gov.hmcts.reform.et.syaapi.exception.CaseRoleManagementException;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
@@ -37,6 +39,7 @@ import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -87,6 +90,7 @@ public class CaseService {
     private final CaseOfficeService caseOfficeService;
     private static final String ALL_CASES_QUERY = "{\"size\":10000,\"query\":{\"match_all\": {}}}";
     private final FeatureToggleService featureToggleService;
+    private final CaseRoleManagementService caseRoleManagementService;
 
     /**
      * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
@@ -137,11 +141,21 @@ public class CaseService {
     // @Retryable({FeignException.class, RuntimeException.class}) --> No need to give exception classes as Retryable
     // covers all runtime exceptions.
     @Retryable
-    public List<CaseDetails> getClaimantCases(String authorization) {
-        // Elasticsearch
-        List<CaseDetails> caseDetailsList = getAllUserCases(authorization);
-        DocumentUtil.filterMultipleCasesDocumentsForClaimant(caseDetailsList);
-        return caseDetailsList;
+    public List<CaseDetails> getUserCasesByCaseUserRole(String authorization, String caseUserRole) {
+        List<CaseDetails> caseDetailsListByRole;
+        try {
+            List<CaseDetails> caseDetailsList = getAllUserCases(authorization);
+            CaseAssignedUserRolesResponse caseAssignedUserRolesResponse =
+                caseRoleManagementService.getCaseUserRolesByCaseAndUserIds(authorization, caseDetailsList);
+            caseDetailsListByRole = CaseRoleManagementService
+                .getCaseDetailsByCaseUserRole(caseDetailsList,
+                                              caseAssignedUserRolesResponse.getCaseAssignedUserRoles(),
+                                              caseUserRole);
+            DocumentUtil.filterMultipleCasesDocumentsForClaimant(caseDetailsListByRole);
+        } catch (IOException e) {
+            throw new CaseRoleManagementException(e);
+        }
+        return caseDetailsListByRole;
     }
 
     /**

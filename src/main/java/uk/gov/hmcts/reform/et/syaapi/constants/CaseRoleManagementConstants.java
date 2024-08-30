@@ -19,16 +19,8 @@ public final class CaseRoleManagementConstants {
     public static final String MODIFICATION_TYPE_ASSIGNMENT = "Assignment";
     public static final String MODIFICATION_TYPE_REVOKE = "Revoke";
     public static final int FIRST_INDEX = 0;
-    public static final String CASE_DETAILS_NOT_FOUND_EXCEPTION = "Unable to find case with id:%s";
     public static final String CASE_USER_ROLE_SUCCESSFULLY_MODIFIED = "Successfully modified case user role";
-    public static final String MODIFY_ROLE_NOTIFICATION_TITLE =
-        "Your role modification request successfully completed";
-    public static final String MODIFY_ROLE_NOTIFICATION_SUBJECT =
-        "Role modification, %s successfully completed for the user with id, %s, to the claim with reference id, %s";
-    public static final String MODIFY_ROLE_NOTIFICATION_PARTY = "Respondent";
-    public static final String MODIFY_ROLE_NOTIFICATION_DETAILS =
-        "Role modification type, %s of the role, %s completed for user, %s to case with submission reference, %s";
-    public static final String MODIFY_ROLE_NOTIFICATION_SENT_FROM = "hmcts@hmcts.net";
+    public static final String CASE_USER_ROLE_CREATOR = "[CREATOR]";
 
     private CaseRoleManagementConstants() {
         // restrict instantiation

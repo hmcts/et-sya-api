@@ -13,6 +13,8 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignedUserRolesResponse;
+import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.ecm.common.service.PostcodeToOfficeService;
 import uk.gov.hmcts.ecm.common.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -26,7 +28,6 @@ import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
-import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.JurisdictionCodesConstants;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
@@ -50,6 +51,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
@@ -60,6 +62,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.ENGLANDWALES_CASE_TYPE_ID;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.ET1_PDF_DOC_CATEGORY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DRAFT_EVENT_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
@@ -70,6 +73,8 @@ import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper.mapRequestCaseDataToCaseData;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CASE_ID;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.DUMMY_CASE_SUBMISSION_REFERENCE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.DUMMY_USER_ID;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.SUBMIT_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
@@ -105,6 +110,8 @@ class CaseServiceTest {
     private CaseOfficeService assignCaseToLocalOfficeService;
     @Mock
     private FeatureToggleService featureToggle;
+    @Mock
+    private CaseRoleManagementService caseRoleManagementService;
     @Spy
     private NotificationsProperties notificationsProperties;
     @InjectMocks
@@ -223,29 +230,8 @@ class CaseServiceTest {
     }
 
     @Test
+    @SneakyThrows
     void shouldGetAllUserCases() {
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(ccdApiClient.searchCases(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            SCOTLAND_CASE_TYPE,
-            ALL_CASES_QUERY
-        )).thenReturn(caseTestData.requestCaseDataListSearchResult());
-
-        when(ccdApiClient.searchCases(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            ENGLAND_CASE_TYPE,
-            ALL_CASES_QUERY
-        )).thenReturn(SearchResult.builder().build());
-
-        List<CaseDetails> caseDetails = caseService.getClaimantCases(TEST_SERVICE_AUTH_TOKEN);
-
-        assertEquals(caseTestData.getRequestCaseDataList(), caseDetails);
-    }
-
-    @Test
-    void shouldGetAllUserCasesDifferentCaseType() {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
 
         when(ccdApiClient.searchCases(
@@ -261,8 +247,28 @@ class CaseServiceTest {
             ENGLAND_CASE_TYPE,
             ALL_CASES_QUERY
         )).thenReturn(caseTestData.getSearchResultRequestCaseDataListEngland());
-
-        List<CaseDetails> caseDetails = caseService.getClaimantCases(TEST_SERVICE_AUTH_TOKEN);
+        CaseAssignmentUserRole caseAssignmentUserRole1 = CaseAssignmentUserRole.builder()
+            .userId(DUMMY_USER_ID)
+            .caseRole(CASE_USER_ROLE_CREATOR).caseDataId(DUMMY_CASE_SUBMISSION_REFERENCE)
+            .caseDataId("1646225213651533")
+            .build();
+        CaseAssignmentUserRole caseAssignmentUserRole2 = CaseAssignmentUserRole.builder()
+            .userId(DUMMY_USER_ID)
+            .caseRole(CASE_USER_ROLE_CREATOR).caseDataId(DUMMY_CASE_SUBMISSION_REFERENCE)
+            .caseDataId("1646225213651512")
+            .build();
+        CaseAssignmentUserRole caseAssignmentUserRole3 = CaseAssignmentUserRole.builder()
+            .userId(DUMMY_USER_ID)
+            .caseRole(CASE_USER_ROLE_CREATOR).caseDataId(DUMMY_CASE_SUBMISSION_REFERENCE)
+            .caseDataId("1646225213651598")
+            .build();
+        CaseAssignedUserRolesResponse expectedCaseAssignedUserRolesResponse = CaseAssignedUserRolesResponse.builder()
+            .caseAssignedUserRoles(List.of(caseAssignmentUserRole1, caseAssignmentUserRole2, caseAssignmentUserRole3))
+            .build();
+        when(caseRoleManagementService.getCaseUserRolesByCaseAndUserIds(eq(TEST_SERVICE_AUTH_TOKEN), anyList()))
+            .thenReturn(expectedCaseAssignedUserRolesResponse);
+        List<CaseDetails> caseDetails = caseService.getUserCasesByCaseUserRole(TEST_SERVICE_AUTH_TOKEN,
+                                                                               CASE_USER_ROLE_CREATOR);
 
         assertThat(caseTestData.getExpectedCaseDataListCombined())
             .hasSize(caseDetails.size()).hasSameElementsAs(caseDetails);

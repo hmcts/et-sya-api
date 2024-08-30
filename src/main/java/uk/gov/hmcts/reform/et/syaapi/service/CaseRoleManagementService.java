@@ -190,14 +190,24 @@ public class CaseRoleManagementService {
     }
 
     /**
-     * Gets list of case user roles with the given caseIds and userIds.
-     * @param caseIds Case Ids to search for case user roles.
-     * @param userIds User Ids to search for case user roles.
+     * Gets list of case user roles with the given case details list and authorization parameter.
+     * @param authorization is used to get user info from IDAM.
+     * @param caseDetailsList is used to get case user roles from core case data service.
      * @return list of case user roles.
      * @throws IOException throws when any error occurs while receiving case user roles.
      */
-    public CaseAssignedUserRolesResponse getCaseUserRolesByCaseAndUserIds(List<String> caseIds, List<String> userIds)
+    public CaseAssignedUserRolesResponse getCaseUserRolesByCaseAndUserIds(String authorization,
+                                                                          List<CaseDetails> caseDetailsList)
         throws IOException {
+        UserInfo userInfo = idamClient.getUserInfo(authorization);
+        List<String> userIds = new ArrayList<>();
+        if (ObjectUtils.isNotEmpty(userInfo) && StringUtils.isNotBlank(userInfo.getUid())) {
+            userIds.add(userInfo.getUid());
+        }
+        List<String> caseIds = new ArrayList<>();
+        for (CaseDetails caseDetails : caseDetailsList) {
+            caseIds.add(caseDetails.getId().toString());
+        }
         String userToken = adminUserService.getAdminUserToken();
         ResponseEntity<CaseAssignedUserRolesResponse> response;
         try {
@@ -214,5 +224,43 @@ public class CaseRoleManagementService {
             throw exception;
         }
         return response.getBody();
+    }
+
+    /**
+     * Gets case details list and case assignment user roles as parameter to check if the case in case details list
+     * has the required case user role.
+     * @param caseDetailsList case details list received from core case data.
+     * @param caseAssignmentUserRoles roles defined for the list of case details.
+     * @param caseUserRole case user role to check if the case has the role or not.
+     * @return case details list with the role given as parameter caseUserRole.
+     */
+    public static List<CaseDetails> getCaseDetailsByCaseUserRole(
+        List<CaseDetails> caseDetailsList, List<CaseAssignmentUserRole> caseAssignmentUserRoles, String caseUserRole) {
+        List<CaseDetails> caseDetailsListByRole = new ArrayList<>();
+        if (CollectionUtils.isEmpty(caseDetailsList)
+            || CollectionUtils.isEmpty(caseAssignmentUserRoles)
+            || StringUtils.isBlank(caseUserRole)) {
+            return caseDetailsListByRole;
+        }
+        for (CaseAssignmentUserRole caseAssignmentUserRole : caseAssignmentUserRoles) {
+            for (CaseDetails caseDetails : caseDetailsList) {
+                String tmpCaseUserRole = findCaseUserRole(caseDetails, caseAssignmentUserRole);
+                if (StringUtils.isNotBlank(tmpCaseUserRole) && tmpCaseUserRole.equals(caseUserRole)) {
+                    caseDetailsListByRole.add(caseDetails);
+                    break;
+                }
+            }
+        }
+        return caseDetailsListByRole;
+    }
+
+    private static String findCaseUserRole(CaseDetails caseDetails,
+                                           CaseAssignmentUserRole caseAssignmentUserRole) {
+        return ObjectUtils.isNotEmpty(caseDetails)
+            && ObjectUtils.isNotEmpty(caseDetails.getId())
+            && ObjectUtils.isNotEmpty(caseAssignmentUserRole)
+            && StringUtils.isNotEmpty(caseAssignmentUserRole.getCaseDataId())
+            && (caseDetails.getId().toString().equals(caseAssignmentUserRole.getCaseDataId()))
+            ? caseAssignmentUserRole.getCaseRole() : StringUtils.EMPTY;
     }
 }

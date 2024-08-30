@@ -29,6 +29,7 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import static org.springframework.http.ResponseEntity.ok;
+import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
 
 /**
@@ -73,7 +74,7 @@ public class ManageCaseController {
     @ApiResponseGroup
     public ResponseEntity<List<CaseDetails>> getClaimantCases(
         @RequestHeader(AUTHORIZATION) String authorization) {
-        var caseDetails = caseService.getClaimantCases(authorization);
+        var caseDetails = caseService.getUserCasesByCaseUserRole(authorization, CASE_USER_ROLE_CREATOR);
         return ok(caseDetails);
     }
 
