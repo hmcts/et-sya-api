@@ -142,7 +142,7 @@ public class CaseService {
         String s2sToken = authTokenGenerator.generate();
         String userId = idamClient.getUserInfo(authorization).getUid();
         String eventTypeName = INITIATE_CASE_DRAFT.name();
-        String caseType = getCaseType(caseRequest);
+        String caseType = caseRequest.getCaseTypeId();
         Et1CaseData data = new EmployeeObjectMapper().getEmploymentCaseData(caseRequest.getCaseData());
         StartEventResponse ccdCase = ccdApiClient.startForCitizen(
             authorization,
@@ -168,17 +168,6 @@ public class CaseService {
             true,
             caseDataContent
         );
-    }
-
-    private String getCaseType(CaseRequest caseRequest) {
-        try {
-            return getCaseTypeId(
-                postcodeToOfficeService.getTribunalOfficeFromPostcode(caseRequest.getPostCode())
-                    .orElse(DEFAULT_TRIBUNAL_OFFICE).getOfficeName());
-        } catch (InvalidPostcodeException e) {
-            log.info("Failed to find tribunal office : {} ", e.getMessage());
-            return getCaseTypeId(DEFAULT_TRIBUNAL_OFFICE.getOfficeName());
-        }
     }
 
     /**
