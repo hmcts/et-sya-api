@@ -22,6 +22,12 @@ public final class CaseRoleManagementConstants {
     public static final String CASE_USER_ROLE_SUCCESSFULLY_MODIFIED = "Successfully modified case user role";
     public static final String CASE_USER_ROLE_CREATOR = "[CREATOR]";
     public static final String CASE_USER_ROLE_DEFENDANT = "[DEFENDANT]";
+    public static final String STRING_AMPERSAND = "&";
+    public static final String STRING_EQUAL = "=";
+    public static final String STRING_QUESTION_MARK = "?";
+    public static final String STRING_PARAM_NAME_CASE_IDS = "case_ids";
+    public static final String STRING_PARAM_NAME_USER_IDS = "user_ids";
+    public static final String CASE_USERS_API_URL = "/case-users";
 
     private CaseRoleManagementConstants() {
         // restrict instantiation

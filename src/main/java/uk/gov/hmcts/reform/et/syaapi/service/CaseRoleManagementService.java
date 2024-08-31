@@ -16,7 +16,6 @@ import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignedUserRolesResponse;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesResponse;
-import uk.gov.hmcts.ecm.common.model.ccd.SearchCaseAssignedUserRolesRequest;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -32,11 +31,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.CASE_USERS_API_URL;
 import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.EXCEPTION_INVALID_MODIFICATION_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.FIRST_INDEX;
 import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.MODIFY_CASE_ROLE_EMPTY_REQUEST;
 import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.MODIFY_CASE_ROLE_POST_WORDING;
 import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.MODIFY_CASE_ROLE_PRE_WORDING;
+import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.STRING_AMPERSAND;
+import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.STRING_EQUAL;
+import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.STRING_PARAM_NAME_CASE_IDS;
+import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.STRING_PARAM_NAME_USER_IDS;
+import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.STRING_QUESTION_MARK;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.CaseRoleManagementServiceUtil.buildHeaders;
@@ -58,8 +63,8 @@ public class CaseRoleManagementService {
     private final CoreCaseDataApi ccdApi;
     private final IdamClient idamClient;
 
-    @Value("${core_case_data.api.url}")
-    private String ccdDataStoreUrl;
+    @Value("${assign_case_access_api_url}")
+    private String aacUrl;
 
     /**
      * Gets case with the user entered details, caseId, respondentName, claimantFirstNames and claimantSurname.
@@ -131,7 +136,7 @@ public class CaseRoleManagementService {
             HttpEntity<CaseAssignmentUserRolesRequest> requestEntity =
                 new HttpEntity<>(caseAssignmentUserRolesRequest,
                                  buildHeaders(userToken, this.authTokenGenerator.generate()));
-            response = restTemplate.exchange(ccdDataStoreUrl + "/case-users",
+            response = restTemplate.exchange(aacUrl + CASE_USERS_API_URL,
                                              httpMethod,
                                              requestEntity,
                                              CaseAssignmentUserRolesResponse.class);
@@ -200,26 +205,35 @@ public class CaseRoleManagementService {
     public CaseAssignedUserRolesResponse getCaseUserRolesByCaseAndUserIds(String authorization,
                                                                           List<CaseDetails> caseDetailsList)
         throws IOException {
-        UserInfo userInfo = idamClient.getUserInfo(authorization);
-        List<String> userIds = new ArrayList<>();
-        if (ObjectUtils.isNotEmpty(userInfo) && StringUtils.isNotBlank(userInfo.getUid())) {
-            userIds.add(userInfo.getUid());
-        }
-        List<String> caseIds = new ArrayList<>();
+        StringBuilder aacApiUriAsStringBuffer = new StringBuilder(aacUrl)
+            .append(CASE_USERS_API_URL)
+            .append(STRING_QUESTION_MARK);
         for (CaseDetails caseDetails : caseDetailsList) {
-            caseIds.add(caseDetails.getId().toString());
+            if (ObjectUtils.isNotEmpty(caseDetails) && ObjectUtils.isNotEmpty(caseDetails.getId())) {
+                aacApiUriAsStringBuffer
+                    .append(STRING_PARAM_NAME_CASE_IDS)
+                    .append(STRING_EQUAL)
+                    .append(caseDetails.getId().toString())
+                    .append(STRING_AMPERSAND);
+            }
         }
-        SearchCaseAssignedUserRolesRequest searchCaseAssignedUserRolesRequest =
-            SearchCaseAssignedUserRolesRequest.builder().caseIds(caseIds).userIds(userIds).build();
+        UserInfo userInfo = idamClient.getUserInfo(authorization);
+        String aacApiUri;
+        if (ObjectUtils.isNotEmpty(userInfo) && StringUtils.isNotBlank(userInfo.getUid())) {
+            aacApiUri = aacApiUriAsStringBuffer
+                .append(STRING_PARAM_NAME_USER_IDS)
+                .append(STRING_EQUAL)
+                .append(userInfo.getUid()).toString();
+        } else {
+            aacApiUri = StringUtils.removeEnd(aacApiUriAsStringBuffer.toString(), STRING_AMPERSAND);
+        }
         ResponseEntity<CaseAssignedUserRolesResponse> response;
         try {
-            HttpEntity<SearchCaseAssignedUserRolesRequest> requestEntity =
-                new HttpEntity<>(searchCaseAssignedUserRolesRequest,
-                                 buildHeaders(authorization, this.authTokenGenerator.generate()));
-            String httpRequestUrl = ccdDataStoreUrl + "/case-users/search";
+            HttpEntity<Object> requestEntity =
+                new HttpEntity<>(buildHeaders(authorization, this.authTokenGenerator.generate()));
             response = restTemplate.exchange(
-                httpRequestUrl,
-                HttpMethod.POST,
+                aacApiUri,
+                HttpMethod.GET,
                 requestEntity,
                 CaseAssignedUserRolesResponse.class);
         } catch (RestClientResponseException | IOException exception) {

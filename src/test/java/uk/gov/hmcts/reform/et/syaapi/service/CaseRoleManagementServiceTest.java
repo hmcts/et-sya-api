@@ -17,6 +17,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignedUserRolesResponse;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
@@ -86,6 +87,8 @@ class CaseRoleManagementServiceTest {
     private static final String USER_CASE_ROLE_DEFENDANT = "[DEFENDANT]";
     private static final String ENGLAND_CASE_TYPE = "ET_EnglandWales";
     private static final String SCOTLAND_CASE_TYPE = "ET_Scotland";
+    private static final String AAC_URL_PARAMETER_NAME = "aacUrl";
+    private static final String AAC_URL_PARAMETER_TEST_VALUE = "https://test.url.com";
 
     @BeforeEach
     void setup() {
@@ -280,6 +283,7 @@ class CaseRoleManagementServiceTest {
     @Test
     @SneakyThrows
     void theGetCaseUserRolesByCaseAndUserIds() {
+        ReflectionTestUtils.setField(caseRoleManagementService, AAC_URL_PARAMETER_NAME, AAC_URL_PARAMETER_TEST_VALUE);
         CaseAssignmentUserRole caseAssignmentUserRole = CaseAssignmentUserRole.builder()
             .userId(DUMMY_USER_ID)
             .caseRole(USER_CASE_ROLE_DEFENDANT).caseDataId(DUMMY_CASE_SUBMISSION_REFERENCE)
@@ -289,7 +293,7 @@ class CaseRoleManagementServiceTest {
             .build();
         when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
         when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(CaseAssignedUserRolesResponse.class)))
+            anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(CaseAssignedUserRolesResponse.class)))
             .thenReturn(new ResponseEntity<>(expectedCaseAssignedUserRolesResponse, HttpStatus.OK));
         CaseAssignedUserRolesResponse actualCaseAssignedUserRolesResponse =
             caseRoleManagementService.getCaseUserRolesByCaseAndUserIds(DUMMY_AUTHORISATION_TOKEN,
