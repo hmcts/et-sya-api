@@ -21,6 +21,7 @@ public final class CaseRoleManagementConstants {
     public static final int FIRST_INDEX = 0;
     public static final String CASE_USER_ROLE_SUCCESSFULLY_MODIFIED = "Successfully modified case user role";
     public static final String CASE_USER_ROLE_CREATOR = "[CREATOR]";
+    public static final String CASE_USER_ROLE_DEFENDANT = "[DEFENDANT]";
 
     private CaseRoleManagementConstants() {
         // restrict instantiation

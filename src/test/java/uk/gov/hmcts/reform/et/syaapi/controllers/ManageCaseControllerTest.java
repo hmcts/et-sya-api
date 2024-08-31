@@ -47,6 +47,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.CASE_USER_ROLE_CREATOR;
+import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.CASE_USER_ROLE_DEFENDANT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_FIRST_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_NAME;
@@ -136,6 +137,30 @@ class ManageCaseControllerTest {
         // when
         mockMvc.perform(
                 get("/cases/user-cases", SCOTLAND_CASE_TYPE)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
+            // then
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("[0].case_type_id").value(requestCaseDataList.get(0).getCaseTypeId()))
+            .andExpect(jsonPath("[0].jurisdiction").value(requestCaseDataList.get(0).getJurisdiction()))
+            .andExpect(jsonPath("[0].state").value(requestCaseDataList.get(0).getState()))
+            .andExpect(jsonPath("[0].created_date").exists())
+            .andExpect(jsonPath("[0].last_modified").exists())
+            .andExpect(jsonPath("[1].case_type_id").value(requestCaseDataList.get(1).getCaseTypeId()));
+    }
+
+    @Test
+    @SneakyThrows
+    void shouldGetCaseDetailsByDefendantUser() {
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(UserInfo.builder().uid(USER_ID).build());
+        when(caseService.getUserCasesByCaseUserRole(
+            TEST_SERVICE_AUTH_TOKEN, CASE_USER_ROLE_DEFENDANT
+        )).thenReturn(requestCaseDataList);
+
+        // when
+        mockMvc.perform(
+                get("/cases/defendant-cases", SCOTLAND_CASE_TYPE)
                     .contentType(MediaType.APPLICATION_JSON)
                     .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
             // then

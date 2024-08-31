@@ -30,6 +30,7 @@ import javax.validation.constraints.NotNull;
 
 import static org.springframework.http.ResponseEntity.ok;
 import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.CASE_USER_ROLE_CREATOR;
+import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.CASE_USER_ROLE_DEFENDANT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
 
 /**
@@ -72,9 +73,24 @@ public class ManageCaseController {
     @GetMapping("/user-cases")
     @Operation(summary = "Return list of case details for a given user")
     @ApiResponseGroup
-    public ResponseEntity<List<CaseDetails>> getClaimantCases(
+    public ResponseEntity<List<CaseDetails>> getCreatorCases(
         @RequestHeader(AUTHORIZATION) String authorization) {
         var caseDetails = caseService.getUserCasesByCaseUserRole(authorization, CASE_USER_ROLE_CREATOR);
+        return ok(caseDetails);
+    }
+
+    /**
+     * Uses the authorization token to extract the user and return all the cases that belong to that user.
+     *
+     * @param authorization the JWT that contains the user information
+     * @return a list of cases for the given user wrapped in a {@link CaseDetails} object
+     */
+    @GetMapping("/defendant-cases")
+    @Operation(summary = "Return list of case details for a given user")
+    @ApiResponseGroup
+    public ResponseEntity<List<CaseDetails>> getDefendantCases(
+        @RequestHeader(AUTHORIZATION) String authorization) {
+        var caseDetails = caseService.getUserCasesByCaseUserRole(authorization, CASE_USER_ROLE_DEFENDANT);
         return ok(caseDetails);
     }
 

@@ -287,10 +287,9 @@ class CaseRoleManagementServiceTest {
         CaseAssignedUserRolesResponse expectedCaseAssignedUserRolesResponse = CaseAssignedUserRolesResponse.builder()
             .caseAssignedUserRoles(List.of(caseAssignmentUserRole))
             .build();
-        when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
         when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(CaseAssignedUserRolesResponse.class)))
+            anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(CaseAssignedUserRolesResponse.class)))
             .thenReturn(new ResponseEntity<>(expectedCaseAssignedUserRolesResponse, HttpStatus.OK));
         CaseAssignedUserRolesResponse actualCaseAssignedUserRolesResponse =
             caseRoleManagementService.getCaseUserRolesByCaseAndUserIds(DUMMY_AUTHORISATION_TOKEN,

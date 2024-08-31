@@ -16,6 +16,7 @@ import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignedUserRolesResponse;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesResponse;
+import uk.gov.hmcts.ecm.common.model.ccd.SearchCaseAssignedUserRolesRequest;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -208,15 +209,17 @@ public class CaseRoleManagementService {
         for (CaseDetails caseDetails : caseDetailsList) {
             caseIds.add(caseDetails.getId().toString());
         }
-        String userToken = adminUserService.getAdminUserToken();
+        SearchCaseAssignedUserRolesRequest searchCaseAssignedUserRolesRequest =
+            SearchCaseAssignedUserRolesRequest.builder().caseIds(caseIds).userIds(userIds).build();
         ResponseEntity<CaseAssignedUserRolesResponse> response;
         try {
-            HttpEntity<Object> requestEntity =
-                new HttpEntity<>(buildHeaders(userToken, this.authTokenGenerator.generate()));
-            String httpRequestUrl = ccdDataStoreUrl + "/case-users?case_ids=" + caseIds + "&user_ids=" + userIds;
+            HttpEntity<SearchCaseAssignedUserRolesRequest> requestEntity =
+                new HttpEntity<>(searchCaseAssignedUserRolesRequest,
+                                 buildHeaders(authorization, this.authTokenGenerator.generate()));
+            String httpRequestUrl = ccdDataStoreUrl + "/case-users/search";
             response = restTemplate.exchange(
                 httpRequestUrl,
-                HttpMethod.GET,
+                HttpMethod.POST,
                 requestEntity,
                 CaseAssignedUserRolesResponse.class);
         } catch (RestClientResponseException | IOException exception) {
