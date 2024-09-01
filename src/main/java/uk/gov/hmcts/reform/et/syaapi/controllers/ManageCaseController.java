@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
@@ -28,9 +29,11 @@ import uk.gov.service.notify.NotificationClientException;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.http.ResponseEntity.ok;
 import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.CASE_USER_ROLE_CREATOR;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.CASE_USER_ROLE_DEFENDANT;
+import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.STRING_LEFT_SQUARE_BRACKET;
+import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.STRING_RIGHT_SQUARE_BRACKET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
 
 /**
@@ -73,24 +76,13 @@ public class ManageCaseController {
     @GetMapping("/user-cases")
     @Operation(summary = "Return list of case details for a given user")
     @ApiResponseGroup
-    public ResponseEntity<List<CaseDetails>> getCreatorCases(
-        @RequestHeader(AUTHORIZATION) String authorization) {
-        var caseDetails = caseService.getUserCasesByCaseUserRole(authorization, CASE_USER_ROLE_CREATOR);
-        return ok(caseDetails);
-    }
-
-    /**
-     * Uses the authorization token to extract the user and return all the cases that belong to that user.
-     *
-     * @param authorization the JWT that contains the user information
-     * @return a list of cases for the given user wrapped in a {@link CaseDetails} object
-     */
-    @GetMapping("/defendant-cases")
-    @Operation(summary = "Return list of case details for a given user")
-    @ApiResponseGroup
-    public ResponseEntity<List<CaseDetails>> getDefendantCases(
-        @RequestHeader(AUTHORIZATION) String authorization) {
-        var caseDetails = caseService.getUserCasesByCaseUserRole(authorization, CASE_USER_ROLE_DEFENDANT);
+    public ResponseEntity<List<CaseDetails>> getUserCasesByRole(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @RequestParam(value = "case_role", required = false) String caseRole) {
+        var caseDetails = caseService.getUserCasesByCaseUserRole(
+            authorization, isBlank(caseRole)
+                ? CASE_USER_ROLE_CREATOR
+                : STRING_LEFT_SQUARE_BRACKET + caseRole + STRING_RIGHT_SQUARE_BRACKET);
         return ok(caseDetails);
     }
 

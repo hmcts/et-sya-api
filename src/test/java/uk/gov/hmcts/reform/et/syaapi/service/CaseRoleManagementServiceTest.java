@@ -89,6 +89,9 @@ class CaseRoleManagementServiceTest {
     private static final String SCOTLAND_CASE_TYPE = "ET_Scotland";
     private static final String AAC_URL_PARAMETER_NAME = "aacUrl";
     private static final String AAC_URL_PARAMETER_TEST_VALUE = "https://test.url.com";
+    private static final String EXPECTED_EMPTY_CASE_DETAILS_EXCEPTION_MESSAGE =
+        "java.lang.Exception: Unable to get user cases because not able to create aacApiUrl with the given "
+            + "caseDetails and authorization data";
 
     @BeforeEach
     void setup() {
@@ -301,6 +304,17 @@ class CaseRoleManagementServiceTest {
         assertThat(actualCaseAssignedUserRolesResponse.getCaseAssignedUserRoles()).isNotNull();
         assertThat(actualCaseAssignedUserRolesResponse.getCaseAssignedUserRoles()).hasSize(1);
         assertThat(actualCaseAssignedUserRolesResponse).isEqualTo(expectedCaseAssignedUserRolesResponse);
+    }
+
+    @Test
+    @SneakyThrows
+    void theGetCaseUserRolesByCaseAndUserIdsThrowsExceptionWhenCaseDetailsEmpty() {
+        ReflectionTestUtils.setField(caseRoleManagementService, AAC_URL_PARAMETER_NAME, AAC_URL_PARAMETER_TEST_VALUE);
+        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
+        String message = assertThrows(CaseRoleManagementException.class,
+                     () -> caseRoleManagementService
+                         .getCaseUserRolesByCaseAndUserIds(DUMMY_AUTHORISATION_TOKEN, null)).getMessage();
+        assertThat(message).isEqualTo(EXPECTED_EMPTY_CASE_DETAILS_EXCEPTION_MESSAGE);
     }
 
     @ParameterizedTest

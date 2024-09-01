@@ -160,7 +160,7 @@ class ManageCaseControllerTest {
 
         // when
         mockMvc.perform(
-                get("/cases/defendant-cases", SCOTLAND_CASE_TYPE)
+                get("/cases/user-cases?case_role=DEFENDANT", SCOTLAND_CASE_TYPE)
                     .contentType(MediaType.APPLICATION_JSON)
                     .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
             // then

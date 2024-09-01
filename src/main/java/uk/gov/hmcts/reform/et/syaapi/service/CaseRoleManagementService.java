@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.exception.CaseRoleManagementException;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.CaseRoleManagementServiceUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
@@ -37,11 +38,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstant
 import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.MODIFY_CASE_ROLE_EMPTY_REQUEST;
 import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.MODIFY_CASE_ROLE_POST_WORDING;
 import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.MODIFY_CASE_ROLE_PRE_WORDING;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.STRING_AMPERSAND;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.STRING_EQUAL;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.STRING_PARAM_NAME_CASE_IDS;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.STRING_PARAM_NAME_USER_IDS;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.STRING_QUESTION_MARK;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.CaseRoleManagementServiceUtil.buildHeaders;
@@ -205,27 +201,13 @@ public class CaseRoleManagementService {
     public CaseAssignedUserRolesResponse getCaseUserRolesByCaseAndUserIds(String authorization,
                                                                           List<CaseDetails> caseDetailsList)
         throws IOException {
-        StringBuilder aacApiUriAsStringBuffer = new StringBuilder(aacUrl)
-            .append(CASE_USERS_API_URL)
-            .append(STRING_QUESTION_MARK);
-        for (CaseDetails caseDetails : caseDetailsList) {
-            if (ObjectUtils.isNotEmpty(caseDetails) && ObjectUtils.isNotEmpty(caseDetails.getId())) {
-                aacApiUriAsStringBuffer
-                    .append(STRING_PARAM_NAME_CASE_IDS)
-                    .append(STRING_EQUAL)
-                    .append(caseDetails.getId().toString())
-                    .append(STRING_AMPERSAND);
-            }
-        }
         UserInfo userInfo = idamClient.getUserInfo(authorization);
-        String aacApiUri;
-        if (ObjectUtils.isNotEmpty(userInfo) && StringUtils.isNotBlank(userInfo.getUid())) {
-            aacApiUri = aacApiUriAsStringBuffer
-                .append(STRING_PARAM_NAME_USER_IDS)
-                .append(STRING_EQUAL)
-                .append(userInfo.getUid()).toString();
-        } else {
-            aacApiUri = StringUtils.removeEnd(aacApiUriAsStringBuffer.toString(), STRING_AMPERSAND);
+        String aacApiUri = CaseRoleManagementServiceUtil
+            .createAacSearchCaseUsersUriByCaseAndUserIds(aacUrl, caseDetailsList, List.of(userInfo));
+        if (StringUtils.isBlank(aacApiUri)) {
+            throw new CaseRoleManagementException(
+                new Exception("Unable to get user cases because not able to create aacApiUrl with the given "
+                                  + "caseDetails and authorization data"));
         }
         ResponseEntity<CaseAssignedUserRolesResponse> response;
         try {

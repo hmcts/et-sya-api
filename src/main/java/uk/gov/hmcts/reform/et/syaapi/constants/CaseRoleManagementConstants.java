@@ -28,6 +28,8 @@ public final class CaseRoleManagementConstants {
     public static final String STRING_PARAM_NAME_CASE_IDS = "case_ids";
     public static final String STRING_PARAM_NAME_USER_IDS = "user_ids";
     public static final String CASE_USERS_API_URL = "/case-users";
+    public static final String STRING_LEFT_SQUARE_BRACKET = "[";
+    public static final String STRING_RIGHT_SQUARE_BRACKET = "]";
 
     private CaseRoleManagementConstants() {
         // restrict instantiation
