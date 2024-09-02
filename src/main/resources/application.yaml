@@ -126,3 +126,5 @@ launchdarkly:
   sdk-key: ${LAUNCH_DARKLY_SDK_KEY:sdk-key}
   offline-mode: false
   env: ${LAUNCH_DARKLY_ENV:default}
+
+assign_case_access_api_url: ${AAC_URL:http://localhost:4454}
