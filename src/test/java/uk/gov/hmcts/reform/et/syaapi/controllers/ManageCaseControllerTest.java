@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -108,7 +109,9 @@ class ManageCaseControllerTest {
 
         // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(caseService.getUserCase(TEST_SERVICE_AUTH_TOKEN, caseRequest.getCaseId()))
+        when(caseService.getUserCaseByCaseUserRole(TEST_SERVICE_AUTH_TOKEN,
+                                                   caseRequest.getCaseId(),
+                                                   CASE_USER_ROLE_CREATOR))
             .thenReturn(expectedDetails);
 
         // when
@@ -160,7 +163,7 @@ class ManageCaseControllerTest {
 
         // when
         mockMvc.perform(
-                get("/cases/user-cases?case_role=DEFENDANT", SCOTLAND_CASE_TYPE)
+                get("/cases/user-cases?case_user_role=DEFENDANT", SCOTLAND_CASE_TYPE)
                     .contentType(MediaType.APPLICATION_JSON)
                     .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN))
             // then
@@ -181,13 +184,13 @@ class ManageCaseControllerTest {
 
         Request request = Request.create(
             Request.HttpMethod.GET, "/test", Collections.emptyMap(), null, new RequestTemplate());
-        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(caseService.getUserCase(any(), any())).thenThrow(new FeignException.BadRequest(
-            "Bad request",
-            request,
-            "incorrect payload".getBytes(StandardCharsets.UTF_8),
-            Collections.emptyMap()
-        ));
+        when(verifyTokenService.verifyTokenSignature(anyString())).thenReturn(true);
+        when(caseService.getUserCaseByCaseUserRole(anyString(), anyString(), anyString())).thenThrow(
+            new FeignException.BadRequest(
+                "Bad request",
+                request,
+                "incorrect payload".getBytes(StandardCharsets.UTF_8),
+                Collections.emptyMap()));
         mockMvc.perform(post("/cases/user-case")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(ResourceLoader.toJson(caseRequest))
@@ -323,8 +326,9 @@ class ManageCaseControllerTest {
             "Bloggs",
             null
         ));
-        when(hubLinkService.updateHubLinkStatuses(hubLinksStatusesRequest, TEST_SERVICE_AUTH_TOKEN))
-            .thenReturn(expectedDetails);
+        when(hubLinkService.updateHubLinkStatuses(hubLinksStatusesRequest,
+                                                  TEST_SERVICE_AUTH_TOKEN,
+                                                  CASE_USER_ROLE_CREATOR)).thenReturn(expectedDetails);
 
         mockMvc.perform(
             put("/cases/update-hub-links-statuses", CASE_ID)
@@ -334,7 +338,8 @@ class ManageCaseControllerTest {
         ).andExpect(status().isOk());
         verify(hubLinkService, times(1)).updateHubLinkStatuses(
             hubLinksStatusesRequest,
-            TEST_SERVICE_AUTH_TOKEN
+            TEST_SERVICE_AUTH_TOKEN,
+            CASE_USER_ROLE_CREATOR
         );
     }
 
@@ -351,7 +356,8 @@ class ManageCaseControllerTest {
         // when
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
 
-        when(applicationService.submitApplication(any(), any())).thenReturn(expectedDetails);
+        when(applicationService.submitApplication(anyString(), any(ClaimantApplicationRequest.class), anyString()))
+            .thenReturn(expectedDetails);
         mockMvc.perform(
             put("/cases/submit-claimant-application", CASE_ID)
                 .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
@@ -361,7 +367,8 @@ class ManageCaseControllerTest {
 
         verify(applicationService, times(1)).submitApplication(
             TEST_SERVICE_AUTH_TOKEN,
-            claimantApplicationRequest
+            claimantApplicationRequest,
+            CASE_USER_ROLE_CREATOR
         );
     }
 
@@ -378,7 +385,8 @@ class ManageCaseControllerTest {
         // when
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
 
-        when(applicationService.submitApplication(any(), any())).thenReturn(expectedDetails);
+        when(applicationService.submitApplication(anyString(), any(ClaimantApplicationRequest.class), anyString()))
+            .thenReturn(expectedDetails);
         mockMvc.perform(
             put("/cases/respond-to-application", CASE_ID)
                 .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
@@ -405,7 +413,8 @@ class ManageCaseControllerTest {
         // when
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
 
-        when(applicationService.submitApplication(any(), any())).thenReturn(expectedDetails);
+        when(applicationService.submitApplication(anyString(), any(ClaimantApplicationRequest.class), anyString()))
+            .thenReturn(expectedDetails);
         mockMvc.perform(
             put("/cases/change-application-status", CASE_ID)
                 .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)

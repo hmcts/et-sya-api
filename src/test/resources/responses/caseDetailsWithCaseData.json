@@ -505,7 +505,7 @@
         "id": "1",
         "value": {
           "creationDate": "2019-12-30T19:34:50.63",
-          "typeOfDocument": "ET1",
+          "typeOfDocument": "App for a Witness Order - C",
           "uploadedDocument": {
             "document_binary_url": "https://document.binary.url/36c8b8b7-2f73-4ba6-968c-1e4863127001",
             "document_filename": "Contact the tribunal.pdf",
@@ -528,7 +528,7 @@
       {
         "id": "3",
         "value": {
-          "documentType": "ET1",
+          "documentType": "App for a Witness Order - R",
           "creationDate": "2022-12-30T19:34:50.63",
           "uploadedDocument": {
             "document_binary_url": "https://document.binary.url/36c8b8b7-2f73-4ba6-968c-1e4863127003",

@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.et.syaapi.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,14 +24,13 @@ import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.HubLinkService;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.DocumentUtil;
 import uk.gov.service.notify.NotificationClientException;
 
 import java.util.List;
 import javax.validation.constraints.NotNull;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.http.ResponseEntity.ok;
+import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.CASE_USER_ROLE_API_PARAMETER_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.STRING_LEFT_SQUARE_BRACKET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.STRING_RIGHT_SQUARE_BRACKET;
@@ -61,9 +61,13 @@ public class ManageCaseController {
     @ApiResponseGroup
     public ResponseEntity<CaseDetails> getUserCaseDetails(
         @RequestHeader(AUTHORIZATION) String authorization,
+        @RequestParam(value = CASE_USER_ROLE_API_PARAMETER_NAME, required = false) String caseUserRole,
         @RequestBody CaseRequest caseRequest) {
-        CaseDetails caseDetails = caseService.getUserCase(authorization, caseRequest.getCaseId());
-        DocumentUtil.filterCaseDocumentsForClaimant(caseDetails, caseRequest.getCaseId());
+        CaseDetails caseDetails = caseService.getUserCaseByCaseUserRole(
+            authorization, caseRequest.getCaseId(),
+            StringUtils.isBlank(caseUserRole)
+                ? CASE_USER_ROLE_CREATOR
+                : STRING_LEFT_SQUARE_BRACKET + caseUserRole.trim() + STRING_RIGHT_SQUARE_BRACKET);
         return ok(caseDetails);
     }
 
@@ -76,13 +80,14 @@ public class ManageCaseController {
     @GetMapping("/user-cases")
     @Operation(summary = "Return list of case details for a given user")
     @ApiResponseGroup
-    public ResponseEntity<List<CaseDetails>> getUserCasesByRole(
+    public ResponseEntity<List<CaseDetails>> getUserCasesByCaseUserRole(
         @RequestHeader(AUTHORIZATION) String authorization,
-        @RequestParam(value = "case_role", required = false) String caseRole) {
+        @RequestParam(value = CASE_USER_ROLE_API_PARAMETER_NAME, required = false) String caseUserRole) {
         var caseDetails = caseService.getUserCasesByCaseUserRole(
-            authorization, isBlank(caseRole)
+            authorization,
+            StringUtils.isBlank(caseUserRole)
                 ? CASE_USER_ROLE_CREATOR
-                : STRING_LEFT_SQUARE_BRACKET + caseRole + STRING_RIGHT_SQUARE_BRACKET);
+                : STRING_LEFT_SQUARE_BRACKET + caseUserRole.trim() + STRING_RIGHT_SQUARE_BRACKET);
         return ok(caseDetails);
     }
 
@@ -160,12 +165,18 @@ public class ManageCaseController {
     @ApiResponseGroup
     public ResponseEntity<CaseDetails> updateHubLinksStatuses(
         @RequestHeader(AUTHORIZATION) String authorization,
+        @RequestParam(value = CASE_USER_ROLE_API_PARAMETER_NAME, required = false) String caseUserRole,
         @NotNull @RequestBody HubLinksStatusesRequest request
     ) {
         log.info("Received update hub link statuses request - caseTypeId: {} caseId: {}",
                  request.getCaseTypeId(), request.getCaseId()
         );
-        return ok(hubLinkService.updateHubLinkStatuses(request, authorization));
+        return ok(hubLinkService.updateHubLinkStatuses(
+            request,
+            authorization,
+            StringUtils.isBlank(caseUserRole)
+                ? CASE_USER_ROLE_CREATOR
+                : STRING_LEFT_SQUARE_BRACKET + caseUserRole.trim() + STRING_RIGHT_SQUARE_BRACKET));
     }
 
     /**
@@ -180,13 +191,16 @@ public class ManageCaseController {
     @ApiResponseGroup
     public ResponseEntity<CaseDetails> submitClaimantApplication(
         @RequestHeader(AUTHORIZATION) String authorization,
+        @RequestParam(value = CASE_USER_ROLE_API_PARAMETER_NAME, required = false) String caseUserRole,
         @NotNull @RequestBody ClaimantApplicationRequest request
     ) throws NotificationClientException {
         log.info("Received submit claimant application request - caseTypeId: {} caseId: {}",
                  request.getCaseTypeId(), request.getCaseId()
         );
-
-        CaseDetails finalCaseDetails = applicationService.submitApplication(authorization, request);
+        CaseDetails finalCaseDetails = applicationService.submitApplication(
+            authorization, request, StringUtils.isBlank(caseUserRole)
+                ? CASE_USER_ROLE_CREATOR
+                : STRING_LEFT_SQUARE_BRACKET + caseUserRole.trim() + STRING_RIGHT_SQUARE_BRACKET);
 
         return ok(finalCaseDetails);
     }

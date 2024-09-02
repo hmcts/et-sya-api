@@ -16,6 +16,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 class HubLinkServiceTest {
@@ -71,7 +72,9 @@ class HubLinkServiceTest {
             any()
         )).thenReturn(testData.getCaseDetailsWithData());
 
-        hubLinkService.updateHubLinkStatuses(hubLinksStatusesRequest, TEST_SERVICE_AUTH_TOKEN);
+        hubLinkService.updateHubLinkStatuses(hubLinksStatusesRequest,
+                                             TEST_SERVICE_AUTH_TOKEN,
+                                             CASE_USER_ROLE_CREATOR);
 
         verify(caseDetailsConverter, times(1)).caseDataContent(
             any(),
@@ -89,14 +92,15 @@ class HubLinkServiceTest {
             null
         )).thenReturn(testData.getCaseDetailsWithData());
         when(featureToggleService.isCaseFlagsEnabled()).thenReturn(false);
-        when(caseService.getUserCase(TEST_SERVICE_AUTH_TOKEN, CASE_ID))
+        when(caseService.getUserCaseByCaseUserRole(TEST_SERVICE_AUTH_TOKEN, CASE_ID, CASE_USER_ROLE_CREATOR))
             .thenReturn(testData.getCaseDetailsWithData());
 
-        hubLinkService.updateHubLinkStatuses(hubLinksStatusesRequest, TEST_SERVICE_AUTH_TOKEN);
+        hubLinkService.updateHubLinkStatuses(hubLinksStatusesRequest, TEST_SERVICE_AUTH_TOKEN, CASE_USER_ROLE_CREATOR);
 
-        verify(caseService, times(1)).getUserCase(
+        verify(caseService, times(1)).getUserCaseByCaseUserRole(
             TEST_SERVICE_AUTH_TOKEN,
-            hubLinksStatusesRequest.getCaseId()
+            hubLinksStatusesRequest.getCaseId(),
+            CASE_USER_ROLE_CREATOR
         );
         verify(caseService, times(1)).triggerEvent(
             TEST_SERVICE_AUTH_TOKEN, hubLinksStatusesRequest.getCaseId(),

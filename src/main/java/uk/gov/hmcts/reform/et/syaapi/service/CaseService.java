@@ -3,7 +3,9 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import uk.gov.dwp.regex.InvalidPostcodeException;
@@ -52,10 +54,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED_STATE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
+import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.FIRST_INDEX;
 import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.CASE_MANAGEMENT_DOC_CATEGORY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
@@ -93,14 +95,61 @@ public class CaseService {
     private final CaseRoleManagementService caseRoleManagementService;
 
     /**
-     * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
+     * With given caseId, gets the case details, by case user role and returns case details by filtering documents
+     * with the given caseUserRole.
      *
-     * @param caseId id of the case
+     * @param authorization is used to get the {@link UserInfo} for the request
      * @return the associated {@link CaseDetails} for the ID provided
      */
+    // @Retryable({FeignException.class, RuntimeException.class}) --> No need to give exception classes as Retryable
+    // covers all runtime exceptions.
     @Retryable
-    public CaseDetails getUserCase(String authorization, String caseId) {
-        return ccdApiClient.getCase(authorization, authTokenGenerator.generate(), caseId);
+    public CaseDetails getUserCaseByCaseUserRole(String authorization,
+                                                 String caseId,
+                                                 String caseUserRole) {
+        CaseDetails caseDetails = ccdApiClient.getCase(authorization, authTokenGenerator.generate(), caseId);
+        if (ObjectUtils.isEmpty(caseDetails)) {
+            throw new CaseRoleManagementException(
+                new Exception("Unable to find user case by case id: " + caseDetails.getId()));
+        }
+        List<CaseDetails> caseDetailsListByCaseUserRole =
+            getCasesByCaseDetailsListAuthorizationAndCaseUserRole(List.of(caseDetails), authorization, caseUserRole);
+        return CollectionUtils.isNotEmpty(caseDetailsListByCaseUserRole)
+            ? caseDetailsListByCaseUserRole.get(FIRST_INDEX)
+            : null;
+    }
+
+    /**
+     * Given a user derived from the authorisation token in the request,
+     * gets all cases {@link CaseDetails} for that user and filters case documents.
+     *
+     * @param authorization is used to get the {@link UserInfo} for the request
+     * @return the associated {@link CaseDetails} list for the authorization code of the user provided
+     */
+    // @Retryable({FeignException.class, RuntimeException.class}) --> No need to give exception classes as Retryable
+    // covers all runtime exceptions.
+    @Retryable
+    public List<CaseDetails> getUserCasesByCaseUserRole(String authorization, String caseUserRole) {
+        List<CaseDetails> caseDetailsList = getAllUserCases(authorization);
+        return getCasesByCaseDetailsListAuthorizationAndCaseUserRole(caseDetailsList, authorization, caseUserRole);
+    }
+
+    private List<CaseDetails> getCasesByCaseDetailsListAuthorizationAndCaseUserRole(List<CaseDetails> caseDetailsList,
+                                                                                    String authorization,
+                                                                                    String caseUserRole) {
+        List<CaseDetails> caseDetailsListByRole;
+        try {
+            CaseAssignedUserRolesResponse caseAssignedUserRolesResponse =
+                caseRoleManagementService.getCaseUserRolesByCaseAndUserIds(authorization, caseDetailsList);
+            caseDetailsListByRole = CaseRoleManagementService
+                .getCaseDetailsByCaseUserRole(caseDetailsList,
+                                              caseAssignedUserRolesResponse.getCaseAssignedUserRoles(),
+                                              caseUserRole);
+            DocumentUtil.filterCasesDocumentsByCaseUserRole(caseDetailsListByRole, caseUserRole);
+        } catch (IOException e) {
+            throw new CaseRoleManagementException(e);
+        }
+        return caseDetailsListByRole;
     }
 
     /**
@@ -108,7 +157,7 @@ public class CaseService {
      * this will get all cases {@link CaseDetails} for that user.
      *
      * @param authorization is used to get the {@link UserInfo} for the request
-     * @return the associated {@link CaseDetails} for the ID provided
+     * @return the associated {@link CaseDetails} list for the authorization code provided
      */
     // @Retryable({FeignException.class, RuntimeException.class}) --> No need to give exception classes as Retryable
     // covers all runtime exceptions.
@@ -129,33 +178,6 @@ public class CaseService {
             ALL_CASES_QUERY).getCases()).orElse(Collections.emptyList());
         return Stream.of(scotlandCases, englandCases)
             .flatMap(Collection::stream).toList();
-    }
-
-    /**
-     * Given a user derived from the authorisation token in the request,
-     * this will get all cases {@link CaseDetails} for that user.
-     *
-     * @param authorization is used to get the {@link UserInfo} for the request
-     * @return the associated {@link CaseDetails} for the ID provided
-     */
-    // @Retryable({FeignException.class, RuntimeException.class}) --> No need to give exception classes as Retryable
-    // covers all runtime exceptions.
-    @Retryable
-    public List<CaseDetails> getUserCasesByCaseUserRole(String authorization, String caseUserRole) {
-        List<CaseDetails> caseDetailsListByRole;
-        try {
-            List<CaseDetails> caseDetailsList = getAllUserCases(authorization);
-            CaseAssignedUserRolesResponse caseAssignedUserRolesResponse =
-                caseRoleManagementService.getCaseUserRolesByCaseAndUserIds(authorization, caseDetailsList);
-            caseDetailsListByRole = CaseRoleManagementService
-                .getCaseDetailsByCaseUserRole(caseDetailsList,
-                                              caseAssignedUserRolesResponse.getCaseAssignedUserRoles(),
-                                              caseUserRole);
-            DocumentUtil.filterMultipleCasesDocumentsForClaimant(caseDetailsListByRole);
-        } catch (IOException e) {
-            throw new CaseRoleManagementException(e);
-        }
-        return caseDetailsListByRole;
     }
 
     /**
@@ -533,7 +555,7 @@ public class CaseService {
             multipartResponsePdf
         );
 
-        if (isEmpty(caseData.getDocumentCollection())) {
+        if (CollectionUtils.isEmpty(caseData.getDocumentCollection())) {
             caseData.setDocumentCollection(new ArrayList<>());
         }
         caseData.getDocumentCollection().add(responsePdf);

@@ -213,6 +213,7 @@ class CaseServiceTest {
     }
 
     @Test
+    @SneakyThrows
     void shouldGetUserCase() {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(ccdApiClient.getCase(
@@ -220,11 +221,21 @@ class CaseServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             caseTestData.getCaseRequest().getCaseId()
         )).thenReturn(caseTestData.getExpectedDetails());
-
         CaseRequest caseRequest = CaseRequest.builder()
             .caseId(caseTestData.getCaseRequest().getCaseId()).build();
+        CaseAssignmentUserRole caseAssignedUserRole = CaseAssignmentUserRole.builder()
+            .caseDataId(caseRequest.getCaseId())
+            .caseRole(CASE_USER_ROLE_CREATOR)
+            .userId(USER_ID).build();
+        CaseAssignedUserRolesResponse caseAssignedUserRolesResponse = CaseAssignedUserRolesResponse.builder()
+                .caseAssignedUserRoles(List.of(caseAssignedUserRole))
+                    .build();
+        when(caseRoleManagementService.getCaseUserRolesByCaseAndUserIds(eq(TEST_SERVICE_AUTH_TOKEN), anyList()))
+            .thenReturn(caseAssignedUserRolesResponse);
 
-        CaseDetails caseDetails = caseService.getUserCase(TEST_SERVICE_AUTH_TOKEN, caseRequest.getCaseId());
+        CaseDetails caseDetails = caseService.getUserCaseByCaseUserRole(TEST_SERVICE_AUTH_TOKEN,
+                                                                        caseRequest.getCaseId(),
+                                                                        CASE_USER_ROLE_CREATOR);
 
         assertEquals(caseTestData.getExpectedDetails(), caseDetails);
     }

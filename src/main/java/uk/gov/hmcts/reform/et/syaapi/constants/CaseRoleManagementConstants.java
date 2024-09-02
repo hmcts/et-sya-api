@@ -30,6 +30,7 @@ public final class CaseRoleManagementConstants {
     public static final String CASE_USERS_API_URL = "/case-users";
     public static final String STRING_LEFT_SQUARE_BRACKET = "[";
     public static final String STRING_RIGHT_SQUARE_BRACKET = "]";
+    public static final String CASE_USER_ROLE_API_PARAMETER_NAME = "case_user_role";
 
     private CaseRoleManagementConstants() {
         // restrict instantiation

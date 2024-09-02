@@ -72,11 +72,14 @@ public class ApplicationService {
      * @param request - application request from the claimant
      * @return the associated {@link CaseDetails} for the ID provided in request
      */
-    public CaseDetails submitApplication(String authorization, ClaimantApplicationRequest request)
+    public CaseDetails submitApplication(String authorization, ClaimantApplicationRequest request, String caseUserRole)
         throws NotificationClientException {
 
         String caseTypeId = request.getCaseTypeId();
-        CaseDetails caseDetails = caseService.getUserCase(authorization, request.getCaseId());
+        // Added parameter case user role as creator...
+        CaseDetails caseDetails = caseService.getUserCaseByCaseUserRole(authorization,
+                                                                        request.getCaseId(),
+                                                                        caseUserRole);
         ClaimantTse claimantTse = request.getClaimantTse();
         caseDetails.getData().put("claimantTse", claimantTse);
 

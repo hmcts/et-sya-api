@@ -25,6 +25,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_CLAIMANT_BUNDLES;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
@@ -56,9 +57,9 @@ class BundlesServiceTest {
             notificationService
         );
 
-        when(caseService.getUserCase(
+        when(caseService.getUserCaseByCaseUserRole(
             TEST_SERVICE_AUTH_TOKEN,
-            testData.getClaimantApplicationRequest().getCaseId()
+            testData.getClaimantApplicationRequest().getCaseId(), CASE_USER_ROLE_CREATOR
         )).thenReturn(testData.getCaseDetailsWithData());
 
         when(caseService.startUpdate(

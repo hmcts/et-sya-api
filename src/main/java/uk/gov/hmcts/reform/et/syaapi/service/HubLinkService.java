@@ -27,7 +27,9 @@ public class HubLinkService {
      * @param authorization is used to find the {@link UserInfo} for request
      * @return the associated {@link CaseDetails} if the case is created
      */
-    public CaseDetails updateHubLinkStatuses(HubLinksStatusesRequest request, String authorization) {
+    public CaseDetails updateHubLinkStatuses(HubLinksStatusesRequest request,
+                                             String authorization,
+                                             String caseUserRole) {
 
         if (featureToggleService.isCaseFlagsEnabled()) {
             log.info("Case flags enabled - calling UPDATE_HUBLINK_STATUS");
@@ -50,7 +52,10 @@ public class HubLinkService {
             );
         } else {
             log.info("Case flags disabled - calling UPDATE_CASE_SUBMITTED");
-            CaseDetails caseDetails = caseService.getUserCase(authorization, request.getCaseId());
+            // Added parameter case user role as creator.
+            CaseDetails caseDetails = caseService.getUserCaseByCaseUserRole(authorization,
+                                                                            request.getCaseId(),
+                                                                            caseUserRole);
             caseDetails.getData().put("hubLinksStatuses", request.getHubLinksStatuses());
 
             return caseService.triggerEvent(
