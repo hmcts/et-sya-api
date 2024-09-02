@@ -128,7 +128,7 @@ task contract(type: Test) {
 
 checkstyle {
   maxWarnings = 0
-  toolVersion = '10.18.0'
+  toolVersion = '10.18.1'
   getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
 
@@ -247,7 +247,7 @@ dependencies {
   implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.15.0'
   implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.18'
   implementation 'org.json:json:20240303'
-  implementation group: 'org.yaml', name: 'snakeyaml', version: '2.2'
+  implementation group: 'org.yaml', name: 'snakeyaml', version: '2.3'
 
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.93'
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.28'
