@@ -20,9 +20,6 @@ public class CaseRequest {
     @JsonProperty("case_type_id")
     private String caseTypeId;
 
-    @JsonProperty("post_code")
-    private String postCode;
-
     @JsonProperty("case_data")
     private Map<String, Object> caseData;
 }
