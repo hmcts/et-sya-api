@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.exception.CaseRoleManagementException;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
-import uk.gov.hmcts.reform.et.syaapi.service.CaseRoleManagementService;
+import uk.gov.hmcts.reform.et.syaapi.service.ManageCaseRoleService;
 
 import javax.validation.constraints.NotNull;
 
@@ -29,10 +29,10 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/caseRoleManagement")
-public class CaseRoleManagementController {
+@RequestMapping("/manageCaseRole")
+public class ManageCaseRoleController {
 
-    private final CaseRoleManagementService caseRoleManagementService;
+    private final ManageCaseRoleService manageCaseRoleService;
 
     @PostMapping("/findCaseForRoleModification")
     @Operation(summary = "Modifies user roles of the case")
@@ -41,7 +41,7 @@ public class CaseRoleManagementController {
         @NotNull @RequestBody FindCaseForRoleModificationRequest findCaseForRoleModificationRequest
     ) {
         CaseDetails caseDetails =
-            caseRoleManagementService.findCaseForRoleModification(findCaseForRoleModificationRequest);
+            manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest);
         return ok(caseDetails);
     }
 
@@ -60,8 +60,8 @@ public class CaseRoleManagementController {
         @NotNull @RequestBody CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest
     ) {
         try {
-            caseRoleManagementService.modifyUserCaseRoles(
-                caseRoleManagementService.generateCaseAssignmentUserRolesRequestWithUserIds(
+            manageCaseRoleService.modifyUserCaseRoles(
+                manageCaseRoleService.generateCaseAssignmentUserRolesRequestWithUserIds(
                     authorisation, caseAssignmentUserRolesRequest),
                 modificationType);
         } catch (Exception e) {

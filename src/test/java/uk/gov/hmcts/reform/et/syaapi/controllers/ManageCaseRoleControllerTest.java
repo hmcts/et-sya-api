@@ -18,7 +18,7 @@ import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.SyaApiApplication;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
-import uk.gov.hmcts.reform.et.syaapi.service.CaseRoleManagementService;
+import uk.gov.hmcts.reform.et.syaapi.service.ManageCaseRoleService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 
@@ -32,16 +32,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest({CaseRoleManagementController.class})
+@WebMvcTest({ManageCaseRoleController.class})
 @ContextConfiguration(classes = SyaApiApplication.class)
-class CaseRoleManagementControllerTest {
+class ManageCaseRoleControllerTest {
     private static final String CASE_ID = "1646225213651590";
     private static final String USER_ID = "1234564789";
     private static final String CASE_ROLE = "[DEFENDANT]";
     private static final String AUTH_TOKEN = "some-token";
-    private static final String POST_MODIFY_CASE_USER_ROLE_URL = "/caseRoleManagement/modifyCaseUserRoles";
+    private static final String POST_MODIFY_CASE_USER_ROLE_URL = "/manageCaseRole/modifyCaseUserRoles";
     private static final String POST_FIND_CASE_FOR_ROLE_MODIFICATION
-        = "/caseRoleManagement/findCaseForRoleModification";
+        = "/manageCaseRole/findCaseForRoleModification";
     private static final String MODIFICATION_TYPE_PARAMETER_NAME = "modificationType";
     private static final String MODIFICATION_TYPE_PARAMETER_VALUE_REVOKE = "Revoke";
     private static final String CASE_SUBMISSION_REFERENCE = "1234567890123456";
@@ -56,7 +56,7 @@ class CaseRoleManagementControllerTest {
     private VerifyTokenService verifyTokenService;
 
     @MockBean
-    private CaseRoleManagementService caseRoleManagementService;
+    private ManageCaseRoleService manageCaseRoleService;
 
     private MockMvc mockMvc;
 
@@ -73,7 +73,7 @@ class CaseRoleManagementControllerTest {
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest = CaseAssignmentUserRolesRequest.builder()
             .caseAssignmentUserRoles(List.of(caseAssignmentUserRole))
             .build();
-        doNothing().when(caseRoleManagementService).modifyUserCaseRoles(any(), any());
+        doNothing().when(manageCaseRoleService).modifyUserCaseRoles(any(), any());
         mockMvc.perform(post(POST_MODIFY_CASE_USER_ROLE_URL)
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                             .param(MODIFICATION_TYPE_PARAMETER_NAME, MODIFICATION_TYPE_PARAMETER_VALUE_REVOKE)
@@ -90,7 +90,7 @@ class CaseRoleManagementControllerTest {
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest = CaseAssignmentUserRolesRequest.builder()
             .caseAssignmentUserRoles(List.of(caseAssignmentUserRole))
             .build();
-        doNothing().when(caseRoleManagementService).modifyUserCaseRoles(any(), any());
+        doNothing().when(manageCaseRoleService).modifyUserCaseRoles(any(), any());
         mockMvc.perform(post(POST_MODIFY_CASE_USER_ROLE_URL)
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                             .param(MODIFICATION_TYPE_PARAMETER_NAME, MODIFICATION_TYPE_PARAMETER_VALUE_REVOKE)
@@ -109,7 +109,7 @@ class CaseRoleManagementControllerTest {
             .claimantFirstNames(CLAIMANT_FIRST_NAMES)
             .claimantLastName(CLAIMANT_LAST_NAME)
             .build();
-        when(caseRoleManagementService.findCaseForRoleModification(findCaseForRoleModificationRequest))
+        when(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest))
             .thenReturn(CaseDetails.builder()
                             .id(Long.parseLong(CASE_ID))
                             .caseTypeId(ENGLAND_CASE_TYPE)

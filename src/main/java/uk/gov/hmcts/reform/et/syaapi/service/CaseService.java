@@ -92,7 +92,7 @@ public class CaseService {
     private final CaseOfficeService caseOfficeService;
     private static final String ALL_CASES_QUERY = "{\"size\":10000,\"query\":{\"match_all\": {}}}";
     private final FeatureToggleService featureToggleService;
-    private final CaseRoleManagementService caseRoleManagementService;
+    private final ManageCaseRoleService manageCaseRoleService;
 
     /**
      * With given caseId, gets the case details, by case user role and returns case details by filtering documents
@@ -140,8 +140,8 @@ public class CaseService {
         List<CaseDetails> caseDetailsListByRole;
         try {
             CaseAssignedUserRolesResponse caseAssignedUserRolesResponse =
-                caseRoleManagementService.getCaseUserRolesByCaseAndUserIds(authorization, caseDetailsList);
-            caseDetailsListByRole = CaseRoleManagementService
+                manageCaseRoleService.getCaseUserRolesByCaseAndUserIds(authorization, caseDetailsList);
+            caseDetailsListByRole = ManageCaseRoleService
                 .getCaseDetailsByCaseUserRole(caseDetailsList,
                                               caseAssignedUserRolesResponse.getCaseAssignedUserRoles(),
                                               caseUserRole);

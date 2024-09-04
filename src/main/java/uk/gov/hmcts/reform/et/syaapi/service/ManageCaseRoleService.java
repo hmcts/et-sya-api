@@ -22,7 +22,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.exception.CaseRoleManagementException;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.CaseRoleManagementServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.ManageCaseRoleServiceUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
@@ -40,8 +40,8 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstant
 import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.MODIFY_CASE_ROLE_PRE_WORDING;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.CaseRoleManagementServiceUtil.buildHeaders;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.CaseRoleManagementServiceUtil.getHttpMethodByModificationType;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.ManageCaseRoleServiceUtil.buildHeaders;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.ManageCaseRoleServiceUtil.getHttpMethodByModificationType;
 
 /**
  * Provides read and write access to cases stored by ET.
@@ -49,7 +49,7 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.CaseRoleManagementServ
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class CaseRoleManagementService {
+public class ManageCaseRoleService {
 
     private String roleList;
 
@@ -202,7 +202,7 @@ public class CaseRoleManagementService {
                                                                           List<CaseDetails> caseDetailsList)
         throws IOException {
         UserInfo userInfo = idamClient.getUserInfo(authorization);
-        String aacApiUri = CaseRoleManagementServiceUtil
+        String aacApiUri = ManageCaseRoleServiceUtil
             .createAacSearchCaseUsersUriByCaseAndUserIds(aacUrl, caseDetailsList, List.of(userInfo));
         if (StringUtils.isBlank(aacApiUri)) {
             throw new CaseRoleManagementException(

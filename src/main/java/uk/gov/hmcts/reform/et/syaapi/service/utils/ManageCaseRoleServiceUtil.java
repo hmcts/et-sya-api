@@ -28,8 +28,8 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstant
 import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.STRING_QUESTION_MARK;
 
 @Slf4j
-public final class CaseRoleManagementServiceUtil {
-    private CaseRoleManagementServiceUtil() {
+public final class ManageCaseRoleServiceUtil {
+    private ManageCaseRoleServiceUtil() {
         // restrict instantiation
     }
 

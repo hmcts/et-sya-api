@@ -48,7 +48,7 @@ import static org.mockito.Mockito.when;
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
-class CaseRoleManagementServiceTest {
+class ManageCaseRoleServiceTest {
 
     @Mock
     RestTemplate restTemplate;
@@ -61,7 +61,7 @@ class CaseRoleManagementServiceTest {
     @Mock
     IdamClient idamClient;
 
-    private CaseRoleManagementService caseRoleManagementService;
+    private ManageCaseRoleService manageCaseRoleService;
     private UserInfo userInfo;
     private CaseAssignmentUserRole caseAssignmentUserRole1;
     private CaseAssignmentUserRole caseAssignmentUserRole2;
@@ -95,7 +95,7 @@ class CaseRoleManagementServiceTest {
 
     @BeforeEach
     void setup() {
-        caseRoleManagementService = new CaseRoleManagementService(
+        manageCaseRoleService = new ManageCaseRoleService(
             adminUserService, restTemplate, authTokenGenerator, ccdApi, idamClient);
         userInfo = new CaseTestData().getUserInfo();
         caseAssignmentUserRole1 = CaseAssignmentUserRole.builder()
@@ -124,14 +124,14 @@ class CaseRoleManagementServiceTest {
             || !MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)
             && !MODIFICATION_TYPE_REVOKE.equals(modificationType)) {
             CaseRoleManagementException exception = assertThrows(CaseRoleManagementException.class, () ->
-                caseRoleManagementService.modifyUserCaseRoles(caseAssignmentUserRolesRequest, modificationType));
+                manageCaseRoleService.modifyUserCaseRoles(caseAssignmentUserRolesRequest, modificationType));
             assertThat(exception.getMessage()).isEqualTo(INVALID_MODIFICATION_TYPE_EXPECTED_EXCEPTION_MESSAGE);
             return;
         }
         if (ObjectUtils.isEmpty(caseAssignmentUserRolesRequest)
             || CollectionUtils.isEmpty(caseAssignmentUserRolesRequest.getCaseAssignmentUserRoles())) {
             CaseRoleManagementException exception = assertThrows(CaseRoleManagementException.class, () ->
-                caseRoleManagementService.modifyUserCaseRoles(caseAssignmentUserRolesRequest, modificationType));
+                manageCaseRoleService.modifyUserCaseRoles(caseAssignmentUserRolesRequest, modificationType));
             assertThat(exception.getMessage()).isEqualTo(INVALID_CASE_ROLE_REQUEST_EXCEPTION_MESSAGE);
             return;
 
@@ -141,7 +141,7 @@ class CaseRoleManagementServiceTest {
             .thenReturn(new ResponseEntity<>(HttpStatus.OK));
         when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        assertDoesNotThrow(() -> caseRoleManagementService
+        assertDoesNotThrow(() -> manageCaseRoleService
             .modifyUserCaseRoles(caseAssignmentUserRolesRequest, modificationType));
     }
 
@@ -189,11 +189,11 @@ class CaseRoleManagementServiceTest {
                                                                  .caseTypeId(ENGLAND_CASE_TYPE)
                                                                  .id(Long.parseLong(CASE_SUBMISSION_REFERENCE))
                                                                  .build())).total(1).build());
-        assertThat(caseRoleManagementService.findCaseForRoleModification(findCaseForRoleModificationRequest))
+        assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest))
             .isNotNull();
-        assertThat(caseRoleManagementService.findCaseForRoleModification(findCaseForRoleModificationRequest)
+        assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest)
                        .getId().toString()).isEqualTo(CASE_SUBMISSION_REFERENCE);
-        assertThat(caseRoleManagementService.findCaseForRoleModification(findCaseForRoleModificationRequest)
+        assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest)
                        .getCaseTypeId()).isEqualTo(ENGLAND_CASE_TYPE);
 
     }
@@ -224,11 +224,11 @@ class CaseRoleManagementServiceTest {
                                                                  .caseTypeId(SCOTLAND_CASE_TYPE)
                                                                  .id(Long.parseLong(CASE_SUBMISSION_REFERENCE))
                                                                  .build())).total(1).build());
-        assertThat(caseRoleManagementService.findCaseForRoleModification(findCaseForRoleModificationRequest))
+        assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest))
             .isNotNull();
-        assertThat(caseRoleManagementService.findCaseForRoleModification(findCaseForRoleModificationRequest)
+        assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest)
                        .getId().toString()).isEqualTo(CASE_SUBMISSION_REFERENCE);
-        assertThat(caseRoleManagementService.findCaseForRoleModification(findCaseForRoleModificationRequest)
+        assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest)
                        .getCaseTypeId()).isEqualTo(SCOTLAND_CASE_TYPE);
     }
 
@@ -254,7 +254,7 @@ class CaseRoleManagementServiceTest {
                                 TEST_SERVICE_AUTH_TOKEN,
                                 SCOTLAND_CASE_TYPE,
                                 elasticSearchQuery)).thenReturn(SearchResult.builder().build());
-        assertThat(caseRoleManagementService.findCaseForRoleModification(findCaseForRoleModificationRequest))
+        assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest))
             .isNull();
     }
 
@@ -273,7 +273,7 @@ class CaseRoleManagementServiceTest {
             .caseAssignmentUserRoles(List.of(caseAssignmentUserRoleWithoutUserId, caseAssignmentUserRoleWithUserId))
             .build();
         when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
-        CaseAssignmentUserRolesRequest  actualCaseAssignmentUserRolesRequest = caseRoleManagementService
+        CaseAssignmentUserRolesRequest  actualCaseAssignmentUserRolesRequest = manageCaseRoleService
             .generateCaseAssignmentUserRolesRequestWithUserIds(
                 DUMMY_AUTHORISATION_TOKEN, caseAssignmentUserRolesRequest);
         assertThat(actualCaseAssignmentUserRolesRequest.getCaseAssignmentUserRoles()).hasSize(2);
@@ -286,7 +286,7 @@ class CaseRoleManagementServiceTest {
     @Test
     @SneakyThrows
     void theGetCaseUserRolesByCaseAndUserIds() {
-        ReflectionTestUtils.setField(caseRoleManagementService, AAC_URL_PARAMETER_NAME, AAC_URL_PARAMETER_TEST_VALUE);
+        ReflectionTestUtils.setField(manageCaseRoleService, AAC_URL_PARAMETER_NAME, AAC_URL_PARAMETER_TEST_VALUE);
         CaseAssignmentUserRole caseAssignmentUserRole = CaseAssignmentUserRole.builder()
             .userId(DUMMY_USER_ID)
             .caseRole(USER_CASE_ROLE_DEFENDANT).caseDataId(DUMMY_CASE_SUBMISSION_REFERENCE)
@@ -299,7 +299,7 @@ class CaseRoleManagementServiceTest {
             anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(CaseAssignedUserRolesResponse.class)))
             .thenReturn(new ResponseEntity<>(expectedCaseAssignedUserRolesResponse, HttpStatus.OK));
         CaseAssignedUserRolesResponse actualCaseAssignedUserRolesResponse =
-            caseRoleManagementService.getCaseUserRolesByCaseAndUserIds(DUMMY_AUTHORISATION_TOKEN,
+            manageCaseRoleService.getCaseUserRolesByCaseAndUserIds(DUMMY_AUTHORISATION_TOKEN,
                 List.of(new CaseTestData().getCaseDetails()));
         assertThat(actualCaseAssignedUserRolesResponse.getCaseAssignedUserRoles()).isNotNull();
         assertThat(actualCaseAssignedUserRolesResponse.getCaseAssignedUserRoles()).hasSize(1);
@@ -309,10 +309,10 @@ class CaseRoleManagementServiceTest {
     @Test
     @SneakyThrows
     void theGetCaseUserRolesByCaseAndUserIdsThrowsExceptionWhenCaseDetailsEmpty() {
-        ReflectionTestUtils.setField(caseRoleManagementService, AAC_URL_PARAMETER_NAME, AAC_URL_PARAMETER_TEST_VALUE);
+        ReflectionTestUtils.setField(manageCaseRoleService, AAC_URL_PARAMETER_NAME, AAC_URL_PARAMETER_TEST_VALUE);
         when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
         String message = assertThrows(CaseRoleManagementException.class,
-                     () -> caseRoleManagementService
+                     () -> manageCaseRoleService
                          .getCaseUserRolesByCaseAndUserIds(DUMMY_AUTHORISATION_TOKEN, null)).getMessage();
         assertThat(message).isEqualTo(EXPECTED_EMPTY_CASE_DETAILS_EXCEPTION_MESSAGE);
     }
@@ -323,7 +323,7 @@ class CaseRoleManagementServiceTest {
                                          List<CaseAssignmentUserRole> caseAssignmentUserRoles,
                                          String caseUserRole) {
         List<CaseDetails> caseDetailsListByCaseUserRole =
-            CaseRoleManagementService.getCaseDetailsByCaseUserRole(caseDetailsList,
+            ManageCaseRoleService.getCaseDetailsByCaseUserRole(caseDetailsList,
                                                                    caseAssignmentUserRoles,
                                                                    caseUserRole);
         if (ObjectUtils.isEmpty(caseDetailsList)
