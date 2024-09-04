@@ -30,11 +30,11 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import static org.springframework.http.ResponseEntity.ok;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.CASE_USER_ROLE_API_PARAMETER_NAME;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.CASE_USER_ROLE_CREATOR;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.STRING_LEFT_SQUARE_BRACKET;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.STRING_RIGHT_SQUARE_BRACKET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_API_PARAMETER_NAME;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.STRING_LEFT_SQUARE_BRACKET;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.STRING_RIGHT_SQUARE_BRACKET;
 
 /**
  * Rest Controller will use {@link CaseService} for interacting and accessing cases.

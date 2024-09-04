@@ -20,8 +20,8 @@ import uk.gov.hmcts.reform.et.syaapi.service.ManageCaseRoleService;
 import javax.validation.constraints.NotNull;
 
 import static org.springframework.http.ResponseEntity.ok;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.CASE_USER_ROLE_SUCCESSFULLY_MODIFIED;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_SUCCESSFULLY_MODIFIED;
 
 /**
  * Rest Controller to modify user case user roles.

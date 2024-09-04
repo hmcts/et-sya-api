@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * Defines case role management constants.
  */
-public final class CaseRoleManagementConstants {
+public final class ManageCaseRoleConstants {
     public static final String MODIFY_CASE_ROLE_PRE_WORDING = "Received a request to modify roles:" + StringUtils.CR;
     public static final String MODIFY_CASE_ROLE_POST_WORDING = "Modified roles:" + StringUtils.CR;
     public static final String MODIFY_CASE_ROLE_EMPTY_REQUEST = "Request to modify roles is empty";
@@ -32,7 +32,7 @@ public final class CaseRoleManagementConstants {
     public static final String STRING_RIGHT_SQUARE_BRACKET = "]";
     public static final String CASE_USER_ROLE_API_PARAMETER_NAME = "case_user_role";
 
-    private CaseRoleManagementConstants() {
+    private ManageCaseRoleConstants() {
         // restrict instantiation
     }
 }

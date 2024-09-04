@@ -12,20 +12,20 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import java.io.IOException;
 import java.util.List;
 
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.AUTHORISATION_TOKEN_REGEX;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.CASE_USERS_API_URL;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.EXCEPTION_AUTHORISATION_TOKEN_REGEX;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.HEADER_AUTHORIZATION;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.HEADER_CONTENT_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.HEADER_SERVICE_AUTHORIZATION;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.HEADER_VALUE_APPLICATION_JSON;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.MODIFICATION_TYPE_ASSIGNMENT;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.MODIFICATION_TYPE_REVOKE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.STRING_AMPERSAND;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.STRING_EQUAL;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.STRING_PARAM_NAME_CASE_IDS;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.STRING_PARAM_NAME_USER_IDS;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.STRING_QUESTION_MARK;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.AUTHORISATION_TOKEN_REGEX;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USERS_API_URL;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_AUTHORISATION_TOKEN_REGEX;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.HEADER_AUTHORIZATION;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.HEADER_CONTENT_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.HEADER_SERVICE_AUTHORIZATION;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.HEADER_VALUE_APPLICATION_JSON;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_REVOKE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.STRING_AMPERSAND;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.STRING_EQUAL;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.STRING_PARAM_NAME_CASE_IDS;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.STRING_PARAM_NAME_USER_IDS;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.STRING_QUESTION_MARK;
 
 @Slf4j
 public final class ManageCaseRoleServiceUtil {

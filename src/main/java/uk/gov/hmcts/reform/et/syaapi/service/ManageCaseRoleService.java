@@ -32,14 +32,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.CASE_USERS_API_URL;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.EXCEPTION_INVALID_MODIFICATION_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.FIRST_INDEX;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.MODIFY_CASE_ROLE_EMPTY_REQUEST;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.MODIFY_CASE_ROLE_POST_WORDING;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.MODIFY_CASE_ROLE_PRE_WORDING;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USERS_API_URL;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_INVALID_MODIFICATION_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.FIRST_INDEX;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFY_CASE_ROLE_EMPTY_REQUEST;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFY_CASE_ROLE_POST_WORDING;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFY_CASE_ROLE_PRE_WORDING;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.ManageCaseRoleServiceUtil.buildHeaders;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.ManageCaseRoleServiceUtil.getHttpMethodByModificationType;
 

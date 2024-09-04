@@ -20,10 +20,10 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.HEADER_AUTHORIZATION;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.HEADER_SERVICE_AUTHORIZATION;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.MODIFICATION_TYPE_ASSIGNMENT;
-import static uk.gov.hmcts.reform.et.syaapi.constants.CaseRoleManagementConstants.MODIFICATION_TYPE_REVOKE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.HEADER_AUTHORIZATION;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.HEADER_SERVICE_AUTHORIZATION;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_REVOKE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.ManageCaseRoleServiceUtil.buildHeaders;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.ManageCaseRoleServiceUtil.getHttpMethodByModificationType;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.DUMMY_AUTHORISATION_TOKEN;
