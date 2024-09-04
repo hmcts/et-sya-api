@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
-import uk.gov.hmcts.reform.et.syaapi.exception.CaseRoleManagementException;
+import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ManageCaseRoleService;
 
@@ -65,7 +65,7 @@ public class ManageCaseRoleController {
                     authorisation, caseAssignmentUserRolesRequest),
                 modificationType);
         } catch (Exception e) {
-            throw new CaseRoleManagementException(e);
+            throw new ManageCaseRoleException(e);
         }
         return ok(CASE_USER_ROLE_SUCCESSFULLY_MODIFIED);
     }

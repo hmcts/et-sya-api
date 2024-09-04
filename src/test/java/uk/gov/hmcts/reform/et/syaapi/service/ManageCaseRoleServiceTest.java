@@ -27,7 +27,7 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
-import uk.gov.hmcts.reform.et.syaapi.exception.CaseRoleManagementException;
+import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
@@ -123,14 +123,14 @@ class ManageCaseRoleServiceTest {
         if (StringUtils.isEmpty(modificationType)
             || !MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)
             && !MODIFICATION_TYPE_REVOKE.equals(modificationType)) {
-            CaseRoleManagementException exception = assertThrows(CaseRoleManagementException.class, () ->
+            ManageCaseRoleException exception = assertThrows(ManageCaseRoleException.class, () ->
                 manageCaseRoleService.modifyUserCaseRoles(caseAssignmentUserRolesRequest, modificationType));
             assertThat(exception.getMessage()).isEqualTo(INVALID_MODIFICATION_TYPE_EXPECTED_EXCEPTION_MESSAGE);
             return;
         }
         if (ObjectUtils.isEmpty(caseAssignmentUserRolesRequest)
             || CollectionUtils.isEmpty(caseAssignmentUserRolesRequest.getCaseAssignmentUserRoles())) {
-            CaseRoleManagementException exception = assertThrows(CaseRoleManagementException.class, () ->
+            ManageCaseRoleException exception = assertThrows(ManageCaseRoleException.class, () ->
                 manageCaseRoleService.modifyUserCaseRoles(caseAssignmentUserRolesRequest, modificationType));
             assertThat(exception.getMessage()).isEqualTo(INVALID_CASE_ROLE_REQUEST_EXCEPTION_MESSAGE);
             return;
@@ -311,8 +311,9 @@ class ManageCaseRoleServiceTest {
     void theGetCaseUserRolesByCaseAndUserIdsThrowsExceptionWhenCaseDetailsEmpty() {
         ReflectionTestUtils.setField(manageCaseRoleService, AAC_URL_PARAMETER_NAME, AAC_URL_PARAMETER_TEST_VALUE);
         when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
-        String message = assertThrows(CaseRoleManagementException.class,
-                     () -> manageCaseRoleService
+        String message = assertThrows(
+            ManageCaseRoleException.class,
+            () -> manageCaseRoleService
                          .getCaseUserRolesByCaseAndUserIds(DUMMY_AUTHORISATION_TOKEN, null)).getMessage();
         assertThat(message).isEqualTo(EXPECTED_EMPTY_CASE_DETAILS_EXCEPTION_MESSAGE);
     }

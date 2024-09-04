@@ -28,7 +28,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
-import uk.gov.hmcts.reform.et.syaapi.exception.CaseRoleManagementException;
+import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
@@ -109,7 +109,7 @@ public class CaseService {
                                                  String caseUserRole) {
         CaseDetails caseDetails = ccdApiClient.getCase(authorization, authTokenGenerator.generate(), caseId);
         if (ObjectUtils.isEmpty(caseDetails)) {
-            throw new CaseRoleManagementException(
+            throw new ManageCaseRoleException(
                 new Exception("Unable to find user case by case id: " + caseDetails.getId()));
         }
         List<CaseDetails> caseDetailsListByCaseUserRole =
@@ -147,7 +147,7 @@ public class CaseService {
                                               caseUserRole);
             DocumentUtil.filterCasesDocumentsByCaseUserRole(caseDetailsListByRole, caseUserRole);
         } catch (IOException e) {
-            throw new CaseRoleManagementException(e);
+            throw new ManageCaseRoleException(e);
         }
         return caseDetailsListByRole;
     }

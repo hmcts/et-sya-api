@@ -19,7 +19,7 @@ import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesResponse;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.et.syaapi.exception.CaseRoleManagementException;
+import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ManageCaseRoleServiceUtil;
@@ -119,11 +119,11 @@ public class ManageCaseRoleService {
                                     String modificationType) throws IOException {
         HttpMethod httpMethod = getHttpMethodByModificationType(modificationType);
         if (ObjectUtils.isEmpty(httpMethod)) {
-            throw new CaseRoleManagementException(new Exception(EXCEPTION_INVALID_MODIFICATION_TYPE));
+            throw new ManageCaseRoleException(new Exception(EXCEPTION_INVALID_MODIFICATION_TYPE));
         }
         if (ObjectUtils.isEmpty(caseAssignmentUserRolesRequest)
             || CollectionUtils.isEmpty(caseAssignmentUserRolesRequest.getCaseAssignmentUserRoles())) {
-            throw new CaseRoleManagementException(new Exception(MODIFY_CASE_ROLE_EMPTY_REQUEST));
+            throw new ManageCaseRoleException(new Exception(MODIFY_CASE_ROLE_EMPTY_REQUEST));
         }
         log.info(getModifyUserCaseRolesLog(caseAssignmentUserRolesRequest, modificationType, true));
         String userToken = adminUserService.getAdminUserToken();
@@ -205,7 +205,7 @@ public class ManageCaseRoleService {
         String aacApiUri = ManageCaseRoleServiceUtil
             .createAacSearchCaseUsersUriByCaseAndUserIds(aacUrl, caseDetailsList, List.of(userInfo));
         if (StringUtils.isBlank(aacApiUri)) {
-            throw new CaseRoleManagementException(
+            throw new ManageCaseRoleException(
                 new Exception("Unable to get user cases because not able to create aacApiUrl with the given "
                                   + "caseDetails and authorization data"));
         }
