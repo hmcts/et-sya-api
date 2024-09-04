@@ -46,26 +46,26 @@ import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
 
-    public static final String STATE = "state";
-    public static final String CASES_INITIATE_CASE = "/cases/initiate-case";
-    public static final String RESPONDENT_NAME = "Boris Johnson";
-    public static final String WAITING_FOR_THE_TRIBUNAL = "waitingForTheTribunal";
-    public static final String NEW_STATUS = "newStatus";
-    public static final String CASES_USER_CASE = "/cases/user-case";
-    public static final String CASES_USER_CASES = "/cases/user-cases";
-    public static final String CASES_UPDATE_CASE = "/cases/update-case";
-    public static final String CASES_SUBMIT_CASE = "/cases/submit-case";
-    public static final String CASES_UPDATE_HUB_LINKS_STATUSES = "/cases/update-hub-links-statuses";
-    public static final String CASES_SUBMIT_CLAIMANT_APPLICATION = "/cases/submit-claimant-application";
-    public static final String CASES_RESPOND_TO_APPLICATION = "/cases/respond-to-application";
-    public static final String CASES_CHANGE_APPLICATION_STATUS = "/cases/change-application-status";
-    public static final String CASES_TRIBUNAL_RESPONSE_VIEWED = "/cases/tribunal-response-viewed";
-    public static final String INVALID_TOKEN = "invalid_token";
+    private static final String STATE = "state";
+    private static final String CASES_INITIATE_CASE = "/cases/initiate-case";
+    private static final String RESPONDENT_NAME = "Boris Johnson";
+    private static final String WAITING_FOR_THE_TRIBUNAL = "waitingForTheTribunal";
+    private static final String NEW_STATUS = "newStatus";
+    private static final String CASES_USER_CASE = "/cases/user-case";
+    private static final String CASES_USER_CASES = "/cases/user-cases";
+    private static final String CASES_UPDATE_CASE = "/cases/update-case";
+    private static final String CASES_SUBMIT_CASE = "/cases/submit-case";
+    private static final String CASES_UPDATE_HUB_LINKS_STATUSES = "/cases/update-hub-links-statuses";
+    private static final String CASES_SUBMIT_CLAIMANT_APPLICATION = "/cases/submit-claimant-application";
+    private static final String CASES_RESPOND_TO_APPLICATION = "/cases/respond-to-application";
+    private static final String CASES_CHANGE_APPLICATION_STATUS = "/cases/change-application-status";
+    private static final String CASES_TRIBUNAL_RESPONSE_VIEWED = "/cases/tribunal-response-viewed";
+    private static final String INVALID_TOKEN = "invalid_token";
     private Long caseId;
     private static final String CASE_TYPE = "ET_EnglandWales";
     private static final String CLAIMANT_EMAIL = "citizen-user-test@test.co.uk";
     private static final String AUTHORIZATION = "Authorization";
-    public static final String SUBMITTED = "Submitted";
+    private static final String SUBMITTED = "Submitted";
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<String, Object> caseData = new ConcurrentHashMap<>();
     private String appId;
@@ -94,6 +94,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
 
         CaseRequest caseRequest = CaseRequest.builder()
             .caseData(caseData)
+            .caseTypeId(CASE_TYPE)
             .build();
 
         JsonPath body = RestAssured.given()
