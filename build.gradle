@@ -206,7 +206,7 @@ ext {
 
 dependencies {
   implementation group: 'com.github.hmcts', name: 'et-data-model', version:'3.17.3'
-  implementation('com.github.hmcts:et-common:2.4.1') { transitive = false }
+  implementation('com.github.hmcts:et-common:2.4.2') { transitive = false }
   implementation group: 'uk.gov.dwp.regex', name: 'postcode-validation', version: '1.1.0'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '3.1.9', {
@@ -244,7 +244,7 @@ dependencies {
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
   implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.40'
 
-  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.15.0'
+  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.15.1'
   implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.18'
   implementation 'org.json:json:20240303'
   implementation group: 'org.yaml', name: 'snakeyaml', version: '2.3'
