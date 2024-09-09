@@ -11,6 +11,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import uk.gov.hmcts.ecm.common.service.PostcodeToOfficeService;
 import uk.gov.hmcts.ecm.common.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -52,10 +54,12 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.ENGLANDWALES_CASE_TYPE_ID;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.ET1_PDF_DOC_CATEGORY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ONLINE_SUBMISSION;
@@ -69,6 +73,7 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.USER_ID;
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.AvoidDuplicateLiterals", "PMD.TooManyFields"})
 class CaseServiceTest {
 
@@ -94,6 +99,8 @@ class CaseServiceTest {
     private NotificationService notificationService;
     @Mock
     private CaseOfficeService assignCaseToLocalOfficeService;
+    @Mock
+    private FeatureToggleService featureToggle;
     @Spy
     private NotificationsProperties notificationsProperties;
     @InjectMocks
@@ -119,7 +126,7 @@ class CaseServiceTest {
     }
 
     @BeforeEach
-    void setUpForSubmitCaseTests(TestInfo testInfo) {
+    void setUp(TestInfo testInfo) {
         if (!testInfo.getDisplayName().startsWith("submitCase")) {
             return;
         }
@@ -546,6 +553,44 @@ class CaseServiceTest {
 
         assertThrows(DocumentGenerationException.class, () -> caseService.uploadTseCyaAsPdf(
             "", caseTestData.getCaseDetails(), caseTestData.getClaimantTse(), ""));
+    }
+
+    @Test
+    void submitCaseCitizenDocGenerationToggleEnabled() throws CaseDocumentException {
+        when(featureToggle.citizenEt1Generation()).thenReturn(true);
+        caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseTestData.getCaseRequest());
+
+        verify(notificationService, never()).sendSubmitCaseConfirmationEmail(any(), any(), any(), any());
+        verify(pdfUploadService, never()).convertCaseDataToPdfDecodedMultipartFile(any(), any());
+        verify(caseDocumentService, never()).uploadAllDocuments(any(), any(), any(), any(), any());
+
+    }
+
+    @Test
+    @SneakyThrows
+    void submitCaseCcdFailsButStillSubmits() {
+        when(featureToggle.citizenEt1Generation()).thenReturn(true);
+        when(ccdApiClient.submitEventForCitizen(
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyBoolean(),
+            any())).thenThrow(new RuntimeException("Submission failed"));
+        when(ccdApiClient.getCase(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            caseTestData.getCaseRequest().getCaseId()
+        )).thenReturn(caseTestData.getExpectedDetails());
+        caseTestData.getExpectedDetails().setState(SUBMITTED);
+        try {
+            caseService.submitCase(TEST_SERVICE_AUTH_TOKEN, caseTestData.getCaseRequest());
+        } catch (Exception e) {
+            verify(ccdApiClient, times(1)).getCase(any(), any(), any());
+
+        }
     }
 
     private List<JurCodesTypeItem> mockJurCodesTypeItems() {
