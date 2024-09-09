@@ -204,6 +204,9 @@ public class ManageCaseRoleService {
         UserInfo userInfo = idamClient.getUserInfo(authorization);
         String aacApiUri = ManageCaseRoleServiceUtil
             .createAacSearchCaseUsersUriByCaseAndUserIds(aacUrl, caseDetailsList, List.of(userInfo));
+        log.info("*************************************************");
+        log.info("AAC API URL:   " + aacApiUri);
+        log.info("*************************************************");
         if (StringUtils.isBlank(aacApiUri)) {
             throw new ManageCaseRoleException(
                 new Exception("Unable to get user cases because not able to create aacApiUrl with the given "
