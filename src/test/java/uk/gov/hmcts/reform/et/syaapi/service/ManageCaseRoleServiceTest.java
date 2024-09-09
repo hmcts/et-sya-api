@@ -311,7 +311,7 @@ class ManageCaseRoleServiceTest {
 
     @Test
     @SneakyThrows
-    void theGetCaseUserRolesByCaseAndUserIdsThrowsExceptionWhenCaseDetailsEmpty() {
+    void theGetCaseUserRolesByCaseAndUserIdsAacThrowsExceptionWhenCaseDetailsEmpty() {
         ReflectionTestUtils.setField(manageCaseRoleService, AAC_URL_PARAMETER_NAME, AAC_URL_PARAMETER_TEST_VALUE);
         when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
         String message = assertThrows(
@@ -346,6 +346,15 @@ class ManageCaseRoleServiceTest {
         assertThat(actualCaseAssignedUserRolesResponse.getCaseAssignedUserRoles()).isNotNull();
         assertThat(actualCaseAssignedUserRolesResponse.getCaseAssignedUserRoles()).hasSize(1);
         assertThat(actualCaseAssignedUserRolesResponse).isEqualTo(expectedCaseAssignedUserRolesResponse);
+    }
+
+    @Test
+    @SneakyThrows
+    void theGetCaseUserRolesByCaseCcdAndUserIdsWhenCaseDetailsEmpty() {
+        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
+        assertThat(
+            manageCaseRoleService.getCaseUserRolesByCaseAndUserIdsCcd(DUMMY_AUTHORISATION_TOKEN, null))
+            .isEqualTo(CaseAssignedUserRolesResponse.builder().build());
     }
 
     @ParameterizedTest

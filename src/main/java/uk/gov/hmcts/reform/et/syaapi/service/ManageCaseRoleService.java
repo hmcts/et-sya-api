@@ -203,9 +203,8 @@ public class ManageCaseRoleService {
      * @return list of case user roles.
      * @throws IOException throws when any error occurs while receiving case user roles.
      */
-    public CaseAssignedUserRolesResponse getCaseUserRolesByCaseAndUserIdsAac(String authorization,
-                                                                             List<CaseDetails> caseDetailsList)
-        throws IOException {
+    public CaseAssignedUserRolesResponse getCaseUserRolesByCaseAndUserIdsAac(
+        String authorization, List<CaseDetails> caseDetailsList) throws IOException {
         UserInfo userInfo = idamClient.getUserInfo(authorization);
         String aacApiUri = ManageCaseRoleServiceUtil
             .createAacSearchCaseUsersUriByCaseAndUserIds(aacUrl, caseDetailsList, List.of(userInfo));
@@ -240,13 +239,19 @@ public class ManageCaseRoleService {
      */
     public CaseAssignedUserRolesResponse getCaseUserRolesByCaseAndUserIdsCcd(
         String authorization, List<CaseDetails> caseDetailsList) throws IOException {
-        UserInfo userInfo = idamClient.getUserInfo(authorization);
+        if (CollectionUtils.isEmpty(caseDetailsList)) {
+            return CaseAssignedUserRolesResponse.builder().build();
+        }
         List<String> caseIds = new ArrayList<>();
         for (CaseDetails caseDetails : caseDetailsList) {
             if (ObjectUtils.isNotEmpty(caseDetails) && ObjectUtils.isNotEmpty(caseDetails.getId())) {
                 caseIds.add(caseDetails.getId().toString());
             }
         }
+        if (CollectionUtils.isEmpty(caseIds)) {
+            return CaseAssignedUserRolesResponse.builder().build();
+        }
+        UserInfo userInfo = idamClient.getUserInfo(authorization);
         SearchCaseAssignedUserRolesRequest searchCaseAssignedUserRolesRequest = SearchCaseAssignedUserRolesRequest
             .builder()
             .caseIds(caseIds)
