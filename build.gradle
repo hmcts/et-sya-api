@@ -201,11 +201,11 @@ repositories {
 
 ext {
   reformLoggingVersion = "5.1.9"
-  log4JVersion = "2.23.1"
+  log4JVersion = "2.24.0"
 }
 
 dependencies {
-  implementation group: 'com.github.hmcts', name: 'et-data-model', version:'3.17.3'
+  implementation group: 'com.github.hmcts', name: 'et-data-model', version:'3.17.4'
   implementation('com.github.hmcts:et-common:2.4.2') { transitive = false }
   implementation group: 'uk.gov.dwp.regex', name: 'postcode-validation', version: '1.1.0'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
