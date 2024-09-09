@@ -31,6 +31,7 @@ public final class ManageCaseRoleConstants {
     public static final String STRING_LEFT_SQUARE_BRACKET = "[";
     public static final String STRING_RIGHT_SQUARE_BRACKET = "]";
     public static final String CASE_USER_ROLE_API_PARAMETER_NAME = "case_user_role";
+    public static final String CASE_USER_ROLE_CCD_API_POST_METHOD_NAME = "/case-users/search";
 
     private ManageCaseRoleConstants() {
         // restrict instantiation

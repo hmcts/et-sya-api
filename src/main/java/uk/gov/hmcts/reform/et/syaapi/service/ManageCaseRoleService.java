@@ -16,6 +16,7 @@ import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignedUserRolesResponse;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesResponse;
+import uk.gov.hmcts.ecm.common.model.ccd.SearchCaseAssignedUserRolesRequest;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -35,6 +36,7 @@ import java.util.Optional;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USERS_API_URL;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CCD_API_POST_METHOD_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_INVALID_MODIFICATION_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.FIRST_INDEX;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFY_CASE_ROLE_EMPTY_REQUEST;
@@ -61,6 +63,9 @@ public class ManageCaseRoleService {
 
     @Value("${assign_case_access_api_url}")
     private String aacUrl;
+
+    @Value("${core_case_data.api.url}")
+    private String ccdApiUrl;
 
     /**
      * Gets case with the user entered details, caseId, respondentName, claimantFirstNames and claimantSurname.
@@ -198,15 +203,12 @@ public class ManageCaseRoleService {
      * @return list of case user roles.
      * @throws IOException throws when any error occurs while receiving case user roles.
      */
-    public CaseAssignedUserRolesResponse getCaseUserRolesByCaseAndUserIds(String authorization,
-                                                                          List<CaseDetails> caseDetailsList)
+    public CaseAssignedUserRolesResponse getCaseUserRolesByCaseAndUserIdsAac(String authorization,
+                                                                             List<CaseDetails> caseDetailsList)
         throws IOException {
         UserInfo userInfo = idamClient.getUserInfo(authorization);
         String aacApiUri = ManageCaseRoleServiceUtil
             .createAacSearchCaseUsersUriByCaseAndUserIds(aacUrl, caseDetailsList, List.of(userInfo));
-        log.info("*************************************************");
-        log.info("AAC API URL:   " + aacApiUri);
-        log.info("*************************************************");
         if (StringUtils.isBlank(aacApiUri)) {
             throw new ManageCaseRoleException(
                 new Exception("Unable to get user cases because not able to create aacApiUrl with the given "
@@ -227,6 +229,45 @@ public class ManageCaseRoleService {
         }
         return response.getBody();
     }
+
+    /**
+     * Gets list of case user roles with the given case details list and authorization parameter by POST method.
+     * When there are too many cases GET method URL exceeds max size(8192 byte or 8KB). That is why this method is
+     * implemented.
+     * @param authorization is used to get user info from IDAM.
+     * @param caseDetailsList is used to get case user roles from core case data service.
+     * @return list of case user roles.
+     */
+    public CaseAssignedUserRolesResponse getCaseUserRolesByCaseAndUserIdsCcd(
+        String authorization, List<CaseDetails> caseDetailsList) {
+        UserInfo userInfo = idamClient.getUserInfo(authorization);
+        List<String> caseIds = new ArrayList<>();
+        for (CaseDetails caseDetails : caseDetailsList) {
+            if (ObjectUtils.isNotEmpty(caseDetails) && ObjectUtils.isNotEmpty(caseDetails.getId())) {
+                caseIds.add(caseDetails.getId().toString());
+            }
+        }
+        SearchCaseAssignedUserRolesRequest searchCaseAssignedUserRolesRequest = SearchCaseAssignedUserRolesRequest
+            .builder()
+            .caseIds(caseIds)
+            .userIds(List.of(userInfo.getUid()))
+            .build();
+        ResponseEntity<CaseAssignedUserRolesResponse> response;
+        try {
+            HttpEntity<SearchCaseAssignedUserRolesRequest> requestHttpEntity =
+                new HttpEntity<>(searchCaseAssignedUserRolesRequest);
+            response = restTemplate
+                .exchange(ccdApiUrl + CASE_USER_ROLE_CCD_API_POST_METHOD_NAME,
+                               HttpMethod.POST,
+                               requestHttpEntity,
+                               CaseAssignedUserRolesResponse.class);
+        } catch (RestClientResponseException exception) {
+            log.info("Error while getting user roles from CCD by POST method - {}", exception.getMessage());
+            throw exception;
+        }
+        return response.getBody();
+    }
+
 
     /**
      * Gets case details list and case assignment user roles as parameter to check if the case in case details list

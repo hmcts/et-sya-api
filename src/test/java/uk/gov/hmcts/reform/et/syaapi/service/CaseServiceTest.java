@@ -230,7 +230,7 @@ class CaseServiceTest {
         CaseAssignedUserRolesResponse caseAssignedUserRolesResponse = CaseAssignedUserRolesResponse.builder()
                 .caseAssignedUserRoles(List.of(caseAssignedUserRole))
                     .build();
-        when(manageCaseRoleService.getCaseUserRolesByCaseAndUserIds(eq(TEST_SERVICE_AUTH_TOKEN), anyList()))
+        when(manageCaseRoleService.getCaseUserRolesByCaseAndUserIdsCcd(eq(TEST_SERVICE_AUTH_TOKEN), anyList()))
             .thenReturn(caseAssignedUserRolesResponse);
 
         CaseDetails caseDetails = caseService.getUserCaseByCaseUserRole(TEST_SERVICE_AUTH_TOKEN,
@@ -276,7 +276,7 @@ class CaseServiceTest {
         CaseAssignedUserRolesResponse expectedCaseAssignedUserRolesResponse = CaseAssignedUserRolesResponse.builder()
             .caseAssignedUserRoles(List.of(caseAssignmentUserRole1, caseAssignmentUserRole2, caseAssignmentUserRole3))
             .build();
-        when(manageCaseRoleService.getCaseUserRolesByCaseAndUserIds(eq(TEST_SERVICE_AUTH_TOKEN), anyList()))
+        when(manageCaseRoleService.getCaseUserRolesByCaseAndUserIdsCcd(eq(TEST_SERVICE_AUTH_TOKEN), anyList()))
             .thenReturn(expectedCaseAssignedUserRolesResponse);
         List<CaseDetails> caseDetails = caseService.getUserCasesByCaseUserRole(TEST_SERVICE_AUTH_TOKEN,
                                                                                CASE_USER_ROLE_CREATOR);

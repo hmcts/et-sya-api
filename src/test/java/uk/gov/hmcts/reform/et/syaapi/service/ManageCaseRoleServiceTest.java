@@ -45,6 +45,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CCD_API_POST_METHOD_NAME;
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
@@ -89,6 +90,8 @@ class ManageCaseRoleServiceTest {
     private static final String SCOTLAND_CASE_TYPE = "ET_Scotland";
     private static final String AAC_URL_PARAMETER_NAME = "aacUrl";
     private static final String AAC_URL_PARAMETER_TEST_VALUE = "https://test.url.com";
+    private static final String CCD_API_URL_PARAMETER_NAME = "ccdApiUrl";
+    private static final String CCD_API_URL_PARAMETER_TEST_VALUE = "https://test.url.com";
     private static final String EXPECTED_EMPTY_CASE_DETAILS_EXCEPTION_MESSAGE =
         "java.lang.Exception: Unable to get user cases because not able to create aacApiUrl with the given "
             + "caseDetails and authorization data";
@@ -285,7 +288,7 @@ class ManageCaseRoleServiceTest {
 
     @Test
     @SneakyThrows
-    void theGetCaseUserRolesByCaseAndUserIds() {
+    void theGetCaseUserRolesByCaseAndUserIdsAac() {
         ReflectionTestUtils.setField(manageCaseRoleService, AAC_URL_PARAMETER_NAME, AAC_URL_PARAMETER_TEST_VALUE);
         CaseAssignmentUserRole caseAssignmentUserRole = CaseAssignmentUserRole.builder()
             .userId(DUMMY_USER_ID)
@@ -299,8 +302,8 @@ class ManageCaseRoleServiceTest {
             anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(CaseAssignedUserRolesResponse.class)))
             .thenReturn(new ResponseEntity<>(expectedCaseAssignedUserRolesResponse, HttpStatus.OK));
         CaseAssignedUserRolesResponse actualCaseAssignedUserRolesResponse =
-            manageCaseRoleService.getCaseUserRolesByCaseAndUserIds(DUMMY_AUTHORISATION_TOKEN,
-                List.of(new CaseTestData().getCaseDetails()));
+            manageCaseRoleService.getCaseUserRolesByCaseAndUserIdsAac(
+                DUMMY_AUTHORISATION_TOKEN, List.of(new CaseTestData().getCaseDetails()));
         assertThat(actualCaseAssignedUserRolesResponse.getCaseAssignedUserRoles()).isNotNull();
         assertThat(actualCaseAssignedUserRolesResponse.getCaseAssignedUserRoles()).hasSize(1);
         assertThat(actualCaseAssignedUserRolesResponse).isEqualTo(expectedCaseAssignedUserRolesResponse);
@@ -314,8 +317,36 @@ class ManageCaseRoleServiceTest {
         String message = assertThrows(
             ManageCaseRoleException.class,
             () -> manageCaseRoleService
-                         .getCaseUserRolesByCaseAndUserIds(DUMMY_AUTHORISATION_TOKEN, null)).getMessage();
+                         .getCaseUserRolesByCaseAndUserIdsAac(DUMMY_AUTHORISATION_TOKEN, null)).getMessage();
         assertThat(message).isEqualTo(EXPECTED_EMPTY_CASE_DETAILS_EXCEPTION_MESSAGE);
+    }
+
+    @Test
+    @SneakyThrows
+    void theGetCaseUserRolesByCaseAndUserIdsCcd() {
+        ReflectionTestUtils.setField(manageCaseRoleService,
+                                     CCD_API_URL_PARAMETER_NAME,
+                                     CCD_API_URL_PARAMETER_TEST_VALUE);
+        CaseAssignmentUserRole caseAssignmentUserRole = CaseAssignmentUserRole.builder()
+            .userId(DUMMY_USER_ID)
+            .caseRole(USER_CASE_ROLE_DEFENDANT).caseDataId(DUMMY_CASE_SUBMISSION_REFERENCE)
+            .build();
+        CaseAssignedUserRolesResponse expectedCaseAssignedUserRolesResponse = CaseAssignedUserRolesResponse.builder()
+            .caseAssignedUserRoles(List.of(caseAssignmentUserRole))
+            .build();
+        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
+        when(restTemplate.exchange(eq(CCD_API_URL_PARAMETER_TEST_VALUE
+                                               + CASE_USER_ROLE_CCD_API_POST_METHOD_NAME),
+                                        eq(HttpMethod.POST),
+                                        any(HttpEntity.class),
+                                        eq(CaseAssignedUserRolesResponse.class)))
+            .thenReturn(new ResponseEntity<>(expectedCaseAssignedUserRolesResponse, HttpStatus.OK));
+        CaseAssignedUserRolesResponse actualCaseAssignedUserRolesResponse =
+            manageCaseRoleService.getCaseUserRolesByCaseAndUserIdsCcd(
+                DUMMY_AUTHORISATION_TOKEN, List.of(new CaseTestData().getCaseDetails()));
+        assertThat(actualCaseAssignedUserRolesResponse.getCaseAssignedUserRoles()).isNotNull();
+        assertThat(actualCaseAssignedUserRolesResponse.getCaseAssignedUserRoles()).hasSize(1);
+        assertThat(actualCaseAssignedUserRolesResponse).isEqualTo(expectedCaseAssignedUserRolesResponse);
     }
 
     @ParameterizedTest
