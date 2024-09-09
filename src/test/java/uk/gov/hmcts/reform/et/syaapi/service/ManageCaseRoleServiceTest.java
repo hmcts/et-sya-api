@@ -351,9 +351,13 @@ class ManageCaseRoleServiceTest {
     @Test
     @SneakyThrows
     void theGetCaseUserRolesByCaseCcdAndUserIdsWhenCaseDetailsEmpty() {
-        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
         assertThat(
             manageCaseRoleService.getCaseUserRolesByCaseAndUserIdsCcd(DUMMY_AUTHORISATION_TOKEN, null))
+            .isEqualTo(CaseAssignedUserRolesResponse.builder().build());
+        CaseDetails caseDetails = new CaseTestData().getCaseDetails();
+        caseDetails.setId(null);
+        assertThat(
+            manageCaseRoleService.getCaseUserRolesByCaseAndUserIdsCcd(DUMMY_AUTHORISATION_TOKEN, List.of(caseDetails)))
             .isEqualTo(CaseAssignedUserRolesResponse.builder().build());
     }
 
