@@ -41,6 +41,7 @@ import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -133,17 +134,20 @@ public class CaseService {
         return getCasesByCaseDetailsListAuthorizationAndCaseUserRole(caseDetailsList, authorization, caseUserRole);
     }
 
-    private List<CaseDetails> getCasesByCaseDetailsListAuthorizationAndCaseUserRole(List<CaseDetails> caseDetailsList,
-                                                                                    String authorization,
-                                                                                    String caseUserRole) {
+    private List<CaseDetails> getCasesByCaseDetailsListAuthorizationAndCaseUserRole(
+        List<CaseDetails> caseDetailsList, String authorization, String caseUserRole) {
         List<CaseDetails> caseDetailsListByRole;
-        CaseAssignedUserRolesResponse caseAssignedUserRolesResponse =
-            manageCaseRoleService.getCaseUserRolesByCaseAndUserIdsCcd(authorization, caseDetailsList);
-        caseDetailsListByRole = ManageCaseRoleService
-            .getCaseDetailsByCaseUserRole(caseDetailsList,
-                                          caseAssignedUserRolesResponse.getCaseAssignedUserRoles(),
-                                          caseUserRole);
-        DocumentUtil.filterCasesDocumentsByCaseUserRole(caseDetailsListByRole, caseUserRole);
+        try {
+            CaseAssignedUserRolesResponse caseAssignedUserRolesResponse =
+                manageCaseRoleService.getCaseUserRolesByCaseAndUserIdsCcd(authorization, caseDetailsList);
+            caseDetailsListByRole = ManageCaseRoleService
+                .getCaseDetailsByCaseUserRole(caseDetailsList,
+                                              caseAssignedUserRolesResponse.getCaseAssignedUserRoles(),
+                                              caseUserRole);
+            DocumentUtil.filterCasesDocumentsByCaseUserRole(caseDetailsListByRole, caseUserRole);
+        } catch (IOException e) {
+            throw new ManageCaseRoleException(e);
+        }
         return caseDetailsListByRole;
     }
 

@@ -335,12 +335,11 @@ class ManageCaseRoleServiceTest {
             .caseAssignedUserRoles(List.of(caseAssignmentUserRole))
             .build();
         when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
-        when(restTemplate.exchange(eq(CCD_API_URL_PARAMETER_TEST_VALUE
+        when(restTemplate.postForObject(eq(CCD_API_URL_PARAMETER_TEST_VALUE
                                                + CASE_USER_ROLE_CCD_API_POST_METHOD_NAME),
-                                        eq(HttpMethod.POST),
                                         any(HttpEntity.class),
                                         eq(CaseAssignedUserRolesResponse.class)))
-            .thenReturn(new ResponseEntity<>(expectedCaseAssignedUserRolesResponse, HttpStatus.OK));
+            .thenReturn(expectedCaseAssignedUserRolesResponse);
         CaseAssignedUserRolesResponse actualCaseAssignedUserRolesResponse =
             manageCaseRoleService.getCaseUserRolesByCaseAndUserIdsCcd(
                 DUMMY_AUTHORISATION_TOKEN, List.of(new CaseTestData().getCaseDetails()));

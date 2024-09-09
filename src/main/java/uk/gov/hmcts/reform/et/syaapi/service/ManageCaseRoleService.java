@@ -239,7 +239,7 @@ public class ManageCaseRoleService {
      * @return list of case user roles.
      */
     public CaseAssignedUserRolesResponse getCaseUserRolesByCaseAndUserIdsCcd(
-        String authorization, List<CaseDetails> caseDetailsList) {
+        String authorization, List<CaseDetails> caseDetailsList) throws IOException {
         UserInfo userInfo = idamClient.getUserInfo(authorization);
         List<String> caseIds = new ArrayList<>();
         for (CaseDetails caseDetails : caseDetailsList) {
@@ -252,20 +252,20 @@ public class ManageCaseRoleService {
             .caseIds(caseIds)
             .userIds(List.of(userInfo.getUid()))
             .build();
-        ResponseEntity<CaseAssignedUserRolesResponse> response;
+        CaseAssignedUserRolesResponse response;
         try {
             HttpEntity<SearchCaseAssignedUserRolesRequest> requestHttpEntity =
-                new HttpEntity<>(searchCaseAssignedUserRolesRequest);
+                new HttpEntity<>(searchCaseAssignedUserRolesRequest,
+                                 buildHeaders(authorization, this.authTokenGenerator.generate()));
             response = restTemplate
-                .exchange(ccdApiUrl + CASE_USER_ROLE_CCD_API_POST_METHOD_NAME,
-                               HttpMethod.POST,
+                .postForObject(ccdApiUrl + CASE_USER_ROLE_CCD_API_POST_METHOD_NAME,
                                requestHttpEntity,
                                CaseAssignedUserRolesResponse.class);
-        } catch (RestClientResponseException exception) {
+        } catch (RestClientResponseException | IOException exception) {
             log.info("Error while getting user roles from CCD by POST method - {}", exception.getMessage());
             throw exception;
         }
-        return response.getBody();
+        return response;
     }
 
 
