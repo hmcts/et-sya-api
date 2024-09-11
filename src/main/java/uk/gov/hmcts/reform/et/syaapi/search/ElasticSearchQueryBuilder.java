@@ -25,11 +25,18 @@ public final class ElasticSearchQueryBuilder {
         // Access through static methods
     }
 
-    public static String buildElasticSearchQueryForRoleModification(
+    /**
+     * Generates query to search case by caseSubmissionReference, respondentName, claimantFirstNames,
+     * and claimantLastName. This query is used to check if the respondent's entered data for self
+     * assignment exists or not.
+     * @param findCaseForRoleModificationRequest is the parameter object which has caseSubmissionReference,
+     *                                           respondentName, claimantFirstNames and claimantLastName
+     * @return the string value of the elastic search query
+     */
+    public static String buildByFindCaseForRoleModificationRequest(
         FindCaseForRoleModificationRequest findCaseForRoleModificationRequest
     ) {
         // Respondent Queries
-
         BoolQueryBuilder boolQueryForRespondentOrganisationName = boolQuery().filter(
             new MatchQueryBuilder(FIELD_NAME_RESPONDENT_ORGANISATION,
                                   findCaseForRoleModificationRequest.getRespondentName()));
@@ -64,6 +71,20 @@ public final class ElasticSearchQueryBuilder {
                                     .must(boolQueryForClaimantFirstNames)
                                     .must(boolQueryForClaimantLastName))
                         .should(boolQueryForClaimantFullName));
+        return new SearchSourceBuilder()
+            .size(ES_SIZE)
+            .query(boolQueryBuilder).toString();
+    }
+
+    /**
+     * This query is used to get the specific case with the entered case submission reference to find the case.
+     * that will be assigned to the respondent.
+     * @param submissionReference submissionReference of the case
+     * @return the string value of the elastic search query
+     */
+    public static String buildBySubmissionReference(String submissionReference) {
+        BoolQueryBuilder boolQueryBuilder = boolQuery()
+            .must(new MatchQueryBuilder(FIELD_NAME_SUBMISSION_REFERENCE, submissionReference));
         return new SearchSourceBuilder()
             .size(ES_SIZE)
             .query(boolQueryBuilder).toString();

@@ -79,7 +79,7 @@ public class ManageCaseRoleService {
         );
         String adminUserToken = adminUserService.getAdminUserToken();
         String elasticSearchQuery = ElasticSearchQueryBuilder
-            .buildElasticSearchQueryForRoleModification(findCaseForRoleModificationRequest);
+            .buildByFindCaseForRoleModificationRequest(findCaseForRoleModificationRequest);
         List<CaseDetails> englandCases = Optional.ofNullable(ccdApi.searchCases(
             adminUserToken,
             authTokenGenerator.generate(),

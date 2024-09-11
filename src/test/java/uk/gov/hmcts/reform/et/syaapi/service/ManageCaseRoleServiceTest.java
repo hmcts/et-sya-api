@@ -181,7 +181,7 @@ class ManageCaseRoleServiceTest {
                 .claimantFirstNames(CLAIMANT_FIRST_NAMES)
                 .claimantLastName(CLAIMANT_LAST_NAME)
                 .build();
-        String elasticSearchQuery = ElasticSearchQueryBuilder.buildElasticSearchQueryForRoleModification(
+        String elasticSearchQuery = ElasticSearchQueryBuilder.buildByFindCaseForRoleModificationRequest(
             findCaseForRoleModificationRequest
         );
         when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
@@ -212,7 +212,7 @@ class ManageCaseRoleServiceTest {
                 .claimantFirstNames(CLAIMANT_FIRST_NAMES)
                 .claimantLastName(CLAIMANT_LAST_NAME)
                 .build();
-        String elasticSearchQuery = ElasticSearchQueryBuilder.buildElasticSearchQueryForRoleModification(
+        String elasticSearchQuery = ElasticSearchQueryBuilder.buildByFindCaseForRoleModificationRequest(
             findCaseForRoleModificationRequest
         );
         when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
@@ -246,7 +246,7 @@ class ManageCaseRoleServiceTest {
                 .claimantFirstNames(CLAIMANT_FIRST_NAMES)
                 .claimantLastName(CLAIMANT_LAST_NAME)
                 .build();
-        String elasticSearchQuery = ElasticSearchQueryBuilder.buildElasticSearchQueryForRoleModification(
+        String elasticSearchQuery = ElasticSearchQueryBuilder.buildByFindCaseForRoleModificationRequest(
             findCaseForRoleModificationRequest
         );
         when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
