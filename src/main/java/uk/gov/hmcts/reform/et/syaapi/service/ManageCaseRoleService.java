@@ -15,11 +15,13 @@ import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignedUserRolesResponse;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
+import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequestWithRespondentName;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesResponse;
 import uk.gov.hmcts.ecm.common.model.ccd.SearchCaseAssignedUserRolesRequest;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
@@ -35,13 +37,6 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USERS_API_URL;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CCD_API_POST_METHOD_NAME;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_INVALID_MODIFICATION_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.FIRST_INDEX;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFY_CASE_ROLE_EMPTY_REQUEST;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFY_CASE_ROLE_POST_WORDING;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFY_CASE_ROLE_PRE_WORDING;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.ManageCaseRoleServiceUtil.buildHeaders;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.ManageCaseRoleServiceUtil.getHttpMethodByModificationType;
 
@@ -92,7 +87,7 @@ public class ManageCaseRoleService {
             elasticSearchQuery
         ).getCases()).orElse(Collections.emptyList());
         if (CollectionUtils.isNotEmpty(englandCases)) {
-            return englandCases.get(FIRST_INDEX);
+            return englandCases.get(ManageCaseRoleConstants.FIRST_INDEX);
         }
 
         List<CaseDetails> scotlandCases = Optional.ofNullable(ccdApi.searchCases(
@@ -102,7 +97,7 @@ public class ManageCaseRoleService {
             elasticSearchQuery
         ).getCases()).orElse(Collections.emptyList());
         if (CollectionUtils.isNotEmpty(scotlandCases)) {
-            return scotlandCases.get(FIRST_INDEX);
+            return scotlandCases.get(ManageCaseRoleConstants.FIRST_INDEX);
         }
         log.info(
             "Case not found for the parameters, submission reference: {}",
@@ -124,11 +119,13 @@ public class ManageCaseRoleService {
                                     String modificationType) throws IOException {
         HttpMethod httpMethod = getHttpMethodByModificationType(modificationType);
         if (ObjectUtils.isEmpty(httpMethod)) {
-            throw new ManageCaseRoleException(new Exception(EXCEPTION_INVALID_MODIFICATION_TYPE));
+            throw new ManageCaseRoleException(
+                new Exception(ManageCaseRoleConstants.EXCEPTION_INVALID_MODIFICATION_TYPE));
         }
         if (ObjectUtils.isEmpty(caseAssignmentUserRolesRequest)
             || CollectionUtils.isEmpty(caseAssignmentUserRolesRequest.getCaseAssignmentUserRoles())) {
-            throw new ManageCaseRoleException(new Exception(MODIFY_CASE_ROLE_EMPTY_REQUEST));
+            throw new ManageCaseRoleException(new Exception(
+                ManageCaseRoleConstants.MODIFY_CASE_ROLE_EMPTY_REQUEST));
         }
         log.info(getModifyUserCaseRolesLog(caseAssignmentUserRolesRequest, modificationType, true));
         String userToken = adminUserService.getAdminUserToken();
@@ -137,7 +134,7 @@ public class ManageCaseRoleService {
             HttpEntity<CaseAssignmentUserRolesRequest> requestEntity =
                 new HttpEntity<>(caseAssignmentUserRolesRequest,
                                  buildHeaders(userToken, this.authTokenGenerator.generate()));
-            response = restTemplate.exchange(aacUrl + CASE_USERS_API_URL,
+            response = restTemplate.exchange(aacUrl + ManageCaseRoleConstants.CASE_USERS_API_URL,
                                              httpMethod,
                                              requestEntity,
                                              CaseAssignmentUserRolesResponse.class);
@@ -163,7 +160,9 @@ public class ManageCaseRoleService {
                 + " Role: " + caseAssignmentUserRole.getCaseRole()
                 + StringUtils.CR;
         }
-        return (isPreModify ? MODIFY_CASE_ROLE_PRE_WORDING : MODIFY_CASE_ROLE_POST_WORDING)
+        return (isPreModify
+            ? ManageCaseRoleConstants.MODIFY_CASE_ROLE_PRE_WORDING
+            : ManageCaseRoleConstants.MODIFY_CASE_ROLE_POST_WORDING)
             + "Modification type is: " + modificationType + StringUtils.CR
             + "Roles: " + roleList;
 
@@ -174,16 +173,18 @@ public class ManageCaseRoleService {
      * Reason to implement this method is, if userId is not received from the client, it automatically gets userId
      * from IDAM and sets that id to all CaseAssignmentUserRoles' userId fields.
      * @param authorisation Authorisation token to receive user information from IDAM.
-     * @param caseAssignmentUserRolesRequest CaseAssignmentUserRolesRequest that contains CaseUserRoles received from
-     *                                       client.
+     * @param caseAssignmentUserRolesRequestWithRespondentName CaseAssignmentUserRolesRequest that contains
+     *                                                         CaseUserRoles received from client.
      * @return new CaseAssignmentUserRolesRequest that has userId which is received from IDAM.
      */
     public CaseAssignmentUserRolesRequest generateCaseAssignmentUserRolesRequestWithUserIds(
-        String authorisation, CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest) {
+        String authorisation,
+        CaseAssignmentUserRolesRequestWithRespondentName caseAssignmentUserRolesRequestWithRespondentName) {
         UserInfo userInfo = idamClient.getUserInfo(authorisation);
         List<CaseAssignmentUserRole> tmpCaseAssignmentUserRoles = new ArrayList<>();
         for (CaseAssignmentUserRole caseAssignmentUserRole :
-            caseAssignmentUserRolesRequest.getCaseAssignmentUserRoles()) {
+            caseAssignmentUserRolesRequestWithRespondentName
+                .getCaseAssignmentUserRolesRequest().getCaseAssignmentUserRoles()) {
             CaseAssignmentUserRole tmpCaseAssignmentUserRole = CaseAssignmentUserRole.builder()
                 .caseDataId(caseAssignmentUserRole.getCaseDataId())
                 .userId(StringUtils.isBlank(caseAssignmentUserRole.getUserId())
@@ -263,7 +264,7 @@ public class ManageCaseRoleService {
                 new HttpEntity<>(searchCaseAssignedUserRolesRequest,
                                  buildHeaders(authorization, this.authTokenGenerator.generate()));
             response = restTemplate
-                .postForObject(ccdApiUrl + CASE_USER_ROLE_CCD_API_POST_METHOD_NAME,
+                .postForObject(ccdApiUrl + ManageCaseRoleConstants.CASE_USER_ROLE_CCD_API_POST_METHOD_NAME,
                                requestHttpEntity,
                                CaseAssignedUserRolesResponse.class);
         } catch (RestClientResponseException | IOException exception) {

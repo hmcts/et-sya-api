@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
+import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequestWithRespondentName;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
@@ -47,8 +47,9 @@ public class ManageCaseRoleController {
 
     /**
      * Modifies user role(s) of the case. Modification Type Assignment for assigning a role and
-     * modification type Revoke for revoking a role for users.
-     * @param caseAssignmentUserRolesRequest the request object which contains user case roles list
+     * modification type Revoke for revoking a role for respondent with the given respondent name.
+     * @param caseAssignmentUserRolesRequestWithRespondentName the request object which contains user case
+     *                                                         roles list and respondent name
      * @return the modification status of the case
      */
     @PostMapping("/modifyCaseUserRoles")
@@ -57,12 +58,13 @@ public class ManageCaseRoleController {
     public ResponseEntity<String> modifyCaseUserRoles(
         @RequestHeader(AUTHORIZATION) String authorisation,
         @NotNull @Parameter String modificationType,
-        @NotNull @RequestBody CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest
+        @NotNull @RequestBody CaseAssignmentUserRolesRequestWithRespondentName
+            caseAssignmentUserRolesRequestWithRespondentName
     ) {
         try {
             manageCaseRoleService.modifyUserCaseRoles(
                 manageCaseRoleService.generateCaseAssignmentUserRolesRequestWithUserIds(
-                    authorisation, caseAssignmentUserRolesRequest),
+                    authorisation, caseAssignmentUserRolesRequestWithRespondentName),
                 modificationType);
         } catch (Exception e) {
             throw new ManageCaseRoleException(e);

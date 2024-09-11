@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpEntity;
@@ -22,6 +23,7 @@ import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignedUserRolesResponse;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
+import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequestWithRespondentName;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesResponse;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
@@ -41,9 +43,6 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CCD_API_POST_METHOD_NAME;
 
@@ -140,7 +139,10 @@ class ManageCaseRoleServiceTest {
 
         }
         HttpMethod httpMethod = MODIFICATION_TYPE_REVOKE.equals(modificationType) ? HttpMethod.DELETE : HttpMethod.POST;
-        when(restTemplate.exchange(anyString(), eq(httpMethod), any(), eq(CaseAssignmentUserRolesResponse.class)))
+        when(restTemplate.exchange(ArgumentMatchers.anyString(),
+                                   ArgumentMatchers.eq(httpMethod),
+                                   ArgumentMatchers.any(),
+                                   ArgumentMatchers.eq(CaseAssignmentUserRolesResponse.class)))
             .thenReturn(new ResponseEntity<>(HttpStatus.OK));
         when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
@@ -275,10 +277,16 @@ class ManageCaseRoleServiceTest {
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest = CaseAssignmentUserRolesRequest.builder()
             .caseAssignmentUserRoles(List.of(caseAssignmentUserRoleWithoutUserId, caseAssignmentUserRoleWithUserId))
             .build();
+        CaseAssignmentUserRolesRequestWithRespondentName caseAssignmentUserRolesRequestWithRespondentName =
+            CaseAssignmentUserRolesRequestWithRespondentName
+                .builder()
+                .respondentName(RESPONDENT_NAME)
+                .caseAssignmentUserRolesRequest(caseAssignmentUserRolesRequest)
+                .build();
         when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
         CaseAssignmentUserRolesRequest  actualCaseAssignmentUserRolesRequest = manageCaseRoleService
             .generateCaseAssignmentUserRolesRequestWithUserIds(
-                DUMMY_AUTHORISATION_TOKEN, caseAssignmentUserRolesRequest);
+                DUMMY_AUTHORISATION_TOKEN, caseAssignmentUserRolesRequestWithRespondentName);
         assertThat(actualCaseAssignmentUserRolesRequest.getCaseAssignmentUserRoles()).hasSize(2);
         assertThat(actualCaseAssignmentUserRolesRequest.getCaseAssignmentUserRoles().get(0).getUserId())
             .isEqualTo(DUMMY_USER_ID);
@@ -299,7 +307,10 @@ class ManageCaseRoleServiceTest {
             .build();
         when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
         when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(CaseAssignedUserRolesResponse.class)))
+            ArgumentMatchers.anyString(),
+            ArgumentMatchers.eq(HttpMethod.GET),
+            ArgumentMatchers.any(HttpEntity.class),
+            ArgumentMatchers.eq(CaseAssignedUserRolesResponse.class)))
             .thenReturn(new ResponseEntity<>(expectedCaseAssignedUserRolesResponse, HttpStatus.OK));
         CaseAssignedUserRolesResponse actualCaseAssignedUserRolesResponse =
             manageCaseRoleService.getCaseUserRolesByCaseAndUserIdsAac(
@@ -335,10 +346,10 @@ class ManageCaseRoleServiceTest {
             .caseAssignedUserRoles(List.of(caseAssignmentUserRole))
             .build();
         when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
-        when(restTemplate.postForObject(eq(CCD_API_URL_PARAMETER_TEST_VALUE
-                                               + CASE_USER_ROLE_CCD_API_POST_METHOD_NAME),
-                                        any(HttpEntity.class),
-                                        eq(CaseAssignedUserRolesResponse.class)))
+        when(restTemplate.postForObject(ArgumentMatchers.eq(CCD_API_URL_PARAMETER_TEST_VALUE
+                                                                + CASE_USER_ROLE_CCD_API_POST_METHOD_NAME),
+                                        ArgumentMatchers.any(HttpEntity.class),
+                                        ArgumentMatchers.eq(CaseAssignedUserRolesResponse.class)))
             .thenReturn(expectedCaseAssignedUserRolesResponse);
         CaseAssignedUserRolesResponse actualCaseAssignedUserRolesResponse =
             manageCaseRoleService.getCaseUserRolesByCaseAndUserIdsCcd(

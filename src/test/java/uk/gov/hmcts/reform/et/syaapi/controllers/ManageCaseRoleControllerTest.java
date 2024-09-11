@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
+import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequestWithRespondentName;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.SyaApiApplication;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
@@ -73,12 +74,18 @@ class ManageCaseRoleControllerTest {
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest = CaseAssignmentUserRolesRequest.builder()
             .caseAssignmentUserRoles(List.of(caseAssignmentUserRole))
             .build();
+        CaseAssignmentUserRolesRequestWithRespondentName caseAssignmentUserRolesRequestWithRespondentName =
+            CaseAssignmentUserRolesRequestWithRespondentName
+                .builder()
+                .caseAssignmentUserRolesRequest(caseAssignmentUserRolesRequest)
+                .respondentName(RESPONDENT_NAME)
+                .build();
         doNothing().when(manageCaseRoleService).modifyUserCaseRoles(any(), any());
         mockMvc.perform(post(POST_MODIFY_CASE_USER_ROLE_URL)
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                             .param(MODIFICATION_TYPE_PARAMETER_NAME, MODIFICATION_TYPE_PARAMETER_VALUE_REVOKE)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(ResourceLoader.toJson(caseAssignmentUserRolesRequest)))
+                            .content(ResourceLoader.toJson(caseAssignmentUserRolesRequestWithRespondentName)))
             .andExpect(status().isOk());
     }
 
