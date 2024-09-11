@@ -63,7 +63,7 @@ public class ManageCaseRoleController {
     ) {
         try {
             manageCaseRoleService.modifyUserCaseRoles(
-                manageCaseRoleService.generateCaseAssignmentUserRolesRequestWithUserIds(
+                manageCaseRoleService.generateCaseAssignmentUserRolesRequestWithRespondentNameAndUserIds(
                     authorisation, caseAssignmentUserRolesRequestWithRespondentName),
                 modificationType);
         } catch (Exception e) {

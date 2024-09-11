@@ -120,20 +120,22 @@ class ManageCaseRoleServiceTest {
     @ParameterizedTest
     @MethodSource("provideModifyUserCaseRolesTestData")
     @SneakyThrows
-    void theModifyUserCaseRoles(CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest,
-                                 String modificationType) {
+    void theModifyUserCaseRoles(
+        CaseAssignmentUserRolesRequestWithRespondentName caseAssignmentUserRolesRequestWithRespondentName,
+        String modificationType) {
         if (StringUtils.isEmpty(modificationType)
             || !MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)
             && !MODIFICATION_TYPE_REVOKE.equals(modificationType)) {
             ManageCaseRoleException exception = assertThrows(ManageCaseRoleException.class, () ->
-                manageCaseRoleService.modifyUserCaseRoles(caseAssignmentUserRolesRequest, modificationType));
+                manageCaseRoleService.modifyUserCaseRoles(caseAssignmentUserRolesRequestWithRespondentName,
+                                                          modificationType));
             assertThat(exception.getMessage()).isEqualTo(INVALID_MODIFICATION_TYPE_EXPECTED_EXCEPTION_MESSAGE);
             return;
         }
-        if (ObjectUtils.isEmpty(caseAssignmentUserRolesRequest)
-            || CollectionUtils.isEmpty(caseAssignmentUserRolesRequest.getCaseAssignmentUserRoles())) {
+        if (checkCaseAssignmentUserRolesRequestWithRespondentName(caseAssignmentUserRolesRequestWithRespondentName)) {
             ManageCaseRoleException exception = assertThrows(ManageCaseRoleException.class, () ->
-                manageCaseRoleService.modifyUserCaseRoles(caseAssignmentUserRolesRequest, modificationType));
+                manageCaseRoleService.modifyUserCaseRoles(caseAssignmentUserRolesRequestWithRespondentName,
+                                                          modificationType));
             assertThat(exception.getMessage()).isEqualTo(INVALID_CASE_ROLE_REQUEST_EXCEPTION_MESSAGE);
             return;
 
@@ -147,7 +149,17 @@ class ManageCaseRoleServiceTest {
         when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         assertDoesNotThrow(() -> manageCaseRoleService
-            .modifyUserCaseRoles(caseAssignmentUserRolesRequest, modificationType));
+            .modifyUserCaseRoles(caseAssignmentUserRolesRequestWithRespondentName, modificationType));
+    }
+
+    private static boolean checkCaseAssignmentUserRolesRequestWithRespondentName(
+        CaseAssignmentUserRolesRequestWithRespondentName caseAssignmentUserRolesRequestWithRespondentName) {
+        return ObjectUtils.isEmpty(caseAssignmentUserRolesRequestWithRespondentName)
+            || ObjectUtils.isEmpty(caseAssignmentUserRolesRequestWithRespondentName.getCaseAssignmentUserRolesRequest())
+            || CollectionUtils.isEmpty(caseAssignmentUserRolesRequestWithRespondentName
+                                           .getCaseAssignmentUserRolesRequest().getCaseAssignmentUserRoles())
+            || StringUtils.isBlank(caseAssignmentUserRolesRequestWithRespondentName.getCaseTypeId())
+            || StringUtils.isBlank(caseAssignmentUserRolesRequestWithRespondentName.getRespondentName());
     }
 
     private static Stream<Arguments> provideModifyUserCaseRolesTestData() {
@@ -158,17 +170,55 @@ class ManageCaseRoleServiceTest {
             .build();
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest = CaseAssignmentUserRolesRequest
             .builder().caseAssignmentUserRoles(List.of(caseAssignmentUserRole)).build();
+        CaseAssignmentUserRolesRequestWithRespondentName caseAssignmentUserRolesRequestWithRespondentName =
+            CaseAssignmentUserRolesRequestWithRespondentName.builder()
+                .caseAssignmentUserRolesRequest(caseAssignmentUserRolesRequest)
+                .caseTypeId(ENGLAND_CASE_TYPE)
+                .respondentName(RESPONDENT_NAME)
+                .build();
+        CaseAssignmentUserRolesRequestWithRespondentName
+            caseAssignmentUserRolesRequestWithRespondentNameEmptyRespondentName =
+            CaseAssignmentUserRolesRequestWithRespondentName
+                .builder()
+                .caseAssignmentUserRolesRequest(caseAssignmentUserRolesRequest)
+                .caseTypeId(ENGLAND_CASE_TYPE)
+                .respondentName(StringUtils.EMPTY)
+                .build();
+        CaseAssignmentUserRolesRequestWithRespondentName
+            caseAssignmentUserRolesRequestWithRespondentNameEmptyCaseTypeId =
+            CaseAssignmentUserRolesRequestWithRespondentName
+                .builder()
+                .caseAssignmentUserRolesRequest(caseAssignmentUserRolesRequest)
+                .caseTypeId(StringUtils.EMPTY)
+                .respondentName(RESPONDENT_NAME)
+                .build();
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequestEmptyCaseAssignmentUserRole =
             CaseAssignmentUserRolesRequest.builder().build();
-
-        return Stream.of(Arguments.of(caseAssignmentUserRolesRequest, MODIFICATION_TYPE_ASSIGNMENT),
-                         Arguments.of(caseAssignmentUserRolesRequest, MODIFICATION_TYPE_REVOKE),
+        CaseAssignmentUserRolesRequestWithRespondentName
+            caseAssignmentUserRolesRequestWithRespondentNameEmptyCaseAssignmentUserRolesRequest =
+            CaseAssignmentUserRolesRequestWithRespondentName.builder()
+            .caseAssignmentUserRolesRequest(caseAssignmentUserRolesRequestEmptyCaseAssignmentUserRole)
+                .build();
+        CaseAssignmentUserRolesRequestWithRespondentName caseAssignmentUserRolesRequestWithRespondentNameEmpty =
+            CaseAssignmentUserRolesRequestWithRespondentName.builder().build();
+        return Stream.of(Arguments.of(caseAssignmentUserRolesRequestWithRespondentName, MODIFICATION_TYPE_ASSIGNMENT),
+                         Arguments.of(caseAssignmentUserRolesRequestWithRespondentName, MODIFICATION_TYPE_REVOKE),
                          Arguments.of(null, MODIFICATION_TYPE_ASSIGNMENT),
                          Arguments.of(null, MODIFICATION_TYPE_REVOKE),
-                         Arguments.of(caseAssignmentUserRolesRequestEmptyCaseAssignmentUserRole,
+                         Arguments.of(caseAssignmentUserRolesRequestWithRespondentName,
                                       MODIFICATION_TYPE_ASSIGNMENT),
-                         Arguments.of(caseAssignmentUserRolesRequestEmptyCaseAssignmentUserRole,
-                                      MODIFICATION_TYPE_REVOKE)
+                         Arguments.of(
+                             caseAssignmentUserRolesRequestWithRespondentNameEmptyCaseAssignmentUserRolesRequest,
+                             MODIFICATION_TYPE_REVOKE),
+                         Arguments.of(
+                             caseAssignmentUserRolesRequestWithRespondentNameEmpty,
+                             MODIFICATION_TYPE_REVOKE),
+                         Arguments.of(
+                             caseAssignmentUserRolesRequestWithRespondentNameEmptyRespondentName,
+                             MODIFICATION_TYPE_REVOKE),
+                         Arguments.of(
+                             caseAssignmentUserRolesRequestWithRespondentNameEmptyCaseTypeId,
+                             MODIFICATION_TYPE_ASSIGNMENT)
             );
     }
 
@@ -264,7 +314,7 @@ class ManageCaseRoleServiceTest {
     }
 
     @Test
-    void theGenerateCaseAssignmentUserRolesRequestWithUserIds() {
+    void theGenerateCaseAssignmentUserRolesRequestWithRespondentNameAndUserIds() {
         UserInfo userInfo = new CaseTestData().getUserInfo();
         CaseAssignmentUserRole caseAssignmentUserRoleWithoutUserId = CaseAssignmentUserRole.builder()
             .userId(null)
@@ -284,13 +334,16 @@ class ManageCaseRoleServiceTest {
                 .caseAssignmentUserRolesRequest(caseAssignmentUserRolesRequest)
                 .build();
         when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
-        CaseAssignmentUserRolesRequest  actualCaseAssignmentUserRolesRequest = manageCaseRoleService
-            .generateCaseAssignmentUserRolesRequestWithUserIds(
+        CaseAssignmentUserRolesRequestWithRespondentName  actualCaseAssignmentUserRolesRequestWithRespondentName =
+            manageCaseRoleService.generateCaseAssignmentUserRolesRequestWithRespondentNameAndUserIds(
                 DUMMY_AUTHORISATION_TOKEN, caseAssignmentUserRolesRequestWithRespondentName);
-        assertThat(actualCaseAssignmentUserRolesRequest.getCaseAssignmentUserRoles()).hasSize(2);
-        assertThat(actualCaseAssignmentUserRolesRequest.getCaseAssignmentUserRoles().get(0).getUserId())
+        assertThat(actualCaseAssignmentUserRolesRequestWithRespondentName
+                       .getCaseAssignmentUserRolesRequest().getCaseAssignmentUserRoles()).hasSize(2);
+        assertThat(actualCaseAssignmentUserRolesRequestWithRespondentName
+                       .getCaseAssignmentUserRolesRequest().getCaseAssignmentUserRoles().get(0).getUserId())
             .isEqualTo(DUMMY_USER_ID);
-        assertThat(actualCaseAssignmentUserRolesRequest.getCaseAssignmentUserRoles().get(1).getUserId())
+        assertThat(actualCaseAssignmentUserRolesRequestWithRespondentName
+                       .getCaseAssignmentUserRolesRequest().getCaseAssignmentUserRoles().get(1).getUserId())
             .isEqualTo(userInfo.getUid());
     }
 
