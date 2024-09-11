@@ -15,8 +15,9 @@ import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignedUserRolesResponse;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
-import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequestWithRespondentName;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesResponse;
+import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRole;
+import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRolesRequest;
 import uk.gov.hmcts.ecm.common.model.ccd.SearchCaseAssignedUserRolesRequest;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
@@ -37,11 +38,9 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.ManageCaseRoleServiceUtil.buildHeaders;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.ManageCaseRoleServiceUtil.getHttpMethodByModificationType;
 
 /**
- * Provides read and write access to cases stored by ET.
+ * Provides services for role modification.
  */
 @Slf4j
 @Service
@@ -111,35 +110,34 @@ public class ManageCaseRoleService {
      * a list of case_users that contains case id, user id and case role to modify the case. For assigning a new role
      * to the case modification type should be Assignment, to revoke an existing role modification type should be
      * Revoke
-     * @param caseAssignmentUserRolesRequestWithRespondentName This is the list of case roles that should be Revoked
-     *                                                         or Assigned to respondent. It also has the idam id
-     *                                                         of the respondent and the case id of the case that will
-     *                                                         be assigned
+     * @param modifyCaseUserRolesRequest This is the list of case roles that should be Revoked or Assigned to
+     *                                   respondent. It also has the idam id of the respondent and the case id
+     *                                   of the case that will be assigned
      * @param modificationType this value could be Assignment or Revoke.
      * @throws IOException Exception when any problem occurs while calling case assignment api (/case-users)
      */
-    public void modifyUserCaseRoles(
-        CaseAssignmentUserRolesRequestWithRespondentName caseAssignmentUserRolesRequestWithRespondentName,
-        String modificationType) throws IOException {
-        HttpMethod httpMethod = getHttpMethodByModificationType(modificationType);
+    public void modifyUserCaseRoles(ModifyCaseUserRolesRequest modifyCaseUserRolesRequest, String modificationType)
+        throws IOException {
+        HttpMethod httpMethod = ManageCaseRoleServiceUtil.getHttpMethodByModificationType(modificationType);
         if (ObjectUtils.isEmpty(httpMethod)) {
             throw new ManageCaseRoleException(
                 new Exception(ManageCaseRoleConstants.EXCEPTION_INVALID_MODIFICATION_TYPE));
         }
-        if (checkCaseAssignmentUserRolesRequestWithRespondentName(caseAssignmentUserRolesRequestWithRespondentName)) {
+        if (ObjectUtils.isEmpty(modifyCaseUserRolesRequest)
+            || CollectionUtils.isEmpty(modifyCaseUserRolesRequest.getModifyCaseUserRoles())) {
             throw new ManageCaseRoleException(new Exception(
                 ManageCaseRoleConstants.MODIFY_CASE_ROLE_EMPTY_REQUEST));
         }
-        log.info(getModifyUserCaseRolesLog(
-            caseAssignmentUserRolesRequestWithRespondentName.getCaseAssignmentUserRolesRequest(),
-            modificationType, true));
+        CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest =
+            ManageCaseRoleServiceUtil.generateCaseAssignmentUserRolesRequestByModifyCaseUserRolesRequest(
+                modifyCaseUserRolesRequest);
+        log.info(getModifyUserCaseRolesLog(caseAssignmentUserRolesRequest, modificationType, true));
         String userToken = adminUserService.getAdminUserToken();
         ResponseEntity<CaseAssignmentUserRolesResponse> response;
         try {
             HttpEntity<CaseAssignmentUserRolesRequest> requestEntity =
-                new HttpEntity<>(
-                    caseAssignmentUserRolesRequestWithRespondentName.getCaseAssignmentUserRolesRequest(),
-                    buildHeaders(userToken, this.authTokenGenerator.generate()));
+                new HttpEntity<>(caseAssignmentUserRolesRequest,
+                                 ManageCaseRoleServiceUtil.buildHeaders(userToken, this.authTokenGenerator.generate()));
             response = restTemplate.exchange(aacUrl + ManageCaseRoleConstants.CASE_USERS_API_URL,
                                              httpMethod,
                                              requestEntity,
@@ -149,22 +147,10 @@ public class ManageCaseRoleService {
             throw exception;
         }
         log.info("{}" + StringUtils.CR + "Response status code: {} Response status code value: {}",
-                 getModifyUserCaseRolesLog(
-                     caseAssignmentUserRolesRequestWithRespondentName.getCaseAssignmentUserRolesRequest(),
-                     modificationType, false),
+                 getModifyUserCaseRolesLog(caseAssignmentUserRolesRequest, modificationType, false),
                  response.getStatusCode(),
                  response.getStatusCodeValue()
         );
-    }
-
-    private boolean checkCaseAssignmentUserRolesRequestWithRespondentName(
-        CaseAssignmentUserRolesRequestWithRespondentName caseAssignmentUserRolesRequestWithRespondentName) {
-        return ObjectUtils.isEmpty(caseAssignmentUserRolesRequestWithRespondentName)
-            || ObjectUtils.isEmpty(caseAssignmentUserRolesRequestWithRespondentName.getCaseAssignmentUserRolesRequest())
-            || CollectionUtils.isEmpty(caseAssignmentUserRolesRequestWithRespondentName
-                                           .getCaseAssignmentUserRolesRequest().getCaseAssignmentUserRoles())
-            || StringUtils.isBlank(caseAssignmentUserRolesRequestWithRespondentName.getCaseTypeId())
-            || StringUtils.isBlank(caseAssignmentUserRolesRequestWithRespondentName.getRespondentName());
     }
 
     private String getModifyUserCaseRolesLog(CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest,
@@ -191,38 +177,27 @@ public class ManageCaseRoleService {
      * Reason to implement this method is, if userId is not received from the client, it automatically gets userId
      * from IDAM and sets that id to all CaseAssignmentUserRoles' userId fields.
      * @param authorisation Authorisation token to receive user information from IDAM.
-     * @param caseAssignmentUserRolesRequestWithRespondentName CaseAssignmentUserRolesRequest that contains
-     *                                                         CaseUserRoles received from client.
+     * @param modifyCaseUserRolesRequest ModifyCaseUserRolesRequest that contains ModifyCaseUserRoles
+     *                                   received from client.
      * @return new CaseAssignmentUserRolesRequest that has userId which is received from IDAM.
      */
-    public CaseAssignmentUserRolesRequestWithRespondentName
-        generateCaseAssignmentUserRolesRequestWithRespondentNameAndUserIds(
-        String authorisation,
-        CaseAssignmentUserRolesRequestWithRespondentName caseAssignmentUserRolesRequestWithRespondentName) {
+    public ModifyCaseUserRolesRequest generateModifyCaseUserRolesRequest(
+        String authorisation, ModifyCaseUserRolesRequest modifyCaseUserRolesRequest) {
         UserInfo userInfo = idamClient.getUserInfo(authorisation);
-        List<CaseAssignmentUserRole> tmpCaseAssignmentUserRoles = new ArrayList<>();
-        for (CaseAssignmentUserRole caseAssignmentUserRole :
-            caseAssignmentUserRolesRequestWithRespondentName
-                .getCaseAssignmentUserRolesRequest().getCaseAssignmentUserRoles()) {
-            CaseAssignmentUserRole tmpCaseAssignmentUserRole = CaseAssignmentUserRole.builder()
-                .caseDataId(caseAssignmentUserRole.getCaseDataId())
-                .userId(StringUtils.isBlank(caseAssignmentUserRole.getUserId())
+        List<ModifyCaseUserRole> tmpModifyCaseUserRoles = new ArrayList<>();
+        for (ModifyCaseUserRole modifyCaseUserRole : modifyCaseUserRolesRequest.getModifyCaseUserRoles()) {
+            ModifyCaseUserRole tmpModifyCaseUserRole = ModifyCaseUserRole.builder()
+                .caseTypeId(modifyCaseUserRole.getCaseTypeId())
+                .caseDataId(modifyCaseUserRole.getCaseDataId())
+                .userFullName(modifyCaseUserRole.getUserFullName())
+                .caseRole(modifyCaseUserRole.getCaseRole())
+                .userId(StringUtils.isBlank(modifyCaseUserRole.getUserId())
                             ? userInfo.getUid()
-                            : caseAssignmentUserRole.getUserId())
-                .caseRole(caseAssignmentUserRole.getCaseRole())
+                            : modifyCaseUserRole.getUserId())
                 .build();
-            tmpCaseAssignmentUserRoles.add(tmpCaseAssignmentUserRole);
+            tmpModifyCaseUserRoles.add(tmpModifyCaseUserRole);
         }
-        CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest =
-            CaseAssignmentUserRolesRequest
-                .builder()
-                .caseAssignmentUserRoles(tmpCaseAssignmentUserRoles)
-                .build();
-        return CaseAssignmentUserRolesRequestWithRespondentName
-            .builder()
-            .caseTypeId(caseAssignmentUserRolesRequestWithRespondentName.getCaseTypeId())
-            .respondentName(caseAssignmentUserRolesRequestWithRespondentName.getRespondentName())
-            .caseAssignmentUserRolesRequest(caseAssignmentUserRolesRequest).build();
+        return ModifyCaseUserRolesRequest.builder().modifyCaseUserRoles(tmpModifyCaseUserRoles).build();
     }
 
     /**
@@ -245,7 +220,8 @@ public class ManageCaseRoleService {
         ResponseEntity<CaseAssignedUserRolesResponse> response;
         try {
             HttpEntity<Object> requestEntity =
-                new HttpEntity<>(buildHeaders(authorization, this.authTokenGenerator.generate()));
+                new HttpEntity<>(ManageCaseRoleServiceUtil
+                                     .buildHeaders(authorization, this.authTokenGenerator.generate()));
             response = restTemplate.exchange(
                 aacApiUri,
                 HttpMethod.GET,
@@ -290,7 +266,8 @@ public class ManageCaseRoleService {
         try {
             HttpEntity<SearchCaseAssignedUserRolesRequest> requestHttpEntity =
                 new HttpEntity<>(searchCaseAssignedUserRolesRequest,
-                                 buildHeaders(authorization, this.authTokenGenerator.generate()));
+                                 ManageCaseRoleServiceUtil
+                                     .buildHeaders(authorization, this.authTokenGenerator.generate()));
             response = restTemplate
                 .postForObject(ccdApiUrl + ManageCaseRoleConstants.CASE_USER_ROLE_CCD_API_POST_METHOD_NAME,
                                requestHttpEntity,
@@ -321,7 +298,8 @@ public class ManageCaseRoleService {
         }
         for (CaseAssignmentUserRole caseAssignmentUserRole : caseAssignmentUserRoles) {
             for (CaseDetails caseDetails : caseDetailsList) {
-                String tmpCaseUserRole = findCaseUserRole(caseDetails, caseAssignmentUserRole);
+                String tmpCaseUserRole = ManageCaseRoleServiceUtil.findCaseUserRole(
+                    caseDetails, caseAssignmentUserRole);
                 if (StringUtils.isNotBlank(tmpCaseUserRole) && tmpCaseUserRole.equals(caseUserRole)) {
                     caseDetailsListByRole.add(caseDetails);
                     break;
@@ -329,15 +307,5 @@ public class ManageCaseRoleService {
             }
         }
         return caseDetailsListByRole;
-    }
-
-    private static String findCaseUserRole(CaseDetails caseDetails,
-                                           CaseAssignmentUserRole caseAssignmentUserRole) {
-        return ObjectUtils.isNotEmpty(caseDetails)
-            && ObjectUtils.isNotEmpty(caseDetails.getId())
-            && ObjectUtils.isNotEmpty(caseAssignmentUserRole)
-            && StringUtils.isNotEmpty(caseAssignmentUserRole.getCaseDataId())
-            && (caseDetails.getId().toString().equals(caseAssignmentUserRole.getCaseDataId()))
-            ? caseAssignmentUserRole.getCaseRole() : StringUtils.EMPTY;
     }
 }

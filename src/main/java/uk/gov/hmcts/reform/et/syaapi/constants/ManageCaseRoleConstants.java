@@ -9,6 +9,8 @@ public final class ManageCaseRoleConstants {
     public static final String MODIFY_CASE_ROLE_PRE_WORDING = "Received a request to modify roles:" + StringUtils.CR;
     public static final String MODIFY_CASE_ROLE_POST_WORDING = "Modified roles:" + StringUtils.CR;
     public static final String MODIFY_CASE_ROLE_EMPTY_REQUEST = "Request to modify roles is empty";
+    public static final String MODIFY_CASE_USER_ROLE_ITEM_INVALID = "One of the case user role modification item is "
+        + "invalid. Invalid Data is For CaseId: %s";
     public static final String HEADER_AUTHORIZATION = "Authorization";
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
     public static final String HEADER_SERVICE_AUTHORIZATION = "ServiceAuthorization";

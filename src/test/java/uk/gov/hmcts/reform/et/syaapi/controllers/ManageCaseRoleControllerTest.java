@@ -15,7 +15,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
-import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequestWithRespondentName;
+import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRole;
+import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRolesRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.SyaApiApplication;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
@@ -69,23 +70,23 @@ class ManageCaseRoleControllerTest {
     @Test
     void modifyUserRoles() throws Exception {
         when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
-        CaseAssignmentUserRole caseAssignmentUserRole = CaseAssignmentUserRole
-            .builder().caseRole(CASE_ROLE).caseDataId(CASE_ID).userId(USER_ID).build();
-        CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest = CaseAssignmentUserRolesRequest.builder()
-            .caseAssignmentUserRoles(List.of(caseAssignmentUserRole))
-            .build();
-        CaseAssignmentUserRolesRequestWithRespondentName caseAssignmentUserRolesRequestWithRespondentName =
-            CaseAssignmentUserRolesRequestWithRespondentName
+        ModifyCaseUserRole modifyCaseUserRole = ModifyCaseUserRole
+            .builder()
+            .caseRole(CASE_ROLE)
+            .caseDataId(CASE_ID)
+            .userId(USER_ID)
+            .caseTypeId(ENGLAND_CASE_TYPE)
+            .userFullName(RESPONDENT_NAME).build();
+        ModifyCaseUserRolesRequest modifyCaseUserRolesRequest = ModifyCaseUserRolesRequest
                 .builder()
-                .caseAssignmentUserRolesRequest(caseAssignmentUserRolesRequest)
-                .respondentName(RESPONDENT_NAME)
+                .modifyCaseUserRoles(List.of(modifyCaseUserRole))
                 .build();
         doNothing().when(manageCaseRoleService).modifyUserCaseRoles(any(), any());
         mockMvc.perform(post(POST_MODIFY_CASE_USER_ROLE_URL)
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                             .param(MODIFICATION_TYPE_PARAMETER_NAME, MODIFICATION_TYPE_PARAMETER_VALUE_REVOKE)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(ResourceLoader.toJson(caseAssignmentUserRolesRequestWithRespondentName)))
+                            .content(ResourceLoader.toJson(modifyCaseUserRolesRequest)))
             .andExpect(status().isOk());
     }
 

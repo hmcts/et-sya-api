@@ -6,10 +6,17 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
+import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
+import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRole;
+import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRolesRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
+import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.AUTHORISATION_TOKEN_REGEX;
@@ -117,5 +124,42 @@ public final class ManageCaseRoleServiceUtil {
             }
         }
         return userIdsUri.toString();
+    }
+
+    public static CaseAssignmentUserRolesRequest generateCaseAssignmentUserRolesRequestByModifyCaseUserRolesRequest(
+        ModifyCaseUserRolesRequest modifyCaseUserRolesRequest) {
+        List<CaseAssignmentUserRole> caseAssignmentUserRoles = new ArrayList<>();
+        for (ModifyCaseUserRole modifyCaseUserRole : modifyCaseUserRolesRequest.getModifyCaseUserRoles()) {
+            checkModifyCaseUserRoleInvalid(modifyCaseUserRole);
+            caseAssignmentUserRoles.add(CaseAssignmentUserRole
+                                            .builder()
+                                            .caseDataId(modifyCaseUserRole.getCaseDataId())
+                                            .userId(modifyCaseUserRole.getUserId())
+                                            .caseRole(modifyCaseUserRole.getCaseRole())
+                                            .build());
+        }
+        return CaseAssignmentUserRolesRequest.builder().caseAssignmentUserRoles(caseAssignmentUserRoles).build();
+    }
+
+    private static void checkModifyCaseUserRoleInvalid(ModifyCaseUserRole modifyCaseUserRole) {
+        if (ObjectUtils.isEmpty(modifyCaseUserRole)
+            || StringUtils.isBlank(modifyCaseUserRole.getUserId())
+            || StringUtils.isBlank(modifyCaseUserRole.getCaseTypeId())
+            || StringUtils.isBlank(modifyCaseUserRole.getCaseRole())
+            || StringUtils.isBlank(modifyCaseUserRole.getCaseDataId())
+            || StringUtils.isBlank(modifyCaseUserRole.getUserFullName())) {
+            throw new ManageCaseRoleException(new Exception(String.format(
+                ManageCaseRoleConstants.MODIFY_CASE_USER_ROLE_ITEM_INVALID, modifyCaseUserRole.getCaseDataId())));
+        }
+    }
+
+    public static String findCaseUserRole(CaseDetails caseDetails,
+                                           CaseAssignmentUserRole caseAssignmentUserRole) {
+        return ObjectUtils.isNotEmpty(caseDetails)
+            && ObjectUtils.isNotEmpty(caseDetails.getId())
+            && ObjectUtils.isNotEmpty(caseAssignmentUserRole)
+            && StringUtils.isNotEmpty(caseAssignmentUserRole.getCaseDataId())
+            && (caseDetails.getId().toString().equals(caseAssignmentUserRole.getCaseDataId()))
+            ? caseAssignmentUserRole.getCaseRole() : StringUtils.EMPTY;
     }
 }
