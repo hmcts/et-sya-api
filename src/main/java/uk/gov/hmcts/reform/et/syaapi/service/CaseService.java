@@ -49,6 +49,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED_STATE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
@@ -172,6 +173,9 @@ public class CaseService {
 
     private String getCaseType(CaseRequest caseRequest) {
         try {
+            if (!isNullOrEmpty(caseRequest.getCaseTypeId())) {
+                return caseRequest.getCaseTypeId();
+            }
             return getCaseTypeId(
                 postcodeToOfficeService.getTribunalOfficeFromPostcode(caseRequest.getPostCode())
                     .orElse(DEFAULT_TRIBUNAL_OFFICE).getOfficeName());

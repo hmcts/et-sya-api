@@ -173,9 +173,7 @@ class ManageCaseControllerTest {
     @Test
     void shouldCreateDraftCase() {
 
-        CaseRequest caseRequest = CaseRequest.builder()
-            .postCode("AB4 8DJ")
-            .build();
+        CaseRequest caseRequest = CaseRequest.builder().build();
 
         // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);

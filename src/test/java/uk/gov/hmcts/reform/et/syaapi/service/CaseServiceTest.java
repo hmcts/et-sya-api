@@ -281,6 +281,48 @@ class CaseServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             USER_ID,
             EtSyaConstants.JURISDICTION_ID,
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            EtSyaConstants.DRAFT_EVENT_TYPE
+        )).thenReturn(
+            caseTestData.getStartEventResponse());
+
+        when(ccdApiClient.submitForCitizen(
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(USER_ID),
+            eq(EtSyaConstants.JURISDICTION_ID),
+            eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
+            eq(true),
+            any(CaseDataContent.class)
+        )).thenReturn(caseTestData.getExpectedDetails());
+
+        CaseRequest caseRequest = caseTestData.getCaseRequest();
+
+        CaseDetails caseDetails = caseService.createCase(
+            TEST_SERVICE_AUTH_TOKEN,
+            caseRequest
+        );
+
+        assertEquals(caseTestData.getExpectedDetails(), caseDetails);
+    }
+
+    @Test
+    void shouldCreateNewDraftCaseInCcdWithPostCode() {
+
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null,
+            USER_ID,
+            TEST_NAME,
+            caseTestData.getCaseData().getClaimantIndType().getClaimantFirstNames(),
+            caseTestData.getCaseData().getClaimantIndType().getClaimantLastName(),
+            null
+        ));
+        when(ccdApiClient.startForCitizen(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            USER_ID,
+            EtSyaConstants.JURISDICTION_ID,
             EtSyaConstants.ENGLAND_CASE_TYPE,
             EtSyaConstants.DRAFT_EVENT_TYPE
         )).thenReturn(
@@ -297,6 +339,7 @@ class CaseServiceTest {
         )).thenReturn(caseTestData.getExpectedDetails());
 
         CaseRequest caseRequest = caseTestData.getCaseRequest();
+        caseRequest.setCaseTypeId(null);
 
         CaseDetails caseDetails = caseService.createCase(
             TEST_SERVICE_AUTH_TOKEN,
