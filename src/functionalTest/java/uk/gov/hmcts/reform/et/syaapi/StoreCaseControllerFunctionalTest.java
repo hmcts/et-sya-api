@@ -38,15 +38,15 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LAN
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
 
-    public static final String CASES_INITIATE_CASE = "/cases/initiate-case";
-    public static final String CASES_SUBMIT_CASE = "/cases/submit-case";
-    public static final String CASES_STORE_CLAIMANT_APPLICATION = "/store/store-claimant-application";
-    public static final String CASES_SUBMIT_CLAIMANT_APPLICATION = "/cases/submit-claimant-application";
-    public static final String CASES_STORE_RESPOND_TO_APPLICATION = "/store/store-respond-to-application";
-    public static final String CASES_SUBMIT_STORED_RESPOND_TO_APPLICATION =
+    private static final String CASES_INITIATE_CASE = "/cases/initiate-case";
+    private static final String CASES_SUBMIT_CASE = "/cases/submit-case";
+    private static final String CASES_STORE_CLAIMANT_APPLICATION = "/store/store-claimant-application";
+    private static final String CASES_SUBMIT_CLAIMANT_APPLICATION = "/cases/submit-claimant-application";
+    private static final String CASES_STORE_RESPOND_TO_APPLICATION = "/store/store-respond-to-application";
+    private static final String CASES_SUBMIT_STORED_RESPOND_TO_APPLICATION =
         "/store/submit-stored-respond-to-application";
-    public static final String RESPONDENT_NAME = "Boris Johnson";
-    public static final String INVALID_TOKEN = "invalid_token";
+    private static final String RESPONDENT_NAME = "Boris Johnson";
+    private static final String INVALID_TOKEN = "invalid_token";
     private static final String CASE_TYPE = "ET_EnglandWales";
     private static final String CLAIMANT_EMAIL = "citizen-user-test@test.co.uk";
     private static final String AUTHORIZATION = "Authorization";
@@ -80,6 +80,7 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
 
         CaseRequest caseRequest = CaseRequest.builder()
             .caseData(caseData)
+            .caseTypeId(CASE_TYPE)
             .build();
 
         JsonPath body = RestAssured.given()
