@@ -35,6 +35,21 @@ public final class ManageCaseRoleConstants {
     public static final String CASE_USER_ROLE_API_PARAMETER_NAME = "case_user_role";
     public static final String CASE_USER_ROLE_CCD_API_POST_METHOD_NAME = "/case-users/search";
 
+    public static final String EXCEPTION_CASE_DETAILS_NOT_FOUND =
+        "Case details not found with the given caseId, %s, and case type id, %s";
+    public static final String EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS =
+        "Case details not found because caseId or caseTypeId value is empty";
+    public static final String EXCEPTION_CASE_DATA_NOT_FOUND =
+        "Case details with Case Id, %s doesn't have case data values";
+    public static final String EXCEPTION_EMPTY_RESPONDENT_COLLECTION =
+        "Unable to add respondent idam id because there is not respondent defined in the case case with id, %s";
+    public static final String EXCEPTION_IDAM_ID_ALREADY_EXISTS =
+        "Unable to add respondent idam id because it has already been assigned to the respondent "
+            + "with name %s, and caseId, %s";
+    public static final String EXCEPTION_RESPONDENT_NOT_FOUND_WITH_RESPONDENT_NAME =
+        "Unable to add respondent idam id because there isn't any respondent with name %s";
+    public static final String EXCEPTION_INVALID_IDAM_ID = "Invalid Idam ID";
+
     private ManageCaseRoleConstants() {
         // restrict instantiation
     }

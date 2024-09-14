@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.helper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
@@ -61,5 +62,9 @@ public class EmployeeObjectMapper {
      */
     public static CaseData mapRequestCaseDataToCaseData(Map<String, Object> caseData) {
         return getCaseData(caseData);
+    }
+
+    public static Map<String, Object> mapCaseDataToLinkedHashMap(CaseData caseData) {
+        return new ObjectMapper().convertValue(caseData, new TypeReference<>() {});
     }
 }

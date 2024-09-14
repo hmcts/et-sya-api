@@ -1,0 +1,236 @@
+package uk.gov.hmcts.reform.et.syaapi.service.utils;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.RespondentUtil.setRespondentIdamId;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_ID_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_ID_VALUE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_VALUE_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_COLLECTION_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_IDAM_ID_1;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_IDAM_ID_2;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_NAME;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_CASE_DATA_NOT_FOUND;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_EMPTY_RESPONDENT_COLLECTION;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_IDAM_ID_ALREADY_EXISTS;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_INVALID_IDAM_ID;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_RESPONDENT_NOT_FOUND_WITH_RESPONDENT_NAME;
+
+class RespondentUtilTest {
+
+    @ParameterizedTest
+    @MethodSource("provideTheSetRespondentIdamIdTestData")
+    void theSetRespondentIdamId(CaseDetails caseDetails, String respondentName, String idamId) {
+        if (MapUtils.isEmpty(caseDetails.getData())) {
+            assertThat(assertThrows(RuntimeException.class, () ->
+                setRespondentIdamId(caseDetails, respondentName, idamId)).getMessage())
+                .contains(TEST_RESPONDENT_UTIL_EXCEPTION_CASE_DATA_NOT_FOUND);
+            return;
+        }
+        List<?> respondentCollection =
+            (ArrayList<?>) caseDetails.getData().get(TEST_RESPONDENT_COLLECTION_KEY);
+        if (hasRespondentCollectionException(respondentCollection, caseDetails, respondentName, idamId)) {
+            return;
+        }
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        if (hasRespondentNameException(caseData, caseDetails, respondentName, idamId)) {
+            return;
+        }
+        if (hasIdamIdException(caseDetails, respondentName, idamId, caseData)) {
+            return;
+        }
+        setRespondentIdamId(caseDetails, respondentName, idamId);
+        caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        assertThat(caseData.getRespondentCollection().get(0).getValue().getIdamId()).isEqualTo(idamId);
+    }
+
+    private static boolean hasRespondentCollectionException(List<?> respondentCollection,
+                                                           CaseDetails caseDetails,
+                                                           String respondentName,
+                                                           String idamId) {
+        if (CollectionUtils.isEmpty(respondentCollection)) {
+            assertThat(assertThrows(RuntimeException.class, () ->
+                setRespondentIdamId(caseDetails, respondentName, idamId)).getMessage())
+                .contains(TEST_RESPONDENT_UTIL_EXCEPTION_EMPTY_RESPONDENT_COLLECTION);
+            return true;
+        }
+
+        if (ObjectUtils.isEmpty(respondentCollection.get(0))
+            || ObjectUtils.isEmpty(((LinkedHashMap<?, ?>) respondentCollection.get(0))
+                                       .get(TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_VALUE_KEY))
+            || StringUtils.isBlank(respondentName)) {
+            assertThat(assertThrows(RuntimeException.class, () ->
+                setRespondentIdamId(caseDetails, respondentName, idamId)).getMessage())
+                .contains(TEST_RESPONDENT_UTIL_EXCEPTION_RESPONDENT_NOT_FOUND_WITH_RESPONDENT_NAME);
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean hasRespondentNameException(CaseData caseData,
+                                                      CaseDetails caseDetails,
+                                                      String respondentName,
+                                                      String idamId) {
+        if (!checkRespondentName(caseData.getRespondentCollection().get(0).getValue(), respondentName)) {
+            assertThat(assertThrows(RuntimeException.class, () ->
+                setRespondentIdamId(caseDetails, respondentName, idamId)).getMessage())
+                .contains(TEST_RESPONDENT_UTIL_EXCEPTION_RESPONDENT_NOT_FOUND_WITH_RESPONDENT_NAME);
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean hasIdamIdException(CaseDetails caseDetails,
+                                           String respondentName,
+                                           String idamId,
+                                           CaseData caseData) {
+        if (StringUtils.isBlank(idamId)) {
+            assertThat(assertThrows(RuntimeException.class, () ->
+                setRespondentIdamId(caseDetails, respondentName, idamId)).getMessage())
+                .contains(TEST_RESPONDENT_UTIL_EXCEPTION_INVALID_IDAM_ID);
+            return true;
+        }
+
+        if (StringUtils.isNotBlank(caseData.getRespondentCollection().get(0).getValue().getIdamId())
+            && !idamId.equals(caseData.getRespondentCollection().get(0).getValue().getIdamId())) {
+            assertThat(assertThrows(RuntimeException.class, () ->
+                setRespondentIdamId(caseDetails, respondentName, idamId)).getMessage())
+                .contains(TEST_RESPONDENT_UTIL_EXCEPTION_IDAM_ID_ALREADY_EXISTS);
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean checkRespondentName(RespondentSumType respondentSumType, String respondentName) {
+        if (respondentName.equals(respondentSumType.getRespondentName())
+            || respondentName.equals(respondentSumType.getRespondentOrganisation())) {
+            return true;
+        }
+        return respondentName.equals(generateRespondentNameByRespondentFirstNameAndLastName(
+            respondentSumType.getRespondentFirstName(), respondentSumType.getRespondentLastName()));
+    }
+
+    private static String generateRespondentNameByRespondentFirstNameAndLastName(String respondentFirstName,
+                                                                                 String respondentLastName) {
+        if (StringUtils.isNotBlank(respondentFirstName) && StringUtils.isNotBlank(respondentLastName)) {
+            return respondentFirstName + StringUtils.SPACE + respondentLastName;
+        } else if (StringUtils.isNotBlank(respondentFirstName)) {
+            return respondentFirstName;
+        } else if (StringUtils.isNotBlank(respondentLastName)) {
+            return respondentLastName;
+        }
+        return StringUtils.EMPTY;
+    }
+
+    @SuppressWarnings({"unchecked","rawtypes"})
+    private static Stream<Arguments> provideTheSetRespondentIdamIdTestData() {
+        CaseDetails caseDetailsWithEmptyRespondentCollection = new CaseTestData().getCaseDetailsWithCaseData();
+        caseDetailsWithEmptyRespondentCollection.getData().put(TEST_RESPONDENT_COLLECTION_KEY, new ArrayList<>());
+
+        CaseDetails caseDetailsWithEmptyRespondentSumTypeItem = new CaseTestData().getCaseDetailsWithCaseData();
+        caseDetailsWithEmptyRespondentSumTypeItem.getData().put(TEST_RESPONDENT_COLLECTION_KEY, new ArrayList<>());
+        ((ArrayList<?>)caseDetailsWithEmptyRespondentSumTypeItem.getData()
+            .get(TEST_RESPONDENT_COLLECTION_KEY)).add(null);
+
+        CaseDetails caseDetailsWithEmptyRespondentSumType = new CaseTestData().getCaseDetailsWithCaseData();
+        caseDetailsWithEmptyRespondentSumType.getData().put(TEST_RESPONDENT_COLLECTION_KEY, new ArrayList<>());
+        LinkedHashMap<String, Object> respondentSumTypeItemAsHashMap = new LinkedHashMap<>();
+        respondentSumTypeItemAsHashMap.put(TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_VALUE_KEY, null);
+        respondentSumTypeItemAsHashMap.put(TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_ID_KEY,
+                                           TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_ID_VALUE);
+        ((List)caseDetailsWithEmptyRespondentSumType.getData()
+            .get(TEST_RESPONDENT_COLLECTION_KEY))
+            .add(respondentSumTypeItemAsHashMap);
+
+        CaseDetails caseDetails = new CaseTestData().getCaseDetailsWithCaseData();
+
+        CaseDetails caseDetailsWithCorrectRespondentName = new CaseTestData().getCaseDetailsWithCaseData();
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        caseData.getRespondentCollection().get(0).getValue().setRespondentName(TEST_RESPONDENT_NAME);
+        caseDetailsWithCorrectRespondentName.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+
+        CaseDetails caseDetailsWithCorrectOrganisationName = new CaseTestData().getCaseDetailsWithCaseData();
+        caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        caseData.getRespondentCollection().get(0).getValue().setRespondentOrganisation(TEST_RESPONDENT_NAME);
+        caseDetailsWithCorrectOrganisationName.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+
+        caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        caseData.getRespondentCollection().get(0).getValue().setRespondentFirstName(TEST_RESPONDENT_NAME);
+        caseData.getRespondentCollection().get(0).getValue().setRespondentLastName(StringUtils.EMPTY);
+        CaseDetails caseDetailsWithCorrectFirstName = new CaseTestData().getCaseDetailsWithCaseData();
+        caseDetailsWithCorrectFirstName.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+
+        caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        caseData.getRespondentCollection().get(0).getValue().setRespondentLastName(TEST_RESPONDENT_NAME);
+        caseData.getRespondentCollection().get(0).getValue().setRespondentFirstName(StringUtils.EMPTY);
+        CaseDetails caseDetailsWithCorrectLastName = new CaseTestData().getCaseDetailsWithCaseData();
+        caseDetailsWithCorrectLastName.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+
+        caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        caseData.getRespondentCollection().get(0).getValue().setRespondentFirstName("Respondent");
+        caseData.getRespondentCollection().get(0).getValue().setRespondentLastName("Name");
+        CaseDetails caseDetailsWithCorrectFirstAndLastName = new CaseTestData().getCaseDetailsWithCaseData();
+        caseDetailsWithCorrectFirstAndLastName.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+
+        caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        caseData.getRespondentCollection().get(0).getValue().setRespondentName(TEST_RESPONDENT_NAME);
+        caseData.getRespondentCollection().get(0).getValue().setRespondentName(TEST_RESPONDENT_IDAM_ID_2);
+        CaseDetails caseDetailsWithDifferentIdamId = new CaseTestData().getCaseDetailsWithCaseData();
+        caseDetailsWithCorrectRespondentName.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+
+        CaseDetails caseDetailsWithEmptyCaseData = CaseDetails.builder().data(new HashMap<>()).build();
+
+        return Stream.of(Arguments.of(caseDetailsWithEmptyCaseData, TEST_RESPONDENT_NAME, TEST_RESPONDENT_IDAM_ID_1),
+                         Arguments.of(caseDetailsWithEmptyRespondentCollection,
+                                      TEST_RESPONDENT_NAME,
+                                      TEST_RESPONDENT_IDAM_ID_1),
+                         Arguments.of(caseDetailsWithEmptyRespondentSumTypeItem,
+                                      TEST_RESPONDENT_NAME,
+                                      TEST_RESPONDENT_IDAM_ID_1),
+                         Arguments.of(caseDetailsWithEmptyRespondentSumType,
+                                      TEST_RESPONDENT_NAME,
+                                      TEST_RESPONDENT_IDAM_ID_1),
+                         Arguments.of(caseDetails, StringUtils.EMPTY, TEST_RESPONDENT_IDAM_ID_1),
+                         Arguments.of(caseDetails, TEST_RESPONDENT_NAME, TEST_RESPONDENT_IDAM_ID_1),
+                         Arguments.of(caseDetailsWithCorrectRespondentName,
+                                      TEST_RESPONDENT_NAME,
+                                      TEST_RESPONDENT_IDAM_ID_1),
+                         Arguments.of(caseDetailsWithCorrectOrganisationName,
+                                      TEST_RESPONDENT_NAME,
+                                      TEST_RESPONDENT_IDAM_ID_1),
+                         Arguments.of(caseDetailsWithCorrectFirstName,
+                                      TEST_RESPONDENT_NAME,
+                                      TEST_RESPONDENT_IDAM_ID_1),
+                         Arguments.of(caseDetailsWithCorrectLastName,
+                                      TEST_RESPONDENT_NAME,
+                                      TEST_RESPONDENT_IDAM_ID_1),
+                         Arguments.of(caseDetailsWithCorrectFirstAndLastName,
+                                      TEST_RESPONDENT_NAME,
+                                      TEST_RESPONDENT_IDAM_ID_1),
+                         Arguments.of(caseDetailsWithDifferentIdamId, TEST_RESPONDENT_NAME, TEST_RESPONDENT_IDAM_ID_1),
+                         Arguments.of(caseDetailsWithCorrectRespondentName,
+                                      TEST_RESPONDENT_NAME,
+                                      StringUtils.EMPTY));
+
+    }
+
+}

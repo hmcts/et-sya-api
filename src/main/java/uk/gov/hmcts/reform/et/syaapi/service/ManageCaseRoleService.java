@@ -27,6 +27,8 @@ import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ManageCaseRoleServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.RemoteServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.RespondentUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
@@ -54,6 +56,7 @@ public class ManageCaseRoleService {
     private final AuthTokenGenerator authTokenGenerator;
     private final CoreCaseDataApi ccdApi;
     private final IdamClient idamClient;
+    private final ET3Service et3Service;
 
     @Value("${assign_case_access_api_url}")
     private String aacUrl;
@@ -118,16 +121,23 @@ public class ManageCaseRoleService {
      */
     public void modifyUserCaseRoles(ModifyCaseUserRolesRequest modifyCaseUserRolesRequest, String modificationType)
         throws IOException {
-        HttpMethod httpMethod = ManageCaseRoleServiceUtil.getHttpMethodByModificationType(modificationType);
-        if (ObjectUtils.isEmpty(httpMethod)) {
-            throw new ManageCaseRoleException(
-                new Exception(ManageCaseRoleConstants.EXCEPTION_INVALID_MODIFICATION_TYPE));
+        // Gets httpMethod by modification type. If modification type is Assignment, method is POST, if Revoke, method
+        // is DELETE. Null if modification type is different then Assignment and Revoke.
+        HttpMethod httpMethod = RemoteServiceUtil.getHttpMethodByCaseUserRoleModificationType(modificationType);
+        // Checks modifyCaseUserRolesRequest parameter if it is empty or not and it's objects.
+        // If there is any problem throws ManageCaseRoleException.
+        ManageCaseRoleServiceUtil.checkModifyCaseUserRolesRequest(modifyCaseUserRolesRequest);
+        // Checks all respondents and if any of the respondent's name matches with the user's input respondent name
+        // sets respondent idam id.
+        for (ModifyCaseUserRole modifyCaseUserRole : modifyCaseUserRolesRequest.getModifyCaseUserRoles()) {
+            CaseDetails caseDetails = et3Service
+                .findCaseBySubmissionReferenceCaseTypeId(modifyCaseUserRole.getCaseDataId(),
+                                                         modifyCaseUserRole.getCaseTypeId());
+            RespondentUtil.setRespondentIdamId(caseDetails,
+                                               modifyCaseUserRole.getUserFullName(),
+                                               modifyCaseUserRole.getUserId());
         }
-        if (ObjectUtils.isEmpty(modifyCaseUserRolesRequest)
-            || CollectionUtils.isEmpty(modifyCaseUserRolesRequest.getModifyCaseUserRoles())) {
-            throw new ManageCaseRoleException(new Exception(
-                ManageCaseRoleConstants.MODIFY_CASE_ROLE_EMPTY_REQUEST));
-        }
+
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest =
             ManageCaseRoleServiceUtil.generateCaseAssignmentUserRolesRequestByModifyCaseUserRolesRequest(
                 modifyCaseUserRolesRequest);
@@ -137,7 +147,7 @@ public class ManageCaseRoleService {
         try {
             HttpEntity<CaseAssignmentUserRolesRequest> requestEntity =
                 new HttpEntity<>(caseAssignmentUserRolesRequest,
-                                 ManageCaseRoleServiceUtil.buildHeaders(userToken, this.authTokenGenerator.generate()));
+                                 RemoteServiceUtil.buildHeaders(userToken, this.authTokenGenerator.generate()));
             response = restTemplate.exchange(aacUrl + ManageCaseRoleConstants.CASE_USERS_API_URL,
                                              httpMethod,
                                              requestEntity,
@@ -220,8 +230,7 @@ public class ManageCaseRoleService {
         ResponseEntity<CaseAssignedUserRolesResponse> response;
         try {
             HttpEntity<Object> requestEntity =
-                new HttpEntity<>(ManageCaseRoleServiceUtil
-                                     .buildHeaders(authorization, this.authTokenGenerator.generate()));
+                new HttpEntity<>(RemoteServiceUtil.buildHeaders(authorization, this.authTokenGenerator.generate()));
             response = restTemplate.exchange(
                 aacApiUri,
                 HttpMethod.GET,
@@ -266,8 +275,7 @@ public class ManageCaseRoleService {
         try {
             HttpEntity<SearchCaseAssignedUserRolesRequest> requestHttpEntity =
                 new HttpEntity<>(searchCaseAssignedUserRolesRequest,
-                                 ManageCaseRoleServiceUtil
-                                     .buildHeaders(authorization, this.authTokenGenerator.generate()));
+                                 RemoteServiceUtil.buildHeaders(authorization, this.authTokenGenerator.generate()));
             response = restTemplate
                 .postForObject(ccdApiUrl + ManageCaseRoleConstants.CASE_USER_ROLE_CCD_API_POST_METHOD_NAME,
                                requestHttpEntity,

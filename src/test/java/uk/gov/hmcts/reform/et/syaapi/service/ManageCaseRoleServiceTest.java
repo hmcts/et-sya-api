@@ -26,11 +26,13 @@ import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesResponse;
 import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRolesRequest;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
+import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
@@ -46,9 +48,11 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CCD_API_POST_METHOD_NAME;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_NAME;
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings({"PMD.ExcessiveImports"})
 class ManageCaseRoleServiceTest {
 
     @Mock
@@ -61,6 +65,8 @@ class ManageCaseRoleServiceTest {
     AuthTokenGenerator authTokenGenerator;
     @Mock
     IdamClient idamClient;
+    @Mock
+    ET3Service et3Service;
 
     private ManageCaseRoleService manageCaseRoleService;
     private UserInfo userInfo;
@@ -103,7 +109,7 @@ class ManageCaseRoleServiceTest {
     @BeforeEach
     void setup() {
         manageCaseRoleService = new ManageCaseRoleService(
-            adminUserService, restTemplate, authTokenGenerator, ccdApi, idamClient);
+            adminUserService, restTemplate, authTokenGenerator, ccdApi, idamClient, et3Service);
         userInfo = new CaseTestData().getUserInfo();
         caseAssignmentUserRole1 = CaseAssignmentUserRole.builder()
             .userId(DUMMY_USER_ID)
@@ -146,6 +152,15 @@ class ManageCaseRoleServiceTest {
             assertThat(exception.getMessage()).contains(INVALID_ROLE_MODIFICATION_ITEM_EXCEPTION_MESSAGE);
             return;
         }
+
+        CaseDetails caseDetails = new CaseTestData().getCaseDetailsWithCaseData();
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        caseData.getRespondentCollection().get(0).getValue().setRespondentName(TEST_RESPONDENT_NAME);
+        caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+        when(et3Service.findCaseBySubmissionReferenceCaseTypeId(
+            modifyCaseUserRolesRequest.getModifyCaseUserRoles().get(0).getCaseDataId(),
+            modifyCaseUserRolesRequest.getModifyCaseUserRoles().get(0).getCaseTypeId()))
+            .thenReturn(caseDetails);
         HttpMethod httpMethod = MODIFICATION_TYPE_REVOKE.equals(modificationType) ? HttpMethod.DELETE : HttpMethod.POST;
         when(restTemplate.exchange(ArgumentMatchers.anyString(),
                                    ArgumentMatchers.eq(httpMethod),
@@ -190,66 +205,12 @@ class ManageCaseRoleServiceTest {
 
         ModifyCaseUserRolesRequest modifyCaseUserRolesRequestEmpty = ModifyCaseUserRolesRequest.builder().build();
 
-        ModifyCaseUserRolesRequest modifyCaseUserRolesRequestEmptyCollection =
-            ModifyCaseUserRolesRequest.builder().modifyCaseUserRoles(new ArrayList<>()).build();
-
-        ModifyCaseUserRole modifyCaseUserRoleWithoutUserId = ModifyCaseUserRole.builder()
-            .caseDataId(CASE_ID)
-            .caseRole(CASE_ROLE_DEFENDANT)
-            .caseTypeId(ENGLAND_CASE_TYPE)
-            .userFullName(RESPONDENT_NAME)
-            .build();
-        ModifyCaseUserRolesRequest modifyCaseUserRolesRequestInvalidUserId = ModifyCaseUserRolesRequest
-            .builder().modifyCaseUserRoles(List.of(modifyCaseUserRoleWithoutUserId)).build();
-
-        ModifyCaseUserRole modifyCaseUserRoleWithoutCaseDataId = ModifyCaseUserRole.builder()
-            .userId(USER_ID)
-            .caseRole(CASE_ROLE_DEFENDANT)
-            .caseTypeId(ENGLAND_CASE_TYPE)
-            .userFullName(RESPONDENT_NAME)
-            .build();
-        ModifyCaseUserRolesRequest modifyCaseUserRolesRequestInvalidCaseDataId = ModifyCaseUserRolesRequest
-            .builder().modifyCaseUserRoles(List.of(modifyCaseUserRoleWithoutCaseDataId)).build();
-
-        ModifyCaseUserRole modifyCaseUserRoleWithoutCaseRole = ModifyCaseUserRole.builder()
-            .caseDataId(CASE_ID)
-            .userId(USER_ID)
-            .caseTypeId(ENGLAND_CASE_TYPE)
-            .userFullName(RESPONDENT_NAME)
-            .build();
-        ModifyCaseUserRolesRequest modifyCaseUserRolesRequestInvalidCaseRole = ModifyCaseUserRolesRequest
-            .builder().modifyCaseUserRoles(List.of(modifyCaseUserRoleWithoutCaseRole)).build();
-
-        ModifyCaseUserRole modifyCaseUserRoleWithoutCaseTypeId = ModifyCaseUserRole.builder()
-            .caseDataId(CASE_ID)
-            .userId(USER_ID)
-            .caseRole(CASE_ROLE_DEFENDANT)
-            .userFullName(RESPONDENT_NAME)
-            .build();
-        ModifyCaseUserRolesRequest modifyCaseUserRolesRequestInvalidCaseTypeId = ModifyCaseUserRolesRequest
-            .builder().modifyCaseUserRoles(List.of(modifyCaseUserRoleWithoutCaseTypeId)).build();
-
-        ModifyCaseUserRole modifyCaseUserRoleWithoutUserFullName = ModifyCaseUserRole.builder()
-            .caseDataId(CASE_ID)
-            .userId(USER_ID)
-            .caseRole(CASE_ROLE_DEFENDANT)
-            .caseTypeId(ENGLAND_CASE_TYPE)
-            .build();
-        ModifyCaseUserRolesRequest modifyCaseUserRolesRequestInvalidUserFullName = ModifyCaseUserRolesRequest
-            .builder().modifyCaseUserRoles(List.of(modifyCaseUserRoleWithoutUserFullName)).build();
 
         return Stream.of(Arguments.of(modifyCaseUserRolesRequestValid, MODIFICATION_TYPE_ASSIGNMENT),
                          Arguments.of(modifyCaseUserRolesRequestValid, MODIFICATION_TYPE_REVOKE),
                          Arguments.of(modifyCaseUserRolesRequestValid, StringUtils.EMPTY),
                          Arguments.of(null, MODIFICATION_TYPE_ASSIGNMENT),
-                         Arguments.of(modifyCaseUserRolesRequestEmpty, MODIFICATION_TYPE_ASSIGNMENT),
-                         Arguments.of(modifyCaseUserRolesRequestEmptyCollection, MODIFICATION_TYPE_ASSIGNMENT),
-                         Arguments.of(modifyCaseUserRolesRequestInvalidUserId, MODIFICATION_TYPE_REVOKE),
-                         Arguments.of(modifyCaseUserRolesRequestInvalidCaseDataId, MODIFICATION_TYPE_ASSIGNMENT),
-                         Arguments.of(modifyCaseUserRolesRequestInvalidCaseRole, MODIFICATION_TYPE_REVOKE),
-                         Arguments.of(modifyCaseUserRolesRequestInvalidCaseTypeId, MODIFICATION_TYPE_REVOKE),
-                         Arguments.of(modifyCaseUserRolesRequestInvalidUserFullName, MODIFICATION_TYPE_REVOKE)
-            );
+                         Arguments.of(modifyCaseUserRolesRequestEmpty, MODIFICATION_TYPE_ASSIGNMENT));
     }
 
     @Test

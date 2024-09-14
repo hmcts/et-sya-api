@@ -232,11 +232,9 @@ class CaseServiceTest {
                     .build();
         when(manageCaseRoleService.getCaseUserRolesByCaseAndUserIdsCcd(eq(TEST_SERVICE_AUTH_TOKEN), anyList()))
             .thenReturn(caseAssignedUserRolesResponse);
-
         CaseDetails caseDetails = caseService.getUserCaseByCaseUserRole(TEST_SERVICE_AUTH_TOKEN,
                                                                         caseRequest.getCaseId(),
                                                                         CASE_USER_ROLE_CREATOR);
-
         assertEquals(caseTestData.getExpectedDetails(), caseDetails);
     }
 
@@ -302,11 +300,8 @@ class CaseServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             USER_ID,
             JURISDICTION_ID,
-            ENGLAND_CASE_TYPE,
+            SCOTLAND_CASE_TYPE,
             DRAFT_EVENT_TYPE
-            EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
-            EtSyaConstants.DRAFT_EVENT_TYPE
         )).thenReturn(
             caseTestData.getStartEventResponse());
 
@@ -314,8 +309,8 @@ class CaseServiceTest {
             eq(TEST_SERVICE_AUTH_TOKEN),
             eq(TEST_SERVICE_AUTH_TOKEN),
             eq(USER_ID),
-            eq(EtSyaConstants.JURISDICTION_ID),
-            eq(EtSyaConstants.SCOTLAND_CASE_TYPE),
+            eq(JURISDICTION_ID),
+            eq(SCOTLAND_CASE_TYPE),
             eq(true),
             any(CaseDataContent.class)
         )).thenReturn(caseTestData.getExpectedDetails());
@@ -346,9 +341,9 @@ class CaseServiceTest {
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
             USER_ID,
-            EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.ENGLAND_CASE_TYPE,
-            EtSyaConstants.DRAFT_EVENT_TYPE
+            JURISDICTION_ID,
+            ENGLAND_CASE_TYPE,
+            DRAFT_EVENT_TYPE
         )).thenReturn(
             caseTestData.getStartEventResponse());
 
