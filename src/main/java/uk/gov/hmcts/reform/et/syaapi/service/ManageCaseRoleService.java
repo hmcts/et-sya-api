@@ -136,6 +136,7 @@ public class ManageCaseRoleService {
             RespondentUtil.setRespondentIdamId(caseDetails,
                                                modifyCaseUserRole.getUserFullName(),
                                                modifyCaseUserRole.getUserId());
+
         }
 
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest =

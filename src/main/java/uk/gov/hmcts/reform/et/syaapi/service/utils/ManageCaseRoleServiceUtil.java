@@ -86,6 +86,13 @@ public final class ManageCaseRoleServiceUtil {
         return userIdsUri.toString();
     }
 
+    /**
+     * This service is used to create CaseAssignmentUserRoles request with the given ModifyCaseUserRoles request to
+     * call case assignment service case-users of aac(assign case access API URrl) with POST method.
+     * @param modifyCaseUserRolesRequest is the parameter that has the required fields for creating
+     *                                   {@link CaseAssignmentUserRolesRequest} for modifying case role.
+     * @return                           {@link CaseAssignmentUserRolesRequest} to use for assigning case user roles.
+     */
     public static CaseAssignmentUserRolesRequest generateCaseAssignmentUserRolesRequestByModifyCaseUserRolesRequest(
         ModifyCaseUserRolesRequest modifyCaseUserRolesRequest) {
         List<CaseAssignmentUserRole> caseAssignmentUserRoles = new ArrayList<>();
@@ -100,6 +107,15 @@ public final class ManageCaseRoleServiceUtil {
         return CaseAssignmentUserRolesRequest.builder().caseAssignmentUserRoles(caseAssignmentUserRoles).build();
     }
 
+    /**
+     * This method is used to find all cases with the given case user roles. It is used to discriminate
+     * CREATOR & DEFENDANT cases for the given user. For et-syr applications we are showing users only the cases that
+     * they are DEFENDANT and on et-sya, CREATOR.
+     * @param caseDetails               {@link CaseDetails} has the case data that needs to be compared with
+     *                                  {@link CaseAssignmentUserRole} values
+     * @param caseAssignmentUserRole    has the role value that needs to be checked with existing CaseDetails.
+     * @return Case role value as DEFENDANT or CREATOR. If nothing found returns empty string.
+     */
     public static String findCaseUserRole(CaseDetails caseDetails,
                                            CaseAssignmentUserRole caseAssignmentUserRole) {
         return ObjectUtils.isNotEmpty(caseDetails)
@@ -112,6 +128,11 @@ public final class ManageCaseRoleServiceUtil {
             ? caseAssignmentUserRole.getCaseRole() : StringUtils.EMPTY;
     }
 
+    /**
+     * Checks the data entered in {@link ModifyCaseUserRolesRequest} before starting user case role assignment.
+     * @param modifyCaseUserRolesRequest is the data that has the required values to assign user case roles which are
+     *                                   case_type_id, user_full_name, case_id, user_id, case_role.
+     */
     public static void checkModifyCaseUserRolesRequest(ModifyCaseUserRolesRequest modifyCaseUserRolesRequest) {
         if (ObjectUtils.isEmpty(modifyCaseUserRolesRequest)
             || CollectionUtils.isEmpty(modifyCaseUserRolesRequest.getModifyCaseUserRoles())) {
@@ -140,4 +161,6 @@ public final class ManageCaseRoleServiceUtil {
             || !CASE_USER_ROLE_DEFENDANT.equals(caseRole)
             && !CASE_USER_ROLE_CREATOR.equals(caseRole);
     }
+
+
 }
