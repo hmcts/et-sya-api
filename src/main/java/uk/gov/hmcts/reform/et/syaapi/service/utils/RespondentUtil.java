@@ -8,6 +8,8 @@ import org.apache.commons.lang3.StringUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
+import uk.gov.hmcts.et.common.model.ccd.types.et3links.ET3CaseDetailsLinksStatuses;
+import uk.gov.hmcts.et.common.model.ccd.types.et3links.ET3HubLinksStatuses;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 
@@ -19,6 +21,11 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EX
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_IDAM_ID_ALREADY_EXISTS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_INVALID_IDAM_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_RESPONDENT_NOT_FOUND_WITH_RESPONDENT_NAME;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_CANNOT_START_YET;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_NOT_AVAILABLE_YET;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_NOT_STARTED_YET;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_NOT_VIEWED_YET;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_OPTIONAL;
 
 @Slf4j
 public final class RespondentUtil {
@@ -35,7 +42,9 @@ public final class RespondentUtil {
      * @param respondentName name of the respondent to search in respondent collection.
      * @param idamId to be assigned to the respondent in the respondent collection.
      */
-    public static void setRespondentIdamId(CaseDetails caseDetails, String respondentName, String idamId) {
+    public static void setRespondentIdamIdDefaultLinkStatuses(CaseDetails caseDetails,
+                                                              String respondentName,
+                                                              String idamId) {
         Map<String, Object> existingCaseData = caseDetails.getData();
         if (MapUtils.isEmpty(existingCaseData)) {
             throw new RuntimeException(String.format(EXCEPTION_CASE_DATA_NOT_FOUND, caseDetails.getId()));
@@ -44,7 +53,7 @@ public final class RespondentUtil {
         if (CollectionUtils.isNotEmpty(caseData.getRespondentCollection())) {
             RespondentSumTypeItem respondentSumTypeItem =
                 findRespondentSumTypeItemByRespondentName(caseData.getRespondentCollection(), respondentName);
-            setRespondentId(respondentSumTypeItem, idamId, respondentName, caseDetails.getId().toString());
+            setRespondentIdLinkStatuses(respondentSumTypeItem, idamId, respondentName, caseDetails.getId().toString());
             Map<String, Object> updatedCaseData = EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData);
             caseDetails.setData(updatedCaseData);
             return;
@@ -88,7 +97,7 @@ public final class RespondentUtil {
         return StringUtils.EMPTY;
     }
 
-    private static void setRespondentId(RespondentSumTypeItem respondentSumTypeItem,
+    private static void setRespondentIdLinkStatuses(RespondentSumTypeItem respondentSumTypeItem,
                                         String idamId,
                                         String respondentName,
                                         String submissionReference) {
@@ -101,5 +110,33 @@ public final class RespondentUtil {
                                                      submissionReference));
         }
         respondentSumTypeItem.getValue().setIdamId(idamId);
+        respondentSumTypeItem.getValue().setEt3CaseDetailsLinksStatuses(generateDefaultET3CaseDetailsLinksStatuses());
+        respondentSumTypeItem.getValue().setEt3HubLinksStatuses(generateDefaultET3HubLinksStatuses());
+    }
+
+    private static ET3CaseDetailsLinksStatuses generateDefaultET3CaseDetailsLinksStatuses() {
+        ET3CaseDetailsLinksStatuses et3CaseDetailsLinksStatuses = new ET3CaseDetailsLinksStatuses();
+        et3CaseDetailsLinksStatuses.setPersonalDetails(LINK_STATUS_NOT_AVAILABLE_YET);
+        et3CaseDetailsLinksStatuses.setEt1ClaimForm(LINK_STATUS_NOT_VIEWED_YET);
+        et3CaseDetailsLinksStatuses.setRespondentResponse(LINK_STATUS_NOT_STARTED_YET);
+        et3CaseDetailsLinksStatuses.setHearingDetails(LINK_STATUS_NOT_AVAILABLE_YET);
+        et3CaseDetailsLinksStatuses.setRespondentRequestsAndApplications(LINK_STATUS_NOT_AVAILABLE_YET);
+        et3CaseDetailsLinksStatuses.setClaimantApplications(LINK_STATUS_NOT_AVAILABLE_YET);
+        et3CaseDetailsLinksStatuses.setContactTribunal(LINK_STATUS_OPTIONAL);
+        et3CaseDetailsLinksStatuses.setTribunalOrders(LINK_STATUS_NOT_AVAILABLE_YET);
+        et3CaseDetailsLinksStatuses.setTribunalJudgements(LINK_STATUS_NOT_AVAILABLE_YET);
+        et3CaseDetailsLinksStatuses.setDocuments(LINK_STATUS_OPTIONAL);
+        return et3CaseDetailsLinksStatuses;
+    }
+
+    private static ET3HubLinksStatuses generateDefaultET3HubLinksStatuses() {
+        ET3HubLinksStatuses et3HubLinksStatuses = new ET3HubLinksStatuses();
+        et3HubLinksStatuses.setContactDetails(LINK_STATUS_NOT_STARTED_YET);
+        et3HubLinksStatuses.setEmployerDetails(LINK_STATUS_NOT_STARTED_YET);
+        et3HubLinksStatuses.setConciliationAndEmployeeDetails(LINK_STATUS_NOT_STARTED_YET);
+        et3HubLinksStatuses.setPayPensionBenefitDetails(LINK_STATUS_NOT_STARTED_YET);
+        et3HubLinksStatuses.setContestClaim(LINK_STATUS_NOT_STARTED_YET);
+        et3HubLinksStatuses.setCheckYorAnswers(LINK_STATUS_CANNOT_START_YET);
+        return et3HubLinksStatuses;
     }
 }

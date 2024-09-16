@@ -98,6 +98,11 @@ public final class TestConstants {
     public static final String TEST_RESPONDENT_UTIL_EXCEPTION_IDAM_ID_ALREADY_EXISTS =
         "Unable to add respondent idam id because it has already been assigned to the respondent";
     public static final String TEST_RESPONDENT_UTIL_EXCEPTION_INVALID_IDAM_ID = "Invalid Idam ID";
+    public static final String TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET = "notStartedYet";
+    public static final String TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_VIEWED_YET = "notViewedYet";
+    public static final String TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET = "notAvailableYet";
+    public static final String TEST_RESPONDENT_UTIL_LINK_STATUS_OPTIONAL = "optional";
+    public static final String TEST_RESPONDENT_UTIL_LINK_STATUS_CANNOT_START_YET = "cannotStartYet";
     public static final PdfDecodedMultipartFile PDF_DECODED_MULTIPART_FILE_NULL = new PdfDecodedMultipartFile(
         null,
         TestConstants.TEST_PDF_FILE_ORIGINAL_NAME,

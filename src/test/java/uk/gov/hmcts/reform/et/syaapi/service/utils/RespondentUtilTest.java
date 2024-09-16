@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.RespondentUtil.setRespondentIdamId;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.RespondentUtil.setRespondentIdamIdDefaultLinkStatuses;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_ID_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_ID_VALUE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_VALUE_KEY;
@@ -34,15 +34,20 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RES
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_IDAM_ID_ALREADY_EXISTS;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_INVALID_IDAM_ID;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_RESPONDENT_NOT_FOUND_WITH_RESPONDENT_NAME;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_CANNOT_START_YET;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_VIEWED_YET;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_OPTIONAL;
 
 class RespondentUtilTest {
 
     @ParameterizedTest
-    @MethodSource("provideTheSetRespondentIdamIdTestData")
-    void theSetRespondentIdamId(CaseDetails caseDetails, String respondentName, String idamId) {
+    @MethodSource("provideTheSetRespondentIdamIdDefaultLinkStatusesTestData")
+    void theSetRespondentIdamIdDefaultLinkStatuses(CaseDetails caseDetails, String respondentName, String idamId) {
         if (MapUtils.isEmpty(caseDetails.getData())) {
             assertThat(assertThrows(RuntimeException.class, () ->
-                setRespondentIdamId(caseDetails, respondentName, idamId)).getMessage())
+                setRespondentIdamIdDefaultLinkStatuses(caseDetails, respondentName, idamId)).getMessage())
                 .contains(TEST_RESPONDENT_UTIL_EXCEPTION_CASE_DATA_NOT_FOUND);
             return;
         }
@@ -58,9 +63,42 @@ class RespondentUtilTest {
         if (hasIdamIdException(caseDetails, respondentName, idamId, caseData)) {
             return;
         }
-        setRespondentIdamId(caseDetails, respondentName, idamId);
+        setRespondentIdamIdDefaultLinkStatuses(caseDetails, respondentName, idamId);
         caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getIdamId()).isEqualTo(idamId);
+        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
+                       .getPersonalDetails()).isEqualTo(TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
+        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
+                       .getEt1ClaimForm()).isEqualTo(TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_VIEWED_YET);
+        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
+                       .getRespondentResponse()).isEqualTo(TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
+        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
+                       .getHearingDetails()).isEqualTo(TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
+        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
+                       .getRespondentRequestsAndApplications())
+            .isEqualTo(TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
+        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
+                       .getClaimantApplications()).isEqualTo(TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
+        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
+                       .getContactTribunal()).isEqualTo(TEST_RESPONDENT_UTIL_LINK_STATUS_OPTIONAL);
+        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
+                       .getTribunalOrders()).isEqualTo(TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
+        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
+                       .getTribunalJudgements()).isEqualTo(TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
+        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
+                       .getDocuments()).isEqualTo(TEST_RESPONDENT_UTIL_LINK_STATUS_OPTIONAL);
+        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3HubLinksStatuses()
+                       .getContactDetails()).isEqualTo(TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
+        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3HubLinksStatuses()
+                       .getEmployerDetails()).isEqualTo(TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
+        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3HubLinksStatuses()
+                       .getConciliationAndEmployeeDetails())
+            .isEqualTo(TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
+        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3HubLinksStatuses()
+                       .getPayPensionBenefitDetails()).isEqualTo(TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
+        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3HubLinksStatuses()
+                       .getContestClaim()).isEqualTo(TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
+        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3HubLinksStatuses().getCheckYorAnswers())
+            .isEqualTo(TEST_RESPONDENT_UTIL_LINK_STATUS_CANNOT_START_YET);
     }
 
     private static boolean hasRespondentCollectionException(List<?> respondentCollection,
@@ -69,7 +107,7 @@ class RespondentUtilTest {
                                                            String idamId) {
         if (CollectionUtils.isEmpty(respondentCollection)) {
             assertThat(assertThrows(RuntimeException.class, () ->
-                setRespondentIdamId(caseDetails, respondentName, idamId)).getMessage())
+                setRespondentIdamIdDefaultLinkStatuses(caseDetails, respondentName, idamId)).getMessage())
                 .contains(TEST_RESPONDENT_UTIL_EXCEPTION_EMPTY_RESPONDENT_COLLECTION);
             return true;
         }
@@ -79,7 +117,7 @@ class RespondentUtilTest {
                                        .get(TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_VALUE_KEY))
             || StringUtils.isBlank(respondentName)) {
             assertThat(assertThrows(RuntimeException.class, () ->
-                setRespondentIdamId(caseDetails, respondentName, idamId)).getMessage())
+                setRespondentIdamIdDefaultLinkStatuses(caseDetails, respondentName, idamId)).getMessage())
                 .contains(TEST_RESPONDENT_UTIL_EXCEPTION_RESPONDENT_NOT_FOUND_WITH_RESPONDENT_NAME);
             return true;
         }
@@ -92,7 +130,7 @@ class RespondentUtilTest {
                                                       String idamId) {
         if (!checkRespondentName(caseData.getRespondentCollection().get(0).getValue(), respondentName)) {
             assertThat(assertThrows(RuntimeException.class, () ->
-                setRespondentIdamId(caseDetails, respondentName, idamId)).getMessage())
+                setRespondentIdamIdDefaultLinkStatuses(caseDetails, respondentName, idamId)).getMessage())
                 .contains(TEST_RESPONDENT_UTIL_EXCEPTION_RESPONDENT_NOT_FOUND_WITH_RESPONDENT_NAME);
             return true;
         }
@@ -105,7 +143,7 @@ class RespondentUtilTest {
                                            CaseData caseData) {
         if (StringUtils.isBlank(idamId)) {
             assertThat(assertThrows(RuntimeException.class, () ->
-                setRespondentIdamId(caseDetails, respondentName, idamId)).getMessage())
+                setRespondentIdamIdDefaultLinkStatuses(caseDetails, respondentName, idamId)).getMessage())
                 .contains(TEST_RESPONDENT_UTIL_EXCEPTION_INVALID_IDAM_ID);
             return true;
         }
@@ -113,7 +151,7 @@ class RespondentUtilTest {
         if (StringUtils.isNotBlank(caseData.getRespondentCollection().get(0).getValue().getIdamId())
             && !idamId.equals(caseData.getRespondentCollection().get(0).getValue().getIdamId())) {
             assertThat(assertThrows(RuntimeException.class, () ->
-                setRespondentIdamId(caseDetails, respondentName, idamId)).getMessage())
+                setRespondentIdamIdDefaultLinkStatuses(caseDetails, respondentName, idamId)).getMessage())
                 .contains(TEST_RESPONDENT_UTIL_EXCEPTION_IDAM_ID_ALREADY_EXISTS);
             return true;
         }
@@ -142,7 +180,7 @@ class RespondentUtilTest {
     }
 
     @SuppressWarnings({"unchecked","rawtypes"})
-    private static Stream<Arguments> provideTheSetRespondentIdamIdTestData() {
+    private static Stream<Arguments> provideTheSetRespondentIdamIdDefaultLinkStatusesTestData() {
         CaseDetails caseDetailsWithEmptyRespondentCollection = new CaseTestData().getCaseDetailsWithCaseData();
         caseDetailsWithEmptyRespondentCollection.getData().put(TEST_RESPONDENT_COLLECTION_KEY, new ArrayList<>());
 

@@ -34,6 +34,11 @@ public final class ManageCaseRoleConstants {
     public static final String STRING_RIGHT_SQUARE_BRACKET = "]";
     public static final String CASE_USER_ROLE_API_PARAMETER_NAME = "case_user_role";
     public static final String CASE_USER_ROLE_CCD_API_POST_METHOD_NAME = "/case-users/search";
+    public static final String LINK_STATUS_NOT_STARTED_YET = "notStartedYet";
+    public static final String LINK_STATUS_NOT_VIEWED_YET = "notViewedYet";
+    public static final String LINK_STATUS_NOT_AVAILABLE_YET = "notAvailableYet";
+    public static final String LINK_STATUS_OPTIONAL = "optional";
+    public static final String LINK_STATUS_CANNOT_START_YET = "cannotStartYet";
 
     public static final String EXCEPTION_CASE_DETAILS_NOT_FOUND =
         "Case details not found with the given caseId, %s, and case type id, %s";

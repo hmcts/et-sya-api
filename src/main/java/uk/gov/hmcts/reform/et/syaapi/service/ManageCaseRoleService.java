@@ -133,10 +133,9 @@ public class ManageCaseRoleService {
             CaseDetails caseDetails = et3Service
                 .findCaseBySubmissionReferenceCaseTypeId(modifyCaseUserRole.getCaseDataId(),
                                                          modifyCaseUserRole.getCaseTypeId());
-            RespondentUtil.setRespondentIdamId(caseDetails,
-                                               modifyCaseUserRole.getUserFullName(),
-                                               modifyCaseUserRole.getUserId());
-
+            RespondentUtil.setRespondentIdamIdDefaultLinkStatuses(caseDetails,
+                                                                  modifyCaseUserRole.getUserFullName(),
+                                                                  modifyCaseUserRole.getUserId());
         }
 
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest =
