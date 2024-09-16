@@ -95,8 +95,7 @@ public final class RespondentUtil {
         if (StringUtils.isBlank(idamId)) {
             throw new RuntimeException(EXCEPTION_INVALID_IDAM_ID);
         }
-        if (StringUtils.isNotBlank(respondentSumTypeItem.getValue().getIdamId())
-            && !respondentSumTypeItem.getValue().getIdamId().equals(idamId)) {
+        if (StringUtils.isNotBlank(respondentSumTypeItem.getValue().getIdamId())) {
             throw new RuntimeException(String.format(EXCEPTION_IDAM_ID_ALREADY_EXISTS,
                                                      respondentName,
                                                      submissionReference));

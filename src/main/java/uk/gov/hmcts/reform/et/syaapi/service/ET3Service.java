@@ -30,6 +30,12 @@ public class ET3Service {
     private final AuthTokenGenerator authTokenGenerator;
     private final CoreCaseDataApi ccdApi;
 
+    /**
+     * Finds case by its submission reference and case type id.
+     * @param submissionReference case data id, or submission reference id of the case
+     * @param caseTypeId case type id can be ET_EnglandWales or ET_Scotland for now.
+     * @return case details for the given submission reference and case type id.
+     */
     public CaseDetails findCaseBySubmissionReferenceCaseTypeId(String submissionReference, String caseTypeId) {
         if (StringUtils.isBlank(submissionReference) || StringUtils.isBlank(caseTypeId)) {
             throw new RuntimeException(EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS);
@@ -48,4 +54,6 @@ public class ET3Service {
         }
         throw new RuntimeException(String.format(EXCEPTION_CASE_DETAILS_NOT_FOUND, submissionReference, caseTypeId));
     }
+
+
 }
