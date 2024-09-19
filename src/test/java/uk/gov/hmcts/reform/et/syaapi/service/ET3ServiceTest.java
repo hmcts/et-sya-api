@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -104,14 +105,13 @@ class ET3ServiceTest {
 
     @Test
     void theUpdateSubmittedCaseWithCaseDetails() {
-        CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
+        CaseDetails caseDetails = new CaseTestData().getCaseDetailsWithCaseData();
         when(caseService.triggerEvent(TEST_SERVICE_AUTH_TOKEN,
-                                      expectedCaseDetails.getId().toString(),
+                                      caseDetails.getId().toString(),
                                       CaseEvent.UPDATE_CASE_SUBMITTED,
-                                      expectedCaseDetails.getCaseTypeId(),
-                                      expectedCaseDetails.getData())).thenReturn(expectedCaseDetails);
-        CaseDetails actualCaseDetails = et3Service.updateSubmittedCaseWithCaseDetails(TEST_SERVICE_AUTH_TOKEN,
-                                                                                      expectedCaseDetails);
-        assertThat(actualCaseDetails).isEqualTo(expectedCaseDetails);
+                                      caseDetails.getCaseTypeId(),
+                                      caseDetails.getData())).thenReturn(caseDetails);
+        assertDoesNotThrow(() -> et3Service.updateSubmittedCaseWithCaseDetails(TEST_SERVICE_AUTH_TOKEN,
+                                                                               caseDetails));
     }
 }

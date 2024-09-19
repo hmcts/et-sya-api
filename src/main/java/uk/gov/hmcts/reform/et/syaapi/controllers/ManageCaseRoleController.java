@@ -21,6 +21,7 @@ import javax.validation.constraints.NotNull;
 
 import static org.springframework.http.ResponseEntity.ok;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_SUCCESSFULLY_MODIFIED;
 
 /**
  * Rest Controller to modify user case user roles.
@@ -54,20 +55,19 @@ public class ManageCaseRoleController {
     @PostMapping("/modifyCaseUserRoles")
     @Operation(summary = "Modifies user roles of the case")
     @ApiResponseGroup
-    public ResponseEntity<CaseDetails> modifyCaseUserRoles(
+    public ResponseEntity<String> modifyCaseUserRoles(
         @RequestHeader(AUTHORIZATION) String authorisation,
         @NotNull @Parameter String modificationType,
         @NotNull @RequestBody ModifyCaseUserRolesRequest modifyCaseUserRolesRequest
     ) {
-        CaseDetails caseDetails;
         try {
-            caseDetails = manageCaseRoleService.modifyUserCaseRoles(
+            manageCaseRoleService.modifyUserCaseRoles(
                 authorisation, manageCaseRoleService.generateModifyCaseUserRolesRequest(authorisation,
                                                                                         modifyCaseUserRolesRequest),
                 modificationType);
         } catch (Exception e) {
             throw new ManageCaseRoleException(e);
         }
-        return ok(caseDetails);
+        return ok(CASE_USER_ROLE_SUCCESSFULLY_MODIFIED);
     }
 }

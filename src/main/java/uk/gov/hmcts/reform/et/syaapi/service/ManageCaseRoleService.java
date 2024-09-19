@@ -78,10 +78,8 @@ public class ManageCaseRoleService {
      */
     public CaseDetails findCaseForRoleModification(
         FindCaseForRoleModificationRequest findCaseForRoleModificationRequest) {
-        log.info(
-            "Trying to receive case for role modification. Submission Reference: {}",
-            findCaseForRoleModificationRequest.getCaseSubmissionReference()
-        );
+        log.info("Trying to receive case for role modification. Submission Reference: {}",
+                 findCaseForRoleModificationRequest.getCaseSubmissionReference());
         String adminUserToken = adminUserService.getAdminUserToken();
         String elasticSearchQuery = ElasticSearchQueryBuilder
             .buildByFindCaseForRoleModificationRequest(findCaseForRoleModificationRequest);
@@ -104,10 +102,8 @@ public class ManageCaseRoleService {
         if (CollectionUtils.isNotEmpty(scotlandCases)) {
             return scotlandCases.get(ManageCaseRoleConstants.FIRST_INDEX);
         }
-        log.info(
-            "Case not found for the parameters, submission reference: {}",
-            findCaseForRoleModificationRequest.getCaseSubmissionReference()
-        );
+        log.info("Case not found for the parameters, submission reference: {}",
+                 findCaseForRoleModificationRequest.getCaseSubmissionReference());
         return null;
     }
 
@@ -123,7 +119,7 @@ public class ManageCaseRoleService {
      * @param modificationType this value could be Assignment or Revoke.
      * @throws IOException Exception when any problem occurs while calling case assignment api (/case-users)
      */
-    public CaseDetails modifyUserCaseRoles(String authorisation,
+    public void modifyUserCaseRoles(String authorisation,
                                     ModifyCaseUserRolesRequest modifyCaseUserRolesRequest,
                                     String modificationType)
         throws IOException {
@@ -151,21 +147,19 @@ public class ManageCaseRoleService {
             log.info("Error from CCD - {}", exception.getMessage() + StringUtils.CR + roleList);
             throw exception;
         }
-        CaseDetails caseDetails = null;
         for (ModifyCaseUserRole modifyCaseUserRole : modifyCaseUserRolesRequest.getModifyCaseUserRoles()) {
-            caseDetails = et3Service.findCaseBySubmissionReferenceCaseTypeId(modifyCaseUserRole.getCaseDataId(),
-                                                                             modifyCaseUserRole.getCaseTypeId());
+            CaseDetails caseDetails =
+                et3Service.findCaseBySubmissionReferenceCaseTypeId(modifyCaseUserRole.getCaseDataId(),
+                                                                   modifyCaseUserRole.getCaseTypeId());
             RespondentUtil.setRespondentIdamIdDefaultLinkStatuses(caseDetails,
                                                                   modifyCaseUserRole.getUserFullName(),
                                                                   modifyCaseUserRole.getUserId());
-            caseDetails = et3Service.updateSubmittedCaseWithCaseDetails(authorisation, caseDetails);
+            et3Service.updateSubmittedCaseWithCaseDetails(authorisation, caseDetails);
         }
-
         log.info("{}" + StringUtils.CR + "Response status code: {} Response status code value: {}",
                  getModifyUserCaseRolesLog(caseAssignmentUserRolesRequest, modificationType, false),
                  response.getStatusCode(),
                  response.getStatusCodeValue());
-        return caseDetails;
     }
 
     private String getModifyUserCaseRolesLog(CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest,

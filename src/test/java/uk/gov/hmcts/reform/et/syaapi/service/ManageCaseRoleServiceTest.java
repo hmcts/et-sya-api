@@ -46,8 +46,10 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CCD_API_POST_METHOD_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
@@ -173,9 +175,8 @@ class ManageCaseRoleServiceTest {
             modifyCaseUserRolesRequest.getModifyCaseUserRoles().get(0).getCaseDataId(),
             modifyCaseUserRolesRequest.getModifyCaseUserRoles().get(0).getCaseTypeId()))
             .thenReturn(expectedCaseDetails);
-        when(et3Service.updateSubmittedCaseWithCaseDetails(TestConstants.DUMMY_AUTHORISATION_TOKEN,
-                                                           expectedCaseDetails))
-            .thenReturn(expectedCaseDetails);
+        doNothing().when(et3Service).updateSubmittedCaseWithCaseDetails(TestConstants.DUMMY_AUTHORISATION_TOKEN,
+                                                                        expectedCaseDetails);
         HttpMethod httpMethod = MODIFICATION_TYPE_REVOKE.equals(modificationType) ? HttpMethod.DELETE : HttpMethod.POST;
         when(restTemplate.exchange(ArgumentMatchers.anyString(),
                                    ArgumentMatchers.eq(httpMethod),
@@ -184,11 +185,10 @@ class ManageCaseRoleServiceTest {
             .thenReturn(new ResponseEntity<>(HttpStatus.OK));
         when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        CaseDetails actualCaseDetails = manageCaseRoleService.modifyUserCaseRoles(
+        assertDoesNotThrow(() -> manageCaseRoleService.modifyUserCaseRoles(
             TestConstants.DUMMY_AUTHORISATION_TOKEN,
             modifyCaseUserRolesRequest,
-            modificationType);
-        assertThat(actualCaseDetails).isEqualTo(expectedCaseDetails);
+            modificationType));
     }
 
     private static boolean isModifyCaseUserRolesRequestInvalid(ModifyCaseUserRolesRequest modifyCaseUserRolesRequest) {
