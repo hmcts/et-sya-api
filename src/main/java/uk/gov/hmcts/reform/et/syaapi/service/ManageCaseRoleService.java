@@ -123,7 +123,7 @@ public class ManageCaseRoleService {
      * @param modificationType this value could be Assignment or Revoke.
      * @throws IOException Exception when any problem occurs while calling case assignment api (/case-users)
      */
-    public void modifyUserCaseRoles(String authorisation,
+    public CaseDetails modifyUserCaseRoles(String authorisation,
                                     ModifyCaseUserRolesRequest modifyCaseUserRolesRequest,
                                     String modificationType)
         throws IOException {
@@ -151,20 +151,21 @@ public class ManageCaseRoleService {
             log.info("Error from CCD - {}", exception.getMessage() + StringUtils.CR + roleList);
             throw exception;
         }
+        CaseDetails caseDetails = null;
         for (ModifyCaseUserRole modifyCaseUserRole : modifyCaseUserRolesRequest.getModifyCaseUserRoles()) {
-            CaseDetails caseDetails = et3Service
-                .findCaseBySubmissionReferenceCaseTypeId(modifyCaseUserRole.getCaseDataId(),
-                                                         modifyCaseUserRole.getCaseTypeId());
+            caseDetails = et3Service.findCaseBySubmissionReferenceCaseTypeId(modifyCaseUserRole.getCaseDataId(),
+                                                                             modifyCaseUserRole.getCaseTypeId());
             RespondentUtil.setRespondentIdamIdDefaultLinkStatuses(caseDetails,
                                                                   modifyCaseUserRole.getUserFullName(),
                                                                   modifyCaseUserRole.getUserId());
-            et3Service.updateSubmittedCaseWithCaseDetails(authorisation, caseDetails);
+            caseDetails = et3Service.updateSubmittedCaseWithCaseDetails(authorisation, caseDetails);
         }
 
         log.info("{}" + StringUtils.CR + "Response status code: {} Response status code value: {}",
                  getModifyUserCaseRolesLog(caseAssignmentUserRolesRequest, modificationType, false),
                  response.getStatusCode(),
                  response.getStatusCodeValue());
+        return caseDetails;
     }
 
     private String getModifyUserCaseRolesLog(CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest,

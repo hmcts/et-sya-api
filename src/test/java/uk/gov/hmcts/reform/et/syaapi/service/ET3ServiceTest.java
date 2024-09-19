@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -13,6 +14,8 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
+import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,12 +43,14 @@ class ET3ServiceTest {
     AuthTokenGenerator authTokenGenerator;
     @Mock
     CoreCaseDataApi ccdApi;
+    @Mock
+    CaseService caseService;
 
     private ET3Service et3Service;
 
     @BeforeEach
     void setUp() {
-        et3Service = new ET3Service(adminUserService, authTokenGenerator, ccdApi);
+        et3Service = new ET3Service(adminUserService, authTokenGenerator, ccdApi, caseService);
     }
 
     @ParameterizedTest
@@ -97,4 +102,16 @@ class ET3ServiceTest {
                          Arguments.of(TEST_CASE_SUBMISSION_REFERENCE2, TEST_CASE_TYPE_ID_ENGLAND_WALES));
     }
 
+    @Test
+    void theUpdateSubmittedCaseWithCaseDetails() {
+        CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
+        when(caseService.triggerEvent(TEST_SERVICE_AUTH_TOKEN,
+                                      expectedCaseDetails.getId().toString(),
+                                      CaseEvent.UPDATE_CASE_SUBMITTED,
+                                      expectedCaseDetails.getCaseTypeId(),
+                                      expectedCaseDetails.getData())).thenReturn(expectedCaseDetails);
+        CaseDetails actualCaseDetails = et3Service.updateSubmittedCaseWithCaseDetails(TEST_SERVICE_AUTH_TOKEN,
+                                                                                      expectedCaseDetails);
+        assertThat(actualCaseDetails).isEqualTo(expectedCaseDetails);
+    }
 }

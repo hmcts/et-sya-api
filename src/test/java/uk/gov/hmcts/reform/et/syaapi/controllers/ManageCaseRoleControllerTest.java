@@ -19,6 +19,7 @@ import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRolesRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.SyaApiApplication;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ManageCaseRoleService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
@@ -27,7 +28,6 @@ import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -81,7 +81,8 @@ class ManageCaseRoleControllerTest {
                 .builder()
                 .modifyCaseUserRoles(List.of(modifyCaseUserRole))
                 .build();
-        doNothing().when(manageCaseRoleService).modifyUserCaseRoles(any(), any(), any());
+        CaseDetails caseDetails = new CaseTestData().getCaseDetailsWithCaseData();
+        when(manageCaseRoleService.modifyUserCaseRoles(any(), any(), any())).thenReturn(caseDetails);
         mockMvc.perform(post(POST_MODIFY_CASE_USER_ROLE_URL)
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                             .param(MODIFICATION_TYPE_PARAMETER_NAME, MODIFICATION_TYPE_PARAMETER_VALUE_REVOKE)
@@ -98,7 +99,8 @@ class ManageCaseRoleControllerTest {
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest = CaseAssignmentUserRolesRequest.builder()
             .caseAssignmentUserRoles(List.of(caseAssignmentUserRole))
             .build();
-        doNothing().when(manageCaseRoleService).modifyUserCaseRoles(any(), any(), any());
+        CaseDetails caseDetails = new CaseTestData().getCaseDetailsWithCaseData();
+        when(manageCaseRoleService.modifyUserCaseRoles(any(), any(), any())).thenReturn(caseDetails);
         mockMvc.perform(post(POST_MODIFY_CASE_USER_ROLE_URL)
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                             .param(MODIFICATION_TYPE_PARAMETER_NAME, MODIFICATION_TYPE_PARAMETER_VALUE_REVOKE)

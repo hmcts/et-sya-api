@@ -46,7 +46,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
@@ -166,14 +165,17 @@ class ManageCaseRoleServiceTest {
             return;
         }
 
-        CaseDetails caseDetails = new CaseTestData().getCaseDetailsWithCaseData();
-        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(expectedCaseDetails.getData());
         caseData.getRespondentCollection().get(0).getValue().setRespondentName(TestConstants.TEST_RESPONDENT_NAME);
-        caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+        expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
         when(et3Service.findCaseBySubmissionReferenceCaseTypeId(
             modifyCaseUserRolesRequest.getModifyCaseUserRoles().get(0).getCaseDataId(),
             modifyCaseUserRolesRequest.getModifyCaseUserRoles().get(0).getCaseTypeId()))
-            .thenReturn(caseDetails);
+            .thenReturn(expectedCaseDetails);
+        when(et3Service.updateSubmittedCaseWithCaseDetails(TestConstants.DUMMY_AUTHORISATION_TOKEN,
+                                                           expectedCaseDetails))
+            .thenReturn(expectedCaseDetails);
         HttpMethod httpMethod = MODIFICATION_TYPE_REVOKE.equals(modificationType) ? HttpMethod.DELETE : HttpMethod.POST;
         when(restTemplate.exchange(ArgumentMatchers.anyString(),
                                    ArgumentMatchers.eq(httpMethod),
@@ -182,10 +184,11 @@ class ManageCaseRoleServiceTest {
             .thenReturn(new ResponseEntity<>(HttpStatus.OK));
         when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        assertDoesNotThrow(() -> manageCaseRoleService
-            .modifyUserCaseRoles(TestConstants.DUMMY_AUTHORISATION_TOKEN,
-                                 modifyCaseUserRolesRequest,
-                                 modificationType));
+        CaseDetails actualCaseDetails = manageCaseRoleService.modifyUserCaseRoles(
+            TestConstants.DUMMY_AUTHORISATION_TOKEN,
+            modifyCaseUserRolesRequest,
+            modificationType);
+        assertThat(actualCaseDetails).isEqualTo(expectedCaseDetails);
     }
 
     private static boolean isModifyCaseUserRolesRequestInvalid(ModifyCaseUserRolesRequest modifyCaseUserRolesRequest) {

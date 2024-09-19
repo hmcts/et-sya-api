@@ -17,6 +17,7 @@ import java.util.Optional;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.FIRST_INDEX;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 
 /**
  * Provides services for ET3 Forms.
@@ -29,6 +30,7 @@ public class ET3Service {
     private final AdminUserService adminUserService;
     private final AuthTokenGenerator authTokenGenerator;
     private final CoreCaseDataApi ccdApi;
+    private final CaseService caseService;
 
     /**
      * Finds case by its submission reference and case type id.
@@ -55,8 +57,9 @@ public class ET3Service {
         throw new RuntimeException(String.format(EXCEPTION_CASE_DETAILS_NOT_FOUND, submissionReference, caseTypeId));
     }
 
-    public void updateSubmittedCaseWithCaseDetails(String authorisation, CaseDetails caseDetails) {
-
+    public CaseDetails updateSubmittedCaseWithCaseDetails(String authorisation, CaseDetails caseDetails) {
+        return caseService.triggerEvent(authorisation, caseDetails.getId().toString(), UPDATE_CASE_SUBMITTED,
+                     caseDetails.getCaseTypeId(), caseDetails.getData());
     }
 
 }
