@@ -13,8 +13,6 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignedUserRolesResponse;
-import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.ecm.common.service.PostcodeToOfficeService;
 import uk.gov.hmcts.ecm.common.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -51,7 +49,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
@@ -68,13 +65,10 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CAS
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ONLINE_SUBMISSION;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper.mapRequestCaseDataToCaseData;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CASE_ID;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.DUMMY_CASE_SUBMISSION_REFERENCE;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.DUMMY_USER_ID;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.SUBMIT_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
@@ -124,7 +118,6 @@ class CaseServiceTest {
     private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private static final String TSE_PDF_DESCRIPTION = "Test description";
 
-    private static final String ALL_CASES_QUERY = "{\"size\":10000,\"query\":{\"match_all\": {}}}";
     private final PdfDecodedMultipartFile tsePdfMultipartFileMock = new PdfDecodedMultipartFile(
         TSE_PDF_BYTES,
         TSE_PDF_NAME,
@@ -210,77 +203,6 @@ class CaseServiceTest {
                                         """);
         when(notificationService.sendSubmitCaseConfirmationEmail(any(), any(), any(), any()))
             .thenReturn(sendEmailResponse);
-    }
-
-    @Test
-    @SneakyThrows
-    void shouldGetUserCase() {
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(ccdApiClient.getCase(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            caseTestData.getCaseRequest().getCaseId()
-        )).thenReturn(caseTestData.getExpectedDetails());
-        CaseRequest caseRequest = CaseRequest.builder()
-            .caseId(caseTestData.getCaseRequest().getCaseId()).build();
-        CaseAssignmentUserRole caseAssignedUserRole = CaseAssignmentUserRole.builder()
-            .caseDataId(caseRequest.getCaseId())
-            .caseRole(CASE_USER_ROLE_CREATOR)
-            .userId(USER_ID).build();
-        CaseAssignedUserRolesResponse caseAssignedUserRolesResponse = CaseAssignedUserRolesResponse.builder()
-                .caseAssignedUserRoles(List.of(caseAssignedUserRole))
-                    .build();
-        when(manageCaseRoleService.getCaseUserRolesByCaseAndUserIdsCcd(eq(TEST_SERVICE_AUTH_TOKEN), anyList()))
-            .thenReturn(caseAssignedUserRolesResponse);
-        CaseDetails caseDetails = caseService.getUserCaseByCaseUserRole(TEST_SERVICE_AUTH_TOKEN,
-                                                                        caseRequest.getCaseId(),
-                                                                        CASE_USER_ROLE_CREATOR);
-        assertEquals(caseTestData.getExpectedDetails(), caseDetails);
-    }
-
-    @Test
-    @SneakyThrows
-    void shouldGetAllUserCases() {
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-
-        when(ccdApiClient.searchCases(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            SCOTLAND_CASE_TYPE,
-            ALL_CASES_QUERY
-        )).thenReturn(caseTestData.getSearchResultRequestCaseDataListScotland());
-
-        when(ccdApiClient.searchCases(
-            TEST_SERVICE_AUTH_TOKEN,
-            TEST_SERVICE_AUTH_TOKEN,
-            ENGLAND_CASE_TYPE,
-            ALL_CASES_QUERY
-        )).thenReturn(caseTestData.getSearchResultRequestCaseDataListEngland());
-        CaseAssignmentUserRole caseAssignmentUserRole1 = CaseAssignmentUserRole.builder()
-            .userId(DUMMY_USER_ID)
-            .caseRole(CASE_USER_ROLE_CREATOR).caseDataId(DUMMY_CASE_SUBMISSION_REFERENCE)
-            .caseDataId("1646225213651533")
-            .build();
-        CaseAssignmentUserRole caseAssignmentUserRole2 = CaseAssignmentUserRole.builder()
-            .userId(DUMMY_USER_ID)
-            .caseRole(CASE_USER_ROLE_CREATOR).caseDataId(DUMMY_CASE_SUBMISSION_REFERENCE)
-            .caseDataId("1646225213651512")
-            .build();
-        CaseAssignmentUserRole caseAssignmentUserRole3 = CaseAssignmentUserRole.builder()
-            .userId(DUMMY_USER_ID)
-            .caseRole(CASE_USER_ROLE_CREATOR).caseDataId(DUMMY_CASE_SUBMISSION_REFERENCE)
-            .caseDataId("1646225213651598")
-            .build();
-        CaseAssignedUserRolesResponse expectedCaseAssignedUserRolesResponse = CaseAssignedUserRolesResponse.builder()
-            .caseAssignedUserRoles(List.of(caseAssignmentUserRole1, caseAssignmentUserRole2, caseAssignmentUserRole3))
-            .build();
-        when(manageCaseRoleService.getCaseUserRolesByCaseAndUserIdsCcd(eq(TEST_SERVICE_AUTH_TOKEN), anyList()))
-            .thenReturn(expectedCaseAssignedUserRolesResponse);
-        List<CaseDetails> caseDetails = caseService.getUserCasesByCaseUserRole(TEST_SERVICE_AUTH_TOKEN,
-                                                                               CASE_USER_ROLE_CREATOR);
-
-        assertThat(caseTestData.getExpectedCaseDataListCombined())
-            .hasSize(caseDetails.size()).hasSameElementsAs(caseDetails);
     }
 
     @Test

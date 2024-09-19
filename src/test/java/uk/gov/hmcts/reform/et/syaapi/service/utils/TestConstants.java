@@ -84,12 +84,14 @@ public final class TestConstants {
     public static final String TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_ID_KEY = "id";
     public static final String TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_ID_VALUE = "test_respondent_sum_type_item_id";
     public static final String TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_VALUE_KEY = "value";
+
     public static final String TEST_EXCEPTION_INVALID_MODIFICATION_TYPE =
         "java.lang.Exception: Invalid modification type";
     public static final String TEST_ET3_SERVICE_EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS =
         "Case details not found because caseId or caseTypeId value is empty";
     public static final String TEST_ET3_SERVICE_EXCEPTION_CASE_DETAILS_NOT_FOUND =
         "Case details not found with the given caseId";
+
     public static final String TEST_RESPONDENT_UTIL_EXCEPTION_CASE_DATA_NOT_FOUND = "doesn't have case data values";
     public static final String TEST_RESPONDENT_UTIL_EXCEPTION_EMPTY_RESPONDENT_COLLECTION =
         "Unable to add respondent idam id because there is not respondent defined in the case case with id,";
@@ -103,6 +105,7 @@ public final class TestConstants {
     public static final String TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET = "notAvailableYet";
     public static final String TEST_RESPONDENT_UTIL_LINK_STATUS_OPTIONAL = "optional";
     public static final String TEST_RESPONDENT_UTIL_LINK_STATUS_CANNOT_START_YET = "cannotStartYet";
+
     public static final PdfDecodedMultipartFile PDF_DECODED_MULTIPART_FILE_NULL = new PdfDecodedMultipartFile(
         null,
         TestConstants.TEST_PDF_FILE_ORIGINAL_NAME,
@@ -219,8 +222,6 @@ public final class TestConstants {
                                                + "\"confirm_email_before_download\":null,\"retention_period\""
                                                + ":null,\"is_csv\":false}");
     public static final String MICHAEL = "Michael";
-    public static final String DUMMY_CASE_SUBMISSION_REFERENCE = "1234567890123456";
-    public static final String DUMMY_USER_ID = "123456789012345678901234567890";
     public static final String DUMMY_AUTHORISATION_TOKEN = "dummy_authorisation_token";
     public static final String DUMMY_SERVICE_AUTHORISATION_TOKEN = "dummy_service_authorisation_token";
 

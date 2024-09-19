@@ -52,6 +52,7 @@ public class ApplicationService {
     private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final FeatureToggleService featureToggleService;
+    private final ManageCaseRoleService manageCaseRoleService;
 
     /**
      * Get the next application number for the case.
@@ -77,9 +78,9 @@ public class ApplicationService {
 
         String caseTypeId = request.getCaseTypeId();
         // Added parameter case user role as creator...
-        CaseDetails caseDetails = caseService.getUserCaseByCaseUserRole(authorization,
-                                                                        request.getCaseId(),
-                                                                        caseUserRole);
+        CaseDetails caseDetails = manageCaseRoleService.getUserCaseByCaseUserRole(authorization,
+                                                                                  request.getCaseId(),
+                                                                                  caseUserRole);
         ClaimantTse claimantTse = request.getClaimantTse();
         caseDetails.getData().put("claimantTse", claimantTse);
 
@@ -87,7 +88,7 @@ public class ApplicationService {
             log.info("Uploading pdf of TSE application");
             caseService.uploadTseCyaAsPdf(authorization, caseDetails, claimantTse, caseTypeId);
         } catch (CaseDocumentException | DocumentGenerationException e) {
-            log.error("Couldn't upload pdf of TSE application " + e.getMessage());
+            logTseApplicationDocumentUploadError(e);
         }
 
         UploadedDocumentType contactApplicationFile = claimantTse.getContactApplicationFile();
@@ -109,6 +110,10 @@ public class ApplicationService {
         sendAcknowledgementEmails(authorization, request, finalCaseDetails);
 
         return finalCaseDetails;
+    }
+
+    private static void logTseApplicationDocumentUploadError(Exception exception) {
+        log.error("Couldn't upload pdf of TSE application {}", exception.getMessage());
     }
 
     /**
@@ -255,7 +260,7 @@ public class ApplicationService {
                     application.getType()
                 );
             } catch (CaseDocumentException | DocumentGenerationException e) {
-                log.error("Couldn't upload pdf of TSE application " + e.getMessage());
+                logTseApplicationDocumentUploadError(e);
             }
         }
     }

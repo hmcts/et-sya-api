@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.HubLinkService;
+import uk.gov.hmcts.reform.et.syaapi.service.ManageCaseRoleService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
@@ -81,6 +82,9 @@ class ManageCaseControllerTest {
     private IdamClient idamClient;
 
     @MockBean
+    private ManageCaseRoleService manageCaseRoleService;
+
+    @MockBean
     private VerifyTokenService verifyTokenService;
 
     @MockBean
@@ -109,11 +113,10 @@ class ManageCaseControllerTest {
 
         // given
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(caseService.getUserCaseByCaseUserRole(TEST_SERVICE_AUTH_TOKEN,
-                                                   caseRequest.getCaseId(),
-                                                   CASE_USER_ROLE_CREATOR))
+        when(manageCaseRoleService.getUserCaseByCaseUserRole(TEST_SERVICE_AUTH_TOKEN,
+                                                             caseRequest.getCaseId(),
+                                                             CASE_USER_ROLE_CREATOR))
             .thenReturn(expectedDetails);
-
         // when
         mockMvc.perform(post("/cases/user-case", CASE_ID)
                             .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
@@ -133,7 +136,7 @@ class ManageCaseControllerTest {
     void shouldGetCaseDetailsByUser() {
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(UserInfo.builder().uid(USER_ID).build());
-        when(caseService.getUserCasesByCaseUserRole(
+        when(manageCaseRoleService.getUserCasesByCaseUserRole(
             TEST_SERVICE_AUTH_TOKEN, CASE_USER_ROLE_CREATOR
         )).thenReturn(requestCaseDataList);
 
@@ -157,7 +160,7 @@ class ManageCaseControllerTest {
     void shouldGetCaseDetailsByDefendantUser() {
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(UserInfo.builder().uid(USER_ID).build());
-        when(caseService.getUserCasesByCaseUserRole(
+        when(manageCaseRoleService.getUserCasesByCaseUserRole(
             TEST_SERVICE_AUTH_TOKEN, CASE_USER_ROLE_DEFENDANT
         )).thenReturn(requestCaseDataList);
 
@@ -185,7 +188,7 @@ class ManageCaseControllerTest {
         Request request = Request.create(
             Request.HttpMethod.GET, "/test", Collections.emptyMap(), null, new RequestTemplate());
         when(verifyTokenService.verifyTokenSignature(anyString())).thenReturn(true);
-        when(caseService.getUserCaseByCaseUserRole(anyString(), anyString(), anyString())).thenThrow(
+        when(manageCaseRoleService.getUserCaseByCaseUserRole(anyString(), anyString(), anyString())).thenThrow(
             new FeignException.BadRequest(
                 "Bad request",
                 request,

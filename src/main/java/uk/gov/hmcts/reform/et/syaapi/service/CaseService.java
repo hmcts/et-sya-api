@@ -5,12 +5,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import uk.gov.dwp.regex.InvalidPostcodeException;
 import uk.gov.hmcts.ecm.common.helpers.DocumentHelper;
-import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignedUserRolesResponse;
 import uk.gov.hmcts.ecm.common.service.PostcodeToOfficeService;
 import uk.gov.hmcts.ecm.common.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -28,7 +26,6 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
-import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.JurisdictionCodesMapper;
@@ -36,12 +33,10 @@ import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfUploadService;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.DocumentUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -66,7 +61,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTIO
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.FIRST_INDEX;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.INITIATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
@@ -93,64 +87,6 @@ public class CaseService {
     private final CaseOfficeService caseOfficeService;
     private static final String ALL_CASES_QUERY = "{\"size\":10000,\"query\":{\"match_all\": {}}}";
     private final FeatureToggleService featureToggleService;
-    private final ManageCaseRoleService manageCaseRoleService;
-
-    /**
-     * With given caseId, gets the case details, by case user role and returns case details by filtering documents
-     * with the given caseUserRole.
-     *
-     * @param authorization is used to get the {@link UserInfo} for the request
-     * @return the associated {@link CaseDetails} for the ID provided
-     */
-    // @Retryable({FeignException.class, RuntimeException.class}) --> No need to give exception classes as Retryable
-    // covers all runtime exceptions.
-    @Retryable
-    public CaseDetails getUserCaseByCaseUserRole(String authorization,
-                                                 String caseId,
-                                                 String caseUserRole) {
-        CaseDetails caseDetails = ccdApiClient.getCase(authorization, authTokenGenerator.generate(), caseId);
-        if (ObjectUtils.isEmpty(caseDetails)) {
-            throw new ManageCaseRoleException(
-                new Exception("Unable to find user case by case id: " + caseDetails.getId()));
-        }
-        List<CaseDetails> caseDetailsListByCaseUserRole =
-            getCasesByCaseDetailsListAuthorizationAndCaseUserRole(List.of(caseDetails), authorization, caseUserRole);
-        return CollectionUtils.isNotEmpty(caseDetailsListByCaseUserRole)
-            ? caseDetailsListByCaseUserRole.get(FIRST_INDEX)
-            : null;
-    }
-
-    /**
-     * Given a user derived from the authorisation token in the request,
-     * gets all cases {@link CaseDetails} for that user and filters case documents.
-     *
-     * @param authorization is used to get the {@link UserInfo} for the request
-     * @return the associated {@link CaseDetails} list for the authorization code of the user provided
-     */
-    // @Retryable({FeignException.class, RuntimeException.class}) --> No need to give exception classes as Retryable
-    // covers all runtime exceptions.
-    @Retryable
-    public List<CaseDetails> getUserCasesByCaseUserRole(String authorization, String caseUserRole) {
-        List<CaseDetails> caseDetailsList = getAllUserCases(authorization);
-        return getCasesByCaseDetailsListAuthorizationAndCaseUserRole(caseDetailsList, authorization, caseUserRole);
-    }
-
-    private List<CaseDetails> getCasesByCaseDetailsListAuthorizationAndCaseUserRole(
-        List<CaseDetails> caseDetailsList, String authorization, String caseUserRole) {
-        List<CaseDetails> caseDetailsListByRole;
-        try {
-            CaseAssignedUserRolesResponse caseAssignedUserRolesResponse =
-                manageCaseRoleService.getCaseUserRolesByCaseAndUserIdsCcd(authorization, caseDetailsList);
-            caseDetailsListByRole = ManageCaseRoleService
-                .getCaseDetailsByCaseUserRole(caseDetailsList,
-                                              caseAssignedUserRolesResponse.getCaseAssignedUserRoles(),
-                                              caseUserRole);
-            DocumentUtil.filterCasesDocumentsByCaseUserRole(caseDetailsListByRole, caseUserRole);
-        } catch (IOException e) {
-            throw new ManageCaseRoleException(e);
-        }
-        return caseDetailsListByRole;
-    }
 
     /**
      * Given a user derived from the authorisation token in the request,
@@ -162,7 +98,7 @@ public class CaseService {
     // @Retryable({FeignException.class, RuntimeException.class}) --> No need to give exception classes as Retryable
     // covers all runtime exceptions.
     @Retryable
-    private List<CaseDetails> getAllUserCases(String authorization) {
+    protected List<CaseDetails> getAllUserCases(String authorization) {
         // Elasticsearch
         List<CaseDetails> scotlandCases = Optional.ofNullable(ccdApiClient.searchCases(
             authorization,

@@ -62,8 +62,9 @@ public class ManageCaseRoleController {
     ) {
         try {
             manageCaseRoleService.modifyUserCaseRoles(
+                authorisation,
                 manageCaseRoleService.generateModifyCaseUserRolesRequest(authorisation,
-                                                                             modifyCaseUserRolesRequest),
+                                                                         modifyCaseUserRolesRequest),
                 modificationType);
         } catch (Exception e) {
             throw new ManageCaseRoleException(e);

@@ -69,6 +69,8 @@ class ApplicationServiceTest {
     private CaseDetailsConverter caseDetailsConverter;
     @MockBean
     private FeatureToggleService featureToggleService;
+    @MockBean
+    private ManageCaseRoleService manageCaseRoleService;
 
     private final TestData testData;
 
@@ -83,18 +85,20 @@ class ApplicationServiceTest {
         caseDocumentService = mock(CaseDocumentService.class);
         caseDetailsConverter = mock(CaseDetailsConverter.class);
         featureToggleService = mock(FeatureToggleService.class);
+        manageCaseRoleService = mock(ManageCaseRoleService.class);
 
         applicationService = new ApplicationService(
             caseService,
             notificationService,
             caseDocumentService,
             caseDetailsConverter,
-            featureToggleService
+            featureToggleService,
+            manageCaseRoleService
         );
 
         when(featureToggleService.isWorkAllocationEnabled()).thenReturn(true);
 
-        when(caseService.getUserCaseByCaseUserRole(
+        when(manageCaseRoleService.getUserCaseByCaseUserRole(
             TEST_SERVICE_AUTH_TOKEN,
             testData.getClaimantApplicationRequest().getCaseId(),
             CASE_USER_ROLE_CREATOR

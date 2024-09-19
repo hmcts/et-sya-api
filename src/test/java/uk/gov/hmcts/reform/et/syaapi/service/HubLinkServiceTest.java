@@ -31,6 +31,8 @@ class HubLinkServiceTest {
     private HubLinkService hubLinkService;
     @MockBean
     private FeatureToggleService featureToggleService;
+    @MockBean
+    private ManageCaseRoleService manageCaseRoleService;
 
     private final TestData testData;
     private HubLinksStatusesRequest hubLinksStatusesRequest;
@@ -44,7 +46,11 @@ class HubLinkServiceTest {
         caseService = mock(CaseService.class);
         caseDetailsConverter = mock(CaseDetailsConverter.class);
         featureToggleService = mock(FeatureToggleService.class);
-        hubLinkService = new HubLinkService(caseService, caseDetailsConverter, featureToggleService);
+        manageCaseRoleService = mock(ManageCaseRoleService.class);
+        hubLinkService = new HubLinkService(caseService,
+                                            caseDetailsConverter,
+                                            featureToggleService,
+                                            manageCaseRoleService);
         HubLinksStatuses hubLinksStatuses = new HubLinksStatuses();
         hubLinksStatusesRequest = HubLinksStatusesRequest.builder()
             .caseTypeId(CASE_TYPE)
@@ -92,12 +98,12 @@ class HubLinkServiceTest {
             null
         )).thenReturn(testData.getCaseDetailsWithData());
         when(featureToggleService.isCaseFlagsEnabled()).thenReturn(false);
-        when(caseService.getUserCaseByCaseUserRole(TEST_SERVICE_AUTH_TOKEN, CASE_ID, CASE_USER_ROLE_CREATOR))
+        when(manageCaseRoleService.getUserCaseByCaseUserRole(TEST_SERVICE_AUTH_TOKEN, CASE_ID, CASE_USER_ROLE_CREATOR))
             .thenReturn(testData.getCaseDetailsWithData());
 
         hubLinkService.updateHubLinkStatuses(hubLinksStatusesRequest, TEST_SERVICE_AUTH_TOKEN, CASE_USER_ROLE_CREATOR);
 
-        verify(caseService, times(1)).getUserCaseByCaseUserRole(
+        verify(manageCaseRoleService, times(1)).getUserCaseByCaseUserRole(
             TEST_SERVICE_AUTH_TOKEN,
             hubLinksStatusesRequest.getCaseId(),
             CASE_USER_ROLE_CREATOR

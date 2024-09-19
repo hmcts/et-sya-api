@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
@@ -26,6 +27,7 @@ import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.DocumentUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ManageCaseRoleServiceUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.RemoteServiceUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.RespondentUtil;
@@ -57,6 +59,7 @@ public class ManageCaseRoleService {
     private final CoreCaseDataApi ccdApi;
     private final IdamClient idamClient;
     private final ET3Service et3Service;
+    private final CaseService caseService;
 
     @Value("${assign_case_access_api_url}")
     private String aacUrl;
@@ -113,13 +116,16 @@ public class ManageCaseRoleService {
      * a list of case_users that contains case id, user id and case role to modify the case. For assigning a new role
      * to the case modification type should be Assignment, to revoke an existing role modification type should be
      * Revoke
+     * @param authorisation Authorisation token of the user
      * @param modifyCaseUserRolesRequest This is the list of case roles that should be Revoked or Assigned to
      *                                   respondent. It also has the idam id of the respondent and the case id
      *                                   of the case that will be assigned
      * @param modificationType this value could be Assignment or Revoke.
      * @throws IOException Exception when any problem occurs while calling case assignment api (/case-users)
      */
-    public void modifyUserCaseRoles(ModifyCaseUserRolesRequest modifyCaseUserRolesRequest, String modificationType)
+    public void modifyUserCaseRoles(String authorisation,
+                                    ModifyCaseUserRolesRequest modifyCaseUserRolesRequest,
+                                    String modificationType)
         throws IOException {
         // Gets httpMethod by modification type. If modification type is Assignment, method is POST, if Revoke, method
         // is DELETE. Null if modification type is different then Assignment and Revoke.
@@ -127,24 +133,13 @@ public class ManageCaseRoleService {
         // Checks modifyCaseUserRolesRequest parameter if it is empty or not and it's objects.
         // If there is any problem throws ManageCaseRoleException.
         ManageCaseRoleServiceUtil.checkModifyCaseUserRolesRequest(modifyCaseUserRolesRequest);
-        // Checks all respondents and if any of the respondent's name matches with the user's input respondent name
-        // sets respondent idam id.
-        for (ModifyCaseUserRole modifyCaseUserRole : modifyCaseUserRolesRequest.getModifyCaseUserRoles()) {
-            CaseDetails caseDetails = et3Service
-                .findCaseBySubmissionReferenceCaseTypeId(modifyCaseUserRole.getCaseDataId(),
-                                                         modifyCaseUserRole.getCaseTypeId());
-            RespondentUtil.setRespondentIdamIdDefaultLinkStatuses(caseDetails,
-                                                                  modifyCaseUserRole.getUserFullName(),
-                                                                  modifyCaseUserRole.getUserId());
-        }
-
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest =
             ManageCaseRoleServiceUtil.generateCaseAssignmentUserRolesRequestByModifyCaseUserRolesRequest(
                 modifyCaseUserRolesRequest);
         log.info(getModifyUserCaseRolesLog(caseAssignmentUserRolesRequest, modificationType, true));
-        String userToken = adminUserService.getAdminUserToken();
         ResponseEntity<CaseAssignmentUserRolesResponse> response;
         try {
+            String userToken = adminUserService.getAdminUserToken();
             HttpEntity<CaseAssignmentUserRolesRequest> requestEntity =
                 new HttpEntity<>(caseAssignmentUserRolesRequest,
                                  RemoteServiceUtil.buildHeaders(userToken, this.authTokenGenerator.generate()));
@@ -156,11 +151,20 @@ public class ManageCaseRoleService {
             log.info("Error from CCD - {}", exception.getMessage() + StringUtils.CR + roleList);
             throw exception;
         }
+        for (ModifyCaseUserRole modifyCaseUserRole : modifyCaseUserRolesRequest.getModifyCaseUserRoles()) {
+            CaseDetails caseDetails = et3Service
+                .findCaseBySubmissionReferenceCaseTypeId(modifyCaseUserRole.getCaseDataId(),
+                                                         modifyCaseUserRole.getCaseTypeId());
+            RespondentUtil.setRespondentIdamIdDefaultLinkStatuses(caseDetails,
+                                                                  modifyCaseUserRole.getUserFullName(),
+                                                                  modifyCaseUserRole.getUserId());
+            et3Service.updateSubmittedCaseWithCaseDetails(authorisation, caseDetails);
+        }
+
         log.info("{}" + StringUtils.CR + "Response status code: {} Response status code value: {}",
                  getModifyUserCaseRolesLog(caseAssignmentUserRolesRequest, modificationType, false),
                  response.getStatusCode(),
-                 response.getStatusCodeValue()
-        );
+                 response.getStatusCodeValue());
     }
 
     private String getModifyUserCaseRolesLog(CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest,
@@ -313,6 +317,63 @@ public class ManageCaseRoleService {
                     break;
                 }
             }
+        }
+        return caseDetailsListByRole;
+    }
+
+    /**
+     * With given caseId, gets the case details, by case user role and returns case details by filtering documents
+     * with the given caseUserRole.
+     *
+     * @param authorization is used to get the {@link UserInfo} for the request
+     * @return the associated {@link CaseDetails} for the ID provided
+     */
+    // @Retryable({FeignException.class, RuntimeException.class}) --> No need to give exception classes as Retryable
+    // covers all runtime exceptions.
+    @Retryable
+    public CaseDetails getUserCaseByCaseUserRole(String authorization,
+                                                 String caseId,
+                                                 String caseUserRole) {
+        CaseDetails caseDetails = ccdApi.getCase(authorization, authTokenGenerator.generate(), caseId);
+        if (ObjectUtils.isEmpty(caseDetails)) {
+            throw new ManageCaseRoleException(
+                new Exception("Unable to find user case by case id: " + caseDetails.getId()));
+        }
+        List<CaseDetails> caseDetailsListByCaseUserRole =
+            getCasesByCaseDetailsListAuthorizationAndCaseUserRole(List.of(caseDetails), authorization, caseUserRole);
+        return CollectionUtils.isNotEmpty(caseDetailsListByCaseUserRole)
+            ? caseDetailsListByCaseUserRole.get(ManageCaseRoleConstants.FIRST_INDEX)
+            : null;
+    }
+
+    /**
+     * Given a user derived from the authorisation token in the request,
+     * gets all cases {@link CaseDetails} for that user and filters case documents.
+     *
+     * @param authorization is used to get the {@link UserInfo} for the request
+     * @return the associated {@link CaseDetails} list for the authorization code of the user provided
+     */
+    // @Retryable({FeignException.class, RuntimeException.class}) --> No need to give exception classes as Retryable
+    // covers all runtime exceptions.
+    @Retryable
+    public List<CaseDetails> getUserCasesByCaseUserRole(String authorization, String caseUserRole) {
+        List<CaseDetails> caseDetailsList = caseService.getAllUserCases(authorization);
+        return getCasesByCaseDetailsListAuthorizationAndCaseUserRole(caseDetailsList, authorization, caseUserRole);
+    }
+
+    private List<CaseDetails> getCasesByCaseDetailsListAuthorizationAndCaseUserRole(
+        List<CaseDetails> caseDetailsList, String authorization, String caseUserRole) {
+        List<CaseDetails> caseDetailsListByRole;
+        try {
+            CaseAssignedUserRolesResponse caseAssignedUserRolesResponse =
+                getCaseUserRolesByCaseAndUserIdsCcd(authorization, caseDetailsList);
+            caseDetailsListByRole = ManageCaseRoleService
+                .getCaseDetailsByCaseUserRole(caseDetailsList,
+                                              caseAssignedUserRolesResponse.getCaseAssignedUserRoles(),
+                                              caseUserRole);
+            DocumentUtil.filterCasesDocumentsByCaseUserRole(caseDetailsListByRole, caseUserRole);
+        } catch (IOException e) {
+            throw new ManageCaseRoleException(e);
         }
         return caseDetailsListByRole;
     }

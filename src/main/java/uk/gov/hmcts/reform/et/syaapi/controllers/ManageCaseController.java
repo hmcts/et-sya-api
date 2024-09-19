@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.HubLinkService;
+import uk.gov.hmcts.reform.et.syaapi.service.ManageCaseRoleService;
 import uk.gov.service.notify.NotificationClientException;
 
 import java.util.List;
@@ -45,9 +46,10 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.ST
 @RequestMapping("/cases")
 public class ManageCaseController {
 
-    private final CaseService caseService;
+    private final ManageCaseRoleService manageCaseRoleService;
     private final ApplicationService applicationService;
     private final HubLinkService hubLinkService;
+    private final CaseService caseService;
 
     /**
      * Accepts parameter of type {@link CaseRequest} and returns the case specified in 'getCaseId'.
@@ -63,7 +65,7 @@ public class ManageCaseController {
         @RequestHeader(AUTHORIZATION) String authorization,
         @RequestParam(value = CASE_USER_ROLE_API_PARAMETER_NAME, required = false) String caseUserRole,
         @RequestBody CaseRequest caseRequest) {
-        CaseDetails caseDetails = caseService.getUserCaseByCaseUserRole(
+        CaseDetails caseDetails = manageCaseRoleService.getUserCaseByCaseUserRole(
             authorization, caseRequest.getCaseId(),
             StringUtils.isBlank(caseUserRole)
                 ? CASE_USER_ROLE_CREATOR
@@ -83,7 +85,7 @@ public class ManageCaseController {
     public ResponseEntity<List<CaseDetails>> getUserCasesByCaseUserRole(
         @RequestHeader(AUTHORIZATION) String authorization,
         @RequestParam(value = CASE_USER_ROLE_API_PARAMETER_NAME, required = false) String caseUserRole) {
-        var caseDetails = caseService.getUserCasesByCaseUserRole(
+        var caseDetails = manageCaseRoleService.getUserCasesByCaseUserRole(
             authorization,
             StringUtils.isBlank(caseUserRole)
                 ? CASE_USER_ROLE_CREATOR

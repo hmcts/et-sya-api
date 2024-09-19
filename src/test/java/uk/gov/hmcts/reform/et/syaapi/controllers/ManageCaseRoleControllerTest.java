@@ -81,7 +81,7 @@ class ManageCaseRoleControllerTest {
                 .builder()
                 .modifyCaseUserRoles(List.of(modifyCaseUserRole))
                 .build();
-        doNothing().when(manageCaseRoleService).modifyUserCaseRoles(any(), any());
+        doNothing().when(manageCaseRoleService).modifyUserCaseRoles(any(), any(), any());
         mockMvc.perform(post(POST_MODIFY_CASE_USER_ROLE_URL)
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                             .param(MODIFICATION_TYPE_PARAMETER_NAME, MODIFICATION_TYPE_PARAMETER_VALUE_REVOKE)
@@ -98,7 +98,7 @@ class ManageCaseRoleControllerTest {
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest = CaseAssignmentUserRolesRequest.builder()
             .caseAssignmentUserRoles(List.of(caseAssignmentUserRole))
             .build();
-        doNothing().when(manageCaseRoleService).modifyUserCaseRoles(any(), any());
+        doNothing().when(manageCaseRoleService).modifyUserCaseRoles(any(), any(), any());
         mockMvc.perform(post(POST_MODIFY_CASE_USER_ROLE_URL)
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                             .param(MODIFICATION_TYPE_PARAMETER_NAME, MODIFICATION_TYPE_PARAMETER_VALUE_REVOKE)

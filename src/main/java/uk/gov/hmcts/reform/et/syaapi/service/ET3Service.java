@@ -55,5 +55,8 @@ public class ET3Service {
         throw new RuntimeException(String.format(EXCEPTION_CASE_DETAILS_NOT_FOUND, submissionReference, caseTypeId));
     }
 
+    public void updateSubmittedCaseWithCaseDetails(String authorisation, CaseDetails caseDetails) {
+
+    }
 
 }

@@ -96,4 +96,5 @@ class ET3ServiceTest {
                          Arguments.of(TEST_CASE_SUBMISSION_REFERENCE1, TEST_CASE_TYPE_ID_ENGLAND_WALES),
                          Arguments.of(TEST_CASE_SUBMISSION_REFERENCE2, TEST_CASE_TYPE_ID_ENGLAND_WALES));
     }
+
 }

@@ -19,6 +19,7 @@ public class HubLinkService {
     private final CaseService caseService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final FeatureToggleService featureToggleService;
+    private final ManageCaseRoleService manageCaseRoleService;
 
     /**
      * Updates case data with hub link statuses {@link CaseDetails}.
@@ -53,7 +54,7 @@ public class HubLinkService {
         } else {
             log.info("Case flags disabled - calling UPDATE_CASE_SUBMITTED");
             // Added parameter case user role as creator.
-            CaseDetails caseDetails = caseService.getUserCaseByCaseUserRole(authorization,
+            CaseDetails caseDetails = manageCaseRoleService.getUserCaseByCaseUserRole(authorization,
                                                                             request.getCaseId(),
                                                                             caseUserRole);
             caseDetails.getData().put("hubLinksStatuses", request.getHubLinksStatuses());
