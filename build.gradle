@@ -219,7 +219,7 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-json'
   implementation group: 'org.springframework.boot', name: 'spring-boot-configuration-processor'
-  implementation group: 'org.springframework.retry', name: 'spring-retry', version: '2.0.8'
+  implementation group: 'org.springframework.retry', name: 'spring-retry', version: '2.0.9'
   implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.17.2'
   implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.2'
 
@@ -249,8 +249,8 @@ dependencies {
   implementation 'org.json:json:20240303'
   implementation group: 'org.yaml', name: 'snakeyaml', version: '2.3'
 
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.94'
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.29'
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.95'
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.30'
 
   implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '6.3.3'
 
@@ -267,7 +267,7 @@ dependencies {
   functionalTestAnnotationProcessor group: 'org.projectlombok', name: 'lombok'
   integrationTestAnnotationProcessor group: 'org.projectlombok', name: 'lombok'
 
-  testImplementation group: 'io.github.openfeign', name: 'feign-jackson', version: '13.3'
+  testImplementation group: 'io.github.openfeign', name: 'feign-jackson', version: '13.4'
   testImplementation group: 'org.mockito', name: 'mockito-inline', version: '5.2.0'
   testImplementation(platform('org.junit:junit-bom:5.11.0'))
   testImplementation group: 'org.projectlombok', name: 'lombok'
