@@ -6,20 +6,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -55,52 +49,38 @@ class ET3ServiceTest {
     }
 
     @ParameterizedTest
-    @MethodSource("generateTheFindCaseBySubmissionReferenceCaseTypeIdTestData")
-    void theFindCaseBySubmissionReferenceCaseTypeId(String submissionReference, String caseTypeId) {
+    @ValueSource(strings = {
+        StringUtils.EMPTY, StringUtils.SPACE, TEST_CASE_SUBMISSION_REFERENCE1, TEST_CASE_SUBMISSION_REFERENCE2})
+    void theFindCaseBySubmissionReference(String submissionReference) {
         CaseDetails caseDetails;
-        if (StringUtils.isNotBlank(submissionReference) && StringUtils.isNotBlank(caseTypeId)) {
+        if (StringUtils.isNotBlank(submissionReference)) {
             when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
             when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
             if (TEST_CASE_SUBMISSION_REFERENCE1.equals(submissionReference)) {
-                when(ccdApi.searchCases(eq(TEST_SERVICE_AUTH_TOKEN),
-                                        eq(TEST_SERVICE_AUTH_TOKEN),
-                                        eq(caseTypeId),
-                                        anyString()))
-                    .thenReturn(SearchResult.builder().cases(List.of(CaseDetails.builder()
-                                                                         .caseTypeId(caseTypeId)
-                                                                         .id(Long.parseLong(submissionReference))
-                                                                         .build())).total(1).build());
-                caseDetails = et3Service.findCaseBySubmissionReferenceCaseTypeId(TEST_CASE_SUBMISSION_REFERENCE1,
-                                                                                 caseTypeId);
+                when(ccdApi.getCase(TEST_SERVICE_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, submissionReference))
+                    .thenReturn(CaseDetails.builder()
+                                    .caseTypeId(TEST_CASE_TYPE_ID_ENGLAND_WALES)
+                                    .id(Long.parseLong(submissionReference))
+                                    .build());
+                caseDetails = et3Service.findCaseBySubmissionReference(TEST_CASE_SUBMISSION_REFERENCE1);
                 assertThat(caseDetails).isNotNull();
                 assertThat(caseDetails.getId()).isEqualTo(Long.parseLong(TEST_CASE_SUBMISSION_REFERENCE1));
                 assertThat(caseDetails.getCaseTypeId()).isEqualTo(TEST_CASE_TYPE_ID_ENGLAND_WALES);
             } else {
-                when(ccdApi.searchCases(eq(TEST_SERVICE_AUTH_TOKEN),
+                when(ccdApi.getCase(eq(TEST_SERVICE_AUTH_TOKEN),
                                         eq(TEST_SERVICE_AUTH_TOKEN),
-                                        eq(caseTypeId),
                                         anyString()))
-                    .thenReturn(SearchResult.builder().cases(new ArrayList<>()).total(1).build());
+                    .thenReturn(null);
                 assertThat(assertThrows(RuntimeException.class, () ->
-                    et3Service.findCaseBySubmissionReferenceCaseTypeId(TEST_CASE_SUBMISSION_REFERENCE1,caseTypeId))
+                    et3Service.findCaseBySubmissionReference(TEST_CASE_SUBMISSION_REFERENCE1))
                                .getMessage()).contains(TEST_ET3_SERVICE_EXCEPTION_CASE_DETAILS_NOT_FOUND);
             }
         } else {
             assertThat(assertThrows(RuntimeException.class, () ->
-                et3Service.findCaseBySubmissionReferenceCaseTypeId(submissionReference, caseTypeId))
+                et3Service.findCaseBySubmissionReference(submissionReference))
                            .getMessage()).isEqualTo(TEST_ET3_SERVICE_EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS);
         }
 
-    }
-
-    private static Stream<Arguments> generateTheFindCaseBySubmissionReferenceCaseTypeIdTestData() {
-        return Stream.of(Arguments.of(null, null),
-                         Arguments.of(StringUtils.EMPTY, StringUtils.EMPTY),
-                         Arguments.of(StringUtils.SPACE, StringUtils.SPACE),
-                         Arguments.of(TEST_CASE_SUBMISSION_REFERENCE1, StringUtils.SPACE),
-                         Arguments.of(StringUtils.SPACE, TEST_CASE_TYPE_ID_ENGLAND_WALES),
-                         Arguments.of(TEST_CASE_SUBMISSION_REFERENCE1, TEST_CASE_TYPE_ID_ENGLAND_WALES),
-                         Arguments.of(TEST_CASE_SUBMISSION_REFERENCE2, TEST_CASE_TYPE_ID_ENGLAND_WALES));
     }
 
     @Test

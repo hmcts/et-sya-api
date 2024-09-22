@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
+import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
@@ -166,17 +167,21 @@ class ManageCaseRoleServiceTest {
             assertThat(exception.getMessage()).contains(INVALID_ROLE_MODIFICATION_ITEM_EXCEPTION_MESSAGE);
             return;
         }
-
         CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(expectedCaseDetails.getData());
         caseData.getRespondentCollection().get(0).getValue().setRespondentName(TestConstants.TEST_RESPONDENT_NAME);
         expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
-        when(et3Service.findCaseBySubmissionReferenceCaseTypeId(
-            modifyCaseUserRolesRequest.getModifyCaseUserRoles().get(0).getCaseDataId(),
-            modifyCaseUserRolesRequest.getModifyCaseUserRoles().get(0).getCaseTypeId()))
-            .thenReturn(expectedCaseDetails);
-        doNothing().when(et3Service).updateSubmittedCaseWithCaseDetails(TestConstants.DUMMY_AUTHORISATION_TOKEN,
-                                                                        expectedCaseDetails);
+        if (ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT.equals(modifyCaseUserRolesRequest
+                                                                        .getModifyCaseUserRoles()
+                                                                        .get(0).getCaseRole())) {
+            when(et3Service.findCaseBySubmissionReference(modifyCaseUserRolesRequest
+                                                              .getModifyCaseUserRoles()
+                                                              .get(0).getCaseDataId())).thenReturn(expectedCaseDetails);
+            doNothing().when(et3Service).updateSubmittedCaseWithCaseDetails(
+                TestConstants.DUMMY_AUTHORISATION_TOKEN,
+                expectedCaseDetails
+            );
+        }
         HttpMethod httpMethod = MODIFICATION_TYPE_REVOKE.equals(modificationType) ? HttpMethod.DELETE : HttpMethod.POST;
         when(restTemplate.exchange(ArgumentMatchers.anyString(),
                                    ArgumentMatchers.eq(httpMethod),
@@ -211,22 +216,31 @@ class ManageCaseRoleServiceTest {
     }
 
     private static Stream<Arguments> provideModifyUserCaseRolesTestData() {
-        ModifyCaseUserRole modifyCaseUserRoleValid = ModifyCaseUserRole.builder()
+        ModifyCaseUserRole modifyCaseUserRoleValidRoleDefendant = ModifyCaseUserRole.builder()
             .userId(USER_ID)
             .caseDataId(CASE_ID)
             .caseRole(CASE_ROLE_DEFENDANT)
             .caseTypeId(ENGLAND_CASE_TYPE)
             .userFullName(RESPONDENT_NAME)
             .build();
-        ModifyCaseUserRolesRequest modifyCaseUserRolesRequestValid = ModifyCaseUserRolesRequest
-            .builder().modifyCaseUserRoles(List.of(modifyCaseUserRoleValid)).build();
-
+        ModifyCaseUserRole modifyCaseUserRoleValidRoleCreator = ModifyCaseUserRole.builder()
+            .userId(USER_ID)
+            .caseDataId(CASE_ID)
+            .caseRole(CASE_ROLE_CREATOR)
+            .caseTypeId(ENGLAND_CASE_TYPE)
+            .userFullName(RESPONDENT_NAME)
+            .build();
+        ModifyCaseUserRolesRequest modifyCaseUserRolesRequestValidDefendant = ModifyCaseUserRolesRequest
+            .builder().modifyCaseUserRoles(List.of(modifyCaseUserRoleValidRoleDefendant)).build();
+        ModifyCaseUserRolesRequest modifyCaseUserRolesRequestValidCreator = ModifyCaseUserRolesRequest
+            .builder().modifyCaseUserRoles(List.of(modifyCaseUserRoleValidRoleCreator)).build();
         ModifyCaseUserRolesRequest modifyCaseUserRolesRequestEmpty = ModifyCaseUserRolesRequest.builder().build();
 
-
-        return Stream.of(Arguments.of(modifyCaseUserRolesRequestValid, MODIFICATION_TYPE_ASSIGNMENT),
-                         Arguments.of(modifyCaseUserRolesRequestValid, MODIFICATION_TYPE_REVOKE),
-                         Arguments.of(modifyCaseUserRolesRequestValid, StringUtils.EMPTY),
+        return Stream.of(Arguments.of(modifyCaseUserRolesRequestValidDefendant, MODIFICATION_TYPE_ASSIGNMENT),
+                         Arguments.of(modifyCaseUserRolesRequestValidDefendant, MODIFICATION_TYPE_REVOKE),
+                         Arguments.of(modifyCaseUserRolesRequestValidCreator, MODIFICATION_TYPE_ASSIGNMENT),
+                         Arguments.of(modifyCaseUserRolesRequestValidCreator, MODIFICATION_TYPE_REVOKE),
+                         Arguments.of(modifyCaseUserRolesRequestValidDefendant, StringUtils.EMPTY),
                          Arguments.of(null, MODIFICATION_TYPE_ASSIGNMENT),
                          Arguments.of(modifyCaseUserRolesRequestEmpty, MODIFICATION_TYPE_ASSIGNMENT));
     }

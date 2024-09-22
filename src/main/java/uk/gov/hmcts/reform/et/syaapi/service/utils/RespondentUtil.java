@@ -26,6 +26,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LI
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_NOT_STARTED_YET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_NOT_VIEWED_YET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_OPTIONAL;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
 
 @Slf4j
 public final class RespondentUtil {
@@ -42,9 +43,10 @@ public final class RespondentUtil {
      * @param respondentName name of the respondent to search in respondent collection.
      * @param idamId to be assigned to the respondent in the respondent collection.
      */
-    public static void setRespondentIdamIdDefaultLinkStatuses(CaseDetails caseDetails,
-                                                              String respondentName,
-                                                              String idamId) {
+    public static void setRespondentIdamIdAndDefaultLinkStatuses(CaseDetails caseDetails,
+                                                                 String respondentName,
+                                                                 String idamId,
+                                                                 String modificationType) {
         Map<String, Object> existingCaseData = caseDetails.getData();
         if (MapUtils.isEmpty(existingCaseData)) {
             throw new RuntimeException(String.format(EXCEPTION_CASE_DATA_NOT_FOUND, caseDetails.getId()));
@@ -53,7 +55,11 @@ public final class RespondentUtil {
         if (CollectionUtils.isNotEmpty(caseData.getRespondentCollection())) {
             RespondentSumTypeItem respondentSumTypeItem =
                 findRespondentSumTypeItemByRespondentName(caseData.getRespondentCollection(), respondentName);
-            setRespondentIdLinkStatuses(respondentSumTypeItem, idamId, respondentName, caseDetails.getId().toString());
+            setRespondentIdLinkStatuses(respondentSumTypeItem,
+                                        idamId,
+                                        respondentName,
+                                        caseDetails.getId().toString(),
+                                        modificationType);
             Map<String, Object> updatedCaseData = EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData);
             caseDetails.setData(updatedCaseData);
             return;
@@ -98,18 +104,24 @@ public final class RespondentUtil {
     }
 
     private static void setRespondentIdLinkStatuses(RespondentSumTypeItem respondentSumTypeItem,
-                                        String idamId,
-                                        String respondentName,
-                                        String submissionReference) {
+                                                    String idamId,
+                                                    String respondentName,
+                                                    String submissionReference,
+                                                    String modificationType) {
         if (StringUtils.isBlank(idamId)) {
             throw new RuntimeException(EXCEPTION_INVALID_IDAM_ID);
         }
-        if (StringUtils.isNotBlank(respondentSumTypeItem.getValue().getIdamId())) {
+        if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)
+            && StringUtils.isNotBlank(respondentSumTypeItem.getValue().getIdamId())) {
             throw new RuntimeException(String.format(EXCEPTION_IDAM_ID_ALREADY_EXISTS,
                                                      respondentName,
                                                      submissionReference));
         }
-        respondentSumTypeItem.getValue().setIdamId(idamId);
+        if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
+            respondentSumTypeItem.getValue().setIdamId(idamId);
+        } else {
+            respondentSumTypeItem.getValue().setIdamId(StringUtils.EMPTY);
+        }
         respondentSumTypeItem.getValue().setEt3CaseDetailsLinksStatuses(generateDefaultET3CaseDetailsLinksStatuses());
         respondentSumTypeItem.getValue().setEt3HubLinksStatuses(generateDefaultET3HubLinksStatuses());
     }

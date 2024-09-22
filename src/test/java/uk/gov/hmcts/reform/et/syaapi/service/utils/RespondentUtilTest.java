@@ -21,10 +21,12 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.RespondentUtil.setRespondentIdamIdDefaultLinkStatuses;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.RespondentUtil.setRespondentIdamIdAndDefaultLinkStatuses;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_ID_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_ID_VALUE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_VALUE_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_MODIFICATION_TYPE_ASSIGNMENT;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_MODIFICATION_TYPE_REVOKE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_COLLECTION_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_IDAM_ID_1;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_IDAM_ID_2;
@@ -43,28 +45,46 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RES
 class RespondentUtilTest {
 
     @ParameterizedTest
-    @MethodSource("provideTheSetRespondentIdamIdDefaultLinkStatusesTestData")
-    void theSetRespondentIdamIdDefaultLinkStatuses(CaseDetails caseDetails, String respondentName, String idamId) {
+    @MethodSource("provideTheSetRespondentIdamIdAndDefaultLinkStatusesTestData")
+    void theSetRespondentIdamIdAndDefaultLinkStatuses(CaseDetails caseDetails,
+                                                      String respondentName,
+                                                      String idamId,
+                                                      String modificationType) {
         if (MapUtils.isEmpty(caseDetails.getData())) {
             assertThat(assertThrows(RuntimeException.class, () ->
-                setRespondentIdamIdDefaultLinkStatuses(caseDetails, respondentName, idamId)).getMessage())
+                setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
+                                                          respondentName,
+                                                          idamId,
+                                                          modificationType)).getMessage())
                 .contains(TEST_RESPONDENT_UTIL_EXCEPTION_CASE_DATA_NOT_FOUND);
             return;
         }
         List<?> respondentCollection =
             (ArrayList<?>) caseDetails.getData().get(TEST_RESPONDENT_COLLECTION_KEY);
-        if (hasRespondentCollectionException(respondentCollection, caseDetails, respondentName, idamId)) {
+        if (hasRespondentCollectionException(respondentCollection,
+                                             caseDetails,
+                                             respondentName,
+                                             idamId,
+                                             modificationType)) {
             return;
         }
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
-        if (hasRespondentNameException(caseData, caseDetails, respondentName, idamId)) {
+        if (hasRespondentNameException(caseData, caseDetails, respondentName, idamId, modificationType)) {
             return;
         }
-        if (hasIdamIdException(caseDetails, respondentName, idamId, caseData)) {
+        if (hasIdamIdException(caseDetails, respondentName, idamId, caseData, modificationType)) {
             return;
         }
-        setRespondentIdamIdDefaultLinkStatuses(caseDetails, respondentName, idamId);
+        setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
+                                                  respondentName,
+                                                  idamId,
+                                                  modificationType);
         caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        if (TEST_MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
+            assertThat(caseData.getRespondentCollection().get(0).getValue().getIdamId()).isEqualTo(idamId);
+        } else {
+            assertThat(caseData.getRespondentCollection().get(0).getValue().getIdamId()).isEqualTo(StringUtils.EMPTY);
+        }
         assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
                        .getPersonalDetails()).isEqualTo(TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
         assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
@@ -102,12 +122,16 @@ class RespondentUtilTest {
     }
 
     private static boolean hasRespondentCollectionException(List<?> respondentCollection,
-                                                           CaseDetails caseDetails,
-                                                           String respondentName,
-                                                           String idamId) {
+                                                            CaseDetails caseDetails,
+                                                            String respondentName,
+                                                            String idamId,
+                                                            String modificationType) {
         if (CollectionUtils.isEmpty(respondentCollection)) {
             assertThat(assertThrows(RuntimeException.class, () ->
-                setRespondentIdamIdDefaultLinkStatuses(caseDetails, respondentName, idamId)).getMessage())
+                setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
+                                                          respondentName,
+                                                          idamId,
+                                                          modificationType)).getMessage())
                 .contains(TEST_RESPONDENT_UTIL_EXCEPTION_EMPTY_RESPONDENT_COLLECTION);
             return true;
         }
@@ -117,7 +141,10 @@ class RespondentUtilTest {
                                        .get(TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_VALUE_KEY))
             || StringUtils.isBlank(respondentName)) {
             assertThat(assertThrows(RuntimeException.class, () ->
-                setRespondentIdamIdDefaultLinkStatuses(caseDetails, respondentName, idamId)).getMessage())
+                setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
+                                                          respondentName,
+                                                          idamId,
+                                                          modificationType)).getMessage())
                 .contains(TEST_RESPONDENT_UTIL_EXCEPTION_RESPONDENT_NOT_FOUND_WITH_RESPONDENT_NAME);
             return true;
         }
@@ -127,10 +154,14 @@ class RespondentUtilTest {
     private static boolean hasRespondentNameException(CaseData caseData,
                                                       CaseDetails caseDetails,
                                                       String respondentName,
-                                                      String idamId) {
+                                                      String idamId,
+                                                      String modificationType) {
         if (!checkRespondentName(caseData.getRespondentCollection().get(0).getValue(), respondentName)) {
             assertThat(assertThrows(RuntimeException.class, () ->
-                setRespondentIdamIdDefaultLinkStatuses(caseDetails, respondentName, idamId)).getMessage())
+                setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
+                                                          respondentName,
+                                                          idamId,
+                                                          modificationType)).getMessage())
                 .contains(TEST_RESPONDENT_UTIL_EXCEPTION_RESPONDENT_NOT_FOUND_WITH_RESPONDENT_NAME);
             return true;
         }
@@ -138,12 +169,16 @@ class RespondentUtilTest {
     }
 
     private static boolean hasIdamIdException(CaseDetails caseDetails,
-                                           String respondentName,
-                                           String idamId,
-                                           CaseData caseData) {
+                                              String respondentName,
+                                              String idamId,
+                                              CaseData caseData,
+                                              String modificationType) {
         if (StringUtils.isBlank(idamId)) {
             assertThat(assertThrows(RuntimeException.class, () ->
-                setRespondentIdamIdDefaultLinkStatuses(caseDetails, respondentName, idamId)).getMessage())
+                setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
+                                                          respondentName,
+                                                          idamId,
+                                                          modificationType)).getMessage())
                 .contains(TEST_RESPONDENT_UTIL_EXCEPTION_INVALID_IDAM_ID);
             return true;
         }
@@ -151,7 +186,10 @@ class RespondentUtilTest {
         if (StringUtils.isNotBlank(caseData.getRespondentCollection().get(0).getValue().getIdamId())
             && !idamId.equals(caseData.getRespondentCollection().get(0).getValue().getIdamId())) {
             assertThat(assertThrows(RuntimeException.class, () ->
-                setRespondentIdamIdDefaultLinkStatuses(caseDetails, respondentName, idamId)).getMessage())
+                setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
+                                                          respondentName,
+                                                          idamId,
+                                                          modificationType)).getMessage())
                 .contains(TEST_RESPONDENT_UTIL_EXCEPTION_IDAM_ID_ALREADY_EXISTS);
             return true;
         }
@@ -180,7 +218,7 @@ class RespondentUtilTest {
     }
 
     @SuppressWarnings({"unchecked","rawtypes"})
-    private static Stream<Arguments> provideTheSetRespondentIdamIdDefaultLinkStatusesTestData() {
+    private static Stream<Arguments> provideTheSetRespondentIdamIdAndDefaultLinkStatusesTestData() {
         CaseDetails caseDetailsWithEmptyRespondentCollection = new CaseTestData().getCaseDetailsWithCaseData();
         caseDetailsWithEmptyRespondentCollection.getData().put(TEST_RESPONDENT_COLLECTION_KEY, new ArrayList<>());
 
@@ -237,37 +275,62 @@ class RespondentUtilTest {
 
         CaseDetails caseDetailsWithEmptyCaseData = CaseDetails.builder().data(new HashMap<>()).build();
 
-        return Stream.of(Arguments.of(caseDetailsWithEmptyCaseData, TEST_RESPONDENT_NAME, TEST_RESPONDENT_IDAM_ID_1),
+        return Stream.of(Arguments.of(caseDetailsWithEmptyCaseData,
+                                      TEST_RESPONDENT_NAME,
+                                      TEST_RESPONDENT_IDAM_ID_1,
+                                      TEST_MODIFICATION_TYPE_ASSIGNMENT),
                          Arguments.of(caseDetailsWithEmptyRespondentCollection,
                                       TEST_RESPONDENT_NAME,
-                                      TEST_RESPONDENT_IDAM_ID_1),
+                                      TEST_RESPONDENT_IDAM_ID_1,
+                                      TEST_MODIFICATION_TYPE_ASSIGNMENT),
                          Arguments.of(caseDetailsWithEmptyRespondentSumTypeItem,
                                       TEST_RESPONDENT_NAME,
-                                      TEST_RESPONDENT_IDAM_ID_1),
+                                      TEST_RESPONDENT_IDAM_ID_1,
+                                      TEST_MODIFICATION_TYPE_ASSIGNMENT),
                          Arguments.of(caseDetailsWithEmptyRespondentSumType,
                                       TEST_RESPONDENT_NAME,
-                                      TEST_RESPONDENT_IDAM_ID_1),
-                         Arguments.of(caseDetails, StringUtils.EMPTY, TEST_RESPONDENT_IDAM_ID_1),
-                         Arguments.of(caseDetails, TEST_RESPONDENT_NAME, TEST_RESPONDENT_IDAM_ID_1),
+                                      TEST_RESPONDENT_IDAM_ID_1,
+                                      TEST_MODIFICATION_TYPE_ASSIGNMENT),
+                         Arguments.of(caseDetails,
+                                      StringUtils.EMPTY,
+                                      TEST_RESPONDENT_IDAM_ID_1,
+                                      TEST_MODIFICATION_TYPE_ASSIGNMENT),
+                         Arguments.of(caseDetails,
+                                      TEST_RESPONDENT_NAME,
+                                      TEST_RESPONDENT_IDAM_ID_1,
+                                      TEST_MODIFICATION_TYPE_ASSIGNMENT),
                          Arguments.of(caseDetailsWithCorrectRespondentName,
                                       TEST_RESPONDENT_NAME,
-                                      TEST_RESPONDENT_IDAM_ID_1),
+                                      TEST_RESPONDENT_IDAM_ID_1,
+                                      TEST_MODIFICATION_TYPE_ASSIGNMENT),
                          Arguments.of(caseDetailsWithCorrectOrganisationName,
                                       TEST_RESPONDENT_NAME,
-                                      TEST_RESPONDENT_IDAM_ID_1),
+                                      TEST_RESPONDENT_IDAM_ID_1,
+                                      TEST_MODIFICATION_TYPE_ASSIGNMENT),
                          Arguments.of(caseDetailsWithCorrectFirstName,
                                       TEST_RESPONDENT_NAME,
-                                      TEST_RESPONDENT_IDAM_ID_1),
+                                      TEST_RESPONDENT_IDAM_ID_1,
+                                      TEST_MODIFICATION_TYPE_ASSIGNMENT),
                          Arguments.of(caseDetailsWithCorrectLastName,
                                       TEST_RESPONDENT_NAME,
-                                      TEST_RESPONDENT_IDAM_ID_1),
+                                      TEST_RESPONDENT_IDAM_ID_1,
+                                      TEST_MODIFICATION_TYPE_ASSIGNMENT),
                          Arguments.of(caseDetailsWithCorrectFirstAndLastName,
                                       TEST_RESPONDENT_NAME,
-                                      TEST_RESPONDENT_IDAM_ID_1),
-                         Arguments.of(caseDetailsWithDifferentIdamId, TEST_RESPONDENT_NAME, TEST_RESPONDENT_IDAM_ID_1),
+                                      TEST_RESPONDENT_IDAM_ID_1,
+                                      TEST_MODIFICATION_TYPE_ASSIGNMENT),
+                         Arguments.of(caseDetailsWithDifferentIdamId,
+                                      TEST_RESPONDENT_NAME,
+                                      TEST_RESPONDENT_IDAM_ID_1,
+                                      TEST_MODIFICATION_TYPE_ASSIGNMENT),
                          Arguments.of(caseDetailsWithCorrectRespondentName,
                                       TEST_RESPONDENT_NAME,
-                                      StringUtils.EMPTY));
+                                      StringUtils.EMPTY,
+                                      TEST_MODIFICATION_TYPE_ASSIGNMENT),
+                         Arguments.of(caseDetailsWithCorrectRespondentName,
+                                      TEST_RESPONDENT_NAME,
+                                      TEST_RESPONDENT_IDAM_ID_1,
+                                      TEST_MODIFICATION_TYPE_REVOKE));
 
     }
 

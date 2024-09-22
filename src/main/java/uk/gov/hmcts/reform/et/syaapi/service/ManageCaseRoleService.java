@@ -42,6 +42,9 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_REVOKE;
 
 /**
  * Provides services for role modification.
@@ -129,16 +132,19 @@ public class ManageCaseRoleService {
         // Checks modifyCaseUserRolesRequest parameter if it is empty or not and it's objects.
         // If there is any problem throws ManageCaseRoleException.
         ManageCaseRoleServiceUtil.checkModifyCaseUserRolesRequest(modifyCaseUserRolesRequest);
+        if (MODIFICATION_TYPE_REVOKE.equals(modificationType)) {
+            setAllRespondentsIdamIdAndDefaultLinkStatuses(authorisation, modifyCaseUserRolesRequest, modificationType);
+        }
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest =
             ManageCaseRoleServiceUtil.generateCaseAssignmentUserRolesRequestByModifyCaseUserRolesRequest(
                 modifyCaseUserRolesRequest);
         log.info(getModifyUserCaseRolesLog(caseAssignmentUserRolesRequest, modificationType, true));
         ResponseEntity<CaseAssignmentUserRolesResponse> response;
         try {
-            String userToken = adminUserService.getAdminUserToken();
+            String adminToken = adminUserService.getAdminUserToken();
             HttpEntity<CaseAssignmentUserRolesRequest> requestEntity =
                 new HttpEntity<>(caseAssignmentUserRolesRequest,
-                                 RemoteServiceUtil.buildHeaders(userToken, this.authTokenGenerator.generate()));
+                                 RemoteServiceUtil.buildHeaders(adminToken, this.authTokenGenerator.generate()));
             response = restTemplate.exchange(aacUrl + ManageCaseRoleConstants.CASE_USERS_API_URL,
                                              httpMethod,
                                              requestEntity,
@@ -147,19 +153,31 @@ public class ManageCaseRoleService {
             log.info("Error from CCD - {}", exception.getMessage() + StringUtils.CR + roleList);
             throw exception;
         }
-        for (ModifyCaseUserRole modifyCaseUserRole : modifyCaseUserRolesRequest.getModifyCaseUserRoles()) {
-            CaseDetails caseDetails =
-                et3Service.findCaseBySubmissionReferenceCaseTypeId(modifyCaseUserRole.getCaseDataId(),
-                                                                   modifyCaseUserRole.getCaseTypeId());
-            RespondentUtil.setRespondentIdamIdDefaultLinkStatuses(caseDetails,
-                                                                  modifyCaseUserRole.getUserFullName(),
-                                                                  modifyCaseUserRole.getUserId());
-            et3Service.updateSubmittedCaseWithCaseDetails(authorisation, caseDetails);
+        if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
+            setAllRespondentsIdamIdAndDefaultLinkStatuses(authorisation, modifyCaseUserRolesRequest, modificationType);
         }
         log.info("{}" + StringUtils.CR + "Response status code: {} Response status code value: {}",
                  getModifyUserCaseRolesLog(caseAssignmentUserRolesRequest, modificationType, false),
                  response.getStatusCode(),
                  response.getStatusCodeValue());
+    }
+
+    private void setAllRespondentsIdamIdAndDefaultLinkStatuses(String authorisation,
+                                                               ModifyCaseUserRolesRequest modifyCaseUserRolesRequest,
+                                                               String modificationType) {
+        for (ModifyCaseUserRole modifyCaseUserRole : modifyCaseUserRolesRequest.getModifyCaseUserRoles()) {
+            if (CASE_USER_ROLE_DEFENDANT.equals(modifyCaseUserRole.getCaseRole())) {
+                CaseDetails caseDetails =
+                    et3Service.findCaseBySubmissionReference(modifyCaseUserRole.getCaseDataId());
+                RespondentUtil.setRespondentIdamIdAndDefaultLinkStatuses(
+                    caseDetails,
+                    modifyCaseUserRole.getUserFullName(),
+                    modifyCaseUserRole.getUserId(),
+                    modificationType
+                );
+                et3Service.updateSubmittedCaseWithCaseDetails(authorisation, caseDetails);
+            }
+        }
     }
 
     private String getModifyUserCaseRolesLog(CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest,

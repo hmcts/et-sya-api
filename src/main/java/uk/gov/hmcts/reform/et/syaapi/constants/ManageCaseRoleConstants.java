@@ -41,7 +41,7 @@ public final class ManageCaseRoleConstants {
     public static final String LINK_STATUS_CANNOT_START_YET = "cannotStartYet";
 
     public static final String EXCEPTION_CASE_DETAILS_NOT_FOUND =
-        "Case details not found with the given caseId, %s, and case type id, %s";
+        "Case details not found with the given caseId, %s";
     public static final String EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS =
         "Case details not found because caseId or caseTypeId value is empty";
     public static final String EXCEPTION_CASE_DATA_NOT_FOUND =

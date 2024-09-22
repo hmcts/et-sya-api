@@ -92,7 +92,7 @@ public final class TestConstants {
     public static final String TEST_ET3_SERVICE_EXCEPTION_CASE_DETAILS_NOT_FOUND =
         "Case details not found with the given caseId";
 
-    public static final String TEST_RESPONDENT_UTIL_EXCEPTION_CASE_DATA_NOT_FOUND = "doesn't have case data values";
+    public static final String  TEST_RESPONDENT_UTIL_EXCEPTION_CASE_DATA_NOT_FOUND = "doesn't have case data values";
     public static final String TEST_RESPONDENT_UTIL_EXCEPTION_EMPTY_RESPONDENT_COLLECTION =
         "Unable to add respondent idam id because there is not respondent defined in the case case with id,";
     public static final String TEST_RESPONDENT_UTIL_EXCEPTION_RESPONDENT_NOT_FOUND_WITH_RESPONDENT_NAME =
@@ -105,6 +105,8 @@ public final class TestConstants {
     public static final String TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET = "notAvailableYet";
     public static final String TEST_RESPONDENT_UTIL_LINK_STATUS_OPTIONAL = "optional";
     public static final String TEST_RESPONDENT_UTIL_LINK_STATUS_CANNOT_START_YET = "cannotStartYet";
+    public static final String TEST_MODIFICATION_TYPE_ASSIGNMENT = "Assignment";
+    public static final String TEST_MODIFICATION_TYPE_REVOKE = "Revoke";
 
     public static final PdfDecodedMultipartFile PDF_DECODED_MULTIPART_FILE_NULL = new PdfDecodedMultipartFile(
         null,
