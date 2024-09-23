@@ -16,7 +16,6 @@ public class AdminUserService {
     private String apiCallUserName;
 
     @Value("${caseWorkerPassword}")
-
     private String apiCallUserPassword;
 
     public String getAdminUserToken() {
