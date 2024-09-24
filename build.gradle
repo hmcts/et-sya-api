@@ -245,9 +245,6 @@ dependencies {
   implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.41.1'
 
   implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.15.1'
-  // https://mvnrepository.com/artifact/org.elasticsearch/elasticsearch-x-content
-  implementation group: 'org.elasticsearch', name: 'elasticsearch-x-content', version: '8.15.1'
-
   implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.18'
   implementation 'org.json:json:20240303'
   implementation group: 'org.yaml', name: 'snakeyaml', version: '2.3'
@@ -302,7 +299,7 @@ mainClassName = 'uk.gov.hmcts.reform.et.syaapi.SyaApiApplication'
 
 bootJar {
   archiveFileName = "et-sya-api.jar"
-  requiresUnpack("org.elasticsearch:elasticsearch-x-content")
+
   manifest {
     attributes('Implementation-Version': project.version.toString())
   }

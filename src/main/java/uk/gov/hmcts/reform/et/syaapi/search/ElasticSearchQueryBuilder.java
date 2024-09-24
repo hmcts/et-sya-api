@@ -41,47 +41,72 @@ public final class ElasticSearchQueryBuilder {
     public static String buildByFindCaseForRoleModificationRequest(
         FindCaseForRoleModificationRequest findCaseForRoleModificationRequest
     ) {
-        // Respondent Queries
-        BoolQueryBuilder boolQueryForRespondentOrganisationName = boolQuery().filter(
-            new MatchQueryBuilder(FIELD_NAME_RESPONDENT_ORGANISATION,
-                                  findCaseForRoleModificationRequest.getRespondentName()));
-        BoolQueryBuilder boolQueryForRespondentName = boolQuery().filter(
-            new MatchQueryBuilder(FIELD_NAME_RESPONDENT_NAME, findCaseForRoleModificationRequest.getRespondentName()));
-        // Respondent name is the field that always has one of the names. If it is an organisation it has the
-        // organisation name or if it is an individual has the individual name. Just added that field as an
-        // or to both organisation and respondent names.
-        BoolQueryBuilder boolQueryForRespondent = boolQuery().filter(
-            new MatchQueryBuilder(FIELD_NAME_RESPONDENT, findCaseForRoleModificationRequest.getRespondentName()));
+        /*
+        // This code is not being used as we have problem with spring boot - elastic search query builder.
+        // This is a bug and needs to be resolved with the new release of elastic search
+        // https://github.com/elastic/elasticsearch/issues/109165
+            // Respondent Queries
+            BoolQueryBuilder boolQueryForRespondentOrganisationName = boolQuery().filter(
+                new MatchQueryBuilder(FIELD_NAME_RESPONDENT_ORGANISATION,
+                                      findCaseForRoleModificationRequest.getRespondentName()));
+            BoolQueryBuilder boolQueryForRespondentName = boolQuery().filter(
+                new MatchQueryBuilder(FIELD_NAME_RESPONDENT_NAME,
+                                      findCaseForRoleModificationRequest.getRespondentName()));
+            // Respondent name is the field that always has one of the names. If it is an organisation it has the
+            // organisation name or if it is an individual has the individual name. Just added that field as an
+            // or to both organisation and respondent names.
+            BoolQueryBuilder boolQueryForRespondent = boolQuery().filter(
+                new MatchQueryBuilder(FIELD_NAME_RESPONDENT, findCaseForRoleModificationRequest.getRespondentName()));
 
 
-        // Claimant Queries
-        BoolQueryBuilder boolQueryForClaimantFirstNames = boolQuery().filter(
-            new MatchQueryBuilder(FIELD_NAME_CLAIMANT_FIRST_NAMES,
-                                  findCaseForRoleModificationRequest.getClaimantFirstNames()));
-        BoolQueryBuilder boolQueryForClaimantLastName = boolQuery().filter(
-            new MatchQueryBuilder(FIELD_NAME_CLAIMANT_LAST_NAME,
-                                  findCaseForRoleModificationRequest.getClaimantLastName()));
-        BoolQueryBuilder boolQueryForClaimantFullName = boolQuery().filter(
-            new MatchQueryBuilder(FIELD_NAME_CLAIMANT_FULL_NAME,
-                                  findCaseForRoleModificationRequest.getClaimantFirstNames()
-                                      + StringUtils.SPACE
-                                      + findCaseForRoleModificationRequest.getClaimantLastName()));
-        // Total Query
-        BoolQueryBuilder boolQueryBuilder = boolQuery()
-            .must(new MatchQueryBuilder(FIELD_NAME_SUBMISSION_REFERENCE,
-                                        findCaseForRoleModificationRequest.getCaseSubmissionReference()))
-            .filter(boolQuery()
-                        .should(boolQueryForRespondentOrganisationName)
-                        .should(boolQueryForRespondentName)
-                        .should(boolQueryForRespondent))
-            .filter(boolQuery()
-                        .should(boolQuery()
-                                    .must(boolQueryForClaimantFirstNames)
-                                    .must(boolQueryForClaimantLastName))
-                        .should(boolQueryForClaimantFullName));
-        return new SearchSourceBuilder()
-            .size(ES_SIZE)
-            .query(boolQueryBuilder).toString();
+            // Claimant Queries
+            BoolQueryBuilder boolQueryForClaimantFirstNames = boolQuery().filter(
+                new MatchQueryBuilder(FIELD_NAME_CLAIMANT_FIRST_NAMES,
+                                      findCaseForRoleModificationRequest.getClaimantFirstNames()));
+            BoolQueryBuilder boolQueryForClaimantLastName = boolQuery().filter(
+                new MatchQueryBuilder(FIELD_NAME_CLAIMANT_LAST_NAME,
+                                      findCaseForRoleModificationRequest.getClaimantLastName()));
+            BoolQueryBuilder boolQueryForClaimantFullName = boolQuery().filter(
+                new MatchQueryBuilder(FIELD_NAME_CLAIMANT_FULL_NAME,
+                                      findCaseForRoleModificationRequest.getClaimantFirstNames()
+                                          + StringUtils.SPACE
+                                          + findCaseForRoleModificationRequest.getClaimantLastName()));
+            // Total Query
+            BoolQueryBuilder boolQueryBuilder = boolQuery()
+                .must(new MatchQueryBuilder(FIELD_NAME_SUBMISSION_REFERENCE,
+                                            findCaseForRoleModificationRequest.getCaseSubmissionReference()))
+                .filter(boolQuery()
+                            .should(boolQueryForRespondentOrganisationName)
+                            .should(boolQueryForRespondentName)
+                            .should(boolQueryForRespondent))
+                .filter(boolQuery()
+                            .should(boolQuery()
+                                        .must(boolQueryForClaimantFirstNames)
+                                        .must(boolQueryForClaimantLastName))
+                            .should(boolQueryForClaimantFullName));
+            return new SearchSourceBuilder()
+                .size(ES_SIZE)
+                .query(boolQueryBuilder).toString();
+       */
+        return "{\"size\":1,\"query\":{\"bool\":{\"must\":[{\"match\":{\"" + FIELD_NAME_SUBMISSION_REFERENCE + "\":"
+            + "{\"query\":\"" + findCaseForRoleModificationRequest.getCaseSubmissionReference()
+            + "\"}}}],\"filter\":[{\"bool\":{\"should\":[{\"bool\":"
+            + "{\"filter\":[{\"match\":{\"" + FIELD_NAME_RESPONDENT_ORGANISATION + "\":"
+            + "{\"query\":\"" + findCaseForRoleModificationRequest.getRespondentName() + "\"}}}],\"boost\":1.0}},"
+            + "{\"bool\":{\"filter\":[{\"match\":{\"" + FIELD_NAME_RESPONDENT_NAME + "\""
+            + ":{\"query\":\"" + findCaseForRoleModificationRequest.getRespondentName() + "\"}}}],"
+            + "\"boost\":1.0}},{\"bool\":{\"filter\":[{\"match\":{\"" + FIELD_NAME_RESPONDENT + "\":{\"query\":"
+            + "\"" + findCaseForRoleModificationRequest.getRespondentName() + "\"}}}],\"boost\":1.0}}],\"boost\":1.0}},"
+            + "{\"bool\":{\"should\":[{\"bool\":{\"must\":[{\"bool\":{\"filter\":[{\"match\":"
+            + "{\"" + FIELD_NAME_CLAIMANT_FIRST_NAMES + "\""
+            + ":{\"query\":\"" + findCaseForRoleModificationRequest.getClaimantFirstNames()
+            + "\"}}}],\"boost\":1.0}},{\"bool\":{\"filter\":[{\"match\""
+            + ":{\"" + FIELD_NAME_CLAIMANT_LAST_NAME + "\":{\"query\":\""
+            + findCaseForRoleModificationRequest.getClaimantLastName() + "\"}}}],\"boost\""
+            + ":1.0}}],\"boost\":1.0}},{\"bool\":{\"filter\":[{\"match\":{\"" + FIELD_NAME_CLAIMANT_FULL_NAME
+            + "\":{\"query\":\"" + findCaseForRoleModificationRequest.getClaimantFirstNames()
+            + StringUtils.SPACE + findCaseForRoleModificationRequest.getClaimantLastName()
+            + "\"}}}],\"boost\":1.0}}],\"boost\":1.0}}],\"boost\":1.0}}}";
     }
 
     /**
