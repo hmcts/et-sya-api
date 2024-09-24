@@ -21,8 +21,6 @@ public class AdminUserService {
     private String apiCallUserPassword;
 
     public String getAdminUserToken() {
-        log.info("Admin user name: {}", apiCallUserName);
-        log.info("Admin password: {}", apiCallUserPassword);
         String adminAccessToken = idamClient.getAccessToken(apiCallUserName, apiCallUserPassword);
         if (StringUtils.contains(adminAccessToken, BEARER)) {
             return adminAccessToken;
