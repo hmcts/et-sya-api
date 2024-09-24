@@ -145,7 +145,7 @@ public class ManageCaseRoleService {
             HttpEntity<CaseAssignmentUserRolesRequest> requestEntity =
                 new HttpEntity<>(caseAssignmentUserRolesRequest,
                                  RemoteServiceUtil.buildHeaders(adminToken, this.authTokenGenerator.generate()));
-            response = restTemplate.exchange(aacUrl + ManageCaseRoleConstants.CASE_USERS_API_URL,
+            response = restTemplate.exchange(ccdApiUrl + ManageCaseRoleConstants.CASE_USERS_API_URL,
                                              httpMethod,
                                              requestEntity,
                                              CaseAssignmentUserRolesResponse.class);
