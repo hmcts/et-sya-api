@@ -299,7 +299,7 @@ mainClassName = 'uk.gov.hmcts.reform.et.syaapi.SyaApiApplication'
 
 bootJar {
   archiveFileName = "et-sya-api.jar"
-
+  requiresUnpack("org.elasticsearch:elasticsearch-x-content")
   manifest {
     attributes('Implementation-Version': project.version.toString())
   }
