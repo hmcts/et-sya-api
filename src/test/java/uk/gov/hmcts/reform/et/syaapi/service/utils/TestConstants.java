@@ -42,6 +42,7 @@ public final class TestConstants {
     public static final String TEST_TEMPLATE_API_KEY =
         "mtd_test-002d2170-e381-4545-8251-5e87dab724e7-ac8ef473-1f28-4bfc-8906-9babd92dc5d8";
     public static final String TEST_CASE_TYPE_ID_ENGLAND_WALES = "ET_EnglandWales";
+    public static final String TEST_CASE_TYPE_ID_SCOTLAND = "ET_Scotland";
     public static final String SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID = "af0b26b7-17b6-4643-bbdc-e296d11e7b0c";
     public static final String WELSH_DUMMY_PDF_TEMPLATE_ID = "1234_welsh";
     public static final String UUID_DUMMY_STRING = "8835039a-3544-439b-a3da-882490d959eb";
@@ -91,7 +92,8 @@ public final class TestConstants {
         "Case details not found because caseId or caseTypeId value is empty";
     public static final String TEST_ET3_SERVICE_EXCEPTION_CASE_DETAILS_NOT_FOUND =
         "Case details not found with the given caseId";
-
+    public static final String TEST_ET3_SERVICE_EXCEPTION_UNABLE_TO_GET_USER_INFO =
+        "java.lang.Exception: Unable to get user info for listing user cases";
     public static final String  TEST_RESPONDENT_UTIL_EXCEPTION_CASE_DATA_NOT_FOUND = "doesn't have case data values";
     public static final String TEST_RESPONDENT_UTIL_EXCEPTION_EMPTY_RESPONDENT_COLLECTION =
         "Unable to add respondent idam id because there is not respondent defined in the case case with id,";
@@ -107,6 +109,7 @@ public final class TestConstants {
     public static final String TEST_RESPONDENT_UTIL_LINK_STATUS_CANNOT_START_YET = "cannotStartYet";
     public static final String TEST_MODIFICATION_TYPE_ASSIGNMENT = "Assignment";
     public static final String TEST_MODIFICATION_TYPE_REVOKE = "Revoke";
+    public static final String TEST_JURISDICTION_ID_EMPLOYMENT = "EMPLOYMENT";
 
     public static final PdfDecodedMultipartFile PDF_DECODED_MULTIPART_FILE_NULL = new PdfDecodedMultipartFile(
         null,

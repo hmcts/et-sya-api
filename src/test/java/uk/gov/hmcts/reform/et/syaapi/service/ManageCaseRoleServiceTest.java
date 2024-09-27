@@ -72,8 +72,6 @@ class ManageCaseRoleServiceTest {
     IdamClient idamClient;
     @Mock
     ET3Service et3Service;
-    @Mock
-    CaseService caseService;
 
     private ManageCaseRoleService manageCaseRoleService;
     private UserInfo userInfo;
@@ -118,7 +116,7 @@ class ManageCaseRoleServiceTest {
     void setup() {
         caseTestData = new CaseTestData();
         manageCaseRoleService = new ManageCaseRoleService(
-            adminUserService, restTemplate, authTokenGenerator, ccdApi, idamClient, et3Service, caseService);
+            adminUserService, restTemplate, authTokenGenerator, ccdApi, idamClient, et3Service);
         userInfo = new CaseTestData().getUserInfo();
         caseAssignmentUserRole1 = CaseAssignmentUserRole.builder()
             .userId(DUMMY_USER_ID)
@@ -567,7 +565,7 @@ class ManageCaseRoleServiceTest {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         List<CaseDetails> allCaseDetails = caseTestData.getSearchResultRequestCaseDataListScotland().getCases();
         allCaseDetails.addAll(caseTestData.getSearchResultRequestCaseDataListEngland().getCases());
-        when(caseService.getAllUserCases(TEST_SERVICE_AUTH_TOKEN)).thenReturn(allCaseDetails);
+        when(et3Service.getAllUserCasesForET3(TEST_SERVICE_AUTH_TOKEN)).thenReturn(allCaseDetails);
         when(idamClient.getUserInfo(ArgumentMatchers.anyString())).thenReturn(userInfo);
         CaseAssignmentUserRole caseAssignmentUserRole1 = CaseAssignmentUserRole.builder()
             .userId(DUMMY_USER_ID)
@@ -592,6 +590,7 @@ class ManageCaseRoleServiceTest {
                                         ArgumentMatchers.any(HttpEntity.class),
                                         ArgumentMatchers.eq(CaseAssignedUserRolesResponse.class)))
             .thenReturn(expectedCaseAssignedUserRolesResponse);
+
         List<CaseDetails> caseDetails = manageCaseRoleService.getUserCasesByCaseUserRole(TEST_SERVICE_AUTH_TOKEN,
                                                                                CASE_USER_ROLE_CREATOR);
 

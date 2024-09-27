@@ -13,7 +13,14 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
+import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -24,8 +31,11 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_CASE_SUBMISSION_REFERENCE1;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_CASE_SUBMISSION_REFERENCE2;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_CASE_TYPE_ID_SCOTLAND;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_ET3_SERVICE_EXCEPTION_CASE_DETAILS_NOT_FOUND;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_ET3_SERVICE_EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_ET3_SERVICE_EXCEPTION_UNABLE_TO_GET_USER_INFO;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_JURISDICTION_ID_EMPLOYMENT;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 @EqualsAndHashCode
@@ -40,12 +50,14 @@ class ET3ServiceTest {
     CoreCaseDataApi ccdApi;
     @Mock
     CaseService caseService;
+    @Mock
+    IdamClient idamClient;
 
     private ET3Service et3Service;
 
     @BeforeEach
     void setUp() {
-        et3Service = new ET3Service(adminUserService, authTokenGenerator, ccdApi, caseService);
+        et3Service = new ET3Service(adminUserService, authTokenGenerator, ccdApi, idamClient, caseService);
     }
 
     @ParameterizedTest
@@ -93,5 +105,39 @@ class ET3ServiceTest {
                                       caseDetails.getData())).thenReturn(caseDetails);
         assertDoesNotThrow(() -> et3Service.updateSubmittedCaseWithCaseDetails(TEST_SERVICE_AUTH_TOKEN,
                                                                                caseDetails));
+    }
+
+    @Test
+    void theGetAllUserCasesForET3() {
+        List<CaseDetails> scotlandCaseDetailsList =
+            new CaseTestData().getSearchResultRequestCaseDataListScotland().getCases();
+        List<CaseDetails> englandWalesCaseDetailsList =
+            new CaseTestData().getSearchResultRequestCaseDataListEngland().getCases();
+        List<CaseDetails> allCaseDetails = new ArrayList<>();
+        allCaseDetails.addAll(scotlandCaseDetailsList);
+        allCaseDetails.addAll(englandWalesCaseDetailsList);
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        UserInfo userinfo = new CaseTestData().getUserInfo();
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(userinfo);
+        when(ccdApi.searchForCitizen(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            userinfo.getUid(),
+            TEST_JURISDICTION_ID_EMPLOYMENT,
+            TEST_CASE_TYPE_ID_ENGLAND_WALES,
+            new HashMap<>())).thenReturn(englandWalesCaseDetailsList);
+        when(ccdApi.searchForCitizen(
+            TEST_SERVICE_AUTH_TOKEN,
+            TEST_SERVICE_AUTH_TOKEN,
+            userinfo.getUid(),
+            TEST_JURISDICTION_ID_EMPLOYMENT,
+            TEST_CASE_TYPE_ID_SCOTLAND,
+            new HashMap<>())).thenReturn(scotlandCaseDetailsList);
+        assertThat(et3Service.getAllUserCasesForET3(TEST_SERVICE_AUTH_TOKEN)).isEqualTo(allCaseDetails);
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(null);
+        ManageCaseRoleException exception =
+            assertThrows(ManageCaseRoleException.class,
+                         () -> et3Service.getAllUserCasesForET3(TEST_SERVICE_AUTH_TOKEN));
+        assertThat(exception.getMessage()).isEqualTo(TEST_ET3_SERVICE_EXCEPTION_UNABLE_TO_GET_USER_INFO);
     }
 }

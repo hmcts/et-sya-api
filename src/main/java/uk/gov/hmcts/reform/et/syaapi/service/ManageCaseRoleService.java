@@ -62,7 +62,6 @@ public class ManageCaseRoleService {
     private final CoreCaseDataApi ccdApi;
     private final IdamClient idamClient;
     private final ET3Service et3Service;
-    private final CaseService caseService;
 
     @Value("${assign_case_access_api_url}")
     private String aacUrl;
@@ -370,7 +369,7 @@ public class ManageCaseRoleService {
     // covers all runtime exceptions.
     @Retryable
     public List<CaseDetails> getUserCasesByCaseUserRole(String authorization, String caseUserRole) {
-        List<CaseDetails> caseDetailsList = caseService.getAllUserCases(authorization);
+        List<CaseDetails> caseDetailsList = et3Service.getAllUserCasesForET3(authorization);
         return getCasesByCaseDetailsListAuthorizationAndCaseUserRole(caseDetailsList, authorization, caseUserRole);
     }
 
