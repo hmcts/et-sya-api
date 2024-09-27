@@ -31,13 +31,13 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
-import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.ManageCaseRoleServiceUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -54,6 +54,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CCD_API_POST_METHOD_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT;
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
@@ -72,6 +73,8 @@ class ManageCaseRoleServiceTest {
     IdamClient idamClient;
     @Mock
     ET3Service et3Service;
+    @Mock
+    CaseService caseService;
 
     private ManageCaseRoleService manageCaseRoleService;
     private UserInfo userInfo;
@@ -79,6 +82,9 @@ class ManageCaseRoleServiceTest {
     private CaseAssignmentUserRole caseAssignmentUserRole2;
     private CaseAssignmentUserRole caseAssignmentUserRole3;
     private CaseTestData caseTestData;
+
+    private CaseAssignedUserRolesResponse expectedCaseAssignedUserRolesResponseCreator;
+    private CaseAssignedUserRolesResponse expectedCaseAssignedUserRolesResponseDefendant;
 
     private static final String INVALID_MODIFICATION_TYPE_EXPECTED_EXCEPTION_MESSAGE =
         "java.lang.Exception: Invalid modification type";
@@ -116,7 +122,7 @@ class ManageCaseRoleServiceTest {
     void setup() {
         caseTestData = new CaseTestData();
         manageCaseRoleService = new ManageCaseRoleService(
-            adminUserService, restTemplate, authTokenGenerator, ccdApi, idamClient, et3Service);
+            adminUserService, restTemplate, authTokenGenerator, ccdApi, idamClient, et3Service, caseService);
         userInfo = new CaseTestData().getUserInfo();
         caseAssignmentUserRole1 = CaseAssignmentUserRole.builder()
             .userId(DUMMY_USER_ID)
@@ -132,6 +138,34 @@ class ManageCaseRoleServiceTest {
             .userId(DUMMY_USER_ID)
             .caseRole(CASE_ROLE_CREATOR).caseDataId(DUMMY_CASE_SUBMISSION_REFERENCE)
             .caseDataId("1646225213651598")
+            .build();
+
+        expectedCaseAssignedUserRolesResponseCreator =
+            CaseAssignedUserRolesResponse.builder()
+                .caseAssignedUserRoles(List.of(caseAssignmentUserRole1,
+                                               caseAssignmentUserRole2,
+                                               caseAssignmentUserRole3))
+            .build();
+
+        CaseAssignmentUserRole caseAssignmentUserRole1D = CaseAssignmentUserRole.builder()
+            .userId(DUMMY_USER_ID)
+            .caseRole(CASE_USER_ROLE_DEFENDANT).caseDataId(DUMMY_CASE_SUBMISSION_REFERENCE)
+            .caseDataId("1646225213651533")
+            .build();
+        CaseAssignmentUserRole caseAssignmentUserRole2D = CaseAssignmentUserRole.builder()
+            .userId(DUMMY_USER_ID)
+            .caseRole(CASE_USER_ROLE_DEFENDANT).caseDataId(DUMMY_CASE_SUBMISSION_REFERENCE)
+            .caseDataId("1646225213651512")
+            .build();
+        CaseAssignmentUserRole caseAssignmentUserRole3D = CaseAssignmentUserRole.builder()
+            .userId(DUMMY_USER_ID)
+            .caseRole(CASE_USER_ROLE_DEFENDANT).caseDataId(DUMMY_CASE_SUBMISSION_REFERENCE)
+            .caseDataId("1646225213651598")
+            .build();
+        expectedCaseAssignedUserRolesResponseDefendant = CaseAssignedUserRolesResponse.builder()
+            .caseAssignedUserRoles(List.of(caseAssignmentUserRole1D,
+                                           caseAssignmentUserRole2D,
+                                           caseAssignmentUserRole3D))
             .build();
     }
 
@@ -169,7 +203,7 @@ class ManageCaseRoleServiceTest {
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(expectedCaseDetails.getData());
         caseData.getRespondentCollection().get(0).getValue().setRespondentName(TestConstants.TEST_RESPONDENT_NAME);
         expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
-        if (ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT.equals(modifyCaseUserRolesRequest
+        if (CASE_USER_ROLE_DEFENDANT.equals(modifyCaseUserRolesRequest
                                                                         .getModifyCaseUserRoles()
                                                                         .get(0).getCaseRole())) {
             when(et3Service.findCaseBySubmissionReference(modifyCaseUserRolesRequest
@@ -448,7 +482,7 @@ class ManageCaseRoleServiceTest {
                                          List<CaseAssignmentUserRole> caseAssignmentUserRoles,
                                          String caseUserRole) {
         List<CaseDetails> caseDetailsListByCaseUserRole =
-            ManageCaseRoleService.getCaseDetailsByCaseUserRole(caseDetailsList,
+            ManageCaseRoleServiceUtil.getCaseDetailsByCaseUserRole(caseDetailsList,
                                                                    caseAssignmentUserRoles,
                                                                    caseUserRole);
         if (ObjectUtils.isEmpty(caseDetailsList)
@@ -566,36 +600,29 @@ class ManageCaseRoleServiceTest {
         List<CaseDetails> allCaseDetails = caseTestData.getSearchResultRequestCaseDataListScotland().getCases();
         allCaseDetails.addAll(caseTestData.getSearchResultRequestCaseDataListEngland().getCases());
         when(et3Service.getAllUserCasesForET3(TEST_SERVICE_AUTH_TOKEN)).thenReturn(allCaseDetails);
+        when(caseService.getAllUserCases(TEST_SERVICE_AUTH_TOKEN)).thenReturn(allCaseDetails);
         when(idamClient.getUserInfo(ArgumentMatchers.anyString())).thenReturn(userInfo);
-        CaseAssignmentUserRole caseAssignmentUserRole1 = CaseAssignmentUserRole.builder()
-            .userId(DUMMY_USER_ID)
-            .caseRole(CASE_USER_ROLE_CREATOR).caseDataId(DUMMY_CASE_SUBMISSION_REFERENCE)
-            .caseDataId("1646225213651533")
-            .build();
-        CaseAssignmentUserRole caseAssignmentUserRole2 = CaseAssignmentUserRole.builder()
-            .userId(DUMMY_USER_ID)
-            .caseRole(CASE_USER_ROLE_CREATOR).caseDataId(DUMMY_CASE_SUBMISSION_REFERENCE)
-            .caseDataId("1646225213651512")
-            .build();
-        CaseAssignmentUserRole caseAssignmentUserRole3 = CaseAssignmentUserRole.builder()
-            .userId(DUMMY_USER_ID)
-            .caseRole(CASE_USER_ROLE_CREATOR).caseDataId(DUMMY_CASE_SUBMISSION_REFERENCE)
-            .caseDataId("1646225213651598")
-            .build();
-        CaseAssignedUserRolesResponse expectedCaseAssignedUserRolesResponse = CaseAssignedUserRolesResponse.builder()
-            .caseAssignedUserRoles(List.of(caseAssignmentUserRole1, caseAssignmentUserRole2, caseAssignmentUserRole3))
-            .build();
+        List<CaseDetails> expectedCaseDetails = caseTestData.getExpectedCaseDataListCombined();
+
         when(restTemplate.postForObject(ArgumentMatchers.eq(CCD_API_URL_PARAMETER_TEST_VALUE
                                                                 + CASE_USER_ROLE_CCD_API_POST_METHOD_NAME),
                                         ArgumentMatchers.any(HttpEntity.class),
                                         ArgumentMatchers.eq(CaseAssignedUserRolesResponse.class)))
-            .thenReturn(expectedCaseAssignedUserRolesResponse);
+            .thenReturn(expectedCaseAssignedUserRolesResponseCreator);
+        List<CaseDetails> caseDetailsForCreator =
+            manageCaseRoleService.getUserCasesByCaseUserRole(TEST_SERVICE_AUTH_TOKEN, CASE_USER_ROLE_CREATOR);
+        assertThat(caseDetailsForCreator)
+            .hasSize(expectedCaseDetails.size()).hasSameElementsAs(expectedCaseDetails);
 
-        List<CaseDetails> caseDetails = manageCaseRoleService.getUserCasesByCaseUserRole(TEST_SERVICE_AUTH_TOKEN,
-                                                                               CASE_USER_ROLE_CREATOR);
-
-        assertThat(caseTestData.getExpectedCaseDataListCombined())
-            .hasSize(caseDetails.size()).hasSameElementsAs(caseDetails);
+        when(restTemplate.postForObject(ArgumentMatchers.eq(CCD_API_URL_PARAMETER_TEST_VALUE
+                                                                + CASE_USER_ROLE_CCD_API_POST_METHOD_NAME),
+                                        ArgumentMatchers.any(HttpEntity.class),
+                                        ArgumentMatchers.eq(CaseAssignedUserRolesResponse.class)))
+            .thenReturn(expectedCaseAssignedUserRolesResponseDefendant);
+        List<CaseDetails> caseDetailsForDefendant =
+            manageCaseRoleService.getUserCasesByCaseUserRole(TEST_SERVICE_AUTH_TOKEN, CASE_USER_ROLE_DEFENDANT);
+        assertThat(caseDetailsForDefendant)
+            .hasSize(expectedCaseDetails.size()).hasSameElementsAs(expectedCaseDetails);
     }
 
 }

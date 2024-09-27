@@ -162,5 +162,32 @@ public final class ManageCaseRoleServiceUtil {
             && !CASE_USER_ROLE_CREATOR.equals(caseRole);
     }
 
-
+    /**
+     * Gets case details list and case assignment user roles as parameter to check if the case in case details list
+     * has the required case user role.
+     * @param caseDetailsList case details list received from core case data.
+     * @param caseAssignmentUserRoles roles defined for the list of case details.
+     * @param caseUserRole case user role to check if the case has the role or not.
+     * @return case details list with the role given as parameter caseUserRole.
+     */
+    public static List<CaseDetails> getCaseDetailsByCaseUserRole(
+        List<CaseDetails> caseDetailsList, List<CaseAssignmentUserRole> caseAssignmentUserRoles, String caseUserRole) {
+        List<CaseDetails> caseDetailsListByRole = new ArrayList<>();
+        if (CollectionUtils.isEmpty(caseDetailsList)
+            || CollectionUtils.isEmpty(caseAssignmentUserRoles)
+            || StringUtils.isBlank(caseUserRole)) {
+            return caseDetailsListByRole;
+        }
+        for (CaseAssignmentUserRole caseAssignmentUserRole : caseAssignmentUserRoles) {
+            for (CaseDetails caseDetails : caseDetailsList) {
+                String tmpCaseUserRole = ManageCaseRoleServiceUtil.findCaseUserRole(
+                    caseDetails, caseAssignmentUserRole);
+                if (StringUtils.isNotBlank(tmpCaseUserRole) && tmpCaseUserRole.equals(caseUserRole)) {
+                    caseDetailsListByRole.add(caseDetails);
+                    break;
+                }
+            }
+        }
+        return caseDetailsListByRole;
+    }
 }

@@ -62,6 +62,7 @@ public class ManageCaseRoleService {
     private final CoreCaseDataApi ccdApi;
     private final IdamClient idamClient;
     private final ET3Service et3Service;
+    private final CaseService caseService;
 
     @Value("${assign_case_access_api_url}")
     private String aacUrl;
@@ -303,36 +304,6 @@ public class ManageCaseRoleService {
         return response;
     }
 
-
-    /**
-     * Gets case details list and case assignment user roles as parameter to check if the case in case details list
-     * has the required case user role.
-     * @param caseDetailsList case details list received from core case data.
-     * @param caseAssignmentUserRoles roles defined for the list of case details.
-     * @param caseUserRole case user role to check if the case has the role or not.
-     * @return case details list with the role given as parameter caseUserRole.
-     */
-    public static List<CaseDetails> getCaseDetailsByCaseUserRole(
-        List<CaseDetails> caseDetailsList, List<CaseAssignmentUserRole> caseAssignmentUserRoles, String caseUserRole) {
-        List<CaseDetails> caseDetailsListByRole = new ArrayList<>();
-        if (CollectionUtils.isEmpty(caseDetailsList)
-            || CollectionUtils.isEmpty(caseAssignmentUserRoles)
-            || StringUtils.isBlank(caseUserRole)) {
-            return caseDetailsListByRole;
-        }
-        for (CaseAssignmentUserRole caseAssignmentUserRole : caseAssignmentUserRoles) {
-            for (CaseDetails caseDetails : caseDetailsList) {
-                String tmpCaseUserRole = ManageCaseRoleServiceUtil.findCaseUserRole(
-                    caseDetails, caseAssignmentUserRole);
-                if (StringUtils.isNotBlank(tmpCaseUserRole) && tmpCaseUserRole.equals(caseUserRole)) {
-                    caseDetailsListByRole.add(caseDetails);
-                    break;
-                }
-            }
-        }
-        return caseDetailsListByRole;
-    }
-
     /**
      * With given caseId, gets the case details, by case user role and returns case details by filtering documents
      * with the given caseUserRole.
@@ -369,8 +340,21 @@ public class ManageCaseRoleService {
     // covers all runtime exceptions.
     @Retryable
     public List<CaseDetails> getUserCasesByCaseUserRole(String authorization, String caseUserRole) {
-        List<CaseDetails> caseDetailsList = et3Service.getAllUserCasesForET3(authorization);
-        return getCasesByCaseDetailsListAuthorizationAndCaseUserRole(caseDetailsList, authorization, caseUserRole);
+        return getCasesByCaseDetailsListAuthorizationAndCaseUserRole(getCaseDetailsByCaseUserRole(authorization,
+                                                                                                  caseUserRole),
+                                                                     authorization,
+                                                                     caseUserRole);
+    }
+
+    private List<CaseDetails> getCaseDetailsByCaseUserRole(String authorization, String caseUserRole) {
+        // If defendant uses ET3 cases search because case service's all case search doesn't list all cases
+        // immediately after assigning a new case
+        if (CASE_USER_ROLE_DEFENDANT.equals(caseUserRole)) {
+            return et3Service.getAllUserCasesForET3(authorization);
+        } else {
+            // If not defendant uses existing cases search
+            return caseService.getAllUserCases(authorization);
+        }
     }
 
     private List<CaseDetails> getCasesByCaseDetailsListAuthorizationAndCaseUserRole(
@@ -379,7 +363,7 @@ public class ManageCaseRoleService {
         try {
             CaseAssignedUserRolesResponse caseAssignedUserRolesResponse =
                 getCaseUserRolesByCaseAndUserIdsCcd(authorization, caseDetailsList);
-            caseDetailsListByRole = ManageCaseRoleService
+            caseDetailsListByRole = ManageCaseRoleServiceUtil
                 .getCaseDetailsByCaseUserRole(caseDetailsList,
                                               caseAssignedUserRolesResponse.getCaseAssignedUserRoles(),
                                               caseUserRole);
