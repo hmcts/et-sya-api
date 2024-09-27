@@ -42,6 +42,7 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_STATE_ACCEPTED;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_REVOKE;
@@ -86,27 +87,33 @@ public class ManageCaseRoleService {
         String adminUserToken = adminUserService.getAdminUserToken();
         String elasticSearchQuery = ElasticSearchQueryBuilder
             .buildByFindCaseForRoleModificationRequest(findCaseForRoleModificationRequest);
-        List<CaseDetails> englandCases = Optional.ofNullable(ccdApi.searchCases(
-            adminUserToken,
-            authTokenGenerator.generate(),
-            ENGLAND_CASE_TYPE,
-            elasticSearchQuery
-        ).getCases()).orElse(Collections.emptyList());
-        if (CollectionUtils.isNotEmpty(englandCases)) {
-            return englandCases.get(ManageCaseRoleConstants.FIRST_INDEX);
+        CaseDetails englandCase = findCaseByCaseType(adminUserToken, ENGLAND_CASE_TYPE, elasticSearchQuery);
+        if (ObjectUtils.isNotEmpty(englandCase)) {
+            return englandCase;
         }
 
-        List<CaseDetails> scotlandCases = Optional.ofNullable(ccdApi.searchCases(
-            adminUserToken,
-            authTokenGenerator.generate(),
-            SCOTLAND_CASE_TYPE,
-            elasticSearchQuery
-        ).getCases()).orElse(Collections.emptyList());
-        if (CollectionUtils.isNotEmpty(scotlandCases)) {
-            return scotlandCases.get(ManageCaseRoleConstants.FIRST_INDEX);
+        CaseDetails scotlandCase = findCaseByCaseType(adminUserToken, SCOTLAND_CASE_TYPE, elasticSearchQuery);
+        if (ObjectUtils.isNotEmpty(scotlandCase)) {
+            return scotlandCase;
         }
         log.info("Case not found for the parameters, submission reference: {}",
                  findCaseForRoleModificationRequest.getCaseSubmissionReference());
+        return null;
+    }
+
+    private CaseDetails findCaseByCaseType(String adminUserToken, String caseType, String elasticSearchQuery) {
+        List<CaseDetails> caseDetailsList = Optional.ofNullable(ccdApi.searchCases(
+            adminUserToken,
+            authTokenGenerator.generate(),
+            caseType,
+            elasticSearchQuery
+        ).getCases()).orElse(Collections.emptyList());
+        if (CollectionUtils.isNotEmpty(caseDetailsList)) {
+            CaseDetails caseDetails = caseDetailsList.get(ManageCaseRoleConstants.FIRST_INDEX);
+            if (CASE_STATE_ACCEPTED.equals(caseDetails.getState())) {
+                return caseDetails;
+            }
+        }
         return null;
     }
 

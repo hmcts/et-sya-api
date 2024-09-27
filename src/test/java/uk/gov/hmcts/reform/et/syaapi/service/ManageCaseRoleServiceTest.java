@@ -117,6 +117,7 @@ class ManageCaseRoleServiceTest {
     private static final String EXPECTED_EMPTY_CASE_DETAILS_EXCEPTION_MESSAGE =
         "java.lang.Exception: Unable to get user cases because not able to create aacApiUrl with the given "
             + "caseDetails and authorization data";
+    private static final String TEST_CASE_STATE_ACCEPTED = "Accepted";
 
     @BeforeEach
     void setup() {
@@ -298,6 +299,7 @@ class ManageCaseRoleServiceTest {
             .thenReturn(SearchResult.builder().cases(List.of(CaseDetails.builder()
                                                                  .caseTypeId(ENGLAND_CASE_TYPE)
                                                                  .id(Long.parseLong(CASE_SUBMISSION_REFERENCE))
+                                                                 .state(TEST_CASE_STATE_ACCEPTED)
                                                                  .build())).total(1).build());
         assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest))
             .isNotNull();
@@ -333,6 +335,7 @@ class ManageCaseRoleServiceTest {
             .thenReturn(SearchResult.builder().cases(List.of(CaseDetails.builder()
                                                                  .caseTypeId(SCOTLAND_CASE_TYPE)
                                                                  .id(Long.parseLong(CASE_SUBMISSION_REFERENCE))
+                                                                 .state(TEST_CASE_STATE_ACCEPTED)
                                                                  .build())).total(1).build());
         assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest))
             .isNotNull();
