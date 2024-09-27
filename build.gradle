@@ -220,7 +220,7 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-json'
   implementation group: 'org.springframework.boot', name: 'spring-boot-configuration-processor'
   implementation group: 'org.springframework.retry', name: 'spring-retry', version: '2.0.9'
-  implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.17.2'
+  implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.18.0'
   implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.2'
 
   implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.8.0'
@@ -244,7 +244,7 @@ dependencies {
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
   implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.41.1'
 
-  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.15.1'
+  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.15.2'
   implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.18'
   implementation 'org.json:json:20240303'
   implementation group: 'org.yaml', name: 'snakeyaml', version: '2.3'
@@ -269,7 +269,7 @@ dependencies {
 
   testImplementation group: 'io.github.openfeign', name: 'feign-jackson', version: '13.4'
   testImplementation group: 'org.mockito', name: 'mockito-inline', version: '5.2.0'
-  testImplementation(platform('org.junit:junit-bom:5.11.0'))
+  testImplementation(platform('org.junit:junit-bom:5.11.1'))
   testImplementation group: 'org.projectlombok', name: 'lombok'
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
     exclude group: 'junit', module: 'junit'
@@ -286,10 +286,10 @@ dependencies {
   // Pact Contract Tests
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: '4.1.41'
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'java8', version: '4.1.41'
-  contractTestImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.11.0'
-  contractTestRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.11.0'
-  contractTestImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.11.0'
-  contractTestRuntimeOnly group: 'org.junit.platform', name: 'junit-platform-commons', version: '1.11.0'
+  contractTestImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.11.1'
+  contractTestRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.11.1'
+  contractTestImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.11.1'
+  contractTestRuntimeOnly group: 'org.junit.platform', name: 'junit-platform-commons', version: '1.11.1'
 
   contractTestImplementation sourceSets.main.runtimeClasspath
   contractTestImplementation sourceSets.test.runtimeClasspath
