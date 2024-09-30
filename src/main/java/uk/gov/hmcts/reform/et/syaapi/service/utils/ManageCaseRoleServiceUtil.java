@@ -149,7 +149,7 @@ public final class ManageCaseRoleServiceUtil {
             && StringUtils.isBlank(modifyCaseUserRole.getUserId())
             && StringUtils.isBlank(modifyCaseUserRole.getCaseTypeId())
             && StringUtils.isBlank(modifyCaseUserRole.getCaseDataId())
-            && StringUtils.isBlank(modifyCaseUserRole.getUserFullName())
+            && StringUtils.isBlank(modifyCaseUserRole.getRespondentName())
             && isCaseRoleInvalid(modifyCaseUserRole.getCaseRole())) {
             throw new ManageCaseRoleException(
                 new Exception(String.format(MODIFY_CASE_USER_ROLE_ITEM_INVALID, modifyCaseUserRole.getCaseDataId())));

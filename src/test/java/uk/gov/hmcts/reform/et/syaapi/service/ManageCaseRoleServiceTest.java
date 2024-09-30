@@ -241,7 +241,7 @@ class ManageCaseRoleServiceTest {
                 || StringUtils.isBlank(modifyCaseUserRole.getCaseTypeId())
                 || StringUtils.isBlank(modifyCaseUserRole.getCaseRole())
                 || StringUtils.isBlank(modifyCaseUserRole.getCaseDataId())
-                || StringUtils.isBlank(modifyCaseUserRole.getUserFullName())) {
+                || StringUtils.isBlank(modifyCaseUserRole.getRespondentName())) {
                 return true;
             }
         }
@@ -254,14 +254,14 @@ class ManageCaseRoleServiceTest {
             .caseDataId(CASE_ID)
             .caseRole(CASE_ROLE_DEFENDANT)
             .caseTypeId(ENGLAND_CASE_TYPE)
-            .userFullName(RESPONDENT_NAME)
+            .respondentName(RESPONDENT_NAME)
             .build();
         ModifyCaseUserRole modifyCaseUserRoleValidRoleCreator = ModifyCaseUserRole.builder()
             .userId(USER_ID)
             .caseDataId(CASE_ID)
             .caseRole(CASE_ROLE_CREATOR)
             .caseTypeId(ENGLAND_CASE_TYPE)
-            .userFullName(RESPONDENT_NAME)
+            .respondentName(RESPONDENT_NAME)
             .build();
         ModifyCaseUserRolesRequest modifyCaseUserRolesRequestValidDefendant = ModifyCaseUserRolesRequest
             .builder().modifyCaseUserRoles(List.of(modifyCaseUserRoleValidRoleDefendant)).build();
@@ -378,14 +378,14 @@ class ManageCaseRoleServiceTest {
             .userId(null)
             .caseRole(USER_CASE_ROLE_DEFENDANT)
             .caseDataId(DUMMY_CASE_SUBMISSION_REFERENCE)
-            .userFullName(RESPONDENT_NAME)
+            .respondentName(RESPONDENT_NAME)
             .caseTypeId(SCOTLAND_CASE_TYPE)
             .build();
         ModifyCaseUserRole modifyCaseUserRoleWithUserId = ModifyCaseUserRole.builder()
             .userId(DUMMY_USER_ID)
             .caseRole(USER_CASE_ROLE_DEFENDANT)
             .caseDataId(DUMMY_CASE_SUBMISSION_REFERENCE)
-            .userFullName(RESPONDENT_NAME)
+            .respondentName(RESPONDENT_NAME)
             .caseTypeId(SCOTLAND_CASE_TYPE)
             .build();
         ModifyCaseUserRolesRequest modifyCaseUserRolesRequest = ModifyCaseUserRolesRequest.builder()

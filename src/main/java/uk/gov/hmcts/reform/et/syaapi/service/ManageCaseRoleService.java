@@ -178,7 +178,7 @@ public class ManageCaseRoleService {
                     et3Service.findCaseBySubmissionReference(modifyCaseUserRole.getCaseDataId());
                 RespondentUtil.setRespondentIdamIdAndDefaultLinkStatuses(
                     caseDetails,
-                    modifyCaseUserRole.getUserFullName(),
+                    modifyCaseUserRole.getRespondentName(),
                     modifyCaseUserRole.getUserId(),
                     modificationType
                 );
@@ -223,7 +223,7 @@ public class ManageCaseRoleService {
             ModifyCaseUserRole tmpModifyCaseUserRole = ModifyCaseUserRole.builder()
                 .caseTypeId(modifyCaseUserRole.getCaseTypeId())
                 .caseDataId(modifyCaseUserRole.getCaseDataId())
-                .userFullName(modifyCaseUserRole.getUserFullName())
+                .respondentName(modifyCaseUserRole.getRespondentName())
                 .caseRole(modifyCaseUserRole.getCaseRole())
                 .userId(StringUtils.isBlank(modifyCaseUserRole.getUserId())
                             ? userInfo.getUid()

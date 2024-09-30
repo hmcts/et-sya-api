@@ -76,7 +76,7 @@ class ManageCaseRoleControllerTest {
             .caseDataId(CASE_ID)
             .userId(USER_ID)
             .caseTypeId(ENGLAND_CASE_TYPE)
-            .userFullName(RESPONDENT_NAME).build();
+            .respondentName(RESPONDENT_NAME).build();
         ModifyCaseUserRolesRequest modifyCaseUserRolesRequest = ModifyCaseUserRolesRequest
                 .builder()
                 .modifyCaseUserRoles(List.of(modifyCaseUserRole))
