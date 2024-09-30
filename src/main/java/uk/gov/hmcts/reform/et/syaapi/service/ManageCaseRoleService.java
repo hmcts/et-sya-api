@@ -133,45 +133,69 @@ public class ManageCaseRoleService {
                                     ModifyCaseUserRolesRequest modifyCaseUserRolesRequest,
                                     String modificationType)
         throws IOException {
-        // Gets httpMethod by modification type. If modification type is Assignment, method is POST, if Revoke, method
-        // is DELETE. Null if modification type is different then Assignment and Revoke.
-        HttpMethod httpMethod = RemoteServiceUtil.getHttpMethodByCaseUserRoleModificationType(modificationType);
         // Checks modifyCaseUserRolesRequest parameter if it is empty or not and it's objects.
         // If there is any problem throws ManageCaseRoleException.
         ManageCaseRoleServiceUtil.checkModifyCaseUserRolesRequest(modifyCaseUserRolesRequest);
-        if (MODIFICATION_TYPE_REVOKE.equals(modificationType)) {
-            setAllRespondentsIdamIdAndDefaultLinkStatuses(authorisation, modifyCaseUserRolesRequest, modificationType);
-        }
+        // Gets httpMethod by modification type. If modification type is Assignment, method is POST, if Revoke, method
+        // is DELETE. Null if modification type is different then Assignment and Revoke.
+        HttpMethod httpMethod = RemoteServiceUtil.getHttpMethodByCaseUserRoleModificationType(modificationType);
+        // If modification type revoke, removes idam id from Respondent. Because after revoking roles
+        // from user, we will not be able to modify respondent data.
+        // If modification type assignment, only checks the data if assignable to the given Respondent
+        // because before assigning any data we are not able to modify respondent data.
+        setAllRespondentsIdamIdAndDefaultLinkStatuses(authorisation,
+                                                      modifyCaseUserRolesRequest,
+                                                      modificationType,
+                                                      MODIFICATION_TYPE_REVOKE.equals(modificationType));
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest =
             ManageCaseRoleServiceUtil.generateCaseAssignmentUserRolesRequestByModifyCaseUserRolesRequest(
                 modifyCaseUserRolesRequest);
         log.info(getModifyUserCaseRolesLog(caseAssignmentUserRolesRequest, modificationType, true));
-        ResponseEntity<CaseAssignmentUserRolesResponse> response;
+        restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, httpMethod);
+        // If modification type assignment sets idam id, case details links statuses and respondent hub links
+        // statuses to respondent. Because after assigning role we are able to update respondent data.
+        // Doesn't do anything after revoking user roles.
+        try {
+            if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
+                setAllRespondentsIdamIdAndDefaultLinkStatuses(
+                    authorisation,
+                    modifyCaseUserRolesRequest,
+                    modificationType,
+                    true
+                );
+            }
+        } catch (Exception e) {
+            // If unable to update existing respondent data with idamId, case details link statuses
+            // and response hub links statuses after assigning user case role, revokes assigned role!....
+            restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, HttpMethod.DELETE);
+            throw new ManageCaseRoleException(e);
+        }
+        log.info("{}" + StringUtils.CR + "Case assignment successfully completed",
+                 getModifyUserCaseRolesLog(caseAssignmentUserRolesRequest, modificationType, false));
+    }
+
+    private void restCallToModifyUserCaseRoles(
+        CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest, HttpMethod httpMethod)
+        throws IOException {
         try {
             String adminToken = adminUserService.getAdminUserToken();
             HttpEntity<CaseAssignmentUserRolesRequest> requestEntity =
                 new HttpEntity<>(caseAssignmentUserRolesRequest,
                                  RemoteServiceUtil.buildHeaders(adminToken, this.authTokenGenerator.generate()));
-            response = restTemplate.exchange(ccdApiUrl + ManageCaseRoleConstants.CASE_USERS_API_URL,
-                                             httpMethod,
-                                             requestEntity,
-                                             CaseAssignmentUserRolesResponse.class);
+            restTemplate.exchange(ccdApiUrl + ManageCaseRoleConstants.CASE_USERS_API_URL,
+                                  httpMethod,
+                                  requestEntity,
+                                  CaseAssignmentUserRolesResponse.class);
         } catch (RestClientResponseException | IOException exception) {
             log.info("Error from CCD - {}", exception.getMessage() + StringUtils.CR + roleList);
             throw exception;
         }
-        if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
-            setAllRespondentsIdamIdAndDefaultLinkStatuses(authorisation, modifyCaseUserRolesRequest, modificationType);
-        }
-        log.info("{}" + StringUtils.CR + "Response status code: {} Response status code value: {}",
-                 getModifyUserCaseRolesLog(caseAssignmentUserRolesRequest, modificationType, false),
-                 response.getStatusCode(),
-                 response.getStatusCodeValue());
     }
 
     private void setAllRespondentsIdamIdAndDefaultLinkStatuses(String authorisation,
                                                                ModifyCaseUserRolesRequest modifyCaseUserRolesRequest,
-                                                               String modificationType) {
+                                                               String modificationType,
+                                                               boolean modifyCaseData) {
         for (ModifyCaseUserRole modifyCaseUserRole : modifyCaseUserRolesRequest.getModifyCaseUserRoles()) {
             if (CASE_USER_ROLE_DEFENDANT.equals(modifyCaseUserRole.getCaseRole())) {
                 CaseDetails caseDetails =
@@ -182,7 +206,9 @@ public class ManageCaseRoleService {
                     modifyCaseUserRole.getUserId(),
                     modificationType
                 );
-                et3Service.updateSubmittedCaseWithCaseDetails(authorisation, caseDetails);
+                if (modifyCaseData) {
+                    et3Service.updateSubmittedCaseWithCaseDetails(authorisation, caseDetails);
+                }
             }
         }
     }

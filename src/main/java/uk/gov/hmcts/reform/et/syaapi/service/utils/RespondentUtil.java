@@ -120,11 +120,12 @@ public final class RespondentUtil {
         }
         if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
             respondentSumTypeItem.getValue().setIdamId(idamId);
+            respondentSumTypeItem.getValue()
+                .setEt3CaseDetailsLinksStatuses(generateDefaultET3CaseDetailsLinksStatuses());
+            respondentSumTypeItem.getValue().setEt3HubLinksStatuses(generateDefaultET3HubLinksStatuses());
         } else {
             respondentSumTypeItem.getValue().setIdamId(StringUtils.EMPTY);
         }
-        respondentSumTypeItem.getValue().setEt3CaseDetailsLinksStatuses(generateDefaultET3CaseDetailsLinksStatuses());
-        respondentSumTypeItem.getValue().setEt3HubLinksStatuses(generateDefaultET3HubLinksStatuses());
     }
 
     private static ET3CaseDetailsLinksStatuses generateDefaultET3CaseDetailsLinksStatuses() {

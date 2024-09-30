@@ -204,6 +204,8 @@ class ManageCaseRoleServiceTest {
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(expectedCaseDetails.getData());
         caseData.getRespondentCollection().get(0).getValue().setRespondentName(TestConstants.TEST_RESPONDENT_NAME);
         expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+        when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         if (CASE_USER_ROLE_DEFENDANT.equals(modifyCaseUserRolesRequest
                                                                         .getModifyCaseUserRoles()
                                                                         .get(0).getCaseRole())) {
@@ -211,7 +213,7 @@ class ManageCaseRoleServiceTest {
                                                               .getModifyCaseUserRoles()
                                                               .get(0).getCaseDataId())).thenReturn(expectedCaseDetails);
             doNothing().when(et3Service).updateSubmittedCaseWithCaseDetails(
-                TestConstants.DUMMY_AUTHORISATION_TOKEN,
+                DUMMY_AUTHORISATION_TOKEN,
                 expectedCaseDetails
             );
         }
@@ -221,8 +223,6 @@ class ManageCaseRoleServiceTest {
                                    ArgumentMatchers.any(),
                                    ArgumentMatchers.eq(CaseAssignmentUserRolesResponse.class)))
             .thenReturn(new ResponseEntity<>(HttpStatus.OK));
-        when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         assertDoesNotThrow(() -> manageCaseRoleService.modifyUserCaseRoles(
             TestConstants.DUMMY_AUTHORISATION_TOKEN,
             modifyCaseUserRolesRequest,
