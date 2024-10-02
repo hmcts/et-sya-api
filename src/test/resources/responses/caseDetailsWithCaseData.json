@@ -179,7 +179,27 @@
           "extensionGranted": null,
           "extensionDate": null,
           "et3Vetting": null,
-          "et3VettingCompleted": null
+          "et3VettingCompleted": null,
+          "et3HubLinksStatuses": {
+            "contactDetails": "submittedAndViewed",
+            "employerDetails": "submittedAndViewed",
+            "conciliationAndEmployeeDetails": "submittedAndViewed",
+            "payPensionBenefitDetails": "submittedAndViewed",
+            "contestClaim": "submittedAndViewed",
+            "checkYorAnswers": "submittedAndViewed"
+          },
+          "et3CaseDetailsLinksStatuses": {
+            "personalDetails": "submittedAndViewed",
+            "et1ClaimForm": "submittedAndViewed",
+            "respondentResponse": "",
+            "hearingDetails": "submittedAndViewed",
+            "respondentRequestsAndApplications": "submittedAndViewed",
+            "claimantApplications": "submittedAndViewed",
+            "contactTribunal": "submittedAndViewed",
+            "tribunalOrders": "submittedAndViewed",
+            "tribunalJudgements": "submittedAndViewed",
+            "documents": "submittedAndViewed"
+          }
         }
       },
       {

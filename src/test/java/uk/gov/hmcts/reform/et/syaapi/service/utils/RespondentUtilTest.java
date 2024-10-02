@@ -10,6 +10,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.et.syaapi.exception.ET3Exception;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 
@@ -21,6 +22,9 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.EXCEPTION_RESPONDENT_COLLECTION_IS_EMPTY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.EXCEPTION_RESPONDENT_NOT_FOUND;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.RespondentUtil.findRespondentSumTypeItemByIdamId;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.RespondentUtil.setRespondentIdamIdAndDefaultLinkStatuses;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_ID_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_ID_VALUE;
@@ -43,6 +47,10 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RES
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_OPTIONAL;
 
 class RespondentUtilTest {
+
+    private static final String TEST_VALID_IDAM_ID = "1234567890";
+    private static final String TEST_INVALID_IDAM_ID = "12345678901234567890";
+    private static final String EXCEPTION_PREFIX = "java.lang.Exception: ";
 
     @ParameterizedTest
     @MethodSource("provideTheSetRespondentIdamIdAndDefaultLinkStatusesTestData")
@@ -332,6 +340,34 @@ class RespondentUtilTest {
                                       TEST_RESPONDENT_IDAM_ID_1,
                                       TEST_MODIFICATION_TYPE_REVOKE));
 
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideFindRespondentSumTypeItemByIdamIdTestData")
+    void theFindRespondentSumTypeItemByIdamId(CaseData caseData, String idamId) {
+        if (CollectionUtils.isEmpty(caseData.getRespondentCollection())) {
+            assertThat(assertThrows(ET3Exception.class, () ->
+                findRespondentSumTypeItemByIdamId(caseData, idamId))
+                           .getMessage()).isEqualTo(EXCEPTION_PREFIX + EXCEPTION_RESPONDENT_COLLECTION_IS_EMPTY);
+            return;
+        }
+        if (TEST_INVALID_IDAM_ID.equals(idamId)) {
+            assertThat(assertThrows(ET3Exception.class, () ->
+                findRespondentSumTypeItemByIdamId(caseData, idamId))
+                           .getMessage()).isEqualTo(EXCEPTION_PREFIX + EXCEPTION_RESPONDENT_NOT_FOUND);
+            return;
+        }
+        assertThat(findRespondentSumTypeItemByIdamId(caseData, idamId))
+            .isEqualTo(caseData.getRespondentCollection().get(0));
+    }
+
+    private static Stream<Arguments> provideFindRespondentSumTypeItemByIdamIdTestData() {
+        CaseData validCaseData = new CaseTestData().getCaseData();
+        CaseData caseDataEmptyRespondentCollection = new CaseTestData().getCaseData();
+        caseDataEmptyRespondentCollection.setRespondentCollection(null);
+        return Stream.of(Arguments.of(validCaseData, TEST_VALID_IDAM_ID),
+                         Arguments.of(validCaseData, TEST_INVALID_IDAM_ID),
+                         Arguments.of(caseDataEmptyRespondentCollection, TEST_VALID_IDAM_ID));
     }
 
 }

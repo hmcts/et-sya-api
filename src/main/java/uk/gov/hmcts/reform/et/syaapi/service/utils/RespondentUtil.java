@@ -11,6 +11,8 @@ import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.et3links.ET3CaseDetailsLinksStatuses;
 import uk.gov.hmcts.et.common.model.ccd.types.et3links.ET3HubLinksStatuses;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants;
+import uk.gov.hmcts.reform.et.syaapi.exception.ET3Exception;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 
 import java.util.List;
@@ -152,5 +154,17 @@ public final class RespondentUtil {
         et3HubLinksStatuses.setContestClaim(LINK_STATUS_NOT_STARTED_YET);
         et3HubLinksStatuses.setCheckYorAnswers(LINK_STATUS_CANNOT_START_YET);
         return et3HubLinksStatuses;
+    }
+
+    public static RespondentSumTypeItem findRespondentSumTypeItemByIdamId(CaseData caseData, String idamId) {
+        if (CollectionUtils.isEmpty(caseData.getRespondentCollection())) {
+            throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_RESPONDENT_COLLECTION_IS_EMPTY));
+        }
+        for (RespondentSumTypeItem respondentSumTypeItem : caseData.getRespondentCollection()) {
+            if (idamId.equals(respondentSumTypeItem.getValue().getIdamId())) {
+                return respondentSumTypeItem;
+            }
+        }
+        throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_RESPONDENT_NOT_FOUND));
     }
 }

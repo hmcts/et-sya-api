@@ -4,6 +4,7 @@ import lombok.Data;
 import org.junit.jupiter.params.provider.Arguments;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
+import uk.gov.hmcts.et.common.model.ccd.Et3Request;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
@@ -120,6 +121,11 @@ public final class CaseTestData {
     private final ClaimantTse claimantTse = ResourceLoader.fromString(
         "requests/claimantTse.json",
         ClaimantTse.class
+    );
+
+    private final Et3Request et3Request = ResourceLoader.fromString(
+        "requests/et3-request-data.json",
+        Et3Request.class
     );
 
     public SendEmailResponse getSendEmailResponse() throws IOException {
@@ -252,13 +258,6 @@ public final class CaseTestData {
             .eventToken(getStartEventResponse().getToken())
             .data(getCaseRequestCaseDataMap())
             .build();
-    }
-
-    public SearchResult requestCaseDataListSearchResult() {
-        SearchResult searchResult = SearchResult.builder().build();
-        searchResult.setCases(getRequestCaseDataList());
-        searchResult.setTotal(2);
-        return searchResult;
     }
 
     public SearchResult getSearchResultRequestCaseDataListScotland() {

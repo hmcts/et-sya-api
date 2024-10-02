@@ -19,6 +19,12 @@
       "claimant_email_address": "test@gmail.com"
     },
     "et1OnlineSubmission": "Yes",
+    "respondentCollection": [{
+      "id": "123456",
+      "value": {
+        "idamId": "dda9d1c3-1a11-3c3a-819e-74174fbec26b"
+      }
+    }],
     "documentCollection": []
   },
   "security_classification": "PUBLIC",

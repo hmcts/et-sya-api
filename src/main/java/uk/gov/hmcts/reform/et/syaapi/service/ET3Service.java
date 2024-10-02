@@ -6,10 +6,19 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.Et3Request;
+import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.et.syaapi.constants.CaseDetailsLinks;
+import uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants;
+import uk.gov.hmcts.reform.et.syaapi.constants.ResponseHubLinks;
+import uk.gov.hmcts.reform.et.syaapi.exception.ET3Exception;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
+import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.ET3Util;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
@@ -18,12 +27,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static org.springframework.beans.BeanUtils.copyProperties;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.RespondentUtil.findRespondentSumTypeItemByIdamId;
 
 /**
  * Provides services for ET3 Forms.
@@ -107,6 +118,26 @@ public class ET3Service {
             .flatMap(Collection::stream).toList();
     }
 
-
+    @Retryable
+    public CaseDetails modifyEt3Data(String authorisation, Et3Request et3Request) {
+        ET3Util.checkModifyEt3DataParameters(authorisation, et3Request);
+        CaseDetails caseDetails = findCaseBySubmissionReference(et3Request.getCaseSubmissionReference());
+        if (ObjectUtils.isEmpty(caseDetails)) {
+            throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_UNABLE_TO_FIND_CASE_DETAILS));
+        }
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        RespondentSumType selectedRespondent =
+            findRespondentSumTypeItemByIdamId(caseData, et3Request.getRespondent().getIdamId()).getValue();
+        ResponseHubLinks.setResponseHubLinkStatus(et3Request.getRespondent(),
+                                                  et3Request.getResponseHubLinksSectionId(),
+                                                  et3Request.getResponseHubLinksSectionStatus());
+        CaseDetailsLinks.setCaseDetailsLinkStatus(et3Request.getRespondent(),
+                                                  et3Request.getCaseDetailsLinksSectionId(),
+                                                  et3Request.getCaseDetailsLinksSectionStatus());
+        copyProperties(et3Request.getRespondent(), selectedRespondent);
+        caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+        updateSubmittedCaseWithCaseDetails(authorisation, caseDetails);
+        return caseDetails;
+    }
 
 }

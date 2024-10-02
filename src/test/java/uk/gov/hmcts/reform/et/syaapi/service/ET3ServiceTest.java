@@ -9,11 +9,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.Et3Request;
+import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
+import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -25,9 +28,11 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_CASE_SUBMISSION_REFERENCE1;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_CASE_SUBMISSION_REFERENCE2;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES;
@@ -100,7 +105,7 @@ class ET3ServiceTest {
         CaseDetails caseDetails = new CaseTestData().getCaseDetailsWithCaseData();
         when(caseService.triggerEvent(TEST_SERVICE_AUTH_TOKEN,
                                       caseDetails.getId().toString(),
-                                      CaseEvent.UPDATE_CASE_SUBMITTED,
+                                      UPDATE_CASE_SUBMITTED,
                                       caseDetails.getCaseTypeId(),
                                       caseDetails.getData())).thenReturn(caseDetails);
         assertDoesNotThrow(() -> et3Service.updateSubmittedCaseWithCaseDetails(TEST_SERVICE_AUTH_TOKEN,
@@ -139,5 +144,26 @@ class ET3ServiceTest {
             assertThrows(ManageCaseRoleException.class,
                          () -> et3Service.getAllUserCasesForET3(TEST_SERVICE_AUTH_TOKEN));
         assertThat(exception.getMessage()).isEqualTo(TEST_ET3_SERVICE_EXCEPTION_UNABLE_TO_GET_USER_INFO);
+    }
+
+    @Test
+    void theModifyEt3Data() {
+        CaseDetails caseDetails = new CaseTestData().getCaseDetails();
+        Et3Request et3Request = new CaseTestData().getEt3Request();
+        when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(ccdApi.getCase(TEST_SERVICE_AUTH_TOKEN,
+                            TEST_SERVICE_AUTH_TOKEN,
+                            et3Request.getCaseSubmissionReference())).thenReturn(caseDetails);
+        when(caseService.triggerEvent(eq(TEST_SERVICE_AUTH_TOKEN),
+                                      eq(caseDetails.getId().toString()),
+                                      eq(UPDATE_CASE_SUBMITTED),
+                                      eq(caseDetails.getCaseTypeId()),
+                                      anyMap())).thenReturn(new CaseTestData().getCaseDetailsWithCaseData());
+        CaseDetails actualCaseDetails = et3Service.modifyEt3Data(TEST_SERVICE_AUTH_TOKEN, et3Request);
+        CaseData caseDataFromService = EmployeeObjectMapper.mapRequestCaseDataToCaseData(actualCaseDetails.getData());
+        RespondentSumType actualRespondent = caseDataFromService.getRespondentCollection().get(0).getValue();
+        RespondentSumType expectedRespondent = et3Request.getRespondent();
+        assertThat(actualRespondent).isEqualTo(expectedRespondent);
     }
 }
