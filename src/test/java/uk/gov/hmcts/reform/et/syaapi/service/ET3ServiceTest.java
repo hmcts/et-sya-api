@@ -148,10 +148,14 @@ class ET3ServiceTest {
 
     @Test
     void theModifyEt3Data() {
-        CaseDetails caseDetails = new CaseTestData().getCaseDetails();
         Et3Request et3Request = new CaseTestData().getEt3Request();
+        CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
+        CaseData expectedCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(expectedCaseDetails.getData());
+        expectedCaseData.getRespondentCollection().get(0).setValue(et3Request.getRespondent());
+        expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(expectedCaseData));
         when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        CaseDetails caseDetails = new CaseTestData().getCaseDetails();
         when(ccdApi.getCase(TEST_SERVICE_AUTH_TOKEN,
                             TEST_SERVICE_AUTH_TOKEN,
                             et3Request.getCaseSubmissionReference())).thenReturn(caseDetails);
@@ -159,11 +163,12 @@ class ET3ServiceTest {
                                       eq(caseDetails.getId().toString()),
                                       eq(UPDATE_CASE_SUBMITTED),
                                       eq(caseDetails.getCaseTypeId()),
-                                      anyMap())).thenReturn(new CaseTestData().getCaseDetailsWithCaseData());
+                                      anyMap())).thenReturn(expectedCaseDetails);
         CaseDetails actualCaseDetails = et3Service.modifyEt3Data(TEST_SERVICE_AUTH_TOKEN, et3Request);
         CaseData caseDataFromService = EmployeeObjectMapper.mapRequestCaseDataToCaseData(actualCaseDetails.getData());
         RespondentSumType actualRespondent = caseDataFromService.getRespondentCollection().get(0).getValue();
-        RespondentSumType expectedRespondent = et3Request.getRespondent();
+        RespondentSumType expectedRespondent = EmployeeObjectMapper
+            .mapRequestCaseDataToCaseData(expectedCaseDetails.getData()).getRespondentCollection().get(0).getValue();
         assertThat(actualRespondent).isEqualTo(expectedRespondent);
     }
 }

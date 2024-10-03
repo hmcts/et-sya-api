@@ -73,12 +73,12 @@ public class ET3Service {
      * @param authorisation authorisation token of the user
      * @param caseDetails case details which is updated with the given ET3 updates for respondent
      */
-    public void updateSubmittedCaseWithCaseDetails(String authorisation, CaseDetails caseDetails) {
-        caseService.triggerEvent(authorisation,
-                                 caseDetails.getId().toString(),
-                                 UPDATE_CASE_SUBMITTED,
-                                 caseDetails.getCaseTypeId(),
-                                 caseDetails.getData());
+    public CaseDetails updateSubmittedCaseWithCaseDetails(String authorisation, CaseDetails caseDetails) {
+        return caseService.triggerEvent(authorisation,
+                                        caseDetails.getId().toString(),
+                                        UPDATE_CASE_SUBMITTED,
+                                        caseDetails.getCaseTypeId(),
+                                        caseDetails.getData());
     }
 
     /**
@@ -136,8 +136,6 @@ public class ET3Service {
                                                   et3Request.getCaseDetailsLinksSectionStatus());
         copyProperties(et3Request.getRespondent(), selectedRespondent);
         caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
-        updateSubmittedCaseWithCaseDetails(authorisation, caseDetails);
-        return caseDetails;
+        return updateSubmittedCaseWithCaseDetails(authorisation, caseDetails);
     }
-
 }

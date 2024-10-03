@@ -50,7 +50,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CCD_API_POST_METHOD_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
@@ -212,10 +211,10 @@ class ManageCaseRoleServiceTest {
             when(et3Service.findCaseBySubmissionReference(modifyCaseUserRolesRequest
                                                               .getModifyCaseUserRoles()
                                                               .get(0).getCaseDataId())).thenReturn(expectedCaseDetails);
-            doNothing().when(et3Service).updateSubmittedCaseWithCaseDetails(
+            when(et3Service.updateSubmittedCaseWithCaseDetails(
                 DUMMY_AUTHORISATION_TOKEN,
                 expectedCaseDetails
-            );
+            )).thenReturn(expectedCaseDetails);
         }
         HttpMethod httpMethod = MODIFICATION_TYPE_REVOKE.equals(modificationType) ? HttpMethod.DELETE : HttpMethod.POST;
         when(restTemplate.exchange(ArgumentMatchers.anyString(),
