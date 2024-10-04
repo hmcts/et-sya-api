@@ -1,15 +1,18 @@
 package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et3Request;
+import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.ET3Exception;
 
-public final class ET3Util {
+public final class ResponseUtil {
 
-    private ET3Util() {
+    private ResponseUtil() {
         // restrict instantiation
     }
 
@@ -43,5 +46,17 @@ public final class ET3Util {
         if (StringUtils.isBlank(et3Respondent.getIdamId())) {
             throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_ET3_RESPONDENT_IDAM_ID_IS_BLANK));
         }
+    }
+
+    public static RespondentSumTypeItem findRespondentSumTypeItemByIdamId(CaseData caseData, String idamId) {
+        if (CollectionUtils.isEmpty(caseData.getRespondentCollection())) {
+            throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_RESPONDENT_COLLECTION_IS_EMPTY));
+        }
+        for (RespondentSumTypeItem respondentSumTypeItem : caseData.getRespondentCollection()) {
+            if (idamId.equals(respondentSumTypeItem.getValue().getIdamId())) {
+                return respondentSumTypeItem;
+            }
+        }
+        throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_RESPONDENT_NOT_FOUND));
     }
 }

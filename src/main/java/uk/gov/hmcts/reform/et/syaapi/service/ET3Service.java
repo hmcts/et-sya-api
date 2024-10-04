@@ -18,7 +18,7 @@ import uk.gov.hmcts.reform.et.syaapi.constants.ResponseHubLinks;
 import uk.gov.hmcts.reform.et.syaapi.exception.ET3Exception;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.ET3Util;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
@@ -34,7 +34,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CA
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.RespondentUtil.findRespondentSumTypeItemByIdamId;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.findRespondentSumTypeItemByIdamId;
 
 /**
  * Provides services for ET3 Forms.
@@ -120,7 +120,7 @@ public class ET3Service {
 
     @Retryable
     public CaseDetails modifyEt3Data(String authorisation, Et3Request et3Request) {
-        ET3Util.checkModifyEt3DataParameters(authorisation, et3Request);
+        ResponseUtil.checkModifyEt3DataParameters(authorisation, et3Request);
         CaseDetails caseDetails = findCaseBySubmissionReference(et3Request.getCaseSubmissionReference());
         if (ObjectUtils.isEmpty(caseDetails)) {
             throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_UNABLE_TO_FIND_CASE_DETAILS));

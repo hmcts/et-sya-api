@@ -11,10 +11,9 @@ import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.et3links.ET3CaseDetailsLinksStatuses;
 import uk.gov.hmcts.et.common.model.ccd.types.et3links.ET3HubLinksStatuses;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants;
-import uk.gov.hmcts.reform.et.syaapi.exception.ET3Exception;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -22,13 +21,14 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EX
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_EMPTY_RESPONDENT_COLLECTION;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_IDAM_ID_ALREADY_EXISTS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_INVALID_IDAM_ID;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_RESPONDENT_NOT_FOUND_WITH_RESPONDENT_NAME;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_RESPONDENT_NOT_FOUND;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_CANNOT_START_YET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_NOT_AVAILABLE_YET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_NOT_STARTED_YET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_NOT_VIEWED_YET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_OPTIONAL;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_REVOKE;
 
 @Slf4j
 public final class RespondentUtil {
@@ -55,13 +55,18 @@ public final class RespondentUtil {
         }
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(existingCaseData);
         if (CollectionUtils.isNotEmpty(caseData.getRespondentCollection())) {
-            RespondentSumTypeItem respondentSumTypeItem =
-                findRespondentSumTypeItemByRespondentName(caseData.getRespondentCollection(), respondentName);
-            setRespondentIdLinkStatuses(respondentSumTypeItem,
-                                        idamId,
-                                        respondentName,
-                                        caseDetails.getId().toString(),
-                                        modificationType);
+            List<RespondentSumTypeItem> respondentSumTypeItems =
+                findRespondentSumTypeItems(caseData.getRespondentCollection(),
+                                           modificationType,
+                                           respondentName,
+                                           idamId);
+            for (RespondentSumTypeItem respondentSumTypeItem : respondentSumTypeItems) {
+                setRespondentIdAndLinkStatuses(respondentSumTypeItem,
+                                               idamId,
+                                               respondentName,
+                                               caseDetails.getId().toString(),
+                                               modificationType);
+            }
             Map<String, Object> updatedCaseData = EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData);
             caseDetails.setData(updatedCaseData);
             return;
@@ -71,17 +76,46 @@ public final class RespondentUtil {
                                                                 caseDetails.getId())));
     }
 
-    private static RespondentSumTypeItem findRespondentSumTypeItemByRespondentName(
-        List<RespondentSumTypeItem> respondentCollection, String respondentName) {
+    private static List<RespondentSumTypeItem> findRespondentSumTypeItems(
+        List<RespondentSumTypeItem> respondentCollection,
+        String modificationType,
+        String respondentName,
+        String idamId) {
+        List<RespondentSumTypeItem> respondentSumTypeItems = new ArrayList<>();
         for (RespondentSumTypeItem respondentSumTypeItem : respondentCollection) {
-            if (ObjectUtils.isNotEmpty(respondentSumTypeItem)
-                && ObjectUtils.isNotEmpty(respondentSumTypeItem.getValue())
+            RespondentSumTypeItem tmpRespondentSumTypeItem =
+                getRespondentSumTypeByModificationType(respondentSumTypeItem,
+                                                       modificationType,
+                                                       respondentName,
+                                                       idamId);
+            if (ObjectUtils.isNotEmpty(tmpRespondentSumTypeItem)) {
+                respondentSumTypeItems.add(tmpRespondentSumTypeItem);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(respondentSumTypeItems)) {
+            return respondentSumTypeItems;
+        }
+        throw new RuntimeException(String.format(EXCEPTION_RESPONDENT_NOT_FOUND, respondentName));
+    }
+
+    private static RespondentSumTypeItem getRespondentSumTypeByModificationType(
+        RespondentSumTypeItem respondentSumTypeItem,
+        String modificationType,
+        String respondentName,
+        String idamId) {
+        if (ObjectUtils.isNotEmpty(respondentSumTypeItem)
+            && ObjectUtils.isNotEmpty(respondentSumTypeItem.getValue())) {
+            if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)
                 && StringUtils.isNotBlank(respondentName)
                 && checkRespondentName(respondentSumTypeItem.getValue(), respondentName)) {
                 return respondentSumTypeItem;
+            } else if (MODIFICATION_TYPE_REVOKE.equals(modificationType)
+                && StringUtils.isNotBlank(respondentSumTypeItem.getValue().getIdamId())
+                && idamId.equals(respondentSumTypeItem.getValue().getIdamId())) {
+                return respondentSumTypeItem;
             }
         }
-        throw new RuntimeException(String.format(EXCEPTION_RESPONDENT_NOT_FOUND_WITH_RESPONDENT_NAME,  respondentName));
+        return null;
     }
 
     private static boolean checkRespondentName(RespondentSumType respondentSumType, String respondentName) {
@@ -105,17 +139,16 @@ public final class RespondentUtil {
         return StringUtils.EMPTY;
     }
 
-    private static void setRespondentIdLinkStatuses(RespondentSumTypeItem respondentSumTypeItem,
-                                                    String idamId,
-                                                    String respondentName,
-                                                    String submissionReference,
-                                                    String modificationType) {
+    private static void setRespondentIdAndLinkStatuses(RespondentSumTypeItem respondentSumTypeItem,
+                                                       String idamId,
+                                                       String respondentName,
+                                                       String submissionReference,
+                                                       String modificationType) {
         if (StringUtils.isBlank(idamId)) {
             throw new RuntimeException(EXCEPTION_INVALID_IDAM_ID);
         }
         if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)
-            && StringUtils.isNotBlank(respondentSumTypeItem.getValue().getIdamId())
-            && !idamId.equals(respondentSumTypeItem.getValue().getIdamId())) {
+            && StringUtils.isNotBlank(respondentSumTypeItem.getValue().getIdamId())) {
             throw new RuntimeException(String.format(EXCEPTION_IDAM_ID_ALREADY_EXISTS,
                                                      respondentName,
                                                      submissionReference));
@@ -154,17 +187,5 @@ public final class RespondentUtil {
         et3HubLinksStatuses.setContestClaim(LINK_STATUS_NOT_STARTED_YET);
         et3HubLinksStatuses.setCheckYorAnswers(LINK_STATUS_CANNOT_START_YET);
         return et3HubLinksStatuses;
-    }
-
-    public static RespondentSumTypeItem findRespondentSumTypeItemByIdamId(CaseData caseData, String idamId) {
-        if (CollectionUtils.isEmpty(caseData.getRespondentCollection())) {
-            throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_RESPONDENT_COLLECTION_IS_EMPTY));
-        }
-        for (RespondentSumTypeItem respondentSumTypeItem : caseData.getRespondentCollection()) {
-            if (idamId.equals(respondentSumTypeItem.getValue().getIdamId())) {
-                return respondentSumTypeItem;
-            }
-        }
-        throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_RESPONDENT_NOT_FOUND));
     }
 }

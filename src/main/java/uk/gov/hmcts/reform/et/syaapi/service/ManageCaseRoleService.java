@@ -143,10 +143,12 @@ public class ManageCaseRoleService {
         // from user, we will not be able to modify respondent data.
         // If modification type assignment, only checks the data if assignable to the given Respondent
         // because before assigning any data we are not able to modify respondent data.
-        setAllRespondentsIdamIdAndDefaultLinkStatuses(authorisation,
-                                                      modifyCaseUserRolesRequest,
-                                                      modificationType,
-                                                      MODIFICATION_TYPE_REVOKE.equals(modificationType));
+        if (MODIFICATION_TYPE_REVOKE.equals(modificationType)) {
+            setAllRespondentsIdamIdAndDefaultLinkStatuses(
+                authorisation,
+                modifyCaseUserRolesRequest,
+                modificationType);
+        }
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest =
             ManageCaseRoleServiceUtil.generateCaseAssignmentUserRolesRequestByModifyCaseUserRolesRequest(
                 modifyCaseUserRolesRequest);
@@ -160,9 +162,7 @@ public class ManageCaseRoleService {
                 setAllRespondentsIdamIdAndDefaultLinkStatuses(
                     authorisation,
                     modifyCaseUserRolesRequest,
-                    modificationType,
-                    true
-                );
+                    modificationType);
             }
         } catch (Exception e) {
             // If unable to update existing respondent data with idamId, case details link statuses
@@ -194,8 +194,7 @@ public class ManageCaseRoleService {
 
     private void setAllRespondentsIdamIdAndDefaultLinkStatuses(String authorisation,
                                                                ModifyCaseUserRolesRequest modifyCaseUserRolesRequest,
-                                                               String modificationType,
-                                                               boolean modifyCaseData) {
+                                                               String modificationType) {
         for (ModifyCaseUserRole modifyCaseUserRole : modifyCaseUserRolesRequest.getModifyCaseUserRoles()) {
             if (CASE_USER_ROLE_DEFENDANT.equals(modifyCaseUserRole.getCaseRole())) {
                 CaseDetails caseDetails =
@@ -206,9 +205,7 @@ public class ManageCaseRoleService {
                     modifyCaseUserRole.getUserId(),
                     modificationType
                 );
-                if (modifyCaseData) {
-                    et3Service.updateSubmittedCaseWithCaseDetails(authorisation, caseDetails);
-                }
+                et3Service.updateSubmittedCaseWithCaseDetails(authorisation, caseDetails);
             }
         }
     }

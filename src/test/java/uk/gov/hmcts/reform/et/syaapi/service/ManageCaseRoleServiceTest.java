@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
+import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
@@ -200,21 +201,13 @@ class ManageCaseRoleServiceTest {
             return;
         }
         CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
-        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(expectedCaseDetails.getData());
-        caseData.getRespondentCollection().get(0).getValue().setRespondentName(TestConstants.TEST_RESPONDENT_NAME);
-        expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+
         when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         if (CASE_USER_ROLE_DEFENDANT.equals(modifyCaseUserRolesRequest
-                                                                        .getModifyCaseUserRoles()
-                                                                        .get(0).getCaseRole())) {
-            when(et3Service.findCaseBySubmissionReference(modifyCaseUserRolesRequest
-                                                              .getModifyCaseUserRoles()
-                                                              .get(0).getCaseDataId())).thenReturn(expectedCaseDetails);
-            when(et3Service.updateSubmittedCaseWithCaseDetails(
-                DUMMY_AUTHORISATION_TOKEN,
-                expectedCaseDetails
-            )).thenReturn(expectedCaseDetails);
+                                                .getModifyCaseUserRoles()
+                                                .get(0).getCaseRole())) {
+            setExpectedDetails(modifyCaseUserRolesRequest, modificationType, expectedCaseDetails);
         }
         HttpMethod httpMethod = MODIFICATION_TYPE_REVOKE.equals(modificationType) ? HttpMethod.DELETE : HttpMethod.POST;
         when(restTemplate.exchange(ArgumentMatchers.anyString(),
@@ -228,6 +221,28 @@ class ManageCaseRoleServiceTest {
             modificationType));
     }
 
+    private void setExpectedDetails(ModifyCaseUserRolesRequest modifyCaseUserRolesRequest,
+                                           String modificationType,
+                                           CaseDetails expectedCaseDetails) {
+        if (ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
+            CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(expectedCaseDetails.getData());
+            caseData.getRespondentCollection().get(0).getValue().setRespondentName(
+                TestConstants.TEST_RESPONDENT_NAME);
+            expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+        }
+        if (ManageCaseRoleConstants.MODIFICATION_TYPE_REVOKE.equals(modificationType)) {
+            CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(expectedCaseDetails.getData());
+            caseData.getRespondentCollection().get(0).getValue().setIdamId(USER_ID);
+            expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+        }
+        when(et3Service.findCaseBySubmissionReference(modifyCaseUserRolesRequest
+                                                          .getModifyCaseUserRoles()
+                                                          .get(0).getCaseDataId())).thenReturn(expectedCaseDetails);
+        when(et3Service.updateSubmittedCaseWithCaseDetails(
+            DUMMY_AUTHORISATION_TOKEN,
+            expectedCaseDetails
+        )).thenReturn(expectedCaseDetails);
+    }
     private static boolean isModifyCaseUserRolesRequestInvalid(ModifyCaseUserRolesRequest modifyCaseUserRolesRequest) {
         return ObjectUtils.isEmpty(modifyCaseUserRolesRequest)
             || CollectionUtils.isEmpty(modifyCaseUserRolesRequest.getModifyCaseUserRoles());

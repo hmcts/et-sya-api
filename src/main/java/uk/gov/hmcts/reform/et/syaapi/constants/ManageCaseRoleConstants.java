@@ -52,7 +52,7 @@ public final class ManageCaseRoleConstants {
     public static final String EXCEPTION_IDAM_ID_ALREADY_EXISTS =
         "Unable to add respondent idam id because it has already been assigned to the respondent "
             + "with name %s, and caseId, %s";
-    public static final String EXCEPTION_RESPONDENT_NOT_FOUND_WITH_RESPONDENT_NAME =
+    public static final String EXCEPTION_RESPONDENT_NOT_FOUND =
         "Unable to add respondent idam id because there isn't any respondent with name %s";
     public static final String EXCEPTION_INVALID_IDAM_ID = "Invalid Idam ID";
 
