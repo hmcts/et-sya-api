@@ -267,7 +267,7 @@ dependencies {
   functionalTestAnnotationProcessor group: 'org.projectlombok', name: 'lombok'
   integrationTestAnnotationProcessor group: 'org.projectlombok', name: 'lombok'
 
-  testImplementation group: 'io.github.openfeign', name: 'feign-jackson', version: '13.4'
+  testImplementation group: 'io.github.openfeign', name: 'feign-jackson', version: '13.5'
   testImplementation group: 'org.mockito', name: 'mockito-inline', version: '5.2.0'
   testImplementation(platform('org.junit:junit-bom:5.11.2'))
   testImplementation group: 'org.projectlombok', name: 'lombok'
