@@ -243,6 +243,7 @@ class ManageCaseRoleServiceTest {
             expectedCaseDetails
         )).thenReturn(expectedCaseDetails);
     }
+
     private static boolean isModifyCaseUserRolesRequestInvalid(ModifyCaseUserRolesRequest modifyCaseUserRolesRequest) {
         return ObjectUtils.isEmpty(modifyCaseUserRolesRequest)
             || CollectionUtils.isEmpty(modifyCaseUserRolesRequest.getModifyCaseUserRoles());
