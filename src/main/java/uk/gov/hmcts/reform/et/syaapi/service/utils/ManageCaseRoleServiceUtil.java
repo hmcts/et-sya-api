@@ -190,4 +190,22 @@ public final class ManageCaseRoleServiceUtil {
         }
         return caseDetailsListByRole;
     }
+
+    public static boolean isCaseRoleAssignmentExceptionForSameUser(Exception exception) {
+        return StringUtils.isBlank(exception.getMessage())
+            || !exception.getMessage().contains(
+            ManageCaseRoleConstants.EXCEPTION_IDAM_ID_ALREADY_EXISTS_SAME_USER
+                .substring(0, ManageCaseRoleConstants
+                    .EXCEPTION_IDAM_ID_ALREADY_EXISTS_SAME_USER.indexOf("%s")));
+    }
+
+    public static CaseDetails checkCaseDetailsList(List<CaseDetails> caseDetailsList) {
+        if (CollectionUtils.isNotEmpty(caseDetailsList)) {
+            CaseDetails caseDetails = caseDetailsList.get(ManageCaseRoleConstants.FIRST_INDEX);
+            if (ManageCaseRoleConstants.CASE_STATE_ACCEPTED.equals(caseDetails.getState())) {
+                return caseDetails;
+            }
+        }
+        return null;
+    }
 }

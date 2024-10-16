@@ -50,8 +50,10 @@ public final class ManageCaseRoleConstants {
     public static final String EXCEPTION_EMPTY_RESPONDENT_COLLECTION =
         "Unable to add respondent idam id because there is not respondent defined in the case case with id, %s";
     public static final String EXCEPTION_IDAM_ID_ALREADY_EXISTS =
-        "Unable to add respondent idam id because it has already been assigned to the respondent "
-            + "with name %s, and caseId, %s";
+        "Unable to add respondent idam id because case has already been assigned "
+            + "caseId, %s";
+    public static final String EXCEPTION_IDAM_ID_ALREADY_EXISTS_SAME_USER =
+        "You have already been assigned to this case caseId, %s ";
     public static final String EXCEPTION_RESPONDENT_NOT_FOUND =
         "Unable to add respondent idam id because there isn't any respondent with name %s";
     public static final String EXCEPTION_INVALID_IDAM_ID = "Invalid Idam ID";

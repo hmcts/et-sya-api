@@ -42,10 +42,6 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_STATE_ACCEPTED;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_REVOKE;
 
 /**
  * Provides services for role modification.
@@ -108,13 +104,7 @@ public class ManageCaseRoleService {
             caseType,
             elasticSearchQuery
         ).getCases()).orElse(Collections.emptyList());
-        if (CollectionUtils.isNotEmpty(caseDetailsList)) {
-            CaseDetails caseDetails = caseDetailsList.get(ManageCaseRoleConstants.FIRST_INDEX);
-            if (CASE_STATE_ACCEPTED.equals(caseDetails.getState())) {
-                return caseDetails;
-            }
-        }
-        return null;
+        return ManageCaseRoleServiceUtil.checkCaseDetailsList(caseDetailsList);
     }
 
     /**
@@ -143,7 +133,7 @@ public class ManageCaseRoleService {
         // from user, we will not be able to modify respondent data.
         // If modification type assignment, only checks the data if assignable to the given Respondent
         // because before assigning any data we are not able to modify respondent data.
-        if (MODIFICATION_TYPE_REVOKE.equals(modificationType)) {
+        if (ManageCaseRoleConstants.MODIFICATION_TYPE_REVOKE.equals(modificationType)) {
             setAllRespondentsIdamIdAndDefaultLinkStatuses(
                 authorisation,
                 modifyCaseUserRolesRequest,
@@ -158,16 +148,18 @@ public class ManageCaseRoleService {
         // statuses to respondent. Because after assigning role we are able to update respondent data.
         // Doesn't do anything after revoking user roles.
         try {
-            if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
+            if (ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
                 setAllRespondentsIdamIdAndDefaultLinkStatuses(
                     authorisation,
                     modifyCaseUserRolesRequest,
                     modificationType);
             }
         } catch (Exception e) {
-            // If unable to update existing respondent data with idamId, case details link statuses
-            // and response hub links statuses after assigning user case role, revokes assigned role!....
-            restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, HttpMethod.DELETE);
+            if (ManageCaseRoleServiceUtil.isCaseRoleAssignmentExceptionForSameUser(e)) {
+                // If unable to update existing respondent data with idamId, case details link statuses
+                // and response hub links statuses after assigning user case role, revokes assigned role!....
+                restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, HttpMethod.DELETE);
+            }
             throw new ManageCaseRoleException(e);
         }
         log.info("{}" + StringUtils.CR + "Case assignment successfully completed",
@@ -196,7 +188,7 @@ public class ManageCaseRoleService {
                                                                ModifyCaseUserRolesRequest modifyCaseUserRolesRequest,
                                                                String modificationType) {
         for (ModifyCaseUserRole modifyCaseUserRole : modifyCaseUserRolesRequest.getModifyCaseUserRoles()) {
-            if (CASE_USER_ROLE_DEFENDANT.equals(modifyCaseUserRole.getCaseRole())) {
+            if (ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT.equals(modifyCaseUserRole.getCaseRole())) {
                 CaseDetails caseDetails =
                     et3Service.findCaseBySubmissionReference(modifyCaseUserRole.getCaseDataId());
                 RespondentUtil.setRespondentIdamIdAndDefaultLinkStatuses(
@@ -379,7 +371,7 @@ public class ManageCaseRoleService {
     private List<CaseDetails> getCaseDetailsByCaseUserRole(String authorization, String caseUserRole) {
         // If defendant uses ET3 cases search because case service's all case search doesn't list all cases
         // immediately after assigning a new case
-        if (CASE_USER_ROLE_DEFENDANT.equals(caseUserRole)) {
+        if (ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT.equals(caseUserRole)) {
             return et3Service.getAllUserCasesForET3(authorization);
         } else {
             // If not defendant uses existing cases search

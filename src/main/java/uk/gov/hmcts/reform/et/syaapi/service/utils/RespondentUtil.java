@@ -20,6 +20,7 @@ import java.util.Map;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DATA_NOT_FOUND;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_EMPTY_RESPONDENT_COLLECTION;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_IDAM_ID_ALREADY_EXISTS;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_IDAM_ID_ALREADY_EXISTS_SAME_USER;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_INVALID_IDAM_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_RESPONDENT_NOT_FOUND;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_CANNOT_START_YET;
@@ -63,7 +64,6 @@ public final class RespondentUtil {
             for (RespondentSumTypeItem respondentSumTypeItem : respondentSumTypeItems) {
                 setRespondentIdAndLinkStatuses(respondentSumTypeItem,
                                                idamId,
-                                               respondentName,
                                                caseDetails.getId().toString(),
                                                modificationType);
             }
@@ -141,7 +141,6 @@ public final class RespondentUtil {
 
     private static void setRespondentIdAndLinkStatuses(RespondentSumTypeItem respondentSumTypeItem,
                                                        String idamId,
-                                                       String respondentName,
                                                        String submissionReference,
                                                        String modificationType) {
         if (StringUtils.isBlank(idamId)) {
@@ -149,9 +148,11 @@ public final class RespondentUtil {
         }
         if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)
             && StringUtils.isNotBlank(respondentSumTypeItem.getValue().getIdamId())) {
-            throw new RuntimeException(String.format(EXCEPTION_IDAM_ID_ALREADY_EXISTS,
-                                                     respondentName,
-                                                     submissionReference));
+            if (idamId.equals(respondentSumTypeItem.getValue().getIdamId())) {
+                throw new RuntimeException(String.format(EXCEPTION_IDAM_ID_ALREADY_EXISTS_SAME_USER,
+                                                         submissionReference));
+            }
+            throw new RuntimeException(String.format(EXCEPTION_IDAM_ID_ALREADY_EXISTS, submissionReference));
         }
         if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
             respondentSumTypeItem.getValue().setIdamId(idamId);
