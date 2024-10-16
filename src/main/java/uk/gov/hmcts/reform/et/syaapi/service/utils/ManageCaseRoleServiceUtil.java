@@ -9,16 +9,19 @@ import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRolesRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_STATE_ACCEPTED;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USERS_API_URL;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_IDAM_ID_ALREADY_EXISTS_SAME_USER;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.FIRST_INDEX;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFY_CASE_ROLE_EMPTY_REQUEST;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFY_CASE_USER_ROLE_ITEM_INVALID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.STRING_AMPERSAND;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.STRING_EQUAL;
@@ -123,8 +126,8 @@ public final class ManageCaseRoleServiceUtil {
             && ObjectUtils.isNotEmpty(caseAssignmentUserRole)
             && StringUtils.isNotEmpty(caseAssignmentUserRole.getCaseDataId())
             && (caseDetails.getId().toString().equals(caseAssignmentUserRole.getCaseDataId()))
-            && (ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR.equals(caseAssignmentUserRole.getCaseRole())
-            ||  ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT.equals(caseAssignmentUserRole.getCaseRole()))
+            && (CASE_USER_ROLE_CREATOR.equals(caseAssignmentUserRole.getCaseRole())
+            ||  CASE_USER_ROLE_DEFENDANT.equals(caseAssignmentUserRole.getCaseRole()))
             ? caseAssignmentUserRole.getCaseRole() : StringUtils.EMPTY;
     }
 
@@ -137,7 +140,7 @@ public final class ManageCaseRoleServiceUtil {
         if (ObjectUtils.isEmpty(modifyCaseUserRolesRequest)
             || CollectionUtils.isEmpty(modifyCaseUserRolesRequest.getModifyCaseUserRoles())) {
             throw new ManageCaseRoleException(new Exception(
-                ManageCaseRoleConstants.MODIFY_CASE_ROLE_EMPTY_REQUEST));
+                MODIFY_CASE_ROLE_EMPTY_REQUEST));
         }
         for (ModifyCaseUserRole modifyCaseUserRole : modifyCaseUserRolesRequest.getModifyCaseUserRoles()) {
             checkModifyCaseUserRole(modifyCaseUserRole);
@@ -192,17 +195,16 @@ public final class ManageCaseRoleServiceUtil {
     }
 
     public static boolean isCaseRoleAssignmentExceptionForSameUser(Exception exception) {
-        return StringUtils.isBlank(exception.getMessage())
-            || !exception.getMessage().contains(
-            ManageCaseRoleConstants.EXCEPTION_IDAM_ID_ALREADY_EXISTS_SAME_USER
-                .substring(0, ManageCaseRoleConstants
-                    .EXCEPTION_IDAM_ID_ALREADY_EXISTS_SAME_USER.indexOf("%s")));
+        return StringUtils.isNotBlank(exception.getMessage())
+            && exception.getMessage().contains(
+            EXCEPTION_IDAM_ID_ALREADY_EXISTS_SAME_USER
+                .substring(0, EXCEPTION_IDAM_ID_ALREADY_EXISTS_SAME_USER.indexOf("%s")));
     }
 
     public static CaseDetails checkCaseDetailsList(List<CaseDetails> caseDetailsList) {
         if (CollectionUtils.isNotEmpty(caseDetailsList)) {
-            CaseDetails caseDetails = caseDetailsList.get(ManageCaseRoleConstants.FIRST_INDEX);
-            if (ManageCaseRoleConstants.CASE_STATE_ACCEPTED.equals(caseDetails.getState())) {
+            CaseDetails caseDetails = caseDetailsList.get(FIRST_INDEX);
+            if (CASE_STATE_ACCEPTED.equals(caseDetails.getState())) {
                 return caseDetails;
             }
         }

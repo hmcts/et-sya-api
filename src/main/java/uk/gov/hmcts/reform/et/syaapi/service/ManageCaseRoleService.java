@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignedUserRolesResponse;
-import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesResponse;
 import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRole;
@@ -51,8 +50,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CA
 @RequiredArgsConstructor
 public class ManageCaseRoleService {
 
-    private String roleList;
-
     private final AdminUserService adminUserService;
     private final RestTemplate restTemplate;
     private final AuthTokenGenerator authTokenGenerator;
@@ -77,18 +74,25 @@ public class ManageCaseRoleService {
      *              types.
      */
     public CaseDetails findCaseForRoleModification(
-        FindCaseForRoleModificationRequest findCaseForRoleModificationRequest) {
+        FindCaseForRoleModificationRequest findCaseForRoleModificationRequest,
+        String authorisation) throws IOException {
         log.info("Trying to receive case for role modification. Submission Reference: {}",
                  findCaseForRoleModificationRequest.getCaseSubmissionReference());
         String adminUserToken = adminUserService.getAdminUserToken();
         String elasticSearchQuery = ElasticSearchQueryBuilder
             .buildByFindCaseForRoleModificationRequest(findCaseForRoleModificationRequest);
-        CaseDetails englandCase = findCaseByCaseType(adminUserToken, ENGLAND_CASE_TYPE, elasticSearchQuery);
+        CaseDetails englandCase = findCaseByCaseType(adminUserToken,
+                                                     ENGLAND_CASE_TYPE,
+                                                     elasticSearchQuery,
+                                                     authorisation);
         if (ObjectUtils.isNotEmpty(englandCase)) {
             return englandCase;
         }
 
-        CaseDetails scotlandCase = findCaseByCaseType(adminUserToken, SCOTLAND_CASE_TYPE, elasticSearchQuery);
+        CaseDetails scotlandCase = findCaseByCaseType(adminUserToken,
+                                                      SCOTLAND_CASE_TYPE,
+                                                      elasticSearchQuery,
+                                                      authorisation);
         if (ObjectUtils.isNotEmpty(scotlandCase)) {
             return scotlandCase;
         }
@@ -97,14 +101,24 @@ public class ManageCaseRoleService {
         return null;
     }
 
-    private CaseDetails findCaseByCaseType(String adminUserToken, String caseType, String elasticSearchQuery) {
+    private CaseDetails findCaseByCaseType(String adminUserToken,
+                                           String caseType,
+                                           String elasticSearchQuery,
+                                           String authorisation) throws IOException {
         List<CaseDetails> caseDetailsList = Optional.ofNullable(ccdApi.searchCases(
             adminUserToken,
             authTokenGenerator.generate(),
             caseType,
             elasticSearchQuery
         ).getCases()).orElse(Collections.emptyList());
-        return ManageCaseRoleServiceUtil.checkCaseDetailsList(caseDetailsList);
+        return checkIsUserCreator(authorisation, caseDetailsList)
+            ? null
+            : ManageCaseRoleServiceUtil.checkCaseDetailsList(caseDetailsList);
+    }
+
+    private boolean checkIsUserCreator(String authorisation, List<CaseDetails> caseDetailsList) throws IOException {
+        return RespondentUtil
+            .checkIsUserCreator(getCaseUserRolesByCaseAndUserIdsCcd(authorisation, caseDetailsList));
     }
 
     /**
@@ -142,7 +156,7 @@ public class ManageCaseRoleService {
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest =
             ManageCaseRoleServiceUtil.generateCaseAssignmentUserRolesRequestByModifyCaseUserRolesRequest(
                 modifyCaseUserRolesRequest);
-        log.info(getModifyUserCaseRolesLog(caseAssignmentUserRolesRequest, modificationType, true));
+        log.info("assigning case");
         restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, httpMethod);
         // If modification type assignment sets idam id, case details links statuses and respondent hub links
         // statuses to respondent. Because after assigning role we are able to update respondent data.
@@ -155,15 +169,14 @@ public class ManageCaseRoleService {
                     modificationType);
             }
         } catch (Exception e) {
-            if (ManageCaseRoleServiceUtil.isCaseRoleAssignmentExceptionForSameUser(e)) {
+            if (!ManageCaseRoleServiceUtil.isCaseRoleAssignmentExceptionForSameUser(e)) {
                 // If unable to update existing respondent data with idamId, case details link statuses
                 // and response hub links statuses after assigning user case role, revokes assigned role!....
                 restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, HttpMethod.DELETE);
             }
             throw new ManageCaseRoleException(e);
         }
-        log.info("{}" + StringUtils.CR + "Case assignment successfully completed",
-                 getModifyUserCaseRolesLog(caseAssignmentUserRolesRequest, modificationType, false));
+        log.info("Case assignment successfully completed");
     }
 
     private void restCallToModifyUserCaseRoles(
@@ -179,7 +192,7 @@ public class ManageCaseRoleService {
                                   requestEntity,
                                   CaseAssignmentUserRolesResponse.class);
         } catch (RestClientResponseException | IOException exception) {
-            log.info("Error from CCD - {}", exception.getMessage() + StringUtils.CR + roleList);
+            log.info("Error from CCD - {}", exception.getMessage());
             throw exception;
         }
     }
@@ -200,25 +213,6 @@ public class ManageCaseRoleService {
                 et3Service.updateSubmittedCaseWithCaseDetails(authorisation, caseDetails);
             }
         }
-    }
-
-    private String getModifyUserCaseRolesLog(CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest,
-                                            String modificationType,
-                                            boolean isPreModify) {
-        roleList = StringUtils.EMPTY;
-        for (CaseAssignmentUserRole caseAssignmentUserRole
-            : caseAssignmentUserRolesRequest.getCaseAssignmentUserRoles()) {
-            roleList = "Case Id: " + caseAssignmentUserRole.getCaseDataId()
-                + ", User Id: " + caseAssignmentUserRole.getUserId()
-                + " Role: " + caseAssignmentUserRole.getCaseRole()
-                + StringUtils.CR;
-        }
-        return (isPreModify
-            ? ManageCaseRoleConstants.MODIFY_CASE_ROLE_PRE_WORDING
-            : ManageCaseRoleConstants.MODIFY_CASE_ROLE_POST_WORDING)
-            + "Modification type is: " + modificationType + StringUtils.CR
-            + "Roles: " + roleList;
-
     }
 
     /**

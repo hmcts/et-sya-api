@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ManageCaseRoleService;
 
+import java.io.IOException;
 import javax.validation.constraints.NotNull;
 
 import static org.springframework.http.ResponseEntity.ok;
@@ -38,10 +39,16 @@ public class ManageCaseRoleController {
     @Operation(summary = "Modifies user roles of the case")
     @ApiResponseGroup
     public ResponseEntity<CaseDetails> findCaseForRoleModification(
+        @RequestHeader(AUTHORIZATION) String authorisation,
         @NotNull @RequestBody FindCaseForRoleModificationRequest findCaseForRoleModificationRequest
     ) {
-        CaseDetails caseDetails =
-            manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest);
+        CaseDetails caseDetails;
+        try {
+            caseDetails =
+                manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest, authorisation);
+        } catch (IOException e) {
+            throw new ManageCaseRoleException(e);
+        }
         return ok(caseDetails);
     }
 

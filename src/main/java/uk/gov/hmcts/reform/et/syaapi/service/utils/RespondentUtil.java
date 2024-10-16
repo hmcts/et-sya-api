@@ -5,6 +5,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignedUserRolesResponse;
+import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
@@ -17,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DATA_NOT_FOUND;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_EMPTY_RESPONDENT_COLLECTION;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_IDAM_ID_ALREADY_EXISTS;
@@ -188,5 +191,19 @@ public final class RespondentUtil {
         et3HubLinksStatuses.setContestClaim(LINK_STATUS_NOT_STARTED_YET);
         et3HubLinksStatuses.setCheckYorAnswers(LINK_STATUS_CANNOT_START_YET);
         return et3HubLinksStatuses;
+    }
+
+
+    public static boolean checkIsUserCreator(CaseAssignedUserRolesResponse caseAssignedUserRolesResponse) {
+        if (ObjectUtils.isEmpty(caseAssignedUserRolesResponse)
+            || CollectionUtils.isEmpty(caseAssignedUserRolesResponse.getCaseAssignedUserRoles())) {
+            return false;
+        }
+        for (CaseAssignmentUserRole caseAssignmentUserRole : caseAssignedUserRolesResponse.getCaseAssignedUserRoles()) {
+            if (CASE_USER_ROLE_CREATOR.equals(caseAssignmentUserRole.getCaseRole())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

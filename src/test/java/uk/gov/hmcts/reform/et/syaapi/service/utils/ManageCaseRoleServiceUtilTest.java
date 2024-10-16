@@ -129,4 +129,12 @@ class ManageCaseRoleServiceUtilTest {
         assertThrows(ManageCaseRoleException.class, () -> ManageCaseRoleServiceUtil.checkModifyCaseUserRolesRequest(
             ModifyCaseUserRolesRequest.builder().build()));
     }
+
+    @Test
+    void theIsCaseRoleAssignmentExceptionForSameUser() {
+        assertThat(ManageCaseRoleServiceUtil.isCaseRoleAssignmentExceptionForSameUser(
+            new Exception("Test Exception"))).isFalse();
+        assertThat(ManageCaseRoleServiceUtil.isCaseRoleAssignmentExceptionForSameUser(
+            new Exception("You have already been assigned to this case caseId, "))).isTrue();
+    }
 }
