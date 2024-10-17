@@ -388,7 +388,7 @@ public class ManageCaseRoleService {
             );
             CaseAssignedUserRolesResponse caseAssignedUserRolesResponse =
                 getCaseUserRolesByCaseAndUserIdsCcd(authorization, caseDetailsList);
-            log.info("**** User Roles Response: {}", caseAssignedUserRolesResponse.getCaseAssignedUserRoles().get(0));
+            log.info("**** User Roles Response: {}", caseAssignedUserRolesResponse.getCaseAssignedUserRoles());
             caseDetailsListByRole = ManageCaseRoleServiceUtil
                 .getCaseDetailsByCaseUserRole(caseDetailsList,
                                               caseAssignedUserRolesResponse.getCaseAssignedUserRoles(),
