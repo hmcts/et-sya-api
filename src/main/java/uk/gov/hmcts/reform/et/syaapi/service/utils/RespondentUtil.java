@@ -200,12 +200,6 @@ public final class RespondentUtil {
             return false;
         }
         for (CaseAssignmentUserRole caseAssignmentUserRole : caseAssignedUserRolesResponse.getCaseAssignedUserRoles()) {
-            log.info(
-                "*********** CASE USER ID{}**** CaseId: {}*** CaseRole:{}",
-                caseAssignmentUserRole.getUserId(),
-                caseAssignmentUserRole.getCaseDataId(),
-                caseAssignmentUserRole.getCaseRole()
-            );
             if (CASE_USER_ROLE_CREATOR.equals(caseAssignmentUserRole.getCaseRole())) {
                 return true;
             }

@@ -373,15 +373,8 @@ public class ManageCaseRoleService {
         List<CaseDetails> caseDetailsList, String authorization, String caseUserRole) {
         List<CaseDetails> caseDetailsListByRole;
         try {
-            log.info(
-                "*****GETTING USER CASES BY USER ROLES: {}***** caseDetailsList: {}***** authorization: {}",
-                caseUserRole,
-                caseDetailsList.get(0).getId(),
-                authorization
-            );
             CaseAssignedUserRolesResponse caseAssignedUserRolesResponse =
                 getCaseUserRolesByCaseAndUserIdsCcd(authorization, caseDetailsList);
-            log.info("**** User Roles Response: {}", caseAssignedUserRolesResponse.getCaseAssignedUserRoles());
             caseDetailsListByRole = ManageCaseRoleServiceUtil
                 .getCaseDetailsByCaseUserRole(caseDetailsList,
                                               caseAssignedUserRolesResponse.getCaseAssignedUserRoles(),

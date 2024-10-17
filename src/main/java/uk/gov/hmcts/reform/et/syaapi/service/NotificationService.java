@@ -769,11 +769,7 @@ public class NotificationService {
                     resp.getValue()
                 );
                 if (isNullOrEmpty(respondentEmailAddress)) {
-                    log.info(
-                        String.format(
-                            "Respondent %s did not have an email address associated with their account",
-                            resp.getId()
-                        ));
+                    log.info("Respondent does not not have an email address associated with their account");
                 } else {
                     try {
                         notificationClient.sendEmail(
