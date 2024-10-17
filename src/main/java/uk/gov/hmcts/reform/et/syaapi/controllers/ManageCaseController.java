@@ -85,7 +85,6 @@ public class ManageCaseController {
     public ResponseEntity<List<CaseDetails>> getUserCasesByCaseUserRole(
         @RequestHeader(AUTHORIZATION) String authorization,
         @RequestParam(value = CASE_USER_ROLE_API_PARAMETER_NAME, required = false) String caseUserRole) {
-        log.info("****** Param case user role: {}", caseUserRole);
         var caseDetails = manageCaseRoleService.getUserCasesByCaseUserRole(
             authorization,
             StringUtils.isBlank(caseUserRole)

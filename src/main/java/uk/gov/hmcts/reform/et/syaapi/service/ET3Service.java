@@ -100,7 +100,6 @@ public class ET3Service {
             log.info("Unable to get user info from idam for listing user cases");
             throw new ManageCaseRoleException(new Exception("Unable to get user info for listing user cases"));
         }
-        log.info("******** get all user cases For ET3 user id: {}", userInfo.getUid());
         List<CaseDetails> englandCases = ccdApi.searchForCitizen(
             authorization,
             authTokenGenerator.generate(),
@@ -115,8 +114,6 @@ public class ET3Service {
             JURISDICTION_ID,
             SCOTLAND_CASE_TYPE,
             new HashMap<>());
-        log.info("ALL USER CASES, gatAllUserCasesForET3: {}", Stream.of(scotlandCases, englandCases)
-            .flatMap(Collection::stream).toList());
         return Stream.of(scotlandCases, englandCases)
             .flatMap(Collection::stream).toList();
     }
