@@ -624,7 +624,6 @@ class ManageCaseRoleServiceTest {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         List<CaseDetails> allCaseDetails = caseTestData.getSearchResultRequestCaseDataListScotland().getCases();
         allCaseDetails.addAll(caseTestData.getSearchResultRequestCaseDataListEngland().getCases());
-        when(et3Service.getAllUserCasesForET3(TEST_SERVICE_AUTH_TOKEN)).thenReturn(allCaseDetails);
         when(caseService.getAllUserCases(TEST_SERVICE_AUTH_TOKEN)).thenReturn(allCaseDetails);
         when(idamClient.getUserInfo(ArgumentMatchers.anyString())).thenReturn(userInfo);
         List<CaseDetails> expectedCaseDetails = caseTestData.getExpectedCaseDataListCombined();

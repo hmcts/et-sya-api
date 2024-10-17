@@ -369,12 +369,7 @@ public class ManageCaseRoleService {
         // If defendant uses ET3 cases search because case service's all case search doesn't list all cases
         // immediately after assigning a new case
         log.info("CASE USER ROLE VALUE ON getCaseDetailsByCaseUserRole: {}", caseUserRole);
-        if (ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT.equals(caseUserRole)) {
-            return et3Service.getAllUserCasesForET3(authorization);
-        } else {
-            // If not defendant uses existing cases search
-            return caseService.getAllUserCases(authorization);
-        }
+        return caseService.getAllUserCases(authorization);
     }
 
     private List<CaseDetails> getCasesByCaseDetailsListAuthorizationAndCaseUserRole(
