@@ -114,6 +114,8 @@ public class ET3Service {
             JURISDICTION_ID,
             SCOTLAND_CASE_TYPE,
             new HashMap<>());
+        log.info("ALL USER CASES, gatAllUserCasesForET3: {}", Stream.of(scotlandCases, englandCases)
+            .flatMap(Collection::stream).toList());
         return Stream.of(scotlandCases, englandCases)
             .flatMap(Collection::stream).toList();
     }
