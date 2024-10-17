@@ -181,6 +181,7 @@ public final class ManageCaseRoleServiceUtil {
             || StringUtils.isBlank(caseUserRole)) {
             return caseDetailsListByRole;
         }
+        log.info("**** CASE DETAILS ON GET CASE DETAILS BY CASE USER ROLE: {}", caseDetailsList.get(0).getId());
         for (CaseAssignmentUserRole caseAssignmentUserRole : caseAssignmentUserRoles) {
             for (CaseDetails caseDetails : caseDetailsList) {
                 String tmpCaseUserRole = ManageCaseRoleServiceUtil.findCaseUserRole(
@@ -191,6 +192,7 @@ public final class ManageCaseRoleServiceUtil {
                 }
             }
         }
+        log.info("***** Number of found cases by role{}", caseDetailsListByRole.size());
         return caseDetailsListByRole;
     }
 

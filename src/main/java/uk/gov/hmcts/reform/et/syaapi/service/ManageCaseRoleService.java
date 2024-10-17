@@ -86,6 +86,7 @@ public class ManageCaseRoleService {
                                                      elasticSearchQuery,
                                                      authorisation);
         if (ObjectUtils.isNotEmpty(englandCase)) {
+            log.info("England Case Id: {}", englandCase.getId().toString());
             return englandCase;
         }
 
@@ -94,6 +95,7 @@ public class ManageCaseRoleService {
                                                       elasticSearchQuery,
                                                       authorisation);
         if (ObjectUtils.isNotEmpty(scotlandCase)) {
+            log.info("England Case Id: {}", scotlandCase.getId().toString());
             return scotlandCase;
         }
         log.info("Case not found for the parameters, submission reference: {}",
@@ -356,6 +358,7 @@ public class ManageCaseRoleService {
     // covers all runtime exceptions.
     @Retryable
     public List<CaseDetails> getUserCasesByCaseUserRole(String authorization, String caseUserRole) {
+        log.info("****** GETTING USER CASES");
         return getCasesByCaseDetailsListAuthorizationAndCaseUserRole(getCaseDetailsByCaseUserRole(authorization,
                                                                                                   caseUserRole),
                                                                      authorization,
@@ -377,8 +380,15 @@ public class ManageCaseRoleService {
         List<CaseDetails> caseDetailsList, String authorization, String caseUserRole) {
         List<CaseDetails> caseDetailsListByRole;
         try {
+            log.info(
+                "*****GETTING USER CASES BY USER ROLES: {}***** caseDetailsList: {}***** authorization: {}",
+                caseUserRole,
+                caseDetailsList.get(0).getId(),
+                authorization
+            );
             CaseAssignedUserRolesResponse caseAssignedUserRolesResponse =
                 getCaseUserRolesByCaseAndUserIdsCcd(authorization, caseDetailsList);
+            log.info("**** User Roles Response: {}", caseAssignedUserRolesResponse.getCaseAssignedUserRoles().get(0));
             caseDetailsListByRole = ManageCaseRoleServiceUtil
                 .getCaseDetailsByCaseUserRole(caseDetailsList,
                                               caseAssignedUserRolesResponse.getCaseAssignedUserRoles(),
