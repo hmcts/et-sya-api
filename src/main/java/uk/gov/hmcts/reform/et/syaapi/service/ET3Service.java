@@ -100,6 +100,7 @@ public class ET3Service {
             log.info("Unable to get user info from idam for listing user cases");
             throw new ManageCaseRoleException(new Exception("Unable to get user info for listing user cases"));
         }
+        log.info("******** get all user cases For ET3 user id: {}", userInfo.getUid());
         List<CaseDetails> englandCases = ccdApi.searchForCitizen(
             authorization,
             authTokenGenerator.generate(),
