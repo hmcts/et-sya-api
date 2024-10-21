@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.ET3_STATUS_IN_PROGRESS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DATA_NOT_FOUND;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_EMPTY_RESPONDENT_COLLECTION;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_IDAM_ID_ALREADY_EXISTS;
@@ -162,6 +163,7 @@ public final class RespondentUtil {
             respondentSumTypeItem.getValue()
                 .setEt3CaseDetailsLinksStatuses(generateDefaultET3CaseDetailsLinksStatuses());
             respondentSumTypeItem.getValue().setEt3HubLinksStatuses(generateDefaultET3HubLinksStatuses());
+            respondentSumTypeItem.getValue().setEt3Status(ET3_STATUS_IN_PROGRESS);
         } else {
             respondentSumTypeItem.getValue().setIdamId(StringUtils.EMPTY);
         }
