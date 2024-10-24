@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.retry.annotation.Retryable;
@@ -18,13 +19,16 @@ import uk.gov.hmcts.reform.et.syaapi.constants.ResponseHubLinks;
 import uk.gov.hmcts.reform.et.syaapi.exception.ET3Exception;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
+import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.springframework.beans.BeanUtils.copyProperties;
@@ -33,6 +37,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTIO
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.FIRST_INDEX;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.findRespondentSumTypeItemByIdamId;
 
@@ -67,6 +72,46 @@ public class ET3Service {
         }
         throw new RuntimeException(String.format(EXCEPTION_CASE_DETAILS_NOT_FOUND, submissionReference));
     }
+
+    /**
+     * Finds case by its ethos case reference.
+     * @param ethosCaseReference case ethos reference of the case
+     * @return case details for the given submission reference and case type id.
+     */
+    public CaseDetails findCaseByEthosCaseReference(String ethosCaseReference) {
+        if (StringUtils.isBlank(ethosCaseReference)) {
+            throw new RuntimeException(EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS);
+        }
+        String elasticSearchQuery = ElasticSearchQueryBuilder.buildByEthosCaseReference(ethosCaseReference);
+        String adminUserToken = adminUserService.getAdminUserToken();
+        CaseDetails englandCase = findCaseByCaseType(adminUserToken,
+                                                     ENGLAND_CASE_TYPE,
+                                                     elasticSearchQuery);
+        if (ObjectUtils.isNotEmpty(englandCase)) {
+            return englandCase;
+        }
+
+        CaseDetails scotlandCase = findCaseByCaseType(adminUserToken,
+                                                      SCOTLAND_CASE_TYPE,
+                                                      elasticSearchQuery);
+        if (ObjectUtils.isNotEmpty(scotlandCase)) {
+            return scotlandCase;
+        }
+        return null;
+    }
+
+    private CaseDetails findCaseByCaseType(String adminUserToken,
+                                           String caseType,
+                                           String elasticSearchQuery) {
+        List<CaseDetails> caseDetailsList = Optional.ofNullable(ccdApi.searchCases(
+            adminUserToken,
+            authTokenGenerator.generate(),
+            caseType,
+            elasticSearchQuery
+        ).getCases()).orElse(Collections.emptyList());
+        return CollectionUtils.isNotEmpty(caseDetailsList) ? caseDetailsList.get(FIRST_INDEX) : null;
+    }
+
 
     /**
      * Updates case details with the new values for ET3 case assignment or ET3 updates.

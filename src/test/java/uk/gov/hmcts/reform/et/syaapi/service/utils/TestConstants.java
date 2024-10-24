@@ -85,6 +85,10 @@ public final class TestConstants {
     public static final String TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_ID_KEY = "id";
     public static final String TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_ID_VALUE = "test_respondent_sum_type_item_id";
     public static final String TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_VALUE_KEY = "value";
+    public static final String POST_SERVICE_MODIFY_ET3_DATA_URL = "/et3/modifyEt3Data";
+    public static final String GET_SERVICE_FIND_CASE_FOR_ROLE_MODIFICATION_URL
+        = "/et3/findCaseByEthosCaseReference";
+    public static final String PARAMETER_NAME_ETHOS_CASE_REFERENCE = "ethosCaseReference";
 
     public static final String TEST_EXCEPTION_INVALID_MODIFICATION_TYPE =
         "java.lang.Exception: Invalid modification type";
@@ -110,6 +114,25 @@ public final class TestConstants {
     public static final String TEST_MODIFICATION_TYPE_ASSIGNMENT = "Assignment";
     public static final String TEST_MODIFICATION_TYPE_REVOKE = "Revoke";
     public static final String TEST_JURISDICTION_ID_EMPLOYMENT = "EMPLOYMENT";
+    public static final String TEST_ETHOS_CASE_REFERENCE = "6000032/2024";
+    public static final String EXPECTED_QUERY_BY_ETHOS_CASE_REFERENCE = "{\"size\":1,\"query\":{\"bool\":{\"must\":"
+        + "[{\"match\":{\"data.ethosCaseReference.keyword\":{\"query\":\"6000032/2024\"}}}],\"boost\":1.0}}}";
+    public static final String EXPECTED_QUERY_BY_ROLE_MODIFICATION_REQUEST =
+        "{\"size\":1,\"query\":{\"bool\":{\"must\":[{\"match\":{\"reference.keyword\":{\"query\":"
+            + "\"case_submission_reference\"}}}],\"filter\":[{\"bool\":{\"should\":[{\"bool\":{\"filter\":"
+            + "[{\"match\":{\"data.respondentCollection.value.respondentOrganisation.keyword\":{\"query\":"
+            + "\"respondent_name\"}}}],\"boost\":1.0}},{\"bool\":{\"filter\":[{\"match\""
+            + ":{\"data.respondentCollection.value.respondent_name.keyword\":{\"query\":\"respondent_name\"}}}],"
+            + "\"boost\":1.0}},{\"bool\":{\"filter\":[{\"match\":{\"data.respondent.keyword\":{\"query\":"
+            + "\"respondent_name\"}}}],\"boost\":1.0}}],\"boost\":1.0}},{\"bool\":{\"should\":[{\"bool\":"
+            + "{\"must\":[{\"bool\":{\"filter\":[{\"match\":{\"data.claimantIndType.claimant_first_names.keyword\":"
+            + "{\"query\":\"claimant_first_names\"}}}],\"boost\":1.0}},{\"bool\":{\"filter\":[{\"match\":"
+            + "{\"data.claimantIndType.claimant_last_name.keyword\":{\"query\":\"claimant_last_name\"}}}],\"boost\":"
+            + "1.0}}],\"boost\":1.0}},{\"bool\":{\"filter\":[{\"match\":{\"data.claimant.keyword\":{\"query\":"
+            + "\"claimant_first_names claimant_last_name\"}}}],\"boost\":1.0}}],\"boost\":1.0}}],\"boost\":1.0}}}";
+    public static final String EXPECTED_QUERY_BY_SUBMISSION_REFERENCE = "{\"size\":1,\"query\":{\"bool\":{\"must\":"
+        + "[{\"match\":{\"reference.keyword\":{\"query\":\"case_submission_reference\"}}}],\"boost\":1.0}}}";
+    public static final String TEST_CASE_STATE_ACCEPTED = "Accepted";
 
     public static final PdfDecodedMultipartFile PDF_DECODED_MULTIPART_FILE_NULL = new PdfDecodedMultipartFile(
         null,

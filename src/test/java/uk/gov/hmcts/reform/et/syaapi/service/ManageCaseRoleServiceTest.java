@@ -109,7 +109,6 @@ class ManageCaseRoleServiceTest {
     private static final String DUMMY_AUTHORISATION_TOKEN = "dummy_authorisation_token";
     private static final String TEST_SERVICE_AUTH_TOKEN = "Bearer TestServiceAuth";
     private static final String USER_CASE_ROLE_DEFENDANT = "[DEFENDANT]";
-    private static final String ENGLAND_CASE_TYPE = "ET_EnglandWales";
     private static final String SCOTLAND_CASE_TYPE = "ET_Scotland";
     private static final String AAC_URL_PARAMETER_NAME = "aacUrl";
     private static final String AAC_URL_PARAMETER_TEST_VALUE = "https://test.url.com";
@@ -118,7 +117,6 @@ class ManageCaseRoleServiceTest {
     private static final String EXPECTED_EMPTY_CASE_DETAILS_EXCEPTION_MESSAGE =
         "java.lang.Exception: Unable to get user cases because not able to create aacApiUrl with the given "
             + "caseDetails and authorization data";
-    private static final String TEST_CASE_STATE_ACCEPTED = "Accepted";
 
     @BeforeEach
     void setup() {
@@ -269,14 +267,14 @@ class ManageCaseRoleServiceTest {
             .userId(USER_ID)
             .caseDataId(CASE_ID)
             .caseRole(CASE_ROLE_DEFENDANT)
-            .caseTypeId(ENGLAND_CASE_TYPE)
+            .caseTypeId(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES)
             .respondentName(RESPONDENT_NAME)
             .build();
         ModifyCaseUserRole modifyCaseUserRoleValidRoleCreator = ModifyCaseUserRole.builder()
             .userId(USER_ID)
             .caseDataId(CASE_ID)
             .caseRole(CASE_ROLE_CREATOR)
-            .caseTypeId(ENGLAND_CASE_TYPE)
+            .caseTypeId(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES)
             .respondentName(RESPONDENT_NAME)
             .build();
         ModifyCaseUserRolesRequest modifyCaseUserRolesRequestValidDefendant = ModifyCaseUserRolesRequest
@@ -311,12 +309,13 @@ class ManageCaseRoleServiceTest {
         when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new CaseTestData().getUserInfo());
         when(ccdApi.searchCases(TEST_SERVICE_AUTH_TOKEN,
                                 TEST_SERVICE_AUTH_TOKEN,
-                                ENGLAND_CASE_TYPE,
+                                TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES,
                                 elasticSearchQuery))
             .thenReturn(SearchResult.builder().cases(List.of(CaseDetails.builder()
-                                                                 .caseTypeId(ENGLAND_CASE_TYPE)
+                                                                 .caseTypeId(
+                                                                     TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES)
                                                                  .id(Long.parseLong(CASE_SUBMISSION_REFERENCE))
-                                                                 .state(TEST_CASE_STATE_ACCEPTED)
+                                                                 .state(TestConstants.TEST_CASE_STATE_ACCEPTED)
                                                                  .build())).total(1).build());
         assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest,
                                                                      TEST_SERVICE_AUTH_TOKEN)).isNotNull();
@@ -325,7 +324,7 @@ class ManageCaseRoleServiceTest {
             .isEqualTo(CASE_SUBMISSION_REFERENCE);
         assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest,
                                                                      TEST_SERVICE_AUTH_TOKEN).getCaseTypeId())
-            .isEqualTo(ENGLAND_CASE_TYPE);
+            .isEqualTo(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES);
 
     }
 
@@ -346,7 +345,7 @@ class ManageCaseRoleServiceTest {
         when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new CaseTestData().getUserInfo());
         when(ccdApi.searchCases(TEST_SERVICE_AUTH_TOKEN,
                                 TEST_SERVICE_AUTH_TOKEN,
-                                ENGLAND_CASE_TYPE,
+                                TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES,
                                 elasticSearchQuery)).thenReturn(SearchResult.builder().build());
         when(ccdApi.searchCases(TEST_SERVICE_AUTH_TOKEN,
                                 TEST_SERVICE_AUTH_TOKEN,
@@ -355,7 +354,7 @@ class ManageCaseRoleServiceTest {
             .thenReturn(SearchResult.builder().cases(List.of(CaseDetails.builder()
                                                                  .caseTypeId(SCOTLAND_CASE_TYPE)
                                                                  .id(Long.parseLong(CASE_SUBMISSION_REFERENCE))
-                                                                 .state(TEST_CASE_STATE_ACCEPTED)
+                                                                 .state(TestConstants.TEST_CASE_STATE_ACCEPTED)
                                                                  .build())).total(1).build());
         assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest,
                                                                      TEST_SERVICE_AUTH_TOKEN)).isNotNull();
@@ -383,7 +382,7 @@ class ManageCaseRoleServiceTest {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(ccdApi.searchCases(TEST_SERVICE_AUTH_TOKEN,
                                 TEST_SERVICE_AUTH_TOKEN,
-                                ENGLAND_CASE_TYPE,
+                                TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES,
                                 elasticSearchQuery)).thenReturn(SearchResult.builder().build());
         when(ccdApi.searchCases(TEST_SERVICE_AUTH_TOKEN,
                                 TEST_SERVICE_AUTH_TOKEN,

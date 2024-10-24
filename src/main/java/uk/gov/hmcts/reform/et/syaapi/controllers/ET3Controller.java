@@ -4,10 +4,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.et.common.model.ccd.Et3Request;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -39,5 +41,13 @@ public class ET3Controller {
     ) {
         CaseDetails caseDetails = et3Service.modifyEt3Data(authorisation, et3Request);
         return ok(caseDetails);
+    }
+
+    @GetMapping("/findCaseByEthosCaseReference")
+    @Operation(summary = "Modifies user roles of the case")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> findCaseByEthosCaseReference(
+        @RequestParam(name = "ethosCaseReference") String ethosCaseReference) {
+        return ok(et3Service.findCaseByEthosCaseReference(ethosCaseReference));
     }
 }
