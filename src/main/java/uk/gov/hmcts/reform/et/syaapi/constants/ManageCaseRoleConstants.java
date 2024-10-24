@@ -37,7 +37,8 @@ public final class ManageCaseRoleConstants {
     public static final String LINK_STATUS_OPTIONAL = "optional";
     public static final String LINK_STATUS_CANNOT_START_YET = "cannotStartYet";
     public static final String CASE_STATE_ACCEPTED = "Accepted";
-
+    public static final String STRING_TRUE = "true";
+    public static final String STRING_FALSE = "false";
     public static final String EXCEPTION_CASE_DETAILS_NOT_FOUND =
         "Case details not found with the given caseId, %s";
     public static final String EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS =

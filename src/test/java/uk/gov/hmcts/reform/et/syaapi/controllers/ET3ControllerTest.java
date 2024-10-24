@@ -65,7 +65,7 @@ class ET3ControllerTest {
     }
 
     @Test
-    void findCaseByEthosCaseReference() throws Exception {
+    void checkCaseByEthosCaseReference() throws Exception {
         when(verifyTokenService.verifyTokenSignature(TEST_SERVICE_AUTH_TOKEN)).thenReturn(true);
         when(et3Service.findCaseByEthosCaseReference(TEST_ETHOS_CASE_REFERENCE))
             .thenReturn(new CaseTestData().getCaseDetails());

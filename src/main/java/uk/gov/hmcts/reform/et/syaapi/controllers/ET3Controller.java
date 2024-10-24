@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.et.syaapi.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +21,8 @@ import javax.validation.constraints.NotNull;
 
 import static org.springframework.http.ResponseEntity.ok;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.STRING_FALSE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.STRING_TRUE;
 
 /**
  * Rest Controller to modify user case user roles.
@@ -46,8 +49,12 @@ public class ET3Controller {
     @GetMapping("/findCaseByEthosCaseReference")
     @Operation(summary = "Modifies user roles of the case")
     @ApiResponseGroup
-    public ResponseEntity<CaseDetails> findCaseByEthosCaseReference(
+    public ResponseEntity<String> checkCaseByEthosCaseReference(
         @RequestParam(name = "ethosCaseReference") String ethosCaseReference) {
-        return ok(et3Service.findCaseByEthosCaseReference(ethosCaseReference));
+        CaseDetails caseDetails = et3Service.findCaseByEthosCaseReference(ethosCaseReference);
+        if (ObjectUtils.isNotEmpty(caseDetails)) {
+            return ok(STRING_TRUE);
+        }
+        return ok(STRING_FALSE);
     }
 }
