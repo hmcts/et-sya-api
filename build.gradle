@@ -219,7 +219,7 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-json'
   implementation group: 'org.springframework.boot', name: 'spring-boot-configuration-processor'
-  implementation group: 'org.springframework.retry', name: 'spring-retry', version: '2.0.9'
+  implementation group: 'org.springframework.retry', name: 'spring-retry', version: '2.0.10'
   implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.18.0'
   implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.2'
 
@@ -235,7 +235,7 @@ dependencies {
   implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.5'
   implementation group: 'com.google.guava', name: 'guava', version: '33.3.1-jre'
 
-  implementation 'org.apache.tika:tika-core:2.9.2'
+  implementation 'org.apache.tika:tika-core:3.0.0'
 
   implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '3.0.0-RC1'
   // Log4J core added to remove startup error message
@@ -252,7 +252,7 @@ dependencies {
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.96'
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.31'
 
-  implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '6.3.3'
+  implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '6.3.4'
 
   implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
 
@@ -269,7 +269,7 @@ dependencies {
 
   testImplementation group: 'io.github.openfeign', name: 'feign-jackson', version: '13.5'
   testImplementation group: 'org.mockito', name: 'mockito-inline', version: '5.2.0'
-  testImplementation(platform('org.junit:junit-bom:5.11.2'))
+  testImplementation(platform('org.junit:junit-bom:5.11.3'))
   testImplementation group: 'org.projectlombok', name: 'lombok'
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
     exclude group: 'junit', module: 'junit'
@@ -286,10 +286,10 @@ dependencies {
   // Pact Contract Tests
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: '4.1.41'
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'java8', version: '4.1.41'
-  contractTestImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.11.2'
-  contractTestRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.11.2'
-  contractTestImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.11.2'
-  contractTestRuntimeOnly group: 'org.junit.platform', name: 'junit-platform-commons', version: '1.11.2'
+  contractTestImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.11.3'
+  contractTestRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.11.3'
+  contractTestImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.11.3'
+  contractTestRuntimeOnly group: 'org.junit.platform', name: 'junit-platform-commons', version: '1.11.3'
 
   contractTestImplementation sourceSets.main.runtimeClasspath
   contractTestImplementation sourceSets.test.runtimeClasspath
