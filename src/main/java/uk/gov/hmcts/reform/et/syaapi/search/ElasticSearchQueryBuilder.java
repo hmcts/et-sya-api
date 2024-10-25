@@ -130,10 +130,13 @@ public final class ElasticSearchQueryBuilder {
      * @return the string value of the elastic search query
      */
     public static String buildByEthosCaseReference(String ethosCaseReference) {
-        BoolQueryBuilder boolQueryBuilder = boolQuery()
+        /*BoolQueryBuilder boolQueryBuilder = boolQuery()
             .must(new MatchQueryBuilder(FIELD_NAME_ETHOS_CASE_REFERENCE, ethosCaseReference));
         return new SearchSourceBuilder()
             .size(ES_SIZE)
-            .query(boolQueryBuilder).toString();
+            .query(boolQueryBuilder).toString();*/
+        return "{\"size\":1,\"query\":{\"bool\":{\"must\":"
+            + "[{\"match\":{\"" + FIELD_NAME_ETHOS_CASE_REFERENCE + "\":{\"query\":\"" + ethosCaseReference
+            + "\"}}}],\"boost\":1.0}}}";
     }
 }
