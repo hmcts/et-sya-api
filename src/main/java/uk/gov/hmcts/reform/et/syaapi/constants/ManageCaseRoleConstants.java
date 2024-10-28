@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.constants;
 
+import java.util.List;
+
 /**
  * Defines case role management constants.
  */
@@ -55,6 +57,7 @@ public final class ManageCaseRoleConstants {
     public static final String EXCEPTION_RESPONDENT_NOT_FOUND =
         "Unable to add respondent idam id because there isn't any respondent with name %s";
     public static final String EXCEPTION_INVALID_IDAM_ID = "Invalid Idam ID";
+    public static final List<String> UNAUTHORIZED_APIS = List.of("/et3/findCaseByEthosCaseReference");
 
     private ManageCaseRoleConstants() {
         // restrict instantiation
