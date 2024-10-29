@@ -322,7 +322,11 @@ class RespondentUtilTest {
                          Arguments.of(caseDetailsWithCorrectRespondentName,
                                       TestConstants.TEST_RESPONDENT_NAME,
                                       StringUtils.EMPTY,
-                                      TestConstants.TEST_MODIFICATION_TYPE_ASSIGNMENT));
+                                      TestConstants.TEST_MODIFICATION_TYPE_ASSIGNMENT),
+                         Arguments.of(caseDetailsWithCorrectRespondentName,
+                                      TestConstants.TEST_RESPONDENT_NAME,
+                                      TestConstants.TEST_RESPONDENT_IDAM_ID_1,
+                                      TestConstants.TEST_MODIFICATION_TYPE_REVOKE));
 
     }
 

@@ -117,7 +117,9 @@ public final class RespondentUtil {
                 && StringUtils.isNotBlank(respondentName)
                 && checkRespondentName(respondentSumTypeItem.getValue(), respondentName)) {
                 return respondentSumTypeItem;
-            } else if (MODIFICATION_TYPE_REVOKE.equals(modificationType)) {
+            } else if (MODIFICATION_TYPE_REVOKE.equals(modificationType)
+                && StringUtils.isNotBlank(respondentSumTypeItem.getValue().getIdamId())
+                && idamId.equals(respondentSumTypeItem.getValue().getIdamId())) {
                 return respondentSumTypeItem;
             }
         }
