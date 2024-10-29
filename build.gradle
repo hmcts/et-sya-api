@@ -128,7 +128,7 @@ task contract(type: Test) {
 
 checkstyle {
   maxWarnings = 0
-  toolVersion = '10.18.2'
+  toolVersion = '10.19.0'
   getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
 
@@ -242,7 +242,7 @@ dependencies {
   implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: log4JVersion
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4JVersion
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
-  implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.41.2'
+  implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.42'
 
   implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.15.3'
   implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.18'
@@ -256,7 +256,7 @@ dependencies {
 
   implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
 
-  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '7.5.0'
+  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '7.6.0'
 
   implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.13'
   implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.13'
