@@ -34,6 +34,7 @@ public final class ManageCaseRoleConstants {
     public static final String CASE_USER_ROLE_CCD_API_POST_METHOD_NAME = "/case-users/search";
     public static final String LINK_STATUS_NOT_STARTED_YET = "notStartedYet";
     public static final String ET3_STATUS_IN_PROGRESS = "inProgress";
+    public static final String SECTION_STATUS_COMPLETED = "completed";
     public static final String LINK_STATUS_NOT_VIEWED_YET = "notViewedYet";
     public static final String LINK_STATUS_NOT_AVAILABLE_YET = "notAvailableYet";
     public static final String LINK_STATUS_OPTIONAL = "optional";

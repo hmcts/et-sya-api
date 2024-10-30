@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.et.syaapi.constants;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.SECTION_STATUS_COMPLETED;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.INVALID_RESPONSE_HUB_SECTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.RESPONSE_HUB_SECTION_CHECK_YOR_ANSWERS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.RESPONSE_HUB_SECTION_CONCILIATION_AND_EMPLOYEE_DETAILS;
@@ -35,25 +36,40 @@ public enum ResponseHubLinks {
                                                 String sectionId,
                                                 String sectionStatus) {
         switch (sectionId) {
-            case RESPONSE_HUB_SECTION_CONTACT_DETAILS:
-                respondent.getEt3HubLinksStatuses().setContactDetails(sectionStatus);
+            case RESPONSE_HUB_SECTION_CONTACT_DETAILS: {
+                respondent.getEt3HubLinksStatuses().setContactDetails(
+                    getSectionValue(respondent.getEt3HubLinksStatuses().getContactDetails(), sectionStatus));
                 break;
+            }
             case RESPONSE_HUB_SECTION_EMPLOYER_DETAILS:
-                respondent.getEt3HubLinksStatuses().setEmployerDetails(sectionStatus);
+                respondent.getEt3HubLinksStatuses().setEmployerDetails(
+                    getSectionValue(respondent.getEt3HubLinksStatuses().getEmployerDetails(), sectionStatus));
                 break;
             case RESPONSE_HUB_SECTION_CONCILIATION_AND_EMPLOYEE_DETAILS:
-                respondent.getEt3HubLinksStatuses().setConciliationAndEmployeeDetails(sectionStatus);
+                respondent.getEt3HubLinksStatuses().setConciliationAndEmployeeDetails(
+                    getSectionValue(respondent.getEt3HubLinksStatuses().getConciliationAndEmployeeDetails(),
+                                    sectionStatus));
                 break;
             case RESPONSE_HUB_SECTION_PAY_PENSION_BENEFIT_DETAILS:
-                respondent.getEt3HubLinksStatuses().setPayPensionBenefitDetails(sectionStatus);
+                respondent.getEt3HubLinksStatuses().setPayPensionBenefitDetails(
+                    getSectionValue(respondent.getEt3HubLinksStatuses().getPayPensionBenefitDetails(), sectionStatus));
                 break;
             case RESPONSE_HUB_SECTION_CONTEST_CLAIM:
-                respondent.getEt3HubLinksStatuses().setContestClaim(sectionStatus);
+                respondent.getEt3HubLinksStatuses().setContestClaim(
+                    getSectionValue(respondent.getEt3HubLinksStatuses().getContestClaim(), sectionStatus));
                 break;
             case RESPONSE_HUB_SECTION_CHECK_YOR_ANSWERS:
-                respondent.getEt3HubLinksStatuses().setCheckYorAnswers(sectionStatus);
+                respondent.getEt3HubLinksStatuses().setCheckYorAnswers(
+                    getSectionValue(respondent.getEt3HubLinksStatuses().getCheckYorAnswers(), sectionStatus));
                 break;
             default: log.info(INVALID_RESPONSE_HUB_SECTION_ID);
         }
+    }
+
+    private static String getSectionValue(String existingValue, String newValue) {
+        if (!SECTION_STATUS_COMPLETED.equals(existingValue)) {
+            return newValue;
+        }
+        return existingValue;
     }
 }

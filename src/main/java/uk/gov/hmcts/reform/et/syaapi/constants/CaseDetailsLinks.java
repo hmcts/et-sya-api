@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.et.syaapi.constants;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.SECTION_STATUS_COMPLETED;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.CASE_DETAILS_SECTION_CLAIMANT_APPLICATIONS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.CASE_DETAILS_SECTION_CONTACT_TRIBUNAL;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.CASE_DETAILS_SECTION_DOCUMENTS;
@@ -42,19 +43,24 @@ public enum CaseDetailsLinks {
     public static void setCaseDetailsLinkStatus(RespondentSumType respondent, String sectionId, String sectionStatus) {
         switch (sectionId) {
             case CASE_DETAILS_SECTION_PERSONAL_DETAILS:
-                respondent.getEt3CaseDetailsLinksStatuses().setPersonalDetails(sectionStatus);
+                respondent.getEt3CaseDetailsLinksStatuses().setPersonalDetails(getSectionValue(
+                    respondent.getEt3CaseDetailsLinksStatuses().getPersonalDetails(), sectionStatus));
                 break;
             case CASE_DETAILS_SECTION_ET1_CLAIM_FORM:
-                respondent.getEt3CaseDetailsLinksStatuses().setEt1ClaimForm(sectionStatus);
+                respondent.getEt3CaseDetailsLinksStatuses().setEt1ClaimForm(getSectionValue(
+                    respondent.getEt3CaseDetailsLinksStatuses().getEt1ClaimForm(), sectionStatus));
                 break;
             case CASE_DETAILS_SECTION_RESPONDENT_RESPONSE:
-                respondent.getEt3CaseDetailsLinksStatuses().setRespondentResponse(sectionStatus);
+                respondent.getEt3CaseDetailsLinksStatuses().setRespondentResponse(getSectionValue(
+                    respondent.getEt3CaseDetailsLinksStatuses().getRespondentResponse(), sectionStatus));
                 break;
             case CASE_DETAILS_SECTION_HEARING_DETAILS:
-                respondent.getEt3CaseDetailsLinksStatuses().setHearingDetails(sectionStatus);
+                respondent.getEt3CaseDetailsLinksStatuses().setHearingDetails(getSectionValue(
+                    respondent.getEt3CaseDetailsLinksStatuses().getHearingDetails(), sectionStatus));
                 break;
             case CASE_DETAILS_SECTION_RESPONDENT_REQUESTS_AND_APPLICATIONS:
-                respondent.getEt3CaseDetailsLinksStatuses().setRespondentRequestsAndApplications(sectionStatus);
+                respondent.getEt3CaseDetailsLinksStatuses().setRespondentRequestsAndApplications(getSectionValue(
+                    respondent.getEt3CaseDetailsLinksStatuses().getRespondentRequestsAndApplications(), sectionStatus));
                 break;
             default: setRemainingCaseDetailsLinkStatus(respondent, sectionId, sectionStatus);
         }
@@ -66,21 +72,33 @@ public enum CaseDetailsLinks {
                                                           String sectionStatus) {
         switch (sectionId) {
             case CASE_DETAILS_SECTION_CLAIMANT_APPLICATIONS:
-                respondent.getEt3CaseDetailsLinksStatuses().setClaimantApplications(sectionStatus);
+                respondent.getEt3CaseDetailsLinksStatuses().setClaimantApplications(getSectionValue(
+                    respondent.getEt3CaseDetailsLinksStatuses().getClaimantApplications(), sectionStatus));
                 break;
             case CASE_DETAILS_SECTION_CONTACT_TRIBUNAL:
-                respondent.getEt3CaseDetailsLinksStatuses().setContactTribunal(sectionStatus);
+                respondent.getEt3CaseDetailsLinksStatuses().setContactTribunal(getSectionValue(
+                    respondent.getEt3CaseDetailsLinksStatuses().getContactTribunal(), sectionStatus));
                 break;
             case CASE_DETAILS_SECTION_TRIBUNAL_ORDERS:
-                respondent.getEt3CaseDetailsLinksStatuses().setTribunalOrders(sectionStatus);
+                respondent.getEt3CaseDetailsLinksStatuses().setTribunalOrders(getSectionValue(
+                    respondent.getEt3CaseDetailsLinksStatuses().getTribunalOrders(), sectionStatus));
                 break;
             case CASE_DETAILS_SECTION_TRIBUNAL_JUDGEMENTS:
-                respondent.getEt3CaseDetailsLinksStatuses().setTribunalJudgements(sectionStatus);
+                respondent.getEt3CaseDetailsLinksStatuses().setTribunalJudgements(getSectionValue(
+                    respondent.getEt3CaseDetailsLinksStatuses().getTribunalJudgements(), sectionStatus));
                 break;
             case CASE_DETAILS_SECTION_DOCUMENTS:
-                respondent.getEt3CaseDetailsLinksStatuses().setDocuments(sectionStatus);
+                respondent.getEt3CaseDetailsLinksStatuses().setDocuments(getSectionValue(
+                    respondent.getEt3CaseDetailsLinksStatuses().getDocuments(), sectionStatus));
                 break;
             default: log.info(INVALID_CASE_DETAILS_SECTION_ID);
         }
+    }
+
+    private static String getSectionValue(String existingValue, String newValue) {
+        if (!SECTION_STATUS_COMPLETED.equals(existingValue)) {
+            return newValue;
+        }
+        return existingValue;
     }
 }
