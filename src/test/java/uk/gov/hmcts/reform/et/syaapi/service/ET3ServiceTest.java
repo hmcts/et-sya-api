@@ -204,6 +204,7 @@ class ET3ServiceTest {
             .mapRequestCaseDataToCaseData(expectedCaseDetails.getData()).getRespondentCollection().get(0).getValue();
         assertThat(actualRespondent).isEqualTo(expectedRespondent);
     }
+
     @Test
     void theFindCaseByEthosCaseReference() {
         CaseDetails englandWalesCaseDetails = CaseDetails.builder()
