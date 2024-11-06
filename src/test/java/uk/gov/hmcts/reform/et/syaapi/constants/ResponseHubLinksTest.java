@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_CANNOT_START_YET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.SECTION_STATUS_COMPLETED;
 
 class ResponseHubLinksTest {
@@ -33,7 +34,7 @@ class ResponseHubLinksTest {
         if (ResponseHubLinks.CHECK_YOR_ANSWERS.toString().equals(et3Request.getResponseHubLinksSectionId())) {
             if (!SECTION_STATUS_COMPLETED.equals(respondent.getEt3HubLinksStatuses().getCheckYorAnswers())) {
                 assertThat(respondent.getEt3HubLinksStatuses().getCheckYorAnswers()).isEqualTo(
-                    SECTION_STATUS_IN_PROGRESS);
+                    LINK_STATUS_CANNOT_START_YET);
                 return;
             }
             assertThat(respondent.getEt3HubLinksStatuses().getCheckYorAnswers()).isEqualTo(SECTION_STATUS_COMPLETED);

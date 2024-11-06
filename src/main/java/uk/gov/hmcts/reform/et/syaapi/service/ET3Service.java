@@ -180,6 +180,8 @@ public class ET3Service {
         if (ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT.equals(et3Request.getRequestType())) {
             et3Request.getRespondent().setEt3Status(ManageCaseRoleConstants.ET3_STATUS_SUBMITTED);
             et3Request.getRespondent().setResponseStatus(ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
+            et3Request.getRespondent().getEt3HubLinksStatuses().setCheckYorAnswers(
+                ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
         }
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
         RespondentSumType selectedRespondent =

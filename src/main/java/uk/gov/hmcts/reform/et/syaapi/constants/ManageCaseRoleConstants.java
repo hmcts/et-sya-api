@@ -60,8 +60,8 @@ public final class ManageCaseRoleConstants {
     public static final String EXCEPTION_INVALID_IDAM_ID = "Invalid Idam ID";
     public static final List<String> UNAUTHORIZED_APIS = List.of("/et3/findCaseByEthosCaseReference");
     public static final String MODIFICATION_TYPE_SUBMIT = "submit";
-    public static final String ET3_STATUS_SUBMITTED = "Submitted";
-    public static final String RESPONSE_STATUS_COMPLETED = "Completed";
+    public static final String ET3_STATUS_SUBMITTED = "submitted";
+    public static final String RESPONSE_STATUS_COMPLETED = "completed";
 
     private ManageCaseRoleConstants() {
         // restrict instantiation
