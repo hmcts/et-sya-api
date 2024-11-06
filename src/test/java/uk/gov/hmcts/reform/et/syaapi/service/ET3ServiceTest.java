@@ -34,6 +34,9 @@ import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.ET3_STATUS_SUBMITTED;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 
 @EqualsAndHashCode
@@ -146,7 +149,7 @@ class ET3ServiceTest {
     }
 
     @Test
-    void theModifyEt3Data() {
+    void theModifyEt3DataForUpdate() {
         Et3Request et3Request = new CaseTestData().getEt3Request();
         CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
         CaseData expectedCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(expectedCaseDetails.getData());
@@ -171,6 +174,36 @@ class ET3ServiceTest {
         assertThat(actualRespondent).isEqualTo(expectedRespondent);
     }
 
+    @Test
+    void theModifyEt3DataForSubmit() {
+        Et3Request et3Request = new CaseTestData().getEt3Request();
+        et3Request.setRequestType(MODIFICATION_TYPE_SUBMIT);
+        CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
+        CaseData expectedCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(expectedCaseDetails.getData());
+        expectedCaseData.getRespondentCollection().get(0).setValue(et3Request.getRespondent());
+        expectedCaseData.getRespondentCollection().get(0).getValue().setEt3Status(ET3_STATUS_SUBMITTED);
+        expectedCaseData.getRespondentCollection().get(0).getValue().setResponseStatus(RESPONSE_STATUS_COMPLETED);
+        expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(expectedCaseData));
+        expectedCaseData.getRespondentCollection().get(0).setValue(et3Request.getRespondent());
+        expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(expectedCaseData));
+        when(adminUserService.getAdminUserToken()).thenReturn(TestConstants.TEST_SERVICE_AUTH_TOKEN);
+        when(authTokenGenerator.generate()).thenReturn(TestConstants.TEST_SERVICE_AUTH_TOKEN);
+        CaseDetails caseDetails = new CaseTestData().getCaseDetails();
+        when(ccdApi.getCase(TestConstants.TEST_SERVICE_AUTH_TOKEN,
+                            TestConstants.TEST_SERVICE_AUTH_TOKEN,
+                            et3Request.getCaseSubmissionReference())).thenReturn(caseDetails);
+        when(caseService.triggerEvent(eq(TestConstants.TEST_SERVICE_AUTH_TOKEN),
+                                      eq(caseDetails.getId().toString()),
+                                      eq(UPDATE_CASE_SUBMITTED),
+                                      eq(caseDetails.getCaseTypeId()),
+                                      anyMap())).thenReturn(expectedCaseDetails);
+        CaseDetails actualCaseDetails = et3Service.modifyEt3Data(TestConstants.TEST_SERVICE_AUTH_TOKEN, et3Request);
+        CaseData caseDataFromService = EmployeeObjectMapper.mapRequestCaseDataToCaseData(actualCaseDetails.getData());
+        RespondentSumType actualRespondent = caseDataFromService.getRespondentCollection().get(0).getValue();
+        RespondentSumType expectedRespondent = EmployeeObjectMapper
+            .mapRequestCaseDataToCaseData(expectedCaseDetails.getData()).getRespondentCollection().get(0).getValue();
+        assertThat(actualRespondent).isEqualTo(expectedRespondent);
+    }
     @Test
     void theFindCaseByEthosCaseReference() {
         CaseDetails englandWalesCaseDetails = CaseDetails.builder()

@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.constants.CaseDetailsLinks;
+import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
 import uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants;
 import uk.gov.hmcts.reform.et.syaapi.constants.ResponseHubLinks;
 import uk.gov.hmcts.reform.et.syaapi.exception.ET3Exception;
@@ -35,9 +36,6 @@ import static org.springframework.beans.BeanUtils.copyProperties;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.FIRST_INDEX;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.findRespondentSumTypeItemByIdamId;
 
@@ -62,7 +60,7 @@ public class ET3Service {
      */
     public CaseDetails findCaseBySubmissionReference(String submissionReference) {
         if (StringUtils.isBlank(submissionReference)) {
-            throw new RuntimeException(EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS);
+            throw new RuntimeException(ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS);
         }
         CaseDetails caseDetails = ccdApi.getCase(adminUserService.getAdminUserToken(),
                                                  authTokenGenerator.generate(),
@@ -70,7 +68,8 @@ public class ET3Service {
         if (ObjectUtils.isNotEmpty(caseDetails)) {
             return caseDetails;
         }
-        throw new RuntimeException(String.format(EXCEPTION_CASE_DETAILS_NOT_FOUND, submissionReference));
+        throw new RuntimeException(String.format(
+            ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND, submissionReference));
     }
 
     /**
@@ -80,7 +79,7 @@ public class ET3Service {
      */
     public CaseDetails findCaseByEthosCaseReference(String ethosCaseReference) {
         if (StringUtils.isBlank(ethosCaseReference)) {
-            throw new RuntimeException(EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS);
+            throw new RuntimeException(ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS);
         }
         String elasticSearchQuery = ElasticSearchQueryBuilder.buildByEthosCaseReference(ethosCaseReference);
         String adminUserToken = adminUserService.getAdminUserToken();
@@ -109,7 +108,9 @@ public class ET3Service {
             caseType,
             elasticSearchQuery
         ).getCases()).orElse(Collections.emptyList());
-        return CollectionUtils.isNotEmpty(caseDetailsList) ? caseDetailsList.get(FIRST_INDEX) : null;
+        return CollectionUtils.isNotEmpty(caseDetailsList)
+            ? caseDetailsList.get(ManageCaseRoleConstants.FIRST_INDEX)
+            : null;
     }
 
 
@@ -179,6 +180,10 @@ public class ET3Service {
         CaseDetailsLinks.setCaseDetailsLinkStatus(et3Request.getRespondent(),
                                                   et3Request.getCaseDetailsLinksSectionId(),
                                                   et3Request.getCaseDetailsLinksSectionStatus());
+        if (et3Request.getRequestType().equals(ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT)) {
+            et3Request.getRespondent().setEt3Status(ManageCaseRoleConstants.ET3_STATUS_SUBMITTED);
+            et3Request.getRespondent().setResponseStatus(ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
+        }
         copyProperties(et3Request.getRespondent(), selectedRespondent);
         caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
         return updateSubmittedCaseWithCaseDetails(authorisation, caseDetails);

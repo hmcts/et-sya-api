@@ -59,6 +59,9 @@ public final class ManageCaseRoleConstants {
         "Unable to add respondent idam id because there isn't any respondent with name %s";
     public static final String EXCEPTION_INVALID_IDAM_ID = "Invalid Idam ID";
     public static final List<String> UNAUTHORIZED_APIS = List.of("/et3/findCaseByEthosCaseReference");
+    public static final String MODIFICATION_TYPE_SUBMIT = "submit";
+    public static final String ET3_STATUS_SUBMITTED = "Submitted";
+    public static final String RESPONSE_STATUS_COMPLETED = "Completed";
 
     private ManageCaseRoleConstants() {
         // restrict instantiation
