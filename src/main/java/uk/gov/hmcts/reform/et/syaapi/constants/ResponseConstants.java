@@ -12,6 +12,7 @@ public final class ResponseConstants {
     public static final String EXCEPTION_ET3_REQUEST_TYPE_BLANK = "ET3 request type is blank";
     public static final String EXCEPTION_ET3_RESPONDENT_EMPTY = "ET3 respondent is empty";
     public static final String EXCEPTION_ET3_RESPONDENT_IDAM_ID_IS_BLANK = "Respondent idam id is blank";
+    public static final String EXCEPTION_ET3_RESPONDENT_CCD_ID_IS_BLANK = "Respondent ccd id is blank";
     public static final String EXCEPTION_UNABLE_TO_FIND_CASE_DETAILS =
         "Unable to find case details with case submission reference %s";
     public static final String EXCEPTION_RESPONDENT_COLLECTION_IS_EMPTY = "Respondent collection is empty";

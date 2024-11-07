@@ -9,7 +9,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et3Request;
-import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
+import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -37,7 +37,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CAS
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.findRespondentSumTypeItemByRespondentSumType;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.findRespondentSumTypeItemByRespondentSumTypeItem;
 
 /**
  * Provides services for ET3 Forms.
@@ -171,22 +171,23 @@ public class ET3Service {
         if (ObjectUtils.isEmpty(caseDetails)) {
             throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_UNABLE_TO_FIND_CASE_DETAILS));
         }
-        ResponseHubLinks.setResponseHubLinkStatus(et3Request.getRespondent(),
+        ResponseHubLinks.setResponseHubLinkStatus(et3Request.getRespondent().getValue(),
                                                   et3Request.getResponseHubLinksSectionId(),
                                                   et3Request.getResponseHubLinksSectionStatus());
-        CaseDetailsLinks.setCaseDetailsLinkStatus(et3Request.getRespondent(),
+        CaseDetailsLinks.setCaseDetailsLinkStatus(et3Request.getRespondent().getValue(),
                                                   et3Request.getCaseDetailsLinksSectionId(),
                                                   et3Request.getCaseDetailsLinksSectionStatus());
-        et3Request.getRespondent().getEt3HubLinksStatuses().setCheckYorAnswers(
-            ResponseUtil.getResponseHubCheckYourAnswersStatus(et3Request.getRespondent().getEt3HubLinksStatuses()));
+        et3Request.getRespondent().getValue().getEt3HubLinksStatuses().setCheckYorAnswers(
+            ResponseUtil.getResponseHubCheckYourAnswersStatus(
+                et3Request.getRespondent().getValue().getEt3HubLinksStatuses()));
         if (ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT.equals(et3Request.getRequestType())) {
-            et3Request.getRespondent().setEt3Status(ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
-            et3Request.getRespondent().getEt3HubLinksStatuses().setCheckYorAnswers(
+            et3Request.getRespondent().getValue().setEt3Status(ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
+            et3Request.getRespondent().getValue().getEt3HubLinksStatuses().setCheckYorAnswers(
                 ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
         }
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
-        RespondentSumType selectedRespondent =
-            findRespondentSumTypeItemByRespondentSumType(caseData, et3Request.getRespondent()).getValue();
+        RespondentSumTypeItem selectedRespondent =
+            findRespondentSumTypeItemByRespondentSumTypeItem(caseData, et3Request.getRespondent());
         copyProperties(et3Request.getRespondent(), selectedRespondent);
         caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
         return updateSubmittedCaseWithCaseDetails(authorisation, caseDetails);

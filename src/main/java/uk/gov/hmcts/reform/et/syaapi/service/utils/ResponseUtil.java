@@ -6,7 +6,6 @@ import org.apache.commons.lang3.StringUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et3Request;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.et3links.ET3HubLinksStatuses;
 import uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.ET3Exception;
@@ -44,55 +43,33 @@ public final class ResponseUtil {
         }
     }
 
-    private static void checkEt3Respondent(RespondentSumType et3Respondent) {
-        if (ObjectUtils.isEmpty(et3Respondent)) {
+    private static void checkEt3Respondent(RespondentSumTypeItem et3RespondentSumTypeItem) {
+        if (ObjectUtils.isEmpty(et3RespondentSumTypeItem)) {
             throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_ET3_RESPONDENT_EMPTY));
         }
-        if (StringUtils.isBlank(et3Respondent.getIdamId())) {
+        if (StringUtils.isBlank(et3RespondentSumTypeItem.getId())) {
+            throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_ET3_RESPONDENT_CCD_ID_IS_BLANK));
+        }
+        if (StringUtils.isBlank(et3RespondentSumTypeItem.getValue().getIdamId())) {
             throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_ET3_RESPONDENT_IDAM_ID_IS_BLANK));
         }
     }
 
-    public static RespondentSumTypeItem findRespondentSumTypeItemByRespondentSumType(
-        CaseData caseData, RespondentSumType et3Respondent) {
+    public static RespondentSumTypeItem findRespondentSumTypeItemByRespondentSumTypeItem(
+        CaseData caseData, RespondentSumTypeItem et3Respondent) {
         if (CollectionUtils.isEmpty(caseData.getRespondentCollection())) {
             throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_RESPONDENT_COLLECTION_IS_EMPTY));
         }
-        String et3RespondentName = getRespondentNameByRespondentSumType(et3Respondent);
-        for (RespondentSumTypeItem respondentSumTypeItem : caseData.getRespondentCollection()) {
-            String caseRespondentName = getRespondentNameByRespondentSumType(respondentSumTypeItem.getValue());
-            if (et3Respondent.getIdamId().equals(respondentSumTypeItem.getValue().getIdamId())
-                && et3RespondentName.equals(caseRespondentName)) {
-                return respondentSumTypeItem;
-            }
+        if (StringUtils.isBlank(et3Respondent.getId())) {
+            throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_ET3_RESPONDENT_CCD_ID_IS_BLANK));
         }
         for (RespondentSumTypeItem respondentSumTypeItem : caseData.getRespondentCollection()) {
-            if (et3Respondent.getIdamId().equals(respondentSumTypeItem.getValue().getIdamId())) {
+            if (et3Respondent.getValue().getIdamId().equals(respondentSumTypeItem.getValue().getIdamId())
+                && et3Respondent.getId().equals(respondentSumTypeItem.getId())) {
                 return respondentSumTypeItem;
             }
         }
         throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_RESPONDENT_NOT_FOUND));
-    }
-
-    private static String getRespondentNameByRespondentSumType(RespondentSumType respondentSumType) {
-        if (StringUtils.isNotBlank(respondentSumType.getRespondentName())) {
-            return respondentSumType.getRespondentName();
-        }
-        if (StringUtils.isNotBlank(respondentSumType.getRespondentOrganisation())) {
-            return respondentSumType.getRespondentOrganisation();
-        }
-        return findRespondentNameByRespondentFirstAndLastNames(respondentSumType);
-    }
-
-    private static String findRespondentNameByRespondentFirstAndLastNames(RespondentSumType respondentSumType) {
-        String respondentName = StringUtils.EMPTY;
-        if (StringUtils.isNotBlank(respondentSumType.getRespondentFirstName())) {
-            respondentName = respondentSumType.getRespondentFirstName() + StringUtils.SPACE;
-        }
-        if (StringUtils.isNotBlank(respondentSumType.getRespondentLastName())) {
-            respondentName = respondentName + respondentSumType.getRespondentLastName();
-        }
-        return respondentName;
     }
 
     public static String getResponseHubCheckYourAnswersStatus(ET3HubLinksStatuses et3HubLinksStatuses) {

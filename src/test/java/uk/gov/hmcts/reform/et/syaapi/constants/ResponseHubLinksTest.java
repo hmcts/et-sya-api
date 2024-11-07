@@ -19,7 +19,7 @@ class ResponseHubLinksTest {
     @ParameterizedTest
     @MethodSource("provideSetResponseHubLinkStatusTestData")
     void theSetResponseHubLinkStatus(Et3Request et3Request) {
-        RespondentSumType respondent = et3Request.getRespondent();
+        RespondentSumType respondent = et3Request.getRespondent().getValue();
         ResponseHubLinks.setResponseHubLinkStatus(respondent,
                                                   et3Request.getResponseHubLinksSectionId(),
                                                   SECTION_STATUS_IN_PROGRESS);
@@ -52,7 +52,7 @@ class ResponseHubLinksTest {
     }
 
     private static void continueTestResponseHubLinks(Et3Request et3Request) {
-        RespondentSumType respondent = et3Request.getRespondent();
+        RespondentSumType respondent = et3Request.getRespondent().getValue();
         if (ResponseHubLinks.CONCILIATION_AND_EMPLOYEE_DETAILS.toString()
             .equals(et3Request.getResponseHubLinksSectionId())) {
             if (!SECTION_STATUS_COMPLETED.equals(
@@ -112,21 +112,21 @@ class ResponseHubLinksTest {
         et3RequestUpdateHubLinkStatusesContestClaim.setResponseHubLinksSectionId(
             ResponseHubLinks.CONTEST_CLAIM.toString()
         );
-        et3RequestUpdateHubLinkStatusesContestClaimCompleted.getRespondent()
+        et3RequestUpdateHubLinkStatusesContestClaimCompleted.getRespondent().getValue()
             .getEt3HubLinksStatuses().setContestClaim(SECTION_STATUS_COMPLETED);
         // COMPLETED SECTION CONTACT DETAILS
         Et3Request et3RequestUpdateHubLinkStatusesContactDetailsCompleted = new CaseTestData().getEt3Request();
         et3RequestUpdateHubLinkStatusesContactDetailsCompleted.setResponseHubLinksSectionId(
             ResponseHubLinks.CONTACT_DETAILS.toString()
         );
-        et3RequestUpdateHubLinkStatusesContactDetailsCompleted.getRespondent()
+        et3RequestUpdateHubLinkStatusesContactDetailsCompleted.getRespondent().getValue()
             .getEt3HubLinksStatuses().setContactDetails(SECTION_STATUS_COMPLETED);
         // COMPLETED SECTION CHECK YOUR ANSWERS
         Et3Request et3RequestUpdateHubLinkStatusesCheckYourAnswersCompleted = new CaseTestData().getEt3Request();
         et3RequestUpdateHubLinkStatusesCheckYourAnswersCompleted.setResponseHubLinksSectionId(
             ResponseHubLinks.CHECK_YOR_ANSWERS.toString()
         );
-        et3RequestUpdateHubLinkStatusesCheckYourAnswersCompleted.getRespondent()
+        et3RequestUpdateHubLinkStatusesCheckYourAnswersCompleted.getRespondent().getValue()
             .getEt3HubLinksStatuses().setCheckYorAnswers(SECTION_STATUS_COMPLETED);
         // COMPLETED SECTION CONCILIATION AND EMPLOYMENT DETAILS
         Et3Request et3RequestUpdateHubLinkStatusesConciliationAndEmploymentDetailsCompleted =
@@ -134,14 +134,14 @@ class ResponseHubLinksTest {
         et3RequestUpdateHubLinkStatusesConciliationAndEmploymentDetailsCompleted.setResponseHubLinksSectionId(
             ResponseHubLinks.CONCILIATION_AND_EMPLOYEE_DETAILS.toString()
         );
-        et3RequestUpdateHubLinkStatusesConciliationAndEmploymentDetailsCompleted.getRespondent()
+        et3RequestUpdateHubLinkStatusesConciliationAndEmploymentDetailsCompleted.getRespondent().getValue()
             .getEt3HubLinksStatuses().setConciliationAndEmployeeDetails(SECTION_STATUS_COMPLETED);
         // COMPLETED SECTION EMPLOYER DETAILS
         Et3Request et3RequestUpdateHubLinkStatusesEmployerDetailsCompleted = new CaseTestData().getEt3Request();
         et3RequestUpdateHubLinkStatusesEmployerDetailsCompleted.setResponseHubLinksSectionId(
             ResponseHubLinks.EMPLOYER_DETAILS.toString()
         );
-        et3RequestUpdateHubLinkStatusesEmployerDetailsCompleted.getRespondent()
+        et3RequestUpdateHubLinkStatusesEmployerDetailsCompleted.getRespondent().getValue()
             .getEt3HubLinksStatuses().setEmployerDetails(SECTION_STATUS_COMPLETED);
         // COMPLETED PAY PENSION BENEFIT DETAILS
         Et3Request et3RequestUpdateHubLinkStatusesPayPensionBenefitDetailsCompleted =
@@ -149,7 +149,7 @@ class ResponseHubLinksTest {
         et3RequestUpdateHubLinkStatusesPayPensionBenefitDetailsCompleted.setResponseHubLinksSectionId(
             ResponseHubLinks.PAY_PENSION_BENEFIT_DETAILS.toString()
         );
-        et3RequestUpdateHubLinkStatusesPayPensionBenefitDetailsCompleted.getRespondent()
+        et3RequestUpdateHubLinkStatusesPayPensionBenefitDetailsCompleted.getRespondent().getValue()
             .getEt3HubLinksStatuses().setPayPensionBenefitDetails(SECTION_STATUS_COMPLETED);
         return Stream.of(et3RequestUpdateHubLinkStatusesContestClaim,
                          et3RequestUpdateHubLinkStatusesContactDetails,

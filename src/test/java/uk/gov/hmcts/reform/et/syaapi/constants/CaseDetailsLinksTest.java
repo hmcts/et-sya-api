@@ -29,7 +29,7 @@ class CaseDetailsLinksTest {
     @ParameterizedTest
     @MethodSource("provideSetCaseDetailsLinkStatusTestData")
     void theSetCaseDetailsLinkStatus(Et3Request et3Request) {
-        RespondentSumType respondent = et3Request.getRespondent();
+        RespondentSumType respondent = et3Request.getRespondent().getValue();
         CaseDetailsLinks.setCaseDetailsLinkStatus(respondent,
                                                   et3Request.getCaseDetailsLinksSectionId(),
                                                   et3Request.getCaseDetailsLinksSectionStatus());
@@ -132,65 +132,68 @@ class CaseDetailsLinksTest {
         et3RequestUpdateCaseDetailsLinkStatusesPersonalDetailsCompleted.setCaseDetailsLinksSectionId(
             CaseDetailsLinks.PERSONAL_DETAILS.name()
         );
-        et3RequestUpdateCaseDetailsLinkStatusesPersonalDetailsCompleted.getRespondent()
+        et3RequestUpdateCaseDetailsLinkStatusesPersonalDetailsCompleted.getRespondent().getValue()
             .getEt3CaseDetailsLinksStatuses().setPersonalDetails(SECTION_STATUS_COMPLETED);
         Et3Request et3RequestUpdateCaseDetailsLinkStatusesET1ClaimFormCompleted = new CaseTestData().getEt3Request();
         et3RequestUpdateCaseDetailsLinkStatusesET1ClaimFormCompleted.setCaseDetailsLinksSectionId(
             CaseDetailsLinks.ET1_CLAIM_FORM.name()
         );
-        et3RequestUpdateCaseDetailsLinkStatusesET1ClaimFormCompleted.getRespondent().getEt3CaseDetailsLinksStatuses()
+        et3RequestUpdateCaseDetailsLinkStatusesET1ClaimFormCompleted
+            .getRespondent().getValue().getEt3CaseDetailsLinksStatuses()
             .setEt1ClaimForm(SECTION_STATUS_COMPLETED);
         Et3Request et3RequestUpdateCaseDetailsLinkStatusesRespondentResponseCompleted =
             new CaseTestData().getEt3Request();
         et3RequestUpdateCaseDetailsLinkStatusesRespondentResponseCompleted.setCaseDetailsLinksSectionId(
             CaseDetailsLinks.RESPONDENT_RESPONSE.name()
         );
-        et3RequestUpdateCaseDetailsLinkStatusesRespondentResponseCompleted.getRespondent()
+        et3RequestUpdateCaseDetailsLinkStatusesRespondentResponseCompleted.getRespondent().getValue()
             .getEt3CaseDetailsLinksStatuses().setRespondentResponse(SECTION_STATUS_COMPLETED);
         Et3Request et3RequestUpdateCaseDetailsLinkStatusesHearingDetailsCompleted = new CaseTestData().getEt3Request();
         et3RequestUpdateCaseDetailsLinkStatusesHearingDetailsCompleted.setCaseDetailsLinksSectionId(
             CaseDetailsLinks.HEARING_DETAILS.name()
         );
-        et3RequestUpdateCaseDetailsLinkStatusesHearingDetailsCompleted.getRespondent().getEt3CaseDetailsLinksStatuses()
+        et3RequestUpdateCaseDetailsLinkStatusesHearingDetailsCompleted
+            .getRespondent().getValue().getEt3CaseDetailsLinksStatuses()
             .setHearingDetails(SECTION_STATUS_COMPLETED);
         Et3Request et3RequestUpdateCaseDetailsLinkStatusesRespondentRequestAndApplicationsCompleted =
             new CaseTestData().getEt3Request();
         et3RequestUpdateCaseDetailsLinkStatusesRespondentRequestAndApplicationsCompleted.setCaseDetailsLinksSectionId(
             CaseDetailsLinks.RESPONDENT_REQUESTS_AND_APPLICATIONS.name()
         );
-        et3RequestUpdateCaseDetailsLinkStatusesRespondentRequestAndApplicationsCompleted.getRespondent()
+        et3RequestUpdateCaseDetailsLinkStatusesRespondentRequestAndApplicationsCompleted.getRespondent().getValue()
             .getEt3CaseDetailsLinksStatuses().setRespondentRequestsAndApplications(SECTION_STATUS_COMPLETED);
         Et3Request et3RequestUpdateCaseDetailsLinkStatusesClaimantApplicationsCompleted =
             new CaseTestData().getEt3Request();
         et3RequestUpdateCaseDetailsLinkStatusesClaimantApplicationsCompleted.setCaseDetailsLinksSectionId(
             CaseDetailsLinks.CLAIMANT_APPLICATIONS.name()
         );
-        et3RequestUpdateCaseDetailsLinkStatusesClaimantApplicationsCompleted.getRespondent()
+        et3RequestUpdateCaseDetailsLinkStatusesClaimantApplicationsCompleted.getRespondent().getValue()
             .getEt3CaseDetailsLinksStatuses().setClaimantApplications(SECTION_STATUS_COMPLETED);
         Et3Request et3RequestUpdateCaseDetailsLinkStatusesContactTribunalCompleted = new CaseTestData().getEt3Request();
         et3RequestUpdateCaseDetailsLinkStatusesContactTribunalCompleted.setCaseDetailsLinksSectionId(
             CaseDetailsLinks.CONTACT_TRIBUNAL.name()
         );
-        et3RequestUpdateCaseDetailsLinkStatusesContactTribunalCompleted.getRespondent()
+        et3RequestUpdateCaseDetailsLinkStatusesContactTribunalCompleted.getRespondent().getValue()
             .getEt3CaseDetailsLinksStatuses().setContactTribunal(SECTION_STATUS_COMPLETED);
         Et3Request et3RequestUpdateCaseDetailsLinkStatusesTribunalOrdersCompleted = new CaseTestData().getEt3Request();
         et3RequestUpdateCaseDetailsLinkStatusesTribunalOrdersCompleted.setCaseDetailsLinksSectionId(
             CaseDetailsLinks.TRIBUNAL_ORDERS.name()
         );
-        et3RequestUpdateCaseDetailsLinkStatusesTribunalOrdersCompleted.getRespondent()
+        et3RequestUpdateCaseDetailsLinkStatusesTribunalOrdersCompleted.getRespondent().getValue()
             .getEt3CaseDetailsLinksStatuses().setTribunalOrders(SECTION_STATUS_COMPLETED);
         Et3Request et3RequestUpdateCaseDetailsLinkStatusesTribunalJudgementsCompleted =
             new CaseTestData().getEt3Request();
         et3RequestUpdateCaseDetailsLinkStatusesTribunalJudgementsCompleted.setCaseDetailsLinksSectionId(
             CaseDetailsLinks.TRIBUNAL_JUDGEMENTS.name()
         );
-        et3RequestUpdateCaseDetailsLinkStatusesTribunalJudgementsCompleted.getRespondent()
+        et3RequestUpdateCaseDetailsLinkStatusesTribunalJudgementsCompleted.getRespondent().getValue()
             .getEt3CaseDetailsLinksStatuses().setTribunalJudgements(SECTION_STATUS_COMPLETED);
         Et3Request et3RequestUpdateCaseDetailsLinkStatusesDocumentsCompleted = new CaseTestData().getEt3Request();
         et3RequestUpdateCaseDetailsLinkStatusesDocumentsCompleted.setCaseDetailsLinksSectionId(
             CaseDetailsLinks.DOCUMENTS.name()
         );
-        et3RequestUpdateCaseDetailsLinkStatusesDocumentsCompleted.getRespondent().getEt3CaseDetailsLinksStatuses()
+        et3RequestUpdateCaseDetailsLinkStatusesDocumentsCompleted
+            .getRespondent().getValue().getEt3CaseDetailsLinksStatuses()
             .setDocuments(SECTION_STATUS_COMPLETED);
         return Stream.of(et3RequestUpdateCaseDetailsLinkStatusesPersonalDetails,
                          et3RequestUpdateCaseDetailsLinkStatusesET1ClaimForm,

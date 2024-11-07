@@ -38,6 +38,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.ET
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_SUM_TYPE_ITEM_VALID_CCD_ID;
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
@@ -153,7 +154,8 @@ class ET3ServiceTest {
         Et3Request et3Request = new CaseTestData().getEt3Request();
         CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
         CaseData expectedCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(expectedCaseDetails.getData());
-        expectedCaseData.getRespondentCollection().get(0).setValue(et3Request.getRespondent());
+        expectedCaseData.getRespondentCollection().get(0).setValue(et3Request.getRespondent().getValue());
+        expectedCaseData.getRespondentCollection().get(0).setId(TEST_RESPONDENT_SUM_TYPE_ITEM_VALID_CCD_ID);
         expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(expectedCaseData));
         when(adminUserService.getAdminUserToken()).thenReturn(TestConstants.TEST_SERVICE_AUTH_TOKEN);
         when(authTokenGenerator.generate()).thenReturn(TestConstants.TEST_SERVICE_AUTH_TOKEN);
@@ -180,12 +182,14 @@ class ET3ServiceTest {
         et3Request.setRequestType(MODIFICATION_TYPE_SUBMIT);
         CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
         CaseData expectedCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(expectedCaseDetails.getData());
-        expectedCaseData.getRespondentCollection().get(0).setValue(et3Request.getRespondent());
+        expectedCaseData.getRespondentCollection().get(0).setValue(et3Request.getRespondent().getValue());
         expectedCaseData.getRespondentCollection().get(0).getValue().setEt3Status(ET3_STATUS_SUBMITTED);
         expectedCaseData.getRespondentCollection().get(0).getValue().setResponseStatus(RESPONSE_STATUS_COMPLETED);
         expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(expectedCaseData));
-        expectedCaseData.getRespondentCollection().get(0).setValue(et3Request.getRespondent());
+        expectedCaseData.getRespondentCollection().get(0).setValue(et3Request.getRespondent().getValue());
+        expectedCaseData.getRespondentCollection().get(0).setId(TEST_RESPONDENT_SUM_TYPE_ITEM_VALID_CCD_ID);
         expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(expectedCaseData));
+
         when(adminUserService.getAdminUserToken()).thenReturn(TestConstants.TEST_SERVICE_AUTH_TOKEN);
         when(authTokenGenerator.generate()).thenReturn(TestConstants.TEST_SERVICE_AUTH_TOKEN);
         CaseDetails caseDetails = new CaseTestData().getCaseDetails();

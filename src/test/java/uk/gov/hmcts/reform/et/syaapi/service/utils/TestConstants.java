@@ -56,6 +56,7 @@ public final class TestConstants {
     public static final String SEND_NOTIFICATION_NO_LANGUAGE_RESPONSE_BODY = "Dear test, "
         + "Please see your detail as 123456789. Regards, ET Team.";
     public static final String TEST_CASE_SUBMISSION_REFERENCE1 = "1234567890123456";
+    public static final String TEST_RESPONDENT_SUM_TYPE_ITEM_VALID_CCD_ID = "123456789";
     public static final String TEST_CASE_SUBMISSION_REFERENCE2 = "9876543210987654";
     public static final String UPLOADED_DOCUMENT_NAME = "Uploaded Document Name";
     public static final String UPLOADED_DOCUMENT_BINARY_URL = "https://uploaded.document.binary.url";
