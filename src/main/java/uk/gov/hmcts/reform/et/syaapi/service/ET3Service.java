@@ -5,6 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.MatchQueryBuilder;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -72,6 +75,37 @@ public class ET3Service {
             ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND, submissionReference));
     }
 
+    public CaseDetails findCaseByIdAndAcceptedState(String id) {
+        if (StringUtils.isBlank(id)) {
+            throw new RuntimeException(ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS);
+        }
+        String elasticSearchQuery = new SearchSourceBuilder()
+            .size(1)
+            .query(new BoolQueryBuilder()
+                       .must(new MatchQueryBuilder("reference.keyword", id))
+                       .must(new MatchQueryBuilder("state.keyword", "Accepted"))).toString();
+
+        return getCaseDetails(elasticSearchQuery);
+    }
+
+    private CaseDetails getCaseDetails(String elasticSearchQuery) {
+        String adminUserToken = adminUserService.getAdminUserToken();
+        CaseDetails englandCase = findCaseByCaseType(adminUserToken,
+                                                     ENGLAND_CASE_TYPE, elasticSearchQuery
+        );
+        if (ObjectUtils.isNotEmpty(englandCase)) {
+            return englandCase;
+        }
+
+        CaseDetails scotlandCase = findCaseByCaseType(adminUserToken,
+                                                      SCOTLAND_CASE_TYPE, elasticSearchQuery
+        );
+        if (ObjectUtils.isNotEmpty(scotlandCase)) {
+            return scotlandCase;
+        }
+        return null;
+    }
+
     /**
      * Finds case by its ethos case reference.
      * @param ethosCaseReference case ethos reference of the case
@@ -82,21 +116,7 @@ public class ET3Service {
             throw new RuntimeException(ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS);
         }
         String elasticSearchQuery = ElasticSearchQueryBuilder.buildByEthosCaseReference(ethosCaseReference);
-        String adminUserToken = adminUserService.getAdminUserToken();
-        CaseDetails englandCase = findCaseByCaseType(adminUserToken,
-                                                     ENGLAND_CASE_TYPE,
-                                                     elasticSearchQuery);
-        if (ObjectUtils.isNotEmpty(englandCase)) {
-            return englandCase;
-        }
-
-        CaseDetails scotlandCase = findCaseByCaseType(adminUserToken,
-                                                      SCOTLAND_CASE_TYPE,
-                                                      elasticSearchQuery);
-        if (ObjectUtils.isNotEmpty(scotlandCase)) {
-            return scotlandCase;
-        }
-        return null;
+        return getCaseDetails(elasticSearchQuery);
     }
 
     private CaseDetails findCaseByCaseType(String adminUserToken,

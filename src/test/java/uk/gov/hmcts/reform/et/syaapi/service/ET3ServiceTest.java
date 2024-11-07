@@ -250,4 +250,51 @@ class ET3ServiceTest {
         caseDetails = et3Service.findCaseByEthosCaseReference(TestConstants.TEST_ETHOS_CASE_REFERENCE);
         assertThat(caseDetails).isNull();
     }
+
+    @Test
+    void theFindCaseById() {
+        CaseDetails englandWalesCaseDetails = CaseDetails.builder()
+            .caseTypeId(
+                TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES)
+            .id(Long.parseLong(
+                TestConstants.TEST_CASE_SUBMISSION_REFERENCE1))
+            .state(TestConstants.TEST_CASE_STATE_ACCEPTED)
+            .build();
+        CaseDetails scotlandCaseDetails = CaseDetails.builder()
+            .caseTypeId(
+                TestConstants.TEST_CASE_TYPE_ID_SCOTLAND)
+            .id(Long.parseLong(
+                TestConstants.TEST_CASE_SUBMISSION_REFERENCE1))
+            .state(TestConstants.TEST_CASE_STATE_ACCEPTED)
+            .build();
+        when(adminUserService.getAdminUserToken()).thenReturn(TestConstants.TEST_SERVICE_AUTH_TOKEN);
+        when(authTokenGenerator.generate()).thenReturn(TestConstants.TEST_SERVICE_AUTH_TOKEN);
+        when(ccdApi.searchCases(TestConstants.TEST_SERVICE_AUTH_TOKEN,
+                                TestConstants.TEST_SERVICE_AUTH_TOKEN,
+                                TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES,
+                                TestConstants.EXPECTED_QUERY_BY_ID))
+            .thenReturn(SearchResult.builder().cases(List.of(englandWalesCaseDetails)).total(1).build());
+        CaseDetails caseDetails =
+            et3Service.findCaseByIdAndAcceptedState(TestConstants.TEST_CASE_SUBMISSION_REFERENCE1);
+        assertThat(caseDetails).isEqualTo(englandWalesCaseDetails);
+        when(ccdApi.searchCases(TestConstants.TEST_SERVICE_AUTH_TOKEN,
+                                TestConstants.TEST_SERVICE_AUTH_TOKEN,
+                                TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES,
+                                TestConstants.EXPECTED_QUERY_BY_ID))
+            .thenReturn(SearchResult.builder().cases(new ArrayList<>()).build());
+        when(ccdApi.searchCases(TestConstants.TEST_SERVICE_AUTH_TOKEN,
+                                TestConstants.TEST_SERVICE_AUTH_TOKEN,
+                                TestConstants.TEST_CASE_TYPE_ID_SCOTLAND,
+                                TestConstants.EXPECTED_QUERY_BY_ID))
+            .thenReturn(SearchResult.builder().cases(List.of(scotlandCaseDetails)).total(1).build());
+        caseDetails = et3Service.findCaseByIdAndAcceptedState(TestConstants.TEST_CASE_SUBMISSION_REFERENCE1);
+        assertThat(caseDetails).isEqualTo(scotlandCaseDetails);
+        when(ccdApi.searchCases(TestConstants.TEST_SERVICE_AUTH_TOKEN,
+                                TestConstants.TEST_SERVICE_AUTH_TOKEN,
+                                TestConstants.TEST_CASE_TYPE_ID_SCOTLAND,
+                                TestConstants.EXPECTED_QUERY_BY_ID))
+            .thenReturn(SearchResult.builder().cases(new ArrayList<>()).build());
+        caseDetails = et3Service.findCaseByIdAndAcceptedState(TestConstants.TEST_CASE_SUBMISSION_REFERENCE1);
+        assertThat(caseDetails).isNull();
+    }
 }

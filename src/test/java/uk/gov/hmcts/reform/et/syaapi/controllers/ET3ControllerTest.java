@@ -27,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.GET_SERVICE_FIND_CASE_FOR_ROLE_MODIFICATION_URL;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.PARAMETER_NAME_ETHOS_CASE_REFERENCE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.POST_SERVICE_MODIFY_ET3_DATA_URL;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_CASE_SUBMISSION_REFERENCE1;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_ETHOS_CASE_REFERENCE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
@@ -72,6 +73,17 @@ class ET3ControllerTest {
         mockMvc.perform(get(GET_SERVICE_FIND_CASE_FOR_ROLE_MODIFICATION_URL)
                             .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
                             .param(PARAMETER_NAME_ETHOS_CASE_REFERENCE, TEST_ETHOS_CASE_REFERENCE))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void checkCaseById() throws Exception {
+        when(verifyTokenService.verifyTokenSignature(TEST_SERVICE_AUTH_TOKEN)).thenReturn(true);
+        when(et3Service.findCaseByIdAndAcceptedState(TEST_CASE_SUBMISSION_REFERENCE1))
+            .thenReturn(new CaseTestData().getCaseDetails());
+        mockMvc.perform(get("/et3/findCaseById")
+                            .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                            .param("id", TEST_CASE_SUBMISSION_REFERENCE1))
             .andExpect(status().isOk());
     }
 }
