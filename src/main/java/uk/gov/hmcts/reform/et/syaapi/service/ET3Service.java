@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,6 +40,7 @@ import static org.springframework.beans.BeanUtils.copyProperties;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.findRespondentSumTypeItemByRespondentSumTypeItem;
 
@@ -204,6 +206,8 @@ public class ET3Service {
             et3Request.getRespondent().getValue().setEt3Status(ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
             et3Request.getRespondent().getValue().getEt3HubLinksStatuses().setCheckYorAnswers(
                 ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
+            et3Request.getRespondent().getValue().setResponseReceived(YES);
+            et3Request.getRespondent().getValue().setResponseReceivedDate(LocalDate.now().toString());
         }
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
         RespondentSumTypeItem selectedRespondent =
