@@ -9,8 +9,10 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et3Request;
+import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.et3links.ET3HubLinksStatuses;
 import uk.gov.hmcts.reform.et.syaapi.exception.ET3Exception;
+import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 
 import java.util.stream.Stream;
@@ -30,14 +32,16 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.EXCEPTIO
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.EXCEPTION_ET3_SUBMISSION_REFERENCE_BLANK;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.EXCEPTION_RESPONDENT_COLLECTION_IS_EMPTY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.EXCEPTION_RESPONDENT_NOT_FOUND;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.findRespondentSumTypeItemByIdamId;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.findRespondentSumTypeItemByRespondentSumType;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 class ResponseUtilTest {
 
     private static final String EXCEPTION_PREFIX = "java.lang.Exception: ";
-    private static final String TEST_VALID_IDAM_ID = "1234567890";
+    private static final String TEST_VALID_IDAM_ID = "12345";
     private static final String TEST_INVALID_IDAM_ID = "12345678901234567890";
+    private static final String TEST_INVALID_RESPONDENT_NAME = "Very Clever Respondent";
+    private static final String TEST_VALID_RESPONDENT_NAME = "Dummy Respondent";
 
     @ParameterizedTest
     @MethodSource("provideCheckModifyEt3DataParametersTestData")
@@ -111,31 +115,47 @@ class ResponseUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("provideFindRespondentSumTypeItemByIdamIdTestData")
-    void theFindRespondentSumTypeItemByIdamId(CaseData caseData, String idamId) {
+    @MethodSource("provideFindRespondentSumTypeItemByRespondentSumType")
+    void theFindRespondentSumTypeItemByRespondentSumType(CaseData caseData, RespondentSumType respondentSumType) {
         if (CollectionUtils.isEmpty(caseData.getRespondentCollection())) {
             assertThat(assertThrows(ET3Exception.class, () ->
-                findRespondentSumTypeItemByIdamId(caseData, idamId))
+                findRespondentSumTypeItemByRespondentSumType(caseData, respondentSumType))
                            .getMessage()).isEqualTo(EXCEPTION_PREFIX + EXCEPTION_RESPONDENT_COLLECTION_IS_EMPTY);
             return;
         }
-        if (TEST_INVALID_IDAM_ID.equals(idamId)) {
+        if (TEST_INVALID_IDAM_ID.equals(respondentSumType.getIdamId())) {
             assertThat(assertThrows(ET3Exception.class, () ->
-                findRespondentSumTypeItemByIdamId(caseData, idamId))
+                findRespondentSumTypeItemByRespondentSumType(caseData, respondentSumType))
                            .getMessage()).isEqualTo(EXCEPTION_PREFIX + EXCEPTION_RESPONDENT_NOT_FOUND);
             return;
         }
-        assertThat(findRespondentSumTypeItemByIdamId(caseData, idamId))
+        assertThat(findRespondentSumTypeItemByRespondentSumType(caseData, respondentSumType))
             .isEqualTo(caseData.getRespondentCollection().get(0));
     }
 
-    private static Stream<Arguments> provideFindRespondentSumTypeItemByIdamIdTestData() {
-        CaseData validCaseData = new CaseTestData().getCaseData();
+    private static Stream<Arguments> provideFindRespondentSumTypeItemByRespondentSumType() {
+        RespondentSumType respondentSumTypeValid = new CaseTestData().getEt3Request().getRespondent();
+        respondentSumTypeValid.setRespondentName(TEST_VALID_RESPONDENT_NAME);
+        respondentSumTypeValid.setIdamId(TEST_VALID_IDAM_ID);
+
+        RespondentSumType respondentSumTypeInValidIdamId = new CaseTestData().getEt3Request().getRespondent();
+        respondentSumTypeInValidIdamId.setRespondentName(TEST_VALID_RESPONDENT_NAME);
+        respondentSumTypeInValidIdamId.setIdamId(TEST_INVALID_IDAM_ID);
+
+        RespondentSumType respondentSumTypeInvalidRespondentName = new CaseTestData().getEt3Request().getRespondent();
+        respondentSumTypeInvalidRespondentName.setRespondentName(TEST_INVALID_RESPONDENT_NAME);
+        respondentSumTypeInvalidRespondentName.setIdamId(TEST_VALID_IDAM_ID);
+
+        CaseData caseDataValid = EmployeeObjectMapper.mapRequestCaseDataToCaseData(
+            new CaseTestData().getCaseDetailsWithCaseData().getData());
+        caseDataValid.getRespondentCollection().get(0).setValue(respondentSumTypeValid);
         CaseData caseDataEmptyRespondentCollection = new CaseTestData().getCaseData();
         caseDataEmptyRespondentCollection.setRespondentCollection(null);
-        return Stream.of(Arguments.of(validCaseData, TEST_VALID_IDAM_ID),
-                         Arguments.of(validCaseData, TEST_INVALID_IDAM_ID),
-                         Arguments.of(caseDataEmptyRespondentCollection, TEST_VALID_IDAM_ID));
+        return Stream.of(Arguments.of(
+            caseDataEmptyRespondentCollection, respondentSumTypeValid,
+            caseDataValid, respondentSumTypeInValidIdamId,
+            caseDataValid, respondentSumTypeValid,
+            caseDataValid, respondentSumTypeInvalidRespondentName));
     }
 
     @Test

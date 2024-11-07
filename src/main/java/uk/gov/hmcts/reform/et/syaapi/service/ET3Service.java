@@ -37,7 +37,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CAS
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.findRespondentSumTypeItemByIdamId;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.findRespondentSumTypeItemByRespondentSumType;
 
 /**
  * Provides services for ET3 Forms.
@@ -177,15 +177,16 @@ public class ET3Service {
         CaseDetailsLinks.setCaseDetailsLinkStatus(et3Request.getRespondent(),
                                                   et3Request.getCaseDetailsLinksSectionId(),
                                                   et3Request.getCaseDetailsLinksSectionStatus());
+        et3Request.getRespondent().getEt3HubLinksStatuses().setCheckYorAnswers(
+            ResponseUtil.getResponseHubCheckYourAnswersStatus(et3Request.getRespondent().getEt3HubLinksStatuses()));
         if (ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT.equals(et3Request.getRequestType())) {
-            et3Request.getRespondent().setEt3Status(ManageCaseRoleConstants.ET3_STATUS_SUBMITTED);
-            et3Request.getRespondent().setResponseStatus(ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
+            et3Request.getRespondent().setEt3Status(ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
             et3Request.getRespondent().getEt3HubLinksStatuses().setCheckYorAnswers(
                 ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
         }
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
         RespondentSumType selectedRespondent =
-            findRespondentSumTypeItemByIdamId(caseData, et3Request.getRespondent().getIdamId()).getValue();
+            findRespondentSumTypeItemByRespondentSumType(caseData, et3Request.getRespondent()).getValue();
         copyProperties(et3Request.getRespondent(), selectedRespondent);
         caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
         return updateSubmittedCaseWithCaseDetails(authorisation, caseDetails);

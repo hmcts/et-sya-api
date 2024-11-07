@@ -53,16 +53,46 @@ public final class ResponseUtil {
         }
     }
 
-    public static RespondentSumTypeItem findRespondentSumTypeItemByIdamId(CaseData caseData, String idamId) {
+    public static RespondentSumTypeItem findRespondentSumTypeItemByRespondentSumType(
+        CaseData caseData, RespondentSumType et3Respondent) {
         if (CollectionUtils.isEmpty(caseData.getRespondentCollection())) {
             throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_RESPONDENT_COLLECTION_IS_EMPTY));
         }
+        String et3RespondentName = getRespondentNameByRespondentSumType(et3Respondent);
         for (RespondentSumTypeItem respondentSumTypeItem : caseData.getRespondentCollection()) {
-            if (idamId.equals(respondentSumTypeItem.getValue().getIdamId())) {
+            String caseRespondentName = getRespondentNameByRespondentSumType(respondentSumTypeItem.getValue());
+            if (et3Respondent.getIdamId().equals(respondentSumTypeItem.getValue().getIdamId())
+                && et3RespondentName.equals(caseRespondentName)) {
+                return respondentSumTypeItem;
+            }
+        }
+        for (RespondentSumTypeItem respondentSumTypeItem : caseData.getRespondentCollection()) {
+            if (et3Respondent.getIdamId().equals(respondentSumTypeItem.getValue().getIdamId())) {
                 return respondentSumTypeItem;
             }
         }
         throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_RESPONDENT_NOT_FOUND));
+    }
+
+    private static String getRespondentNameByRespondentSumType(RespondentSumType respondentSumType) {
+        if (StringUtils.isNotBlank(respondentSumType.getRespondentName())) {
+            return respondentSumType.getRespondentName();
+        }
+        if (StringUtils.isNotBlank(respondentSumType.getRespondentOrganisation())) {
+            return respondentSumType.getRespondentOrganisation();
+        }
+        return findRespondentNameByRespondentFirstAndLastNames(respondentSumType);
+    }
+
+    private static String findRespondentNameByRespondentFirstAndLastNames(RespondentSumType respondentSumType) {
+        String respondentName = StringUtils.EMPTY;
+        if (StringUtils.isNotBlank(respondentSumType.getRespondentFirstName())) {
+            respondentName = respondentSumType.getRespondentFirstName() + StringUtils.SPACE;
+        }
+        if (StringUtils.isNotBlank(respondentSumType.getRespondentLastName())) {
+            respondentName = respondentName + respondentSumType.getRespondentLastName();
+        }
+        return respondentName;
     }
 
     public static String getResponseHubCheckYourAnswersStatus(ET3HubLinksStatuses et3HubLinksStatuses) {
