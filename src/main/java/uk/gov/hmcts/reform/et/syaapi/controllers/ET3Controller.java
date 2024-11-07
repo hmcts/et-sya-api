@@ -57,4 +57,16 @@ public class ET3Controller {
         }
         return ok(STRING_FALSE);
     }
+
+    @GetMapping("/findCaseById")
+    @Operation(summary = "Find accepted case by id")
+    @ApiResponseGroup
+    public ResponseEntity<String> findCaseById(
+        @RequestParam(name = "id") String id) {
+        CaseDetails caseDetails = et3Service.findCaseByIdAndAcceptedState(id);
+        if (ObjectUtils.isNotEmpty(caseDetails)) {
+            return ok(STRING_TRUE);
+        }
+        return ok(STRING_FALSE);
+    }
 }
