@@ -85,11 +85,13 @@ public class ET3Service {
         String elasticSearchQuery = "{\"size\":1,\"query\":{\"bool\":{\"must\":[{\"match\":{\""
             + FIELD_NAME_SUBMISSION_REFERENCE + "\":{\"query\":\"" + id + "\"}}},{\"match\""
             + ":{\"" + FIELD_NAME_STATE +  "\":{\"query\":\"" + STATE_VALUE_ACCEPTED + "\"}}}],\"boost\":1.0}}}";
-            /* new SearchSourceBuilder()
-            .size(1)
-            .query(new BoolQueryBuilder()
-                       .must(new MatchQueryBuilder("reference.keyword", id))
-                       .must(new MatchQueryBuilder("state.keyword", "Accepted"))).toString(); */
+        /*
+         new SearchSourceBuilder()
+        .size(1)
+        .query(new BoolQueryBuilder()
+        .must(new MatchQueryBuilder("reference.keyword", id))
+        .must(new MatchQueryBuilder("state.keyword", "Accepted"))).toString();
+        */
         return getCaseDetails(elasticSearchQuery);
     }
 
