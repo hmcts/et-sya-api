@@ -1,12 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.search;
 
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.MatchQueryBuilder;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
-
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 
 public final class ElasticSearchQueryBuilder {
 
@@ -20,7 +15,6 @@ public final class ElasticSearchQueryBuilder {
     private static final String FIELD_NAME_CLAIMANT_FIRST_NAMES = "data.claimantIndType.claimant_first_names.keyword";
     private static final String FIELD_NAME_CLAIMANT_LAST_NAME = "data.claimantIndType.claimant_last_name.keyword";
     private static final String FIELD_NAME_CLAIMANT_FULL_NAME = "data.claimant.keyword";
-    private static final int ES_SIZE = 1;
 
     private ElasticSearchQueryBuilder() {
         // Access through static methods
@@ -117,11 +111,15 @@ public final class ElasticSearchQueryBuilder {
      * @return the string value of the elastic search query
      */
     public static String buildBySubmissionReference(String submissionReference) {
+        /*
         BoolQueryBuilder boolQueryBuilder = boolQuery()
             .must(new MatchQueryBuilder(FIELD_NAME_SUBMISSION_REFERENCE, submissionReference));
         return new SearchSourceBuilder()
             .size(ES_SIZE)
             .query(boolQueryBuilder).toString();
+            */
+        return "{\"size\":1,\"query\":{\"bool\":{\"must\":[{\"match\":{\"" + FIELD_NAME_SUBMISSION_REFERENCE + "\":"
+            + "{\"query\":\"" + submissionReference + "\"}}}],\"boost\":1.0}}}";
     }
 
     /**
