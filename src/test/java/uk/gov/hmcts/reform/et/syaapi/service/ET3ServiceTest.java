@@ -30,9 +30,12 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.ET3_STATUS_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT;
@@ -54,12 +57,15 @@ class ET3ServiceTest {
     CaseService caseService;
     @Mock
     IdamClient idamClient;
+    @Mock
+    NotificationService notificationService;
 
     private ET3Service et3Service;
 
     @BeforeEach
     void setUp() {
-        et3Service = new ET3Service(adminUserService, authTokenGenerator, ccdApi, idamClient, caseService);
+        et3Service = new ET3Service(adminUserService, authTokenGenerator, ccdApi, idamClient, caseService,
+                                    notificationService);
     }
 
     @ParameterizedTest
@@ -207,6 +213,7 @@ class ET3ServiceTest {
         RespondentSumType expectedRespondent = EmployeeObjectMapper
             .mapRequestCaseDataToCaseData(expectedCaseDetails.getData()).getRespondentCollection().get(0).getValue();
         assertThat(actualRespondent).isEqualTo(expectedRespondent);
+        verify(notificationService, times(1)).sendEt3ConfirmationEmail(anyString(), any(), anyString());
     }
 
     @Test
