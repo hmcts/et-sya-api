@@ -5,9 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.MatchQueryBuilder;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -57,6 +54,9 @@ public class ET3Service {
     private final CoreCaseDataApi ccdApi;
     private final IdamClient idamClient;
     private final CaseService caseService;
+    private static final String FIELD_NAME_SUBMISSION_REFERENCE = "reference.keyword";
+    private static final String FIELD_NAME_STATE = "state.keyword";
+    private static final String STATE_VALUE_ACCEPTED = "Accepted";
 
     /**
      * Finds case by its submission reference.
@@ -81,12 +81,15 @@ public class ET3Service {
         if (StringUtils.isBlank(id)) {
             throw new RuntimeException(ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS);
         }
-        String elasticSearchQuery = new SearchSourceBuilder()
+
+        String elasticSearchQuery = "{\"size\":1,\"query\":{\"bool\":{\"must\":[{\"match\":{\""
+            + FIELD_NAME_SUBMISSION_REFERENCE + "\":{\"query\":\"" + id + "\"}}},{\"match\""
+            + ":{\"" + FIELD_NAME_STATE +  "\":{\"query\":\"" + STATE_VALUE_ACCEPTED + "\"}}}],\"boost\":1.0}}}";
+            /* new SearchSourceBuilder()
             .size(1)
             .query(new BoolQueryBuilder()
                        .must(new MatchQueryBuilder("reference.keyword", id))
-                       .must(new MatchQueryBuilder("state.keyword", "Accepted"))).toString();
-
+                       .must(new MatchQueryBuilder("state.keyword", "Accepted"))).toString(); */
         return getCaseDetails(elasticSearchQuery);
     }
 
