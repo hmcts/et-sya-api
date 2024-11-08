@@ -109,10 +109,6 @@ public final class RespondentUtil {
         String idamId) {
         if (ObjectUtils.isNotEmpty(respondentSumTypeItem)
             && ObjectUtils.isNotEmpty(respondentSumTypeItem.getValue())) {
-            log.info("*****Values, respondentId: {}", respondentSumTypeItem.getValue().getIdamId());
-            log.info("*****Values, modificationType: {}", modificationType);
-            log.info("*****Values, respondentName: {}", respondentName);
-            log.info("*****Values, idamId: {}", idamId);
             if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)
                 && StringUtils.isNotBlank(respondentName)
                 && checkRespondentName(respondentSumTypeItem.getValue(), respondentName)) {
