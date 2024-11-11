@@ -55,7 +55,7 @@ class PdfUploadServiceTest {
         pdfUploadService = new PdfUploadService(pdfService, documentGenerationService);
         pdfUploadService.englishPdfTemplateSource = "ET1_0224.pdf";
         pdfUploadService.welshPdfTemplateSource = "CY_ET1_0224.pdf";
-        when(pdfService.convertCaseToPdf(any(), anyString())).thenReturn(SAMPLE_BYTE_ARRAY);
+        when(pdfService.convertCaseToPdf(any(), anyString(), anyString(), anyString())).thenReturn(SAMPLE_BYTE_ARRAY);
     }
 
     @Test

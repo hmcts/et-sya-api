@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.ET3FormService;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -54,12 +55,19 @@ class ET3ServiceTest {
     CaseService caseService;
     @Mock
     IdamClient idamClient;
+    @Mock
+    ET3FormService et3FormService;
 
     private ET3Service et3Service;
 
     @BeforeEach
     void setUp() {
-        et3Service = new ET3Service(adminUserService, authTokenGenerator, ccdApi, idamClient, caseService);
+        et3Service = new ET3Service(adminUserService,
+                                    authTokenGenerator,
+                                    ccdApi,
+                                    idamClient,
+                                    caseService,
+                                    et3FormService);
     }
 
     @ParameterizedTest

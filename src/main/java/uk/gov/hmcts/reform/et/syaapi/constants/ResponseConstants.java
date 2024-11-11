@@ -40,6 +40,9 @@ public final class ResponseConstants {
     public static final String RESPONSE_HUB_SECTION_PAY_PENSION_BENEFIT_DETAILS = "payPensionBenefitDetails";
     public static final String RESPONSE_HUB_SECTION_CONTEST_CLAIM = "contestClaim";
     public static final String RESPONSE_HUB_SECTION_CHECK_YOR_ANSWERS = "checkYorAnswers";
+    public static final String ET3_FORM = "ET3_FORM";
+    public static final String ET3_FORM_DOCUMENT_TYPE = "ET3";
+    public static final String UNABLE_TO_UPLOAD_DOCUMENT = "Unable to upload document";
 
 
 

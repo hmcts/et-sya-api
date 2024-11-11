@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.constants.CaseDetailsLinks;
+import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
 import uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants;
 import uk.gov.hmcts.reform.et.syaapi.constants.ResponseHubLinks;
@@ -21,6 +22,7 @@ import uk.gov.hmcts.reform.et.syaapi.exception.ET3Exception;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
+import uk.gov.hmcts.reform.et.syaapi.service.pdf.ET3FormService;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -34,10 +36,6 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.springframework.beans.BeanUtils.copyProperties;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.findRespondentSumTypeItemByRespondentSumTypeItem;
 
@@ -54,6 +52,7 @@ public class ET3Service {
     private final CoreCaseDataApi ccdApi;
     private final IdamClient idamClient;
     private final CaseService caseService;
+    private final ET3FormService et3FormService;
     private static final String FIELD_NAME_SUBMISSION_REFERENCE = "reference.keyword";
     private static final String FIELD_NAME_STATE = "state.keyword";
     private static final String STATE_VALUE_ACCEPTED = "Accepted";
@@ -98,14 +97,14 @@ public class ET3Service {
     private CaseDetails getCaseDetails(String elasticSearchQuery) {
         String adminUserToken = adminUserService.getAdminUserToken();
         CaseDetails englandCase = findCaseByCaseType(adminUserToken,
-                                                     ENGLAND_CASE_TYPE, elasticSearchQuery
+                                                     EtSyaConstants.ENGLAND_CASE_TYPE, elasticSearchQuery
         );
         if (ObjectUtils.isNotEmpty(englandCase)) {
             return englandCase;
         }
 
         CaseDetails scotlandCase = findCaseByCaseType(adminUserToken,
-                                                      SCOTLAND_CASE_TYPE, elasticSearchQuery
+                                                      EtSyaConstants.SCOTLAND_CASE_TYPE, elasticSearchQuery
         );
         if (ObjectUtils.isNotEmpty(scotlandCase)) {
             return scotlandCase;
@@ -177,15 +176,15 @@ public class ET3Service {
             authorization,
             authTokenGenerator.generate(),
             userInfo.getUid(),
-            JURISDICTION_ID,
-            ENGLAND_CASE_TYPE,
+            EtSyaConstants.JURISDICTION_ID,
+            EtSyaConstants.ENGLAND_CASE_TYPE,
             new HashMap<>());
         List<CaseDetails> scotlandCases = ccdApi.searchForCitizen(
             authorization,
             authTokenGenerator.generate(),
             userInfo.getUid(),
-            JURISDICTION_ID,
-            SCOTLAND_CASE_TYPE,
+            EtSyaConstants.JURISDICTION_ID,
+            EtSyaConstants.SCOTLAND_CASE_TYPE,
             new HashMap<>());
         return Stream.of(scotlandCases, englandCases)
             .flatMap(Collection::stream).toList();
@@ -207,17 +206,18 @@ public class ET3Service {
         et3Request.getRespondent().getValue().getEt3HubLinksStatuses().setCheckYorAnswers(
             ResponseUtil.getResponseHubCheckYourAnswersStatus(
                 et3Request.getRespondent().getValue().getEt3HubLinksStatuses()));
-        if (ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT.equals(et3Request.getRequestType())) {
-            et3Request.getRespondent().getValue().setEt3Status(ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
-            et3Request.getRespondent().getValue().getEt3HubLinksStatuses().setCheckYorAnswers(
-                ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
-            et3Request.getRespondent().getValue().setResponseReceived(YES);
-            et3Request.getRespondent().getValue().setResponseReceivedDate(LocalDate.now().toString());
-        }
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
         RespondentSumTypeItem selectedRespondent =
             findRespondentSumTypeItemByRespondentSumTypeItem(caseData, et3Request.getRespondent());
         copyProperties(et3Request.getRespondent(), selectedRespondent);
+        if (ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT.equals(et3Request.getRequestType())) {
+            et3FormService.generateET3WelshAndEnglishForms(authorisation, caseData, selectedRespondent);
+            selectedRespondent.getValue().setEt3Status(ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
+            selectedRespondent.getValue().getEt3HubLinksStatuses().setCheckYorAnswers(
+                ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
+            selectedRespondent.getValue().setResponseReceived(EtSyaConstants.YES);
+            selectedRespondent.getValue().setResponseReceivedDate(LocalDate.now().toString());
+        }
         caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
         return updateSubmittedCaseWithCaseDetails(authorisation, caseDetails);
     }
