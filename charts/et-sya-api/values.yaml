@@ -41,5 +41,6 @@ java:
     TORNADO_URL: "https://docmosis.{{ .Values.global.environment }}.platform.hmcts.net/rs/render"
     CASE_DOCUMENT_AM_URL: "http://ccd-case-document-am-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     CITIZEN_PORTAL_LINK: "https://et-sya.{{ .Values.global.environment }}.platform.hmcts.net/citizen-hub/"
+    RESPONDENT_PORTAL_LINK: "https://et-syr.{{ .Values.global.environment }}.platform.hmcts.net/"
     EXUI_CASE_DETAILS_URL: "https://manage-case.{{ .Values.global.environment }}.platform.hmcts.net/cases/case-details/"
     LAUNCH_DARKLY_ENV: '{{ .Values.global.environment }}'
