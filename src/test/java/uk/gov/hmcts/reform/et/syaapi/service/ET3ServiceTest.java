@@ -67,14 +67,13 @@ class ET3ServiceTest {
 
     @BeforeEach
     void setUp() {
-        et3Service = new ET3Service(adminUserService, authTokenGenerator, ccdApi, idamClient, caseService,
-                                    notificationService);
         et3Service = new ET3Service(adminUserService,
                                     authTokenGenerator,
                                     ccdApi,
                                     idamClient,
                                     caseService,
-                                    et3FormService);
+                                    et3FormService,
+                                    notificationService);
     }
 
     @ParameterizedTest

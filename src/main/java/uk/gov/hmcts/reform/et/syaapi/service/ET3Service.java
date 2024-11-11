@@ -53,6 +53,8 @@ public class ET3Service {
     private final CoreCaseDataApi ccdApi;
     private final IdamClient idamClient;
     private final CaseService caseService;
+    private final ET3FormService et3FormService;
+    private final NotificationService notificationService;
     private static final String FIELD_NAME_SUBMISSION_REFERENCE = "reference.keyword";
     private static final String FIELD_NAME_STATE = "state.keyword";
     private static final String STATE_VALUE_ACCEPTED = "Accepted";
@@ -206,34 +208,22 @@ public class ET3Service {
             respondentSumType,
             et3Request.getCaseDetailsLinksSectionId(),
             et3Request.getCaseDetailsLinksSectionStatus());
-        respondentSumType.getEt3HubLinksStatuses().setCheckYorAnswers(
-            ResponseUtil.getResponseHubCheckYourAnswersStatus(
-                et3Request.getRespondent().getValue().getEt3HubLinksStatuses()));
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
-                respondentSumType.getEt3HubLinksStatuses()));
-        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
-        if (ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT.equals(et3Request.getRequestType())) {
-            respondentSumType.setEt3Status(ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
-            respondentSumType.getEt3HubLinksStatuses().setCheckYorAnswers(
-                ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
-            respondentSumType.setResponseReceived(YES);
-            respondentSumType.setResponseReceivedDate(LocalDate.now().toString());
-            if (!StringUtils.isBlank(respondentSumType.getRespondentEmail())) {
-                notificationService.sendEt3ConfirmationEmail(respondentSumType.getRespondentEmail(), caseData,
-                                                             caseDetails.getId().toString());
-            }
-
-        }
         RespondentSumTypeItem selectedRespondent =
             findRespondentSumTypeItemByRespondentSumTypeItem(caseData, et3Request.getRespondent());
         copyProperties(et3Request.getRespondent(), selectedRespondent);
         if (ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT.equals(et3Request.getRequestType())) {
             et3FormService.generateET3WelshAndEnglishForms(authorisation, caseData, selectedRespondent);
-            selectedRespondent.getValue().setEt3Status(ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
-            selectedRespondent.getValue().getEt3HubLinksStatuses().setCheckYorAnswers(
+            respondentSumType.setEt3Status(ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
+            respondentSumType.getEt3HubLinksStatuses().setCheckYorAnswers(
                 ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
             selectedRespondent.getValue().setResponseReceived(EtSyaConstants.YES);
             selectedRespondent.getValue().setResponseReceivedDate(LocalDate.now().toString());
+            if (!StringUtils.isBlank(respondentSumType.getRespondentEmail())) {
+                notificationService.sendEt3ConfirmationEmail(respondentSumType.getRespondentEmail(), caseData,
+                                                             caseDetails.getId().toString());
+            }
+
         }
         caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
         return updateSubmittedCaseWithCaseDetails(authorisation, caseDetails);
