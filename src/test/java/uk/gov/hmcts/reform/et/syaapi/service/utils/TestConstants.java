@@ -256,6 +256,8 @@ public final class TestConstants {
     public static final String MICHAEL = "Michael";
     public static final String DUMMY_AUTHORISATION_TOKEN = "dummy_authorisation_token";
     public static final String DUMMY_SERVICE_AUTHORISATION_TOKEN = "dummy_service_authorisation_token";
+    public static final String ET3_ENGLISH_PDF_TEMPLATE_DOCUMENT = "ET3_0224.pdf";
+    public static final String ET3_WELSH_PDF_TEMPLATE_DOCUMENT = "CY_ET3_0224.pdf";
 
     private TestConstants() {
 

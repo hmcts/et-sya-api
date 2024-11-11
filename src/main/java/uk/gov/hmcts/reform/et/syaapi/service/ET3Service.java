@@ -39,6 +39,7 @@ import java.util.stream.Stream;
 import static org.springframework.beans.BeanUtils.copyProperties;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.findRespondentSumTypeItemByRespondentSumTypeItem;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.getResponseHubCheckYourAnswersStatus;
 
 /**
  * Provides services for ET3 Forms.
@@ -212,6 +213,9 @@ public class ET3Service {
         RespondentSumTypeItem selectedRespondent =
             findRespondentSumTypeItemByRespondentSumTypeItem(caseData, et3Request.getRespondent());
         copyProperties(et3Request.getRespondent(), selectedRespondent);
+        selectedRespondent.getValue().getEt3HubLinksStatuses()
+            .setCheckYorAnswers(getResponseHubCheckYourAnswersStatus(
+                et3Request.getRespondent().getValue().getEt3HubLinksStatuses()));
         if (ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT.equals(et3Request.getRequestType())) {
             et3FormService.generateET3WelshAndEnglishForms(authorisation, caseData, selectedRespondent);
             respondentSumType.setEt3Status(ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
