@@ -39,6 +39,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.ET3_STATUS_SUBMITTED;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
@@ -126,7 +127,8 @@ class ET3ServiceTest {
                                       caseDetails.getCaseTypeId(),
                                       caseDetails.getData())).thenReturn(caseDetails);
         assertDoesNotThrow(() -> et3Service.updateSubmittedCaseWithCaseDetails(TestConstants.TEST_SERVICE_AUTH_TOKEN,
-                                                                               caseDetails));
+                                                                               caseDetails,
+                                                                               MODIFICATION_TYPE_ASSIGNMENT));
     }
 
     @Test

@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
 import uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants;
 import uk.gov.hmcts.reform.et.syaapi.constants.ResponseHubLinks;
+import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.exception.ET3Exception;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
@@ -37,6 +38,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.springframework.beans.BeanUtils.copyProperties;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_ET3_FORM;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.findRespondentSumTypeItemByRespondentSumTypeItem;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.getResponseHubCheckYourAnswersStatus;
@@ -148,10 +150,16 @@ public class ET3Service {
      * @param authorisation authorisation token of the user
      * @param caseDetails case details which is updated with the given ET3 updates for respondent
      */
-    public CaseDetails updateSubmittedCaseWithCaseDetails(String authorisation, CaseDetails caseDetails) {
+    public CaseDetails updateSubmittedCaseWithCaseDetails(String authorisation,
+                                                          CaseDetails caseDetails,
+                                                          String requestType) {
+        CaseEvent caseEvent = UPDATE_CASE_SUBMITTED;
+        if (ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT.equals(requestType)) {
+            caseEvent = SUBMIT_ET3_FORM;
+        }
         return caseService.triggerEvent(authorisation,
                                         caseDetails.getId().toString(),
-                                        UPDATE_CASE_SUBMITTED,
+                                        caseEvent,
                                         caseDetails.getCaseTypeId(),
                                         caseDetails.getData());
     }
@@ -230,6 +238,6 @@ public class ET3Service {
 
         }
         caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
-        return updateSubmittedCaseWithCaseDetails(authorisation, caseDetails);
+        return updateSubmittedCaseWithCaseDetails(authorisation, caseDetails, et3Request.getRequestType());
     }
 }

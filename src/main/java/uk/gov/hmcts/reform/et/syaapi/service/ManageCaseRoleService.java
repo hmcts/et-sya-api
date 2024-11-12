@@ -41,6 +41,7 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
 
 /**
  * Provides services for role modification.
@@ -162,7 +163,7 @@ public class ManageCaseRoleService {
         // statuses to respondent. Because after assigning role we are able to update respondent data.
         // Doesn't do anything after revoking user roles.
         try {
-            if (ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
+            if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
                 setAllRespondentsIdamIdAndDefaultLinkStatuses(
                     authorisation,
                     modifyCaseUserRolesRequest,
@@ -210,7 +211,7 @@ public class ManageCaseRoleService {
                     modifyCaseUserRole.getUserId(),
                     modificationType
                 );
-                et3Service.updateSubmittedCaseWithCaseDetails(authorisation, caseDetails);
+                et3Service.updateSubmittedCaseWithCaseDetails(authorisation, caseDetails, MODIFICATION_TYPE_ASSIGNMENT);
             }
         }
     }

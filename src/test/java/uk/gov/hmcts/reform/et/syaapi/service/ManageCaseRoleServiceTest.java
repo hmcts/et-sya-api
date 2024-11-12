@@ -239,7 +239,8 @@ class ManageCaseRoleServiceTest {
                                                           .get(0).getCaseDataId())).thenReturn(expectedCaseDetails);
         when(et3Service.updateSubmittedCaseWithCaseDetails(
             DUMMY_AUTHORISATION_TOKEN,
-            expectedCaseDetails
+            expectedCaseDetails,
+            MODIFICATION_TYPE_ASSIGNMENT
         )).thenReturn(expectedCaseDetails);
     }
 
