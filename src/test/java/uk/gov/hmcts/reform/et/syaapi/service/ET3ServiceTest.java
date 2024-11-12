@@ -42,6 +42,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.ET
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_ET3_FORM;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_RESPONDENT_SUM_TYPE_ITEM_VALID_CCD_ID;
 
@@ -214,7 +215,7 @@ class ET3ServiceTest {
                             et3Request.getCaseSubmissionReference())).thenReturn(caseDetails);
         when(caseService.triggerEvent(eq(TestConstants.TEST_SERVICE_AUTH_TOKEN),
                                       eq(caseDetails.getId().toString()),
-                                      eq(UPDATE_CASE_SUBMITTED),
+                                      eq(SUBMIT_ET3_FORM),
                                       eq(caseDetails.getCaseTypeId()),
                                       anyMap())).thenReturn(expectedCaseDetails);
         CaseDetails actualCaseDetails = et3Service.modifyEt3Data(TestConstants.TEST_SERVICE_AUTH_TOKEN, et3Request);
