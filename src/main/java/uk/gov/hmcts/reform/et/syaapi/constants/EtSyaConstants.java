@@ -72,6 +72,7 @@ public final class EtSyaConstants {
 
     public static final String CLAIMANT_CORRESPONDENCE_DOCUMENT = "Claimant correspondence";
     public static final String YES = "Yes";
+    public static final String NO = "No";
 
     public static final String WELSH_LANGUAGE = "Welsh";
     public static final String WELSH_LANGUAGE_PARAM = "/?lng=cy";

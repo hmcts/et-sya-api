@@ -38,6 +38,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.springframework.beans.BeanUtils.copyProperties;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_ET3_FORM;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.findRespondentSumTypeItemByRespondentSumTypeItem;
@@ -231,6 +232,7 @@ public class ET3Service {
                 ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
             selectedRespondent.getValue().setResponseReceived(EtSyaConstants.YES);
             selectedRespondent.getValue().setResponseReceivedDate(LocalDate.now().toString());
+            selectedRespondent.getValue().setResponseContinue(NO);
             if (!StringUtils.isBlank(respondentSumType.getRespondentEmail())) {
                 notificationService.sendEt3ConfirmationEmail(respondentSumType.getRespondentEmail(), caseData,
                                                              caseDetails.getId().toString());
