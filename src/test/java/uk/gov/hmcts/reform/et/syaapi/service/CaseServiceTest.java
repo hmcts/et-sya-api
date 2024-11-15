@@ -67,7 +67,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTIO
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
-import static uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper.mapRequestCaseDataToCaseData;
+import static uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper.convertCaseDataMapToCaseDataObject;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CASE_ID;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.SUBMIT_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_NAME;
@@ -437,7 +437,7 @@ class CaseServiceTest {
             String contactApplicationType = "withdraw";
             caseService.uploadTseSupportingDocument(caseDetails, new UploadedDocumentType(), contactApplicationType);
 
-            CaseData caseData = mapRequestCaseDataToCaseData(caseDetails.getData());
+            CaseData caseData = convertCaseDataMapToCaseDataObject(caseDetails.getData());
             String actual = caseData.getDocumentCollection().get(0).getValue().getShortDescription();
             String expected = "Withdraw all/part of claim";
             assertThat(actual).isEqualTo(expected);
@@ -448,7 +448,7 @@ class CaseServiceTest {
     void shouldInvokeCaseEnrichmentWithJurCodesInSubmitEvent() {
         List<JurCodesTypeItem> expectedItems = mockJurCodesTypeItems();
         caseTestData.getStartEventResponse().setEventId(SUBMIT_CASE_DRAFT);
-        CaseData caseData = mapRequestCaseDataToCaseData(caseTestData.getCaseDataWithClaimTypes()
+        CaseData caseData = convertCaseDataMapToCaseDataObject(caseTestData.getCaseDataWithClaimTypes()
                                                                                   .getCaseData());
         caseData.setJurCodesCollection(expectedItems);
         caseData.setFeeGroupReference(CASE_ID);

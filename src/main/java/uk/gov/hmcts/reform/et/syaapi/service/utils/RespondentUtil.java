@@ -58,7 +58,7 @@ public final class RespondentUtil {
         if (MapUtils.isEmpty(existingCaseData)) {
             throw new RuntimeException(String.format(EXCEPTION_CASE_DATA_NOT_FOUND, caseDetails.getId()));
         }
-        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(existingCaseData);
+        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(existingCaseData);
         if (CollectionUtils.isNotEmpty(caseData.getRespondentCollection())) {
             List<RespondentSumTypeItem> respondentSumTypeItems =
                 findRespondentSumTypeItems(caseData.getRespondentCollection(),

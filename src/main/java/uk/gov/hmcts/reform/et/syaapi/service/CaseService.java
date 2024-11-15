@@ -282,7 +282,7 @@ public class CaseService {
         ObjectMapper objectMapper = new ObjectMapper();
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
-        CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseData);
+        CaseData caseData1 = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseData);
 
         if (SUBMIT_CASE_DRAFT == eventName) {
             enrichCaseDataWithJurisdictionCodes(caseData1);
@@ -307,7 +307,7 @@ public class CaseService {
         StartEventResponse startEventResponse = startUpdate(authorization, caseRequest.getCaseId(),
                                                             caseRequest.getCaseTypeId(), SUBMIT_CASE_DRAFT
         );
-        CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(
+        CaseData caseData1 = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(
             startEventResponse.getCaseDetails().getData());
         enrichCaseDataWithJurisdictionCodes(caseData1);
         caseData1.setManagingOffice(caseRequest.getCaseData().get("managingOffice") == null ? UNASSIGNED_OFFICE :
@@ -396,7 +396,7 @@ public class CaseService {
 
     void uploadTseSupportingDocument(CaseDetails caseDetails, UploadedDocumentType contactApplicationFile,
                                      String contactApplicationType) {
-        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
         List<DocumentTypeItem> docList = caseData.getDocumentCollection();
 
         if (docList == null) {
@@ -435,7 +435,7 @@ public class CaseService {
         String caseType
     ) throws DocumentGenerationException, CaseDocumentException {
 
-        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
         List<DocumentTypeItem> docList = caseData.getDocumentCollection();
 
         if (docList == null) {

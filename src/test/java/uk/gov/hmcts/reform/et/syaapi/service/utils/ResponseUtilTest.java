@@ -32,7 +32,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.EXCEPTIO
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.EXCEPTION_ET3_SUBMISSION_REFERENCE_BLANK;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.EXCEPTION_RESPONDENT_COLLECTION_IS_EMPTY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.EXCEPTION_RESPONDENT_NOT_FOUND;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.findRespondentSumTypeItemByRespondentSumTypeItem;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.findSelectedRespondentByRespondentSumTypeItem;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 class ResponseUtilTest {
@@ -115,26 +115,26 @@ class ResponseUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("provideFindRespondentSumTypeItemByRespondentSumTypeItem")
-    void theFindRespondentSumTypeItemByRespondentSumTypeItem(CaseData caseData,
-                                                             RespondentSumTypeItem respondentSumTypeItem) {
+    @MethodSource("provideFindSelectedRespondentByRespondentSumTypeItem")
+    void theFindSelectedRespondentByRespondentSumTypeItem(CaseData caseData,
+                                                          RespondentSumTypeItem respondentSumTypeItem) {
         if (CollectionUtils.isEmpty(caseData.getRespondentCollection())) {
             assertThat(assertThrows(ET3Exception.class, () ->
-                findRespondentSumTypeItemByRespondentSumTypeItem(caseData, respondentSumTypeItem))
+                findSelectedRespondentByRespondentSumTypeItem(caseData, respondentSumTypeItem))
                            .getMessage()).isEqualTo(EXCEPTION_PREFIX + EXCEPTION_RESPONDENT_COLLECTION_IS_EMPTY);
             return;
         }
         if (TEST_INVALID_IDAM_ID.equals(respondentSumTypeItem.getValue().getIdamId())) {
             assertThat(assertThrows(ET3Exception.class, () ->
-                findRespondentSumTypeItemByRespondentSumTypeItem(caseData, respondentSumTypeItem))
+                findSelectedRespondentByRespondentSumTypeItem(caseData, respondentSumTypeItem))
                            .getMessage()).isEqualTo(EXCEPTION_PREFIX + EXCEPTION_RESPONDENT_NOT_FOUND);
             return;
         }
-        assertThat(findRespondentSumTypeItemByRespondentSumTypeItem(caseData, respondentSumTypeItem))
+        assertThat(findSelectedRespondentByRespondentSumTypeItem(caseData, respondentSumTypeItem))
             .isEqualTo(caseData.getRespondentCollection().get(0));
     }
 
-    private static Stream<Arguments> provideFindRespondentSumTypeItemByRespondentSumTypeItem() {
+    private static Stream<Arguments> provideFindSelectedRespondentByRespondentSumTypeItem() {
         RespondentSumTypeItem respondentSumTypeItemValid = new CaseTestData().getEt3Request().getRespondent();
         respondentSumTypeItemValid.setId(TEST_VALID_RESPONDENT_CCD_ID);
         respondentSumTypeItemValid.getValue().setIdamId(TEST_VALID_IDAM_ID);
@@ -147,7 +147,7 @@ class ResponseUtilTest {
         respondentSumTypeItemInvalidCcdId.setId(TEST_INVALID_RESPONDENT_CCD_ID);
         respondentSumTypeItemInvalidCcdId.getValue().setIdamId(TEST_VALID_IDAM_ID);
 
-        CaseData caseDataValid = EmployeeObjectMapper.mapRequestCaseDataToCaseData(
+        CaseData caseDataValid = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(
             new CaseTestData().getCaseDetailsWithCaseData().getData());
         caseDataValid.getRespondentCollection().get(0).setValue(respondentSumTypeItemValid.getValue());
         caseDataValid.getRespondentCollection().get(0).setId(respondentSumTypeItemInValidIdamId.getId());

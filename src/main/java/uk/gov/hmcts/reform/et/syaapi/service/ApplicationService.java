@@ -135,7 +135,7 @@ public class ApplicationService {
         );
 
         CaseData caseData = EmployeeObjectMapper
-            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
+            .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
 
         GenericTseApplicationTypeItem appToModify = TseApplicationHelper.getSelectedApplication(
             caseData.getGenericTseApplicationCollection(), request.getApplicationId()
@@ -181,7 +181,7 @@ public class ApplicationService {
         );
 
         CaseData caseData = EmployeeObjectMapper
-            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
+            .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
 
         GenericTseApplicationTypeItem appToModify = TseApplicationHelper.getSelectedApplication(
             caseData.getGenericTseApplicationCollection(),
@@ -218,7 +218,7 @@ public class ApplicationService {
         );
 
         CaseData caseData = EmployeeObjectMapper
-            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
+            .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
 
         GenericTseApplicationTypeItem selectedApplication = TseApplicationHelper.getSelectedApplication(
             caseData.getGenericTseApplicationCollection(),
@@ -270,7 +270,7 @@ public class ApplicationService {
         ClaimantApplicationRequest request,
         CaseDetails finalCaseDetails
     ) throws NotificationClientException {
-        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(finalCaseDetails.getData());
+        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(finalCaseDetails.getData());
         ClaimantIndType claimantIndType = caseData.getClaimantIndType();
         String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
         CoreEmailDetails details = new CoreEmailDetails(

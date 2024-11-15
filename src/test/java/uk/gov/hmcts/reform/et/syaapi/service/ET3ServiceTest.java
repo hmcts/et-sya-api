@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
+import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
@@ -39,7 +40,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.ET3_STATUS_SUBMITTED;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_ET3_FORM;
@@ -129,7 +129,7 @@ class ET3ServiceTest {
                                       caseDetails.getData())).thenReturn(caseDetails);
         assertDoesNotThrow(() -> et3Service.updateSubmittedCaseWithCaseDetails(TestConstants.TEST_SERVICE_AUTH_TOKEN,
                                                                                caseDetails,
-                                                                               MODIFICATION_TYPE_ASSIGNMENT));
+                                                                               UPDATE_ET3_FORM));
     }
 
     @Test
@@ -170,26 +170,29 @@ class ET3ServiceTest {
     void theModifyEt3DataForUpdate() {
         Et3Request et3Request = new CaseTestData().getEt3Request();
         CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
-        CaseData expectedCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(expectedCaseDetails.getData());
+        CaseData expectedCaseData = EmployeeObjectMapper
+            .convertCaseDataMapToCaseDataObject(expectedCaseDetails.getData());
         expectedCaseData.getRespondentCollection().get(0).setValue(et3Request.getRespondent().getValue());
         expectedCaseData.getRespondentCollection().get(0).setId(TEST_RESPONDENT_SUM_TYPE_ITEM_VALID_CCD_ID);
         expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(expectedCaseData));
-        when(adminUserService.getAdminUserToken()).thenReturn(TestConstants.TEST_SERVICE_AUTH_TOKEN);
-        when(authTokenGenerator.generate()).thenReturn(TestConstants.TEST_SERVICE_AUTH_TOKEN);
-        CaseDetails caseDetails = new CaseTestData().getCaseDetails();
-        when(ccdApi.getCase(TestConstants.TEST_SERVICE_AUTH_TOKEN,
-                            TestConstants.TEST_SERVICE_AUTH_TOKEN,
-                            et3Request.getCaseSubmissionReference())).thenReturn(caseDetails);
+        StartEventResponse startEventResponse = new CaseTestData().getStartEventResponse();
+        startEventResponse.setCaseDetails(new CaseTestData().getCaseDetails());
+        when(caseService.startUpdate(TestConstants.TEST_SERVICE_AUTH_TOKEN,
+                            et3Request.getCaseSubmissionReference(),
+                                     et3Request.getCaseTypeId(),
+                                     UPDATE_ET3_FORM)).thenReturn(startEventResponse);
         when(caseService.triggerEvent(eq(TestConstants.TEST_SERVICE_AUTH_TOKEN),
-                                      eq(caseDetails.getId().toString()),
+                                      eq(startEventResponse.getCaseDetails().getId().toString()),
                                       eq(UPDATE_ET3_FORM),
-                                      eq(caseDetails.getCaseTypeId()),
+                                      eq(startEventResponse.getCaseDetails().getCaseTypeId()),
                                       anyMap())).thenReturn(expectedCaseDetails);
         CaseDetails actualCaseDetails = et3Service.modifyEt3Data(TestConstants.TEST_SERVICE_AUTH_TOKEN, et3Request);
-        CaseData caseDataFromService = EmployeeObjectMapper.mapRequestCaseDataToCaseData(actualCaseDetails.getData());
+        CaseData caseDataFromService = EmployeeObjectMapper
+            .convertCaseDataMapToCaseDataObject(actualCaseDetails.getData());
         RespondentSumType actualRespondent = caseDataFromService.getRespondentCollection().get(0).getValue();
         RespondentSumType expectedRespondent = EmployeeObjectMapper
-            .mapRequestCaseDataToCaseData(expectedCaseDetails.getData()).getRespondentCollection().get(0).getValue();
+            .convertCaseDataMapToCaseDataObject(
+                expectedCaseDetails.getData()).getRespondentCollection().get(0).getValue();
         assertThat(actualRespondent).isEqualTo(expectedRespondent);
     }
 
@@ -198,7 +201,8 @@ class ET3ServiceTest {
         Et3Request et3Request = new CaseTestData().getEt3Request();
         et3Request.setRequestType(MODIFICATION_TYPE_SUBMIT);
         CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
-        CaseData expectedCaseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(expectedCaseDetails.getData());
+        CaseData expectedCaseData = EmployeeObjectMapper
+            .convertCaseDataMapToCaseDataObject(expectedCaseDetails.getData());
         expectedCaseData.getRespondentCollection().get(0).setValue(et3Request.getRespondent().getValue());
         expectedCaseData.getRespondentCollection().get(0).getValue().setEt3Status(ET3_STATUS_SUBMITTED);
         expectedCaseData.getRespondentCollection().get(0).getValue().setResponseStatus(RESPONSE_STATUS_COMPLETED);
@@ -206,25 +210,27 @@ class ET3ServiceTest {
         expectedCaseData.getRespondentCollection().get(0).setValue(et3Request.getRespondent().getValue());
         expectedCaseData.getRespondentCollection().get(0).setId(TEST_RESPONDENT_SUM_TYPE_ITEM_VALID_CCD_ID);
         expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(expectedCaseData));
-
-        when(adminUserService.getAdminUserToken()).thenReturn(TestConstants.TEST_SERVICE_AUTH_TOKEN);
-        when(authTokenGenerator.generate()).thenReturn(TestConstants.TEST_SERVICE_AUTH_TOKEN);
-        CaseDetails caseDetails = new CaseTestData().getCaseDetails();
-        when(ccdApi.getCase(TestConstants.TEST_SERVICE_AUTH_TOKEN,
-                            TestConstants.TEST_SERVICE_AUTH_TOKEN,
-                            et3Request.getCaseSubmissionReference())).thenReturn(caseDetails);
+        StartEventResponse startEventResponse = new CaseTestData().getStartEventResponse();
+        startEventResponse.setCaseDetails(new CaseTestData().getCaseDetails());
+        when(caseService.startUpdate(TestConstants.TEST_SERVICE_AUTH_TOKEN,
+                                     et3Request.getCaseSubmissionReference(),
+                                     et3Request.getCaseTypeId(),
+                                     SUBMIT_ET3_FORM)).thenReturn(startEventResponse);
         when(caseService.triggerEvent(eq(TestConstants.TEST_SERVICE_AUTH_TOKEN),
-                                      eq(caseDetails.getId().toString()),
+                                      eq(startEventResponse.getCaseDetails().getId().toString()),
                                       eq(SUBMIT_ET3_FORM),
-                                      eq(caseDetails.getCaseTypeId()),
+                                      eq(startEventResponse.getCaseDetails().getCaseTypeId()),
                                       anyMap())).thenReturn(expectedCaseDetails);
         CaseDetails actualCaseDetails = et3Service.modifyEt3Data(TestConstants.TEST_SERVICE_AUTH_TOKEN, et3Request);
-        CaseData caseDataFromService = EmployeeObjectMapper.mapRequestCaseDataToCaseData(actualCaseDetails.getData());
+        CaseData caseDataFromService = EmployeeObjectMapper
+            .convertCaseDataMapToCaseDataObject(actualCaseDetails.getData());
         RespondentSumType actualRespondent = caseDataFromService.getRespondentCollection().get(0).getValue();
         RespondentSumType expectedRespondent = EmployeeObjectMapper
-            .mapRequestCaseDataToCaseData(expectedCaseDetails.getData()).getRespondentCollection().get(0).getValue();
+            .convertCaseDataMapToCaseDataObject(
+                expectedCaseDetails.getData()).getRespondentCollection().get(0).getValue();
         assertThat(actualRespondent).isEqualTo(expectedRespondent);
-        verify(notificationService, times(1)).sendEt3ConfirmationEmail(anyString(), any(), anyString());
+        verify(notificationService, times(1))
+            .sendEt3ConfirmationEmail(anyString(), any(), anyString());
     }
 
     @Test

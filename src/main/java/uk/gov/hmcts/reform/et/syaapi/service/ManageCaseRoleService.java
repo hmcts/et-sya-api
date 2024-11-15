@@ -42,6 +42,7 @@ import java.util.Optional;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_ET3_FORM;
 
 /**
  * Provides services for role modification.
@@ -211,7 +212,7 @@ public class ManageCaseRoleService {
                     modifyCaseUserRole.getUserId(),
                     modificationType
                 );
-                et3Service.updateSubmittedCaseWithCaseDetails(authorisation, caseDetails, MODIFICATION_TYPE_ASSIGNMENT);
+                et3Service.updateSubmittedCaseWithCaseDetails(authorisation, caseDetails, UPDATE_ET3_FORM);
             }
         }
     }

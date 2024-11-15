@@ -56,6 +56,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CCD_API_POST_METHOD_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_ET3_FORM;
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
@@ -224,13 +225,13 @@ class ManageCaseRoleServiceTest {
                                            String modificationType,
                                            CaseDetails expectedCaseDetails) {
         if (ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
-            CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(expectedCaseDetails.getData());
+            CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(expectedCaseDetails.getData());
             caseData.getRespondentCollection().get(0).getValue().setRespondentName(
                 TestConstants.TEST_RESPONDENT_NAME);
             expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
         }
         if (ManageCaseRoleConstants.MODIFICATION_TYPE_REVOKE.equals(modificationType)) {
-            CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(expectedCaseDetails.getData());
+            CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(expectedCaseDetails.getData());
             caseData.getRespondentCollection().get(0).getValue().setIdamId(USER_ID);
             expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
         }
@@ -240,7 +241,7 @@ class ManageCaseRoleServiceTest {
         when(et3Service.updateSubmittedCaseWithCaseDetails(
             DUMMY_AUTHORISATION_TOKEN,
             expectedCaseDetails,
-            MODIFICATION_TYPE_ASSIGNMENT
+            UPDATE_ET3_FORM
         )).thenReturn(expectedCaseDetails);
     }
 

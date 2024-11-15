@@ -53,7 +53,7 @@ class RespondentUtilTest {
                                              modificationType)) {
             return;
         }
-        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
         if (hasRespondentNameException(caseData, caseDetails, respondentName, idamId, modificationType)) {
             return;
         }
@@ -64,7 +64,7 @@ class RespondentUtilTest {
                                                   respondentName,
                                                   idamId,
                                                   modificationType);
-        caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
         if (TestConstants.TEST_MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
             assertThat(caseData.getRespondentCollection().get(0).getValue().getIdamId()).isEqualTo(idamId);
         } else {
@@ -235,35 +235,35 @@ class RespondentUtilTest {
         CaseDetails caseDetails = new CaseTestData().getCaseDetailsWithCaseData();
 
         CaseDetails caseDetailsWithCorrectRespondentName = new CaseTestData().getCaseDetailsWithCaseData();
-        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
         caseData.getRespondentCollection().get(0).getValue().setRespondentName(TestConstants.TEST_RESPONDENT_NAME);
         caseDetailsWithCorrectRespondentName.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
 
         CaseDetails caseDetailsWithCorrectOrganisationName = new CaseTestData().getCaseDetailsWithCaseData();
-        caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
         caseData.getRespondentCollection().get(0).getValue()
             .setRespondentOrganisation(TestConstants.TEST_RESPONDENT_NAME);
         caseDetailsWithCorrectOrganisationName.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
 
-        caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
         caseData.getRespondentCollection().get(0).getValue().setRespondentFirstName(TestConstants.TEST_RESPONDENT_NAME);
         caseData.getRespondentCollection().get(0).getValue().setRespondentLastName(StringUtils.EMPTY);
         CaseDetails caseDetailsWithCorrectFirstName = new CaseTestData().getCaseDetailsWithCaseData();
         caseDetailsWithCorrectFirstName.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
 
-        caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
         caseData.getRespondentCollection().get(0).getValue().setRespondentLastName(TestConstants.TEST_RESPONDENT_NAME);
         caseData.getRespondentCollection().get(0).getValue().setRespondentFirstName(StringUtils.EMPTY);
         CaseDetails caseDetailsWithCorrectLastName = new CaseTestData().getCaseDetailsWithCaseData();
         caseDetailsWithCorrectLastName.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
 
-        caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
         caseData.getRespondentCollection().get(0).getValue().setRespondentFirstName("Respondent");
         caseData.getRespondentCollection().get(0).getValue().setRespondentLastName("Name");
         CaseDetails caseDetailsWithCorrectFirstAndLastName = new CaseTestData().getCaseDetailsWithCaseData();
         caseDetailsWithCorrectFirstAndLastName.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
 
-        caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
         caseData.getRespondentCollection().get(0).getValue().setRespondentName(TestConstants.TEST_RESPONDENT_NAME);
         caseData.getRespondentCollection().get(0).getValue().setRespondentName(TestConstants.TEST_RESPONDENT_IDAM_ID_2);
         CaseDetails caseDetailsWithDifferentIdamId = new CaseTestData().getCaseDetailsWithCaseData();
