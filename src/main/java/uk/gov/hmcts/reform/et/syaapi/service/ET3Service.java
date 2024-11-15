@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -13,15 +14,16 @@ import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.CaseDetailsLinks;
-import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
-import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
 import uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants;
 import uk.gov.hmcts.reform.et.syaapi.constants.ResponseHubLinks;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.exception.ET3Exception;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
+import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.ET3FormService;
@@ -38,7 +40,16 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.springframework.beans.BeanUtils.copyProperties;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.NO;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.FIRST_INDEX;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_ET3_FORM;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_ET3_FORM;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.findRespondentSumTypeItemByRespondentSumTypeItem;
@@ -70,7 +81,7 @@ public class ET3Service {
      */
     public CaseDetails findCaseBySubmissionReference(String submissionReference) {
         if (StringUtils.isBlank(submissionReference)) {
-            throw new RuntimeException(ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS);
+            throw new RuntimeException(EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS);
         }
         CaseDetails caseDetails = ccdApi.getCase(adminUserService.getAdminUserToken(),
                                                  authTokenGenerator.generate(),
@@ -79,12 +90,12 @@ public class ET3Service {
             return caseDetails;
         }
         throw new RuntimeException(String.format(
-            ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND, submissionReference));
+            EXCEPTION_CASE_DETAILS_NOT_FOUND, submissionReference));
     }
 
     public CaseDetails findCaseByIdAndAcceptedState(String id) {
         if (StringUtils.isBlank(id)) {
-            throw new RuntimeException(ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS);
+            throw new RuntimeException(EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS);
         }
 
         String elasticSearchQuery = "{\"size\":1,\"query\":{\"bool\":{\"must\":[{\"match\":{\""
@@ -103,14 +114,14 @@ public class ET3Service {
     private CaseDetails getCaseDetails(String elasticSearchQuery) {
         String adminUserToken = adminUserService.getAdminUserToken();
         CaseDetails englandCase = findCaseByCaseType(adminUserToken,
-                                                     EtSyaConstants.ENGLAND_CASE_TYPE, elasticSearchQuery
+                                                     ENGLAND_CASE_TYPE, elasticSearchQuery
         );
         if (ObjectUtils.isNotEmpty(englandCase)) {
             return englandCase;
         }
 
         CaseDetails scotlandCase = findCaseByCaseType(adminUserToken,
-                                                      EtSyaConstants.SCOTLAND_CASE_TYPE, elasticSearchQuery
+                                                      SCOTLAND_CASE_TYPE, elasticSearchQuery
         );
         if (ObjectUtils.isNotEmpty(scotlandCase)) {
             return scotlandCase;
@@ -125,7 +136,7 @@ public class ET3Service {
      */
     public CaseDetails findCaseByEthosCaseReference(String ethosCaseReference) {
         if (StringUtils.isBlank(ethosCaseReference)) {
-            throw new RuntimeException(ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS);
+            throw new RuntimeException(EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS);
         }
         String elasticSearchQuery = ElasticSearchQueryBuilder.buildByEthosCaseReference(ethosCaseReference);
         return getCaseDetails(elasticSearchQuery);
@@ -141,7 +152,7 @@ public class ET3Service {
             elasticSearchQuery
         ).getCases()).orElse(Collections.emptyList());
         return CollectionUtils.isNotEmpty(caseDetailsList)
-            ? caseDetailsList.get(ManageCaseRoleConstants.FIRST_INDEX)
+            ? caseDetailsList.get(FIRST_INDEX)
             : null;
     }
 
@@ -155,7 +166,7 @@ public class ET3Service {
                                                           CaseDetails caseDetails,
                                                           String requestType) {
         CaseEvent caseEvent = UPDATE_ET3_FORM;
-        if (ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT.equals(requestType)) {
+        if (MODIFICATION_TYPE_SUBMIT.equals(requestType)) {
             caseEvent = SUBMIT_ET3_FORM;
         }
         return caseService.triggerEvent(authorisation,
@@ -188,15 +199,15 @@ public class ET3Service {
             authorization,
             authTokenGenerator.generate(),
             userInfo.getUid(),
-            EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.ENGLAND_CASE_TYPE,
+            JURISDICTION_ID,
+            ENGLAND_CASE_TYPE,
             new HashMap<>());
         List<CaseDetails> scotlandCases = ccdApi.searchForCitizen(
             authorization,
             authTokenGenerator.generate(),
             userInfo.getUid(),
-            EtSyaConstants.JURISDICTION_ID,
-            EtSyaConstants.SCOTLAND_CASE_TYPE,
+            JURISDICTION_ID,
+            SCOTLAND_CASE_TYPE,
             new HashMap<>());
         return Stream.of(scotlandCases, englandCases)
             .flatMap(Collection::stream).toList();
@@ -205,11 +216,26 @@ public class ET3Service {
     @Retryable
     public CaseDetails modifyEt3Data(String authorisation, Et3Request et3Request) {
         ResponseUtil.checkModifyEt3DataParameters(authorisation, et3Request);
-        CaseDetails caseDetails = findCaseBySubmissionReference(et3Request.getCaseSubmissionReference());
+
+        CaseEvent caseEvent = et3Request.getRequestType().equals(MODIFICATION_TYPE_SUBMIT)
+            ? SUBMIT_ET3_FORM
+            : UPDATE_ET3_FORM;
+        StartEventResponse startEventResponse = caseService.startUpdate(authorisation,
+                                                                       et3Request.getCaseSubmissionReference(),
+                                                                       et3Request.getCaseTypeId(), caseEvent);
+
+        CaseDetails caseDetails = startEventResponse.getCaseDetails();
+
         if (ObjectUtils.isEmpty(caseDetails)) {
             throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_UNABLE_TO_FIND_CASE_DETAILS));
         }
-        RespondentSumType respondentSumType = et3Request.getRespondent().getValue();
+
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+
+        RespondentSumTypeItem selectedRespondent =
+            findRespondentSumTypeItemByRespondentSumTypeItem(caseData, et3Request.getRespondent());
+        RespondentSumType respondentSumType = selectedRespondent.getValue();
+
         ResponseHubLinks.setResponseHubLinkStatus(
             respondentSumType,
             et3Request.getResponseHubLinksSectionId(),
@@ -218,28 +244,30 @@ public class ET3Service {
             respondentSumType,
             et3Request.getCaseDetailsLinksSectionId(),
             et3Request.getCaseDetailsLinksSectionStatus());
-        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
-        RespondentSumTypeItem selectedRespondent =
-            findRespondentSumTypeItemByRespondentSumTypeItem(caseData, et3Request.getRespondent());
         copyProperties(et3Request.getRespondent(), selectedRespondent);
-        selectedRespondent.getValue().getEt3HubLinksStatuses()
+        respondentSumType.getEt3HubLinksStatuses()
             .setCheckYorAnswers(getResponseHubCheckYourAnswersStatus(
                 et3Request.getRespondent().getValue().getEt3HubLinksStatuses()));
-        if (ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT.equals(et3Request.getRequestType())) {
+
+        if (MODIFICATION_TYPE_SUBMIT.equals(et3Request.getRequestType())) {
             et3FormService.generateET3WelshAndEnglishForms(authorisation, caseData, selectedRespondent);
-            respondentSumType.setEt3Status(ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
-            respondentSumType.getEt3HubLinksStatuses().setCheckYorAnswers(
-                ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
-            selectedRespondent.getValue().setResponseReceived(EtSyaConstants.YES);
-            selectedRespondent.getValue().setResponseReceivedDate(LocalDate.now().toString());
-            selectedRespondent.getValue().setResponseContinue(NO);
+            respondentSumType.setEt3Status(RESPONSE_STATUS_COMPLETED);
+            respondentSumType.getEt3HubLinksStatuses().setCheckYorAnswers(RESPONSE_STATUS_COMPLETED);
+            respondentSumType.setResponseReceived(YES);
+            respondentSumType.setResponseReceivedDate(LocalDate.now().toString());
+            respondentSumType.setResponseContinue(NO);
             if (!StringUtils.isBlank(respondentSumType.getRespondentEmail())) {
                 notificationService.sendEt3ConfirmationEmail(respondentSumType.getRespondentEmail(), caseData,
                                                              caseDetails.getId().toString());
             }
 
         }
-        caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
-        return updateSubmittedCaseWithCaseDetails(authorisation, caseDetails, et3Request.getRequestType());
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
+
+        CaseDataContent caseDataContent = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
+        return caseService.submitUpdate(authorisation, caseDetails.getId().toString(),
+                                        caseDataContent, caseDetails.getCaseTypeId());
     }
 }

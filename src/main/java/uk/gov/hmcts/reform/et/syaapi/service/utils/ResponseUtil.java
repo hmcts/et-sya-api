@@ -10,6 +10,8 @@ import uk.gov.hmcts.et.common.model.ccd.types.et3links.ET3HubLinksStatuses;
 import uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.ET3Exception;
 
+import java.util.Optional;
+
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_CANNOT_START_YET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_NOT_STARTED_YET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.SECTION_STATUS_COMPLETED;
@@ -63,13 +65,17 @@ public final class ResponseUtil {
         if (StringUtils.isBlank(et3Respondent.getId())) {
             throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_ET3_RESPONDENT_CCD_ID_IS_BLANK));
         }
-        for (RespondentSumTypeItem respondentSumTypeItem : caseData.getRespondentCollection()) {
-            if (et3Respondent.getValue().getIdamId().equals(respondentSumTypeItem.getValue().getIdamId())
-                && et3Respondent.getId().equals(respondentSumTypeItem.getId())) {
-                return respondentSumTypeItem;
-            }
+
+        Optional<RespondentSumTypeItem> respondentSumTypeItem = caseData.getRespondentCollection().stream()
+            .filter(r -> et3Respondent.getValue().getIdamId().equals(r.getValue().getIdamId())
+                         && et3Respondent.getId().equals(r.getId()))
+            .findFirst();
+
+        if (respondentSumTypeItem.isPresent()) {
+            return respondentSumTypeItem.get();
+        } else {
+            throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_RESPONDENT_NOT_FOUND));
         }
-        throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_RESPONDENT_NOT_FOUND));
     }
 
     public static String getResponseHubCheckYourAnswersStatus(ET3HubLinksStatuses et3HubLinksStatuses) {
