@@ -40,7 +40,7 @@ import java.util.stream.Stream;
 import static org.springframework.beans.BeanUtils.copyProperties;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_ET3_FORM;
-import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_ET3_FORM;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.findRespondentSumTypeItemByRespondentSumTypeItem;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.getResponseHubCheckYourAnswersStatus;
 
@@ -154,7 +154,7 @@ public class ET3Service {
     public CaseDetails updateSubmittedCaseWithCaseDetails(String authorisation,
                                                           CaseDetails caseDetails,
                                                           String requestType) {
-        CaseEvent caseEvent = UPDATE_CASE_SUBMITTED;
+        CaseEvent caseEvent = UPDATE_ET3_FORM;
         if (ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT.equals(requestType)) {
             caseEvent = SUBMIT_ET3_FORM;
         }
