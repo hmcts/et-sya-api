@@ -6,11 +6,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et3Request;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.et3links.ET3HubLinksStatuses;
+import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.exception.ET3Exception;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
@@ -22,6 +25,9 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_CANNOT_START_YET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_NOT_STARTED_YET;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_UPDATE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.SECTION_STATUS_COMPLETED;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.EXCEPTION_AUTHORISATION_TOKEN_BLANK;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.EXCEPTION_ET3_CASE_TYPE_BLANK;
@@ -32,6 +38,8 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.EXCEPTIO
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.EXCEPTION_ET3_SUBMISSION_REFERENCE_BLANK;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.EXCEPTION_RESPONDENT_COLLECTION_IS_EMPTY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.EXCEPTION_RESPONDENT_NOT_FOUND;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_ET3_FORM;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_ET3_FORM;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.findSelectedRespondentByRespondentSumTypeItem;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
@@ -175,4 +183,26 @@ class ResponseUtilTest {
         assertThat(ResponseUtil.getResponseHubCheckYourAnswersStatus(et3HubLinksStatuses))
             .isEqualTo(LINK_STATUS_NOT_STARTED_YET);
     }
+
+    @ParameterizedTest
+    @EmptySource
+    @ValueSource(strings = {MODIFICATION_TYPE_SUBMIT, MODIFICATION_TYPE_ASSIGNMENT, MODIFICATION_TYPE_UPDATE})
+    void theFindCaseEventByRequestType(String requestType) {
+        if (MODIFICATION_TYPE_SUBMIT.equals(requestType)) {
+            assertThat(ResponseUtil.findCaseEventByRequestType(requestType)).isEqualTo(SUBMIT_ET3_FORM);
+            return;
+        }
+        assertThat(ResponseUtil.findCaseEventByRequestType(requestType)).isEqualTo(UPDATE_ET3_FORM);
+    }
+
+    @Test
+    void theGetCaseDetailsByStartEventResponse() {
+        StartEventResponse startEventResponse = new CaseTestData().getStartEventResponse();
+        assertThat(ResponseUtil.getCaseDetailsByStartEventResponse(startEventResponse))
+            .isEqualTo(startEventResponse.getCaseDetails());
+        assertThrows(ET3Exception.class, () -> ResponseUtil.getCaseDetailsByStartEventResponse(null));
+        assertThrows(ET3Exception.class, () -> ResponseUtil.getCaseDetailsByStartEventResponse(
+            StartEventResponse.builder().build()));
+    }
+
 }

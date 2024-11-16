@@ -17,6 +17,7 @@ public final class ManageCaseRoleConstants {
     public static final String EXCEPTION_AUTHORISATION_TOKEN_REGEX = "authToken regex exception";
     public static final String EXCEPTION_INVALID_MODIFICATION_TYPE = "Invalid modification type";
     public static final String MODIFICATION_TYPE_ASSIGNMENT = "Assignment";
+    public static final String MODIFICATION_TYPE_UPDATE = "update";
     public static final String MODIFICATION_TYPE_REVOKE = "Revoke";
     public static final int FIRST_INDEX = 0;
     public static final String CASE_USER_ROLE_SUCCESSFULLY_MODIFIED = "Successfully modified case user role";
