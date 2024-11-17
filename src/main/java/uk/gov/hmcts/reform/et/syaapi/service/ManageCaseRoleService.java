@@ -133,12 +133,14 @@ public class ManageCaseRoleService {
      *                                   respondent. It also has the idam id of the respondent and the case id
      *                                   of the case that will be assigned
      * @param modificationType this value could be Assignment or Revoke.
+     * @return list of case details that are assigned to the user.
      * @throws IOException Exception when any problem occurs while calling case assignment api (/case-users)
      */
-    public void modifyUserCaseRoles(String authorisation,
-                                    ModifyCaseUserRolesRequest modifyCaseUserRolesRequest,
-                                    String modificationType)
+    public List<CaseDetails> modifyUserCaseRoles(String authorisation,
+                                                 ModifyCaseUserRolesRequest modifyCaseUserRolesRequest,
+                                                 String modificationType)
         throws IOException {
+        List<CaseDetails> caseDetailsList = new ArrayList<>();
         // Checks modifyCaseUserRolesRequest parameter if it is empty or not and it's objects.
         // If there is any problem throws ManageCaseRoleException.
         ManageCaseRoleServiceUtil.checkModifyCaseUserRolesRequest(modifyCaseUserRolesRequest);
@@ -150,10 +152,9 @@ public class ManageCaseRoleService {
         // If modification type assignment, only checks the data if assignable to the given Respondent
         // because before assigning any data we are not able to modify respondent data.
         if (ManageCaseRoleConstants.MODIFICATION_TYPE_REVOKE.equals(modificationType)) {
-            setAllRespondentsIdamIdAndDefaultLinkStatuses(
-                authorisation,
-                modifyCaseUserRolesRequest,
-                modificationType);
+            caseDetailsList = updateAllRespondentsIdamIdAndDefaultLinkStatuses(authorisation,
+                                                                               modifyCaseUserRolesRequest,
+                                                                               modificationType);
         }
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest =
             ManageCaseRoleServiceUtil.generateCaseAssignmentUserRolesRequestByModifyCaseUserRolesRequest(
@@ -165,10 +166,9 @@ public class ManageCaseRoleService {
         // Doesn't do anything after revoking user roles.
         try {
             if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
-                setAllRespondentsIdamIdAndDefaultLinkStatuses(
-                    authorisation,
-                    modifyCaseUserRolesRequest,
-                    modificationType);
+                caseDetailsList = updateAllRespondentsIdamIdAndDefaultLinkStatuses(authorisation,
+                                                                                   modifyCaseUserRolesRequest,
+                                                                                   modificationType);
             }
         } catch (Exception e) {
             if (!ManageCaseRoleServiceUtil.isCaseRoleAssignmentExceptionForSameUser(e)) {
@@ -179,6 +179,7 @@ public class ManageCaseRoleService {
             throw new ManageCaseRoleException(e);
         }
         log.info("Case assignment successfully completed");
+        return caseDetailsList;
     }
 
     private void restCallToModifyUserCaseRoles(
@@ -199,9 +200,9 @@ public class ManageCaseRoleService {
         }
     }
 
-    private void setAllRespondentsIdamIdAndDefaultLinkStatuses(String authorisation,
-                                                               ModifyCaseUserRolesRequest modifyCaseUserRolesRequest,
-                                                               String modificationType) {
+    private List<CaseDetails> updateAllRespondentsIdamIdAndDefaultLinkStatuses(
+        String authorisation, ModifyCaseUserRolesRequest modifyCaseUserRolesRequest, String modificationType) {
+        List<CaseDetails> caseDetailsList = new ArrayList<>();
         for (ModifyCaseUserRole modifyCaseUserRole : modifyCaseUserRolesRequest.getModifyCaseUserRoles()) {
             if (ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT.equals(modifyCaseUserRole.getCaseRole())) {
                 CaseDetails caseDetails =
@@ -212,9 +213,11 @@ public class ManageCaseRoleService {
                     modifyCaseUserRole.getUserId(),
                     modificationType
                 );
-                et3Service.updateSubmittedCaseWithCaseDetails(authorisation, caseDetails, UPDATE_ET3_FORM);
+                caseDetailsList.add(
+                    et3Service.updateSubmittedCaseWithCaseDetails(authorisation, caseDetails, UPDATE_ET3_FORM));
             }
         }
+        return caseDetailsList;
     }
 
     /**

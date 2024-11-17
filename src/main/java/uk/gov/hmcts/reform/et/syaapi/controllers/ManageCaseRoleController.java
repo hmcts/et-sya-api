@@ -18,11 +18,11 @@ import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ManageCaseRoleService;
 
 import java.io.IOException;
+import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import static org.springframework.http.ResponseEntity.ok;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_SUCCESSFULLY_MODIFIED;
 
 /**
  * Rest Controller to modify user case user roles.
@@ -62,19 +62,20 @@ public class ManageCaseRoleController {
     @PostMapping("/modifyCaseUserRoles")
     @Operation(summary = "Modifies user roles of the case")
     @ApiResponseGroup
-    public ResponseEntity<String> modifyCaseUserRoles(
+    public ResponseEntity<List<CaseDetails>> modifyCaseUserRoles(
         @RequestHeader(AUTHORIZATION) String authorisation,
         @NotNull @Parameter String modificationType,
         @NotNull @RequestBody ModifyCaseUserRolesRequest modifyCaseUserRolesRequest
     ) {
+        List<CaseDetails> caseDetailsList;
         try {
-            manageCaseRoleService.modifyUserCaseRoles(
+            caseDetailsList = manageCaseRoleService.modifyUserCaseRoles(
                 authorisation, manageCaseRoleService.generateModifyCaseUserRolesRequest(authorisation,
                                                                                         modifyCaseUserRolesRequest),
                 modificationType);
         } catch (Exception e) {
             throw new ManageCaseRoleException(e);
         }
-        return ok(CASE_USER_ROLE_SUCCESSFULLY_MODIFIED);
+        return ok(caseDetailsList);
     }
 }
