@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -8,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et3Request;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -18,6 +20,7 @@ import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
+import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.ET3FormService;
@@ -29,6 +32,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -137,21 +141,59 @@ public class ET3Service {
             : null;
     }
 
-
     /**
      * Updates case details with the new values for ET3 case assignment or ET3 updates.
      * @param authorisation authorisation token of the user
      * @param caseDetails case details which is updated with the given ET3 updates for respondent
      */
-    public CaseDetails updateSubmittedCaseWithCaseDetails(String authorisation,
-                                                          CaseDetails caseDetails,
-                                                          CaseEvent caseEvent) {
+    public CaseDetails updateSubmittedCaseWithCaseDetailsForCaseAssignment(String authorisation,
+                                                                           CaseDetails caseDetails,
+                                                                           CaseEvent caseEvent) {
         return caseService.triggerEvent(authorisation,
                                         caseDetails.getId().toString(),
                                         caseEvent,
                                         caseDetails.getCaseTypeId(),
                                         caseDetails.getData());
     }
+
+    /**
+     * Updates case details with the new values for ET3 case assignment or ET3 updates.
+     * @param authorisation authorisation token of the user
+     * @param startEventResponse start event response is the response that has the latest updated case details data
+     * @return CaseDetails that has the latest modified case data.
+     */
+    public CaseDetails updateSubmittedCaseWithCaseDetailsForET3FormUpdates(String authorisation,
+                                                                           StartEventResponse startEventResponse) {
+        return triggerEvent(authorisation,
+                            startEventResponse.getCaseDetails().getId().toString(),
+                            startEventResponse,
+                            startEventResponse.getCaseDetails().getCaseTypeId(),
+                            startEventResponse.getCaseDetails().getData());
+    }
+
+    /**
+     * Given a caseId, initialization of trigger event to start and submit update for case.
+     *
+     * @param authorization      is used to seek the {@link UserInfo} for request
+     * @param caseId             used to retrieve get case details
+     * @param caseType           is used to determine if the case is for ET_EnglandWales or ET_Scotland
+     * @param startEventResponse is used to determine INITIATE_CASE_DRAFT or UPDATE_CASE_DRAFT
+     * @param caseData           is used to provide the {@link Et1CaseData} in json format
+     * @return the associated {@link CaseData} if the case is updated
+     */
+    public CaseDetails triggerEvent(String authorization, String caseId, StartEventResponse startEventResponse,
+                                    String caseType, Map<String, Object> caseData) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
+        CaseData caseDataObject = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseData);
+        return caseService.submitUpdate(
+            authorization,
+            caseId,
+            caseDetailsConverter.et1ToCaseDataContent(startEventResponse, caseDataObject),
+            caseType
+        );
+    }
+
 
     /**
      * Given a user derived from the authorisation token in the request,
@@ -214,6 +256,6 @@ public class ET3Service {
             }
         }
         caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
-        return updateSubmittedCaseWithCaseDetails(authorisation, caseDetails, caseEvent);
+        return updateSubmittedCaseWithCaseDetailsForET3FormUpdates(authorisation, startEventResponse);
     }
 }

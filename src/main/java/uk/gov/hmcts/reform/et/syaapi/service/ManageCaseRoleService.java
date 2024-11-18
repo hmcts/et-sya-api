@@ -214,7 +214,9 @@ public class ManageCaseRoleService {
                     modificationType
                 );
                 caseDetailsList.add(
-                    et3Service.updateSubmittedCaseWithCaseDetails(authorisation, caseDetails, UPDATE_ET3_FORM));
+                    et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(authorisation,
+                                                                                   caseDetails,
+                                                                                   UPDATE_ET3_FORM));
             }
         }
         return caseDetailsList;

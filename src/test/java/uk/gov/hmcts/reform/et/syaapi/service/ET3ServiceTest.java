@@ -33,7 +33,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -120,16 +119,17 @@ class ET3ServiceTest {
     }
 
     @Test
-    void theUpdateSubmittedCaseWithCaseDetails() {
+    void theUpdateSubmittedCaseWithCaseDetailsForCaseAssignment() {
         CaseDetails caseDetails = new CaseTestData().getCaseDetailsWithCaseData();
         when(caseService.triggerEvent(TestConstants.TEST_SERVICE_AUTH_TOKEN,
                                       caseDetails.getId().toString(),
                                       UPDATE_ET3_FORM,
                                       caseDetails.getCaseTypeId(),
                                       caseDetails.getData())).thenReturn(caseDetails);
-        assertDoesNotThrow(() -> et3Service.updateSubmittedCaseWithCaseDetails(TestConstants.TEST_SERVICE_AUTH_TOKEN,
-                                                                               caseDetails,
-                                                                               UPDATE_ET3_FORM));
+        assertDoesNotThrow(() -> et3Service
+            .updateSubmittedCaseWithCaseDetailsForCaseAssignment(TestConstants.TEST_SERVICE_AUTH_TOKEN,
+                                                                 caseDetails,
+                                                                 UPDATE_ET3_FORM));
     }
 
     @Test
@@ -181,11 +181,11 @@ class ET3ServiceTest {
                             et3Request.getCaseSubmissionReference(),
                                      et3Request.getCaseTypeId(),
                                      UPDATE_ET3_FORM)).thenReturn(startEventResponse);
-        when(caseService.triggerEvent(eq(TestConstants.TEST_SERVICE_AUTH_TOKEN),
+        when(caseService.submitUpdate(eq(TestConstants.TEST_SERVICE_AUTH_TOKEN),
                                       eq(startEventResponse.getCaseDetails().getId().toString()),
-                                      eq(UPDATE_ET3_FORM),
-                                      eq(startEventResponse.getCaseDetails().getCaseTypeId()),
-                                      anyMap())).thenReturn(expectedCaseDetails);
+                                      any(),
+                                      eq(startEventResponse.getCaseDetails().getCaseTypeId())))
+            .thenReturn(expectedCaseDetails);
         CaseDetails actualCaseDetails = et3Service.modifyEt3Data(TestConstants.TEST_SERVICE_AUTH_TOKEN, et3Request);
         CaseData caseDataFromService = EmployeeObjectMapper
             .convertCaseDataMapToCaseDataObject(actualCaseDetails.getData());
@@ -216,11 +216,11 @@ class ET3ServiceTest {
                                      et3Request.getCaseSubmissionReference(),
                                      et3Request.getCaseTypeId(),
                                      SUBMIT_ET3_FORM)).thenReturn(startEventResponse);
-        when(caseService.triggerEvent(eq(TestConstants.TEST_SERVICE_AUTH_TOKEN),
+        when(caseService.submitUpdate(eq(TestConstants.TEST_SERVICE_AUTH_TOKEN),
                                       eq(startEventResponse.getCaseDetails().getId().toString()),
-                                      eq(SUBMIT_ET3_FORM),
-                                      eq(startEventResponse.getCaseDetails().getCaseTypeId()),
-                                      anyMap())).thenReturn(expectedCaseDetails);
+                                      any(),
+                                      eq(startEventResponse.getCaseDetails().getCaseTypeId())))
+            .thenReturn(expectedCaseDetails);
         CaseDetails actualCaseDetails = et3Service.modifyEt3Data(TestConstants.TEST_SERVICE_AUTH_TOKEN, et3Request);
         CaseData caseDataFromService = EmployeeObjectMapper
             .convertCaseDataMapToCaseDataObject(actualCaseDetails.getData());
