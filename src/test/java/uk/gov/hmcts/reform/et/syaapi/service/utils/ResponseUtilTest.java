@@ -181,6 +181,14 @@ class ResponseUtilTest {
         et3HubLinksStatuses.setEmployerDetails(SECTION_STATUS_COMPLETED);
         et3HubLinksStatuses.setConciliationAndEmployeeDetails(SECTION_STATUS_COMPLETED);
         assertThat(ResponseUtil.getResponseHubCheckYourAnswersStatus(et3HubLinksStatuses))
+            .isEqualTo(LINK_STATUS_CANNOT_START_YET);
+        et3HubLinksStatuses.setContactDetails(SECTION_STATUS_COMPLETED);
+        et3HubLinksStatuses.setPayPensionBenefitDetails(SECTION_STATUS_COMPLETED);
+        et3HubLinksStatuses.setContestClaim(SECTION_STATUS_COMPLETED);
+        et3HubLinksStatuses.setEmployerDetails(SECTION_STATUS_COMPLETED);
+        et3HubLinksStatuses.setConciliationAndEmployeeDetails(SECTION_STATUS_COMPLETED);
+        et3HubLinksStatuses.setEmployersContractClaim(SECTION_STATUS_COMPLETED);
+        assertThat(ResponseUtil.getResponseHubCheckYourAnswersStatus(et3HubLinksStatuses))
             .isEqualTo(LINK_STATUS_NOT_STARTED_YET);
     }
 

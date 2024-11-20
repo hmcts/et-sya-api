@@ -10,6 +10,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.RESPONSE
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.RESPONSE_HUB_SECTION_CONCILIATION_AND_EMPLOYEE_DETAILS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.RESPONSE_HUB_SECTION_CONTACT_DETAILS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.RESPONSE_HUB_SECTION_CONTEST_CLAIM;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.RESPONSE_HUB_SECTION_EMPLOYERS_CONTRACT_CLAIM;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.RESPONSE_HUB_SECTION_EMPLOYER_DETAILS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.RESPONSE_HUB_SECTION_PAY_PENSION_BENEFIT_DETAILS;
 
@@ -20,6 +21,7 @@ public enum ResponseHubLinks {
     CONCILIATION_AND_EMPLOYEE_DETAILS(RESPONSE_HUB_SECTION_CONCILIATION_AND_EMPLOYEE_DETAILS),
     PAY_PENSION_BENEFIT_DETAILS(RESPONSE_HUB_SECTION_PAY_PENSION_BENEFIT_DETAILS),
     CONTEST_CLAIM(RESPONSE_HUB_SECTION_CONTEST_CLAIM),
+    EMPLOYERS_CONTRACT_CLAIM(RESPONSE_HUB_SECTION_EMPLOYERS_CONTRACT_CLAIM),
     CHECK_YOR_ANSWERS(RESPONSE_HUB_SECTION_CHECK_YOR_ANSWERS);
 
     private final String name;
@@ -58,6 +60,10 @@ public enum ResponseHubLinks {
             case RESPONSE_HUB_SECTION_CONTEST_CLAIM:
                 respondent.getEt3HubLinksStatuses().setContestClaim(
                     getSectionValue(respondent.getEt3HubLinksStatuses().getContestClaim(), sectionStatus));
+                break;
+            case RESPONSE_HUB_SECTION_EMPLOYERS_CONTRACT_CLAIM:
+                respondent.getEt3HubLinksStatuses().setEmployersContractClaim(
+                    getSectionValue(respondent.getEt3HubLinksStatuses().getEmployersContractClaim(), sectionStatus));
                 break;
             case RESPONSE_HUB_SECTION_CHECK_YOR_ANSWERS:
                 respondent.getEt3HubLinksStatuses().setCheckYorAnswers(

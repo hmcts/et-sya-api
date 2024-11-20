@@ -72,6 +72,15 @@ class ResponseHubLinksTest {
             }
             assertThat(respondent.getEt3HubLinksStatuses().getContestClaim()).isEqualTo(SECTION_STATUS_COMPLETED);
         }
+        if (ResponseHubLinks.EMPLOYERS_CONTRACT_CLAIM.toString().equals(et3Request.getResponseHubLinksSectionId())) {
+            if (!SECTION_STATUS_COMPLETED.equals(respondent.getEt3HubLinksStatuses().getEmployersContractClaim())) {
+                assertThat(respondent.getEt3HubLinksStatuses().getEmployersContractClaim()).isEqualTo(
+                    SECTION_STATUS_IN_PROGRESS);
+                return;
+            }
+            assertThat(respondent.getEt3HubLinksStatuses().getEmployersContractClaim())
+                .isEqualTo(SECTION_STATUS_COMPLETED);
+        }
         if (ResponseHubLinks.EMPLOYER_DETAILS.toString().equals(et3Request.getResponseHubLinksSectionId())) {
             if (!SECTION_STATUS_COMPLETED.equals(respondent.getEt3HubLinksStatuses().getEmployerDetails())) {
                 assertThat(respondent.getEt3HubLinksStatuses().getEmployerDetails()).isEqualTo(
@@ -83,6 +92,10 @@ class ResponseHubLinksTest {
     }
 
     private static Stream<Et3Request> provideSetResponseHubLinkStatusTestData() {
+        Et3Request et3RequestUpdateHubLinkStatusesEmployersContractClaim = new CaseTestData().getEt3Request();
+        et3RequestUpdateHubLinkStatusesEmployersContractClaim.setResponseHubLinksSectionId(
+            ResponseHubLinks.EMPLOYERS_CONTRACT_CLAIM.toString()
+        );
         Et3Request et3RequestUpdateHubLinkStatusesContestClaim = new CaseTestData().getEt3Request();
         et3RequestUpdateHubLinkStatusesContestClaim.setResponseHubLinksSectionId(
             ResponseHubLinks.CONTEST_CLAIM.toString()
@@ -107,6 +120,13 @@ class ResponseHubLinksTest {
         et3RequestUpdateHubLinkStatusesPayPensionBenefitDetails.setResponseHubLinksSectionId(
             ResponseHubLinks.PAY_PENSION_BENEFIT_DETAILS.toString()
         );
+        // COMPLETED SECTION EMPLOYER'S CONTRACT CLAIM
+        Et3Request et3RequestUpdateHubLinkStatusesEmployersContractClaimCompleted = new CaseTestData().getEt3Request();
+        et3RequestUpdateHubLinkStatusesEmployersContractClaim.setResponseHubLinksSectionId(
+            ResponseHubLinks.EMPLOYERS_CONTRACT_CLAIM.toString()
+        );
+        et3RequestUpdateHubLinkStatusesEmployersContractClaimCompleted.getRespondent().getValue()
+            .getEt3HubLinksStatuses().setEmployersContractClaim(SECTION_STATUS_COMPLETED);
         // COMPLETED SECTION CONTEST CLAIM
         Et3Request et3RequestUpdateHubLinkStatusesContestClaimCompleted = new CaseTestData().getEt3Request();
         et3RequestUpdateHubLinkStatusesContestClaim.setResponseHubLinksSectionId(
@@ -151,7 +171,8 @@ class ResponseHubLinksTest {
         );
         et3RequestUpdateHubLinkStatusesPayPensionBenefitDetailsCompleted.getRespondent().getValue()
             .getEt3HubLinksStatuses().setPayPensionBenefitDetails(SECTION_STATUS_COMPLETED);
-        return Stream.of(et3RequestUpdateHubLinkStatusesContestClaim,
+        return Stream.of(et3RequestUpdateHubLinkStatusesEmployersContractClaim,
+                         et3RequestUpdateHubLinkStatusesContestClaim,
                          et3RequestUpdateHubLinkStatusesContactDetails,
                          et3RequestUpdateHubLinkStatusesCheckYourAnswers,
                          et3RequestUpdateHubLinkStatusesConciliationAndEmploymentDetails,
@@ -162,6 +183,7 @@ class ResponseHubLinksTest {
                          et3RequestUpdateHubLinkStatusesCheckYourAnswersCompleted,
                          et3RequestUpdateHubLinkStatusesConciliationAndEmploymentDetailsCompleted,
                          et3RequestUpdateHubLinkStatusesEmployerDetailsCompleted,
-                         et3RequestUpdateHubLinkStatusesPayPensionBenefitDetailsCompleted);
+                         et3RequestUpdateHubLinkStatusesPayPensionBenefitDetailsCompleted,
+                         et3RequestUpdateHubLinkStatusesEmployersContractClaimCompleted);
     }
 }

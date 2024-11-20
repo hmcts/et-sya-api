@@ -94,7 +94,8 @@ public final class ResponseUtil {
             && isET3HubLinkStatusCompleted(et3HubLinksStatuses.getContestClaim())
             && isET3HubLinkStatusCompleted(et3HubLinksStatuses.getEmployerDetails())
             && isET3HubLinkStatusCompleted(et3HubLinksStatuses.getPayPensionBenefitDetails())
-            && isET3HubLinkStatusCompleted(et3HubLinksStatuses.getConciliationAndEmployeeDetails())) {
+            && isET3HubLinkStatusCompleted(et3HubLinksStatuses.getConciliationAndEmployeeDetails())
+            && isET3HubLinkStatusCompleted(et3HubLinksStatuses.getEmployersContractClaim())) {
             return LINK_STATUS_NOT_STARTED_YET;
         }
         return LINK_STATUS_CANNOT_START_YET;
