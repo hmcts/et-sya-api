@@ -20,7 +20,6 @@ import uk.gov.hmcts.reform.et.syaapi.exception.ET3Exception;
 
 import java.time.LocalDate;
 
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_CANNOT_START_YET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_NOT_STARTED_YET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT;
@@ -135,6 +134,5 @@ public final class ResponseUtil {
             ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
         respondentSumType.setResponseReceived(EtSyaConstants.YES);
         respondentSumType.setResponseReceivedDate(LocalDate.now().toString());
-        respondentSumType.setResponseContinue(NO);
     }
 }
