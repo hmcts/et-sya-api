@@ -20,7 +20,6 @@ public final class ManageCaseRoleConstants {
     public static final String MODIFICATION_TYPE_UPDATE = "update";
     public static final String MODIFICATION_TYPE_REVOKE = "Revoke";
     public static final int FIRST_INDEX = 0;
-    public static final String CASE_USER_ROLE_SUCCESSFULLY_MODIFIED = "Successfully modified case user role";
     public static final String CASE_USER_ROLE_CREATOR = "[CREATOR]";
     public static final String CASE_USER_ROLE_DEFENDANT = "[DEFENDANT]";
     public static final String STRING_AMPERSAND = "&";
@@ -63,6 +62,7 @@ public final class ManageCaseRoleConstants {
     public static final String MODIFICATION_TYPE_SUBMIT = "submit";
     public static final String ET3_STATUS_SUBMITTED = "submitted";
     public static final String RESPONSE_STATUS_COMPLETED = "completed";
+    public static final String ET3_RESPONSE_LANGUAGE_PREFERENCE_WELSH = "Welsh";
 
     private ManageCaseRoleConstants() {
         // restrict instantiation
