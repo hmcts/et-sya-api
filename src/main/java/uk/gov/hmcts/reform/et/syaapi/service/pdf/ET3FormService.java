@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ecm.common.exceptions.PdfServiceException;
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 
 import static uk.gov.hmcts.ecm.common.constants.PdfMapperConstants.PDF_TYPE_ET3;
 import static uk.gov.hmcts.ecm.common.service.pdf.et3.ET3FormConstants.ET3_FORM_CLIENT_TYPE_RESPONDENT;
+import static uk.gov.hmcts.ecm.common.service.pdf.et3.ET3FormConstants.SUBMIT_ET3_CITIZEN;
 import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.ET3_PDF_DOC_CATEGORY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET3;
@@ -32,7 +35,8 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.ET
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.ET3_FORM_DOCUMENT_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.UNABLE_TO_UPLOAD_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfUploadService.createPdfDocumentDescriptionFromCaseData;
-import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfUploadService.createPdfDocumentNameFromCaseData;
+import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfUploadService.sanitizePartyName;
+
 
 @Slf4j
 @Service
@@ -46,6 +50,76 @@ public class ET3FormService {
     public String et3EnglishPdfTemplateSource;
     @Value("${pdf.et3Welsh}")
     public String et3WelshPdfTemplateSource;
+
+    private static final String STRING_UNDERSCORE = "_";
+
+    public static String createET3PdfDocumentNameFromCaseData(CaseData caseData,
+                                                               String documentLanguage,
+                                                               UserInfo userInfo,
+                                                               RespondentSumTypeItem selectedRespondent) {
+        String respondentName = getRespondentNameBySelectedRespondent(selectedRespondent, userInfo);
+        String caseNumber = StringUtils.EMPTY;
+        if (ObjectUtils.isNotEmpty(caseData) && StringUtils.isNotBlank(caseData.getEthosCaseReference())) {
+            caseNumber = caseData.getEthosCaseReference().replace("/", StringUtils.EMPTY);
+        }
+        return ET3 + STRING_UNDERSCORE
+            + sanitizePartyName(respondentName)
+            + STRING_UNDERSCORE
+            + sanitizePartyName(caseNumber)
+            + STRING_UNDERSCORE
+            + (ENGLISH_LANGUAGE.equals(documentLanguage) ? StringUtils.EMPTY : STRING_UNDERSCORE)
+            + documentLanguage
+            + ".pdf";
+    }
+
+    public static String getRespondentNameBySelectedRespondent(RespondentSumTypeItem selectedRespondent,
+                                                               UserInfo userInfo) {
+        if (ObjectUtils.isEmpty(selectedRespondent) || ObjectUtils.isEmpty(selectedRespondent.getValue())) {
+            return StringUtils.EMPTY;
+        }
+        if (StringUtils.isNotBlank(selectedRespondent.getValue().getResponseRespondentName())) {
+            return selectedRespondent.getValue().getResponseRespondentName();
+        }
+        if (StringUtils.isNotBlank(selectedRespondent.getValue().getRespondentOrganisation())) {
+            return selectedRespondent.getValue().getRespondentOrganisation();
+        }
+        String respondentName = getRespondentNameByUserInfo(userInfo);
+
+        if (StringUtils.isBlank(respondentName)) {
+            respondentName = getRespondentNameByRespondentFirstAndLastNames(selectedRespondent);
+        }
+        return respondentName.trim();
+    }
+
+    private static String getRespondentNameByUserInfo(UserInfo userInfo) {
+        if (ObjectUtils.isEmpty(userInfo)) {
+            return StringUtils.EMPTY;
+        }
+        String respondentName = StringUtils.EMPTY;
+        if (StringUtils.isNotBlank(userInfo.getGivenName())) {
+            respondentName = userInfo.getGivenName();
+        }
+        if (ObjectUtils.isNotEmpty(userInfo) && StringUtils.isNotBlank(userInfo.getFamilyName())) {
+            respondentName = respondentName + StringUtils.SPACE + userInfo.getFamilyName();
+        }
+        return respondentName.trim();
+    }
+
+    private static String getRespondentNameByRespondentFirstAndLastNames(RespondentSumTypeItem respondent) {
+        if (ObjectUtils.isEmpty(respondent)) {
+            return StringUtils.EMPTY;
+        }
+        String respondentName = StringUtils.EMPTY;
+        if (StringUtils.isNotBlank(respondent.getValue().getRespondentFirstName())) {
+            respondentName = respondent.getValue().getRespondentFirstName();
+        }
+        if (StringUtils.isNotBlank(respondent.getValue().getRespondentLastName())) {
+            respondentName = respondentName
+                + StringUtils.SPACE
+                + respondent.getValue().getRespondentLastName();
+        }
+        return respondentName.trim();
+    }
 
     public void generateET3WelshAndEnglishForms(String authorisation,
                                                 CaseData caseData,
@@ -63,12 +137,13 @@ public class ET3FormService {
                 caseData,
                 et3EnglishPdfTemplateSource,
                 PDF_TYPE_ET3,
-                ET3_FORM_CLIENT_TYPE_RESPONDENT
+                ET3_FORM_CLIENT_TYPE_RESPONDENT,
+                SUBMIT_ET3_CITIZEN
             );
             UserInfo userInfo = idamClient.getUserInfo(authorisation);
             PdfDecodedMultipartFile englishET3Form = new PdfDecodedMultipartFile(
                 englishPdfFileByteArray,
-                createPdfDocumentNameFromCaseData(caseData, ENGLISH_LANGUAGE, userInfo, ET3),
+                createET3PdfDocumentNameFromCaseData(caseData, ENGLISH_LANGUAGE, userInfo, selectedRespondent),
                 PDF_FILE_TIKA_CONTENT_TYPE,
                 createPdfDocumentDescriptionFromCaseData(caseData)
             );
@@ -91,11 +166,12 @@ public class ET3FormService {
                     caseData,
                     et3WelshPdfTemplateSource,
                     PDF_TYPE_ET3,
-                    ET3_FORM_CLIENT_TYPE_RESPONDENT
+                    ET3_FORM_CLIENT_TYPE_RESPONDENT,
+                    SUBMIT_ET3_CITIZEN
                 );
                 PdfDecodedMultipartFile welshET3Form = new PdfDecodedMultipartFile(
                     welshPdfFileByteArray,
-                    createPdfDocumentNameFromCaseData(caseData, WELSH_LANGUAGE, userInfo, ET3),
+                    createET3PdfDocumentNameFromCaseData(caseData, WELSH_LANGUAGE, userInfo, selectedRespondent),
                     PDF_FILE_TIKA_CONTENT_TYPE,
                     createPdfDocumentDescriptionFromCaseData(caseData)
                 );

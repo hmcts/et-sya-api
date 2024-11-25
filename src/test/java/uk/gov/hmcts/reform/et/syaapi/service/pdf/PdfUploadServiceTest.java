@@ -28,7 +28,9 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.ecm.common.service.pdf.et3.ET3FormConstants.SUBMIT_ET3_CITIZEN;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.SAMPLE_BYTE_ARRAY;
 
@@ -55,7 +57,8 @@ class PdfUploadServiceTest {
         pdfUploadService = new PdfUploadService(pdfService, documentGenerationService);
         pdfUploadService.englishPdfTemplateSource = "ET1_0224.pdf";
         pdfUploadService.welshPdfTemplateSource = "CY_ET1_0224.pdf";
-        when(pdfService.convertCaseToPdf(any(), anyString(), anyString(), anyString())).thenReturn(SAMPLE_BYTE_ARRAY);
+        when(pdfService.convertCaseToPdf(any(), anyString(), anyString(), anyString(), eq(SUBMIT_ET3_CITIZEN)))
+            .thenReturn(SAMPLE_BYTE_ARRAY);
     }
 
     @Test

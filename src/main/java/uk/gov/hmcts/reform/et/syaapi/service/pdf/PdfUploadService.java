@@ -34,6 +34,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static uk.gov.hmcts.ecm.common.constants.PdfMapperConstants.PDF_TYPE_ET1;
 import static uk.gov.hmcts.ecm.common.service.pdf.et3.ET3FormConstants.ET3_FORM_CLIENT_TYPE_RESPONDENT;
+import static uk.gov.hmcts.ecm.common.service.pdf.et3.ET3FormConstants.SUBMIT_ET3_CITIZEN;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1;
@@ -118,7 +119,7 @@ public class PdfUploadService {
         List<PdfDecodedMultipartFile> files = new ArrayList<>();
         try {
             byte[] pdfData = pdfService.convertCaseToPdf(caseData, this.englishPdfTemplateSource, PDF_TYPE_ET1,
-                                                         ET3_FORM_CLIENT_TYPE_RESPONDENT);
+                                                         ET3_FORM_CLIENT_TYPE_RESPONDENT, SUBMIT_ET3_CITIZEN);
             if (ObjectUtils.isEmpty(pdfData)) {
                 throw new PdfServiceException(
                     "Failed to convert to PDF. English Template Not Found",
@@ -139,7 +140,7 @@ public class PdfUploadService {
         try {
             if (WELSH_LANGUAGE.equals(GenericServiceUtil.findClaimantLanguage(caseData))) {
                 byte[] pdfData = pdfService.convertCaseToPdf(caseData, this.welshPdfTemplateSource, PDF_TYPE_ET1,
-                                                             ET3_FORM_CLIENT_TYPE_RESPONDENT);
+                                                             ET3_FORM_CLIENT_TYPE_RESPONDENT, SUBMIT_ET3_CITIZEN);
                 if (ObjectUtils.isEmpty(pdfData)) {
                     throw new PdfServiceException("Failed to convert to PDF. Welsh Template Not Found",
                                                   new NullPointerException());
@@ -270,7 +271,7 @@ public class PdfUploadService {
         );
     }
 
-    private static String sanitizePartyName(String partyName) {
+    protected static String sanitizePartyName(String partyName) {
         if (isNullOrEmpty(partyName)) {
             return "";
         }
