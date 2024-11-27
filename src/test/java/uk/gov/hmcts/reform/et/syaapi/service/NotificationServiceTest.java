@@ -412,7 +412,7 @@ class NotificationServiceTest {
             mockedServiceUtil.verify(
                 () -> GenericServiceUtil.logException(
                     anyString(),
-                    eq(null),
+                    eq("1646225213651590"),
                     anyString(),
                     anyString(),
                     anyString()

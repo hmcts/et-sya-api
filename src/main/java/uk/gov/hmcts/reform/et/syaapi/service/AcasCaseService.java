@@ -156,8 +156,7 @@ public class AcasCaseService {
                                                        CaseData caseData) {
         retrieveRespondentDocuments(authorisation, documents, caseData);
 
-        List<DocumentTypeItem> documentTypeItemList = new ArrayList<>();
-        documentTypeItemList.addAll(getDocumentCollectionDocs(caseData));
+        List<DocumentTypeItem> documentTypeItemList = new ArrayList<>(getDocumentCollectionDocs(caseData));
 
         if (caseData.getClaimantRequests() != null
             && caseData.getClaimantRequests().getClaimDescriptionDocument() != null) {
@@ -272,7 +271,7 @@ public class AcasCaseService {
         List<CaseDetails> searchResults = searchEnglandScotlandCases(authorisation, query);
         List<CaseData> caseDataList = new ArrayList<>();
         for (CaseDetails caseDetails : searchResults) {
-            caseDataList.add(EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData()));
+            caseDataList.add(EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData()));
         }
         return caseDataList;
     }
