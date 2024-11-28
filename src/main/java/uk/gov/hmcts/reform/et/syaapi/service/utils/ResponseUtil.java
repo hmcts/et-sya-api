@@ -7,23 +7,17 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et3Request;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
-import uk.gov.hmcts.et.common.model.ccd.types.et3links.ET3HubLinksStatuses;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
-import uk.gov.hmcts.reform.et.syaapi.constants.CaseDetailsLinks;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
 import uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants;
-import uk.gov.hmcts.reform.et.syaapi.constants.ResponseHubLinks;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.exception.ET3Exception;
 
 import java.time.LocalDate;
 
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_CANNOT_START_YET;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_NOT_STARTED_YET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.SECTION_STATUS_COMPLETED;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_ET3_FORM;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_ET3_FORM;
 
@@ -83,38 +77,6 @@ public final class ResponseUtil {
             }
         }
         throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_RESPONDENT_NOT_FOUND));
-    }
-
-    public static String getResponseHubCheckYourAnswersStatus(ET3HubLinksStatuses et3HubLinksStatuses) {
-        if (ObjectUtils.isEmpty(et3HubLinksStatuses)) {
-            return LINK_STATUS_CANNOT_START_YET;
-        }
-        if (isET3HubLinkStatusCompleted(et3HubLinksStatuses.getContactDetails())
-            && isET3HubLinkStatusCompleted(et3HubLinksStatuses.getContestClaim())
-            && isET3HubLinkStatusCompleted(et3HubLinksStatuses.getEmployerDetails())
-            && isET3HubLinkStatusCompleted(et3HubLinksStatuses.getPayPensionBenefitDetails())
-            && isET3HubLinkStatusCompleted(et3HubLinksStatuses.getConciliationAndEmployeeDetails())
-            && isET3HubLinkStatusCompleted(et3HubLinksStatuses.getEmployersContractClaim())) {
-            return LINK_STATUS_NOT_STARTED_YET;
-        }
-        return LINK_STATUS_CANNOT_START_YET;
-    }
-
-    private static boolean isET3HubLinkStatusCompleted(String status) {
-        return StringUtils.isNotBlank(status) && SECTION_STATUS_COMPLETED.equals(status);
-    }
-
-    public static void setLinkStatuses(RespondentSumType respondentSumType, Et3Request et3Request) {
-        ResponseHubLinks.setResponseHubLinkStatus(
-            respondentSumType,
-            et3Request.getResponseHubLinksSectionId(),
-            et3Request.getResponseHubLinksSectionStatus());
-        CaseDetailsLinks.setCaseDetailsLinkStatus(
-            respondentSumType,
-            et3Request.getCaseDetailsLinksSectionId(),
-            et3Request.getCaseDetailsLinksSectionStatus());
-        respondentSumType.getEt3HubLinksStatuses()
-            .setCheckYorAnswers(getResponseHubCheckYourAnswersStatus(respondentSumType.getEt3HubLinksStatuses()));
     }
 
     public static CaseEvent findCaseEventByRequestType(String requestType) {

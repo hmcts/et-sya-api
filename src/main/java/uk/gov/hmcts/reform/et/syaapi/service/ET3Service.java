@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.ET3FormService;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.HubLinksUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -245,7 +246,7 @@ public class ET3Service {
         RespondentSumTypeItem selectedRespondent =
             findSelectedRespondentByRespondentSumTypeItem(caseData, et3Request.getRespondent());
         copyProperties(et3Request.getRespondent(), selectedRespondent);
-        ResponseUtil.setLinkStatuses(selectedRespondent.getValue(), et3Request);
+        HubLinksUtil.setLinkStatuses(caseData, selectedRespondent.getValue(), et3Request);
         if (MODIFICATION_TYPE_SUBMIT.equals(et3Request.getRequestType())) {
             et3FormService.generateET3WelshAndEnglishForms(authorisation, caseData, selectedRespondent);
             ResponseUtil.setET3SubmitValues(selectedRespondent.getValue());

@@ -12,7 +12,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et3Request;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.types.et3links.ET3HubLinksStatuses;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.exception.ET3Exception;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
@@ -23,12 +22,9 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_CANNOT_START_YET;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_NOT_STARTED_YET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_UPDATE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.SECTION_STATUS_COMPLETED;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.EXCEPTION_AUTHORISATION_TOKEN_BLANK;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.EXCEPTION_ET3_CASE_TYPE_BLANK;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.EXCEPTION_ET3_REQUEST_EMPTY;
@@ -166,30 +162,6 @@ class ResponseUtilTest {
             caseDataValid, respondentSumTypeItemInValidIdamId,
             caseDataValid, respondentSumTypeItemValid,
             caseDataValid, respondentSumTypeItemInvalidCcdId));
-    }
-
-    @Test
-    void theSetCheckYourAnswersSection() {
-        assertThat(ResponseUtil.getResponseHubCheckYourAnswersStatus(null))
-            .isEqualTo(LINK_STATUS_CANNOT_START_YET);
-        ET3HubLinksStatuses et3HubLinksStatuses = new ET3HubLinksStatuses();
-        assertThat(ResponseUtil.getResponseHubCheckYourAnswersStatus(et3HubLinksStatuses))
-            .isEqualTo(LINK_STATUS_CANNOT_START_YET);
-        et3HubLinksStatuses.setContactDetails(SECTION_STATUS_COMPLETED);
-        et3HubLinksStatuses.setPayPensionBenefitDetails(SECTION_STATUS_COMPLETED);
-        et3HubLinksStatuses.setContestClaim(SECTION_STATUS_COMPLETED);
-        et3HubLinksStatuses.setEmployerDetails(SECTION_STATUS_COMPLETED);
-        et3HubLinksStatuses.setConciliationAndEmployeeDetails(SECTION_STATUS_COMPLETED);
-        assertThat(ResponseUtil.getResponseHubCheckYourAnswersStatus(et3HubLinksStatuses))
-            .isEqualTo(LINK_STATUS_CANNOT_START_YET);
-        et3HubLinksStatuses.setContactDetails(SECTION_STATUS_COMPLETED);
-        et3HubLinksStatuses.setPayPensionBenefitDetails(SECTION_STATUS_COMPLETED);
-        et3HubLinksStatuses.setContestClaim(SECTION_STATUS_COMPLETED);
-        et3HubLinksStatuses.setEmployerDetails(SECTION_STATUS_COMPLETED);
-        et3HubLinksStatuses.setConciliationAndEmployeeDetails(SECTION_STATUS_COMPLETED);
-        et3HubLinksStatuses.setEmployersContractClaim(SECTION_STATUS_COMPLETED);
-        assertThat(ResponseUtil.getResponseHubCheckYourAnswersStatus(et3HubLinksStatuses))
-            .isEqualTo(LINK_STATUS_NOT_STARTED_YET);
     }
 
     @ParameterizedTest

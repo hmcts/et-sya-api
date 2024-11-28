@@ -2,7 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.constants;
 
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.HubLinksUtil;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.SECTION_STATUS_COMPLETED;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.SECTION_STATUS_IN_PROGRESS;
@@ -70,8 +70,9 @@ public enum ResponseHubLinks {
             case RESPONSE_HUB_SECTION_CHECK_YOR_ANSWERS:
                 respondent.getEt3HubLinksStatuses().setCheckYorAnswers(
                     getSectionValue(respondent.getEt3HubLinksStatuses().getCheckYorAnswers(),
-                                    ResponseUtil
-                                        .getResponseHubCheckYourAnswersStatus(respondent.getEt3HubLinksStatuses())));
+                                    HubLinksUtil
+                                        .getResponseHubCheckYourAnswersStatus(null,
+                                                                              respondent.getEt3HubLinksStatuses())));
                 break;
             default: log.info(INVALID_RESPONSE_HUB_SECTION_ID);
         }
