@@ -35,6 +35,13 @@ public final class ManageCaseRoleConstants {
     public static final String LINK_STATUS_NOT_STARTED_YET = "notStartedYet";
     public static final String ET3_STATUS_IN_PROGRESS = "inProgress";
     public static final String SECTION_STATUS_COMPLETED = "completed";
+    public static final String SECTION_STATUS_IN_PROGRESS = "inProgress";
+    // This status is implemented as a fake status. Normally
+    // if any section status is completed we don't change it is status
+    // But if on CYA(Check Your Answers) page if it is selected as No,
+    // to section completed question, we update to inProgress again.
+    // To have that discrimination, we use this option.
+    public static final String SECTION_STATUS_IN_PROGRESS_CYA = "inProgressCya";
     public static final String LINK_STATUS_NOT_VIEWED_YET = "notViewedYet";
     public static final String LINK_STATUS_NOT_AVAILABLE_YET = "notAvailableYet";
     public static final String LINK_STATUS_OPTIONAL = "optional";

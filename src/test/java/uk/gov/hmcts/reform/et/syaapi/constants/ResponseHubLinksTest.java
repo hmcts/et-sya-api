@@ -11,10 +11,10 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_CANNOT_START_YET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.SECTION_STATUS_COMPLETED;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.SECTION_STATUS_IN_PROGRESS;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.SECTION_STATUS_IN_PROGRESS_CYA;
 
 class ResponseHubLinksTest {
-
-    private static final String SECTION_STATUS_IN_PROGRESS = "inProgress";
 
     @ParameterizedTest
     @MethodSource("provideSetResponseHubLinkStatusTestData")
@@ -169,8 +169,14 @@ class ResponseHubLinksTest {
         et3RequestUpdateHubLinkStatusesPayPensionBenefitDetailsCompleted.setResponseHubLinksSectionId(
             ResponseHubLinks.PAY_PENSION_BENEFIT_DETAILS.toString()
         );
-        et3RequestUpdateHubLinkStatusesPayPensionBenefitDetailsCompleted.getRespondent().getValue()
-            .getEt3HubLinksStatuses().setPayPensionBenefitDetails(SECTION_STATUS_COMPLETED);
+        // IN PROGRESS CYA PAY PENSION BENEFIT DETAILS
+        Et3Request et3RequestUpdateHubLinkStatusesPayPensionBenefitDetailsInProgressCya =
+            new CaseTestData().getEt3Request();
+        et3RequestUpdateHubLinkStatusesPayPensionBenefitDetailsInProgressCya.setResponseHubLinksSectionId(
+            ResponseHubLinks.PAY_PENSION_BENEFIT_DETAILS.toString()
+        );
+        et3RequestUpdateHubLinkStatusesPayPensionBenefitDetailsInProgressCya.getRespondent().getValue()
+            .getEt3HubLinksStatuses().setPayPensionBenefitDetails(SECTION_STATUS_IN_PROGRESS_CYA);
         return Stream.of(et3RequestUpdateHubLinkStatusesEmployersContractClaim,
                          et3RequestUpdateHubLinkStatusesContestClaim,
                          et3RequestUpdateHubLinkStatusesContactDetails,
@@ -184,6 +190,7 @@ class ResponseHubLinksTest {
                          et3RequestUpdateHubLinkStatusesConciliationAndEmploymentDetailsCompleted,
                          et3RequestUpdateHubLinkStatusesEmployerDetailsCompleted,
                          et3RequestUpdateHubLinkStatusesPayPensionBenefitDetailsCompleted,
-                         et3RequestUpdateHubLinkStatusesEmployersContractClaimCompleted);
+                         et3RequestUpdateHubLinkStatusesEmployersContractClaimCompleted,
+                         et3RequestUpdateHubLinkStatusesPayPensionBenefitDetailsInProgressCya);
     }
 }

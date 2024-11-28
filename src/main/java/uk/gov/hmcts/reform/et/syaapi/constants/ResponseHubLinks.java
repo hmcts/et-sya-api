@@ -5,6 +5,8 @@ import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.SECTION_STATUS_COMPLETED;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.SECTION_STATUS_IN_PROGRESS;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.SECTION_STATUS_IN_PROGRESS_CYA;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.INVALID_RESPONSE_HUB_SECTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.RESPONSE_HUB_SECTION_CHECK_YOR_ANSWERS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.RESPONSE_HUB_SECTION_CONCILIATION_AND_EMPLOYEE_DETAILS;
@@ -78,6 +80,9 @@ public enum ResponseHubLinks {
     private static String getSectionValue(String existingValue, String newValue) {
         if (!SECTION_STATUS_COMPLETED.equals(existingValue)) {
             return newValue;
+        }
+        if (SECTION_STATUS_IN_PROGRESS_CYA.equals(newValue)) {
+            return SECTION_STATUS_IN_PROGRESS;
         }
         return existingValue;
     }
