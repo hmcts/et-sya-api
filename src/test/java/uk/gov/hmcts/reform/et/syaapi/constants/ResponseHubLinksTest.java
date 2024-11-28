@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.constants;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.et.common.model.ccd.Et3Request;
@@ -192,5 +193,15 @@ class ResponseHubLinksTest {
                          et3RequestUpdateHubLinkStatusesPayPensionBenefitDetailsCompleted,
                          et3RequestUpdateHubLinkStatusesEmployersContractClaimCompleted,
                          et3RequestUpdateHubLinkStatusesPayPensionBenefitDetailsInProgressCya);
+    }
+
+    @Test
+    void theGetSectionValue() {
+        assertThat(ResponseHubLinks.getSectionValue(SECTION_STATUS_COMPLETED, SECTION_STATUS_IN_PROGRESS))
+            .isEqualTo(SECTION_STATUS_COMPLETED);
+        assertThat(ResponseHubLinks.getSectionValue(SECTION_STATUS_COMPLETED, SECTION_STATUS_IN_PROGRESS_CYA))
+            .isEqualTo(SECTION_STATUS_IN_PROGRESS);
+        assertThat(ResponseHubLinks.getSectionValue(SECTION_STATUS_IN_PROGRESS, SECTION_STATUS_IN_PROGRESS_CYA))
+            .isEqualTo(SECTION_STATUS_IN_PROGRESS);
     }
 }

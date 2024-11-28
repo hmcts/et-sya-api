@@ -78,12 +78,12 @@ public enum ResponseHubLinks {
         }
     }
 
-    private static String getSectionValue(String existingValue, String newValue) {
-        if (!SECTION_STATUS_COMPLETED.equals(existingValue)) {
-            return newValue;
-        }
+    public static String getSectionValue(String existingValue, String newValue) {
         if (SECTION_STATUS_IN_PROGRESS_CYA.equals(newValue)) {
             return SECTION_STATUS_IN_PROGRESS;
+        }
+        if (!SECTION_STATUS_COMPLETED.equals(existingValue)) {
+            return newValue;
         }
         return existingValue;
     }
