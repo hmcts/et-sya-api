@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -37,6 +36,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.beans.BeanUtils.copyProperties;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_SUBMIT;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.findSelectedRespondentByRespondentSumTypeItem;
@@ -66,7 +66,7 @@ public class ET3Service {
      * @return case details for the given submission reference and case type id.
      */
     public CaseDetails findCaseBySubmissionReference(String submissionReference) {
-        if (StringUtils.isBlank(submissionReference)) {
+        if (isBlank(submissionReference)) {
             throw new RuntimeException(ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS);
         }
         CaseDetails caseDetails = ccdApi.getCase(adminUserService.getAdminUserToken(),
@@ -80,7 +80,7 @@ public class ET3Service {
     }
 
     public CaseDetails findCaseByIdAndAcceptedState(String id) {
-        if (StringUtils.isBlank(id)) {
+        if (isBlank(id)) {
             throw new RuntimeException(ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS);
         }
 
@@ -121,7 +121,7 @@ public class ET3Service {
      * @return case details for the given submission reference and case type id.
      */
     public CaseDetails findCaseByEthosCaseReference(String ethosCaseReference) {
-        if (StringUtils.isBlank(ethosCaseReference)) {
+        if (isBlank(ethosCaseReference)) {
             throw new RuntimeException(ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS);
         }
         String elasticSearchQuery = ElasticSearchQueryBuilder.buildByEthosCaseReference(ethosCaseReference);
@@ -248,13 +248,15 @@ public class ET3Service {
         copyProperties(et3Request.getRespondent(), selectedRespondent);
         HubLinksUtil.setLinkStatuses(caseData, selectedRespondent.getValue(), et3Request);
         if (MODIFICATION_TYPE_SUBMIT.equals(et3Request.getRequestType())) {
+            if (isBlank(selectedRespondent.getValue().getResponseRespondentEmail())) {
+                UserInfo userInfo = idamClient.getUserInfo(authorisation);
+                selectedRespondent.getValue().setResponseRespondentEmail(userInfo.getSub());
+            }
             et3FormService.generateET3WelshAndEnglishForms(authorisation, caseData, selectedRespondent);
             ResponseUtil.setET3SubmitValues(selectedRespondent.getValue());
-            if (!StringUtils.isBlank(selectedRespondent.getValue().getRespondentEmail())) {
-                notificationService.sendEt3ConfirmationEmail(selectedRespondent.getValue().getRespondentEmail(),
-                                                             caseData,
-                                                             caseDetails.getId().toString());
-            }
+            notificationService.sendEt3ConfirmationEmail(selectedRespondent.getValue().getResponseRespondentEmail(),
+                                                         caseData,
+                                                         caseDetails.getId().toString());
         }
         caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
         return updateSubmittedCaseWithCaseDetailsForET3FormUpdates(authorisation, startEventResponse);
