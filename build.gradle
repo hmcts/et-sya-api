@@ -279,7 +279,7 @@ dependencies {
   testImplementation group: 'nl.jqno.equalsverifier', name: 'equalsverifier', version: '3.17.4'
   testImplementation('org.assertj:assertj-core:3.26.3')
   testImplementation group: 'io.rest-assured', name: 'rest-assured'
-  testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit', version: '4.0.0'
+  testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit', version: '4.1.0'
 
   testImplementation 'com.github.hmcts:fortify-client:1.4.5:all'
 
