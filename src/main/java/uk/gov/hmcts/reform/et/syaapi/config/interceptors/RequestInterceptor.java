@@ -18,8 +18,6 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @Component
 public class RequestInterceptor implements HandlerInterceptor {
 
-    private static final String FAILED_TO_VERIFY_TOKEN = "Failed to verify the following token: {}";
-
     private final VerifyTokenService verifyTokenService;
 
     @Autowired
@@ -39,7 +37,6 @@ public class RequestInterceptor implements HandlerInterceptor {
         String authorizationHeader = requestServlet.getHeader(AUTHORIZATION);
         boolean jwtVerified = verifyTokenService.verifyTokenSignature(authorizationHeader);
         if (!jwtVerified) {
-            log.error(FAILED_TO_VERIFY_TOKEN, authorizationHeader);
             throw new UnAuthorisedServiceException("Failed to verify bearer token.");
         }
         return true;
