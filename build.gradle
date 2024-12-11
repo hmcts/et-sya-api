@@ -203,7 +203,7 @@ ext {
   reformLoggingVersion = "5.1.9"
   log4JVersion = "2.24.2"
 }
-
+dependencies {
   implementation group: 'com.github.hmcts', name: 'et-data-model', version:'3.18.21'
   implementation('com.github.hmcts:et-common:2.5.1') { transitive = false }
   implementation group: 'uk.gov.dwp.regex', name: 'postcode-validation', version: '1.1.0'
