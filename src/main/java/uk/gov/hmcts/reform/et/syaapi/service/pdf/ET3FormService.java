@@ -50,8 +50,6 @@ public class ET3FormService {
     @Value("${pdf.et3Welsh}")
     public String et3WelshPdfTemplateSource;
 
-    private static final String STRING_UNDERSCORE = "_";
-
     public static String createET3PdfDocumentNameFromCaseData(CaseData caseData,
                                                                String documentLanguage,
                                                                UserInfo userInfo,
@@ -61,13 +59,11 @@ public class ET3FormService {
         if (ObjectUtils.isNotEmpty(caseData) && StringUtils.isNotBlank(caseData.getEthosCaseReference())) {
             caseNumber = caseData.getEthosCaseReference().replace("/", StringUtils.EMPTY);
         }
-        return ET3 + STRING_UNDERSCORE
+        return ET3 + StringUtils.SPACE
             + sanitizePartyName(respondentName)
-            + STRING_UNDERSCORE
+            + StringUtils.SPACE
             + sanitizePartyName(caseNumber)
-            + STRING_UNDERSCORE
-            + (ENGLISH_LANGUAGE.equals(documentLanguage) ? StringUtils.EMPTY : STRING_UNDERSCORE)
-            + documentLanguage
+            + (ENGLISH_LANGUAGE.equals(documentLanguage) ? StringUtils.EMPTY : StringUtils.SPACE + documentLanguage)
             + ".pdf";
     }
 

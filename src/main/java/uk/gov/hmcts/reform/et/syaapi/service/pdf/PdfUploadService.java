@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -77,11 +78,11 @@ public class PdfUploadService {
         if (isNullOrEmpty(claimantLastName)) {
             claimantLastName = userInfo.getFamilyName();
         }
-        return documentType + "-"
+        return documentType + StringUtils.SPACE
             + sanitizePartyName(claimantFirstName)
-            + "_"
+            + StringUtils.SPACE
             + sanitizePartyName(claimantLastName)
-            + (ENGLISH_LANGUAGE.equals(documentLanguage) ? "" : "_" + documentLanguage)
+            + (ENGLISH_LANGUAGE.equals(documentLanguage) ? "" : StringUtils.SPACE + documentLanguage)
             + ".pdf";
     }
 
