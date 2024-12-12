@@ -81,7 +81,7 @@ public class PdfUploadService {
         }
         return documentType + StringUtils.SPACE + STRING_DASH + StringUtils.SPACE
             + sanitizePartyName(claimantFirstName)
-            + StringUtils.SPACE + STRING_DASH + StringUtils.SPACE
+            + StringUtils.SPACE
             + sanitizePartyName(claimantLastName)
             + (ENGLISH_LANGUAGE.equals(documentLanguage)
             ? ""
