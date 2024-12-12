@@ -34,13 +34,15 @@ public final class TestConstants {
     public static final String TEST_FIRST_NAME = "Joe";
     public static final String TEST_SURNAME = "Bloggs";
     public static final String TEST_NAME = "Name";
-    public static final String CASE_ID = "TEST_CASE_ID";
+    public static final String CASE_ID = "1234567890123456";
     public static final String TEST_EMAIL = "TEST@GMAIL.COM";
     public static final String TEST_PDF_FILE_ORIGINAL_NAME = "Test pdf file original name";
     public static final String TEST_PDF_FILE_CONTENT_TYPE = "application/pdf";
     public static final String TEST_PDF_FILE_DOCUMENT_DESCRIPTION = "Test pdf file docuent description";
     public static final String TEST_TEMPLATE_API_KEY =
         "mtd_test-002d2170-e381-4545-8251-5e87dab724e7-ac8ef473-1f28-4bfc-8906-9babd92dc5d8";
+    public static final String TEST_CASE_TYPE_ID_ENGLAND_WALES = "ET_EnglandWales";
+    public static final String TEST_CASE_TYPE_ID_SCOTLAND = "ET_Scotland";
     public static final String SUBMIT_CASE_CONFIRMATION_EMAIL_TEMPLATE_ID = "af0b26b7-17b6-4643-bbdc-e296d11e7b0c";
     public static final String WELSH_DUMMY_PDF_TEMPLATE_ID = "1234_welsh";
     public static final String UUID_DUMMY_STRING = "8835039a-3544-439b-a3da-882490d959eb";
@@ -53,6 +55,9 @@ public final class TestConstants {
         + "https://www.gov.uk/log-in-register-hmrc-online-services/123456722/?lng=cy.";
     public static final String SEND_NOTIFICATION_NO_LANGUAGE_RESPONSE_BODY = "Dear test, "
         + "Please see your detail as 123456789. Regards, ET Team.";
+    public static final String TEST_CASE_SUBMISSION_REFERENCE1 = "1234567890123456";
+    public static final String TEST_RESPONDENT_SUM_TYPE_ITEM_VALID_CCD_ID = "123456789";
+    public static final String TEST_CASE_SUBMISSION_REFERENCE2 = "9876543210987654";
     public static final String UPLOADED_DOCUMENT_NAME = "Uploaded Document Name";
     public static final String UPLOADED_DOCUMENT_BINARY_URL = "https://uploaded.document.binary.url";
     public static final String UPLOADED_DOCUMENT_URL = "https://uploaded.document.url";
@@ -71,6 +76,68 @@ public final class TestConstants {
     public static final String NO = "No";
     public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
     public static final String TEST_CASE_DATA_JSON_FILE = "requests/caseData.json";
+    public static final String TEST_CASE_USER_ROLE_CREATOR = "[CREATOR]";
+    public static final String TEST_CASE_USER_ROLE_DEFENDANT = "[DEFENDANT]";
+    public static final String TEST_CASE_USER_ROLE_INVALID = "[INVALID]";
+    public static final String TEST_RESPONDENT_NAME = "Respondent Name";
+    public static final String TEST_RESPONDENT_IDAM_ID_1 = "test_respondent_idam_id_1";
+    public static final String TEST_RESPONDENT_IDAM_ID_2 = "test_respondent_idam_id_2";
+    public static final String TEST_RESPONDENT_COLLECTION_KEY = "respondentCollection";
+    public static final String TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_ID_KEY = "id";
+    public static final String TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_ID_VALUE = "test_respondent_sum_type_item_id";
+    public static final String TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_VALUE_KEY = "value";
+    public static final String POST_SERVICE_MODIFY_ET3_DATA_URL = "/et3/modifyEt3Data";
+    public static final String GET_SERVICE_FIND_CASE_FOR_ROLE_MODIFICATION_URL
+        = "/et3/findCaseByEthosCaseReference";
+    public static final String PARAMETER_NAME_ETHOS_CASE_REFERENCE = "ethosCaseReference";
+
+    public static final String TEST_EXCEPTION_INVALID_MODIFICATION_TYPE =
+        "java.lang.Exception: Invalid modification type";
+    public static final String TEST_ET3_SERVICE_EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS =
+        "Case details not found because caseId or caseTypeId value is empty";
+    public static final String TEST_ET3_SERVICE_EXCEPTION_CASE_DETAILS_NOT_FOUND =
+        "Case details not found with the given caseId";
+    public static final String TEST_ET3_SERVICE_EXCEPTION_UNABLE_TO_GET_USER_INFO =
+        "java.lang.Exception: Unable to get user info for listing user cases";
+    public static final String  TEST_RESPONDENT_UTIL_EXCEPTION_CASE_DATA_NOT_FOUND = "doesn't have case data values";
+    public static final String TEST_RESPONDENT_UTIL_EXCEPTION_EMPTY_RESPONDENT_COLLECTION =
+        "Unable to add respondent idam id because there is not respondent defined in the case case with id,";
+    public static final String TEST_RESPONDENT_UTIL_EXCEPTION_RESPONDENT_NOT_FOUND_WITH_RESPONDENT_NAME =
+        "Unable to add respondent idam id because there isn't any respondent with name";
+    public static final String TEST_RESPONDENT_UTIL_EXCEPTION_IDAM_ID_ALREADY_EXISTS =
+        "Unable to add respondent idam id because it has already been assigned to the respondent";
+    public static final String TEST_RESPONDENT_UTIL_EXCEPTION_INVALID_IDAM_ID = "Invalid Idam ID";
+    public static final String TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET = "notStartedYet";
+    public static final String TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_VIEWED_YET = "notViewedYet";
+    public static final String TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET = "notAvailableYet";
+    public static final String TEST_RESPONDENT_UTIL_LINK_STATUS_OPTIONAL = "optional";
+    public static final String TEST_RESPONDENT_UTIL_LINK_STATUS_CANNOT_START_YET = "cannotStartYet";
+    public static final String TEST_MODIFICATION_TYPE_ASSIGNMENT = "Assignment";
+    public static final String TEST_MODIFICATION_TYPE_REVOKE = "Revoke";
+    public static final String TEST_JURISDICTION_ID_EMPLOYMENT = "EMPLOYMENT";
+    public static final String TEST_ETHOS_CASE_REFERENCE = "6000032/2024";
+    public static final String EXPECTED_QUERY_BY_ETHOS_CASE_REFERENCE = "{\"size\":1,\"query\":{\"bool\":{\"must\":"
+        + "[{\"match\":{\"data.ethosCaseReference.keyword\":{\"query\":\"6000032/2024\"}}}],\"boost\":1.0}}}";
+    public static final String EXPECTED_QUERY_BY_ID = "{\"size\":1,\"query\":{\"bool\":{\"must\":[{\"match\":"
+        + "{\"reference.keyword\":{\"query\":\"1234567890123456\"}}},{\"match\":{\"state.keyword\":{\"query\""
+                                                      + ":\"Accepted\"}}}],\"boost\":1.0}}}";
+    public static final String EXPECTED_QUERY_BY_ROLE_MODIFICATION_REQUEST =
+        "{\"size\":1,\"query\":{\"bool\":{\"must\":[{\"match\":{\"reference.keyword\":{\"query\":"
+            + "\"case_submission_reference\"}}}],\"filter\":[{\"bool\":{\"should\":[{\"bool\":{\"filter\":"
+            + "[{\"match\":{\"data.respondentCollection.value.respondentOrganisation.keyword\":{\"query\":"
+            + "\"respondent_name\"}}}],\"boost\":1.0}},{\"bool\":{\"filter\":[{\"match\""
+            + ":{\"data.respondentCollection.value.respondent_name.keyword\":{\"query\":\"respondent_name\"}}}],"
+            + "\"boost\":1.0}},{\"bool\":{\"filter\":[{\"match\":{\"data.respondent.keyword\":{\"query\":"
+            + "\"respondent_name\"}}}],\"boost\":1.0}}],\"boost\":1.0}},{\"bool\":{\"should\":[{\"bool\":"
+            + "{\"must\":[{\"bool\":{\"filter\":[{\"match\":{\"data.claimantIndType.claimant_first_names.keyword\":"
+            + "{\"query\":\"claimant_first_names\"}}}],\"boost\":1.0}},{\"bool\":{\"filter\":[{\"match\":"
+            + "{\"data.claimantIndType.claimant_last_name.keyword\":{\"query\":\"claimant_last_name\"}}}],\"boost\":"
+            + "1.0}}],\"boost\":1.0}},{\"bool\":{\"filter\":[{\"match\":{\"data.claimant.keyword\":{\"query\":"
+            + "\"claimant_first_names claimant_last_name\"}}}],\"boost\":1.0}}],\"boost\":1.0}}],\"boost\":1.0}}}";
+    public static final String EXPECTED_QUERY_BY_SUBMISSION_REFERENCE = "{\"size\":1,\"query\":{\"bool\":{\"must\":"
+        + "[{\"match\":{\"reference.keyword\":{\"query\":\"case_submission_reference\"}}}],\"boost\":1.0}}}";
+    public static final String TEST_CASE_STATE_ACCEPTED = "Accepted";
+
     public static final PdfDecodedMultipartFile PDF_DECODED_MULTIPART_FILE_NULL = new PdfDecodedMultipartFile(
         null,
         TestConstants.TEST_PDF_FILE_ORIGINAL_NAME,
@@ -187,6 +254,10 @@ public final class TestConstants {
                                                + "\"confirm_email_before_download\":null,\"retention_period\""
                                                + ":null,\"is_csv\":false}");
     public static final String MICHAEL = "Michael";
+    public static final String DUMMY_AUTHORISATION_TOKEN = "dummy_authorisation_token";
+    public static final String DUMMY_SERVICE_AUTHORISATION_TOKEN = "dummy_service_authorisation_token";
+    public static final String ET3_ENGLISH_PDF_TEMPLATE_DOCUMENT = "ET3_0224.pdf";
+    public static final String ET3_WELSH_PDF_TEMPLATE_DOCUMENT = "CY_ET3_0224.pdf";
 
     private TestConstants() {
 
