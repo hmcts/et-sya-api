@@ -12,7 +12,6 @@ import uk.gov.hmcts.ecm.common.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.ecm.common.service.pdf.PdfService;
 import uk.gov.hmcts.ecm.common.service.pdf.et1.GenericServiceUtil;
 import uk.gov.hmcts.et.common.model.bulk.types.DynamicFixedListType;
-import uk.gov.hmcts.et.common.model.bulk.types.DynamicValueType;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
@@ -126,13 +125,9 @@ public class ET3FormService {
                                                 RespondentSumTypeItem selectedRespondent) {
         log.info("Generating ET3 Welsh and English Forms");
         try {
-            DynamicFixedListType dynamicFixedListType = new DynamicFixedListType();
-            DynamicValueType dynamicValueType = new DynamicValueType();
-            dynamicValueType.setCode("SubmitRespondent");
-            dynamicValueType.setLabel(selectedRespondent.getId());
-
-            caseData.setSubmitEt3Respondent(dynamicFixedListType);
-            caseData.getSubmitEt3Respondent().setValue(dynamicValueType);
+            caseData.setSubmitEt3Respondent(DynamicFixedListType.from("SubmitRespondent",
+                                                                      selectedRespondent.getId(),
+                                                                      true));
             byte[] englishPdfFileByteArray = pdfService.convertCaseToPdf(
                 caseData,
                 et3EnglishPdfTemplateSource,
