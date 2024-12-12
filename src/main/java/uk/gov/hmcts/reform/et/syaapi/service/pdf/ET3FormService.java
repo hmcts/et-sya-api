@@ -29,6 +29,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET3;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.PDF_FILE_TIKA_CONTENT_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.STRING_DASH;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.ET3_RESPONSE_LANGUAGE_PREFERENCE_WELSH;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.ET3_FORM_DOCUMENT_TYPE;
@@ -50,20 +51,15 @@ public class ET3FormService {
     @Value("${pdf.et3Welsh}")
     public String et3WelshPdfTemplateSource;
 
-    public static String createET3PdfDocumentNameFromCaseData(CaseData caseData,
-                                                               String documentLanguage,
-                                                               UserInfo userInfo,
-                                                               RespondentSumTypeItem selectedRespondent) {
+    public static String createET3PdfDocumentNameFromCaseData(String documentLanguage,
+                                                              UserInfo userInfo,
+                                                              RespondentSumTypeItem selectedRespondent) {
         String respondentName = getRespondentNameBySelectedRespondent(selectedRespondent, userInfo);
-        String caseNumber = StringUtils.EMPTY;
-        if (ObjectUtils.isNotEmpty(caseData) && StringUtils.isNotBlank(caseData.getEthosCaseReference())) {
-            caseNumber = caseData.getEthosCaseReference().replace("/", StringUtils.EMPTY);
-        }
-        return ET3 + StringUtils.SPACE
+        return ET3 + StringUtils.SPACE + STRING_DASH + StringUtils.SPACE
             + sanitizePartyName(respondentName)
-            + StringUtils.SPACE
-            + sanitizePartyName(caseNumber)
-            + (ENGLISH_LANGUAGE.equals(documentLanguage) ? StringUtils.EMPTY : StringUtils.SPACE + documentLanguage)
+            + (ENGLISH_LANGUAGE.equals(documentLanguage)
+            ? StringUtils.EMPTY
+            : StringUtils.SPACE + STRING_DASH + StringUtils.SPACE + documentLanguage)
             + ".pdf";
     }
 
@@ -134,7 +130,7 @@ public class ET3FormService {
             UserInfo userInfo = idamClient.getUserInfo(authorisation);
             PdfDecodedMultipartFile englishET3Form = new PdfDecodedMultipartFile(
                 englishPdfFileByteArray,
-                createET3PdfDocumentNameFromCaseData(caseData, ENGLISH_LANGUAGE, userInfo, selectedRespondent),
+                createET3PdfDocumentNameFromCaseData(ENGLISH_LANGUAGE, userInfo, selectedRespondent),
                 PDF_FILE_TIKA_CONTENT_TYPE,
                 createPdfDocumentDescriptionFromCaseData(caseData)
             );
@@ -162,7 +158,7 @@ public class ET3FormService {
                 );
                 PdfDecodedMultipartFile welshET3Form = new PdfDecodedMultipartFile(
                     welshPdfFileByteArray,
-                    createET3PdfDocumentNameFromCaseData(caseData, WELSH_LANGUAGE, userInfo, selectedRespondent),
+                    createET3PdfDocumentNameFromCaseData(WELSH_LANGUAGE, userInfo, selectedRespondent),
                     PDF_FILE_TIKA_CONTENT_TYPE,
                     createPdfDocumentDescriptionFromCaseData(caseData)
                 );

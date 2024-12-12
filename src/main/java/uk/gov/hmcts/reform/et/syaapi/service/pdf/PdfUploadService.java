@@ -38,6 +38,7 @@ import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.PDF_FILE_TIKA_CONTENT_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.STRING_DASH;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 
 /**
@@ -78,11 +79,13 @@ public class PdfUploadService {
         if (isNullOrEmpty(claimantLastName)) {
             claimantLastName = userInfo.getFamilyName();
         }
-        return documentType + StringUtils.SPACE
+        return documentType + StringUtils.SPACE + STRING_DASH + StringUtils.SPACE
             + sanitizePartyName(claimantFirstName)
-            + StringUtils.SPACE
+            + StringUtils.SPACE + STRING_DASH + StringUtils.SPACE
             + sanitizePartyName(claimantLastName)
-            + (ENGLISH_LANGUAGE.equals(documentLanguage) ? "" : StringUtils.SPACE + documentLanguage)
+            + (ENGLISH_LANGUAGE.equals(documentLanguage)
+            ? ""
+            : StringUtils.SPACE + STRING_DASH + StringUtils.SPACE + documentLanguage)
             + ".pdf";
     }
 
