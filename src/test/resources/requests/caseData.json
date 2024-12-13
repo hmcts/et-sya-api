@@ -146,7 +146,8 @@
         "extensionGranted": null,
         "extensionDate": null,
         "et3Vetting": null,
-        "et3VettingCompleted": null
+        "et3VettingCompleted": null,
+        "idamId": "1234567890"
       }
     },
     {

@@ -45,7 +45,7 @@ public class BundlesService {
         );
 
         CaseData caseData = EmployeeObjectMapper
-            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
+            .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
 
         if (CollectionUtils.isEmpty(caseData.getBundlesClaimantCollection())) {
             caseData.setBundlesClaimantCollection(new ArrayList<>());

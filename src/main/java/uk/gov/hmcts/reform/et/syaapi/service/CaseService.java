@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -32,7 +33,6 @@ import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfUploadService;
-import uk.gov.hmcts.reform.et.syaapi.service.utils.DocumentUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -49,14 +49,14 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import static org.springframework.util.CollectionUtils.isEmpty;
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED_STATE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.CASE_MANAGEMENT_DOC_CATEGORY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ONLINE_SUBMISSION;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
@@ -86,29 +86,19 @@ public class CaseService {
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
     private final CaseOfficeService caseOfficeService;
     private static final String ALL_CASES_QUERY = "{\"size\":10000,\"query\":{\"match_all\": {}}}";
-
-    /**
-     * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
-     *
-     * @param caseId id of the case
-     * @return the associated {@link CaseDetails} for the ID provided
-     */
-    @Retryable
-    public CaseDetails getUserCase(String authorization, String caseId) {
-        return ccdApiClient.getCase(authorization, authTokenGenerator.generate(), caseId);
-    }
+    private final FeatureToggleService featureToggleService;
 
     /**
      * Given a user derived from the authorisation token in the request,
      * this will get all cases {@link CaseDetails} for that user.
      *
      * @param authorization is used to get the {@link UserInfo} for the request
-     * @return the associated {@link CaseDetails} for the ID provided
+     * @return the associated {@link CaseDetails} list for the authorization code provided
      */
     // @Retryable({FeignException.class, RuntimeException.class}) --> No need to give exception classes as Retryable
     // covers all runtime exceptions.
     @Retryable
-    public List<CaseDetails> getAllUserCases(String authorization) {
+    protected List<CaseDetails> getAllUserCases(String authorization) {
         // Elasticsearch
         List<CaseDetails> scotlandCases = Optional.ofNullable(ccdApiClient.searchCases(
             authorization,
@@ -122,10 +112,8 @@ public class CaseService {
             authTokenGenerator.generate(),
             ENGLAND_CASE_TYPE,
             ALL_CASES_QUERY).getCases()).orElse(Collections.emptyList());
-        List<CaseDetails> caseDetailsList = Stream.of(scotlandCases, englandCases)
+        return Stream.of(scotlandCases, englandCases)
             .flatMap(Collection::stream).toList();
-        DocumentUtil.filterMultipleCasesDocumentsForClaimant(caseDetailsList);
-        return caseDetailsList;
     }
 
     /**
@@ -171,6 +159,9 @@ public class CaseService {
 
     private String getCaseType(CaseRequest caseRequest) {
         try {
+            if (!isNullOrEmpty(caseRequest.getCaseTypeId())) {
+                return caseRequest.getCaseTypeId();
+            }
             return getCaseTypeId(
                 postcodeToOfficeService.getTribunalOfficeFromPostcode(caseRequest.getPostCode())
                     .orElse(DEFAULT_TRIBUNAL_OFFICE).getOfficeName());
@@ -210,32 +201,39 @@ public class CaseService {
         // Submitting the case to CCD, receiving caseDetails and setting ethosCaseReference,
         // receiptDate, feeGroupReference with the received details.
         CaseDetails caseDetails = triggerEventForSubmitCase(authorization, caseRequest);
-        setCaseDataWithSubmittedCaseDetails(caseDetails, caseData);
-        // Create case pdf file(s). If the user selected language is Welsh, we also create Welsh pdf file
-        // and add it to our pdf files list
-        List<PdfDecodedMultipartFile> casePdfFiles =
-            pdfUploadService.convertCaseDataToPdfDecodedMultipartFile(caseData, userInfo);
-        // Submit e-mail to the user with attached ET1 pdf file according to selected contact language
-        // (Welsh or English)
-        notificationService.sendSubmitCaseConfirmationEmail(caseRequest, caseData, userInfo, casePdfFiles);
-        // Creating acas certificates for each respondent
-        List<PdfDecodedMultipartFile> acasCertificates =
-            pdfUploadService.convertAcasCertificatesToPdfDecodedMultipartFiles(
-                caseData, acasService.getAcasCertificatesByCaseData(caseData));
-        // Uploading all documents to document store
-        List<DocumentTypeItem> documentList = uploadAllDocuments(authorization, caseRequest, caseData, casePdfFiles,
-                                                                 acasCertificates);
-        // Setting claimantPcqId and documentCollection to case details
-        caseDetails.getData().put("ClaimantPcqId", caseData.getClaimantPcqId());
-        caseDetails.getData().put(DOCUMENT_COLLECTION, documentList);
-        // For determining the case is submitted via ET1
-        caseDetails.getData().put(ET1_ONLINE_SUBMISSION, YES);
 
-        // Updating case with ClaimantPcqId and Document collection
-        triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED, caseDetails.getCaseTypeId(),
-                     caseDetails.getData()
-        );
+        if (!featureToggleService.citizenEt1Generation()) {
+            log.info("Citizen ET1 generation feature is disabled");
+            setCaseDataWithSubmittedCaseDetails(caseDetails, caseData);
+            // Create case pdf file(s). If the user selected language is Welsh, we also create Welsh pdf file
+            // and add it to our pdf files list
+            List<PdfDecodedMultipartFile> casePdfFiles =
+                pdfUploadService.convertCaseDataToPdfDecodedMultipartFile(caseData, userInfo);
+            // Submit e-mail to the user with attached ET1 pdf file according to selected contact language
+            // (Welsh or English)
+            notificationService.sendSubmitCaseConfirmationEmail(caseRequest, caseData, userInfo, casePdfFiles);
+            // Creating acas certificates for each respondent
+            List<PdfDecodedMultipartFile> acasCertificates =
+                pdfUploadService.convertAcasCertificatesToPdfDecodedMultipartFiles(
+                    caseData, acasService.getAcasCertificatesByCaseData(caseData)
+            );
+            // Uploading all documents to document store
+            List<DocumentTypeItem> documentList = uploadAllDocuments(authorization,
+                                                                     caseRequest,
+                                                                     caseData,
+                                                                     casePdfFiles,
+                                                                     acasCertificates
+            );
 
+            caseDetails.getData().put(DOCUMENT_COLLECTION, documentList);
+
+            triggerEvent(authorization,
+                         caseRequest.getCaseId(),
+                         UPDATE_CASE_SUBMITTED,
+                         caseDetails.getCaseTypeId(),
+                         caseDetails.getData()
+            );
+        }
         return caseDetails;
     }
 
@@ -318,22 +316,36 @@ public class CaseService {
     public CaseDetails triggerEventForSubmitCase(String authorization, CaseRequest caseRequest) {
         StartEventResponse startEventResponse = startUpdate(authorization, caseRequest.getCaseId(),
                                                             caseRequest.getCaseTypeId(), SUBMIT_CASE_DRAFT);
-        CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(
-            startEventResponse.getCaseDetails().getData());
+        CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
         enrichCaseDataWithJurisdictionCodes(caseData1);
         caseData1.setManagingOffice(caseRequest.getCaseData().get("managingOffice") == null ? UNASSIGNED_OFFICE :
                                         caseRequest.getCaseData().get("managingOffice").toString());
         caseData1.setReceiptDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         caseData1.setFeeGroupReference(caseRequest.getCaseId());
         caseData1.setPositionType("ET1 Online submission");
+        caseData1.setClaimantPcqId(caseRequest.getCaseData().get("claimantPcqId") == null ? "" :
+                                      caseRequest.getCaseData().get("claimantPcqId").toString());
+        caseData1.setEt1OnlineSubmission(YES);
         ObjectMapper objectMapper = new ObjectMapper();
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
-        return submitUpdate(
-            authorization,
-            caseRequest.getCaseId(),
-            caseDetailsConverter.caseDataContent(startEventResponse, caseData1),
-            caseRequest.getCaseTypeId()
-        );
+        try {
+            return submitUpdate(
+                authorization,
+                caseRequest.getCaseId(),
+                caseDetailsConverter.et1ToCaseDataContent(startEventResponse, caseData1),
+                caseRequest.getCaseTypeId()
+            );
+        } catch (Exception e) {
+            // In case it has submitted but CCD has failed for some reason
+            CaseDetails ccdCaseDetails = ccdApiClient.getCase(authorization, authTokenGenerator.generate(),
+                                                             caseRequest.getCaseId());
+            if (SUBMITTED_STATE.equals(ccdCaseDetails.getState())) {
+                return ccdCaseDetails;
+            } else {
+                log.error("Failed to submit case with caseId: {}", caseRequest.getCaseId(), e);
+                throw e;
+            }
+        }
     }
 
     /**
@@ -395,7 +407,6 @@ public class CaseService {
     void uploadTseSupportingDocument(CaseDetails caseDetails, UploadedDocumentType contactApplicationFile,
                                      String contactApplicationType) {
         CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
-
         List<DocumentTypeItem> docList = caseData.getDocumentCollection();
 
         if (docList == null) {
@@ -434,7 +445,7 @@ public class CaseService {
         String caseType
     ) throws DocumentGenerationException, CaseDocumentException {
 
-        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
         List<DocumentTypeItem> docList = caseData.getDocumentCollection();
 
         if (docList == null) {
@@ -493,9 +504,23 @@ public class CaseService {
             multipartResponsePdf
         );
 
-        if (isEmpty(caseData.getDocumentCollection())) {
+        if (CollectionUtils.isEmpty(caseData.getDocumentCollection())) {
             caseData.setDocumentCollection(new ArrayList<>());
         }
         caseData.getDocumentCollection().add(responsePdf);
+    }
+
+    /**
+     * Will accept a {@link CaseRequest} trigger an event to update a submitted case in ET.
+     *
+     * @param authorization jwt of the user
+     * @param caseRequest   case to be updated
+     * @return the newly updated case wrapped in a {@link CaseDetails} object.
+     */
+    public CaseDetails updateCaseSubmitted(String authorization,
+                                           CaseRequest caseRequest) {
+        return triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED,
+                            caseRequest.getCaseTypeId(), caseRequest.getCaseData()
+        );
     }
 }
