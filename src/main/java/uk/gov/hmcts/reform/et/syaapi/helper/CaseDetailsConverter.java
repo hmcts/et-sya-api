@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.et.syaapi.helper;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +36,7 @@ public class CaseDetailsConverter {
     public CaseDetailsConverter(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
         this.objectMapper.registerModule(new JavaTimeModule());
+        this.objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
     }
 
@@ -65,6 +68,9 @@ public class CaseDetailsConverter {
      * @return {@link CaseDataContent} which returns overall contents of the case
      */
     public CaseDataContent et1ToCaseDataContent(StartEventResponse startEventResponse, Et1CaseData et1CaseData) {
+        if (startEventResponse == null) {
+            return null;
+        }
         return CaseDataContent.builder()
             .eventToken(startEventResponse.getToken())
             .event(Event.builder().id(startEventResponse.getEventId()).build())
@@ -84,6 +90,9 @@ public class CaseDetailsConverter {
      * @return {@link CaseDataContent} which returns overall contents of the case
      */
     public CaseDataContent caseDataContent(StartEventResponse startEventResponse, CaseData caseData) {
+        if (startEventResponse == null) {
+            return null;
+        }
         return CaseDataContent.builder()
             .eventToken(startEventResponse.getToken())
             .event(Event.builder().id(startEventResponse.getEventId()).build())

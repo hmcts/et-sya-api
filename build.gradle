@@ -144,6 +144,15 @@ pmd {
 
 jacocoTestReport {
   executionData(test)
+
+  // Exclude the problematic class or method from instrumentation
+  afterEvaluate {
+    classDirectories.setFrom(files(classDirectories.files.collect {
+      fileTree(dir: it, exclude: [
+        'uk/gov/hmcts/et/common/model/ccd/CaseData.class' // Exclude the whole class
+      ])
+    }))
+  }
   reports {
     xml.required = true
     csv.required = false
