@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
@@ -65,4 +66,24 @@ class CaseDetailsConverterTest {
         assertNotNull(caseDetailsConverter.getCaseData(expectedDetails.getData()));
         assertEquals(caseDetailsConverter.getCaseData(expectedDetails.getData()).getClass(), CaseData.class);
     }
+
+    @Test
+    void shouldConvertCaseDataToCaseDataContent() {
+        CaseData caseData = new CaseData();
+        CaseDataContent caseDataContent = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
+        assertNotNull(caseDataContent);
+        assertEquals(startEventResponse.getToken(), caseDataContent.getEventToken());
+        assertEquals(startEventResponse.getEventId(), caseDataContent.getEvent().getId());
+        assertEquals(caseData, caseDataContent.getData());
+    }
+
+    @Test
+    void shouldConvertEt1CaseDataToCaseDataContent() {
+        CaseDataContent caseDataContent = caseDetailsConverter.et1ToCaseDataContent(startEventResponse, et1CaseData);
+        assertNotNull(caseDataContent);
+        assertEquals(startEventResponse.getToken(), caseDataContent.getEventToken());
+        assertEquals(startEventResponse.getEventId(), caseDataContent.getEvent().getId());
+        assertEquals(et1CaseData, caseDataContent.getData());
+    }
+
 }

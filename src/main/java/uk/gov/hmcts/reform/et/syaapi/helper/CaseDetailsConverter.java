@@ -104,7 +104,6 @@ public class CaseDetailsConverter {
         log.error("Re-CaseData: {}", requestCaseData.toString());
         CaseData latestCaseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(latestData);
         log.error("La-CaseData: {}", latestCaseData.toString());
-
         Class<?> sourceClass = requestData.getClass();
         try {
             for (Field field : sourceClass.getDeclaredFields()) {
