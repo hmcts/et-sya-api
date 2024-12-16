@@ -65,7 +65,7 @@ public class StoredRespondToApplicationService {
         );
 
         CaseData caseData = EmployeeObjectMapper
-            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
+            .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
 
         // Update application
         GenericTseApplicationTypeItem appToModify = TseApplicationHelper.getSelectedApplication(
@@ -181,7 +181,7 @@ public class StoredRespondToApplicationService {
         );
 
         CaseData caseData = EmployeeObjectMapper
-            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
+            .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
 
         // Get selected GenericTseApplicationTypeItem
         GenericTseApplicationTypeItem appToModify = TseApplicationHelper.getSelectedApplication(
