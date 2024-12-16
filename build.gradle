@@ -145,7 +145,8 @@ pmd {
 jacocoTestReport {
   executionData(test)
 
-  // Exclude the problematic class or method from instrumentation
+  // Exclude the equals method of the CaseData class as Jcoco instrumentation find it too large a method
+  // given the JVM method size limit
   afterEvaluate {
     classDirectories.setFrom(files(classDirectories.files.collect {
       fileTree(dir: it, exclude: [
