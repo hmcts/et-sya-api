@@ -130,4 +130,29 @@ class CaseDetailsConverterTest {
         assertNotNull(updatedCaseData);
         assertEquals("Eth00099233/2023", updatedCaseData.getEthosCaseReference());
     }
+
+    @Test
+    void shouldReturnCaseDataContentWithValidStartEventResponseAndCaseData() {
+        CaseData caseData = new CaseData();
+        CaseDataContent caseDataContent = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
+        assertNotNull(caseDataContent);
+        assertEquals(startEventResponse.getToken(), caseDataContent.getEventToken());
+        assertEquals(startEventResponse.getEventId(), caseDataContent.getEvent().getId());
+        assertEquals(caseData, caseDataContent.getData());
+    }
+
+    @Test
+    void shouldReturnCaseDataContentWhenCaseDataIsNull() {
+        CaseDataContent caseDataContent = caseDetailsConverter.caseDataContent(startEventResponse, null);
+        assertNotNull(caseDataContent);
+        assertEquals(startEventResponse.getToken(), caseDataContent.getEventToken());
+        assertEquals(startEventResponse.getEventId(), caseDataContent.getEvent().getId());
+        assertNull(caseDataContent.getData());
+    }
+
+    @Test
+    void shouldReturnNullWhenStartEventResponseIsNullInCaseDataContent() {
+        CaseDataContent caseDataContent = caseDetailsConverter.caseDataContent(null, new CaseData());
+        assertNull(caseDataContent);
+    }
 }
