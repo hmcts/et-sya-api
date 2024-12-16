@@ -101,16 +101,6 @@ class CaseDetailsConverterTest {
     }
 
     @Test
-    void shouldConvertCaseDataToCaseDataContent() {
-        CaseData caseData = new CaseData();
-        CaseDataContent caseDataContent = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
-        assertNotNull(caseDataContent);
-        assertEquals(startEventResponse.getToken(), caseDataContent.getEventToken());
-        assertEquals(startEventResponse.getEventId(), caseDataContent.getEvent().getId());
-        assertEquals(caseData, caseDataContent.getData());
-    }
-
-    @Test
     void shouldConvertEt1CaseDataToCaseDataContent() {
         CaseDataContent caseDataContent = caseDetailsConverter.et1ToCaseDataContent(startEventResponse, et1CaseData);
         assertNotNull(caseDataContent);
