@@ -157,7 +157,7 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
     @Order(4)
     void submitStoredClaimantApplicationShouldReturnCaseDetails() {
         ClaimantApplicationRequest caseRequest = ClaimantApplicationRequest.builder()
-            .caseId(String.valueOf(caseId))
+            .caseId(caseId.toString())
             .caseTypeId(CASE_TYPE)
             .claimantTse(storedClaimantTse)
             .build();
