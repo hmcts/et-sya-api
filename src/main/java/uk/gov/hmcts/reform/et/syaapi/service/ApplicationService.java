@@ -329,7 +329,7 @@ public class ApplicationService {
             .filter(n -> defaultIfEmpty(n.getValue().getShortDescription(), "").startsWith(TSE_FILENAME))
             .toList();
 
-        if (tseFiles.isEmpty()) {
+        if (isEmpty(tseFiles)) {
             return null;
         }
 
