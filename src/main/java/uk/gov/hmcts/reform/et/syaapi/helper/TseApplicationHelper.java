@@ -114,10 +114,6 @@ public final class TseApplicationHelper {
      */
     public static TseRespondTypeItem findResponse(GenericTseApplicationTypeItem selectedApplication,
                                                   String responseId) {
-        if (CollectionUtils.isEmpty(selectedApplication.getValue().getRespondCollection())) {
-            return null;
-        }
-
         return selectedApplication.getValue().getRespondCollection().stream()
             .filter(a -> a.getId().equals(responseId))
             .findFirst()

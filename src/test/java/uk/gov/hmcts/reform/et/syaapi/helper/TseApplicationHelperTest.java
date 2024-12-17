@@ -193,12 +193,4 @@ class TseApplicationHelperTest {
         assertThat(actual).isNull();
     }
 
-    @Test
-    void shouldReturnNullWhenRespondCollectionIsNull() {
-        GenericTseApplicationTypeItem app = GenericTseApplicationTypeItem.builder()
-            .value(GenericTseApplicationType.builder().respondCollection(null).build())
-            .build();
-        TseRespondTypeItem actual = TseApplicationHelper.findResponse(app, "testId");
-        assertThat(actual).isNull();
-    }
 }
