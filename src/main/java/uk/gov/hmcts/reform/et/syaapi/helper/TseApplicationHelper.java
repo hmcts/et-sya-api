@@ -64,10 +64,6 @@ public final class TseApplicationHelper {
         List<GenericTseApplicationTypeItem> applications,
         String applicationId) {
 
-        if (CollectionUtils.isEmpty(applications)) {
-            return null;
-        }
-
         return applications.stream()
             .filter(a -> a.getId().equals(applicationId))
             .findAny()
