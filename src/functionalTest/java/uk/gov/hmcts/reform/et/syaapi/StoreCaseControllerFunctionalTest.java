@@ -210,7 +210,7 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
     @Order(6)
     void submitStoredRespondToApplicationShouldReturnCaseDetails() {
         SubmitStoredRespondToApplicationRequest caseRequest = SubmitStoredRespondToApplicationRequest.builder()
-            .caseId(String.valueOf(caseId))
+            .caseId(caseId.toString())
             .caseTypeId(CASE_TYPE)
             .applicationId(appId)
             .storedRespondId(responseId)
