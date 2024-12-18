@@ -11,7 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
@@ -20,7 +19,6 @@ import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -72,10 +70,9 @@ class SendNotificationControllerTest {
             .build();
 
         // when
-        when(verifyTokenService.verifyTokenSignature(anyString())).thenReturn(true);
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
 
-        when(applicationService.submitApplication(anyString(), any(ClaimantApplicationRequest.class), anyString()))
-            .thenReturn(expectedDetails);
+        when(applicationService.submitApplication(any(), any())).thenReturn(expectedDetails);
         mockMvc.perform(
             put("/sendNotification/update-notification-state", CASE_ID)
                 .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)

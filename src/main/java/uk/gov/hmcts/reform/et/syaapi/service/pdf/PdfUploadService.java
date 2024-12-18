@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.et.syaapi.service.pdf;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -33,12 +32,8 @@ import java.util.Optional;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
-import static uk.gov.hmcts.ecm.common.constants.PdfMapperConstants.PDF_TYPE_ET1;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.PDF_FILE_TIKA_CONTENT_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.STRING_DASH;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
 
 /**
@@ -62,15 +57,13 @@ public class PdfUploadService {
 
     private static final String TSE_FILENAME = "Contact the tribunal - ";
     private static final String CLAIMANT_TITLE = "Claimant";
+    private static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
     private static final String NOT_FOUND = "not found";
-    private static final String CLIENT_TYPE_CLAIMANT = "claimant";
-    private static final String SUBMIT_ET1_CITIZEN = "submitET1Citizen";
     private static final List<String> DOCUMENT_CHARS_TO_REPLACE = List.of("@", "/", "\\", "'", ":");
 
-    public static String createPdfDocumentNameFromCaseData(CaseData caseData,
+    private static String createPdfDocumentNameFromCaseData(CaseData caseData,
                                                             String documentLanguage,
-                                                            UserInfo userInfo,
-                                                            String documentType) {
+                                                            UserInfo userInfo) {
         String claimantFirstName = caseData.getClaimantIndType().getClaimantFirstNames();
         String claimantLastName = caseData.getClaimantIndType().getClaimantLastName();
         if (isNullOrEmpty(claimantFirstName)) {
@@ -79,13 +72,11 @@ public class PdfUploadService {
         if (isNullOrEmpty(claimantLastName)) {
             claimantLastName = userInfo.getFamilyName();
         }
-        return documentType + StringUtils.SPACE + STRING_DASH + StringUtils.SPACE
+        return "ET1 - "
             + sanitizePartyName(claimantFirstName)
-            + StringUtils.SPACE
+            + " "
             + sanitizePartyName(claimantLastName)
-            + (ENGLISH_LANGUAGE.equals(documentLanguage)
-            ? ""
-            : StringUtils.SPACE + STRING_DASH + StringUtils.SPACE + documentLanguage)
+            + (ENGLISH_LANGUAGE.equals(documentLanguage) ? "" : " " + documentLanguage)
             + ".pdf";
     }
 
@@ -105,7 +96,7 @@ public class PdfUploadService {
             + acasCertificate.getCertificateNumber().replace("/", "_");
     }
 
-    public static String createPdfDocumentDescriptionFromCaseData(CaseData caseData) {
+    private static String createPdfDocumentDescriptionFromCaseData(CaseData caseData) {
         return "ET1 - "
             + caseData.getClaimantIndType().getClaimantFirstNames()
             + " " + caseData.getClaimantIndType().getClaimantLastName();
@@ -122,8 +113,7 @@ public class PdfUploadService {
         userInfo) {
         List<PdfDecodedMultipartFile> files = new ArrayList<>();
         try {
-            byte[] pdfData = pdfService.convertCaseToPdf(caseData, this.englishPdfTemplateSource, PDF_TYPE_ET1,
-                                                         CLIENT_TYPE_CLAIMANT, SUBMIT_ET1_CITIZEN);
+            byte[] pdfData = pdfService.convertCaseToPdf(caseData, this.englishPdfTemplateSource);
             if (ObjectUtils.isEmpty(pdfData)) {
                 throw new PdfServiceException(
                     "Failed to convert to PDF. English Template Not Found",
@@ -132,7 +122,7 @@ public class PdfUploadService {
             }
             files.add(new PdfDecodedMultipartFile(
                 pdfData,
-                createPdfDocumentNameFromCaseData(caseData, ENGLISH_LANGUAGE, userInfo, ET1),
+                createPdfDocumentNameFromCaseData(caseData, ENGLISH_LANGUAGE, userInfo),
                 PDF_FILE_TIKA_CONTENT_TYPE,
                 createPdfDocumentDescriptionFromCaseData(caseData)
             ));
@@ -143,21 +133,14 @@ public class PdfUploadService {
         }
         try {
             if (WELSH_LANGUAGE.equals(GenericServiceUtil.findClaimantLanguage(caseData))) {
-                // New parameter CLIENT_TYPE_RESPONDENT not has any effect to the flow of ET1 pdf creation.
-                // It is used to discriminate representatives and respondents while mapping ET3 PDF data.
-                // SUBMIT_ET1_CITIZEN does not have any effect to the flow of ET1 pdf creation just checks if
-                // the event is submission event not. If submit event, sets date received field of pdf file to the
-                // local date current value. This is because, on caseworker screens we create PDF files without
-                // submission of the event.
-                byte[] pdfData = pdfService.convertCaseToPdf(caseData, this.welshPdfTemplateSource, PDF_TYPE_ET1,
-                                                             CLIENT_TYPE_CLAIMANT, SUBMIT_ET1_CITIZEN);
+                byte[] pdfData = pdfService.convertCaseToPdf(caseData, this.welshPdfTemplateSource);
                 if (ObjectUtils.isEmpty(pdfData)) {
                     throw new PdfServiceException("Failed to convert to PDF. Welsh Template Not Found",
                                                   new NullPointerException());
                 }
                 files.add(new PdfDecodedMultipartFile(
                     pdfData,
-                    createPdfDocumentNameFromCaseData(caseData, WELSH_LANGUAGE, userInfo, ET1),
+                    createPdfDocumentNameFromCaseData(caseData, WELSH_LANGUAGE, userInfo),
                     PDF_FILE_TIKA_CONTENT_TYPE,
                     createPdfDocumentDescriptionFromCaseData(caseData)
                 ));
@@ -281,7 +264,7 @@ public class PdfUploadService {
         );
     }
 
-    protected static String sanitizePartyName(String partyName) {
+    private static String sanitizePartyName(String partyName) {
         if (isNullOrEmpty(partyName)) {
             return "";
         }

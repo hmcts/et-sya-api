@@ -30,10 +30,6 @@ public class NotificationsProperties {
     @NotBlank
     private String citizenPortalLink;
 
-    @Value("${notifications.respondentPortalLink}")
-    @NotBlank
-    private String respondentPortalLink;
-
     @Value("${notifications.exuiCaseDetailsLink}")
     @NotBlank
     private String exuiCaseDetailsLink;
@@ -156,8 +152,4 @@ public class NotificationsProperties {
     @Value("${notifications.bundles.claimantSubmitted}")
     @NotBlank
     private String bundlesClaimantSubmittedNotificationTemplateId;
-
-    @Value("${notifications.et3SubmissionConfirmation}")
-    @NotBlank
-    private String et3SubmissionConfirmationTemplateId;
 }

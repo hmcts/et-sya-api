@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -33,6 +32,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfUploadService;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.DocumentUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.GenericServiceUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -50,6 +50,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED_STATE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
@@ -89,16 +90,27 @@ public class CaseService {
     private final FeatureToggleService featureToggleService;
 
     /**
+     * Given a case id in the case request, this will retrieve the correct {@link CaseDetails}.
+     *
+     * @param caseId id of the case
+     * @return the associated {@link CaseDetails} for the ID provided
+     */
+    @Retryable
+    public CaseDetails getUserCase(String authorization, String caseId) {
+        return ccdApiClient.getCase(authorization, authTokenGenerator.generate(), caseId);
+    }
+
+    /**
      * Given a user derived from the authorisation token in the request,
      * this will get all cases {@link CaseDetails} for that user.
      *
      * @param authorization is used to get the {@link UserInfo} for the request
-     * @return the associated {@link CaseDetails} list for the authorization code provided
+     * @return the associated {@link CaseDetails} for the ID provided
      */
     // @Retryable({FeignException.class, RuntimeException.class}) --> No need to give exception classes as Retryable
     // covers all runtime exceptions.
     @Retryable
-    protected List<CaseDetails> getAllUserCases(String authorization) {
+    public List<CaseDetails> getAllUserCases(String authorization) {
         // Elasticsearch
         List<CaseDetails> scotlandCases = Optional.ofNullable(ccdApiClient.searchCases(
             authorization,
@@ -112,8 +124,10 @@ public class CaseService {
             authTokenGenerator.generate(),
             ENGLAND_CASE_TYPE,
             ALL_CASES_QUERY).getCases()).orElse(Collections.emptyList());
-        return Stream.of(scotlandCases, englandCases)
+        List<CaseDetails> caseDetailsList = Stream.of(scotlandCases, englandCases)
             .flatMap(Collection::stream).toList();
+        DocumentUtil.filterMultipleCasesDocumentsForClaimant(caseDetailsList);
+        return caseDetailsList;
     }
 
     /**
@@ -282,7 +296,7 @@ public class CaseService {
         ObjectMapper objectMapper = new ObjectMapper();
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         StartEventResponse startEventResponse = startUpdate(authorization, caseId, caseType, eventName);
-        CaseData caseData1 = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseData);
+        CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseData);
 
         if (SUBMIT_CASE_DRAFT == eventName) {
             enrichCaseDataWithJurisdictionCodes(caseData1);
@@ -307,7 +321,7 @@ public class CaseService {
         StartEventResponse startEventResponse = startUpdate(authorization, caseRequest.getCaseId(),
                                                             caseRequest.getCaseTypeId(), SUBMIT_CASE_DRAFT
         );
-        CaseData caseData1 = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(
+        CaseData caseData1 = EmployeeObjectMapper.mapRequestCaseDataToCaseData(
             startEventResponse.getCaseDetails().getData());
         enrichCaseDataWithJurisdictionCodes(caseData1);
         caseData1.setManagingOffice(caseRequest.getCaseData().get("managingOffice") == null ? UNASSIGNED_OFFICE :
@@ -396,7 +410,7 @@ public class CaseService {
 
     void uploadTseSupportingDocument(CaseDetails caseDetails, UploadedDocumentType contactApplicationFile,
                                      String contactApplicationType) {
-        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
         List<DocumentTypeItem> docList = caseData.getDocumentCollection();
 
         if (docList == null) {
@@ -435,7 +449,7 @@ public class CaseService {
         String caseType
     ) throws DocumentGenerationException, CaseDocumentException {
 
-        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
         List<DocumentTypeItem> docList = caseData.getDocumentCollection();
 
         if (docList == null) {
@@ -494,23 +508,9 @@ public class CaseService {
             multipartResponsePdf
         );
 
-        if (CollectionUtils.isEmpty(caseData.getDocumentCollection())) {
+        if (isEmpty(caseData.getDocumentCollection())) {
             caseData.setDocumentCollection(new ArrayList<>());
         }
         caseData.getDocumentCollection().add(responsePdf);
-    }
-
-    /**
-     * Will accept a {@link CaseRequest} trigger an event to update a submitted case in ET.
-     *
-     * @param authorization jwt of the user
-     * @param caseRequest   case to be updated
-     * @return the newly updated case wrapped in a {@link CaseDetails} object.
-     */
-    public CaseDetails updateCaseSubmitted(String authorization,
-                                           CaseRequest caseRequest) {
-        return triggerEvent(authorization, caseRequest.getCaseId(), UPDATE_CASE_SUBMITTED,
-                            caseRequest.getCaseTypeId(), caseRequest.getCaseData()
-        );
     }
 }

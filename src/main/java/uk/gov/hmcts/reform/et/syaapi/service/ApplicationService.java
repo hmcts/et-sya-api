@@ -52,7 +52,6 @@ public class ApplicationService {
     private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final FeatureToggleService featureToggleService;
-    private final ManageCaseRoleService manageCaseRoleService;
 
     /**
      * Get the next application number for the case.
@@ -73,14 +72,11 @@ public class ApplicationService {
      * @param request - application request from the claimant
      * @return the associated {@link CaseDetails} for the ID provided in request
      */
-    public CaseDetails submitApplication(String authorization, ClaimantApplicationRequest request, String caseUserRole)
+    public CaseDetails submitApplication(String authorization, ClaimantApplicationRequest request)
         throws NotificationClientException {
 
         String caseTypeId = request.getCaseTypeId();
-        // Added parameter case user role as creator...
-        CaseDetails caseDetails = manageCaseRoleService.getUserCaseByCaseUserRole(authorization,
-                                                                                  request.getCaseId(),
-                                                                                  caseUserRole);
+        CaseDetails caseDetails = caseService.getUserCase(authorization, request.getCaseId());
         ClaimantTse claimantTse = request.getClaimantTse();
         caseDetails.getData().put("claimantTse", claimantTse);
 
@@ -88,7 +84,7 @@ public class ApplicationService {
             log.info("Uploading pdf of TSE application");
             caseService.uploadTseCyaAsPdf(authorization, caseDetails, claimantTse, caseTypeId);
         } catch (CaseDocumentException | DocumentGenerationException e) {
-            logTseApplicationDocumentUploadError(e);
+            log.error("Couldn't upload pdf of TSE application " + e.getMessage());
         }
 
         UploadedDocumentType contactApplicationFile = claimantTse.getContactApplicationFile();
@@ -112,10 +108,6 @@ public class ApplicationService {
         return finalCaseDetails;
     }
 
-    private static void logTseApplicationDocumentUploadError(Exception exception) {
-        log.error("Couldn't upload pdf of TSE application {}", exception.getMessage());
-    }
-
     /**
      * Submit Claimant Response to Respondent's request to Tell Something Else.
      *
@@ -135,7 +127,7 @@ public class ApplicationService {
         );
 
         CaseData caseData = EmployeeObjectMapper
-            .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
+            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
 
         GenericTseApplicationTypeItem appToModify = TseApplicationHelper.getSelectedApplication(
             caseData.getGenericTseApplicationCollection(), request.getApplicationId()
@@ -181,7 +173,7 @@ public class ApplicationService {
         );
 
         CaseData caseData = EmployeeObjectMapper
-            .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
+            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
 
         GenericTseApplicationTypeItem appToModify = TseApplicationHelper.getSelectedApplication(
             caseData.getGenericTseApplicationCollection(),
@@ -218,7 +210,7 @@ public class ApplicationService {
         );
 
         CaseData caseData = EmployeeObjectMapper
-            .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
+            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
 
         GenericTseApplicationTypeItem selectedApplication = TseApplicationHelper.getSelectedApplication(
             caseData.getGenericTseApplicationCollection(),
@@ -260,7 +252,7 @@ public class ApplicationService {
                     application.getType()
                 );
             } catch (CaseDocumentException | DocumentGenerationException e) {
-                logTseApplicationDocumentUploadError(e);
+                log.error("Couldn't upload pdf of TSE application " + e.getMessage());
             }
         }
     }
@@ -270,7 +262,7 @@ public class ApplicationService {
         ClaimantApplicationRequest request,
         CaseDetails finalCaseDetails
     ) throws NotificationClientException {
-        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(finalCaseDetails.getData());
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(finalCaseDetails.getData());
         ClaimantIndType claimantIndType = caseData.getClaimantIndType();
         String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
         CoreEmailDetails details = new CoreEmailDetails(
