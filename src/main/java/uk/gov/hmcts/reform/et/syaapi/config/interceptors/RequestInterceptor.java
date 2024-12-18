@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.UNAUTHORIZED_APIS;
 
 /**
  * Intercepts any call to the et-sya-api and validates the token.
@@ -35,9 +34,6 @@ public class RequestInterceptor implements HandlerInterceptor {
      */
     @Override
     public boolean preHandle(HttpServletRequest requestServlet, HttpServletResponse responseServlet, Object handler) {
-        if (UNAUTHORIZED_APIS.contains(requestServlet.getRequestURI())) {
-            return true;
-        }
         String authorizationHeader = requestServlet.getHeader(AUTHORIZATION);
         boolean jwtVerified = verifyTokenService.verifyTokenSignature(authorizationHeader);
         if (!jwtVerified) {

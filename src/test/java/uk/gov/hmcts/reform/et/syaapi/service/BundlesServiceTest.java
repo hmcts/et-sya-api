@@ -46,15 +46,20 @@ class BundlesServiceTest {
 
     @BeforeEach
     void before() {
+        ObjectMapper objectMapper = new ObjectMapper();
         caseService = mock(CaseService.class);
         notificationService = mock(NotificationService.class);
 
-        ObjectMapper objectMapper = new ObjectMapper();
         bundlesService = new BundlesService(
             caseService,
             new CaseDetailsConverter(objectMapper),
             notificationService
         );
+
+        when(caseService.getUserCase(
+            TEST_SERVICE_AUTH_TOKEN,
+            testData.getClaimantApplicationRequest().getCaseId()
+        )).thenReturn(testData.getCaseDetailsWithData());
 
         when(caseService.startUpdate(
             any(),

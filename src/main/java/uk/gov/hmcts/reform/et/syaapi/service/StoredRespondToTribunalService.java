@@ -66,7 +66,7 @@ public class StoredRespondToTribunalService {
         );
 
         CaseData caseData = EmployeeObjectMapper
-            .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
+            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
 
         // get sendNotificationTypeItem
         var sendNotificationTypeItem =
@@ -165,7 +165,7 @@ public class StoredRespondToTribunalService {
         );
 
         CaseData caseData = EmployeeObjectMapper
-            .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
+            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
 
         // get selected SendNotificationType
         var sendNotificationTypeItem =

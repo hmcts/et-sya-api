@@ -26,7 +26,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
@@ -770,7 +769,11 @@ public class NotificationService {
                     resp.getValue()
                 );
                 if (isNullOrEmpty(respondentEmailAddress)) {
-                    log.info("Respondent does not not have an email address associated with their account");
+                    log.info(
+                        String.format(
+                            "Respondent %s did not have an email address associated with their account",
+                            resp.getId()
+                        ));
                 } else {
                     try {
                         notificationClient.sendEmail(
@@ -940,25 +943,5 @@ public class NotificationService {
         return isWelsh
             ? notificationsProperties.getCyClaimantTseEmailTypeATemplateId()
             : notificationsProperties.getClaimantTseEmailTypeATemplateId();
-    }
-
-    public void sendEt3ConfirmationEmail(String email, CaseData caseData, String caseId) {
-        Map<String, Object> parameters = new ConcurrentHashMap<>();
-        parameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseData.getEthosCaseReference());
-        parameters.put("claimant", caseData.getClaimant());
-        parameters.put("list_of_respondents", getRespondentNames(caseData));
-        parameters.put("linkToPortal",
-                       notificationsProperties.getRespondentPortalLink() + "case-details/" + caseId);
-
-        try {
-            notificationClient.sendEmail(
-                notificationsProperties.getEt3SubmissionConfirmationTemplateId(),
-                email,
-                parameters,
-                UUID.randomUUID().toString()
-            );
-        } catch (NotificationClientException ne) {
-            throw new NotificationException(ne);
-        }
     }
 }

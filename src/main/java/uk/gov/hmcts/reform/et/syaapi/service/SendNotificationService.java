@@ -60,7 +60,7 @@ public class SendNotificationService {
         );
 
         CaseData caseData = EmployeeObjectMapper
-            .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
+            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
 
         List<SendNotificationTypeItem> notifications = caseData.getSendNotificationCollection();
         for (SendNotificationTypeItem item : notifications) {
@@ -126,7 +126,7 @@ public class SendNotificationService {
         );
 
         CaseData caseData = EmployeeObjectMapper
-            .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
+            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
         var sendNotificationTypeItem =
             caseData.getSendNotificationCollection()
                 .stream()

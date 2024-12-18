@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,7 +30,6 @@ import uk.gov.service.notify.NotificationClientException;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.util.Collections;
 
@@ -73,6 +71,7 @@ class ManageCaseControllerIntegrationTest {
     private ApplicationService applicationService;
     @MockBean
     private BundlesService bundlesService;
+
     @Autowired
     private ResourceLoader resourceLoader;
 
@@ -93,7 +92,7 @@ class ManageCaseControllerIntegrationTest {
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(authTokenGenerator.generate()).thenReturn("token");
         when(idamClient.getUserInfo(any())).thenReturn(UserInfo.builder().uid("1234").build());
-        when(applicationService.submitApplication(any(), any(), any())).thenReturn(caseDetailsResponse);
+        when(applicationService.submitApplication(any(), any())).thenReturn(caseDetailsResponse);
         when(applicationService.respondToApplication(any(), any())).thenReturn(caseDetailsResponse);
         when(applicationService.updateTribunalResponseAsViewed(any(),any())).thenReturn(caseDetailsResponse);
         when(bundlesService.submitBundles(any(),any())).thenReturn(caseDetailsResponse);
@@ -204,7 +203,7 @@ class ManageCaseControllerIntegrationTest {
             .thenReturn(caseDetailsResponse);
 
         mockMvc.perform(
-                post("/cases/update-case-submitted")
+                put("/cases/update-case-submitted")
                     .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(resourceLoader.toJson(caseRequest)))
@@ -270,13 +269,9 @@ class ManageCaseControllerIntegrationTest {
     private String getSerialisedMessage(String fileName) {
         try {
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            URL url = ObjectUtils.isNotEmpty(classLoader) && ObjectUtils.isNotEmpty(classLoader.getResource(fileName))
-                ? classLoader.getResource(fileName) : null;
-            File file = ObjectUtils.isNotEmpty(url) ? new File(url.getFile()) : null;
-            if (ObjectUtils.isNotEmpty(file)) {
-                return new String(Files.readAllBytes(file.toPath()));
-            }
-            throw new IOException("Unable to find the file");
+            File file = new File(classLoader.getResource(fileName).getFile());
+            return new String(Files.readAllBytes(file.toPath()));
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

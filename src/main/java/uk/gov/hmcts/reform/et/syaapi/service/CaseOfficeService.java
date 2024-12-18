@@ -38,7 +38,7 @@ public class CaseOfficeService {
      * @return @link CaseData
      */
     public CaseData convertCaseRequestToCaseDataWithTribunalOffice(CaseRequest caseRequest) {
-        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseRequest.getCaseData());
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseRequest.getCaseData());
         List<RespondentSumTypeItem> respondentSumTypeList = caseData.getRespondentCollection();
         String managingOffice = UNASSIGNED_OFFICE;
         if (doesClaimantHaveWorkingAddressPostcode(caseData)) {

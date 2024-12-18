@@ -32,7 +32,7 @@ class NotificationHelperTest {
     void shouldReturnEmptyStringUtil() {
         // Given
         var data = caseTestData.getCaseDataWithClaimTypes().getCaseData();
-        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(data);
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(data);
         // When
         String respondentNames = NotificationsHelper.getRespondentNames(caseData);
 
