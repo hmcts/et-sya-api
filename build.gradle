@@ -3,12 +3,12 @@ plugins {
   id 'checkstyle'
   id 'pmd'
   id 'jacoco'
-  id 'io.spring.dependency-management' version '1.1.6'
+  id 'io.spring.dependency-management' version '1.1.7'
   id 'org.springframework.boot' version '2.7.18'
   id 'org.owasp.dependencycheck' version '11.1.1'
   id 'com.github.ben-manes.versions' version '0.51.0'
   id 'org.sonarqube' version '6.0.1.5171'
-  id 'hmcts.ccd.sdk' version '5.5.14'
+  id 'hmcts.ccd.sdk' version '5.5.16'
   id 'au.com.dius.pact' version '4.3.15'
 }
 
@@ -128,7 +128,7 @@ task contract(type: Test) {
 
 checkstyle {
   maxWarnings = 0
-  toolVersion = '10.20.2'
+  toolVersion = '10.21.0'
   getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
 
@@ -201,7 +201,7 @@ repositories {
 
 ext {
   reformLoggingVersion = "5.1.9"
-  log4JVersion = "2.24.2"
+  log4JVersion = "2.24.3"
 }
 
 dependencies {
@@ -220,7 +220,7 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-json'
   implementation group: 'org.springframework.boot', name: 'spring-boot-configuration-processor'
-  implementation group: 'org.springframework.retry', name: 'spring-retry', version: '2.0.10'
+  implementation group: 'org.springframework.retry', name: 'spring-retry', version: '2.0.11'
   implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.18.2'
   implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.2'
 
@@ -234,7 +234,7 @@ dependencies {
 
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '4.1.1-RELEASE'
   implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.5'
-  implementation group: 'com.google.guava', name: 'guava', version: '33.3.1-jre'
+  implementation group: 'com.google.guava', name: 'guava', version: '33.4.0-jre'
 
   implementation 'org.apache.tika:tika-core:3.0.0'
 
@@ -245,7 +245,7 @@ dependencies {
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
   implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.47'
 
-  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.16.1'
+  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '8.17.0'
   implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.7.18'
   implementation 'org.json:json:20240303'
   implementation group: 'org.yaml', name: 'snakeyaml', version: '2.3'
@@ -253,7 +253,7 @@ dependencies {
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.98'
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '11.0.2'
 
-  implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '6.4.1'
+  implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '6.4.2'
 
   implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
 
@@ -270,7 +270,7 @@ dependencies {
 
   testImplementation group: 'io.github.openfeign', name: 'feign-jackson', version: '13.5'
   testImplementation group: 'org.mockito', name: 'mockito-inline', version: '5.2.0'
-  testImplementation(platform('org.junit:junit-bom:5.11.3'))
+  testImplementation(platform('org.junit:junit-bom:5.11.4'))
   testImplementation group: 'org.projectlombok', name: 'lombok'
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
     exclude group: 'junit', module: 'junit'
@@ -282,15 +282,15 @@ dependencies {
   testImplementation group: 'io.rest-assured', name: 'rest-assured'
   testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit', version: '4.1.0'
 
-  testImplementation 'com.github.hmcts:fortify-client:1.4.5:all'
+  testImplementation 'com.github.hmcts:fortify-client:1.4.6:all'
 
   // Pact Contract Tests
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: '4.1.41'
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'java8', version: '4.1.41'
-  contractTestImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.11.3'
-  contractTestRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.11.3'
-  contractTestImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.11.3'
-  contractTestRuntimeOnly group: 'org.junit.platform', name: 'junit-platform-commons', version: '1.11.3'
+  contractTestImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.11.4'
+  contractTestRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.11.4'
+  contractTestImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.11.4'
+  contractTestRuntimeOnly group: 'org.junit.platform', name: 'junit-platform-commons', version: '1.11.4'
 
   contractTestImplementation sourceSets.main.runtimeClasspath
   contractTestImplementation sourceSets.test.runtimeClasspath
