@@ -55,7 +55,7 @@ public class StoredApplicationService {
         );
 
         CaseData caseData = EmployeeObjectMapper
-            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
+            .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
 
         // Create new GenericTseApplicationTypeItem
         ClaimantTse claimantTse = request.getClaimantTse();
@@ -114,7 +114,7 @@ public class StoredApplicationService {
         ClaimantApplicationRequest request,
         CaseDetails finalCaseDetails
     ) {
-        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(finalCaseDetails.getData());
+        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(finalCaseDetails.getData());
         ClaimantIndType claimantIndType = caseData.getClaimantIndType();
         String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
         NotificationService.CoreEmailDetails details = new NotificationService.CoreEmailDetails(
