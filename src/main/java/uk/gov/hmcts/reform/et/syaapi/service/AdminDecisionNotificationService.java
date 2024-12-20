@@ -35,7 +35,7 @@ public class AdminDecisionNotificationService {
         );
 
         CaseData caseData = EmployeeObjectMapper
-            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
+            .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
 
         GenericTseApplicationTypeItem selectedApplication = TseApplicationHelper.getSelectedApplication(
             caseData.getGenericTseApplicationCollection(), request.getAppId()

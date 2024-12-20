@@ -19,6 +19,7 @@ public class HubLinkService {
     private final CaseService caseService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final FeatureToggleService featureToggleService;
+    private final ManageCaseRoleService manageCaseRoleService;
 
     /**
      * Updates case data with hub link statuses {@link CaseDetails}.
@@ -27,7 +28,9 @@ public class HubLinkService {
      * @param authorization is used to find the {@link UserInfo} for request
      * @return the associated {@link CaseDetails} if the case is created
      */
-    public CaseDetails updateHubLinkStatuses(HubLinksStatusesRequest request, String authorization) {
+    public CaseDetails updateHubLinkStatuses(HubLinksStatusesRequest request,
+                                             String authorization,
+                                             String caseUserRole) {
 
         if (featureToggleService.isCaseFlagsEnabled()) {
             log.info("Case flags enabled - calling UPDATE_HUBLINK_STATUS");
@@ -39,7 +42,7 @@ public class HubLinkService {
             );
 
             CaseData caseData = EmployeeObjectMapper
-                .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
+                .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
             caseData.setHubLinksStatuses(request.getHubLinksStatuses());
 
             return caseService.submitUpdate(
@@ -50,7 +53,10 @@ public class HubLinkService {
             );
         } else {
             log.info("Case flags disabled - calling UPDATE_CASE_SUBMITTED");
-            CaseDetails caseDetails = caseService.getUserCase(authorization, request.getCaseId());
+            // Added parameter case user role as creator.
+            CaseDetails caseDetails = manageCaseRoleService.getUserCaseByCaseUserRole(authorization,
+                                                                            request.getCaseId(),
+                                                                            caseUserRole);
             caseDetails.getData().put("hubLinksStatuses", request.getHubLinksStatuses());
 
             return caseService.triggerEvent(
