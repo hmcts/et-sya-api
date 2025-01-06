@@ -11,6 +11,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.TseRespondTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
+import uk.gov.hmcts.et.common.model.ccd.types.RespondentTse;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -23,6 +24,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.RespondentApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.NotificationService.CoreEmailDetails;
 import uk.gov.service.notify.NotificationClient;
@@ -344,5 +346,46 @@ public class ApplicationService {
             true,
             WEEKS_78
         );
+    }
+
+    /**
+     * Submit Claimant Application to Tell Something Else.
+     *
+     * @param authorization - authorization
+     * @param request - application request from the claimant
+     * @return the associated {@link CaseDetails} for the ID provided in request
+     */
+    public CaseDetails submitRespondentApplication(String authorization, RespondentApplicationRequest request)
+        throws NotificationClientException {
+
+        String caseTypeId = request.getCaseTypeId();
+        CaseDetails caseDetails = caseService.getUserCase(authorization, request.getCaseId());
+        RespondentTse respondentTse = request.getRespondentTse();
+        caseDetails.getData().put("respondentTse", respondentTse);
+
+        try {
+            log.info("Uploading pdf of TSE application");
+            caseService.uploadRespondentTseAsPdf(authorization, caseDetails, respondentTse, caseTypeId);
+        } catch (CaseDocumentException | DocumentGenerationException e) {
+            log.error("Couldn't upload pdf of TSE application " + e.getMessage());
+        }
+
+        UploadedDocumentType contactApplicationFile = respondentTse.getContactApplicationFile();
+        if (contactApplicationFile != null) {
+            log.info("Uploading supporting file to document collection");
+            caseService.uploadTseSupportingDocument(caseDetails, contactApplicationFile,
+                                                    respondentTse.getContactApplicationType()
+            );
+        }
+
+        CaseDetails finalCaseDetails = caseService.triggerEvent(
+            authorization,
+            request.getCaseId(),
+            CaseEvent.SUBMIT_CLAIMANT_TSE,
+            caseTypeId,
+            caseDetails.getData()
+        );
+
+        return finalCaseDetails;
     }
 }

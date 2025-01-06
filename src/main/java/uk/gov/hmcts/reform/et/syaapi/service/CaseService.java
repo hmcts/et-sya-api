@@ -16,6 +16,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.JurCodesTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
+import uk.gov.hmcts.et.common.model.ccd.types.RespondentTse;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -512,5 +513,41 @@ public class CaseService {
             caseData.setDocumentCollection(new ArrayList<>());
         }
         caseData.getDocumentCollection().add(responsePdf);
+    }
+
+    void uploadRespondentTseAsPdf(
+        String authorization,
+        CaseDetails caseDetails,
+        RespondentTse respondentTse,
+        String caseType
+    ) throws DocumentGenerationException, CaseDocumentException {
+
+        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        List<DocumentTypeItem> docList = caseData.getDocumentCollection();
+
+        if (docList == null) {
+            docList = new ArrayList<>();
+        }
+
+        String docName = "Application %d - %s.pdf".formatted(
+            ApplicationService.getNextApplicationNumber(caseData),
+            respondentTse.getContactApplicationType()).replace("/", " or ");
+        PdfDecodedMultipartFile pdfDecodedMultipartFile =
+            pdfUploadService.convertRespondentTseIntoMultipartFile(respondentTse,
+                                                                 caseData.getEthosCaseReference(),
+                                                                 docName);
+        String applicationDocMapping = respondentTse.getContactApplicationType();
+        String topLevel = DocumentHelper.getTopLevelDocument(applicationDocMapping);
+
+        docList.add(caseDocumentService.createDocumentTypeItemLevels(
+            authorization,
+            caseType,
+            topLevel,
+            applicationDocMapping,
+            CASE_MANAGEMENT_DOC_CATEGORY,
+            pdfDecodedMultipartFile
+        ));
+
+        caseDetails.getData().put(DOCUMENT_COLLECTION, docList);
     }
 }

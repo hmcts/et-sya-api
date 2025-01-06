@@ -248,4 +248,27 @@ public class ManageCaseController {
         CaseDetails finalCaseDetails = applicationService.updateTribunalResponseAsViewed(authorization, request);
         return ok(finalCaseDetails);
     }
+
+    /**
+     * Submits a Claimant Application.
+     *
+     * @param authorization jwt of the user
+     * @param request       the request object which contains the claimant application passed from sya-frontend
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    @PutMapping("/submit-claimant-application")
+    @Operation(summary = "Submit a claimant application")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> submitRespondentApplication(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody ClaimantApplicationRequest request
+    ) throws NotificationClientException {
+        log.info("Received submit respondent application request - caseTypeId: {} caseId: {}",
+                 request.getCaseTypeId(), request.getCaseId()
+        );
+
+        CaseDetails finalCaseDetails = applicationService.submitRespondentApplication(authorization, request);
+
+        return ok(finalCaseDetails);
+    }
 }
