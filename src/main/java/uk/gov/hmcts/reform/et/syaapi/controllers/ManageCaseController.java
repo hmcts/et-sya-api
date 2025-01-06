@@ -257,7 +257,7 @@ public class ManageCaseController {
      * @param request       the request object which contains the claimant application passed from sya-frontend
      * @return the new updated case wrapped in a {@link CaseDetails}
      */
-    @PutMapping("/submit-claimant-application")
+    @PutMapping("/submit-respondent-application")
     @Operation(summary = "Submit a claimant application")
     @ApiResponseGroup
     public ResponseEntity<CaseDetails> submitRespondentApplication(
