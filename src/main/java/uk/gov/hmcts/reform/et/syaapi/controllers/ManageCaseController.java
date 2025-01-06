@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.RespondentApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
@@ -261,7 +262,7 @@ public class ManageCaseController {
     @ApiResponseGroup
     public ResponseEntity<CaseDetails> submitRespondentApplication(
         @RequestHeader(AUTHORIZATION) String authorization,
-        @NotNull @RequestBody ClaimantApplicationRequest request
+        @NotNull @RequestBody RespondentApplicationRequest request
     ) throws NotificationClientException {
         log.info("Received submit respondent application request - caseTypeId: {} caseId: {}",
                  request.getCaseTypeId(), request.getCaseId()
