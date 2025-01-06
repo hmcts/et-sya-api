@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentTse;
-import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 
 @Data
 @Builder
