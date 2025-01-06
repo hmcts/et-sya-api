@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.hmcts.et.common.model.ccd.types.RespondentTse;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.HubLinksStatuses;
@@ -24,7 +23,6 @@ import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.RespondentApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
@@ -415,32 +413,6 @@ class ManageCaseControllerTest {
         verify(applicationService, times(1)).updateTribunalResponseAsViewed(
             TEST_SERVICE_AUTH_TOKEN,
             caseRequest
-        );
-    }
-
-    @SneakyThrows
-    @Test
-    void shouldSubmitRespondentApplication() {
-        RespondentApplicationRequest respondentApplicationRequest = RespondentApplicationRequest.builder()
-            .caseId(CASE_ID)
-            .caseTypeId(CASE_TYPE)
-            .respondentTse(new RespondentTse())
-            .build();
-
-        // when
-        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(applicationService.submitRespondentApplication(any(), any())).thenReturn(expectedDetails);
-
-        mockMvc.perform(
-            put("/cases/submit-respondent-application", CASE_ID)
-                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(ResourceLoader.toJson(respondentApplicationRequest))
-        ).andExpect(status().isOk());
-
-        verify(applicationService, times(1)).submitRespondentApplication(
-            TEST_SERVICE_AUTH_TOKEN,
-            respondentApplicationRequest
         );
     }
 }

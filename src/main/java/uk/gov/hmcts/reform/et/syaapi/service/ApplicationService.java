@@ -355,8 +355,7 @@ public class ApplicationService {
      * @param request - application request from the claimant
      * @return the associated {@link CaseDetails} for the ID provided in request
      */
-    public CaseDetails submitRespondentApplication(String authorization, RespondentApplicationRequest request)
-        throws NotificationClientException {
+    public CaseDetails submitRespondentApplication(String authorization, RespondentApplicationRequest request) {
 
         String caseTypeId = request.getCaseTypeId();
         CaseDetails caseDetails = caseService.getUserCase(authorization, request.getCaseId());
@@ -364,28 +363,26 @@ public class ApplicationService {
         caseDetails.getData().put("respondentTse", respondentTse);
 
         try {
-            log.info("Uploading pdf of TSE application");
+            log.info("Uploading pdf of Respondent TSE application");
             caseService.uploadRespondentTseAsPdf(authorization, caseDetails, respondentTse, caseTypeId);
         } catch (CaseDocumentException | DocumentGenerationException e) {
-            log.error("Couldn't upload pdf of TSE application " + e.getMessage());
+            log.error("Couldn't upload pdf of Respondent TSE application " + e.getMessage());
         }
 
         UploadedDocumentType contactApplicationFile = respondentTse.getContactApplicationFile();
         if (contactApplicationFile != null) {
-            log.info("Uploading supporting file to document collection");
+            log.info("Uploading Respondent TSE supporting file to document collection");
             caseService.uploadTseSupportingDocument(caseDetails, contactApplicationFile,
                                                     respondentTse.getContactApplicationType()
             );
         }
 
-        CaseDetails finalCaseDetails = caseService.triggerEvent(
+        return caseService.triggerEvent(
             authorization,
             request.getCaseId(),
             CaseEvent.SUBMIT_CLAIMANT_TSE,
             caseTypeId,
             caseDetails.getData()
         );
-
-        return finalCaseDetails;
     }
 }

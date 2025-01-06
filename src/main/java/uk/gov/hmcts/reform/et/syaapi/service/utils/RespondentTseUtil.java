@@ -12,7 +12,7 @@ import java.time.LocalDate;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
 
 @Slf4j
-public class RespondentTseUtil {
+public final class RespondentTseUtil {
     private RespondentTseUtil() {
     }
 

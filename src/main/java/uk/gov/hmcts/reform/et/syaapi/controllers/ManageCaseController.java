@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.et.syaapi.models.ChangeApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.HubLinksStatusesRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
-import uk.gov.hmcts.reform.et.syaapi.models.RespondentApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.TribunalResponseViewedRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseService;
@@ -247,29 +246,6 @@ public class ManageCaseController {
                  request.getCaseTypeId(), request.getCaseId()
         );
         CaseDetails finalCaseDetails = applicationService.updateTribunalResponseAsViewed(authorization, request);
-        return ok(finalCaseDetails);
-    }
-
-    /**
-     * Submits a Claimant Application.
-     *
-     * @param authorization jwt of the user
-     * @param request       the request object which contains the claimant application passed from sya-frontend
-     * @return the new updated case wrapped in a {@link CaseDetails}
-     */
-    @PutMapping("/submit-respondent-application")
-    @Operation(summary = "Submit a claimant application")
-    @ApiResponseGroup
-    public ResponseEntity<CaseDetails> submitRespondentApplication(
-        @RequestHeader(AUTHORIZATION) String authorization,
-        @NotNull @RequestBody RespondentApplicationRequest request
-    ) throws NotificationClientException {
-        log.info("Received submit respondent application request - caseTypeId: {} caseId: {}",
-                 request.getCaseTypeId(), request.getCaseId()
-        );
-
-        CaseDetails finalCaseDetails = applicationService.submitRespondentApplication(authorization, request);
-
         return ok(finalCaseDetails);
     }
 }
