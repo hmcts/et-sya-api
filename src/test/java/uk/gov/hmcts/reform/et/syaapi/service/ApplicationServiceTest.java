@@ -88,15 +88,9 @@ class ApplicationServiceTest {
             notificationService,
             caseDocumentService,
             caseDetailsConverter,
-            featureToggleService
-        );
+            featureToggleService);
 
         when(featureToggleService.isWorkAllocationEnabled()).thenReturn(true);
-
-        when(caseService.getUserCase(
-            TEST_SERVICE_AUTH_TOKEN,
-            testData.getClaimantApplicationRequest().getCaseId()
-        )).thenReturn(testData.getCaseDetailsWithData());
 
         doNothing().when(caseService).uploadTseSupportingDocument(any(), any(), any());
         doNothing().when(caseService).uploadTseCyaAsPdf(any(), any(), any(), any());
@@ -118,6 +112,13 @@ class ApplicationServiceTest {
         DocumentTypeItem docType = DocumentTypeItem.builder().id("1").value(new DocumentType()).build();
         when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(docType);
 
+        when(caseService.submitUpdate(
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(testData.getClaimantApplicationRequest().getCaseId()),
+            any(),
+            eq(testData.getClaimantApplicationRequest().getCaseTypeId())
+        )).thenReturn(testData.getCaseDetailsWithData());
+
         ResponseEntity<ByteArrayResource> responseEntity =
             new ResponseEntity<>(HttpStatus.OK);
         when(caseDocumentService.downloadDocument(eq(TEST_SERVICE_AUTH_TOKEN), any())).thenReturn(responseEntity);
@@ -126,7 +127,8 @@ class ApplicationServiceTest {
 
     @Test
     void shouldSendClaimantEmailWithCorrectParameters() throws NotificationClientException {
-        applicationService.submitApplication(TEST_SERVICE_AUTH_TOKEN, testData.getClaimantApplicationRequest());
+        applicationService.submitApplication(TEST_SERVICE_AUTH_TOKEN,
+                                             testData.getClaimantApplicationRequest());
 
         ArgumentCaptor<CoreEmailDetails> argument = ArgumentCaptor.forClass(CoreEmailDetails.class);
         verify(notificationService, times(1)).sendAcknowledgementEmailToClaimant(
@@ -153,7 +155,8 @@ class ApplicationServiceTest {
 
             when(caseDocumentService.downloadDocument(eq(TEST_SERVICE_AUTH_TOKEN), any())).thenReturn(responseEntity);
 
-            applicationService.submitApplication(TEST_SERVICE_AUTH_TOKEN, testData.getClaimantApplicationRequest());
+            applicationService.submitApplication(TEST_SERVICE_AUTH_TOKEN,
+                                                 testData.getClaimantApplicationRequest());
 
             ArgumentCaptor<CoreEmailDetails> argument = ArgumentCaptor.forClass(CoreEmailDetails.class);
             verify(notificationService, times(1)).sendAcknowledgementEmailToRespondents(
@@ -173,7 +176,8 @@ class ApplicationServiceTest {
 
         @Test
         void shouldSendRespondentEmailWithNoSupportingDocument() throws NotificationClientException {
-            applicationService.submitApplication(TEST_SERVICE_AUTH_TOKEN, testData.getClaimantApplicationRequest());
+            applicationService.submitApplication(TEST_SERVICE_AUTH_TOKEN,
+                                                 testData.getClaimantApplicationRequest());
 
             ArgumentCaptor<CoreEmailDetails> argument = ArgumentCaptor.forClass(CoreEmailDetails.class);
             verify(notificationService, times(1)).sendAcknowledgementEmailToRespondents(
@@ -194,7 +198,8 @@ class ApplicationServiceTest {
 
     @Test
     void shouldSendTribunalEmailWithCorrectParameters() throws NotificationClientException {
-        applicationService.submitApplication(TEST_SERVICE_AUTH_TOKEN, testData.getClaimantApplicationRequest());
+        applicationService.submitApplication(TEST_SERVICE_AUTH_TOKEN,
+                                             testData.getClaimantApplicationRequest());
 
         ArgumentCaptor<CoreEmailDetails> argument = ArgumentCaptor.forClass(CoreEmailDetails.class);
         verify(notificationService, times(1)).sendAcknowledgementEmailToTribunal(

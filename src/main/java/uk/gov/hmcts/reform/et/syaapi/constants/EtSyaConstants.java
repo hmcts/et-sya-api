@@ -72,19 +72,20 @@ public final class EtSyaConstants {
 
     public static final String CLAIMANT_CORRESPONDENCE_DOCUMENT = "Claimant correspondence";
     public static final String YES = "Yes";
+    public static final String NO = "No";
 
     public static final String WELSH_LANGUAGE = "Welsh";
     public static final String WELSH_LANGUAGE_PARAM = "/?lng=cy";
 
     public static final String ET3_ATTACHMENT = "ET3 Attachment";
     public static final String ET3 = "ET3";
+    public static final String ET1 = "ET1";
 
     public static final String WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH = "?lng=cy";
 
     public static final String ET1_ONLINE_SUBMISSION = "et1OnlineSubmission";
-    public static final String TIMES_NEW_ROMAN_PDFBOX_CHARACTER_CODE = "TiRo";
-    public static final String HELVETICA_PDFBOX_CHARACTER_CODE_1 = "Helvetica";
-    public static final String HELVETICA_PDFBOX_CHARACTER_CODE_2 = "Helv";
+    public static final String PDF_FILE_TIKA_CONTENT_TYPE = "application/pdf";
+    public static final String STRING_DASH = "-";
 
     public static final List<String> ACAS_HIDDEN_DOCS = List.of(ET1_VETTING, ET3_PROCESSING, INITIAL_CONSIDERATION,
         APP_FOR_A_WITNESS_ORDER_C, APP_FOR_A_WITNESS_ORDER_R, REFERRAL_JUDICIAL_DIRECTION, COT3,
