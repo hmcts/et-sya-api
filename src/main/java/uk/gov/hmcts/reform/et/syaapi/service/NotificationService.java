@@ -10,6 +10,7 @@ import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ecm.common.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
+import uk.gov.hmcts.et.common.model.ccd.types.RespondentTse;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
@@ -31,6 +32,8 @@ import java.util.stream.Stream;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.apache.tika.utils.StringUtils.isBlank;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.TSE_APP_ORDER_A_WITNESS_TO_ATTEND_TO_GIVE_EVIDENCE;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_ABBREVIATED_MONTHS_MAP;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_APP_TYPE_MAP;
@@ -92,6 +95,7 @@ public class NotificationService {
     public static final String HEARING_DATE_KEY = "hearingDate";
     private static final String NO_CLAIMANT_EMAIL_FOUND =
         "No claimant email found - Application response acknowledgment not being sent";
+    private static final String HEARING_DATE_NOT_SET_WELSH = "Heb ei anfon";
 
     /**
      * Record containing core details of an email.
@@ -282,54 +286,47 @@ public class NotificationService {
      */
     SendEmailResponse sendAcknowledgementEmailToClaimant(CoreEmailDetails details, ClaimantTse claimantApplication) {
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
-        boolean welshFlagEnabled = featureToggleService.isWelshEnabled();
-        log.info("Welsh feature flag is set to " + welshFlagEnabled);
-        boolean isWelsh = welshFlagEnabled && WELSH_LANGUAGE.equals(
-            details.caseData().getClaimantHearingPreference().getContactLanguage());
-        String hearingDate = details.hearingDate;
+        boolean isWelsh = isWelshLanguage(details.caseData());
 
-        if (NOT_SET.equals(hearingDate) && isWelsh) {
-            hearingDate = "Heb ei anfon";
-        } else if (isWelsh) {
-            hearingDate = translateHearingDateToWelsh(hearingDate);
-        }
-
+        String hearingDate = getHearingDate(details.hearingDate(), isWelsh);
         claimantParameters.put(HEARING_DATE_KEY, hearingDate);
 
-        addCommonParameters(
-            claimantParameters,
-            details.claimant,
-            details.respondentNames,
-            details.caseId,
-            details.caseNumber
-        );
+        addCommonParameters(claimantParameters, details.claimant(), details.respondentNames(), details.caseId(), details.caseNumber());
 
-        String citizenPortalLink = notificationsProperties.getCitizenPortalLink() + details.caseId
-            + (isWelsh ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
-        claimantParameters.put(
-            SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
-            citizenPortalLink
-        );
+        String citizenPortalLink = getCitizenPortalLink(details.caseId(), isWelsh);
+        claimantParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, citizenPortalLink);
 
-        String emailToClaimantTemplate = getAndSetRule92EmailTemplate(
-            claimantApplication,
-            hearingDate,
-            claimantParameters,
-            isWelsh
-        );
+        String emailToClaimantTemplate = getAndSetRule92EmailTemplate(claimantApplication, hearingDate,
+                                                                      claimantParameters, isWelsh);
 
-        SendEmailResponse claimantEmail;
-        try {
-            claimantEmail = notificationClient.sendEmail(
-                emailToClaimantTemplate,
-                details.caseData.getClaimantType().getClaimantEmailAddress(),
-                claimantParameters,
-                details.caseId
-            );
-        } catch (NotificationClientException ne) {
-            throw new NotificationException(ne);
+        return sendEmailToClaimant(details.caseData(), details.caseId(), emailToClaimantTemplate, claimantParameters);
+    }
+
+    private boolean isWelshLanguage(CaseData caseData) {
+        boolean welshFlagEnabled = featureToggleService.isWelshEnabled();
+        log.info("Welsh feature flag is set to " + welshFlagEnabled);
+        return welshFlagEnabled && WELSH_LANGUAGE.equals(caseData.getClaimantHearingPreference().getContactLanguage());
+    }
+
+    private String getHearingDate(String hearingDate, boolean isWelsh) {
+        if (NOT_SET.equals(hearingDate)) {
+            return isWelsh ? HEARING_DATE_NOT_SET_WELSH : NOT_SET;
         }
-        return claimantEmail;
+        return isWelsh ? translateHearingDateToWelsh(hearingDate) : hearingDate;
+    }
+
+    private String getCitizenPortalLink(String caseId, boolean isWelsh) {
+        return notificationsProperties.getCitizenPortalLink() + caseId + (isWelsh ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
+    }
+
+    private SendEmailResponse sendEmailToClaimant(CaseData caseData, String caseId, String emailTemplate, Map<String, Object> parameters) {
+        try {
+            String claimantEmail = caseData.getClaimantType().getClaimantEmailAddress();
+            return notificationClient.sendEmail(emailTemplate, claimantEmail, parameters, caseId);
+        } catch (NotificationClientException e) {
+            log.error("Failed to send acknowledgment email to claimant", e);
+            throw new NotificationException(e);
+        }
     }
 
     private String translateHearingDateToWelsh(String hearingDate) {
@@ -944,4 +941,9 @@ public class NotificationService {
             ? notificationsProperties.getCyClaimantTseEmailTypeATemplateId()
             : notificationsProperties.getClaimantTseEmailTypeATemplateId();
     }
+
+    SendEmailResponse sendRespondentAppAcknowledgementEmail(CoreEmailDetails details, RespondentTse respondentTse) {
+
+    }
+
 }
