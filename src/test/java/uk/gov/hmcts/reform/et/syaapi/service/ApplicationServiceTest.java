@@ -232,6 +232,12 @@ class ApplicationServiceTest {
         assertThat(actualState).isEqualTo("viewed");
     }
 
+    @Test
+    void shouldSubmitRespondentApplication() {
+        applicationService.submitRespondentApplication(TEST_SERVICE_AUTH_TOKEN, testData.getRespondentApplicationRequest());
+
+    }
+
     @Nested
     class RespondToApplicationReplyToTribunal {
         RespondToApplicationRequest testRequest;
