@@ -40,8 +40,9 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
-import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.setClaimantApplicationWithResppondentResponse;
-import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.setRespondentApplicationWithClaimantResponse;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.RESPONDENT;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.setRespondentApplicationWithResponse;
 
 @RequiredArgsConstructor
 @Service
@@ -168,7 +169,7 @@ public class ApplicationService {
         sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
 
         boolean waEnabled = featureToggleService.isWorkAllocationEnabled();
-        setRespondentApplicationWithClaimantResponse(request, appType, caseData, caseDocumentService, waEnabled);
+        setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService, waEnabled, CLAIMANT);
 
         createAndAddPdfOfResponse(authorization, request, caseData, appType);
 
@@ -301,6 +302,31 @@ public class ApplicationService {
         notificationService.sendAcknowledgementEmailToTribunal(details, claimantTse.getContactApplicationType());
     }
 
+//    private void sendRespondentAppAcknowledgementEmails(
+//        String authorization,
+//        RespondentApplicationRequest request,
+//        CaseDetails finalCaseDetails
+//    ) throws NotificationClientException {
+//        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(finalCaseDetails.getData());
+//        ClaimantIndType claimantIndType = caseData.getClaimantIndType();
+//        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
+//        CoreEmailDetails details = new CoreEmailDetails(
+//            caseData,
+//            claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName(),
+//            caseData.getEthosCaseReference(),
+//            getRespondentNames(caseData),
+//            hearingDate,
+//            finalCaseDetails.getId().toString()
+//        );
+//
+//        RespondentTse respondentTse = request.getRespondentTse();
+//        JSONObject documentJson = getDocumentDownload(authorization, caseData);
+//
+////        notificationService.sendRespondentAppAcknowledgementEmailToRespondent(details, respondentTse);
+////        notificationService.sendAcknowledgementEmailToRespondents(details, documentJson, respondentTse);
+//        notificationService.sendAcknowledgementEmailToTribunal(details, respondentTse.getContactApplicationType());
+//    }
+
     private void sendResponseToApplicationEmails(
         GenericTseApplicationType application,
         CaseData caseData,
@@ -375,7 +401,15 @@ public class ApplicationService {
     public CaseDetails submitRespondentApplication(String authorization, RespondentApplicationRequest request) {
 
         String caseTypeId = request.getCaseTypeId();
-        CaseDetails caseDetails = caseService.getUserCase(authorization, request.getCaseId());
+
+        StartEventResponse startEventResponse = caseService.startUpdate(
+            authorization,
+            request.getCaseId(),
+            request.getCaseTypeId(),
+            CaseEvent.SUBMIT_RESPONDENT_TSE
+        );
+
+        CaseDetails caseDetails = startEventResponse.getCaseDetails();
         RespondentTse respondentTse = request.getRespondentTse();
         caseDetails.getData().put("respondentTse", respondentTse);
 
@@ -394,13 +428,20 @@ public class ApplicationService {
             );
         }
 
-        return caseService.triggerEvent(
+        CaseData caseData = EmployeeObjectMapper
+            .convertCaseDataMapToCaseDataObject(caseDetails.getData());
+        CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
+
+
+        CaseDetails finalCaseDetails = caseService.submitUpdate(
             authorization,
             request.getCaseId(),
-            CaseEvent.SUBMIT_CLAIMANT_TSE,
-            caseTypeId,
-            caseDetails.getData()
+            content,
+            caseTypeId
         );
+
+//        sendRespondentAppAcknowledgementEmails(authorization, request, finalCaseDetails);
+        return finalCaseDetails;
     }
 
     /**
@@ -410,47 +451,45 @@ public class ApplicationService {
      * @param request - the request object which contains the appId and respondent application passed from sya-frontend
      * @return the new updated case wrapped in a {@link CaseDetails}
      */
-    public CaseDetails respondToClaimantApplication(String authorization, RespondToApplicationRequest request) {
-        String caseId = request.getCaseId();
-        String caseTypeId = request.getCaseTypeId();
-
-        StartEventResponse startEventResponse = caseService.startUpdate(
-            authorization,
-            caseId,
-            caseTypeId,
-            CaseEvent.RESPONDENT_TSE_RESPOND
-        );
-
-        CaseData caseData = EmployeeObjectMapper
-            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
-
-        GenericTseApplicationTypeItem appToModify = TseApplicationHelper.getSelectedApplication(
-            caseData.getGenericTseApplicationCollection(), request.getApplicationId()
-        );
-
-        if (appToModify == null) {
-            throw new IllegalArgumentException("Application id provided is incorrect");
-        }
-
-        String copyToOtherParty = request.getResponse().getCopyToOtherParty();
-        GenericTseApplicationType appType = appToModify.getValue();
-
-        boolean isRespondingToTribunal = request.isRespondingToRequestOrOrder();
-        if (isRespondingToTribunal) {
-            appType.setApplicationState(IN_PROGRESS);
-            appType.setClaimantResponseRequired(NO);
-        }
-
-        sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
-
-        boolean waEnabled = featureToggleService.isWorkAllocationEnabled();
-        setClaimantApplicationWithResppondentResponse(request, appType, caseData, caseDocumentService, waEnabled);
-
-        createAndAddPdfOfResponse(authorization, request, caseData, appType);
-
-        return caseService.submitUpdate(
-            authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
-    }
-
-
+//    public CaseDetails respondToClaimantApplication(String authorization, RespondToApplicationRequest request) {
+//        String caseId = request.getCaseId();
+//        String caseTypeId = request.getCaseTypeId();
+//
+//        StartEventResponse startEventResponse = caseService.startUpdate(
+//            authorization,
+//            caseId,
+//            caseTypeId,
+//            CaseEvent.RESPONDENT_TSE_RESPOND
+//        );
+//
+//        CaseData caseData = EmployeeObjectMapper
+//            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
+//
+//        GenericTseApplicationTypeItem appToModify = TseApplicationHelper.getSelectedApplication(
+//            caseData.getGenericTseApplicationCollection(), request.getApplicationId()
+//        );
+//
+//        if (appToModify == null) {
+//            throw new IllegalArgumentException("Application id provided is incorrect");
+//        }
+//
+//        String copyToOtherParty = request.getResponse().getCopyToOtherParty();
+//        GenericTseApplicationType appType = appToModify.getValue();
+//
+//        boolean isRespondingToTribunal = request.isRespondingToRequestOrOrder();
+//        if (isRespondingToTribunal) {
+//            appType.setApplicationState(IN_PROGRESS);
+//            appType.setClaimantResponseRequired(NO);
+//        }
+//
+////        sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
+//
+//        boolean waEnabled = featureToggleService.isWorkAllocationEnabled();
+//        setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService, waEnabled, RESPONDENT);
+//
+//        createAndAddPdfOfResponse(authorization, request, caseData, appType);
+//
+//        return caseService.submitUpdate(
+//            authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
+//    }
 }

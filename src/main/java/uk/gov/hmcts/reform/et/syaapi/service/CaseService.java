@@ -522,7 +522,7 @@ public class CaseService {
         String caseType
     ) throws DocumentGenerationException, CaseDocumentException {
 
-        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(caseDetails.getData());
+        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
         List<DocumentTypeItem> docList = caseData.getDocumentCollection();
 
         if (docList == null) {
