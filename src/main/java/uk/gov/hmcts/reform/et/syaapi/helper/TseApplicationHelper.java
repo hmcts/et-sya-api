@@ -123,11 +123,11 @@ public final class TseApplicationHelper {
      * @param caseData - case data
      * @param caseDocumentService - case document service to create pdf of response
      */
-    public static void setRespondentApplicationWithResponse(RespondToApplicationRequest request,
-                                                            GenericTseApplicationType appToModify,
-                                                            CaseData caseData,
-                                                            CaseDocumentService caseDocumentService,
-                                                            boolean isWorkAllocationEnabled) {
+    public static void setRespondentApplicationWithClaimantResponse(RespondToApplicationRequest request,
+                                                                    GenericTseApplicationType appToModify,
+                                                                    CaseData caseData,
+                                                                    CaseDocumentService caseDocumentService,
+                                                                    boolean isWorkAllocationEnabled) {
         if (CollectionUtils.isEmpty(appToModify.getRespondCollection())) {
             appToModify.setRespondCollection(new ArrayList<>());
         }
@@ -200,5 +200,58 @@ public final class TseApplicationHelper {
             .findFirst()
             .orElse("");
 
+    }
+
+
+    public static void setClaimantApplicationWithResppondentResponse(RespondToApplicationRequest request,
+                                                                    GenericTseApplicationType appToModify,
+                                                                    CaseData caseData,
+                                                                    CaseDocumentService caseDocumentService,
+                                                                    boolean isWorkAllocationEnabled) {
+        if (CollectionUtils.isEmpty(appToModify.getRespondCollection())) {
+            appToModify.setRespondCollection(new ArrayList<>());
+        }
+        TseRespondType responseToAdd = request.getResponse();
+        responseToAdd.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
+        responseToAdd.setFrom(CLAIMANT);
+
+        if (isWorkAllocationEnabled) {
+            responseToAdd.setDateTime(getCurrentDateTime());
+            responseToAdd.setApplicationType(appToModify.getType());
+        }
+
+        if (request.getSupportingMaterialFile() != null) {
+            DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(
+                CLAIMANT_CORRESPONDENCE_DOCUMENT,
+                request.getSupportingMaterialFile()
+            );
+            documentTypeItem.getValue().setShortDescription("Response to " + appToModify.getType());
+
+            responseToAdd.setSupportingMaterial(new ArrayList<>());
+            responseToAdd.getSupportingMaterial().add(documentTypeItem);
+
+            String applicationDoc = getApplicationDoc(appToModify);
+            String extension = FilenameUtils.getExtension(request.getSupportingMaterialFile().getDocumentFilename());
+            String docName = "Application %s - %s - Attachment.%s".formatted(
+                appToModify.getNumber(),
+                appToModify.getType(),
+                extension
+            );
+            request.getSupportingMaterialFile().setDocumentFilename(docName);
+            documentTypeItem = caseDocumentService.createDocumentTypeItem(applicationDoc,
+                                                                          request.getSupportingMaterialFile());
+
+            if (caseData.getDocumentCollection() == null) {
+                caseData.setDocumentCollection(new ArrayList<>());
+            }
+            caseData.getDocumentCollection().add(documentTypeItem);
+        }
+
+        appToModify.getRespondCollection().add(TseRespondTypeItem.builder()
+                                                   .id(UUID.randomUUID().toString())
+                                                   .value(responseToAdd).build());
+        appToModify.setResponsesCount(
+            String.valueOf(appToModify.getRespondCollection().size()));
+        appToModify.setApplicationState(WAITING_FOR_TRIBUNAL);
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
+import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondentApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.service.notify.NotificationClientException;
@@ -28,6 +29,13 @@ public class RespondentTseController {
 
     private final ApplicationService applicationService;
 
+    /**
+     * Submit a Respondent Application.
+     *
+     * @param authorization jwt of the user
+     * @param request       the request object which contains the appId and respondent application passed from sya-frontend
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
     @PutMapping("/submit-respondent-application")
     @Operation(summary = "Submit a respondent application")
     @ApiResponseGroup
@@ -43,4 +51,28 @@ public class RespondentTseController {
 
         return ok(finalCaseDetails);
     }
+
+    /**
+     * Respond to an application.
+     *
+     * @param authorization jwt of the user
+     * @param request       the request object which contains the appId and respondent application passed from sya-frontend
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    @PutMapping("/respond-to-claimant-application")
+    @Operation(summary = "Respond to an application")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> respondToApplication(
+            @RequestHeader(AUTHORIZATION) String authorization,
+            @NotNull @RequestBody RespondToApplicationRequest request
+    ) {
+        log.info("Received submit respond to application request - caseTypeId: {} caseId: {}",
+                request.getCaseTypeId(), request.getCaseId()
+        );
+
+        CaseDetails finalCaseDetails = applicationService.respondToClaimantApplication(authorization, request);
+
+        return ok(finalCaseDetails);
+    }
+
 }

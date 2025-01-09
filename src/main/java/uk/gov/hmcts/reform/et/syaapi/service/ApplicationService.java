@@ -39,7 +39,8 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
-import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.setRespondentApplicationWithResponse;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.setClaimantApplicationWithResppondentResponse;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.setRespondentApplicationWithClaimantResponse;
 
 @RequiredArgsConstructor
 @Service
@@ -151,7 +152,7 @@ public class ApplicationService {
         sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
 
         boolean waEnabled = featureToggleService.isWorkAllocationEnabled();
-        setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService, waEnabled);
+        setRespondentApplicationWithClaimantResponse(request, appType, caseData, caseDocumentService, waEnabled);
 
         createAndAddPdfOfResponse(authorization, request, caseData, appType);
 
@@ -349,10 +350,10 @@ public class ApplicationService {
     }
 
     /**
-     * Submit Claimant Application to Tell Something Else.
+     * Submit Respondent Application to Tell Something Else.
      *
      * @param authorization - authorization
-     * @param request - application request from the claimant
+     * @param request - application request from the respondent
      * @return the associated {@link CaseDetails} for the ID provided in request
      */
     public CaseDetails submitRespondentApplication(String authorization, RespondentApplicationRequest request) {
@@ -385,4 +386,55 @@ public class ApplicationService {
             caseDetails.getData()
         );
     }
+
+    /**
+     * Respond to claimant application.
+     *
+     * @param authorization - authorization
+     * @param request - the request object which contains the appId and respondent application passed from sya-frontend
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    public CaseDetails respondToClaimantApplication(String authorization, RespondToApplicationRequest request) {
+        String caseId = request.getCaseId();
+        String caseTypeId = request.getCaseTypeId();
+
+        StartEventResponse startEventResponse = caseService.startUpdate(
+            authorization,
+            caseId,
+            caseTypeId,
+            CaseEvent.RESPONDENT_TSE_RESPOND
+        );
+
+        CaseData caseData = EmployeeObjectMapper
+            .mapRequestCaseDataToCaseData(startEventResponse.getCaseDetails().getData());
+
+        GenericTseApplicationTypeItem appToModify = TseApplicationHelper.getSelectedApplication(
+            caseData.getGenericTseApplicationCollection(), request.getApplicationId()
+        );
+
+        if (appToModify == null) {
+            throw new IllegalArgumentException("Application id provided is incorrect");
+        }
+
+        String copyToOtherParty = request.getResponse().getCopyToOtherParty();
+        GenericTseApplicationType appType = appToModify.getValue();
+
+        boolean isRespondingToTribunal = request.isRespondingToRequestOrOrder();
+        if (isRespondingToTribunal) {
+            appType.setApplicationState(IN_PROGRESS);
+            appType.setClaimantResponseRequired(NO);
+        }
+
+        sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
+
+        boolean waEnabled = featureToggleService.isWorkAllocationEnabled();
+        setClaimantApplicationWithResppondentResponse(request, appType, caseData, caseDocumentService, waEnabled);
+
+        createAndAddPdfOfResponse(authorization, request, caseData, appType);
+
+        return caseService.submitUpdate(
+            authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
+    }
+
+
 }
