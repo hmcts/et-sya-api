@@ -343,56 +343,35 @@ public class NotificationService {
      * @param details             core details of the email
      * @param claimantApplication application request data
      */
-    void sendAcknowledgementEmailToRespondents(
-        CoreEmailDetails details,
-        JSONObject documentJson,
-        ClaimantTse claimantApplication
-    ) {
+    void sendAcknowledgementEmailToRespondents(CoreEmailDetails details, JSONObject documentJson, ClaimantTse claimantApplication) {
         if (TYPE_C.equals(claimantApplication.getContactApplicationType())
             || DONT_SEND_COPY.equals(claimantApplication.getCopyToOtherPartyYesOrNo())) {
             log.info("Acknowledgement email not sent to respondents for this application type");
             return;
         }
+
         Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
-        addCommonParameters(
-            respondentParameters,
-            details.claimant,
-            details.respondentNames,
-            details.caseId,
-            details.caseNumber
-        );
-        respondentParameters.put(
-            SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
-            details.hearingDate
-        );
-        respondentParameters.put(
-            SEND_EMAIL_PARAMS_SHORTTEXT_KEY,
-            APP_TYPE_MAP.get(claimantApplication.getContactApplicationType())
-        );
-        respondentParameters.put(
-            SEND_EMAIL_PARAMS_DATEPLUS7_KEY,
-            LocalDate.now().plusDays(7).format(UK_LOCAL_DATE_PATTERN)
-        );
+        addCommonParameters(respondentParameters,
+                            details.claimant(),
+                            details.respondentNames(),
+                            details.caseId(),
+                            details.caseNumber());
+        respondentParameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, details.hearingDate());
+        respondentParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, APP_TYPE_MAP.get(
+            claimantApplication.getContactApplicationType()));
+        respondentParameters.put(SEND_EMAIL_PARAMS_DATEPLUS7_KEY,
+                                 LocalDate.now().plusDays(7).format(UK_LOCAL_DATE_PATTERN));
+        respondentParameters.put(SEND_EMAIL_PARAMS_LINK_DOC_KEY,
+                                 Objects.requireNonNullElse(documentJson, ""));
+        respondentParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+                                 notificationsProperties.getExuiCaseDetailsLink() + details.caseId());
 
-        String emailToRespondentTemplate;
-        if (Stream.of(typeB).anyMatch(appType -> Objects.equals(
-            appType,
-            claimantApplication.getContactApplicationType()
-        ))) {
-            emailToRespondentTemplate = notificationsProperties.getRespondentTseEmailTypeBTemplateId();
-        } else {
-            emailToRespondentTemplate = notificationsProperties.getRespondentTseEmailTypeATemplateId();
-        }
-        respondentParameters.put(
-            SEND_EMAIL_PARAMS_LINK_DOC_KEY,
-            Objects.requireNonNullElse(documentJson, "")
-        );
-        respondentParameters.put(
-            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
-            notificationsProperties.getExuiCaseDetailsLink() + details.caseId
-        );
+        String emailToRespondentTemplate = Stream.of(typeB).anyMatch(
+            appType -> Objects.equals(appType, claimantApplication.getContactApplicationType()))
+            ? notificationsProperties.getRespondentTseEmailTypeBTemplateId()
+            : notificationsProperties.getRespondentTseEmailTypeATemplateId();
 
-        sendRespondentEmails(details.caseData, details.caseId, respondentParameters, emailToRespondentTemplate);
+        sendRespondentEmails(details.caseData(), details.caseId(), respondentParameters, emailToRespondentTemplate);
     }
 
     /**
@@ -941,9 +920,4 @@ public class NotificationService {
             ? notificationsProperties.getCyClaimantTseEmailTypeATemplateId()
             : notificationsProperties.getClaimantTseEmailTypeATemplateId();
     }
-
-    SendEmailResponse sendRespondentAppAcknowledgementEmail(CoreEmailDetails details, RespondentTse respondentTse) {
-
-    }
-
 }
