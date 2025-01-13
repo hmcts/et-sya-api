@@ -59,12 +59,15 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CO
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.RESPONDENT_CORRESPONDENCE_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.INITIATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT;
+
 /**
  * Provides read and write access to cases stored by ET.
  */
@@ -396,7 +399,7 @@ public class CaseService {
     }
 
     void uploadTseSupportingDocument(CaseDetails caseDetails, UploadedDocumentType contactApplicationFile,
-                                     String contactApplicationType) {
+                                     String contactApplicationType, String userType) {
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
         List<DocumentTypeItem> docList = caseData.getDocumentCollection();
 
@@ -408,13 +411,21 @@ public class CaseService {
             ApplicationService.getNextApplicationNumber(caseData),
             APP_TYPE_MAP.get(contactApplicationType),
             extension);
-        String applicationDocMapping =
-            DocumentHelper.claimantApplicationTypeToDocType(contactApplicationType);
+
+        String applicationDocMapping;
+        if (userType.equals(CLAIMANT)) {
+            applicationDocMapping = DocumentHelper.claimantApplicationTypeToDocType(contactApplicationType);
+        } else {
+            applicationDocMapping = DocumentHelper.respondentApplicationToDocType(contactApplicationType);
+        }
+
         String topLevel = DocumentHelper.getTopLevelDocument(applicationDocMapping);
         contactApplicationFile.setDocumentFilename(docName);
+
         DocumentType documentType = DocumentType.builder()
             .topLevelDocuments(topLevel)
-            .typeOfDocument(CLAIMANT_CORRESPONDENCE_DOCUMENT)
+            .typeOfDocument(userType.equals(CLAIMANT) ?
+                                CLAIMANT_CORRESPONDENCE_DOCUMENT : RESPONDENT_CORRESPONDENCE_DOCUMENT)
             .uploadedDocument(contactApplicationFile)
             .shortDescription(APP_TYPE_MAP.get(contactApplicationType))
             .dateOfCorrespondence(LocalDate.now().toString())
@@ -427,6 +438,10 @@ public class CaseService {
                         .value(documentType)
                         .build());
         caseDetails.getData().put(DOCUMENT_COLLECTION, docList);
+    }
+
+    private void uploadClaimantTseSupportingDocument() {
+        // Implementation not provided
     }
 
     void uploadTseCyaAsPdf(

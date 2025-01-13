@@ -104,8 +104,8 @@ public class ApplicationService {
         if (contactApplicationFile != null) {
             log.info("Uploading supporting file to document collection");
             caseService.uploadTseSupportingDocument(caseDetails, contactApplicationFile,
-                                                    claimantTse.getContactApplicationType()
-            );
+                                                    claimantTse.getContactApplicationType(),
+                                                    CLAIMANT);
         }
 
         CaseData caseData = EmployeeObjectMapper
@@ -283,16 +283,8 @@ public class ApplicationService {
         CaseDetails finalCaseDetails
     ) throws NotificationClientException {
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(finalCaseDetails.getData());
-        ClaimantIndType claimantIndType = caseData.getClaimantIndType();
-        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
-        CoreEmailDetails details = new CoreEmailDetails(
-            caseData,
-            claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName(),
-            caseData.getEthosCaseReference(),
-            getRespondentNames(caseData),
-            hearingDate,
-            finalCaseDetails.getId().toString()
-        );
+        String caseId = finalCaseDetails.getId().toString();
+        CoreEmailDetails details = prepareAcknowledgementEmailDetails(caseData, caseId);
 
         ClaimantTse claimantTse = request.getClaimantTse();
         JSONObject documentJson = getDocumentDownload(authorization, caseData);
@@ -302,30 +294,36 @@ public class ApplicationService {
         notificationService.sendAcknowledgementEmailToTribunal(details, claimantTse.getContactApplicationType());
     }
 
-//    private void sendRespondentAppAcknowledgementEmails(
-//        String authorization,
-//        RespondentApplicationRequest request,
-//        CaseDetails finalCaseDetails
-//    ) throws NotificationClientException {
-//        CaseData caseData = EmployeeObjectMapper.mapRequestCaseDataToCaseData(finalCaseDetails.getData());
-//        ClaimantIndType claimantIndType = caseData.getClaimantIndType();
-//        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
-//        CoreEmailDetails details = new CoreEmailDetails(
-//            caseData,
-//            claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName(),
-//            caseData.getEthosCaseReference(),
-//            getRespondentNames(caseData),
-//            hearingDate,
-//            finalCaseDetails.getId().toString()
-//        );
-//
-//        RespondentTse respondentTse = request.getRespondentTse();
-//        JSONObject documentJson = getDocumentDownload(authorization, caseData);
-//
-////        notificationService.sendRespondentAppAcknowledgementEmailToRespondent(details, respondentTse);
-////        notificationService.sendAcknowledgementEmailToRespondents(details, documentJson, respondentTse);
-//        notificationService.sendAcknowledgementEmailToTribunal(details, respondentTse.getContactApplicationType());
-//    }
+    private void sendRespondentAppAcknowledgementEmails(
+        String authorization,
+        RespondentApplicationRequest request,
+        CaseDetails finalCaseDetails
+    ) throws NotificationClientException {
+        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(finalCaseDetails.getData());
+        String caseId = finalCaseDetails.getId().toString();
+        CoreEmailDetails details = prepareAcknowledgementEmailDetails(caseData, caseId);
+
+        RespondentTse respondentTse = request.getRespondentTse();
+        JSONObject documentJson = getDocumentDownload(authorization, caseData);
+
+//        notificationService.sendRespondentAppAcknowledgementEmailToRespondent(details, respondentTse);
+//        notificationService.sendAcknowledgementEmailToRespondents(details, documentJson, respondentTse);
+        notificationService.sendAcknowledgementEmailToTribunal(details, respondentTse.getContactApplicationType());
+    }
+
+    private CoreEmailDetails prepareAcknowledgementEmailDetails(CaseData caseData, String caseId) {
+        ClaimantIndType claimantIndType = caseData.getClaimantIndType();
+        String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
+
+        return new CoreEmailDetails(
+            caseData,
+            claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName(),
+            caseData.getEthosCaseReference(),
+            getRespondentNames(caseData),
+            hearingDate,
+            caseId
+        );
+    }
 
     private void sendResponseToApplicationEmails(
         GenericTseApplicationType application,
@@ -424,8 +422,8 @@ public class ApplicationService {
         if (contactApplicationFile != null) {
             log.info("Uploading Respondent TSE supporting file to document collection");
             caseService.uploadTseSupportingDocument(caseDetails, contactApplicationFile,
-                                                    respondentTse.getContactApplicationType()
-            );
+                                                    respondentTse.getContactApplicationType(),
+                                                    RESPONDENT);
         }
 
         CaseData caseData = EmployeeObjectMapper
