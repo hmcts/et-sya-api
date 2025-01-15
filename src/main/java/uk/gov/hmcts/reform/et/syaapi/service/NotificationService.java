@@ -288,7 +288,8 @@ public class NotificationService {
         boolean isWelsh = isWelshLanguage(details.caseData());
         String hearingDate = getHearingDate(details.hearingDate(), isWelsh);
         Map<String, Object> claimantParameters = prepareEmailParameters(details, hearingDate, isWelsh);
-        String emailToClaimantTemplate = getAndSetEmailTemplate(claimantApplication, hearingDate, claimantParameters, isWelsh, false);
+        String emailToClaimantTemplate = getAndSetEmailTemplate(claimantApplication, hearingDate,
+                                                                claimantParameters, isWelsh, false);
         return sendEmailToClaimant(details.caseData(), details.caseId(), emailToClaimantTemplate, claimantParameters);
     }
 
@@ -298,18 +299,21 @@ public class NotificationService {
      * @param details             core details of the email
      * @param respondentApplication application request data
      */
-    void sendRespondentAppAcknowledgementEmailToRespondent(CoreEmailDetails details, RespondentTse respondentApplication) {
+    void sendRespondentAppAcknowledgementEmailToRespondent(CoreEmailDetails details,
+                                                           RespondentTse respondentApplication) {
         boolean isWelsh = isWelshLanguage(details.caseData());
         String hearingDate = getHearingDate(details.hearingDate(), isWelsh);
         Map<String, Object> respondentParameters = prepareEmailParameters(details, hearingDate, isWelsh);
-        String emailToRespondentTemplate = getAndSetEmailTemplate(respondentApplication, hearingDate, respondentParameters, isWelsh, true);
+        String emailToRespondentTemplate = getAndSetEmailTemplate(respondentApplication, hearingDate,
+                                                                  respondentParameters, isWelsh, true);
         sendRespondentEmails(details.caseData(), details.caseId(), respondentParameters, emailToRespondentTemplate);
     }
 
     private Map<String, Object> prepareEmailParameters(CoreEmailDetails details, String hearingDate, boolean isWelsh) {
         Map<String, Object> parameters = new ConcurrentHashMap<>();
         parameters.put(HEARING_DATE_KEY, hearingDate);
-        addCommonParameters(parameters, details.claimant(), details.respondentNames(), details.caseId(), details.caseNumber());
+        addCommonParameters(parameters, details.claimant(), details.respondentNames(), details.caseId(),
+                            details.caseNumber());
         // citizenPortalLink
         String citizenPortalLink = getCitizenPortalLink(details.caseId(), isWelsh);
         parameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, citizenPortalLink);
@@ -330,10 +334,12 @@ public class NotificationService {
     }
 
     private String getCitizenPortalLink(String caseId, boolean isWelsh) {
-        return notificationsProperties.getCitizenPortalLink() + caseId + (isWelsh ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
+        return notificationsProperties.getCitizenPortalLink() + caseId + (isWelsh
+            ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
     }
 
-    private SendEmailResponse sendEmailToClaimant(CaseData caseData, String caseId, String emailTemplate, Map<String, Object> parameters) {
+    private SendEmailResponse sendEmailToClaimant(CaseData caseData, String caseId, String emailTemplate,
+                                                  Map<String, Object> parameters) {
         try {
             String claimantEmail = caseData.getClaimantType().getClaimantEmailAddress();
             return notificationClient.sendEmail(emailTemplate, claimantEmail, parameters, caseId);
@@ -934,7 +940,8 @@ public class NotificationService {
         addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber, caseNumber);
     }
 
-    private String getAndSetEmailTemplate(Object application, String hearingDate, Map<String, Object> parameters, boolean isWelsh, boolean isRespondent) {
+    String getAndSetEmailTemplate(Object application, String hearingDate, Map<String, Object> parameters,
+                                          boolean isWelsh, boolean isRespondent) {
         parameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, hearingDate);
         Map<String, String> selectedMap = isWelsh ? CY_APP_TYPE_MAP : APP_TYPE_MAP;
         String applicationType = getApplicationType(application, isRespondent);

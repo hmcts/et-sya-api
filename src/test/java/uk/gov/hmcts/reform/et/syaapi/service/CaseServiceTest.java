@@ -68,6 +68,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CA
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper.convertCaseDataMapToCaseDataObject;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CASE_ID;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.SUBMIT_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_NAME;
@@ -435,7 +436,8 @@ class CaseServiceTest {
         void setsShortDescriptionCorrectly() {
             CaseDetails caseDetails = CaseDetails.builder().data(new HashMap<>()).build();
             String contactApplicationType = "withdraw";
-            caseService.uploadTseSupportingDocument(caseDetails, new UploadedDocumentType(), contactApplicationType);
+            caseService.uploadTseSupportingDocument(caseDetails, new UploadedDocumentType(),
+                                                    contactApplicationType, CLAIMANT);
 
             CaseData caseData = convertCaseDataMapToCaseDataObject(caseDetails.getData());
             String actual = caseData.getDocumentCollection().get(0).getValue().getShortDescription();

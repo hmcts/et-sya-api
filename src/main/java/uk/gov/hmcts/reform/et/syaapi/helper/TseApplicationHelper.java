@@ -144,7 +144,10 @@ public final class TseApplicationHelper {
         }
 
         if (request.getSupportingMaterialFile() != null) {
-            String documentType = CLAIMANT.equals(responseUserType) ? CLAIMANT_CORRESPONDENCE_DOCUMENT : RESPONDENT_CORRESPONDENCE_DOCUMENT;
+            String documentType = CLAIMANT.equals(responseUserType)
+                ? CLAIMANT_CORRESPONDENCE_DOCUMENT
+                : RESPONDENT_CORRESPONDENCE_DOCUMENT;
+
             DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(
                 documentType,
                 request.getSupportingMaterialFile()

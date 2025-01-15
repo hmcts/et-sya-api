@@ -33,7 +33,8 @@ public class RespondentTseController {
      * Submit a Respondent Application.
      *
      * @param authorization jwt of the user
-     * @param request       the request object which contains the appId and respondent application passed from sya-frontend
+     * @param request       the request object which contains the appId and respondent
+     *                      application passed from sya-frontend
      * @return the new updated case wrapped in a {@link CaseDetails}
      */
     @PutMapping("/submit-respondent-application")
@@ -52,27 +53,28 @@ public class RespondentTseController {
         return ok(finalCaseDetails);
     }
 
-//    /**
-//     * Respond to an application.
-//     *
-//     * @param authorization jwt of the user
-//     * @param request       the request object which contains the appId and respondent application passed from sya-frontend
-//     * @return the new updated case wrapped in a {@link CaseDetails}
-//     */
-//    @PutMapping("/respond-to-claimant-application")
-//    @Operation(summary = "Respond to an application")
-//    @ApiResponseGroup
-//    public ResponseEntity<CaseDetails> respondToApplication(
-//            @RequestHeader(AUTHORIZATION) String authorization,
-//            @NotNull @RequestBody RespondToApplicationRequest request
-//    ) {
-//        log.info("Received submit respond to application request - caseTypeId: {} caseId: {}",
-//                request.getCaseTypeId(), request.getCaseId()
-//        );
-//
-//        CaseDetails finalCaseDetails = applicationService.respondToClaimantApplication(authorization, request);
-//
-//        return ok(finalCaseDetails);
-//    }
+    /**
+     * Respond to an application.
+     *
+     * @param authorization jwt of the user
+     * @param request       the request object which contains the appId and
+     *                      respondent application passed from sya-frontend
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    @PutMapping("/respond-to-claimant-application")
+    @Operation(summary = "Respond to an application")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> respondToApplication(
+            @RequestHeader(AUTHORIZATION) String authorization,
+            @NotNull @RequestBody RespondToApplicationRequest request
+    ) {
+        log.info("Received submit respond to application request - caseTypeId: {} caseId: {}",
+                request.getCaseTypeId(), request.getCaseId()
+        );
+
+        CaseDetails finalCaseDetails = applicationService.respondToClaimantApplication(authorization, request);
+
+        return ok(finalCaseDetails);
+    }
 
 }

@@ -92,7 +92,7 @@ class ApplicationServiceTest {
 
         when(featureToggleService.isWorkAllocationEnabled()).thenReturn(true);
 
-        doNothing().when(caseService).uploadTseSupportingDocument(any(), any(), any());
+        doNothing().when(caseService).uploadTseSupportingDocument(any(), any(), any(), any());
         doNothing().when(caseService).uploadTseCyaAsPdf(any(), any(), any(), any());
 
         when(caseService.triggerEvent(
@@ -238,9 +238,9 @@ class ApplicationServiceTest {
     }
 
     @Test
-    void shouldSubmitRespondentApplication() {
-        applicationService.submitRespondentApplication(TEST_SERVICE_AUTH_TOKEN, testData.getRespondentApplicationRequest());
-
+    void shouldSubmitRespondentApplication() throws NotificationClientException {
+        applicationService.submitRespondentApplication(TEST_SERVICE_AUTH_TOKEN,
+                                                       testData.getRespondentApplicationRequest());
     }
 
     @Nested

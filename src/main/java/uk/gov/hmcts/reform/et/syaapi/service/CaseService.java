@@ -424,8 +424,9 @@ public class CaseService {
 
         DocumentType documentType = DocumentType.builder()
             .topLevelDocuments(topLevel)
-            .typeOfDocument(userType.equals(CLAIMANT) ?
-                                CLAIMANT_CORRESPONDENCE_DOCUMENT : RESPONDENT_CORRESPONDENCE_DOCUMENT)
+            .typeOfDocument(userType.equals(CLAIMANT)
+                                ? CLAIMANT_CORRESPONDENCE_DOCUMENT
+                                : RESPONDENT_CORRESPONDENCE_DOCUMENT)
             .uploadedDocument(contactApplicationFile)
             .shortDescription(APP_TYPE_MAP.get(contactApplicationType))
             .dateOfCorrespondence(LocalDate.now().toString())
