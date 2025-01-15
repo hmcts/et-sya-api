@@ -103,6 +103,28 @@ class ApplicationServiceTest {
             any()
         )).thenReturn(testData.getCaseDetailsWithData());
 
+        when(caseService.submitUpdate(
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(testData.getClaimantApplicationRequest().getCaseId()),
+            any(),
+            eq(testData.getClaimantApplicationRequest().getCaseTypeId())
+        )).thenReturn(testData.getCaseDetailsWithData());
+
+        when(caseService.submitUpdate(
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(testData.getRespondentApplicationRequest().getCaseId()),
+            any(),
+            eq(testData.getRespondentApplicationRequest().getCaseTypeId())
+        )).thenReturn(testData.getCaseDetailsWithData());
+
+        when(caseService.triggerEvent(
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(testData.getRespondentApplicationRequest().getCaseId()),
+            eq(CaseEvent.SUBMIT_RESPONDENT_TSE),
+            eq(testData.getRespondentApplicationRequest().getCaseTypeId()),
+            any()
+        )).thenReturn(testData.getCaseDetailsWithData());
+
         when(caseService.startUpdate(
             any(),
             any(),
@@ -111,13 +133,6 @@ class ApplicationServiceTest {
         )).thenReturn(testData.getUpdateCaseEventResponse());
         DocumentTypeItem docType = DocumentTypeItem.builder().id("1").value(new DocumentType()).build();
         when(caseDocumentService.createDocumentTypeItem(any(), any())).thenReturn(docType);
-
-        when(caseService.submitUpdate(
-            eq(TEST_SERVICE_AUTH_TOKEN),
-            eq(testData.getClaimantApplicationRequest().getCaseId()),
-            any(),
-            eq(testData.getClaimantApplicationRequest().getCaseTypeId())
-        )).thenReturn(testData.getCaseDetailsWithData());
 
         ResponseEntity<ByteArrayResource> responseEntity =
             new ResponseEntity<>(HttpStatus.OK);
@@ -434,5 +449,25 @@ class ApplicationServiceTest {
                 Arguments.of(false, INITIAL_STATE, YES)
             );
         }
+    }
+
+    @Test
+    void shouldSendRespondentEmailWithCorrectParameters() throws NotificationClientException {
+        applicationService.submitRespondentApplication(TEST_SERVICE_AUTH_TOKEN,
+                                             testData.getRespondentApplicationRequest());
+
+        ArgumentCaptor<CoreEmailDetails> argument = ArgumentCaptor.forClass(CoreEmailDetails.class);
+        verify(notificationService, times(1)).sendRespondentAppAcknowledgementEmailToRespondent(
+            argument.capture(),
+            any()
+        );
+
+        CoreEmailDetails coreEmailDetails = argument.getValue();
+        assertThat(coreEmailDetails.caseData()).isNotNull();
+        assertThat(coreEmailDetails.claimant()).isEqualTo(CLAIMANT);
+        assertThat(coreEmailDetails.caseNumber()).isEqualTo(CASE_REF);
+        assertThat(coreEmailDetails.respondentNames()).isEqualTo(RESPONDENT_LIST);
+        assertThat(coreEmailDetails.hearingDate()).isEqualTo(NOT_SET);
+        assertThat(coreEmailDetails.caseId()).isEqualTo(CASE_ID);
     }
 }
