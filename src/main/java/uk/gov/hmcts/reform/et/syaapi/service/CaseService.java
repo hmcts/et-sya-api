@@ -441,10 +441,6 @@ public class CaseService {
         caseDetails.getData().put(DOCUMENT_COLLECTION, docList);
     }
 
-    private void uploadClaimantTseSupportingDocument() {
-        // Implementation not provided
-    }
-
     void uploadTseCyaAsPdf(
         String authorization,
         CaseDetails caseDetails,

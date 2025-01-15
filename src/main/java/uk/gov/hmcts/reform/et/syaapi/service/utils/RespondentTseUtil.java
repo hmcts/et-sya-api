@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.GenericTseApplication;
 import java.time.LocalDate;
 
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.RESPONDENT_TITLE;
 
 @Slf4j
 public final class RespondentTseUtil {
@@ -30,8 +31,8 @@ public final class RespondentTseUtil {
 
         return GenericTseApplication.builder()
             .caseNumber(caseReference)
-            .applicant(CLAIMANT_TITLE)
-            .applicationType(ClaimantTse.APP_TYPE_MAP.get(respondentTse.getContactApplicationType()))
+            .applicant(RESPONDENT_TITLE)
+            .applicationType(respondentTse.getContactApplicationType())
             .applicationDate(UtilHelper.formatCurrentDate(LocalDate.now()))
             .tellOrAskTribunal(respondentTse.getContactApplicationText())
             .supportingEvidence(supportingEvidence)

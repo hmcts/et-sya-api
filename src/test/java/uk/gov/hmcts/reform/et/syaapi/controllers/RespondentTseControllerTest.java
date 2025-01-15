@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondentApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
@@ -71,6 +72,31 @@ class RespondentTseControllerTest {
         verify(applicationService, times(1)).submitRespondentApplication(
             TEST_SERVICE_AUTH_TOKEN,
             respondentApplicationRequest
+        );
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldRespondToClaimantApplication() {
+        RespondToApplicationRequest respondToApplicationRequest = RespondToApplicationRequest.builder()
+                .caseId(CASE_ID)
+                .caseTypeId(CASE_TYPE)
+                .build();
+
+        // when
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+        when(applicationService.respondToClaimantApplication(any(), any())).thenReturn(expectedDetails);
+
+        mockMvc.perform(
+                put("/respondentTSE/respond-to-claimant-application", CASE_ID)
+                        .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ResourceLoader.toJson(respondToApplicationRequest))
+        ).andExpect(status().isOk());
+
+        verify(applicationService, times(1)).respondToClaimantApplication(
+                TEST_SERVICE_AUTH_TOKEN,
+                respondToApplicationRequest
         );
     }
 }
