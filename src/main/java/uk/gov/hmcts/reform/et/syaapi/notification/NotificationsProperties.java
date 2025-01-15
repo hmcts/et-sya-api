@@ -160,4 +160,52 @@ public class NotificationsProperties {
     @Value("${notifications.et3SubmissionConfirmation}")
     @NotBlank
     private String et3SubmissionConfirmationTemplateId;
+
+    @Value("${notifications.cyRespondentTseTypeCRespAckTemplateId}")
+    @NotBlank
+    private String cyRespondentTseTypeCRespAckTemplateId;
+
+    @Value("${notifications.cyRespondentTseTypeBRespAckTemplateId}")
+    @NotBlank
+    private String cyRespondentTseTypeBRespAckTemplateId;
+
+    @Value("${notifications.cyRespondentTseTypeARespAckTemplateId}")
+    @NotBlank
+    private String cyRespondentTseTypeARespAckTemplateId;
+
+    @Value("${notifications.RespondentTseTypeCRespAckTemplateId}")
+    @NotBlank
+    private String respondentTseTypeCRespAckTemplateId;
+
+    @Value("${notifications.RespondentTseTypeBRespAckTemplateId}")
+    @NotBlank
+    private String respondentTseTypeBRespAckTemplateId;
+
+    @Value("${notifications.RespondentTseTypeARespAckTemplateId}")
+    @NotBlank
+    private String respondentTseTypeARespAckTemplateId;
+
+    @Value("${notifications.cyRespondentTseNoRespAckTemplateId}")
+    @NotBlank
+    private String cyRespondentTseNoRespAckTemplateId;
+
+    @Value("${notifications.RespondentTseNoRespAckTemplateId}")
+    @NotBlank
+    private String respondentTseNoRespAckTemplateId;
+
+    @Value("${notifications.cyRespondentTseTypeAClaimantAckTemplateId}")
+    @NotBlank
+    private String cyRespondentTseTypeAClaimantAckTemplateId;
+
+    @Value("${notifications.RespondentTseTypeAClaimantAckTemplateId}")
+    @NotBlank
+    private String respondentTseTypeAClaimantAckTemplateId;
+
+    @Value("${notifications.cyRespondentTseTypeBClaimantAckTemplateId}")
+    @NotBlank
+    private String cyRespondentTseTypeBClaimantAckTemplateId;
+
+    @Value("${notifications.RespondentTseTypeBClaimantAckTemplateId}")
+    @NotBlank
+    private String respondentTseTypeBClaimantAckTemplateId;
 }

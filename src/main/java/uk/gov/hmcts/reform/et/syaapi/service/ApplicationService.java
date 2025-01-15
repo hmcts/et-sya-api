@@ -306,8 +306,8 @@ public class ApplicationService {
         RespondentTse respondentTse = request.getRespondentTse();
         JSONObject documentJson = getDocumentDownload(authorization, caseData);
 
-//        notificationService.sendRespondentAppAcknowledgementEmailToRespondent(details, respondentTse);
-//        notificationService.sendAcknowledgementEmailToRespondents(details, documentJson, respondentTse);
+        notificationService.sendRespondentAppAcknowledgementEmailToRespondent(details, respondentTse);
+        notificationService.sendRespondentAppAcknowledgementEmailToClaimant(details, documentJson, respondentTse);
         notificationService.sendAcknowledgementEmailToTribunal(details, respondentTse.getContactApplicationType());
     }
 
@@ -396,7 +396,7 @@ public class ApplicationService {
      * @param request - application request from the respondent
      * @return the associated {@link CaseDetails} for the ID provided in request
      */
-    public CaseDetails submitRespondentApplication(String authorization, RespondentApplicationRequest request) {
+    public CaseDetails submitRespondentApplication(String authorization, RespondentApplicationRequest request) throws NotificationClientException {
 
         String caseTypeId = request.getCaseTypeId();
 
@@ -438,7 +438,7 @@ public class ApplicationService {
             caseTypeId
         );
 
-//        sendRespondentAppAcknowledgementEmails(authorization, request, finalCaseDetails);
+        sendRespondentAppAcknowledgementEmails(authorization, request, finalCaseDetails);
         return finalCaseDetails;
     }
 
