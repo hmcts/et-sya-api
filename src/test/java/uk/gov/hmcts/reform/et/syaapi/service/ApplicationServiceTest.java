@@ -237,12 +237,6 @@ class ApplicationServiceTest {
         assertThat(actualState).isEqualTo("viewed");
     }
 
-    @Test
-    void shouldSubmitRespondentApplication() throws NotificationClientException {
-        applicationService.submitRespondentApplication(TEST_SERVICE_AUTH_TOKEN,
-                                                       testData.getRespondentApplicationRequest());
-    }
-
     @Nested
     class RespondToApplicationReplyToTribunal {
         RespondToApplicationRequest testRequest;
