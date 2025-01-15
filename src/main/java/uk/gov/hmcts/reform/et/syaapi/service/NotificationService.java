@@ -79,7 +79,7 @@ import static uk.gov.service.notify.NotificationClient.prepareUpload;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.CyclomaticComplexity"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.CyclomaticComplexity", "PMD.GodClass"})
 public class NotificationService {
     static final String NOT_SET = "Not set";
 
