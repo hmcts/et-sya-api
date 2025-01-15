@@ -413,22 +413,27 @@ public class CaseService {
             extension);
 
         String applicationDocMapping;
+        String typeOfDocument;
+        String shortDescription;
         if (userType.equals(CLAIMANT)) {
             applicationDocMapping = DocumentHelper.claimantApplicationTypeToDocType(contactApplicationType);
+            typeOfDocument = CLAIMANT_CORRESPONDENCE_DOCUMENT;
+            shortDescription = APP_TYPE_MAP.get(contactApplicationType);
         } else {
             applicationDocMapping = DocumentHelper.respondentApplicationToDocType(contactApplicationType);
+            typeOfDocument = RESPONDENT_CORRESPONDENCE_DOCUMENT;
+            shortDescription = contactApplicationType;
         }
 
         String topLevel = DocumentHelper.getTopLevelDocument(applicationDocMapping);
         contactApplicationFile.setDocumentFilename(docName);
 
+
         DocumentType documentType = DocumentType.builder()
             .topLevelDocuments(topLevel)
-            .typeOfDocument(userType.equals(CLAIMANT)
-                                ? CLAIMANT_CORRESPONDENCE_DOCUMENT
-                                : RESPONDENT_CORRESPONDENCE_DOCUMENT)
+            .typeOfDocument(typeOfDocument)
             .uploadedDocument(contactApplicationFile)
-            .shortDescription(APP_TYPE_MAP.get(contactApplicationType))
+            .shortDescription(shortDescription)
             .dateOfCorrespondence(LocalDate.now().toString())
             .build();
         DocumentHelper.setSecondLevelDocumentFromType(documentType, applicationDocMapping);
