@@ -173,15 +173,15 @@ public class NotificationsProperties {
     @NotBlank
     private String cyRespondentTseTypeARespAckTemplateId;
 
-    @Value("${notifications.RespondentTseTypeCRespAckTemplateId}")
+    @Value("${notifications.respondentTseTypeCRespAckTemplateId}")
     @NotBlank
     private String respondentTseTypeCRespAckTemplateId;
 
-    @Value("${notifications.RespondentTseTypeBRespAckTemplateId}")
+    @Value("${notifications.respondentTseTypeBRespAckTemplateId}")
     @NotBlank
     private String respondentTseTypeBRespAckTemplateId;
 
-    @Value("${notifications.RespondentTseTypeARespAckTemplateId}")
+    @Value("${notifications.respondentTseTypeARespAckTemplateId}")
     @NotBlank
     private String respondentTseTypeARespAckTemplateId;
 
@@ -189,7 +189,7 @@ public class NotificationsProperties {
     @NotBlank
     private String cyRespondentTseNoRespAckTemplateId;
 
-    @Value("${notifications.RespondentTseNoRespAckTemplateId}")
+    @Value("${notifications.respondentTseNoRespAckTemplateId}")
     @NotBlank
     private String respondentTseNoRespAckTemplateId;
 
@@ -197,7 +197,7 @@ public class NotificationsProperties {
     @NotBlank
     private String cyRespondentTseTypeAClaimantAckTemplateId;
 
-    @Value("${notifications.RespondentTseTypeAClaimantAckTemplateId}")
+    @Value("${notifications.respondentTseTypeAClaimantAckTemplateId}")
     @NotBlank
     private String respondentTseTypeAClaimantAckTemplateId;
 
@@ -205,7 +205,7 @@ public class NotificationsProperties {
     @NotBlank
     private String cyRespondentTseTypeBClaimantAckTemplateId;
 
-    @Value("${notifications.RespondentTseTypeBClaimantAckTemplateId}")
+    @Value("${notifications.respondentTseTypeBClaimantAckTemplateId}")
     @NotBlank
     private String respondentTseTypeBClaimantAckTemplateId;
 }
