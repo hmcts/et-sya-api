@@ -51,6 +51,7 @@ class PdfUploadServiceTest {
 
     private static final String CLIENT_TYPE_CLAIMANT = "claimant";
     private static final String SUBMIT_ET1_CITIZEN = "submitET1Citizen";
+    private static final String CUSTOM_DOC_NAME = "customDocName.pdf";
 
     @BeforeEach
     @SneakyThrows
@@ -124,7 +125,7 @@ class PdfUploadServiceTest {
             pdfUploadService.convertClaimantTseIntoMultipartFile(
                 caseTestData.getClaimantTse(),
                 caseTestData.getCaseData().getEthosCaseReference(),
-                "customDocName.pdf");
+                CUSTOM_DOC_NAME);
 
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
@@ -136,7 +137,7 @@ class PdfUploadServiceTest {
             pdfUploadService.convertClaimantTseIntoMultipartFile(
                 caseTestData.getClaimantTse(),
                 caseTestData.getCaseData().getEthosCaseReference(),
-                "customDocName.pdf");
+                CUSTOM_DOC_NAME);
 
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
@@ -183,7 +184,7 @@ class PdfUploadServiceTest {
             pdfUploadService.convertRespondentTseIntoMultipartFile(
                 caseTestData.getRespondentTse(),
                 caseTestData.getCaseData().getEthosCaseReference(),
-                "customDocName.pdf");
+                CUSTOM_DOC_NAME);
 
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
@@ -196,7 +197,7 @@ class PdfUploadServiceTest {
             pdfUploadService.convertRespondentTseIntoMultipartFile(
                 caseTestData.getRespondentTse(),
                 caseTestData.getCaseData().getEthosCaseReference(),
-                "customDocName.pdf");
+                CUSTOM_DOC_NAME);
 
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
