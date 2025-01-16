@@ -189,7 +189,8 @@ class PdfUploadServiceTest {
     }
 
     @Test
-    void shouldCreatePdfDecodedMultipartFileFromRespTseApplicationNoSupportingFile() throws DocumentGenerationException {
+    void shouldCreatePdfDecodedMultipartFileFromRespTseApplicationNoSupportingFile()
+        throws DocumentGenerationException {
         caseTestData.getRespondentTse().setContactApplicationFile(null);
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             pdfUploadService.convertRespondentTseIntoMultipartFile(

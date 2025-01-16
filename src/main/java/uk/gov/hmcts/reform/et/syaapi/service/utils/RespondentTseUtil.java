@@ -4,12 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.ecm.common.helpers.UtilHelper;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentTse;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
-import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.models.GenericTseApplication;
 
 import java.time.LocalDate;
 
-import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.RESPONDENT_TITLE;
 
 @Slf4j
