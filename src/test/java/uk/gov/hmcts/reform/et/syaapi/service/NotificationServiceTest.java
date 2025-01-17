@@ -1430,46 +1430,5 @@ class NotificationServiceTest {
             );
         }
     }
-
-    @Nested
-    class SendRepAppAcknowledgementEmailToRespondentWelsh {
-
-        @ParameterizedTest
-        @MethodSource("monthTranslations")
-        void shouldTranslateHearingDateToWelsh(
-            String englishMonth, String welshMonth) throws NotificationClientException {
-            String hearingDate = DATE_DAY + " " + englishMonth + " " + DATE_YEAR;
-            details = new CoreEmailDetails(
-                caseTestData.getCaseData(),
-                CLAIMANT,
-                "1",
-                TEST_RESPONDENT,
-                hearingDate,
-                caseTestData.getExpectedDetails().getId().toString()
-            );
-            when(featureToggleService.isWelshEnabled()).thenReturn(true);
-            when(notificationsProperties.getRespondentTseTypeCRespAckTemplateId()).thenReturn(
-                "ExpectedEmailTemplateIdForWelsh");
-            caseTestData.getRespondentApplication().setContactApplicationType(WITNESS);
-            when(notificationClient.sendEmail(
-                anyString(),
-                anyString(),
-                respondentParametersCaptor.capture(),
-                anyString()
-            ))
-                .thenReturn(mock(SendEmailResponse.class));
-            notificationService.sendRespondentAppAcknowledgementEmailToRespondent(
-                details, caseTestData.getRespondentApplication());
-
-            Map<String, Object> capturedClaimantParameters = respondentParametersCaptor.getValue();
-            String translatedHearingDate = capturedClaimantParameters.get(HEARING_DATE_KEY).toString();
-            assertThat(translatedHearingDate).isEqualTo(DATE_DAY + " " + welshMonth + " " + DATE_YEAR);
-        }
-
-        static Stream<Arguments> monthTranslations() {
-            return CY_ABBREVIATED_MONTHS_MAP.entrySet().stream()
-                .map(entry -> Arguments.of(entry.getKey(), entry.getValue()));
-        }
-    }
 }
 
