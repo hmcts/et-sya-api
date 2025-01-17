@@ -972,7 +972,7 @@ public class NotificationService {
         parameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, hearingDate);
         Map<String, String> selectedMap = isWelsh ? CY_APP_TYPE_MAP : APP_TYPE_MAP;
         String applicationType = getApplicationType(application, isRespondent);
-        String shortText = isRespondent? applicationType : selectedMap.get(applicationType);
+        String shortText = isRespondent ? applicationType : selectedMap.get(applicationType);
         parameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
 
         String copyToOtherParty = getCopyToOtherParty(application, isRespondent);

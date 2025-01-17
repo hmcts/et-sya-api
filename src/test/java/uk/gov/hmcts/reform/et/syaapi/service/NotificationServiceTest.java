@@ -1358,8 +1358,8 @@ class NotificationServiceTest {
                 caseTestData.getCaseData(),
                 CLAIMANT,
                 "1",
-                "TEST_RESPONDENT_1, TEST_RESPONDENT_2, " +
-                    "TEST_RESPONDENT_3, TEST_RESPONDENT_4, TEST_RESPONDENT_5",
+                "TEST_RESPONDENT_1, TEST_RESPONDENT_2, "
+                    + "TEST_RESPONDENT_3, TEST_RESPONDENT_4, TEST_RESPONDENT_5",
                 NOT_SET,
                 caseTestData.getExpectedDetails().getId().toString()
             );
