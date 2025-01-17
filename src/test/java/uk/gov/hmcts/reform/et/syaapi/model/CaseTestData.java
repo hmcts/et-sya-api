@@ -50,6 +50,10 @@ public final class CaseTestData {
         "responses/claimantTse.json",
         ClaimantTse.class
     );
+    private final RespondentTse respondentApplication = ResourceLoader.fromString(
+        "responses/respondentTse.json",
+        RespondentTse.class
+    );
     private final CaseRequest caseRequest = ResourceLoader.fromString(
         "requests/caseRequest.json",
         CaseRequest.class

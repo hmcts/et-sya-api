@@ -197,4 +197,19 @@ public final class NotificationsHelper {
         return !isNullOrEmpty(date) && LocalDateTime.parse(date).atZone(ZoneId.of("Europe/London"))
             .isAfter(now.atZone(ZoneId.of("UTC")));
     }
+
+    public static String getRespondentOrRespondentRepEmailAddress(CaseData caseData, RespondentSumType respondent) {
+        if (respondent.getIdamId() != null) {
+            return respondent.getRespondentEmail();
+        } else {
+            RepresentedTypeR representative = getRespondentRepresentative(caseData, respondent);
+            if (representative != null) {
+                String repEmail = representative.getRepresentativeEmailAddress();
+                if (!isNullOrEmpty(repEmail)) {
+                    return repEmail;
+                }
+            }
+            return "";
+        }
+    }
 }

@@ -1349,5 +1349,127 @@ class NotificationServiceTest {
 
         assertEquals(expectedTemplateId, emailTemplate);
     }
+
+    @Nested
+    class SendRepAppAcknowledgementEmailToRespondent {
+        @BeforeEach
+        void setUp() {
+            details = new CoreEmailDetails(
+                caseTestData.getCaseData(),
+                CLAIMANT,
+                "1",
+                "TEST_RESPONDENT_1, TEST_RESPONDENT_2, " +
+                    "TEST_RESPONDENT_3, TEST_RESPONDENT_4, TEST_RESPONDENT_5",
+                NOT_SET,
+                caseTestData.getExpectedDetails().getId().toString()
+            );
+        }
+
+        @Test
+        void shouldSendCopyYesEmail() throws NotificationClientException, IOException {
+            when(notificationClient.sendEmail(
+                eq(YES),
+                eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            )).thenReturn(caseTestData.getSendEmailResponse());
+
+            notificationService.sendRespondentAppAcknowledgementEmailToRespondent(
+                details,
+                caseTestData.getRespondentApplication());
+
+            verify(notificationClient, times(5)).sendEmail(
+                any(),
+                any(),
+                respondentParametersCaptor.capture(),
+                any()
+            );
+        }
+
+        @Test
+        void shouldSendCopyNoEmail() throws NotificationClientException, IOException {
+            caseTestData.getClaimantApplication().setCopyToOtherPartyYesOrNo("No");
+            when(notificationClient.sendEmail(
+                eq("No"),
+                eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            )).thenReturn(caseTestData.getSendEmailResponse());
+
+            notificationService.sendRespondentAppAcknowledgementEmailToRespondent(
+                details,
+                caseTestData.getRespondentApplication());
+
+            verify(notificationClient, times(5)).sendEmail(
+                any(),
+                any(),
+                respondentParametersCaptor.capture(),
+                any()
+            );
+        }
+
+        @Test
+        void shouldSendTypeCEmail() throws NotificationClientException, IOException {
+            caseTestData.getClaimantApplication().setContactApplicationType(WITNESS);
+            when(notificationClient.sendEmail(
+                eq("C"),
+                eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            )).thenReturn(caseTestData.getSendEmailResponse());
+
+            notificationService.sendRespondentAppAcknowledgementEmailToRespondent(
+                details,
+                caseTestData.getRespondentApplication());
+
+            verify(notificationClient, times(5)).sendEmail(
+                any(),
+                any(),
+                respondentParametersCaptor.capture(),
+                any()
+            );
+        }
+    }
+
+    @Nested
+    class SendRepAppAcknowledgementEmailToRespondentWelsh {
+
+        @ParameterizedTest
+        @MethodSource("monthTranslations")
+        void shouldTranslateHearingDateToWelsh(
+            String englishMonth, String welshMonth) throws NotificationClientException {
+            String hearingDate = DATE_DAY + " " + englishMonth + " " + DATE_YEAR;
+            details = new CoreEmailDetails(
+                caseTestData.getCaseData(),
+                CLAIMANT,
+                "1",
+                TEST_RESPONDENT,
+                hearingDate,
+                caseTestData.getExpectedDetails().getId().toString()
+            );
+            when(featureToggleService.isWelshEnabled()).thenReturn(true);
+            when(notificationsProperties.getRespondentTseTypeCRespAckTemplateId()).thenReturn(
+                "ExpectedEmailTemplateIdForWelsh");
+            caseTestData.getRespondentApplication().setContactApplicationType(WITNESS);
+            when(notificationClient.sendEmail(
+                anyString(),
+                anyString(),
+                respondentParametersCaptor.capture(),
+                anyString()
+            ))
+                .thenReturn(mock(SendEmailResponse.class));
+            notificationService.sendRespondentAppAcknowledgementEmailToRespondent(
+                details, caseTestData.getRespondentApplication());
+
+            Map<String, Object> capturedClaimantParameters = respondentParametersCaptor.getValue();
+            String translatedHearingDate = capturedClaimantParameters.get(HEARING_DATE_KEY).toString();
+            assertThat(translatedHearingDate).isEqualTo(DATE_DAY + " " + welshMonth + " " + DATE_YEAR);
+        }
+
+        static Stream<Arguments> monthTranslations() {
+            return CY_ABBREVIATED_MONTHS_MAP.entrySet().stream()
+                .map(entry -> Arguments.of(entry.getKey(), entry.getValue()));
+        }
+    }
 }
 

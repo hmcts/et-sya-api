@@ -306,7 +306,34 @@ public class NotificationService {
         Map<String, Object> respondentParameters = prepareEmailParameters(details, hearingDate, isWelsh);
         String emailToRespondentTemplate = getAndSetEmailTemplate(respondentApplication, hearingDate,
                                                                   respondentParameters, isWelsh, true);
-        sendRespondentEmails(details.caseData(), details.caseId(), respondentParameters, emailToRespondentTemplate);
+        sendRespondentAppEmails(details.caseData(), details.caseId(), respondentParameters, emailToRespondentTemplate);
+    }
+
+    private void sendRespondentAppEmails(CaseData caseData, String caseId, Map<String, Object> respondentParameters,
+                                      String emailToRespondentTemplate) {
+        // assuming respondent or respondent's representative is in the system. not both
+        caseData.getRespondentCollection()
+            .forEach(resp -> {
+                String respondentEmailAddress = NotificationsHelper.getRespondentOrRespondentRepEmailAddress(
+                    caseData,
+                    resp.getValue()
+                );
+                if (isNullOrEmpty(respondentEmailAddress)) {
+                    log.info("Respondent does not not have an email address associated with their account");
+                } else {
+                    try {
+                        notificationClient.sendEmail(
+                            emailToRespondentTemplate,
+                            respondentEmailAddress,
+                            respondentParameters,
+                            caseId
+                        );
+                        log.info("Sent email to respondent");
+                    } catch (NotificationClientException ne) {
+                        throw new NotificationException(ne);
+                    }
+                }
+            });
     }
 
     private Map<String, Object> prepareEmailParameters(CoreEmailDetails details, String hearingDate, boolean isWelsh) {
@@ -945,7 +972,7 @@ public class NotificationService {
         parameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, hearingDate);
         Map<String, String> selectedMap = isWelsh ? CY_APP_TYPE_MAP : APP_TYPE_MAP;
         String applicationType = getApplicationType(application, isRespondent);
-        String shortText = selectedMap.get(applicationType);
+        String shortText = isRespondent? applicationType : selectedMap.get(applicationType);
         parameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
 
         String copyToOtherParty = getCopyToOtherParty(application, isRespondent);
