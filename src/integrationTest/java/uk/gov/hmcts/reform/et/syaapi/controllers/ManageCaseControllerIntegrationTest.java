@@ -93,7 +93,7 @@ class ManageCaseControllerIntegrationTest {
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
         when(authTokenGenerator.generate()).thenReturn("token");
         when(idamClient.getUserInfo(any())).thenReturn(UserInfo.builder().uid("1234").build());
-        when(applicationService.submitApplication(any(), any(), any())).thenReturn(caseDetailsResponse);
+        when(applicationService.submitApplication(any(), any())).thenReturn(caseDetailsResponse);
         when(applicationService.respondToApplication(any(), any())).thenReturn(caseDetailsResponse);
         when(applicationService.updateTribunalResponseAsViewed(any(),any())).thenReturn(caseDetailsResponse);
         when(bundlesService.submitBundles(any(),any())).thenReturn(caseDetailsResponse);

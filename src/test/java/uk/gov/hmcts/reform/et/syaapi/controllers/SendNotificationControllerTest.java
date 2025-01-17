@@ -74,7 +74,7 @@ class SendNotificationControllerTest {
         // when
         when(verifyTokenService.verifyTokenSignature(anyString())).thenReturn(true);
 
-        when(applicationService.submitApplication(anyString(), any(ClaimantApplicationRequest.class), anyString()))
+        when(applicationService.submitApplication(anyString(), any(ClaimantApplicationRequest.class)))
             .thenReturn(expectedDetails);
         mockMvc.perform(
             put("/sendNotification/update-notification-state", CASE_ID)

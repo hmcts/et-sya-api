@@ -193,16 +193,13 @@ public class ManageCaseController {
     @ApiResponseGroup
     public ResponseEntity<CaseDetails> submitClaimantApplication(
         @RequestHeader(AUTHORIZATION) String authorization,
-        @RequestParam(value = CASE_USER_ROLE_API_PARAMETER_NAME, required = false) String caseUserRole,
         @NotNull @RequestBody ClaimantApplicationRequest request
     ) throws NotificationClientException {
         log.info("Received submit claimant application request - caseTypeId: {} caseId: {}",
                  request.getCaseTypeId(), request.getCaseId()
         );
         CaseDetails finalCaseDetails = applicationService.submitApplication(
-            authorization, request, StringUtils.isBlank(caseUserRole)
-                ? CASE_USER_ROLE_CREATOR
-                : STRING_LEFT_SQUARE_BRACKET + caseUserRole.trim() + STRING_RIGHT_SQUARE_BRACKET);
+            authorization, request);
 
         return ok(finalCaseDetails);
     }

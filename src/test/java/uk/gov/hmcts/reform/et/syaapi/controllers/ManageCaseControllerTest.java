@@ -357,7 +357,7 @@ class ManageCaseControllerTest {
         // when
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
 
-        when(applicationService.submitApplication(anyString(), any(ClaimantApplicationRequest.class), anyString()))
+        when(applicationService.submitApplication(anyString(), any(ClaimantApplicationRequest.class)))
             .thenReturn(expectedDetails);
         mockMvc.perform(
             put("/cases/submit-claimant-application", CASE_ID)
@@ -368,8 +368,7 @@ class ManageCaseControllerTest {
 
         verify(applicationService, times(1)).submitApplication(
             TEST_SERVICE_AUTH_TOKEN,
-            claimantApplicationRequest,
-            CASE_USER_ROLE_CREATOR
+            claimantApplicationRequest
         );
     }
 
@@ -386,7 +385,7 @@ class ManageCaseControllerTest {
         // when
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
 
-        when(applicationService.submitApplication(anyString(), any(ClaimantApplicationRequest.class), anyString()))
+        when(applicationService.submitApplication(anyString(), any(ClaimantApplicationRequest.class)))
             .thenReturn(expectedDetails);
         mockMvc.perform(
             put("/cases/respond-to-application", CASE_ID)
@@ -414,7 +413,7 @@ class ManageCaseControllerTest {
         // when
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
 
-        when(applicationService.submitApplication(anyString(), any(ClaimantApplicationRequest.class), anyString()))
+        when(applicationService.submitApplication(anyString(), any(ClaimantApplicationRequest.class)))
             .thenReturn(expectedDetails);
         mockMvc.perform(
             put("/cases/change-application-status", CASE_ID)

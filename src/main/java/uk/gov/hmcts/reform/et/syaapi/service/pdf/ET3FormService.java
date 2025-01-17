@@ -34,6 +34,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGU
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.ET3_RESPONSE_LANGUAGE_PREFERENCE_WELSH;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.ET3_FORM_DOCUMENT_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.UNABLE_TO_UPLOAD_DOCUMENT;
+import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfUploadService.createPdfDocumentDescriptionFromCaseData;
 import static uk.gov.hmcts.reform.et.syaapi.service.pdf.PdfUploadService.sanitizePartyName;
 
 
@@ -131,7 +132,7 @@ public class ET3FormService {
                 englishPdfFileByteArray,
                 createET3PdfDocumentNameFromCaseData(ENGLISH_LANGUAGE, userInfo, selectedRespondent),
                 PDF_FILE_TIKA_CONTENT_TYPE,
-                StringUtils.EMPTY
+                createPdfDocumentDescriptionFromCaseData(caseData)
             );
 
             DocumentTypeItem englishDocument = caseDocumentService.createDocumentTypeItem(
@@ -159,7 +160,7 @@ public class ET3FormService {
                     welshPdfFileByteArray,
                     createET3PdfDocumentNameFromCaseData(WELSH_LANGUAGE, userInfo, selectedRespondent),
                     PDF_FILE_TIKA_CONTENT_TYPE,
-                    StringUtils.EMPTY
+                    createPdfDocumentDescriptionFromCaseData(caseData)
                 );
                 DocumentTypeItem welshDocument = caseDocumentService.createDocumentTypeItem(
                     authorisation,

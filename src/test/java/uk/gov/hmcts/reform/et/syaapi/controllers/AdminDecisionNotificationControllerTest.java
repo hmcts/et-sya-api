@@ -70,7 +70,7 @@ class AdminDecisionNotificationControllerTest {
         // when
         when(verifyTokenService.verifyTokenSignature(anyString())).thenReturn(true);
 
-        when(applicationService.submitApplication(anyString(), any(ClaimantApplicationRequest.class), anyString()))
+        when(applicationService.submitApplication(anyString(), any(ClaimantApplicationRequest.class)))
             .thenReturn(expectedDetails);
         mockMvc.perform(
             put("/tseAdmin/update-admin-decision-state", CASE_ID)

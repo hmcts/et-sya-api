@@ -13,6 +13,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.TseRespondTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
@@ -52,7 +53,6 @@ public class ApplicationService {
     private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final FeatureToggleService featureToggleService;
-    private final ManageCaseRoleService manageCaseRoleService;
 
     /**
      * Get the next application number for the case.
@@ -73,14 +73,19 @@ public class ApplicationService {
      * @param request - application request from the claimant
      * @return the associated {@link CaseDetails} for the ID provided in request
      */
-    public CaseDetails submitApplication(String authorization, ClaimantApplicationRequest request, String caseUserRole)
+    public CaseDetails submitApplication(String authorization, ClaimantApplicationRequest request)
         throws NotificationClientException {
 
         String caseTypeId = request.getCaseTypeId();
-        // Added parameter case user role as creator...
-        CaseDetails caseDetails = manageCaseRoleService.getUserCaseByCaseUserRole(authorization,
-                                                                                  request.getCaseId(),
-                                                                                  caseUserRole);
+
+        StartEventResponse startEventResponse = caseService.startUpdate(
+            authorization,
+            request.getCaseId(),
+            request.getCaseTypeId(),
+            CaseEvent.SUBMIT_CLAIMANT_TSE
+        );
+
+        CaseDetails caseDetails = startEventResponse.getCaseDetails();
         ClaimantTse claimantTse = request.getClaimantTse();
         caseDetails.getData().put("claimantTse", claimantTse);
 
@@ -99,12 +104,15 @@ public class ApplicationService {
             );
         }
 
-        CaseDetails finalCaseDetails = caseService.triggerEvent(
+        CaseData caseData = EmployeeObjectMapper
+            .convertCaseDataMapToCaseDataObject(caseDetails.getData());
+        CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
+
+        CaseDetails finalCaseDetails = caseService.submitUpdate(
             authorization,
             request.getCaseId(),
-            CaseEvent.SUBMIT_CLAIMANT_TSE,
-            caseTypeId,
-            caseDetails.getData()
+            content,
+            request.getCaseTypeId()
         );
 
         sendAcknowledgementEmails(authorization, request, finalCaseDetails);
