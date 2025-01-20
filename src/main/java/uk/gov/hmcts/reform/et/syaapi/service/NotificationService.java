@@ -10,6 +10,7 @@ import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ecm.common.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
+import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentTse;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
@@ -300,24 +301,22 @@ public class NotificationService {
      * @param respondentApplication application request data
      */
     void sendRespondentAppAcknowledgementEmailToRespondent(CoreEmailDetails details,
-                                                           RespondentTse respondentApplication) {
-        boolean isWelsh = isWelshLanguage(details.caseData());
-        String hearingDate = getHearingDate(details.hearingDate(), isWelsh);
-        Map<String, Object> respondentParameters = prepareEmailParameters(details, hearingDate, isWelsh);
-        String emailToRespondentTemplate = getAndSetEmailTemplate(respondentApplication, hearingDate,
-                                                                  respondentParameters, isWelsh, true);
-        sendRespondentAppEmails(details.caseData(), details.caseId(), respondentParameters, emailToRespondentTemplate);
-    }
-
-    private void sendRespondentAppEmails(CaseData caseData, String caseId, Map<String, Object> respondentParameters,
-                                      String emailToRespondentTemplate) {
+                                                                  RespondentTse respondentApplication) {
+        CaseData caseData = details.caseData();
         // assuming respondent or respondent's representative is in the system. not both
         caseData.getRespondentCollection()
             .forEach(resp -> {
-                String respondentEmailAddress = NotificationsHelper.getRespondentOrRespondentRepEmailAddress(
+                boolean isWelsh = isWelshLanguage(resp);
+                String hearingDate = getHearingDate(details.hearingDate(), isWelsh);
+                Map<String, Object> respondentParameters = prepareEmailParameters(details, hearingDate, isWelsh);
+
+                String emailToRespondentTemplate = getAndSetEmailTemplate(respondentApplication, hearingDate,
+                                           respondentParameters, isWelsh, true);
+                String respondentEmailAddress = NotificationsHelper.getEmailAddressForRespondent(
                     caseData,
                     resp.getValue()
                 );
+
                 if (isNullOrEmpty(respondentEmailAddress)) {
                     log.info("Respondent does not not have an email address associated with their account");
                 } else {
@@ -326,7 +325,7 @@ public class NotificationService {
                             emailToRespondentTemplate,
                             respondentEmailAddress,
                             respondentParameters,
-                            caseId
+                            details.caseId()
                         );
                         log.info("Sent email to respondent");
                     } catch (NotificationClientException ne) {
@@ -351,6 +350,12 @@ public class NotificationService {
         boolean welshFlagEnabled = featureToggleService.isWelshEnabled();
         log.info("Welsh feature flag is set to " + welshFlagEnabled);
         return welshFlagEnabled && WELSH_LANGUAGE.equals(caseData.getClaimantHearingPreference().getContactLanguage());
+    }
+
+    private boolean isWelshLanguage(RespondentSumTypeItem respondent) {
+        boolean welshFlagEnabled = featureToggleService.isWelshEnabled();
+        log.info("Welsh feature flag is set to " + welshFlagEnabled);
+        return welshFlagEnabled && WELSH_LANGUAGE.equals(respondent.getValue().getEt3ResponseLanguagePreference());
     }
 
     private String getHearingDate(String hearingDate, boolean isWelsh) {
