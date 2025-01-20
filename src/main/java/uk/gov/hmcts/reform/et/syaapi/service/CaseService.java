@@ -52,21 +52,21 @@ import java.util.stream.Stream;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED_STATE;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.CLAIMANT_CORRESPONDENCE;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.RESPONDENT_CORRESPONDENCE;
 import static uk.gov.hmcts.ecm.common.model.helper.TribunalOffice.getCaseTypeId;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.CASE_MANAGEMENT_DOC_CATEGORY;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.DEFAULT_TRIBUNAL_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.RESPONDENT_CORRESPONDENCE_DOCUMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.INITIATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.SUBMIT_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
-import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT_TITLE;
 
 /**
  * Provides read and write access to cases stored by ET.
@@ -415,13 +415,13 @@ public class CaseService {
         String applicationDocMapping;
         String typeOfDocument;
         String shortDescription;
-        if (userType.equals(CLAIMANT)) {
+        if (userType.equals(CLAIMANT_TITLE)) {
             applicationDocMapping = DocumentHelper.claimantApplicationTypeToDocType(contactApplicationType);
-            typeOfDocument = CLAIMANT_CORRESPONDENCE_DOCUMENT;
+            typeOfDocument = CLAIMANT_CORRESPONDENCE;
             shortDescription = APP_TYPE_MAP.get(contactApplicationType);
         } else {
             applicationDocMapping = DocumentHelper.respondentApplicationToDocType(contactApplicationType);
-            typeOfDocument = RESPONDENT_CORRESPONDENCE_DOCUMENT;
+            typeOfDocument = RESPONDENT_CORRESPONDENCE;
             shortDescription = contactApplicationType;
         }
 

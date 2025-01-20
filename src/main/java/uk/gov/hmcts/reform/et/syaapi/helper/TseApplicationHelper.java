@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
+import uk.gov.hmcts.ecm.common.model.helper.Constants;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
@@ -23,11 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.OLD_DATE_TIME_PATTERN;
-import static uk.gov.hmcts.ecm.common.model.helper.Constants.RESPONDENT_TITLE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.RESPONDENT_CORRESPONDENCE_DOCUMENT;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.CLAIMANT_CORRESPONDENCE;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.RESPONDENT_CORRESPONDENCE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UK_LOCAL_DATE_PATTERN;
 
 @Slf4j
@@ -35,8 +34,8 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UK_LOCAL_DA
 @SuppressWarnings({"checkstyle:HideUtilityClassConstructor"})
 public final class TseApplicationHelper {
 
-    public static final String CLAIMANT = "Claimant";
-    public static final String RESPONDENT = "Respondent";
+    public static final String CLAIMANT_TITLE = "Claimant";
+    public static final String RESPONDENT_TITLE = "Respondent";
     public static final String WAITING_FOR_TRIBUNAL = "waitingForTheTribunal";
 
     /**
@@ -125,12 +124,12 @@ public final class TseApplicationHelper {
      * @param caseData - case data
      * @param caseDocumentService - case document service to create pdf of response
      */
-    public static void setRespondentApplicationWithResponse(RespondToApplicationRequest request,
-                                                            GenericTseApplicationType appToModify,
-                                                            CaseData caseData,
-                                                            CaseDocumentService caseDocumentService,
-                                                            boolean isWorkAllocationEnabled,
-                                                            String responseUserType) {
+    public static void setApplicationWithResponse(RespondToApplicationRequest request,
+                                                  GenericTseApplicationType appToModify,
+                                                  CaseData caseData,
+                                                  CaseDocumentService caseDocumentService,
+                                                  boolean isWorkAllocationEnabled,
+                                                  String responseUserType) {
         if (CollectionUtils.isEmpty(appToModify.getRespondCollection())) {
             appToModify.setRespondCollection(new ArrayList<>());
         }
@@ -144,9 +143,9 @@ public final class TseApplicationHelper {
         }
 
         if (request.getSupportingMaterialFile() != null) {
-            String documentType = CLAIMANT.equals(responseUserType)
-                ? CLAIMANT_CORRESPONDENCE_DOCUMENT
-                : RESPONDENT_CORRESPONDENCE_DOCUMENT;
+            String documentType = CLAIMANT_TITLE.equals(responseUserType)
+                ? CLAIMANT_CORRESPONDENCE
+                : RESPONDENT_CORRESPONDENCE;
 
             DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(
                 documentType,
@@ -188,10 +187,10 @@ public final class TseApplicationHelper {
      * @return the document type
      */
     public static String getApplicationDoc(GenericTseApplicationType applicationType) {
-        if (CLAIMANT_TITLE.equals(applicationType.getApplicant())) {
+        if (Constants.CLAIMANT_TITLE.equals(applicationType.getApplicant())) {
             return uk.gov.hmcts.ecm.common.helpers.DocumentHelper.claimantApplicationTypeToDocType(
                 getClaimantApplicationType(applicationType));
-        } else if (RESPONDENT_TITLE.equals(applicationType.getApplicant())) {
+        } else if (Constants.RESPONDENT_TITLE.equals(applicationType.getApplicant())) {
             return uk.gov.hmcts.ecm.common.helpers.DocumentHelper.respondentApplicationToDocType(
                 applicationType.getType());
         } else {

@@ -40,9 +40,9 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
-import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT;
-import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.RESPONDENT;
-import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.setRespondentApplicationWithResponse;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT_TITLE;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.RESPONDENT_TITLE;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.setApplicationWithResponse;
 
 @RequiredArgsConstructor
 @Service
@@ -105,7 +105,8 @@ public class ApplicationService {
             log.info("Uploading supporting file to document collection");
             caseService.uploadTseSupportingDocument(caseDetails, contactApplicationFile,
                                                     claimantTse.getContactApplicationType(),
-                                                    CLAIMANT);
+                                                    CLAIMANT_TITLE
+            );
         }
 
         CaseData caseData = EmployeeObjectMapper
@@ -146,7 +147,9 @@ public class ApplicationService {
             CaseEvent.CLAIMANT_TSE_RESPOND
         );
 
-        return submitResponseForApplication(authorization, request, caseId, caseTypeId, startEventResponse, CLAIMANT);
+        return submitResponseForApplication(authorization, request, caseId, caseTypeId, startEventResponse,
+                                            CLAIMANT_TITLE
+        );
     }
 
     /**
@@ -396,7 +399,8 @@ public class ApplicationService {
             log.info("Uploading Respondent TSE supporting file to document collection");
             caseService.uploadTseSupportingDocument(caseDetails, contactApplicationFile,
                                                     respondentTse.getContactApplicationType(),
-                                                    RESPONDENT);
+                                                    RESPONDENT_TITLE
+            );
         }
 
         CaseData caseData = EmployeeObjectMapper
@@ -433,7 +437,9 @@ public class ApplicationService {
             CaseEvent.RESPONDENT_TSE_RESPOND
         );
 
-        return submitResponseForApplication(authorization, request, caseId, caseTypeId, startEventResponse, RESPONDENT);
+        return submitResponseForApplication(authorization, request, caseId, caseTypeId, startEventResponse,
+                                            RESPONDENT_TITLE
+        );
     }
 
     private CaseDetails submitResponseForApplication(String authorization,
@@ -465,7 +471,7 @@ public class ApplicationService {
         sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
 
         boolean waEnabled = featureToggleService.isWorkAllocationEnabled();
-        setRespondentApplicationWithResponse(request, appType, caseData, caseDocumentService, waEnabled, respondent);
+        setApplicationWithResponse(request, appType, caseData, caseDocumentService, waEnabled, respondent);
 
         createAndAddPdfOfResponse(authorization, request, caseData, appType);
 
