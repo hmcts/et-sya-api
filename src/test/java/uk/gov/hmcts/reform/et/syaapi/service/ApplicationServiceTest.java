@@ -502,7 +502,9 @@ class ApplicationServiceTest {
         }
 
         @Test
-        void shouldSubmitResponseToClaimantApplicationAndSendCopy() throws CaseDocumentException, DocumentGenerationException {
+        void shouldSubmitResponseToClaimantApplicationAndSendCopy()
+            throws CaseDocumentException, DocumentGenerationException {
+
             testRequest.getResponse().setCopyToOtherParty(YES);
 
             applicationService.respondToClaimantApplication(
@@ -612,7 +614,8 @@ class ApplicationServiceTest {
 
         @ParameterizedTest
         @MethodSource
-        void testNewStateAndResponseRequiredForClaimant(boolean isRespondingToRequestOrOrder, String expectedApplicationState,
+        void testNewStateAndResponseRequiredForClaimant(boolean isRespondingToRequestOrOrder,
+                                                        String expectedApplicationState,
                                                         String expectedClaimantResponseRequired) {
             testRequest.setRespondingToRequestOrOrder(isRespondingToRequestOrOrder);
             GenericTseApplicationType application = GenericTseApplicationType.builder()
