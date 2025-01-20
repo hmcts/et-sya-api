@@ -64,6 +64,8 @@ public class EmployeeObjectMapper {
     }
 
     public static Map<String, Object> mapCaseDataToLinkedHashMap(CaseData caseData) {
-        return new ObjectMapper().convertValue(caseData, new TypeReference<>() {});
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        return mapper.convertValue(caseData, new TypeReference<>() {});
     }
 }
