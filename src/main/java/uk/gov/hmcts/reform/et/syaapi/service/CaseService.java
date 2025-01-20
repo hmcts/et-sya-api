@@ -318,6 +318,9 @@ public class CaseService {
         caseData1.setClaimantPcqId(caseRequest.getCaseData().get("claimantPcqId") == null ? "" :
                                       caseRequest.getCaseData().get("claimantPcqId").toString());
         caseData1.setEt1OnlineSubmission(YES);
+        //Remove case time to live to avoid case being deleted
+        caseData1.setTtl(null);
+
         ObjectMapper objectMapper = new ObjectMapper();
         CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
         try {

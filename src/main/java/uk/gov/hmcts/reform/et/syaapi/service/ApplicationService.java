@@ -88,8 +88,6 @@ public class ApplicationService {
         CaseDetails caseDetails = startEventResponse.getCaseDetails();
         ClaimantTse claimantTse = request.getClaimantTse();
         caseDetails.getData().put("claimantTse", claimantTse);
-        //Remove case time to live to avoid case being deleted
-        caseDetails.getData().remove("TTL");
 
         try {
             log.info("Uploading pdf of TSE application");
