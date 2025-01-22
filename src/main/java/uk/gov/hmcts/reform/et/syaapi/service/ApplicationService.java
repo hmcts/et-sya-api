@@ -356,14 +356,13 @@ public class ApplicationService {
                                                                     isRespondingToRequestOrOrder);
 
         if (isRespondingToRequestOrOrder) {
-            notificationService.sendReplyEmailToClaimant(
-                caseData,
+            notificationService.sendRespondentResponseEmailToClaimant(
+                details,
                 caseData.getEthosCaseReference(),
-                caseId,
                 copyToOtherParty
             );
         } else {
-            notificationService.sendResponseEmailToClaimant(details, type, copyToOtherParty);
+            notificationService.sendReplyEmailToClaimant(details.caseData(), caseId, type, copyToOtherParty);
         }
     }
 

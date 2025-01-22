@@ -577,8 +577,10 @@ public class NotificationService {
      * @param copyToOtherParty             whether to notify other party
      * @param isRespondingToRequestOrOrder indicates whether the reply is to a tribunal order or not
      */
-    void sendResponseEmailToClaimant(CoreEmailDetails details, String applicationType, String copyToOtherParty,
-                                     boolean isRespondingToRequestOrOrder) {
+    void sendResponseEmailToClaimant(CoreEmailDetails details,
+                                               String applicationType,
+                                               String copyToOtherParty,
+                                               boolean isRespondingToRequestOrOrder) {
         if (TYPE_C.equals(applicationType)) {
             log.info("Type C application -  Claimant is only notified of "
                          + "Type A/B application responses, email not being sent");
@@ -823,7 +825,8 @@ public class NotificationService {
      * @param applicationType  type of application
      * @param copyToOtherParty should copy response to other party
      */
-    void sendResponseEmailToClaimant(CoreEmailDetails details, String applicationType, String copyToOtherParty) {
+    void sendRespondentResponseEmailToClaimant(CoreEmailDetails details, String applicationType,
+                                               String copyToOtherParty) {
         if (TYPE_C.equals(applicationType) || DONT_SEND_COPY.equals(copyToOtherParty)) {
             log.info("Acknowledgement email not sent to claimants for this application type");
             return;
