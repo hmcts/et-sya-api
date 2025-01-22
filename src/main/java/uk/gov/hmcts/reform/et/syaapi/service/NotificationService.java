@@ -589,18 +589,8 @@ public class NotificationService {
             log.info(NO_CLAIMANT_EMAIL_FOUND);
             return;
         }
-        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
+        Map<String, Object> claimantParameters = prepareResponseEmailCommonParameters(details, applicationType);
 
-        addCommonParameters(
-            claimantParameters,
-            details.claimant,
-            details.respondentNames,
-            details.caseId,
-            details.caseNumber,
-            String.join(" ", details.caseNumber, applicationType),
-            applicationType
-        );
-        claimantParameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, details.hearingDate);
         claimantParameters.put(
             SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
             notificationsProperties.getCitizenPortalLink() + details.caseId
@@ -627,6 +617,92 @@ public class NotificationService {
         } catch (NotificationClientException ne) {
             throw new NotificationException(ne);
         }
+    }
+
+    /**
+     * Send acknowledgment email to the respondent when they are responding to
+     * an application (type A/B) made by the Claimant.
+     *
+     * @param details                      core details of the email
+     * @param applicationType              type of application
+     * @param copyToOtherParty             whether to notify other party
+     * @param isRespondingToRequestOrOrder indicates whether the reply is to a tribunal order or not
+     */
+    void sendRespondentResponseEmailToRespondent(CoreEmailDetails details, String applicationType,
+                                                 String copyToOtherParty, boolean isRespondingToRequestOrOrder) {
+        if (TYPE_C.equals(applicationType)) {
+            log.info("Type C application -  Respondent is only notified of "
+                         + "Type A/B application responses, email not being sent");
+            return;
+        }
+
+        Map<String, Object> emailParameters = prepareResponseEmailCommonParameters(details, applicationType);
+        String emailTemplate = getRespondentResponseEmailTemplate(isRespondingToRequestOrOrder,
+                                                                  copyToOtherParty);
+
+        CaseData caseData = details.caseData();
+        caseData.getRespondentCollection()
+            .forEach(resp -> {
+                boolean isRespondentOrRep = StringUtils.isNotBlank(resp.getValue().getIdamId());
+                String linkToCase = isRespondentOrRep
+                    ? getRespondentPortalLink(details.caseId(), false)
+                    : getRespondentRepPortalLink(details.caseId());
+                emailParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, linkToCase);
+
+                String respondentEmailAddress = NotificationsHelper.getEmailAddressForRespondent(
+                    caseData,
+                    resp.getValue()
+                );
+
+                if (isNullOrEmpty(respondentEmailAddress)) {
+                    log.info("Respondent does not not have an email address associated with their account");
+                } else {
+                    try {
+                        notificationClient.sendEmail(
+                            emailTemplate,
+                            respondentEmailAddress,
+                            emailParameters,
+                            details.caseId()
+                        );
+                        log.info("Sent email to respondent");
+                    } catch (NotificationClientException ne) {
+                        throw new NotificationException(ne);
+                    }
+                }
+            });
+    }
+
+    private Map<String, Object> prepareResponseEmailCommonParameters(CoreEmailDetails details,
+                                                                     String applicationType) {
+        Map<String, Object> emailParameters = new ConcurrentHashMap<>();
+
+        addCommonParameters(
+            emailParameters,
+            details.claimant,
+            details.respondentNames,
+            details.caseId,
+            details.caseNumber,
+            String.join(" ", details.caseNumber, applicationType),
+            applicationType
+        );
+        emailParameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, details.hearingDate);
+
+        return emailParameters;
+    }
+
+    private String getRespondentResponseEmailTemplate(boolean isRespondingToRequestOrOrder, String copyToOtherParty) {
+        String emailTemplate;
+        if (isRespondingToRequestOrOrder) {
+            emailTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
+                ? notificationsProperties.getTseClaimantResponseToRequestNoTemplateId()
+                : notificationsProperties.getTseClaimantResponseToRequestYesTemplateId();
+        } else {
+            emailTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
+                ? notificationsProperties.getTseClaimantResponseNoTemplateId()
+                : notificationsProperties.getTseClaimantResponseYesTemplateId();
+        }
+
+        return emailTemplate;
     }
 
     /**
@@ -692,6 +768,102 @@ public class NotificationService {
         String emailToRespondentTemplate = notificationsProperties.getTseReplyToTribunalToRespondentTemplateId();
 
         sendRespondentEmails(caseData, caseId, respondentParameters, emailToRespondentTemplate);
+    }
+
+    /**
+     * Email claimant when respondent responds to a request for info from the tribunal on a TSE application.
+     *
+     * @param caseData   existing case details
+     * @param caseNumber ethos case reference
+     * @param caseId     16 digit case id
+     */
+    void sendReplyEmailToClaimant(
+        CaseData caseData,
+        String caseNumber,
+        String caseId,
+        String copyToOtherParty
+    ) {
+        if (DONT_SEND_COPY.equals(copyToOtherParty)) {
+            log.info("Answered no for Rule 92, not sending email to claimant");
+            return;
+        }
+
+        String claimantEmailAddress = caseData.getClaimantType().getClaimantEmailAddress();
+        if (isBlank(claimantEmailAddress)) {
+            log.info(NO_CLAIMANT_EMAIL_FOUND);
+            return;
+        }
+
+        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
+        claimantParameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
+        claimantParameters.put(
+            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+            notificationsProperties.getCitizenPortalLink() + caseId
+        );
+
+        String emailTemplate = notificationsProperties.getTseReplyToTribunalToRespondentTemplateId();
+
+        try {
+            notificationClient.sendEmail(
+                emailTemplate,
+                claimantEmailAddress,
+                claimantParameters,
+                caseId
+            );
+        } catch (NotificationClientException ne) {
+            throw new NotificationException(ne);
+        }
+    }
+
+    /**
+     * Send acknowledgment email to the respondent when they are responding to
+     * an application (type A/B) made by the Respondent.
+     *
+     * @param details          core details of the email
+     * @param applicationType  type of application
+     * @param copyToOtherParty should copy response to other party
+     */
+    void sendResponseEmailToClaimant(CoreEmailDetails details, String applicationType, String copyToOtherParty) {
+        if (TYPE_C.equals(applicationType) || DONT_SEND_COPY.equals(copyToOtherParty)) {
+            log.info("Acknowledgement email not sent to claimants for this application type");
+            return;
+        }
+
+        String claimantEmailAddress = details.caseData.getClaimantType().getClaimantEmailAddress();
+        if (isBlank(claimantEmailAddress)) {
+            log.info(NO_CLAIMANT_EMAIL_FOUND);
+            return;
+        }
+
+        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
+
+        addCommonParameters(
+            claimantParameters,
+            details.claimant,
+            details.respondentNames,
+            details.caseId,
+            details.caseNumber,
+            String.join(" ", details.caseNumber, applicationType),
+            applicationType
+        );
+        claimantParameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, details.hearingDate);
+        claimantParameters.put(
+            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+            notificationsProperties.getCitizenPortalLink() + details.caseId
+        );
+
+        String emailTemplate = notificationsProperties.getTseRespondentResponseTemplateId();
+
+        try {
+            notificationClient.sendEmail(
+                emailTemplate,
+                claimantEmailAddress,
+                claimantParameters,
+                details.caseId
+            );
+        } catch (NotificationClientException ne) {
+            throw new NotificationException(ne);
+        }
     }
 
     void sendResponseNotificationEmailToTribunal(CaseData caseData, String caseId) {

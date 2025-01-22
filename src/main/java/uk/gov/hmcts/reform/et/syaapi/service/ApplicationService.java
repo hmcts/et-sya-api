@@ -346,24 +346,24 @@ public class ApplicationService {
         }
     }
 
-    // todo: implement this method
     private void sendRespondentResponseToApplicationEmails(CaseData caseData,
                                                            CoreEmailDetails details,
                                                            String caseId,
                                                            String type,
                                                            String copyToOtherParty,
                                                            boolean isRespondingToRequestOrOrder) {
-        notificationService.sendResponseEmailToClaimant(details, type, copyToOtherParty, isRespondingToRequestOrOrder);
+        notificationService.sendRespondentResponseEmailToRespondent(details, type, copyToOtherParty,
+                                                                    isRespondingToRequestOrOrder);
 
         if (isRespondingToRequestOrOrder) {
-            notificationService.sendReplyEmailToRespondent(
+            notificationService.sendReplyEmailToClaimant(
                 caseData,
                 caseData.getEthosCaseReference(),
                 caseId,
                 copyToOtherParty
             );
         } else {
-            notificationService.sendResponseEmailToRespondent(details, type, copyToOtherParty);
+            notificationService.sendResponseEmailToClaimant(details, type, copyToOtherParty);
         }
     }
 
