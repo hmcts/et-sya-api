@@ -148,8 +148,7 @@ public class ApplicationService {
         );
 
         return submitResponseForApplication(authorization, request, caseId, caseTypeId, startEventResponse,
-                                            CLAIMANT_TITLE
-        );
+                                            CLAIMANT_TITLE);
     }
 
     /**
@@ -235,7 +234,8 @@ public class ApplicationService {
         String authorization,
         RespondToApplicationRequest request,
         CaseData caseData,
-        GenericTseApplicationType application
+        GenericTseApplicationType application,
+        String respondingUserType
     ) {
         if (YES.equals(request.getResponse().getCopyToOtherParty())) {
             try {
@@ -244,7 +244,8 @@ public class ApplicationService {
                     authorization,
                     caseData,
                     request,
-                    application.getType()
+                    application.getType(),
+                    respondingUserType
                 );
             } catch (CaseDocumentException | DocumentGenerationException e) {
                 logTseApplicationDocumentUploadError(e);
@@ -259,7 +260,7 @@ public class ApplicationService {
     ) throws NotificationClientException {
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(finalCaseDetails.getData());
         String caseId = finalCaseDetails.getId().toString();
-        CoreEmailDetails details = prepareAcknowledgementEmailDetails(caseData, caseId);
+        CoreEmailDetails details = prepareCoreEmailDetails(caseData, caseId);
 
         ClaimantTse claimantTse = request.getClaimantTse();
         JSONObject documentJson = getDocumentDownload(authorization, caseData);
@@ -276,7 +277,7 @@ public class ApplicationService {
     ) throws NotificationClientException {
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(finalCaseDetails.getData());
         String caseId = finalCaseDetails.getId().toString();
-        CoreEmailDetails details = prepareAcknowledgementEmailDetails(caseData, caseId);
+        CoreEmailDetails details = prepareCoreEmailDetails(caseData, caseId);
 
         RespondentTse respondentTse = request.getRespondentTse();
         JSONObject documentJson = getDocumentDownload(authorization, caseData);
@@ -286,7 +287,7 @@ public class ApplicationService {
         notificationService.sendAcknowledgementEmailToTribunal(details, respondentTse.getContactApplicationType());
     }
 
-    private CoreEmailDetails prepareAcknowledgementEmailDetails(CaseData caseData, String caseId) {
+    private CoreEmailDetails prepareCoreEmailDetails(CaseData caseData, String caseId) {
         ClaimantIndType claimantIndType = caseData.getClaimantIndType();
         String hearingDate = NotificationsHelper.getNearestHearingToReferral(caseData, "Not set");
 
@@ -305,21 +306,52 @@ public class ApplicationService {
         CaseData caseData,
         String caseId,
         String copyToOtherParty,
-        boolean isRespondingToRequestOrOrder
+        boolean isRespondingToRequestOrOrder,
+        String respondingUserType
     ) {
-        ClaimantIndType claimantIndType = caseData.getClaimantIndType();
-
-        CoreEmailDetails details = new CoreEmailDetails(
-            caseData,
-            claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName(),
-            caseData.getEthosCaseReference(),
-            getRespondentNames(caseData),
-            NotificationsHelper.getNearestHearingToReferral(caseData, "Not set"),
-            caseId
-        );
+        CoreEmailDetails details = prepareCoreEmailDetails(caseData, caseId);
         String type = application.getType();
 
         notificationService.sendResponseEmailToTribunal(details, type, isRespondingToRequestOrOrder);
+
+        if (respondingUserType.equals(RESPONDENT_TITLE)) {
+            sendRespondentResponseToApplicationEmails(caseData, details, caseId, type, copyToOtherParty,
+                                                     isRespondingToRequestOrOrder);
+        } else {
+            sendClaimantResponseToApplicationEmails(caseData, details, type, caseId, copyToOtherParty,
+                                                    isRespondingToRequestOrOrder);
+        }
+
+    }
+
+    private void sendClaimantResponseToApplicationEmails(CaseData caseData,
+                                                         CoreEmailDetails details,
+                                                         String type,
+                                                         String caseId,
+                                                         String copyToOtherParty,
+                                                         boolean isRespondingToRequestOrOrder) {
+
+        notificationService.sendResponseEmailToClaimant(details, type, copyToOtherParty, isRespondingToRequestOrOrder);
+
+        if (isRespondingToRequestOrOrder) {
+            notificationService.sendReplyEmailToRespondent(
+                caseData,
+                caseData.getEthosCaseReference(),
+                caseId,
+                copyToOtherParty
+            );
+        } else {
+            notificationService.sendResponseEmailToRespondent(details, type, copyToOtherParty);
+        }
+    }
+
+    // todo: implement this method
+    private void sendRespondentResponseToApplicationEmails(CaseData caseData,
+                                                           CoreEmailDetails details,
+                                                           String caseId,
+                                                           String type,
+                                                           String copyToOtherParty,
+                                                           boolean isRespondingToRequestOrOrder) {
         notificationService.sendResponseEmailToClaimant(details, type, copyToOtherParty, isRespondingToRequestOrOrder);
 
         if (isRespondingToRequestOrOrder) {
@@ -438,8 +470,7 @@ public class ApplicationService {
         );
 
         return submitResponseForApplication(authorization, request, caseId, caseTypeId, startEventResponse,
-                                            RESPONDENT_TITLE
-        );
+                                            RESPONDENT_TITLE);
     }
 
     private CaseDetails submitResponseForApplication(String authorization,
@@ -447,7 +478,7 @@ public class ApplicationService {
                                                      String caseId,
                                                      String caseTypeId,
                                                      StartEventResponse startEventResponse,
-                                                     String respondent) {
+                                                     String respondingUserType) {
         CaseData caseData = EmployeeObjectMapper
             .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
 
@@ -465,15 +496,20 @@ public class ApplicationService {
         boolean isRespondingToTribunal = request.isRespondingToRequestOrOrder();
         if (isRespondingToTribunal) {
             appType.setApplicationState(IN_PROGRESS);
-            appType.setClaimantResponseRequired(NO);
+            if (respondingUserType.equals(RESPONDENT_TITLE)) {
+                appType.setRespondentResponseRequired(NO);
+            } else {
+                appType.setClaimantResponseRequired(NO);
+            }
         }
 
-        sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal);
+        sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty,
+                                        isRespondingToTribunal, respondingUserType);
 
         boolean waEnabled = featureToggleService.isWorkAllocationEnabled();
-        setApplicationWithResponse(request, appType, caseData, caseDocumentService, waEnabled, respondent);
+        setApplicationWithResponse(request, appType, caseData, caseDocumentService, waEnabled, respondingUserType);
 
-        createAndAddPdfOfResponse(authorization, request, caseData, appType);
+        createAndAddPdfOfResponse(authorization, request, caseData, appType, respondingUserType);
 
         return caseService.submitUpdate(
             authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);

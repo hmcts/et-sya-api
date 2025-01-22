@@ -32,6 +32,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT_TITLE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.SAMPLE_BYTE_ARRAY;
 
 @ExtendWith(MockitoExtension.class)
@@ -148,8 +149,9 @@ class PdfUploadServiceTest {
         GenericTseApplicationType application =
             caseTestData.getCaseData().getGenericTseApplicationCollection().get(0).getValue();
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            pdfUploadService.convertClaimantResponseIntoMultipartFile(request, "Response to app",
-                                                                "6000001/2023", application);
+            pdfUploadService.convertApplicationResponseIntoMultipartFile(request, "Response to app",
+                                                                "6000001/2023", application,
+                                                                         CLAIMANT_TITLE);
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
 
@@ -160,8 +162,9 @@ class PdfUploadServiceTest {
             caseTestData.getCaseData().getGenericTseApplicationCollection().get(0).getValue();
         request.getResponse().setHasSupportingMaterial("No");
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
-            pdfUploadService.convertClaimantResponseIntoMultipartFile(request, "Response to app",
-                                                                "6000001/2023", application);
+            pdfUploadService.convertApplicationResponseIntoMultipartFile(request, "Response to app",
+                                                                "6000001/2023", application,
+                                                                         CLAIMANT_TITLE);
         assertThat(pdfDecodedMultipartFile).isNotNull();
     }
 

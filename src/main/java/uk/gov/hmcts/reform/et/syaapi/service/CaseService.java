@@ -487,7 +487,8 @@ public class CaseService {
     void createResponsePdf(String authorization,
                            CaseData caseData,
                            RespondToApplicationRequest request,
-                           String appType)
+                           String appType,
+                           String respondingUserType)
         throws DocumentGenerationException, CaseDocumentException {
         String description = "Response to " + appType;
         GenericTseApplicationType application = TseApplicationHelper.getSelectedApplication(
@@ -496,10 +497,11 @@ public class CaseService {
             .getValue();
 
         PdfDecodedMultipartFile multipartResponsePdf =
-            pdfUploadService.convertClaimantResponseIntoMultipartFile(request,
-                                                                      description,
-                                                                      caseData.getEthosCaseReference(),
-                                                                      application);
+            pdfUploadService.convertApplicationResponseIntoMultipartFile(request,
+                                                                         description,
+                                                                         caseData.getEthosCaseReference(),
+                                                                         application,
+                                                                         respondingUserType);
 
         String applicationDoc = TseApplicationHelper.getApplicationDoc(application);
         String topLevel = DocumentHelper.getTopLevelDocument(applicationDoc);

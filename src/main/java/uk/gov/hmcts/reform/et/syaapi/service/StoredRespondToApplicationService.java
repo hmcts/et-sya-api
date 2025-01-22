@@ -153,7 +153,8 @@ public class StoredRespondToApplicationService {
                     authorization,
                     caseData,
                     request,
-                    application.getType()
+                    application.getType(),
+                    CLAIMANT_TITLE
                 );
             } catch (CaseDocumentException | DocumentGenerationException e) {
                 log.error("Couldn't upload pdf of TSE application " + e.getMessage());

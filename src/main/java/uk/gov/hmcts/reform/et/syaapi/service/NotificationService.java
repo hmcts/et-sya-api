@@ -310,6 +310,12 @@ public class NotificationService {
                 String hearingDate = getHearingDate(details.hearingDate(), isWelsh);
                 Map<String, Object> respondentParameters = prepareEmailParameters(details, hearingDate, isWelsh);
 
+                boolean isRespondentOrRep = StringUtils.isNotBlank(resp.getValue().getIdamId());
+                String linkToCase = isRespondentOrRep
+                    ? getRespondentPortalLink(details.caseId(), isWelsh)
+                    : getRespondentRepPortalLink(details.caseId());
+                respondentParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY, linkToCase);
+
                 String emailToRespondentTemplate = getAndSetEmailTemplate(respondentApplication, hearingDate,
                                            respondentParameters, isWelsh, true);
                 String respondentEmailAddress = NotificationsHelper.getEmailAddressForRespondent(
@@ -368,6 +374,15 @@ public class NotificationService {
     private String getCitizenPortalLink(String caseId, boolean isWelsh) {
         return notificationsProperties.getCitizenPortalLink() + caseId + (isWelsh
             ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
+    }
+
+    private String getRespondentPortalLink(String caseId, boolean isWelsh) {
+        return notificationsProperties.getRespondentPortalLink() + caseId + (isWelsh
+            ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
+    }
+
+    private String getRespondentRepPortalLink(String caseId) {
+        return notificationsProperties.getRespondentPortalLink() + caseId;
     }
 
     private SendEmailResponse sendEmailToClaimant(CaseData caseData, String caseId, String emailTemplate,

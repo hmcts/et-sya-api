@@ -42,6 +42,8 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT_TITLE;
+import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.RESPONDENT_TITLE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 @SuppressWarnings({"PMD.SingularField", "PMD.TooManyMethods"})
@@ -295,7 +297,8 @@ class ApplicationServiceTest {
                 eq(TEST_SERVICE_AUTH_TOKEN),
                 any(),
                 eq(testRequest),
-                any()
+                any(),
+                eq(CLAIMANT_TITLE)
             );
 
             verify(caseDetailsConverter, times(1)).caseDataContent(
@@ -322,7 +325,8 @@ class ApplicationServiceTest {
                 eq(TEST_SERVICE_AUTH_TOKEN),
                 any(),
                 eq(testRequest),
-                any()
+                any(),
+                eq(CLAIMANT_TITLE)
             );
 
             verify(caseDetailsConverter, times(1)).caseDataContent(
@@ -515,8 +519,9 @@ class ApplicationServiceTest {
             verify(caseService, times(1)).createResponsePdf(
                 eq(TEST_SERVICE_AUTH_TOKEN),
                 any(),
-                eq(testRequest),
-                any()
+                any(),
+                any(),
+                eq(RESPONDENT_TITLE)
             );
 
             verify(caseDetailsConverter, times(1)).caseDataContent(
@@ -543,7 +548,8 @@ class ApplicationServiceTest {
                 eq(TEST_SERVICE_AUTH_TOKEN),
                 any(),
                 eq(testRequest),
-                any()
+                any(),
+                eq(RESPONDENT_TITLE)
             );
 
             verify(caseDetailsConverter, times(1)).caseDataContent(
@@ -616,10 +622,10 @@ class ApplicationServiceTest {
         @MethodSource
         void testNewStateAndResponseRequiredForClaimant(boolean isRespondingToRequestOrOrder,
                                                         String expectedApplicationState,
-                                                        String expectedClaimantResponseRequired) {
+                                                        String expectedRespondentResponseRequired) {
             testRequest.setRespondingToRequestOrOrder(isRespondingToRequestOrOrder);
             GenericTseApplicationType application = GenericTseApplicationType.builder()
-                .claimantResponseRequired(YES).applicationState(INITIAL_STATE).build();
+                .respondentResponseRequired(YES).applicationState(INITIAL_STATE).build();
 
             MockedStatic<TseApplicationHelper> mockStatic = mockStatic(TseApplicationHelper.class);
             mockStatic.when(() -> TseApplicationHelper.getSelectedApplication(any(), any()))
@@ -628,7 +634,7 @@ class ApplicationServiceTest {
             applicationService.respondToClaimantApplication(TEST_SERVICE_AUTH_TOKEN, testRequest);
 
             assertThat(application.getApplicationState()).isEqualTo(expectedApplicationState);
-            assertThat(application.getClaimantResponseRequired()).isEqualTo(expectedClaimantResponseRequired);
+            assertThat(application.getRespondentResponseRequired()).isEqualTo(expectedRespondentResponseRequired);
 
             mockStatic.close();
         }

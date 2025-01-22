@@ -17,7 +17,7 @@ import uk.gov.hmcts.et.common.model.ccd.types.RespondentTse;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.models.AcasCertificate;
-import uk.gov.hmcts.reform.et.syaapi.models.ClaimantResponseCya;
+import uk.gov.hmcts.reform.et.syaapi.models.AppResponseCitizen;
 import uk.gov.hmcts.reform.et.syaapi.models.GenericTseApplication;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.DocumentGenerationException;
@@ -240,10 +240,11 @@ public class PdfUploadService {
      * @return {@link PdfDecodedMultipartFile} with the claimant response CYA page in pdf format.
      * @throws DocumentGenerationException if there is an error generating the PDF.
      */
-    public PdfDecodedMultipartFile convertClaimantResponseIntoMultipartFile(RespondToApplicationRequest request,
-                                                                            String description,
-                                                                            String ethosCaseReference,
-                                                                            GenericTseApplicationType application)
+    public PdfDecodedMultipartFile convertApplicationResponseIntoMultipartFile(RespondToApplicationRequest request,
+                                                                               String description,
+                                                                               String ethosCaseReference,
+                                                                               GenericTseApplicationType application,
+                                                                               String respondingUserType)
         throws DocumentGenerationException {
 
         String documentName = "Application %s  - %s - Claimant Response.pdf".formatted(
@@ -252,28 +253,31 @@ public class PdfUploadService {
         );
 
         return new PdfDecodedMultipartFile(
-            convertClaimantResponseToPdf(request, ethosCaseReference, description, documentName),
+            convertClaimantResponseToPdf(request, ethosCaseReference, description, documentName, respondingUserType),
             documentName,
             PDF_FILE_TIKA_CONTENT_TYPE,
             description
         );
     }
 
-    private byte[] convertClaimantResponseToPdf(RespondToApplicationRequest request, String ethosCaseReference,
-                                                String appTypeDescription, String documentName)
+    private byte[] convertClaimantResponseToPdf(RespondToApplicationRequest request,
+                                                String ethosCaseReference,
+                                                String appTypeDescription,
+                                                String documentName,
+                                                String respondingUserType)
         throws DocumentGenerationException {
-        TseRespondType claimantResponse = request.getResponse();
-        String fileName = claimantResponse.getSupportingMaterial() != null
+        TseRespondType applicationResponse = request.getResponse();
+        String fileName = applicationResponse.getSupportingMaterial() != null
             ? request.getSupportingMaterialFile().getDocumentFilename() : null;
 
-        ClaimantResponseCya claimantResponseCya = ClaimantResponseCya.builder()
+        AppResponseCitizen claimantResponseCya = AppResponseCitizen.builder()
             .caseNumber(ethosCaseReference)
-            .applicant(CLAIMANT_TITLE)
+            .applicant(respondingUserType)
             .applicationType(appTypeDescription)
             .applicationDate(UtilHelper.formatCurrentDate(LocalDate.now()))
-            .response(claimantResponse.getResponse())
+            .response(applicationResponse.getResponse())
             .fileName(fileName)
-            .copyToOtherPartyYesOrNo(claimantResponse.getCopyToOtherParty())
+            .copyToOtherPartyYesOrNo(applicationResponse.getCopyToOtherParty())
             .build();
 
         return documentGenerationService.genPdfDocument(
