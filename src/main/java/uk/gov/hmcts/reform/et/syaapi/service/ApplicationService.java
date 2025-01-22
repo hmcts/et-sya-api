@@ -47,6 +47,7 @@ import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.setAppli
 @RequiredArgsConstructor
 @Service
 @Slf4j
+@SuppressWarnings({"PMD.TooManyMethods"})
 public class ApplicationService {
     public static final String WEEKS_78 = "78 weeks";
 
