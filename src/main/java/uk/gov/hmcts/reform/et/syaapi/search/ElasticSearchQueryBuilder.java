@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.et.syaapi.search;
 import org.apache.commons.lang3.StringUtils;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 
+@SuppressWarnings({"PMD.AvoidDuplicateLiterals"})
 public final class ElasticSearchQueryBuilder {
 
     private static final String FIELD_NAME_RESPONDENT_ORGANISATION
@@ -36,36 +37,40 @@ public final class ElasticSearchQueryBuilder {
     public static String buildByFindCaseForRoleModificationRequest(
         FindCaseForRoleModificationRequest findCaseForRoleModificationRequest
     ) {
-        /*
+
         // This code is not being used as we have problem with spring boot - elastic search query builder.
         // This is a bug and needs to be resolved with the new release of elastic search
         // https://github.com/elastic/elasticsearch/issues/109165
-            // Respondent Queries
+        // Respondent Queries
+        /*
             BoolQueryBuilder boolQueryForRespondentOrganisationName = boolQuery().filter(
-                new MatchQueryBuilder(FIELD_NAME_RESPONDENT_ORGANISATION,
-                                      findCaseForRoleModificationRequest.getRespondentName()));
+                new TermQueryBuilder(FIELD_NAME_RESPONDENT_ORGANISATION,
+                                                       findCaseForRoleModificationRequest
+                                                       .getRespondentName()).caseInsensitive(true));
             BoolQueryBuilder boolQueryForRespondentName = boolQuery().filter(
-                new MatchQueryBuilder(FIELD_NAME_RESPONDENT_NAME,
-                                      findCaseForRoleModificationRequest.getRespondentName()));
+                new TermQueryBuilder(FIELD_NAME_RESPONDENT_NAME,
+                                      findCaseForRoleModificationRequest.getRespondentName()).caseInsensitive(true));
             // Respondent name is the field that always has one of the names. If it is an organisation it has the
             // organisation name or if it is an individual has the individual name. Just added that field as an
             // or to both organisation and respondent names.
             BoolQueryBuilder boolQueryForRespondent = boolQuery().filter(
-                new MatchQueryBuilder(FIELD_NAME_RESPONDENT, findCaseForRoleModificationRequest.getRespondentName()));
+                new TermQueryBuilder(FIELD_NAME_RESPONDENT,
+                findCaseForRoleModificationRequest.getRespondentName()).caseInsensitive(true));
 
 
             // Claimant Queries
             BoolQueryBuilder boolQueryForClaimantFirstNames = boolQuery().filter(
-                new MatchQueryBuilder(FIELD_NAME_CLAIMANT_FIRST_NAMES,
+                new TermQueryBuilder(FIELD_NAME_CLAIMANT_FIRST_NAMES,
                                       findCaseForRoleModificationRequest.getClaimantFirstNames()));
             BoolQueryBuilder boolQueryForClaimantLastName = boolQuery().filter(
-                new MatchQueryBuilder(FIELD_NAME_CLAIMANT_LAST_NAME,
+                new TermQueryBuilder(FIELD_NAME_CLAIMANT_LAST_NAME,
                                       findCaseForRoleModificationRequest.getClaimantLastName()));
             BoolQueryBuilder boolQueryForClaimantFullName = boolQuery().filter(
-                new MatchQueryBuilder(FIELD_NAME_CLAIMANT_FULL_NAME,
+                new TermQueryBuilder(FIELD_NAME_CLAIMANT_FULL_NAME,
                                       findCaseForRoleModificationRequest.getClaimantFirstNames()
                                           + StringUtils.SPACE
-                                          + findCaseForRoleModificationRequest.getClaimantLastName()));
+                                          + findCaseForRoleModificationRequest
+                                          .getClaimantLastName()).caseInsensitive(true));
             // Total Query
             BoolQueryBuilder boolQueryBuilder = boolQuery()
                 .must(new MatchQueryBuilder(FIELD_NAME_SUBMISSION_REFERENCE,
@@ -80,10 +85,10 @@ public final class ElasticSearchQueryBuilder {
                                         .must(boolQueryForClaimantLastName))
                             .should(boolQueryForClaimantFullName));
             return new SearchSourceBuilder()
-                .size(ES_SIZE)
+                .size(1)
                 .query(boolQueryBuilder).toString();
-       */
-        return "{\"size\":1,\"query\":{\"bool\":{\"must\":[{\"match\":{\"" + FIELD_NAME_SUBMISSION_REFERENCE + "\":"
+            */
+        /* return "{\"size\":1,\"query\":{\"bool\":{\"must\":[{\"match\":{\"" + FIELD_NAME_SUBMISSION_REFERENCE + "\":"
             + "{\"query\":\"" + findCaseForRoleModificationRequest.getCaseSubmissionReference()
             + "\"}}}],\"filter\":[{\"bool\":{\"should\":[{\"bool\":"
             + "{\"filter\":[{\"match\":{\"" + FIELD_NAME_RESPONDENT_ORGANISATION + "\":"
@@ -101,7 +106,28 @@ public final class ElasticSearchQueryBuilder {
             + ":1.0}}],\"boost\":1.0}},{\"bool\":{\"filter\":[{\"match\":{\"" + FIELD_NAME_CLAIMANT_FULL_NAME
             + "\":{\"query\":\"" + findCaseForRoleModificationRequest.getClaimantFirstNames()
             + StringUtils.SPACE + findCaseForRoleModificationRequest.getClaimantLastName()
-            + "\"}}}],\"boost\":1.0}}],\"boost\":1.0}}],\"boost\":1.0}}}";
+            + "\"}}}],\"boost\":1.0}}],\"boost\":1.0}}],\"boost\":1.0}}}";*/
+        return "{\"size\":1,\"query\":{\"bool\":{\"must\":[{\"match\":{\"" + FIELD_NAME_SUBMISSION_REFERENCE + "\":"
+            + "{\"query\":\"" + findCaseForRoleModificationRequest.getCaseSubmissionReference()
+            + "\"}}}],\"filter\":[{\"bool\":{\"should\":[{\"bool\":{\"filter\":[{\"term\":{\""
+            + FIELD_NAME_RESPONDENT_ORGANISATION + "\":{\"value\":\""
+            + findCaseForRoleModificationRequest.getRespondentName() + "\",\"case_insensitive\":true}}}],"
+            + "\"boost\":1.0}},{\"bool\":{\"filter\":[{\"term\":{\"" + FIELD_NAME_RESPONDENT_NAME
+            + "\":{\"value\":\"" + findCaseForRoleModificationRequest.getRespondentName() + "\""
+            + ",\"case_insensitive\":true}}}],\"boost\":1.0}},{\"bool\":{\"filter\":[{\"term\""
+            + ":{\"" + FIELD_NAME_RESPONDENT + "\":{\"value\":\""
+            + findCaseForRoleModificationRequest.getRespondentName() + "\",\"case_insensitive\":true}}}],"
+            + "\"boost\":1.0}}],\"boost\":1.0}},{\"bool\":{\"should\":[{\"bool\":{\"must\":[{\"bool\":{\"filter\":"
+            + "[{\"term\":{\"" + FIELD_NAME_CLAIMANT_FIRST_NAMES + "\":{\"value\":\""
+            + findCaseForRoleModificationRequest.getClaimantFirstNames() + "\"}}}],"
+            + "\"boost\":1.0}},{\"bool\":{\"filter\":[{\"term\":{\"" + FIELD_NAME_CLAIMANT_LAST_NAME + "\""
+            + ":{\"value\":\"" + findCaseForRoleModificationRequest.getClaimantLastName() + "\"}}}],\"boost\":1.0}}],"
+            + "\"boost\":1.0}},{\"bool\":{\"filter\":"
+            + "[{\"term\":{\"" + FIELD_NAME_CLAIMANT_FULL_NAME
+            + "\":{\"value\":\"" + findCaseForRoleModificationRequest.getClaimantFirstNames()
+            + StringUtils.SPACE + findCaseForRoleModificationRequest.getClaimantLastName()
+            + "\",\"case_insensitive\":true}}}],"
+            + "\"boost\":1.0}}],\"boost\":1.0}}],\"boost\":1.0}}}";
     }
 
     /**
