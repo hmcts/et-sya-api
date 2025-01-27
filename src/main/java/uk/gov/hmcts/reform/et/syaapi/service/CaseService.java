@@ -176,7 +176,7 @@ public class CaseService {
     }
 
     /**
-     * Will accept a {@link CaseRequest} trigger an event to update a give case in ET.
+     * Will accept a {@link CaseRequest} trigger an event to update a given case in ET.
      *
      * @param authorization jwt of the user
      * @param caseRequest   case to be updated

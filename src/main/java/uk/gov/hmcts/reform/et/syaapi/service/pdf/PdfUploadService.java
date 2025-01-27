@@ -204,7 +204,9 @@ public class PdfUploadService {
      * Converts a given object of type {@link ClaimantTse} to a {@link PdfDecodedMultipartFile}.
      * Firstly by converting to a pdf byte array and then wrapping within the return object.
      *
-     * @param claimantTse {@link CaseData} object that contains the {@link ClaimantTse} object to be converted.
+     * @param claimantTse the {@link ClaimantTse} object to be converted.
+     * @param caseReference used to TseApplication from ClaimantTse
+     * @param docName used for the name of the pdf document to be generated
      * @return {@link PdfDecodedMultipartFile} with the claimant tse CYA page in pdf format.
      * @throws DocumentGenerationException if there is an error generating the PDF.
      */
@@ -300,10 +302,12 @@ public class PdfUploadService {
     }
 
     /**
-     * Converts a given object of type {@link ClaimantTse} to a {@link PdfDecodedMultipartFile}.
+     * Converts a given object of type {@link RespondentTse} to a {@link PdfDecodedMultipartFile}.
      * Firstly by converting to a pdf byte array and then wrapping within the return object.
      *
-     * @param respondentTse {@link CaseData} object that contains the {@link ClaimantTse} object to be converted.
+     * @param respondentTse the {@link RespondentTse} object to be converted.
+     * @param caseReference the caseReference used to identify TseApplication from RespondentTse.
+     * @param docName the name to be used for the pdf document to be generated.
      * @return {@link PdfDecodedMultipartFile} with the claimant tse CYA page in pdf format.
      * @throws DocumentGenerationException if there is an error generating the PDF.
      */
