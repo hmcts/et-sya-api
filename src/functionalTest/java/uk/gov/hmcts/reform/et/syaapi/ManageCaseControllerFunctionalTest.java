@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.http.Header;
@@ -80,7 +81,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
         caseData.put("caseSource", "Manually Created");
         caseData.put("claimant", "claimant");
         caseData.put("receiptDate", "1970-04-02");
-
+        objectMapper.registerModule(new JavaTimeModule());
         ClaimantIndType claimantIndType = new ClaimantIndType();
         claimantIndType.setClaimantFirstNames("Boris");
         claimantIndType.setClaimantLastName("Johnson");
