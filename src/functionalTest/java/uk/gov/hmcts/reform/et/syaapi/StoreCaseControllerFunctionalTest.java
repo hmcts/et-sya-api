@@ -56,7 +56,7 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
     private String appId;
     private String responseId;
     private ClaimantTse storedClaimantTse;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
     private final Map<String, Object> caseData = new ConcurrentHashMap<>();
 
     @Test

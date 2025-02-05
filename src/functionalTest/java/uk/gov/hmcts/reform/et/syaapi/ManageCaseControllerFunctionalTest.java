@@ -67,7 +67,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
     private static final String CLAIMANT_EMAIL = "citizen-user-test@test.co.uk";
     private static final String AUTHORIZATION = "Authorization";
     private static final String SUBMITTED = "Submitted";
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
     private final Map<String, Object> caseData = new ConcurrentHashMap<>();
     private String appId;
     private String responseId;
