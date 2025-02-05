@@ -81,7 +81,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
         caseData.put("caseSource", "Manually Created");
         caseData.put("claimant", "claimant");
         caseData.put("receiptDate", "1970-04-02");
-
+        objectMapper.registerModule(new JavaTimeModule());
         ClaimantIndType claimantIndType = new ClaimantIndType();
         claimantIndType.setClaimantFirstNames("Boris");
         claimantIndType.setClaimantLastName("Johnson");

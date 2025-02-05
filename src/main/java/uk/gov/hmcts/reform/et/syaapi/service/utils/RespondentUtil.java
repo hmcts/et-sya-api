@@ -123,11 +123,11 @@ public final class RespondentUtil {
     }
 
     private static boolean checkRespondentName(RespondentSumType respondentSumType, String respondentName) {
-        if (respondentName.equals(respondentSumType.getRespondentName())
-            || respondentName.equals(respondentSumType.getRespondentOrganisation())) {
+        if (respondentName.equalsIgnoreCase(respondentSumType.getRespondentName())
+            || respondentName.equalsIgnoreCase(respondentSumType.getRespondentOrganisation())) {
             return true;
         }
-        return respondentName.equals(generateRespondentNameByRespondentFirstNameAndLastName(
+        return respondentName.equalsIgnoreCase(generateRespondentNameByRespondentFirstNameAndLastName(
             respondentSumType.getRespondentFirstName(), respondentSumType.getRespondentLastName()));
     }
 

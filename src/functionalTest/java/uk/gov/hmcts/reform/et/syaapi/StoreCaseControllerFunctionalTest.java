@@ -66,7 +66,7 @@ class StoreCaseControllerFunctionalTest extends FunctionalTestBase {
         caseData.put("caseSource", "Manually Created");
         caseData.put("claimant", "claimant");
         caseData.put("receiptDate", "1970-04-02");
-
+        objectMapper.registerModule(new JavaTimeModule());
         ClaimantHearingPreference claimantHearingPreference = new ClaimantHearingPreference();
         claimantHearingPreference.setContactLanguage(ENGLISH_LANGUAGE);
         caseData.put("claimantHearingPreference", claimantHearingPreference);
