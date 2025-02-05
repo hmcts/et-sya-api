@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.http.Header;
@@ -66,7 +67,7 @@ class ManageCaseControllerFunctionalTest extends FunctionalTestBase {
     private static final String CLAIMANT_EMAIL = "citizen-user-test@test.co.uk";
     private static final String AUTHORIZATION = "Authorization";
     private static final String SUBMITTED = "Submitted";
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
     private final Map<String, Object> caseData = new ConcurrentHashMap<>();
     private String appId;
     private String responseId;
