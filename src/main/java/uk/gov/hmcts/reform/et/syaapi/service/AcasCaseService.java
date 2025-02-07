@@ -78,7 +78,10 @@ public class AcasCaseService {
                   ],
                   "boost": 1.0
                 }
-              }
+              },
+              "_source": [
+                "reference"
+              ]
             }
             """.formatted(MAX_ES_SIZE, requestDateTime.toString());
 
@@ -289,6 +292,7 @@ public class AcasCaseService {
                                                              caseTypeId, query
         );
         if (searchResult != null && CollectionUtils.isNotEmpty(searchResult.getCases())) {
+            log.info("ACAS Search result for case type {} is {}", caseTypeId, searchResult.getCases().size());
             caseDetailsList.addAll(searchResult.getCases());
         }
         return caseDetailsList;
