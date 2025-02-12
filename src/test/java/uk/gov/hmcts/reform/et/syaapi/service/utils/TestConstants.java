@@ -123,17 +123,19 @@ public final class TestConstants {
                                                       + ":\"Accepted\"}}}],\"boost\":1.0}}}";
     public static final String EXPECTED_QUERY_BY_ROLE_MODIFICATION_REQUEST =
         "{\"size\":1,\"query\":{\"bool\":{\"must\":[{\"match\":{\"reference.keyword\":{\"query\":"
-            + "\"case_submission_reference\"}}}],\"filter\":[{\"bool\":{\"should\":[{\"bool\":{\"filter\":"
-            + "[{\"match\":{\"data.respondentCollection.value.respondentOrganisation.keyword\":{\"query\":"
-            + "\"respondent_name\"}}}],\"boost\":1.0}},{\"bool\":{\"filter\":[{\"match\""
-            + ":{\"data.respondentCollection.value.respondent_name.keyword\":{\"query\":\"respondent_name\"}}}],"
-            + "\"boost\":1.0}},{\"bool\":{\"filter\":[{\"match\":{\"data.respondent.keyword\":{\"query\":"
-            + "\"respondent_name\"}}}],\"boost\":1.0}}],\"boost\":1.0}},{\"bool\":{\"should\":[{\"bool\":"
-            + "{\"must\":[{\"bool\":{\"filter\":[{\"match\":{\"data.claimantIndType.claimant_first_names.keyword\":"
-            + "{\"query\":\"claimant_first_names\"}}}],\"boost\":1.0}},{\"bool\":{\"filter\":[{\"match\":"
-            + "{\"data.claimantIndType.claimant_last_name.keyword\":{\"query\":\"claimant_last_name\"}}}],\"boost\":"
-            + "1.0}}],\"boost\":1.0}},{\"bool\":{\"filter\":[{\"match\":{\"data.claimant.keyword\":{\"query\":"
-            + "\"claimant_first_names claimant_last_name\"}}}],\"boost\":1.0}}],\"boost\":1.0}}],\"boost\":1.0}}}";
+            + "\"case_submission_reference\"}}}],\"filter\":[{\"bool\":{\"should\":[{\"bool\":{\"filter\":[{\"term\":"
+            + "{\"data.respondentCollection.value.respondentOrganisation.keyword\":{\"value\":\"respondent_name\",\""
+            + "case_insensitive\":true}}}],\"boost\":1.0}},{\"bool\":{\"filter\":[{\"term\":"
+            + "{\"data.respondentCollection.value.respondent_name.keyword\":{\"value\":\"respondent_name\","
+            + "\"case_insensitive\":true}}}],\"boost\":1.0}},{\"bool\":{\"filter\":[{\"term\":"
+            + "{\"data.respondent.keyword\":{\"value\":\"respondent_name\",\"case_insensitive\":true}}}],"
+            + "\"boost\":1.0}}],\"boost\":1.0}},{\"bool\":{\"should\":[{\"bool\":{\"must\":[{\"bool\":{\"filter\""
+            + ":[{\"term\":{\"data.claimantIndType.claimant_first_names.keyword\":{\"value\":"
+            + "\"claimant_first_names\"}}}],\"boost\":1.0}},{\"bool\":{\"filter\":[{\"term\":"
+            + "{\"data.claimantIndType.claimant_last_name.keyword\":{\"value\":\"claimant_last_name\"}}}],"
+            + "\"boost\":1.0}}],\"boost\":1.0}},{\"bool\":{\"filter\":[{\"term\":{\"data.claimant.keyword\":"
+            + "{\"value\":\"claimant_first_names claimant_last_name\",\"case_insensitive\":true}}}],\"boost\":1.0}}],"
+            + "\"boost\":1.0}}],\"boost\":1.0}}}";
     public static final String EXPECTED_QUERY_BY_SUBMISSION_REFERENCE = "{\"size\":1,\"query\":{\"bool\":{\"must\":"
         + "[{\"match\":{\"reference.keyword\":{\"query\":\"case_submission_reference\"}}}],\"boost\":1.0}}}";
     public static final String TEST_CASE_STATE_ACCEPTED = "Accepted";
