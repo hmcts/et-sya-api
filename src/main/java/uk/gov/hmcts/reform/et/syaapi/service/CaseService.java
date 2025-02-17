@@ -44,6 +44,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -406,19 +407,20 @@ public class CaseService {
         if (docList == null) {
             docList = new ArrayList<>();
         }
+
+        String appTypeMapKeyAfterAfterSwap = getAppTypeMapKeyByValue(contactApplicationType);
         String extension = FilenameUtils.getExtension(contactApplicationFile.getDocumentFilename());
         String docName = "Application %d - %s - Attachment.%s".formatted(
             ApplicationService.getNextApplicationNumber(caseData),
-            APP_TYPE_MAP.get(contactApplicationType),
+            APP_TYPE_MAP.get(appTypeMapKeyAfterAfterSwap),
             extension);
-
         String applicationDocMapping;
         String typeOfDocument;
         String shortDescription;
         if (userType.equals(CLAIMANT_TITLE)) {
             applicationDocMapping = DocumentHelper.claimantApplicationTypeToDocType(contactApplicationType);
             typeOfDocument = CLAIMANT_CORRESPONDENCE;
-            shortDescription = APP_TYPE_MAP.get(contactApplicationType);
+            shortDescription = APP_TYPE_MAP.get(appTypeMapKeyAfterAfterSwap);
         } else {
             applicationDocMapping = DocumentHelper.respondentApplicationToDocType(contactApplicationType);
             typeOfDocument = RESPONDENT_CORRESPONDENCE;
@@ -427,7 +429,6 @@ public class CaseService {
 
         String topLevel = DocumentHelper.getTopLevelDocument(applicationDocMapping);
         contactApplicationFile.setDocumentFilename(docName);
-
 
         DocumentType documentType = DocumentType.builder()
             .topLevelDocuments(topLevel)
@@ -446,6 +447,14 @@ public class CaseService {
         caseDetails.getData().put(DOCUMENT_COLLECTION, docList);
     }
 
+    private String getAppTypeMapKeyByValue(String appTypeValue) {
+        Map<String, String> swappedMap = new HashMap<>();
+        for (Map.Entry<String, String> entry : ClaimantTse.APP_TYPE_MAP.entrySet()) {
+            swappedMap.put(entry.getValue(), entry.getKey());
+        }
+        return swappedMap.get(appTypeValue);
+    }
+
     void uploadTseCyaAsPdf(
         String authorization,
         CaseDetails caseDetails,
@@ -462,8 +471,7 @@ public class CaseService {
 
         String docName = "Application %d - %s.pdf".formatted(
             ApplicationService.getNextApplicationNumber(caseData),
-            ClaimantTse.APP_TYPE_MAP.get(claimantTse.getContactApplicationType())
-                .replace("/", " or "));
+            ClaimantTse.APP_TYPE_MAP.get(claimantTse.getContactApplicationType()));
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             pdfUploadService.convertClaimantTseIntoMultipartFile(claimantTse,
                                                                  caseData.getEthosCaseReference(),
@@ -549,8 +557,7 @@ public class CaseService {
         }
 
         String docName = "Application %d - %s.pdf".formatted(
-            ApplicationService.getNextApplicationNumber(caseData),
-            respondentTse.getContactApplicationType()).replace("/", " or ");
+            ApplicationService.getNextApplicationNumber(caseData), respondentTse.getContactApplicationClaimantType());
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             pdfUploadService.convertRespondentTseIntoMultipartFile(respondentTse,
                                                                  caseData.getEthosCaseReference(),

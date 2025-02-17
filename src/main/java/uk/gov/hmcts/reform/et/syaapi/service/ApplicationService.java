@@ -32,12 +32,16 @@ import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
+import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
+import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT_TITLE;
@@ -429,16 +433,17 @@ public class ApplicationService {
         UploadedDocumentType contactApplicationFile = respondentTse.getContactApplicationFile();
         if (contactApplicationFile != null) {
             log.info("Uploading Respondent TSE supporting file to document collection");
-            caseService.uploadTseSupportingDocument(caseDetails, contactApplicationFile,
-                                                    respondentTse.getContactApplicationType(),
-                                                    RESPONDENT_TITLE
+            caseService.uploadTseSupportingDocument(
+                caseDetails,
+                contactApplicationFile,
+                respondentTse.getContactApplicationClaimantType(),
+                RESPONDENT_TITLE
             );
         }
 
         CaseData caseData = EmployeeObjectMapper
             .convertCaseDataMapToCaseDataObject(caseDetails.getData());
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
-
 
         CaseDetails finalCaseDetails = caseService.submitUpdate(
             authorization,
@@ -450,6 +455,7 @@ public class ApplicationService {
         sendRespondentAppAcknowledgementEmails(authorization, request, finalCaseDetails);
         return finalCaseDetails;
     }
+
 
     /**
      * Respond to claimant application.
