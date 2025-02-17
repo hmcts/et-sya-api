@@ -457,14 +457,18 @@ public class NotificationService {
                             details.respondentNames(),
                             details.caseId(),
                             details.caseNumber());
+
+        String appTypeByLanguage = getApplicationTypeTextByLanguage(respondentTse.getContactApplicationClaimantType(),
+                                                                 isWelshLanguage(details.caseData()));
         claimantParameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, details.hearingDate());
-        claimantParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, APP_TYPE_MAP.get(
-            respondentTse.getContactApplicationType()));
+        claimantParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, appTypeByLanguage);
         claimantParameters.put(SEND_EMAIL_PARAMS_DATEPLUS7_KEY,
                                  LocalDate.now().plusDays(7).format(UK_LOCAL_DATE_PATTERN));
         claimantParameters.put(SEND_EMAIL_PARAMS_LINK_DOC_KEY,
                                  Objects.requireNonNullElse(documentJson, ""));
         // will have to handle claimant and claimant representative emails
+        claimantParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+                                 notificationsProperties.getExuiCaseDetailsLink() + details.caseId());
         claimantParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
                                  notificationsProperties.getExuiCaseDetailsLink() + details.caseId());
 
@@ -480,6 +484,16 @@ public class NotificationService {
                 : notificationsProperties.getRespondentTseTypeAClaimantAckTemplateId();
         }
         sendEmailToClaimant(details.caseData(), details.caseId(), emailToClaimantTemplate, claimantParameters);
+    }
+
+    private String getApplicationTypeTextByLanguage(String text, boolean isWelsh) {
+        if (isWelsh) {
+            log.info("Notification service - app type is Welsh and param text is: " + text);
+            return CY_APP_TYPE_MAP.values().stream().filter(t -> t.equals(text)).findFirst().orElse(null);
+        } else {
+            log.info("Notification service - app type is EW and param text is: " + text);
+            return APP_TYPE_MAP.values().stream().filter(t -> t.equals(text)).findFirst().orElse(null);
+        }
     }
 
     /**
