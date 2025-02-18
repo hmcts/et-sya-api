@@ -454,8 +454,7 @@ class CaseServiceTest {
             String contactApplicationType = "Amend response";
             caseService.uploadTseSupportingDocument(caseDetails, new UploadedDocumentType(),
                                                     contactApplicationType, RESPONDENT_TITLE,
-                                                    Optional.empty()
-            );
+                                                    Optional.of("Amend response"));
 
             CaseData caseData = convertCaseDataMapToCaseDataObject(caseDetails.getData());
             String actual = caseData.getDocumentCollection().get(0).getValue().getShortDescription();
