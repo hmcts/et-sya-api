@@ -49,3 +49,7 @@ variable "et_acas_product_name" {
 
 variable "aks_subscription_id" {
 }
+
+variable "acas_swagger_url" {
+  default = "https://raw.githubusercontent.com/hmcts/reform-api-docs/master/docs/specs/et-acas-api-prod.json"
+}
