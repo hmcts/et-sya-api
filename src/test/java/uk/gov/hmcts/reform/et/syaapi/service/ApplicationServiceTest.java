@@ -94,7 +94,7 @@ class ApplicationServiceTest {
 
         when(featureToggleService.isWorkAllocationEnabled()).thenReturn(true);
 
-        doNothing().when(caseService).uploadTseSupportingDocument(any(), any(), any(), any());
+        doNothing().when(caseService).uploadTseSupportingDocument(any(), any(), any(), any(), any());
         doNothing().when(caseService).uploadTseCyaAsPdf(any(), any(), any(), any());
 
         when(caseService.triggerEvent(
@@ -457,8 +457,8 @@ class ApplicationServiceTest {
 
     @Test
     void shouldSendRespondentEmailWithCorrectParameters() throws NotificationClientException {
-        applicationService.submitRespondentApplication(TEST_SERVICE_AUTH_TOKEN,
-                                             testData.getRespondentApplicationRequest());
+        var request =  testData.getRespondentApplicationRequest();
+        applicationService.submitRespondentApplication(TEST_SERVICE_AUTH_TOKEN, request);
 
         ArgumentCaptor<CoreEmailDetails> argument = ArgumentCaptor.forClass(CoreEmailDetails.class);
         verify(notificationService, times(1)).sendRespondentAppAcknowledgementEmailToRespondent(

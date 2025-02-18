@@ -41,6 +41,7 @@ import uk.gov.service.notify.SendEmailResponse;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -438,7 +439,8 @@ class CaseServiceTest {
             CaseDetails caseDetails = CaseDetails.builder().data(new HashMap<>()).build();
             String contactApplicationType = "withdraw";
             caseService.uploadTseSupportingDocument(caseDetails, new UploadedDocumentType(),
-                                                    contactApplicationType, CLAIMANT_TITLE);
+                                                    contactApplicationType, CLAIMANT_TITLE,
+                                                    Optional.empty());
 
             CaseData caseData = convertCaseDataMapToCaseDataObject(caseDetails.getData());
             String actual = caseData.getDocumentCollection().get(0).getValue().getShortDescription();
@@ -451,7 +453,8 @@ class CaseServiceTest {
             CaseDetails caseDetails = CaseDetails.builder().data(new HashMap<>()).build();
             String contactApplicationType = "Amend response";
             caseService.uploadTseSupportingDocument(caseDetails, new UploadedDocumentType(),
-                                                    contactApplicationType, RESPONDENT_TITLE
+                                                    contactApplicationType, RESPONDENT_TITLE,
+                                                    Optional.empty()
             );
 
             CaseData caseData = convertCaseDataMapToCaseDataObject(caseDetails.getData());

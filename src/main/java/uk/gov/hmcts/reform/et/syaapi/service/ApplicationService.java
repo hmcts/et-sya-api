@@ -35,13 +35,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
-import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
-import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT_TITLE;
@@ -110,7 +109,8 @@ public class ApplicationService {
             log.info("Uploading supporting file to document collection");
             caseService.uploadTseSupportingDocument(caseDetails, contactApplicationFile,
                                                     claimantTse.getContactApplicationType(),
-                                                    CLAIMANT_TITLE
+                                                    CLAIMANT_TITLE,
+                                                    Optional.empty()
             );
         }
 
@@ -436,8 +436,8 @@ public class ApplicationService {
             caseService.uploadTseSupportingDocument(
                 caseDetails,
                 contactApplicationFile,
-                respondentTse.getContactApplicationClaimantType(),
-                RESPONDENT_TITLE
+                getAppTypeMapKeyByValue(respondentTse.getContactApplicationClaimantType()),
+                RESPONDENT_TITLE, Optional.of(respondentTse.getContactApplicationType())
             );
         }
 
@@ -454,6 +454,14 @@ public class ApplicationService {
 
         sendRespondentAppAcknowledgementEmails(authorization, request, finalCaseDetails);
         return finalCaseDetails;
+    }
+
+    private String getAppTypeMapKeyByValue(String appTypeValue) {
+        Map<String, String> swappedMap = new ConcurrentHashMap<>();
+        for (Map.Entry<String, String> entry : ClaimantTse.APP_TYPE_MAP.entrySet()) {
+            swappedMap.put(entry.getValue(), entry.getKey());
+        }
+        return swappedMap.get(appTypeValue);
     }
 
 

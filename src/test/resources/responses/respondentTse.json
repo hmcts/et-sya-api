@@ -1,5 +1,6 @@
 {
   "contactApplicationType": "Amend response",
+  "contactApplicationClaimantType": "Change my personal details",
   "contactApplicationText": "Amend response",
   "contactApplicationFile": {
     "document_url": "",
