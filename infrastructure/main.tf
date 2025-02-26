@@ -55,6 +55,7 @@ module "key-vault" {
   product_group_name          = "DTS Employment Tribunals"
   common_tags                 = local.tags
   managed_identity_object_ids = [data.azurerm_user_assigned_identity.et-identity.principal_id]
+  soft_delete_retention_days  = 90
 }
 
 resource "azurerm_key_vault_secret" "et_sya_api_s2s_secret" {
