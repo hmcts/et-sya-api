@@ -118,8 +118,8 @@ notifications:
 pdf:
   english: "ET1_0125.pdf"
   welsh: "CY_ET1_0125.pdf"
-  et3English: "ET3_0224.pdf"
-  et3Welsh: "CY_ET3_0224.pdf"
+  et3English: "ET3_0125.pdf"
+  et3Welsh: "CY_ET3_0125.pdf"
   contact_tribunal_template: "EM-TRB-EGW-ENG-00068.docx"
   claimant_response_template: "EM-TRB-EGW-ENG-00069.docx"
 
