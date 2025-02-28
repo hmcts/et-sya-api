@@ -1,23 +1,29 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.CasePreAcceptType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
-import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
+import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,13 +31,17 @@ import java.util.UUID;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.EMPLOYMENT;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ACAS_HIDDEN_DOCS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1_ATTACHMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET3;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET3_ATTACHMENT;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper.convertCaseDataMapToCaseDataObject;
 
 /**
  * Provides read access to ACAS when calling certain APIs.
@@ -274,7 +284,7 @@ public class AcasCaseService {
         List<CaseDetails> searchResults = searchEnglandScotlandCases(authorisation, query);
         List<CaseData> caseDataList = new ArrayList<>();
         for (CaseDetails caseDetails : searchResults) {
-            caseDataList.add(EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData()));
+            caseDataList.add(convertCaseDataMapToCaseDataObject(caseDetails.getData()));
         }
         return caseDataList;
     }
@@ -296,6 +306,81 @@ public class AcasCaseService {
             caseDetailsList.addAll(searchResult.getCases());
         }
         return caseDetailsList;
+    }
+
+    /**
+     * Given a caseId, this method will vet and accept the case with static data.
+     *
+     * @param caseId 16 digit CCD id
+     * @return the case details
+     */
+    public CaseDetails vetAndAcceptCase(String caseId) {
+        String authorization = idamClient.getAccessToken(caseWorkerUserName, caseWorkerPassword);
+        CaseDetails caseDetails = ccdApiClient.getCase(authorization, authTokenGenerator.generate(), caseId);
+        if (ObjectUtils.isEmpty(caseDetails)) {
+            throw new IllegalArgumentException("Case not found");
+        }
+        String caseTypeId = caseDetails.getCaseTypeId();
+        StartEventResponse startEventResponse = startCaseUpdate(caseId, authorization, caseTypeId, "et1Vetting");
+        CaseData caseData = convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
+        setVettingData(caseData);
+        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(new ObjectMapper());
+        submitCaseUpdate(caseId, authorization, caseTypeId, caseDetailsConverter, startEventResponse, caseData);
+
+        startEventResponse = startCaseUpdate(caseId, authorization, caseTypeId, "preAcceptanceCase");
+        caseData = convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
+        setAcceptanceData(caseData);
+        return submitCaseUpdate(caseId, authorization, caseTypeId, caseDetailsConverter, startEventResponse, caseData);
+    }
+
+    private CaseDetails submitCaseUpdate(String caseId, String authorization, String caseTypeId,
+                                         CaseDetailsConverter caseDetailsConverter,
+                                         StartEventResponse startEventResponse, CaseData caseData) {
+        String s2sToken = authTokenGenerator.generate();
+        UserInfo userInfo = idamClient.getUserInfo(authorization);
+        return ccdApiClient.submitEventForCaseWorker(
+            authorization,
+            s2sToken,
+            userInfo.getUid(),
+            EMPLOYMENT,
+            caseTypeId,
+            caseId,
+            true,
+            caseDetailsConverter.caseDataContent(startEventResponse, caseData)
+        );
+    }
+
+    private StartEventResponse startCaseUpdate(String caseId, String authorization, String caseTypeId,
+                                               String eventId) {
+        String s2sToken = authTokenGenerator.generate();
+        UserInfo userInfo = idamClient.getUserInfo(authorization);
+        return ccdApiClient.startEventForCaseWorker(
+            authorization,
+            s2sToken,
+            userInfo.getUid(),
+            EMPLOYMENT,
+            caseTypeId,
+            caseId,
+            eventId
+        );
+    }
+
+    private void setAcceptanceData(CaseData caseData) {
+        CasePreAcceptType casePreAcceptType = new CasePreAcceptType();
+        casePreAcceptType.setCaseAccepted(YES);
+        casePreAcceptType.setDateAccepted(LocalDate.now().toString());
+        caseData.setPreAcceptCase(casePreAcceptType);
+    }
+
+    private static void setVettingData(CaseData caseData) {
+        caseData.setAreTheseCodesCorrect(YES);
+        caseData.setEt1GovOrMajorQuestion(NO);
+        caseData.setEt1ReasonableAdjustmentsQuestion(NO);
+        caseData.setEt1SuggestHearingVenue(NO);
+        caseData.setEt1VettingAcasCertExemptYesOrNo1(YES);
+        caseData.setEt1VettingCanServeClaimYesOrNo(YES);
+        caseData.setEt1VideoHearingQuestion(YES);
+        caseData.setIsLocationCorrect(YES);
     }
 
 }

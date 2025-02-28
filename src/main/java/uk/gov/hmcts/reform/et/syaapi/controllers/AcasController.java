@@ -9,6 +9,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +17,7 @@ import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
 import uk.gov.hmcts.reform.et.syaapi.service.AcasCaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
+import uk.gov.hmcts.reform.et.syaapi.service.FeatureToggleService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 import java.time.LocalDateTime;
@@ -37,6 +39,7 @@ public class AcasController {
     private final AcasCaseService acasCaseService;
     private final CaseDocumentService caseDocumentService;
     private final IdamClient idamClient;
+    private final FeatureToggleService featureToggleService;
 
     @Value("${caseWorkerUserName}")
     private String caseWorkerUserName;
@@ -110,5 +113,29 @@ public class AcasController {
         @RequestHeader(AUTHORIZATION) String authToken) {
         String accessToken = idamClient.getAccessToken(caseWorkerUserName, caseWorkerPassword);
         return caseDocumentService.downloadDocument(accessToken, documentId);
+    }
+
+    /**
+     * THIS API SHOULD ONLY BE USED IN NON-PRODUCTION ENVIRONMENTS.
+     * FEATURE TOGGLE IN PLACE TO DISABLE ACCESS IN PRODUCTION
+     * Perform ET1 Vetting and Accept the case
+     * @param caseId caseId
+     * @param authToken authToken
+     * @return CaseDetails after vetting and accepting
+     */
+    @PostMapping("/vetAndAcceptCase")
+    @Operation(summary = "Endpoint to vet and accept a case")
+    @ApiResponseGroup
+    public ResponseEntity<Object> vetAndAcceptCase(
+        @RequestParam(name = "caseId") final String caseId,
+        @RequestHeader(AUTHORIZATION) String authToken) {
+        // Feature flag in place to disable access in Production
+        if (featureToggleService.isAcasVetAndAcceptEnabled()) {
+            return 16 == caseId.length()
+                ? ok(acasCaseService.vetAndAcceptCase(caseId))
+                : ResponseEntity.badRequest().body("Invalid caseId");
+        } else {
+            return ResponseEntity.status(403).body("Feature is disabled");
+        }
     }
 }

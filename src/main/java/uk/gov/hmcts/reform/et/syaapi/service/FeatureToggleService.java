@@ -48,4 +48,14 @@ public class FeatureToggleService {
         return this.featureToggleApi.isFeatureEnabled("citizen-et1-generation");
     }
 
+    /**
+     * This method is used to check if the feature toggle for the ACAS vet and accept is enabled.
+     * This should only be true for lower environments
+     *
+     * @return true if the feature toggle is enabled, false otherwise
+     */
+    public boolean isAcasVetAndAcceptEnabled() {
+        return this.featureToggleApi.isFeatureEnabled("acasVetAndAccept");
+    }
+
 }

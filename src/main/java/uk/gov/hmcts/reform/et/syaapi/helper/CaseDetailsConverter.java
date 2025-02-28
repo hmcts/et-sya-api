@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi.helper;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
@@ -30,6 +31,7 @@ public class CaseDetailsConverter {
     public CaseDetailsConverter(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
         this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        this.objectMapper.registerModule(new JavaTimeModule());
     }
 
     /**
