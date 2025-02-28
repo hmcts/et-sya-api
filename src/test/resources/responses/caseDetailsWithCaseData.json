@@ -195,6 +195,7 @@
             "hearingDetails": "submittedAndViewed",
             "respondentRequestsAndApplications": "submittedAndViewed",
             "claimantApplications": "submittedAndViewed",
+            "otherRespondentApplications": "submittedAndViewed",
             "contactTribunal": "submittedAndViewed",
             "tribunalOrders": "submittedAndViewed",
             "tribunalJudgements": "submittedAndViewed",
