@@ -25,6 +25,7 @@ module "et-acas-mgmt-api" {
   path          = "et-sya-api"
   protocols     = ["http", "https"]
   swagger_url   = var.acas_swagger_url
+  content_format = openapi-link
 
   providers = {
     azurerm = azurerm.aks-cftapps
