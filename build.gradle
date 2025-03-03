@@ -207,7 +207,7 @@ ext {
 dependencies {
 
   implementation group: 'com.github.hmcts', name: 'et-data-model', version:'65960b85e0'
-  implementation('com.github.hmcts:et-common:8183d5e5c3') { transitive = false }
+  implementation('com.github.hmcts:et-common:0ea4a8ecca') { transitive = false }
   implementation group: 'uk.gov.dwp.regex', name: 'postcode-validation', version: '1.1.0'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '3.1.9', {
