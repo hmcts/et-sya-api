@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
 import uk.gov.hmcts.reform.et.syaapi.service.AcasCaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
+import uk.gov.hmcts.reform.et.syaapi.service.FeatureToggleService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 
@@ -34,6 +35,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -41,6 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = SyaApiApplication.class)
 @SuppressWarnings({"PMD.LinguisticNaming", "PMD.TooManyMethods"})
 class AcasControllerTest {
+    public static final String CASE_ID_PARAM = "caseId";
     private final List<String> caseIds = new ArrayList<>();
     private static final String REQUEST_DATE_TIME_STRING = "2022-09-01T12:34:00";
     private static final String AUTH_TOKEN = "some-token";
@@ -48,16 +51,16 @@ class AcasControllerTest {
     private static final String GET_CASE_DATA_URL = "/getCaseData";
     private static final String GET_ACAS_DOCUMENTS_URL = "/getAcasDocuments";
     private static final String DOWNLOAD_ACAS_DOCUMENTS_URL = "/downloadAcasDocuments";
+    private static final String VET_AND_ACCEPT_CASE = "/vetAndAcceptCase";
 
     @Autowired
     private WebApplicationContext webApplicationContext;
-
     @MockBean
     private VerifyTokenService verifyTokenService;
-
     @MockBean
     private AcasCaseService acasCaseService;
-
+    @MockBean
+    private FeatureToggleService featureToggleService;
     @MockBean
     private CaseDocumentService caseDocumentService;
 
@@ -164,7 +167,7 @@ class AcasControllerTest {
 
         mockMvc.perform(get(GET_ACAS_DOCUMENTS_URL)
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
-                            .param("caseId", "123"))
+                            .param(CASE_ID_PARAM, "123"))
             .andExpect(status().isOk());
     }
 
@@ -181,7 +184,7 @@ class AcasControllerTest {
         when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(false);
         mockMvc.perform(get(GET_ACAS_DOCUMENTS_URL)
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
-                            .param("caseId", "dummy"))
+                            .param(CASE_ID_PARAM, "dummy"))
             .andExpect(status().isForbidden());
     }
 
@@ -211,6 +214,41 @@ class AcasControllerTest {
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                             .param("documentId", UUID.randomUUID().toString()))
             .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void vetAndAcceptCaseFeatureToggleDisabled() throws Exception {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+        when(featureToggleService.isAcasVetAndAcceptEnabled()).thenReturn(false);
+        mockMvc.perform(post(VET_AND_ACCEPT_CASE)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                            .param(CASE_ID_PARAM, "123"))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void vetAndAcceptCaseInvalidCaseId() throws Exception {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+        when(featureToggleService.isAcasVetAndAcceptEnabled()).thenReturn(true);
+        mockMvc.perform(post(VET_AND_ACCEPT_CASE)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                            .param(CASE_ID_PARAM, "1234"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void vetAndAcceptCaseValidCaseId() throws Exception {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+        when(featureToggleService.isAcasVetAndAcceptEnabled()).thenReturn(true);
+        when(acasCaseService.vetAndAcceptCase("1234567890123456"))
+            .thenReturn(CaseDetails.builder()
+                            .id(1_234_567_890_123_456L)
+                            .caseTypeId(EtSyaConstants.SCOTLAND_CASE_TYPE)
+                            .build());
+        mockMvc.perform(post(VET_AND_ACCEPT_CASE)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                            .param(CASE_ID_PARAM, "1234567890123456"))
+            .andExpect(status().isOk());
     }
 
     private ResponseEntity<ByteArrayResource> getDocumentBinaryContent() {
