@@ -21,7 +21,7 @@ module "et-acas-mgmt-api" {
   service_url   = local.et_sya_api_url
   product_id    = module.api-et-acas-mgmt-product.product_id
   name          = join("-", [var.et_acas_product_name, "api"])
-  display_name  = "ET SYA ACAS Api"
+  display_name  = "ET ACAS Api"
   path          = "et-sya-api"
   protocols     = ["http", "https"]
   swagger_url   = var.acas_swagger_url
