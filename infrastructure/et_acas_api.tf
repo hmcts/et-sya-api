@@ -17,7 +17,7 @@ module "et-acas-mgmt-api" {
 
   api_mgmt_name = local.api_mgmt_name
   api_mgmt_rg   = local.api_mgmt_rg
-  revision      = "2"
+  revision      = "2-1"
   service_url   = local.et_sya_api_url
   product_id    = module.api-et-acas-mgmt-product.product_id
   name          = join("-", [var.et_acas_product_name, "api"])
