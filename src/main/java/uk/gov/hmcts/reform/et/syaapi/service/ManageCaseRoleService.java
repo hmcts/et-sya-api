@@ -203,6 +203,12 @@ public class ManageCaseRoleService {
     private List<CaseDetails> updateAllRespondentsIdamIdAndDefaultLinkStatuses(
         String authorisation, ModifyCaseUserRolesRequest modifyCaseUserRolesRequest, String modificationType) {
         List<CaseDetails> caseDetailsList = new ArrayList<>();
+
+        log.info("updateAllRespondentsIdamIdAndDefaultLinkStatuses\n");
+        log.info("modifyCaseUserRolesRequest: \n" + modifyCaseUserRolesRequest.toString());
+        log.info("getModifyCaseUserRoles: \n" + modifyCaseUserRolesRequest.getModifyCaseUserRoles().toString());
+        log.info("modificationType: \n" + modificationType);
+
         for (ModifyCaseUserRole modifyCaseUserRole : modifyCaseUserRolesRequest.getModifyCaseUserRoles()) {
             if (ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT.equals(modifyCaseUserRole.getCaseRole())) {
                 CaseDetails caseDetails =
