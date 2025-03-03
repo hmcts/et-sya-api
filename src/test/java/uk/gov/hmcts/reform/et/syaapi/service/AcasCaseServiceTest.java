@@ -1,14 +1,18 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.EqualsAndHashCode;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
@@ -16,7 +20,9 @@ import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.data.TestDataProvider;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -24,12 +30,22 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.EMPLOYMENT;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.MAX_ES_SIZE;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.USER_ID;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.YES;
 
 @EqualsAndHashCode
 @ExtendWith(MockitoExtension.class)
@@ -46,9 +62,16 @@ class AcasCaseServiceTest {
     @InjectMocks
     private AcasCaseService acasCaseService;
     private final CaseTestData testData;
+    private static final String EXAMPLE_CASE_ID = "1646225213651598";
 
     AcasCaseServiceTest() {
         testData = new CaseTestData();
+    }
+
+    @BeforeEach
+    void setUp() {
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        lenient().when(idamClient.getAccessToken(any(), any())).thenReturn(TEST_SERVICE_AUTH_TOKEN);
     }
 
     @Test
@@ -65,7 +88,6 @@ class AcasCaseServiceTest {
             .cases(testData.getRequestCaseDataListScotland())
             .build();
 
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(ccdApiClient.searchCases(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
@@ -98,7 +120,6 @@ class AcasCaseServiceTest {
             .cases(null)
             .build();
 
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(ccdApiClient.searchCases(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
@@ -144,7 +165,7 @@ class AcasCaseServiceTest {
 
     @Test
     void shouldReturnCaseData() {
-        List<String> caseIds = List.of("1646225213651598", "1646225213651533", "1646225213651512");
+        List<String> caseIds = List.of(EXAMPLE_CASE_ID, "1646225213651533", "1646225213651512");
         SearchResult englandWalesSearchResult = SearchResult.builder()
             .total(1)
             .cases(testData.getRequestCaseDataListEngland())
@@ -154,7 +175,6 @@ class AcasCaseServiceTest {
             .cases(testData.getRequestCaseDataListScotland())
             .build();
 
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(ccdApiClient.searchCases(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
@@ -173,7 +193,7 @@ class AcasCaseServiceTest {
 
     @Test
     void shouldReturnCaseDataNoCasesFound() {
-        List<String> caseIds = List.of("1646225213651598", "1646225213651533");
+        List<String> caseIds = List.of(EXAMPLE_CASE_ID, "1646225213651533");
         SearchResult englandWalesSearchResult = SearchResult.builder()
             .total(0)
             .cases(null)
@@ -183,7 +203,6 @@ class AcasCaseServiceTest {
             .cases(null)
             .build();
 
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(ccdApiClient.searchCases(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
@@ -222,9 +241,7 @@ class AcasCaseServiceTest {
 
     @Test
     void retrieveAcasDocuments() {
-        when(idamClient.getAccessToken(any(), any())).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-
-        String caseId = "1646225213651598";
+        String caseId = EXAMPLE_CASE_ID;
         SearchResult englandWalesSearchResult = SearchResult.builder()
             .total(1)
             .cases(testData.getRequestCaseDataListEnglandAcas())
@@ -234,7 +251,6 @@ class AcasCaseServiceTest {
             .cases(null)
             .build();
 
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(ccdApiClient.searchCases(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
@@ -254,5 +270,53 @@ class AcasCaseServiceTest {
         List<CaseDocumentAcasResponse> documents = acasCaseService.retrieveAcasDocuments(caseId);
         assertNotNull(documents);
         assertThat(documents).hasSize(5);
+    }
+
+    @Test
+    void vetAndAcceptCase() {
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new UserInfo(
+            null, USER_ID, TEST_NAME, "ET", "Admin", null));
+        when(ccdApiClient.getCase(TEST_SERVICE_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, EXAMPLE_CASE_ID))
+            .thenReturn(testData.getCaseDetails());
+        when(ccdApiClient.startEventForCaseWorker(
+            eq(TEST_SERVICE_AUTH_TOKEN), eq(TEST_SERVICE_AUTH_TOKEN), eq(USER_ID), eq(EMPLOYMENT),
+            eq(EtSyaConstants.SCOTLAND_CASE_TYPE), eq(EXAMPLE_CASE_ID), anyString()))
+            .thenReturn(testData.getStartEventResponse());
+        when(ccdApiClient.submitEventForCaseWorker(
+            eq(TEST_SERVICE_AUTH_TOKEN), eq(TEST_SERVICE_AUTH_TOKEN), eq(USER_ID), eq(EMPLOYMENT),
+            eq(EtSyaConstants.SCOTLAND_CASE_TYPE), eq(EXAMPLE_CASE_ID), eq(true), any(CaseDataContent.class)))
+            .thenReturn(testData.getCaseDetails());
+
+        acasCaseService.vetAndAcceptCase(EXAMPLE_CASE_ID);
+        verify(ccdApiClient, times(1)).getCase(
+            TEST_SERVICE_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, EXAMPLE_CASE_ID);
+        verify(ccdApiClient, times(1)).startEventForCaseWorker(
+            TEST_SERVICE_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, USER_ID, EMPLOYMENT, EtSyaConstants.SCOTLAND_CASE_TYPE,
+            EXAMPLE_CASE_ID, "et1Vetting");
+        verify(ccdApiClient, times(1)).startEventForCaseWorker(
+            TEST_SERVICE_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, USER_ID, EMPLOYMENT, EtSyaConstants.SCOTLAND_CASE_TYPE,
+            EXAMPLE_CASE_ID, "preAcceptanceCase");
+        ArgumentCaptor<CaseDataContent> argumentCaptor = ArgumentCaptor.forClass(CaseDataContent.class);
+        verify(ccdApiClient, times(2)).submitEventForCaseWorker(
+            eq(TEST_SERVICE_AUTH_TOKEN), eq(TEST_SERVICE_AUTH_TOKEN), eq(USER_ID), eq(EMPLOYMENT),
+            eq(EtSyaConstants.SCOTLAND_CASE_TYPE), eq(EXAMPLE_CASE_ID), eq(true), argumentCaptor.capture());
+
+        // Check Vetting Data
+        CaseData caseData = (CaseData) argumentCaptor.getAllValues().get(0).getData();
+        assertThat(caseData.getAreTheseCodesCorrect()).isEqualTo(YES);
+        assertThat(caseData.getEt1VettingCanServeClaimYesOrNo()).isEqualTo(YES);
+        // Check Pre Acceptance Data
+        caseData = (CaseData) argumentCaptor.getAllValues().get(1).getData();
+        assertThat(caseData.getPreAcceptCase().getCaseAccepted()).isEqualTo(YES);
+        assertThat(caseData.getPreAcceptCase().getDateAccepted()).isEqualTo(LocalDate.now().toString());
+    }
+
+    @Test
+    void vetAndAcceptCaseWhenCaseNotFound() {
+        when(ccdApiClient.getCase(TEST_SERVICE_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, EXAMPLE_CASE_ID))
+            .thenReturn(null);
+        assertThrows(IllegalArgumentException.class, () -> acasCaseService.vetAndAcceptCase(EXAMPLE_CASE_ID));
+        verify(ccdApiClient, times(1)).getCase(
+            TEST_SERVICE_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, EXAMPLE_CASE_ID);
     }
 }
