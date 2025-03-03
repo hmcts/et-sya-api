@@ -71,11 +71,10 @@ data "azurerm_key_vault_secret" "s2s_client_id" {
 resource "azurerm_api_management_user" "et_api_management_user" {
   api_management_name = local.api_mgmt_name
   resource_group_name = local.api_mgmt_rg
-  user_id             = "5931a75ae4bbd512288c888c"
   provider            = azurerm.aks-cftapps
-  email               = "Peter.Moores@hmcts.net"
-  first_name          = "Peter"
-  last_name           = "Moores"
+  email               = "Harpreet.Jhita@justice.gov.uk"
+  first_name          = "Harpreet"
+  last_name           = "Jhita"
 }
 
 data "azurerm_key_vault" "et-msg-handler-vault" {
