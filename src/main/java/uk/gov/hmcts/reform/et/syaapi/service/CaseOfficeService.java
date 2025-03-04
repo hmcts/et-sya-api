@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.dwp.regex.InvalidPostcodeException;
+import uk.gov.hmcts.ecm.common.configuration.PostcodeToOfficeMappings;
 import uk.gov.hmcts.ecm.common.model.helper.TribunalOffice;
 import uk.gov.hmcts.ecm.common.service.PostcodeToOfficeService;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -24,6 +25,11 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CAS
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 
+/**
+ * Service class to assign case to a Tribunal based on the postcode. The postcode to office mapping is done
+ * in et-common using this file {@link PostcodeToOfficeMappings} using this configuration
+ * <a href="https://github.com/hmcts/et-common/blob/master/src/main/resources/postcode-office.yml">file</a>.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor

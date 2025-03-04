@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.et.syaapi.config;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.test.context.ContextConfiguration;
@@ -18,7 +20,6 @@ class PostcodeToOfficeLookupTest {
     private static final String LEEDS = "Leeds";
     private static final String MANCHESTER = "Manchester";
     private static final String GLASGOW = "Glasgow";
-    private static final String EDINGBURGH = "Edinburgh";
 
     @Autowired
     private PostcodeToOfficeMappings postcodeToOfficeLookup;
@@ -43,9 +44,18 @@ class PostcodeToOfficeLookupTest {
         assertThat(postcodeToOfficeLookup.getPostcodes()).containsEntry("G", GLASGOW);
     }
 
+    /**
+     * Any Scotland postcode should return Glasgow office.
+     */
     @Test
-    void mapMatchesPostcodePartialsToEdinburghOffice() {
-        assertThat(postcodeToOfficeLookup.getPostcodes()).containsEntry("EH", EDINGBURGH);
+    void mapMatchesPostcodePartialsEdinburghToGlasgowOffice() {
+        assertThat(postcodeToOfficeLookup.getPostcodes()).containsEntry("EH", GLASGOW);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"LA", "LA1", "LA23"})
+    void mapMatchesLaPostcodeToManchester(String postcode) {
+        assertThat(postcodeToOfficeLookup.getPostcodes()).containsEntry(postcode, MANCHESTER);
     }
 
     @Test
