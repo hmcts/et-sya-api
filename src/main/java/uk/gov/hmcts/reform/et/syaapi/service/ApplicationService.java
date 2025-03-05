@@ -421,6 +421,7 @@ public class ApplicationService {
 
         CaseDetails caseDetails = startEventResponse.getCaseDetails();
         RespondentTse respondentTse = request.getRespondentTse();
+        log.info("respondentTse: {}", respondentTse.getRespondentIdamId());
         caseDetails.getData().put("respondentTse", respondentTse);
 
         try {
