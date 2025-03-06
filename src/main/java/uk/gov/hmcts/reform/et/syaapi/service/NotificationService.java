@@ -26,9 +26,11 @@ import uk.gov.service.notify.SendEmailResponse;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
@@ -70,6 +72,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGU
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentAndRespRepEmailAddressesMap;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 import static uk.gov.service.notify.NotificationClient.prepareUpload;
 
@@ -303,42 +306,61 @@ public class NotificationService {
     void sendRespondentAppAcknowledgementEmailToRespondent(CoreEmailDetails details,
                                                                   RespondentTse respondentApplication) {
         CaseData caseData = details.caseData();
-        // assuming respondent or respondent's representative is in the system. not both
+        Set<String> sentEmailAddresses = new HashSet<>();
+        // send both respondent and respondent representative emails
         caseData.getRespondentCollection()
-            .forEach(resp -> {
-                boolean isWelsh = isWelshLanguage(resp);
-                String hearingDate = getHearingDate(details.hearingDate(), isWelsh);
-                Map<String, Object> respondentParameters = prepareEmailParameters(details, hearingDate, isWelsh);
+            .forEach(resp -> prepareEmailTemplateAppAckToRespondent(details, resp, respondentApplication,
+                                                                    sentEmailAddresses));
+    }
 
-                boolean isRespondentOrRep = StringUtils.isNotBlank(resp.getValue().getIdamId());
-                String linkToCase = isRespondentOrRep
+    private void prepareEmailTemplateAppAckToRespondent(CoreEmailDetails details,
+                                                        RespondentSumTypeItem respondent,
+                                                        RespondentTse respondentApplication,
+                                                        Set<String> sentEmailAddresses) {
+        CaseData caseData = details.caseData();
+        Map<String, Boolean> emailAddressesMap = getRespondentAndRespRepEmailAddressesMap(
+            caseData,
+            respondent.getValue()
+        );
+
+        boolean isWelsh = isWelshLanguage(respondent);
+        String hearingDate = getHearingDate(details.hearingDate(), isWelsh);
+        Map<String, Object> respondentParameters = prepareEmailParameters(details, hearingDate, isWelsh);
+
+        emailAddressesMap.forEach((emailAddress, isRespondent) -> {
+            // check if the email has already been sent since the same
+            // representative can represent multiple respondents
+            if (!sentEmailAddresses.contains((emailAddress))) {
+                String linkToCase = Boolean.TRUE.equals(isRespondent)
                     ? getRespondentPortalLink(details.caseId(), isWelsh)
                     : getRespondentRepPortalLink(details.caseId());
                 respondentParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY, linkToCase);
 
                 String emailToRespondentTemplate = getAndSetEmailTemplate(respondentApplication, hearingDate,
-                                           respondentParameters, isWelsh, true);
-                String respondentEmailAddress = NotificationsHelper.getEmailAddressForRespondent(
-                    caseData,
-                    resp.getValue()
+                                                                          respondentParameters, isWelsh,
+                                                                          isRespondent
                 );
 
-                if (isNullOrEmpty(respondentEmailAddress)) {
-                    log.info("Respondent does not not have an email address associated with their account");
-                } else {
-                    try {
-                        notificationClient.sendEmail(
-                            emailToRespondentTemplate,
-                            respondentEmailAddress,
-                            respondentParameters,
-                            details.caseId()
-                        );
-                        log.info("Sent email to respondent");
-                    } catch (NotificationClientException ne) {
-                        throw new NotificationException(ne);
-                    }
+                sendEmailToRespondent(emailAddress, emailToRespondentTemplate, respondentParameters,
+                                      details.caseId()
+                );
+
+                // add representative email to the list of sent emails addresses
+                if (Boolean.FALSE.equals(isRespondent)) {
+                    sentEmailAddresses.add(emailAddress);
                 }
-            });
+            }
+        });
+    }
+
+    private void sendEmailToRespondent(String respondentEmailAddress, String emailTemplate,
+                                       Map<String, Object> parameters, String caseId) {
+        try {
+            notificationClient.sendEmail(emailTemplate, respondentEmailAddress, parameters, caseId);
+            log.info("Sent email to respondent");
+        } catch (NotificationClientException ne) {
+            throw new NotificationException(ne);
+        }
     }
 
     private Map<String, Object> prepareEmailParameters(CoreEmailDetails details, String hearingDate, boolean isWelsh) {
@@ -354,13 +376,13 @@ public class NotificationService {
 
     private boolean isWelshLanguage(CaseData caseData) {
         boolean welshFlagEnabled = featureToggleService.isWelshEnabled();
-        log.info("Welsh feature flag is set to " + welshFlagEnabled);
+        log.info("Welsh feature flag is set to {}", welshFlagEnabled);
         return welshFlagEnabled && WELSH_LANGUAGE.equals(caseData.getClaimantHearingPreference().getContactLanguage());
     }
 
     private boolean isWelshLanguage(RespondentSumTypeItem respondent) {
         boolean welshFlagEnabled = featureToggleService.isWelshEnabled();
-        log.info("Welsh feature flag is set to " + welshFlagEnabled);
+        log.info("Welsh feature flag is set to {}", welshFlagEnabled);
         return welshFlagEnabled && WELSH_LANGUAGE.equals(respondent.getValue().getEt3ResponseLanguagePreference());
     }
 

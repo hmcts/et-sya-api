@@ -428,7 +428,7 @@ public class ApplicationService {
             log.info("Uploading pdf of Respondent TSE application");
             caseService.uploadRespondentTseAsPdf(authorization, caseDetails, respondentTse, caseTypeId);
         } catch (CaseDocumentException | DocumentGenerationException e) {
-            log.error("Couldn't upload pdf of Respondent TSE application " + e.getMessage());
+            log.error("Couldn't upload pdf of Respondent TSE application {}", e.getMessage());
         }
 
         UploadedDocumentType contactApplicationFile = respondentTse.getContactApplicationFile();
