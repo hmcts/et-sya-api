@@ -11,9 +11,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.et.syaapi.models.ChangeRespondentApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondentApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
+import uk.gov.hmcts.reform.et.syaapi.service.RespondentTseService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 
@@ -41,6 +43,9 @@ class RespondentTseControllerTest {
 
     @MockBean
     private ApplicationService applicationService;
+
+    @MockBean
+    private RespondentTseService respondentTseService;
 
     RespondentTseControllerTest() {
         expectedDetails = ResourceLoader.fromString(
@@ -97,6 +102,35 @@ class RespondentTseControllerTest {
         verify(applicationService, times(1)).respondToClaimantApplication(
                 TEST_SERVICE_AUTH_TOKEN,
                 respondToApplicationRequest
+        );
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldChangeRespondentApplicationStatus() {
+        ChangeRespondentApplicationStatusRequest testRequest =
+            ChangeRespondentApplicationStatusRequest.builder()
+                .caseId(CASE_ID)
+                .caseTypeId(CASE_TYPE)
+                .applicationId("1cba4d4c-26d1-47c3-9197-0603f935d708")
+                .userIdamId("e67fae0a-7a75-4f45-abc8-6f9d2a79801f")
+                .newStatus("viewed")
+                .build();
+
+        // when
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+        when(respondentTseService.changeRespondentApplicationStatus(any(), any())).thenReturn(expectedDetails);
+
+        mockMvc.perform(
+            put("/respondentTSE/change-respondent-application-status", CASE_ID)
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ResourceLoader.toJson(testRequest))
+        ).andExpect(status().isOk());
+
+        verify(respondentTseService, times(1)).changeRespondentApplicationStatus(
+            TEST_SERVICE_AUTH_TOKEN,
+            testRequest
         );
     }
 }
