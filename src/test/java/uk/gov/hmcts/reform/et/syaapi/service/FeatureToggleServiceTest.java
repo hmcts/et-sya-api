@@ -73,6 +73,14 @@ class FeatureToggleServiceTest {
         assertThat(featureToggleService.citizenEt1Generation()).isEqualTo(toggleStat);
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldReturnCorrectValueWhenAcasVetAndAcceptIsEnabled(boolean toggleStat) {
+        givenToggle("acasVetAndAccept", toggleStat);
+
+        assertThat(featureToggleService.isAcasVetAndAcceptEnabled()).isEqualTo(toggleStat);
+    }
+
     private void givenToggle(String feature, boolean state) {
         when(featureToggleApi.isFeatureEnabled(feature)).thenReturn(state);
     }
