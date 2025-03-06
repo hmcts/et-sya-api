@@ -20,8 +20,10 @@ import java.time.ZoneId;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -65,6 +67,22 @@ public final class NotificationsHelper {
         }
 
         return isNullOrEmpty(respondent.getRespondentEmail()) ? "" : respondent.getRespondentEmail();
+    }
+
+
+    public static Map<String, Boolean> getRespondentAndRespRepEmailAddressesMap(CaseData caseData,
+                                                                                RespondentSumType respondent) {
+        Map<String, Boolean> emailAddressesMap = new HashMap<>();
+        if (StringUtils.isNotBlank(respondent.getRespondentEmail())) {
+            emailAddressesMap.put(respondent.getRespondentEmail(), true);
+        }
+
+        RepresentedTypeR representative = getRespondentRepresentative(caseData, respondent);
+        if (representative != null && StringUtils.isNotBlank(representative.getRepresentativeEmailAddress())) {
+            emailAddressesMap.put(representative.getRepresentativeEmailAddress(), false);
+        }
+
+        return emailAddressesMap;
     }
 
     private static RepresentedTypeR getRespondentRepresentative(CaseData caseData, RespondentSumType respondent) {

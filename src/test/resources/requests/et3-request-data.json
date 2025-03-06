@@ -239,6 +239,7 @@
         "hearingDetails": "notAvailableYet",
         "respondentRequestsAndApplications": "notAvailableYet",
         "claimantApplications": "notAvailableYet",
+        "otherRespondentApplications": "notAvailableYet",
         "contactTribunal": "optional",
         "tribunalOrders": "notAvailableYet",
         "tribunalJudgements": "notAvailableYet",
