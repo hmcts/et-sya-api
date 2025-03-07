@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
+import uk.gov.hmcts.reform.et.syaapi.models.ChangeRespondentApplicationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondentApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
+import uk.gov.hmcts.reform.et.syaapi.service.RespondentTseService;
 import uk.gov.service.notify.NotificationClientException;
 
 import javax.validation.constraints.NotNull;
@@ -28,6 +30,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 public class RespondentTseController {
 
     private final ApplicationService applicationService;
+    private final RespondentTseService respondentTseService;
 
     /**
      * Submit a Respondent Application.
@@ -77,4 +80,26 @@ public class RespondentTseController {
         return ok(finalCaseDetails);
     }
 
+    /**
+     * Change respondent application status in syr.
+     *
+     * @param authorization jwt of the user
+     * @param request       the request object which contains the appId and new status
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    @PutMapping("/change-respondent-application-status")
+    @Operation(summary = "Change respondent application status")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> changeRespondentApplicationStatus(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody ChangeRespondentApplicationStatusRequest request
+    ) {
+        log.info("Received a change respondent application status request - caseTypeId: {} caseId: {}",
+                 request.getCaseTypeId(), request.getCaseId()
+        );
+
+        CaseDetails finalCaseDetails = respondentTseService.changeRespondentApplicationStatus(authorization, request);
+
+        return ok(finalCaseDetails);
+    }
 }
