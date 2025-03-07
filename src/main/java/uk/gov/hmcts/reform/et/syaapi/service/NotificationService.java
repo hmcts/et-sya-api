@@ -317,9 +317,9 @@ public class NotificationService {
                 getRespondentAndRespRepEmailAddressesMap(caseData, resp.getValue());
 
             emailAddressesMap.forEach((email, isRespondent) -> {
-                if (!sentEmailAddresses.contains(email)) {
-                    prepareAndSendEmail(details, resp, respondentApplication, email, isRespondent,
-                                        sentEmailAddresses, applicantName, documentJson);
+                if (sentEmailAddresses.add(email)) {
+                    prepareAndSendEmail(details, resp, respondentApplication, email,
+                                        isRespondent, applicantName, documentJson);
                 }
             });
         });
@@ -327,20 +327,18 @@ public class NotificationService {
 
     private void prepareAndSendEmail(CoreEmailDetails details, RespondentSumTypeItem respondent,
                                      RespondentTse respondentApplication, String email, boolean isRespondent,
-                                     Set<String> sentEmailAddresses, String applicantName, JSONObject documentJson) {
+                                     String applicantName, JSONObject documentJson) {
         boolean isWelsh = isWelshLanguage(respondent);
         String hearingDate = getHearingDate(details.hearingDate(), isWelsh);
         Map<String, Object> respondentParameters = prepareEmailParameters(details, hearingDate, isWelsh);
-
-        respondentParameters.put(SEND_EMAIL_PARAMS_APPLICANT_NAME_KEY, applicantName);
-
-        boolean isApplicant =
-            respondentApplication.getRespondentIdamId().equals(respondent.getValue().getIdamId())
-                && isRespondent;
         String linkToCase = isRespondent
             ? getRespondentPortalLink(details.caseId(), isWelsh) : getRespondentRepPortalLink(details.caseId());
 
+        respondentParameters.put(SEND_EMAIL_PARAMS_APPLICANT_NAME_KEY, applicantName);
         respondentParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY, linkToCase);
+
+        boolean isApplicant =
+            respondentApplication.getRespondentIdamId().equals(respondent.getValue().getIdamId()) && isRespondent;
         String emailToRespondentTemplate;
         if (isApplicant) {
             emailToRespondentTemplate = getAndSetAckEmailTemplate(respondentApplication, hearingDate,
@@ -356,10 +354,6 @@ public class NotificationService {
 
         }
         sendEmailToRespondent(email, emailToRespondentTemplate, respondentParameters, details.caseId());
-
-        if (!isRespondent) {
-            sentEmailAddresses.add(email);
-        }
     }
 
     private void sendEmailToRespondent(String respondentEmailAddress, String emailTemplate,
