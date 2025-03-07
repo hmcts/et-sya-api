@@ -64,6 +64,7 @@ public final class EtSyaConstants {
     public static final String SEND_EMAIL_PARAMS_SHORTTEXT_KEY = "shortText";
     public static final String SEND_EMAIL_PARAMS_DATEPLUS7_KEY = "datePlus7";
     public static final String SEND_EMAIL_PARAMS_LINK_DOC_KEY = "linkToDocument";
+    public static final String SEND_EMAIL_PARAMS_APPLICANT_NAME_KEY = "applicantName";
     public static final String SEND_EMAIL_SERVICE_OWNER_NAME_KEY = "serviceOwnerName";
     public static final String SEND_EMAIL_SERVICE_OWNER_NAME_VALUE = "Service Owner";
     public static final String SCOTLAND_CASE_TYPE = "ET_Scotland";

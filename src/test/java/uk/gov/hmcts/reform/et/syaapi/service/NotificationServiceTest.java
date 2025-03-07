@@ -1322,7 +1322,7 @@ class NotificationServiceTest {
         when(claimantApplication.getContactApplicationType()).thenReturn(contactType);
         when(claimantApplication.getCopyToOtherPartyYesOrNo()).thenReturn(copyTo);
 
-        String emailTemplate = notificationService.getAndSetEmailTemplate(
+        String emailTemplate = notificationService.getAndSetAckEmailTemplate(
             claimantApplication, details.hearingDate(), params, isWelsh, false);
 
         assertEquals(expectedTemplateId, emailTemplate);
@@ -1380,7 +1380,7 @@ class NotificationServiceTest {
 
             notificationService.sendRespondentAppAcknowledgementEmailToRespondent(
                 details,
-                caseTestData.getRespondentApplication());
+                caseTestData.getRespondentApplication(), null);
 
             verify(notificationClient, times(5)).sendEmail(
                 any(),
@@ -1402,7 +1402,7 @@ class NotificationServiceTest {
 
             notificationService.sendRespondentAppAcknowledgementEmailToRespondent(
                 details,
-                caseTestData.getRespondentApplication());
+                caseTestData.getRespondentApplication(), null);
 
             verify(notificationClient, times(5)).sendEmail(
                 any(),
@@ -1424,7 +1424,7 @@ class NotificationServiceTest {
 
             notificationService.sendRespondentAppAcknowledgementEmailToRespondent(
                 details,
-                caseTestData.getRespondentApplication());
+                caseTestData.getRespondentApplication(), null);
 
             verify(notificationClient, times(5)).sendEmail(
                 any(),
@@ -1466,7 +1466,7 @@ class NotificationServiceTest {
                 .thenReturn(mock(SendEmailResponse.class));
 
             notificationService.sendRespondentAppAcknowledgementEmailToRespondent(
-                details, caseTestData.getRespondentApplication());
+                details, caseTestData.getRespondentApplication(), null);
 
             List<Map<String, Object>> capturedParameters = respondentParametersCaptor.getAllValues();
             for (Map<String, Object> params : capturedParameters) {

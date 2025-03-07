@@ -287,7 +287,7 @@ public class ApplicationService {
         RespondentTse respondentTse = request.getRespondentTse();
         JSONObject documentJson = getDocumentDownload(authorization, caseData);
 
-        notificationService.sendRespondentAppAcknowledgementEmailToRespondent(details, respondentTse);
+        notificationService.sendRespondentAppAcknowledgementEmailToRespondent(details, respondentTse, documentJson);
         notificationService.sendRespondentAppAcknowledgementEmailToClaimant(details, documentJson, respondentTse);
         notificationService.sendAcknowledgementEmailToTribunal(details, respondentTse.getContactApplicationType());
     }
@@ -518,8 +518,8 @@ public class ApplicationService {
             }
         }
 
-        sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty,
-                                        isRespondingToTribunal, respondingUserType);
+        sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal,
+                                        respondingUserType);
 
         boolean waEnabled = featureToggleService.isWorkAllocationEnabled();
         setApplicationWithResponse(request, appType, caseData, caseDocumentService, waEnabled, respondingUserType);

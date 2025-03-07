@@ -20,12 +20,12 @@ import java.time.ZoneId;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -72,7 +72,7 @@ public final class NotificationsHelper {
 
     public static Map<String, Boolean> getRespondentAndRespRepEmailAddressesMap(CaseData caseData,
                                                                                 RespondentSumType respondent) {
-        Map<String, Boolean> emailAddressesMap = new HashMap<>();
+        Map<String, Boolean> emailAddressesMap = new ConcurrentHashMap<>();
         if (StringUtils.isNotBlank(respondent.getRespondentEmail())) {
             emailAddressesMap.put(respondent.getRespondentEmail(), true);
         }
@@ -163,6 +163,14 @@ public final class NotificationsHelper {
         } else {
             responseToUpdate.setIsECC(NO);
         }
+    }
+
+    public static String getApplicantRespondentName(CaseData caseData, String applicantIdamId) {
+        return caseData.getRespondentCollection().stream()
+            .filter(r -> applicantIdamId.equals(r.getValue().getIdamId()))
+            .map(r -> r.getValue().getRespondentName())
+            .findFirst()
+            .orElse(null);
     }
 
     private static String formatToSimpleDate(String defaultValue, String earliestFutureHearingDate) {
