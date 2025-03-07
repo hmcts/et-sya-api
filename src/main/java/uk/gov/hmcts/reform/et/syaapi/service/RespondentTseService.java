@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.TseStatusTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.TseStatusType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
@@ -16,6 +17,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeRespondentApplicationStatusRequest;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -67,13 +69,16 @@ public class RespondentTseService {
             app.setRespondentState(new ArrayList<>());
         }
         app.getRespondentState().stream()
-            .filter(status -> status.getUserIdamId().equals(userIdamId))
+            .filter(status -> status.getValue().getUserIdamId().equals(userIdamId))
             .findFirst()
             .ifPresentOrElse(
-                status -> status.setApplicationState(newState),
-                () -> app.getRespondentState().add(TseStatusType.builder()
-                                                       .userIdamId(userIdamId)
-                                                       .applicationState(newState)
+                status -> status.getValue().setApplicationState(newState),
+                () -> app.getRespondentState().add(TseStatusTypeItem.builder()
+                                                       .id(UUID.randomUUID().toString())
+                                                       .value(TseStatusType.builder()
+                                                                  .userIdamId(userIdamId)
+                                                                  .applicationState(newState)
+                                                                  .build())
                                                        .build())
         );
     }
