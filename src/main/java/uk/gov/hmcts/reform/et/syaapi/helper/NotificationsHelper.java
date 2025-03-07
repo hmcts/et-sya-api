@@ -165,6 +165,14 @@ public final class NotificationsHelper {
         }
     }
 
+    public static String getApplicantRespondentName(CaseData caseData, String applicantIdamId) {
+        return caseData.getRespondentCollection().stream()
+            .filter(r -> r.getValue().getIdamId().equals(applicantIdamId))
+            .map(r -> r.getValue().getRespondentName())
+            .findFirst()
+            .orElse(null);
+    }
+
     private static String formatToSimpleDate(String defaultValue, String earliestFutureHearingDate) {
         try {
             Date hearingStartDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").parse(earliestFutureHearingDate);

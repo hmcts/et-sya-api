@@ -518,8 +518,8 @@ public class ApplicationService {
             }
         }
 
-        sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty,
-                                        isRespondingToTribunal, respondingUserType);
+//        sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty,
+//                                        isRespondingToTribunal, respondingUserType);
 
         boolean waEnabled = featureToggleService.isWorkAllocationEnabled();
         setApplicationWithResponse(request, appType, caseData, caseDocumentService, waEnabled, respondingUserType);

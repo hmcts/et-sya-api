@@ -48,6 +48,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ACAS_PDF3_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ACAS_PDF4_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ACAS_PDF5_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_APPLICANT_NAME_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CASE_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CASE_NUMBER_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY;
@@ -72,6 +73,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGU
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getApplicantRespondentName;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentAndRespRepEmailAddressesMap;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 import static uk.gov.service.notify.NotificationClient.prepareUpload;
@@ -304,53 +306,59 @@ public class NotificationService {
      * @param respondentApplication application request data
      */
     void sendRespondentAppAcknowledgementEmailToRespondent(CoreEmailDetails details,
-                                                                  RespondentTse respondentApplication) {
+                                                           RespondentTse respondentApplication) {
         CaseData caseData = details.caseData();
         Set<String> sentEmailAddresses = new HashSet<>();
-        // send both respondent and respondent representative emails
-        caseData.getRespondentCollection()
-            .forEach(resp -> prepareEmailTemplateAppAckToRespondent(details, resp, respondentApplication,
-                                                                    sentEmailAddresses));
+        String applicantName = getApplicantRespondentName(caseData, respondentApplication.getRespondentIdamId());
+
+        caseData.getRespondentCollection().forEach(resp -> {
+            Map<String, Boolean> emailAddressesMap =
+                getRespondentAndRespRepEmailAddressesMap(caseData, resp.getValue());
+
+            emailAddressesMap.forEach((email, isRespondent) -> {
+                if (!sentEmailAddresses.contains(email)) {
+                    prepareAndSendEmail(details, resp, respondentApplication, email, isRespondent,
+                                        sentEmailAddresses, applicantName);
+                }
+            });
+        });
     }
 
-    private void prepareEmailTemplateAppAckToRespondent(CoreEmailDetails details,
-                                                        RespondentSumTypeItem respondent,
-                                                        RespondentTse respondentApplication,
-                                                        Set<String> sentEmailAddresses) {
-        CaseData caseData = details.caseData();
-        Map<String, Boolean> emailAddressesMap = getRespondentAndRespRepEmailAddressesMap(
-            caseData,
-            respondent.getValue()
-        );
-
+    private void prepareAndSendEmail(CoreEmailDetails details, RespondentSumTypeItem respondent,
+                                     RespondentTse respondentApplication, String email, boolean isRespondent,
+                                     Set<String> sentEmailAddresses, String applicantName) {
         boolean isWelsh = isWelshLanguage(respondent);
         String hearingDate = getHearingDate(details.hearingDate(), isWelsh);
         Map<String, Object> respondentParameters = prepareEmailParameters(details, hearingDate, isWelsh);
 
-        emailAddressesMap.forEach((emailAddress, isRespondent) -> {
-            // check if the email has already been sent since the same
-            // representative can represent multiple respondents
-            if (!sentEmailAddresses.contains((emailAddress))) {
-                String linkToCase = Boolean.TRUE.equals(isRespondent)
-                    ? getRespondentPortalLink(details.caseId(), isWelsh)
-                    : getRespondentRepPortalLink(details.caseId());
-                respondentParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY, linkToCase);
+        respondentParameters.put(SEND_EMAIL_PARAMS_APPLICANT_NAME_KEY, applicantName);
 
-                String emailToRespondentTemplate = getAndSetEmailTemplate(respondentApplication, hearingDate,
-                                                                          respondentParameters, isWelsh,
-                                                                          isRespondent
-                );
+        boolean isApplicant =
+            respondentApplication.getRespondentIdamId().equals(respondent.getValue().getIdamId())
+                && isRespondent;
+        String linkToCase = isRespondent ?
+            getRespondentPortalLink(details.caseId(), isWelsh) : getRespondentRepPortalLink(details.caseId());
 
-                sendEmailToRespondent(emailAddress, emailToRespondentTemplate, respondentParameters,
-                                      details.caseId()
-                );
+        respondentParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY, linkToCase);
+        String emailToRespondentTemplate;
+        if (isApplicant) {
+            emailToRespondentTemplate = getAndSetEmailTemplate(respondentApplication, hearingDate,
+                                                               respondentParameters, isWelsh,
+                                                               true);
+        }
+        else {
+            emailToRespondentTemplate = getNonApplicantTemplateId(respondentApplication, isWelsh);
+            respondentParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, "test");
+            respondentParameters.put(SEND_EMAIL_PARAMS_DATEPLUS7_KEY,
+                                    LocalDate.now().plusDays(7).format(UK_LOCAL_DATE_PATTERN));
+            respondentParameters.put(SEND_EMAIL_PARAMS_LINK_DOC_KEY, "");
 
-                // add representative email to the list of sent emails addresses
-                if (Boolean.FALSE.equals(isRespondent)) {
-                    sentEmailAddresses.add(emailAddress);
-                }
-            }
-        });
+        }
+        sendEmailToRespondent(email, emailToRespondentTemplate, respondentParameters, details.caseId());
+
+        if (!isRespondent) {
+            sentEmailAddresses.add(email);
+        }
     }
 
     private void sendEmailToRespondent(String respondentEmailAddress, String emailTemplate,
@@ -482,6 +490,11 @@ public class NotificationService {
 
         String appTypeByLanguage = getApplicationTypeTextByLanguage(respondentTse.getContactApplicationClaimantType(),
                                                                  isWelshLanguage(details.caseData()));
+
+        CaseData caseData = details.caseData();
+        String applicantName = getApplicantRespondentName(caseData, respondentTse.getRespondentIdamId());
+
+        claimantParameters.put(SEND_EMAIL_PARAMS_APPLICANT_NAME_KEY, applicantName);
         claimantParameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, details.hearingDate());
         claimantParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, appTypeByLanguage);
         claimantParameters.put(SEND_EMAIL_PARAMS_DATEPLUS7_KEY,
@@ -494,18 +507,21 @@ public class NotificationService {
         claimantParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
                                  notificationsProperties.getExuiCaseDetailsLink() + details.caseId());
 
-        boolean isWelsh = isWelshLanguage(details.caseData());
-        String emailToClaimantTemplate;
+        boolean isWelsh = isWelshLanguage(caseData);
+        String emailToClaimantTemplate = getNonApplicantTemplateId(respondentTse, isWelsh);
+        sendEmailToClaimant(caseData, details.caseId(), emailToClaimantTemplate, claimantParameters);
+    }
+
+    private String getNonApplicantTemplateId(RespondentTse respondentTse, boolean isWelsh) {
         if (Stream.of(typeB).anyMatch(appType -> Objects.equals(appType, respondentTse.getContactApplicationType()))) {
-            emailToClaimantTemplate = isWelsh
+            return isWelsh
                 ? notificationsProperties.getCyRespondentTseTypeBClaimantAckTemplateId()
                 : notificationsProperties.getRespondentTseTypeBClaimantAckTemplateId();
         } else {
-            emailToClaimantTemplate = isWelsh
+            return isWelsh
                 ? notificationsProperties.getCyRespondentTseTypeAClaimantAckTemplateId()
                 : notificationsProperties.getRespondentTseTypeAClaimantAckTemplateId();
         }
-        sendEmailToClaimant(details.caseData(), details.caseId(), emailToClaimantTemplate, claimantParameters);
     }
 
     private String getApplicationTypeTextByLanguage(String text, boolean isWelsh) {
@@ -1199,16 +1215,15 @@ public class NotificationService {
     }
 
     String getAndSetEmailTemplate(Object application, String hearingDate, Map<String, Object> parameters,
-                                          boolean isWelsh, boolean isRespondent) {
+                                          boolean isWelsh, boolean isRespondentOrRep) {
         parameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, hearingDate);
         Map<String, String> selectedMap = isWelsh ? CY_APP_TYPE_MAP : APP_TYPE_MAP;
-        String applicationType = getApplicationType(application, isRespondent);
-        String shortText = isRespondent ? applicationType : selectedMap.get(applicationType);
+        String applicationType = getApplicationType(application, isRespondentOrRep);
+        String shortText = isRespondentOrRep ? applicationType : selectedMap.get(applicationType);
         parameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
 
-        String copyToOtherParty = getCopyToOtherParty(application, isRespondent);
-
-        return getTemplateId(applicationType, copyToOtherParty, isWelsh, isRespondent);
+        String copyToOtherParty = getCopyToOtherParty(application, isRespondentOrRep);
+        return getTemplateId(applicationType, copyToOtherParty, isWelsh, isRespondentOrRep);
     }
 
     private String getApplicationType(Object application, boolean isRespondent) {
@@ -1224,20 +1239,20 @@ public class NotificationService {
     }
 
     private String getTemplateId(String applicationType, String copyToOtherParty,
-                                 boolean isWelsh, boolean isRespondent) {
+                                 boolean isWelsh, boolean isApplicant) {
         if (TYPE_C.equals(applicationType)) {
-            return getTypeCTemplateId(isWelsh, isRespondent);
+            return getTypeCTemplateId(isWelsh, isApplicant);
         }
 
         if (DONT_SEND_COPY.equals(copyToOtherParty)) {
-            return getNoCopyTemplateId(isWelsh, isRespondent);
+            return getNoCopyTemplateId(isWelsh, isApplicant);
         }
 
         if (Arrays.asList(typeB).contains(applicationType)) {
-            return getTypeBTemplateId(isWelsh, isRespondent);
+            return getTypeBTemplateId(isWelsh, isApplicant);
         }
 
-        return getTypeATemplateId(isWelsh, isRespondent);
+        return getTypeATemplateId(isWelsh, isApplicant);
     }
 
     private String getTypeCTemplateId(boolean isWelsh, boolean isRespondent) {
