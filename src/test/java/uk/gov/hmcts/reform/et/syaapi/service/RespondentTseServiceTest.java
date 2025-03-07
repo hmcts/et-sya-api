@@ -68,7 +68,7 @@ class RespondentTseServiceTest {
 
         String actualState = argumentCaptor.getValue()
             .getGenericTseApplicationCollection().get(0).getValue()
-            .getRespondentState().get(0)
+            .getRespondentState().get(0).getValue()
             .getApplicationState();
         assertThat(actualState).isEqualTo("viewed");
     }
