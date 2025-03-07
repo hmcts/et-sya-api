@@ -294,8 +294,8 @@ public class NotificationService {
         boolean isWelsh = isWelshLanguage(details.caseData());
         String hearingDate = getHearingDate(details.hearingDate(), isWelsh);
         Map<String, Object> claimantParameters = prepareEmailParameters(details, hearingDate, isWelsh);
-        String emailToClaimantTemplate = getAndSetEmailTemplate(claimantApplication, hearingDate,
-                                                                claimantParameters, isWelsh, false);
+        String emailToClaimantTemplate = getAndSetAckEmailTemplate(claimantApplication, hearingDate,
+                                                                   claimantParameters, isWelsh, false);
         return sendEmailToClaimant(details.caseData(), details.caseId(), emailToClaimantTemplate, claimantParameters);
     }
 
@@ -306,7 +306,8 @@ public class NotificationService {
      * @param respondentApplication application request data
      */
     void sendRespondentAppAcknowledgementEmailToRespondent(CoreEmailDetails details,
-                                                           RespondentTse respondentApplication) {
+                                                           RespondentTse respondentApplication,
+                                                           JSONObject documentJson) {
         CaseData caseData = details.caseData();
         Set<String> sentEmailAddresses = new HashSet<>();
         String applicantName = getApplicantRespondentName(caseData, respondentApplication.getRespondentIdamId());
@@ -318,7 +319,7 @@ public class NotificationService {
             emailAddressesMap.forEach((email, isRespondent) -> {
                 if (!sentEmailAddresses.contains(email)) {
                     prepareAndSendEmail(details, resp, respondentApplication, email, isRespondent,
-                                        sentEmailAddresses, applicantName);
+                                        sentEmailAddresses, applicantName, documentJson);
                 }
             });
         });
@@ -326,7 +327,7 @@ public class NotificationService {
 
     private void prepareAndSendEmail(CoreEmailDetails details, RespondentSumTypeItem respondent,
                                      RespondentTse respondentApplication, String email, boolean isRespondent,
-                                     Set<String> sentEmailAddresses, String applicantName) {
+                                     Set<String> sentEmailAddresses, String applicantName, JSONObject documentJson) {
         boolean isWelsh = isWelshLanguage(respondent);
         String hearingDate = getHearingDate(details.hearingDate(), isWelsh);
         Map<String, Object> respondentParameters = prepareEmailParameters(details, hearingDate, isWelsh);
@@ -342,15 +343,16 @@ public class NotificationService {
         respondentParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY, linkToCase);
         String emailToRespondentTemplate;
         if (isApplicant) {
-            emailToRespondentTemplate = getAndSetEmailTemplate(respondentApplication, hearingDate,
-                                                               respondentParameters, isWelsh,
-                                                               true);
+            emailToRespondentTemplate = getAndSetAckEmailTemplate(respondentApplication, hearingDate,
+                                                                  respondentParameters, isWelsh,
+                                                                  true);
         } else {
             emailToRespondentTemplate = getNonApplicantTemplateId(respondentApplication, isWelsh);
-            respondentParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, "test");
+            String applicationType = getApplicationType(respondentApplication, true);
+            respondentParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, applicationType);
             respondentParameters.put(SEND_EMAIL_PARAMS_DATEPLUS7_KEY,
                                     LocalDate.now().plusDays(7).format(UK_LOCAL_DATE_PATTERN));
-            respondentParameters.put(SEND_EMAIL_PARAMS_LINK_DOC_KEY, "");
+            respondentParameters.put(SEND_EMAIL_PARAMS_LINK_DOC_KEY, Objects.requireNonNullElse(documentJson, ""));
 
         }
         sendEmailToRespondent(email, emailToRespondentTemplate, respondentParameters, details.caseId());
@@ -1213,8 +1215,8 @@ public class NotificationService {
         addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber, caseNumber);
     }
 
-    String getAndSetEmailTemplate(Object application, String hearingDate, Map<String, Object> parameters,
-                                          boolean isWelsh, boolean isRespondentOrRep) {
+    String getAndSetAckEmailTemplate(Object application, String hearingDate, Map<String, Object> parameters,
+                                     boolean isWelsh, boolean isRespondentOrRep) {
         parameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, hearingDate);
         Map<String, String> selectedMap = isWelsh ? CY_APP_TYPE_MAP : APP_TYPE_MAP;
         String applicationType = getApplicationType(application, isRespondentOrRep);

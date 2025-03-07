@@ -167,7 +167,7 @@ public final class NotificationsHelper {
 
     public static String getApplicantRespondentName(CaseData caseData, String applicantIdamId) {
         return caseData.getRespondentCollection().stream()
-            .filter(r -> r.getValue().getIdamId().equals(applicantIdamId))
+            .filter(r -> applicantIdamId.equals(r.getValue().getIdamId()))
             .map(r -> r.getValue().getRespondentName())
             .findFirst()
             .orElse(null);

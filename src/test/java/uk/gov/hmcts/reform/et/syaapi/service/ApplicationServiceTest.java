@@ -463,7 +463,7 @@ class ApplicationServiceTest {
         ArgumentCaptor<CoreEmailDetails> argument = ArgumentCaptor.forClass(CoreEmailDetails.class);
         verify(notificationService, times(1)).sendRespondentAppAcknowledgementEmailToRespondent(
             argument.capture(),
-            any()
+            any(), any()
         );
 
         CoreEmailDetails coreEmailDetails = argument.getValue();
