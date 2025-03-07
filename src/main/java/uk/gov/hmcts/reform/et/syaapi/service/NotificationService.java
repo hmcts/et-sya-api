@@ -336,8 +336,8 @@ public class NotificationService {
         boolean isApplicant =
             respondentApplication.getRespondentIdamId().equals(respondent.getValue().getIdamId())
                 && isRespondent;
-        String linkToCase = isRespondent ?
-            getRespondentPortalLink(details.caseId(), isWelsh) : getRespondentRepPortalLink(details.caseId());
+        String linkToCase = isRespondent
+            ? getRespondentPortalLink(details.caseId(), isWelsh) : getRespondentRepPortalLink(details.caseId());
 
         respondentParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY, linkToCase);
         String emailToRespondentTemplate;
@@ -345,8 +345,7 @@ public class NotificationService {
             emailToRespondentTemplate = getAndSetEmailTemplate(respondentApplication, hearingDate,
                                                                respondentParameters, isWelsh,
                                                                true);
-        }
-        else {
+        } else {
             emailToRespondentTemplate = getNonApplicantTemplateId(respondentApplication, isWelsh);
             respondentParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, "test");
             respondentParameters.put(SEND_EMAIL_PARAMS_DATEPLUS7_KEY,
