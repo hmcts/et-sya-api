@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.helper;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -12,7 +11,9 @@ import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.TseAdminRecordDecisionTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.TseStatusTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
+import uk.gov.hmcts.et.common.model.ccd.types.TseStatusType;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
@@ -22,9 +23,12 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.UPDATED;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_FOR_A_JUDGMENT_TO_BE_RECONSIDERED_C;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_FOR_A_WITNESS_ORDER_C;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.APP_TO_AMEND_CLAIM;
@@ -120,8 +124,8 @@ class TseApplicationHelperTest {
                                        true, CLAIMANT_TITLE
             );
 
-            Assertions.assertEquals("waitingForTheTribunal", app.getApplicationState());
-            Assertions.assertEquals("Response to Amend response",
+            assertEquals("waitingForTheTribunal", app.getApplicationState());
+            assertEquals("Response to Amend response",
                 caseData.getDocumentCollection().get(0).getValue().getShortDescription()
             );
         }
@@ -182,6 +186,38 @@ class TseApplicationHelperTest {
             String actualLocalDateTime = TseApplicationHelper.formatCurrentDate(data);
 
             assertThat(actualLocalDateTime).isEqualTo(expectedLocalDateTime);
+        }
+    }
+
+    @Nested
+    class SetRespondentApplicationState {
+        @Test
+        void shouldUpdateApplicationStateForValidRespondentStates() {
+            TseStatusTypeItem item1 = new TseStatusTypeItem();
+            TseStatusTypeItem item2 = new TseStatusTypeItem();
+
+            TseStatusType status1 = new TseStatusType();
+            TseStatusType status2 = new TseStatusType();
+
+            item1.setValue(status1);
+            item2.setValue(status2);
+
+            List<TseStatusTypeItem> respondentStateList = List.of(item1, item2);
+
+            GenericTseApplicationType applicationType = new GenericTseApplicationType();
+            applicationType.setRespondentState(respondentStateList);
+
+            TseApplicationHelper.setRespondentApplicationState(applicationType, UPDATED);
+
+            assertEquals(UPDATED, status1.getApplicationState());
+            assertEquals(UPDATED, status2.getApplicationState());
+        }
+
+        @Test
+        void shouldDoNothingWhenRespondentStateListIsNull() {
+            GenericTseApplicationType applicationType = new GenericTseApplicationType();
+            TseApplicationHelper.setRespondentApplicationState(applicationType, UPDATED);
+            assertNull(applicationType.getRespondentState());
         }
     }
 }
