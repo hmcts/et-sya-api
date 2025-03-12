@@ -12,6 +12,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.TseAdminRecordDecisionTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.TseRespondTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.TseStatusTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
@@ -25,6 +26,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.OLD_DATE_TIME_PATTERN;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.UPDATED;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.CLAIMANT_CORRESPONDENCE;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.RESPONDENT_CORRESPONDENCE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UK_LOCAL_DATE_PATTERN;
@@ -179,6 +181,7 @@ public final class TseApplicationHelper {
         appToModify.setResponsesCount(
             String.valueOf(appToModify.getRespondCollection().size()));
         appToModify.setApplicationState(WAITING_FOR_TRIBUNAL);
+        TseApplicationHelper.setRespondentApplicationState(appToModify, UPDATED);
     }
 
     /**
@@ -206,5 +209,22 @@ public final class TseApplicationHelper {
             .findFirst()
             .orElse("");
 
+    }
+
+    /**
+     * Update Respondent Application State list.
+     * @param applicationType application in GenericTseApplicationType
+     * @param newState new state
+     */
+    public static void setRespondentApplicationState(GenericTseApplicationType applicationType, String newState) {
+        List<TseStatusTypeItem> respondentStateList = applicationType.getRespondentState();
+        if (CollectionUtils.isEmpty(respondentStateList)) {
+            return;
+        }
+        for (TseStatusTypeItem statusItem : respondentStateList) {
+            if (statusItem != null && statusItem.getValue() != null) {
+                statusItem.getValue().setApplicationState(newState);
+            }
+        }
     }
 }
