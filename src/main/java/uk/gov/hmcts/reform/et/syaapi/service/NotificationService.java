@@ -63,6 +63,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_HEARING_DATE_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_LASTNAME_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_LINK_DOC_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_RESPONDING_USER_NAME_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SHORTTEXT_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SUBJECTLINE_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_SERVICE_OWNER_NAME_KEY;
@@ -73,7 +74,9 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGU
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
-import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getApplicantRespondentName;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.RESPONDING_USER_EMAIL_STRING;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.THE_RESPONDENT_EMAIL_STRING;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getCurrentRespondentName;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentAndRespRepEmailAddressesMap;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 import static uk.gov.service.notify.NotificationClient.prepareUpload;
@@ -310,7 +313,7 @@ public class NotificationService {
                                                            JSONObject documentJson) {
         CaseData caseData = details.caseData();
         Set<String> sentEmailAddresses = new HashSet<>();
-        String applicantName = getApplicantRespondentName(caseData, respondentApplication.getRespondentIdamId());
+        String applicantName = getCurrentRespondentName(caseData, respondentApplication.getRespondentIdamId());
 
         caseData.getRespondentCollection().forEach(resp -> {
             Map<String, Boolean> emailAddressesMap =
@@ -487,7 +490,7 @@ public class NotificationService {
                                                                  isWelshLanguage(details.caseData()));
 
         CaseData caseData = details.caseData();
-        String applicantName = getApplicantRespondentName(caseData, respondentTse.getRespondentIdamId());
+        String applicantName = getCurrentRespondentName(caseData, respondentTse.getRespondentIdamId());
 
         claimantParameters.put(SEND_EMAIL_PARAMS_APPLICANT_NAME_KEY, applicantName);
         claimantParameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, details.hearingDate());
@@ -678,47 +681,59 @@ public class NotificationService {
      * @param isRespondingToRequestOrOrder indicates whether the reply is to a tribunal order or not
      */
     void sendRespondentResponseEmailToRespondent(CoreEmailDetails details, String applicationType,
-                                                 String copyToOtherParty, boolean isRespondingToRequestOrOrder) {
+                                                 String copyToOtherParty, boolean isRespondingToRequestOrOrder,
+                                                 String respondingUserIdamId) {
         if (TYPE_C.equals(applicationType)) {
             log.info("Type C application -  Respondent is only notified of "
                          + "Type A/B application responses, email not being sent");
             return;
         }
 
-        Map<String, Object> emailParameters = prepareResponseEmailCommonParameters(details, applicationType);
         String emailTemplate = getRespondentResponseEmailTemplate(isRespondingToRequestOrOrder,
                                                                   copyToOtherParty);
+        Set<String> sentEmailAddresses = new HashSet<>();
 
         CaseData caseData = details.caseData();
+        String respondingUserName = getCurrentRespondentName(details.caseData(), respondingUserIdamId);
         caseData.getRespondentCollection()
             .forEach(resp -> {
-                boolean isRespondentOrRep = StringUtils.isNotBlank(resp.getValue().getIdamId());
-                String linkToCase = isRespondentOrRep
-                    ? getRespondentPortalLink(details.caseId(), false)
-                    : getRespondentRepPortalLink(details.caseId());
-                emailParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, linkToCase);
 
-                String respondentEmailAddress = NotificationsHelper.getEmailAddressForRespondent(
-                    caseData,
-                    resp.getValue()
-                );
+                Map<String, Boolean> emailAddressesMap =
+                    getRespondentAndRespRepEmailAddressesMap(caseData, resp.getValue());
 
-                if (isNullOrEmpty(respondentEmailAddress)) {
-                    log.info("Respondent does not not have an email address associated with their account");
-                } else {
-                    try {
-                        notificationClient.sendEmail(
-                            emailTemplate,
-                            respondentEmailAddress,
-                            emailParameters,
-                            details.caseId()
-                        );
-                        log.info("Sent email to respondent");
-                    } catch (NotificationClientException ne) {
-                        throw new NotificationException(ne);
+                emailAddressesMap.forEach((emailAddress, isRespondent) -> {
+                    if (sentEmailAddresses.add(emailAddress)) {
+                        prepareAndSendRespondingToAppEmail(details, isRespondent, applicationType, emailAddress,
+                                                           emailTemplate, respondingUserName, resp,
+                                                           respondingUserIdamId);
                     }
-                }
+                });
             });
+    }
+
+    private void prepareAndSendRespondingToAppEmail(CoreEmailDetails details, boolean isRespondent,
+                                                    String applicationType, String emailAddress, String emailTemplate,
+                                                    String respondingUserName, RespondentSumTypeItem respondent,
+                                                    String respondingUserIdamId) {
+        Map<String, Object> emailParameters = prepareResponseEmailCommonParameters(details, applicationType);
+
+        boolean isRespondingUser =
+            respondingUserIdamId.equals(respondent.getValue().getIdamId()) && isRespondent;
+
+        if (isRespondingUser) {
+            emailParameters.put(SEND_EMAIL_PARAMS_RESPONDING_USER_NAME_KEY, RESPONDING_USER_EMAIL_STRING);
+        } else {
+            emailParameters.put(SEND_EMAIL_PARAMS_RESPONDING_USER_NAME_KEY,
+                                THE_RESPONDENT_EMAIL_STRING + respondingUserName);
+        }
+
+        String linkToCase = isRespondent
+            ? getRespondentPortalLink(details.caseId(), false)
+            : getRespondentRepPortalLink(details.caseId());
+        emailParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, linkToCase);
+
+
+        sendEmailToRespondent(emailAddress, emailTemplate, emailParameters, details.caseId);
     }
 
     private Map<String, Object> prepareResponseEmailCommonParameters(CoreEmailDetails details,
@@ -743,12 +758,12 @@ public class NotificationService {
         String emailTemplate;
         if (isRespondingToRequestOrOrder) {
             emailTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
-                ? notificationsProperties.getTseClaimantResponseToRequestNoTemplateId()
-                : notificationsProperties.getTseClaimantResponseToRequestYesTemplateId();
+                ? notificationsProperties.getTseRespondentResponseToRequestNoTemplateId()
+                : notificationsProperties.getTseRespondentResponseToRequestYesTemplateId();
         } else {
             emailTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
-                ? notificationsProperties.getTseClaimantResponseNoTemplateId()
-                : notificationsProperties.getTseClaimantResponseYesTemplateId();
+                ? notificationsProperties.getTseRespondentResponseNoTemplateId()
+                : notificationsProperties.getTseRespondentResponseYesTemplateId();
         }
 
         return emailTemplate;

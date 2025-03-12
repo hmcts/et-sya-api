@@ -606,7 +606,8 @@ class ApplicationServiceTest {
                 argument.capture(),
                 eq("Amend response"),
                 eq("No"),
-                eq(false)
+                eq(false),
+                any()
             );
 
             CoreEmailDetails coreEmailDetails = argument.getValue();

@@ -312,7 +312,8 @@ public class ApplicationService {
         String caseId,
         String copyToOtherParty,
         boolean isRespondingToRequestOrOrder,
-        String respondingUserType
+        String respondingUserType,
+        String respondingUserIdamId
     ) {
         CoreEmailDetails details = prepareCoreEmailDetails(caseData, caseId);
         String type = application.getType();
@@ -321,7 +322,7 @@ public class ApplicationService {
 
         if (respondingUserType.equals(RESPONDENT_TITLE)) {
             sendRespondentResponseToApplicationEmails(caseData, details, caseId, type, copyToOtherParty,
-                                                     isRespondingToRequestOrOrder);
+                                                     isRespondingToRequestOrOrder, respondingUserIdamId);
         } else {
             sendClaimantResponseToApplicationEmails(caseData, details, type, caseId, copyToOtherParty,
                                                     isRespondingToRequestOrOrder);
@@ -355,9 +356,10 @@ public class ApplicationService {
                                                            String caseId,
                                                            String type,
                                                            String copyToOtherParty,
-                                                           boolean isRespondingToRequestOrOrder) {
+                                                           boolean isRespondingToRequestOrOrder,
+                                                           String respondingUserIdamId) {
         notificationService.sendRespondentResponseEmailToRespondent(details, type, copyToOtherParty,
-                                                                    isRespondingToRequestOrOrder);
+                                                                    isRespondingToRequestOrOrder, respondingUserIdamId);
 
         if (isRespondingToRequestOrOrder) {
             notificationService.sendRespondentResponseEmailToClaimant(
@@ -518,8 +520,9 @@ public class ApplicationService {
             }
         }
 
+        String respondingUserIdamId = request.getResponse().getFromIdamId();
         sendResponseToApplicationEmails(appType, caseData, caseId, copyToOtherParty, isRespondingToTribunal,
-                                        respondingUserType);
+                                        respondingUserType, respondingUserIdamId);
 
         boolean waEnabled = featureToggleService.isWorkAllocationEnabled();
         setApplicationWithResponse(request, appType, caseData, caseDocumentService, waEnabled, respondingUserType);

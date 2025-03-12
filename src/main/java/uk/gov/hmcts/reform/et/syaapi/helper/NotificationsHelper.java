@@ -69,7 +69,16 @@ public final class NotificationsHelper {
         return isNullOrEmpty(respondent.getRespondentEmail()) ? "" : respondent.getRespondentEmail();
     }
 
-
+    /**
+     * Retrieves a map of email addresses for a respondent and their representative.
+     * The map contains email addresses as keys and a boolean value indicating whether
+     * the email belongs to the respondent (true) or the representative (false).
+     *
+     * @param caseData  the case data containing respondent and representative information
+     * @param respondent the respondent for whom the email addresses are being retrieved
+     * @return a map where the keys are email addresses and the values are booleans indicating
+     *         if the email belongs to the respondent (true) or the representative (false)
+     */
     public static Map<String, Boolean> getRespondentAndRespRepEmailAddressesMap(CaseData caseData,
                                                                                 RespondentSumType respondent) {
         Map<String, Boolean> emailAddressesMap = new ConcurrentHashMap<>();
@@ -165,7 +174,14 @@ public final class NotificationsHelper {
         }
     }
 
-    public static String getApplicantRespondentName(CaseData caseData, String applicantIdamId) {
+    /**
+     * Get the name of the current user(respondent).
+     *
+     * @param caseData      existing case data
+     * @param applicantIdamId idam id of the applicant
+     * @return respondent name
+     */
+    public static String getCurrentRespondentName(CaseData caseData, String applicantIdamId) {
         return caseData.getRespondentCollection().stream()
             .filter(r -> applicantIdamId.equals(r.getValue().getIdamId()))
             .map(r -> r.getValue().getRespondentName())

@@ -208,4 +208,20 @@ public class NotificationsProperties {
     @Value("${notifications.respondentTseTypeBClaimantAckTemplateId}")
     @NotBlank
     private String respondentTseTypeBClaimantAckTemplateId;
+
+    @Value("${notifications.tse.reply-to-tribunal.to-respondent-rule-92-yes}")
+    @NotBlank
+    private String tseRespondentResponseToRequestYesTemplateId;
+
+    @Value("${notifications.tse.reply-to-tribunal.to-respondent-rule-92-no}")
+    @NotBlank
+    private String tseRespondentResponseToRequestNoTemplateId;
+
+    @Value("${notifications.tse.respondentResponseYes}")
+    @NotBlank
+    private String tseRespondentResponseYesTemplateId;
+
+    @Value("${notifications.tse.respondentResponseNo}")
+    @NotBlank
+    private String tseRespondentResponseNoTemplateId;
 }

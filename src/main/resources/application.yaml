@@ -111,11 +111,15 @@ notifications:
     claimantResponseNo: ${TSE_CLAIMANT_RESPONSE_NO:0727a137-322f-458b-9941-ee8b6d3c11c2}
     tribunalResponse: ${TSE_TRIBUNAL_RESPONSE:9da290ff-c7da-4897-80d2-114361271dfa}
     respondentResponse: ${TSE_RESPONDENT_RESPONSE:63b0488f-134c-4bf2-8dea-40df4d158628}
+    respondentResponseNo: ${TSE_RESPONDENT_RESPONSE_NO:a6ff5a19-9666-4940-a9ad-340300a7b600}
+    respondentResponseYes: ${TSE_RESPONDENT_RESPONSE_YES:2754d3f6-3e0a-466d-a6bf-43247d483242}
     reply-to-tribunal:
       to-tribunal: ${TSE_TRIBUNAL_RESPONSE_TO_REQUEST:a90587ee-61a4-430a-b14a-5801c14b4976}
       to-respondent: ${TSE_TO_RESPONDENT_CLAIMANT_REPLIED_TO_REQUEST:19e056f1-fc1e-413e-a465-48fd99b88da2}
       to-claimant-rule-92-yes: ${TSE_CLAIMANT_RESPONSE_TO_REQUEST_YES:b29db0e8-27c9-453a-a068-b5a815d43de2}
       to-claimant-rule-92-no: ${TSE_CLAIMANT_RESPONSE_TO_REQUEST_NO:d335b6f8-9f11-4539-9a4c-5b2c936ecc8d}
+      to-respondent-rule-92-yes: ${TSE_RESPONDENT_RESPONSE_TO_REQUEST_YES:5bd8839d-7c45-492e-bfb4-20b1d504d280}
+      to-respondent-rule-92-no: ${TSE_RESPONDENT_RESPONSE_TO_REQUEST_NO:86bfb198-351f-4e13-9c5c-36e80c1c23df}
 
   pse:
     claimantResponseYes: ${CLAIMANT_RESPONSE_YES:5898b330-674c-48c8-87e1-ee07ab2910ee}

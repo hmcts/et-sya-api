@@ -1507,7 +1507,8 @@ class NotificationServiceTest {
                 details,
                 CHANGE_DETAILS_APPLICATION_TYPE,
                 "No",
-                false
+                false,
+                "idamId"
             );
 
             verify(notificationClient, times(5)).sendEmail(
@@ -1524,7 +1525,8 @@ class NotificationServiceTest {
                 details,
                 WITNESS,
                 "No",
-                false
+                false,
+                "idamId"
             );
 
             verify(notificationClient, times(0)).sendEmail(
