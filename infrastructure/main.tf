@@ -53,7 +53,6 @@ module "key-vault" {
   object_id                   = var.jenkins_AAD_objectId
   resource_group_name         = azurerm_resource_group.rg.name
   product_group_name          = "DTS Employment Tribunals"
-  soft_delete_retention_days  = 90
   common_tags                 = local.tags
   managed_identity_object_ids = [data.azurerm_user_assigned_identity.et-identity.principal_id]
 }
