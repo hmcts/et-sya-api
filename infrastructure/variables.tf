@@ -55,5 +55,5 @@ variable "acas_swagger_url" {
 }
 
 variable "soft_delete_retention_days" {
-  default = 90
+  default = 9
 }
