@@ -57,7 +57,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.ENGLANDWALES_CASE_TYPE_ID;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.RESPONDENT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.ET1_PDF_DOC_CATEGORY;
@@ -69,8 +71,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CA
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper.convertCaseDataMapToCaseDataObject;
-import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT_TITLE;
-import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.RESPONDENT_TITLE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CASE_ID;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.SUBMIT_CASE_DRAFT;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_NAME;

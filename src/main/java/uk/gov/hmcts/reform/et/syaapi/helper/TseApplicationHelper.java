@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.OLD_DATE_TIME_PATTERN;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.UPDATED;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.CLAIMANT_CORRESPONDENCE;
@@ -36,8 +37,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UK_LOCAL_DA
 @SuppressWarnings({"checkstyle:HideUtilityClassConstructor"})
 public final class TseApplicationHelper {
 
-    public static final String CLAIMANT_TITLE = "Claimant";
-    public static final String RESPONDENT_TITLE = "Respondent";
     public static final String WAITING_FOR_TRIBUNAL = "waitingForTheTribunal";
 
     /**
@@ -190,7 +189,7 @@ public final class TseApplicationHelper {
      * @return the document type
      */
     public static String getApplicationDoc(GenericTseApplicationType applicationType) {
-        if (Constants.CLAIMANT_TITLE.equals(applicationType.getApplicant())) {
+        if (CLAIMANT_TITLE.equals(applicationType.getApplicant())) {
             return uk.gov.hmcts.ecm.common.helpers.DocumentHelper.claimantApplicationTypeToDocType(
                 getClaimantApplicationType(applicationType));
         } else if (Constants.RESPONDENT_TITLE.equals(applicationType.getApplicant())) {

@@ -39,12 +39,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.IN_PROGRESS;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.RESPONDENT_TITLE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
-import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT_TITLE;
-import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.RESPONDENT_TITLE;
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.setApplicationWithResponse;
 
 @RequiredArgsConstructor
