@@ -726,7 +726,8 @@ class NotificationServiceTest {
         void shouldSendEmailToTribunalTypeAOrB() throws NotificationClientException {
             notificationService.sendAcknowledgementEmailToTribunal(
                 details,
-                caseTestData.getClaimantApplication().getContactApplicationType()
+                caseTestData.getClaimantApplication().getContactApplicationType(),
+                false
             );
 
             verify(notificationClient, times(1)).sendEmail(
@@ -743,7 +744,8 @@ class NotificationServiceTest {
             caseTestData.getClaimantApplication().setContactApplicationType(WITNESS);
             notificationService.sendAcknowledgementEmailToTribunal(
                 details,
-                caseTestData.getClaimantApplication().getContactApplicationType()
+                caseTestData.getClaimantApplication().getContactApplicationType(),
+                false
             );
 
             verify(notificationClient, times(1)).sendEmail(
@@ -759,7 +761,8 @@ class NotificationServiceTest {
             caseTestData.getCaseData().setManagingOffice(UNASSIGNED_OFFICE);
             notificationService.sendAcknowledgementEmailToTribunal(
                 details,
-                caseTestData.getClaimantApplication().getContactApplicationType()
+                caseTestData.getClaimantApplication().getContactApplicationType(),
+                false
             );
 
             verify(notificationClient, times(0)).sendEmail(

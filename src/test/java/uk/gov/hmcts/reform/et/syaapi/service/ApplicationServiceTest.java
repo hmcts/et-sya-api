@@ -35,6 +35,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
@@ -221,7 +222,8 @@ class ApplicationServiceTest {
         ArgumentCaptor<CoreEmailDetails> argument = ArgumentCaptor.forClass(CoreEmailDetails.class);
         verify(notificationService, times(1)).sendAcknowledgementEmailToTribunal(
             argument.capture(),
-            any()
+            any(),
+            anyBoolean()
         );
 
         CoreEmailDetails coreEmailDetails = argument.getValue();

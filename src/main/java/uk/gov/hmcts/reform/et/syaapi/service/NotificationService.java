@@ -538,16 +538,17 @@ public class NotificationService {
      * @param details         core details of the email
      * @param applicationType type of application
      */
-    void sendAcknowledgementEmailToTribunal(CoreEmailDetails details, String applicationType) {
+    void sendAcknowledgementEmailToTribunal(CoreEmailDetails details, String applicationType, boolean isRespondentApp) {
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
 
+        String applicationTypeName = isRespondentApp ? applicationType : APP_TYPE_MAP.get(applicationType);
         addCommonParameters(
             tribunalParameters,
             details.claimant,
             details.respondentNames,
             details.caseId,
             details.caseNumber,
-            String.join(" ", details.caseNumber, APP_TYPE_MAP.get(applicationType))
+            String.join(" ", details.caseNumber, applicationTypeName)
         );
         tribunalParameters.put(
             SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
