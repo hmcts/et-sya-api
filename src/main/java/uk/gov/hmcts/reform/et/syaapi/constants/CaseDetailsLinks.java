@@ -9,6 +9,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.CASE_DET
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.CASE_DETAILS_SECTION_DOCUMENTS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.CASE_DETAILS_SECTION_ET1_CLAIM_FORM;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.CASE_DETAILS_SECTION_HEARING_DETAILS;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.CASE_DETAILS_SECTION_OTHER_RESPONDENT_APPLICATIONS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.CASE_DETAILS_SECTION_PERSONAL_DETAILS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.CASE_DETAILS_SECTION_RESPONDENT_REQUESTS_AND_APPLICATIONS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.CASE_DETAILS_SECTION_RESPONDENT_RESPONSE;
@@ -24,6 +25,7 @@ public enum CaseDetailsLinks {
     HEARING_DETAILS(CASE_DETAILS_SECTION_HEARING_DETAILS),
     RESPONDENT_REQUESTS_AND_APPLICATIONS(CASE_DETAILS_SECTION_RESPONDENT_REQUESTS_AND_APPLICATIONS),
     CLAIMANT_APPLICATIONS(CASE_DETAILS_SECTION_CLAIMANT_APPLICATIONS),
+    OTHER_RESPONDENT_APPLICATIONS(CASE_DETAILS_SECTION_OTHER_RESPONDENT_APPLICATIONS),
     CONTACT_TRIBUNAL(CASE_DETAILS_SECTION_CONTACT_TRIBUNAL),
     TRIBUNAL_ORDERS(CASE_DETAILS_SECTION_TRIBUNAL_ORDERS),
     TRIBUNAL_JUDGEMENTS(CASE_DETAILS_SECTION_TRIBUNAL_JUDGEMENTS),
@@ -71,27 +73,25 @@ public enum CaseDetailsLinks {
                                                           String sectionId,
                                                           String sectionStatus) {
         switch (sectionId) {
-            case CASE_DETAILS_SECTION_CLAIMANT_APPLICATIONS:
+            case CASE_DETAILS_SECTION_CLAIMANT_APPLICATIONS ->
                 respondent.getEt3CaseDetailsLinksStatuses().setClaimantApplications(getSectionValue(
                     respondent.getEt3CaseDetailsLinksStatuses().getClaimantApplications(), sectionStatus));
-                break;
-            case CASE_DETAILS_SECTION_CONTACT_TRIBUNAL:
+            case CASE_DETAILS_SECTION_OTHER_RESPONDENT_APPLICATIONS ->
+                respondent.getEt3CaseDetailsLinksStatuses().setOtherRespondentApplications(getSectionValue(
+                    respondent.getEt3CaseDetailsLinksStatuses().getOtherRespondentApplications(), sectionStatus));
+            case CASE_DETAILS_SECTION_CONTACT_TRIBUNAL ->
                 respondent.getEt3CaseDetailsLinksStatuses().setContactTribunal(getSectionValue(
                     respondent.getEt3CaseDetailsLinksStatuses().getContactTribunal(), sectionStatus));
-                break;
-            case CASE_DETAILS_SECTION_TRIBUNAL_ORDERS:
+            case CASE_DETAILS_SECTION_TRIBUNAL_ORDERS ->
                 respondent.getEt3CaseDetailsLinksStatuses().setTribunalOrders(getSectionValue(
                     respondent.getEt3CaseDetailsLinksStatuses().getTribunalOrders(), sectionStatus));
-                break;
-            case CASE_DETAILS_SECTION_TRIBUNAL_JUDGEMENTS:
+            case CASE_DETAILS_SECTION_TRIBUNAL_JUDGEMENTS ->
                 respondent.getEt3CaseDetailsLinksStatuses().setTribunalJudgements(getSectionValue(
                     respondent.getEt3CaseDetailsLinksStatuses().getTribunalJudgements(), sectionStatus));
-                break;
-            case CASE_DETAILS_SECTION_DOCUMENTS:
+            case CASE_DETAILS_SECTION_DOCUMENTS ->
                 respondent.getEt3CaseDetailsLinksStatuses().setDocuments(getSectionValue(
                     respondent.getEt3CaseDetailsLinksStatuses().getDocuments(), sectionStatus));
-                break;
-            default: log.info(INVALID_CASE_DETAILS_SECTION_ID);
+            default -> log.info(INVALID_CASE_DETAILS_SECTION_ID);
         }
     }
 

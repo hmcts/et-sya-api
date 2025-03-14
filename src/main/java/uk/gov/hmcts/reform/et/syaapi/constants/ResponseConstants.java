@@ -28,6 +28,7 @@ public final class ResponseConstants {
     public static final String CASE_DETAILS_SECTION_RESPONDENT_REQUESTS_AND_APPLICATIONS =
         "respondentRequestsAndApplications";
     public static final String CASE_DETAILS_SECTION_CLAIMANT_APPLICATIONS = "claimantApplications";
+    public static final String CASE_DETAILS_SECTION_OTHER_RESPONDENT_APPLICATIONS = "otherRespondentApplications";
     public static final String CASE_DETAILS_SECTION_CONTACT_TRIBUNAL = "contactTribunal";
     public static final String CASE_DETAILS_SECTION_TRIBUNAL_ORDERS = "tribunalOrders";
     public static final String CASE_DETAILS_SECTION_TRIBUNAL_JUDGEMENTS = "tribunalJudgements";

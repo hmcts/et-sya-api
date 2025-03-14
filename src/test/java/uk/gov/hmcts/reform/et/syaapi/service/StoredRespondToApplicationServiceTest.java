@@ -22,6 +22,7 @@ import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -94,7 +95,8 @@ class StoredRespondToApplicationServiceTest {
             ArgumentCaptor.forClass(NotificationService.CoreEmailDetails.class);
         verify(notificationService, times(0)).sendAcknowledgementEmailToTribunal(
             argument.capture(),
-            any()
+            any(),
+            anyBoolean()
         );
         verify(notificationService, times(1)).sendStoredEmailToClaimant(
             argument.capture(),

@@ -28,12 +28,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.VIEWED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
-import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.CLAIMANT;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.CLAIMANT_CORRESPONDENCE;
 
 @RequiredArgsConstructor
 @Service
@@ -119,11 +119,11 @@ public class StoredRespondToTribunalService {
     private PseResponseType getPseResponseType(SendNotificationAddResponseRequest request) {
         PseResponseType pseResponseType = request.getPseResponseType();
         pseResponseType.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
-        pseResponseType.setFrom(CLAIMANT);
+        pseResponseType.setFrom(CLAIMANT_TITLE);
 
         if (request.getSupportingMaterialFile() != null) {
             DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(
-                CLAIMANT_CORRESPONDENCE_DOCUMENT,
+                CLAIMANT_CORRESPONDENCE,
                 request.getSupportingMaterialFile()
             );
             var documentTypeItems = new ArrayList<GenericTypeItem<DocumentType>>();

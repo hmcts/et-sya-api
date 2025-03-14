@@ -91,6 +91,18 @@ notifications:
   respondentCopyTypeA: ${RESPONDENT_COPY_A:a2ffb9b3-8bf7-4e9a-aab8-08a6c5a82636}
   respondentCopyTypeB: ${RESPONDENT_COPY_B:59ccc472-8f2e-43e4-b275-832f1c714eff}
   tribunalAcknowledgement: ${TRIBUNAL_ACKNOWLEDGEMENT:d82aa18a-1a3d-44af-91fa-565d178f5e0e}
+  respondentTseTypeCRespAckTemplateId: ${RESPONDENT_TSE_TYPE_C_RESP_ACK_TEMPLATE_ID:b0b56d54-2951-4370-94b8-0c6295a50c03}
+  cyRespondentTseTypeCRespAckTemplateId: ${CY_RESPONDENT_TSE_TYPE_C_RESP_ACK_TEMPLATE_ID:2588dc0b-4c73-4a0e-8338-47e8f27ddfdc}
+  respondentTseTypeBRespAckTemplateId: ${RESPONDENT_TSE_TYPE_B_RESP_ACK_TEMPLATE_ID:a5b466ce-0dfd-4312-a749-f8204c75566d}
+  cyRespondentTseTypeBRespAckTemplateId: ${CY_RESPONDENT_TSE_TYPE_B_RESP_ACK_TEMPLATE_ID:336ce2dd-4c30-44ea-a381-dba87ccb571f}
+  respondentTseTypeARespAckTemplateId: ${RESPONDENT_TSE_TYPE_A_RESP_ACK_TEMPLATE_ID:113de748-b0a8-40c8-a0c3-60e6e74fdd29}
+  cyRespondentTseTypeARespAckTemplateId: ${CY_RESPONDENT_TSE_TYPE_A_RESP_ACK_TEMPLATE_ID:9e0142b3-e098-481c-a545-cc5c886dbc5f}
+  respondentTseNoRespAckTemplateId: ${RESPONDENT_TSE_NO_RESP_ACK_TEMPLATE_ID:c9a66418-3d54-4222-8333-50cf551bd6b3}
+  cyRespondentTseNoRespAckTemplateId: ${CY_RESPONDENT_TSE_NO_RESP_ACK_TEMPLATE_ID:7197c5ab-238d-4a3c-9bc5-19b0b2ae569c}
+  respondentTseTypeAClaimantAckTemplateId: ${RESPONDENT_TSE_TYPE_A_CLAIMANT_ACK_TEMPLATE_ID:bfd00397-44d3-4b61-bdd2-2639043dc3e5}
+  cyRespondentTseTypeAClaimantAckTemplateId: ${CY_RESPONDENT_TSE_TYPE_A_CLAIMANT_ACK_TEMPLATE_ID:b037e493-16ef-4ad1-af46-df7666de2e53}
+  respondentTseTypeBClaimantAckTemplateId: ${RESPONDENT_TSE_TYPE_B_CLAIMANT_ACK_TEMPLATE_ID:f09e2e85-04bf-43cd-a959-4344924175c0}
+  cyRespondentTseTypeBClaimantAckTemplateId: ${CY_RESPONDENT_TSE_TYPE_B_CLAIMANT_ACK_TEMPLATE_ID:3c317fe0-f87f-4032-af2e-a50a57a7a601}
 
   et3SubmissionConfirmation: ${ET3_SUBMISSION_CONFIRMATION:16efc13b-3365-4bb8-aa27-5c0544645be8}
 
@@ -99,11 +111,15 @@ notifications:
     claimantResponseNo: ${TSE_CLAIMANT_RESPONSE_NO:0727a137-322f-458b-9941-ee8b6d3c11c2}
     tribunalResponse: ${TSE_TRIBUNAL_RESPONSE:9da290ff-c7da-4897-80d2-114361271dfa}
     respondentResponse: ${TSE_RESPONDENT_RESPONSE:63b0488f-134c-4bf2-8dea-40df4d158628}
+    respondentResponseNo: ${TSE_RESPONDENT_RESPONSE_NO:a6ff5a19-9666-4940-a9ad-340300a7b600}
+    respondentResponseYes: ${TSE_RESPONDENT_RESPONSE_YES:2754d3f6-3e0a-466d-a6bf-43247d483242}
     reply-to-tribunal:
       to-tribunal: ${TSE_TRIBUNAL_RESPONSE_TO_REQUEST:a90587ee-61a4-430a-b14a-5801c14b4976}
       to-respondent: ${TSE_TO_RESPONDENT_CLAIMANT_REPLIED_TO_REQUEST:19e056f1-fc1e-413e-a465-48fd99b88da2}
       to-claimant-rule-92-yes: ${TSE_CLAIMANT_RESPONSE_TO_REQUEST_YES:b29db0e8-27c9-453a-a068-b5a815d43de2}
       to-claimant-rule-92-no: ${TSE_CLAIMANT_RESPONSE_TO_REQUEST_NO:d335b6f8-9f11-4539-9a4c-5b2c936ecc8d}
+      to-respondent-rule-92-yes: ${TSE_RESPONDENT_RESPONSE_TO_REQUEST_YES:5bd8839d-7c45-492e-bfb4-20b1d504d280}
+      to-respondent-rule-92-no: ${TSE_RESPONDENT_RESPONSE_TO_REQUEST_NO:86bfb198-351f-4e13-9c5c-36e80c1c23df}
 
   pse:
     claimantResponseYes: ${CLAIMANT_RESPONSE_YES:5898b330-674c-48c8-87e1-ee07ab2910ee}
