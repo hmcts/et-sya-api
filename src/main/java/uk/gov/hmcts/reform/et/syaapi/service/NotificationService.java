@@ -99,8 +99,8 @@ public class NotificationService {
     private final String[] typeA =
         {"strike", "amend", "non-compliance", "other", "postpone", "vary", "respondent", "publicity"};
     private final String[] typeB = {"withdraw", "change-details", "reconsider-decision", "reconsider-judgement",
-        "Change my personal details", "Apply to have a decision considered afresh",
-        "Apply for the judgment to be reconsidered"};
+        "Change my personal details", "Consider a decision afresh",
+        "Reconsider judgment"};
     private static final String TYPE_C = "witness";
     private static final String TYPE_C_RESPONDENT = "Order a witness to attend to give evidence";
     private static final String DONT_SEND_COPY = "No";
