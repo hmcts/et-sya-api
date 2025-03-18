@@ -98,8 +98,11 @@ public class NotificationService {
 
     private final String[] typeA =
         {"strike", "amend", "non-compliance", "other", "postpone", "vary", "respondent", "publicity"};
-    private final String[] typeB = {"withdraw", "change-details", "reconsider-decision", "reconsider-judgement"};
+    private final String[] typeB = {"withdraw", "change-details", "reconsider-decision", "reconsider-judgement",
+        "Change my personal details", "Apply to have a decision considered afresh",
+        "Apply for the judgment to be reconsidered"};
     private static final String TYPE_C = "witness";
+    private static final String TYPE_C_RESPONDENT = "Order a witness to attend to give evidence";
     private static final String DONT_SEND_COPY = "No";
     public static final String HEARING_DATE_KEY = "hearingDate";
     private static final String NO_CLAIMANT_EMAIL_FOUND =
@@ -474,7 +477,7 @@ public class NotificationService {
     void sendRespondentAppAcknowledgementEmailToClaimant(CoreEmailDetails details,
                                                JSONObject documentJson,
                                                RespondentTse respondentTse) {
-        if (TYPE_C.equals(respondentTse.getContactApplicationType())
+        if (TYPE_C_RESPONDENT.equals(respondentTse.getContactApplicationType())
             || DONT_SEND_COPY.equals(respondentTse.getCopyToOtherPartyYesOrNo())) {
             log.info("Acknowledgement email not sent to claimant for this application type");
             return;
@@ -632,7 +635,7 @@ public class NotificationService {
                                                String applicationType,
                                                String copyToOtherParty,
                                                boolean isRespondingToRequestOrOrder) {
-        if (TYPE_C.equals(applicationType)) {
+        if (TYPE_C.equals(applicationType) || TYPE_C_RESPONDENT.equals(applicationType)) {
             log.info("Type C application -  Claimant is only notified of "
                          + "Type A/B application responses, email not being sent");
             return;
@@ -684,7 +687,7 @@ public class NotificationService {
     void sendRespondentResponseEmailToRespondent(CoreEmailDetails details, String applicationType,
                                                  String copyToOtherParty, boolean isRespondingToRequestOrOrder,
                                                  String respondingUserIdamId) {
-        if (TYPE_C.equals(applicationType)) {
+        if (TYPE_C.equals(applicationType) || TYPE_C_RESPONDENT.equals(applicationType)) {
             log.info("Type C application -  Respondent is only notified of "
                          + "Type A/B application responses, email not being sent");
             return;
@@ -779,7 +782,8 @@ public class NotificationService {
      * @param copyToOtherParty should copy response to other party
      */
     void sendResponseEmailToRespondent(CoreEmailDetails details, String applicationType, String copyToOtherParty) {
-        if (TYPE_C.equals(applicationType) || DONT_SEND_COPY.equals(copyToOtherParty)) {
+        if (TYPE_C.equals(applicationType) || DONT_SEND_COPY.equals(copyToOtherParty)
+            || TYPE_C_RESPONDENT.equals(applicationType)) {
             log.info("Acknowledgement email not sent to respondents for this application type");
             return;
         }
@@ -890,7 +894,8 @@ public class NotificationService {
      */
     void sendRespondentResponseEmailToClaimant(CoreEmailDetails details, String applicationType,
                                                String copyToOtherParty) {
-        if (TYPE_C.equals(applicationType) || DONT_SEND_COPY.equals(copyToOtherParty)) {
+        if (TYPE_C.equals(applicationType) || TYPE_C_RESPONDENT.equals(applicationType)
+            || DONT_SEND_COPY.equals(copyToOtherParty)) {
             log.info("Acknowledgement email not sent to claimants for this application type");
             return;
         }
@@ -1251,7 +1256,7 @@ public class NotificationService {
 
     private String getTemplateId(String applicationType, String copyToOtherParty,
                                  boolean isWelsh, boolean isApplicant) {
-        if (TYPE_C.equals(applicationType)) {
+        if (TYPE_C.equals(applicationType) || TYPE_C_RESPONDENT.equals(applicationType)) {
             return getTypeCTemplateId(isWelsh, isApplicant);
         }
 
