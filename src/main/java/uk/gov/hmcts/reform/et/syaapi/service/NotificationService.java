@@ -386,6 +386,10 @@ public class NotificationService {
     private boolean isWelshLanguage(CaseData caseData) {
         boolean welshFlagEnabled = featureToggleService.isWelshEnabled();
         log.info("Welsh feature flag is set to {}", welshFlagEnabled);
+        if (caseData.getClaimantHearingPreference() == null) {
+            log.warn("Claimant hearing preference is not set");
+            return false;
+        }
         return welshFlagEnabled && WELSH_LANGUAGE.equals(caseData.getClaimantHearingPreference().getContactLanguage());
     }
 
