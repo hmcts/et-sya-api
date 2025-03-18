@@ -82,8 +82,14 @@ public final class NotificationsHelper {
     public static Map<String, Boolean> getRespondentAndRespRepEmailAddressesMap(CaseData caseData,
                                                                                 RespondentSumType respondent) {
         Map<String, Boolean> emailAddressesMap = new ConcurrentHashMap<>();
-        if (StringUtils.isNotBlank(respondent.getRespondentEmail())) {
-            emailAddressesMap.put(respondent.getRespondentEmail(), true);
+
+        String responseEmail = respondent.getResponseRespondentEmail();
+        String respondentEmail = respondent.getRespondentEmail();
+
+        if (StringUtils.isNotBlank(responseEmail)) {
+            emailAddressesMap.put(responseEmail, true);
+        } else if (StringUtils.isNotBlank(respondentEmail)) {
+            emailAddressesMap.put(respondentEmail, true);
         }
 
         RepresentedTypeR representative = getRespondentRepresentative(caseData, respondent);
