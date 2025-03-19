@@ -37,7 +37,6 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static uk.gov.hmcts.ecm.common.constants.PdfMapperConstants.PDF_TYPE_ET1;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
-import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_RESPONDENT_APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.PDF_FILE_TIKA_CONTENT_TYPE;
@@ -332,7 +331,7 @@ public class PdfUploadService {
             tseApplicationPdf,
             docName,
             PDF_FILE_TIKA_CONTENT_TYPE,
-            TSE_FILENAME + CY_RESPONDENT_APP_TYPE_MAP.get(respondentTse.getContactApplicationType())
+            TSE_FILENAME + respondentTse.getContactApplicationClaimantType()
         );
     }
 }

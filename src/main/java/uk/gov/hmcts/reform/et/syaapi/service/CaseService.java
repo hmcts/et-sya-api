@@ -555,7 +555,8 @@ public class CaseService {
             pdfUploadService.convertRespondentTseIntoMultipartFile(respondentTse,
                                                                  caseData.getEthosCaseReference(),
                                                                  docName);
-        String applicationDocMapping = respondentTse.getContactApplicationType();
+        String applicationDocMapping = DocumentHelper.respondentApplicationToDocType(
+            respondentTse.getContactApplicationType());
         String topLevel = DocumentHelper.getTopLevelDocument(applicationDocMapping);
 
         docList.add(caseDocumentService.createDocumentTypeItemLevels(
