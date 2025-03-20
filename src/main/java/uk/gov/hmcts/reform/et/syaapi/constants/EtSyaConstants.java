@@ -64,13 +64,14 @@ public final class EtSyaConstants {
     public static final String SEND_EMAIL_PARAMS_SHORTTEXT_KEY = "shortText";
     public static final String SEND_EMAIL_PARAMS_DATEPLUS7_KEY = "datePlus7";
     public static final String SEND_EMAIL_PARAMS_LINK_DOC_KEY = "linkToDocument";
+    public static final String SEND_EMAIL_PARAMS_APPLICANT_NAME_KEY = "applicantName";
+    public static final String SEND_EMAIL_PARAMS_RESPONDING_USER_NAME_KEY = "respondentName";
     public static final String SEND_EMAIL_SERVICE_OWNER_NAME_KEY = "serviceOwnerName";
     public static final String SEND_EMAIL_SERVICE_OWNER_NAME_VALUE = "Service Owner";
     public static final String SCOTLAND_CASE_TYPE = "ET_Scotland";
     public static final DateTimeFormatter UK_LOCAL_DATE_PATTERN = DateTimeFormatter.ofPattern("dd MMM yyyy");
     public static final String UNASSIGNED_OFFICE = "Unassigned";
 
-    public static final String CLAIMANT_CORRESPONDENCE_DOCUMENT = "Claimant correspondence";
     public static final String YES = "Yes";
     public static final String NO = "No";
 

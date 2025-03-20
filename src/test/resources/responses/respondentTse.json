@@ -1,0 +1,15 @@
+{
+  "respondentIdamId": "1234567890",
+  "contactApplicationType": "Amend response",
+  "contactApplicationClaimantType": "Change my personal details",
+  "contactApplicationText": "Amend response",
+  "contactApplicationFile": {
+    "document_url": "",
+    "document_filename": "",
+    "document_binary_url": "",
+    "document_size": "",
+    "document_mime_type": ""
+  },
+  "copyToOtherPartyYesOrNo": "Yes",
+  "copyToOtherPartyText": ""
+}

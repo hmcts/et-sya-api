@@ -160,4 +160,68 @@ public class NotificationsProperties {
     @Value("${notifications.et3SubmissionConfirmation}")
     @NotBlank
     private String et3SubmissionConfirmationTemplateId;
+
+    @Value("${notifications.cyRespondentTseTypeCRespAckTemplateId}")
+    @NotBlank
+    private String cyRespondentTseTypeCRespAckTemplateId;
+
+    @Value("${notifications.cyRespondentTseTypeBRespAckTemplateId}")
+    @NotBlank
+    private String cyRespondentTseTypeBRespAckTemplateId;
+
+    @Value("${notifications.cyRespondentTseTypeARespAckTemplateId}")
+    @NotBlank
+    private String cyRespondentTseTypeARespAckTemplateId;
+
+    @Value("${notifications.respondentTseTypeCRespAckTemplateId}")
+    @NotBlank
+    private String respondentTseTypeCRespAckTemplateId;
+
+    @Value("${notifications.respondentTseTypeBRespAckTemplateId}")
+    @NotBlank
+    private String respondentTseTypeBRespAckTemplateId;
+
+    @Value("${notifications.respondentTseTypeARespAckTemplateId}")
+    @NotBlank
+    private String respondentTseTypeARespAckTemplateId;
+
+    @Value("${notifications.cyRespondentTseNoRespAckTemplateId}")
+    @NotBlank
+    private String cyRespondentTseNoRespAckTemplateId;
+
+    @Value("${notifications.respondentTseNoRespAckTemplateId}")
+    @NotBlank
+    private String respondentTseNoRespAckTemplateId;
+
+    @Value("${notifications.cyRespondentTseTypeAClaimantAckTemplateId}")
+    @NotBlank
+    private String cyRespondentTseTypeAClaimantAckTemplateId;
+
+    @Value("${notifications.respondentTseTypeAClaimantAckTemplateId}")
+    @NotBlank
+    private String respondentTseTypeAClaimantAckTemplateId;
+
+    @Value("${notifications.cyRespondentTseTypeBClaimantAckTemplateId}")
+    @NotBlank
+    private String cyRespondentTseTypeBClaimantAckTemplateId;
+
+    @Value("${notifications.respondentTseTypeBClaimantAckTemplateId}")
+    @NotBlank
+    private String respondentTseTypeBClaimantAckTemplateId;
+
+    @Value("${notifications.tse.reply-to-tribunal.to-respondent-rule-92-yes}")
+    @NotBlank
+    private String tseRespondentResponseToRequestYesTemplateId;
+
+    @Value("${notifications.tse.reply-to-tribunal.to-respondent-rule-92-no}")
+    @NotBlank
+    private String tseRespondentResponseToRequestNoTemplateId;
+
+    @Value("${notifications.tse.respondentResponseYes}")
+    @NotBlank
+    private String tseRespondentResponseYesTemplateId;
+
+    @Value("${notifications.tse.respondentResponseNo}")
+    @NotBlank
+    private String tseRespondentResponseNoTemplateId;
 }
