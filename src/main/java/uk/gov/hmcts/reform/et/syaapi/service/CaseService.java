@@ -465,7 +465,7 @@ public class CaseService {
         String docName = "Application %d - %s.pdf".formatted(
             ApplicationService.getNextApplicationNumber(caseData),
             ClaimantTse.APP_TYPE_MAP.get(claimantTse.getContactApplicationType()))
-            .replace("/", " ");
+            .replace("/", "-");
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             pdfUploadService.convertClaimantTseIntoMultipartFile(claimantTse,
                                                                  caseData.getEthosCaseReference(),
