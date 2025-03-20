@@ -79,6 +79,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.THE_RESPOND
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getCurrentRespondentName;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentAndRespRepEmailAddressesMap;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.isRepresentedClaimantWithMyHmctsCase;
 import static uk.gov.service.notify.NotificationClient.prepareUpload;
 
 /**
@@ -512,10 +513,13 @@ public class NotificationService {
         claimantParameters.put(SEND_EMAIL_PARAMS_LINK_DOC_KEY,
                                  Objects.requireNonNullElse(documentJson, ""));
         // will have to handle claimant and claimant representative emails
-        claimantParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
-                                 notificationsProperties.getExuiCaseDetailsLink() + details.caseId());
-        claimantParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
-                                 notificationsProperties.getCitizenPortalLink() + details.caseId());
+        if (isRepresentedClaimantWithMyHmctsCase(caseData)) {
+            claimantParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+                                   notificationsProperties.getExuiCaseDetailsLink() + details.caseId());
+        } else {
+            claimantParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
+                notificationsProperties.getCitizenPortalLink() + details.caseId());
+        }
 
         boolean isWelsh = isWelshLanguage(caseData);
         String emailToClaimantTemplate = getNonApplicantTemplateId(respondentTse, isWelsh);
