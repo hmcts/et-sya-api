@@ -255,11 +255,4 @@ public final class NotificationsHelper {
             && ObjectUtils.isNotEmpty(caseData.getRepresentativeClaimantType())
             && ObjectUtils.isNotEmpty(caseData.getRepresentativeClaimantType().getMyHmctsOrganisation());
     }
-
-    public static boolean isClaimantNonSystemUser(CaseData caseData) {
-        if (caseData != null) {
-            return caseData.getEt1OnlineSubmission() == null && caseData.getHubLinksStatuses() == null;
-        }
-        return true;
-    }
 }

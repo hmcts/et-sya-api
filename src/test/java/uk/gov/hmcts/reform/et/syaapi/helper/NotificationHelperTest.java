@@ -2,9 +2,14 @@ package uk.gov.hmcts.reform.et.syaapi.helper;
 
 import org.apache.tika.utils.StringUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.HearingTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
+import uk.gov.hmcts.et.common.model.ccd.types.Organisation;
+import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 
@@ -15,9 +20,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 
 class NotificationHelperTest {
 
@@ -191,5 +200,34 @@ class NotificationHelperTest {
                 "123345"
             ));
         assertThat(exception.getMessage()).isEqualTo("Hearing does not have any future dates");
+    }
+
+    @ParameterizedTest
+    @MethodSource("isRepresentedClaimantWithMyHmctsCaseParameter")
+    void isRepresentedClaimantWithMyHmctsCase(String caseSource, String claimantRepresentedQuestion,
+                                              RepresentedTypeC representedTypeC, boolean expected) {
+        CaseData caseData = new CaseData();
+        caseData.setCaseSource(caseSource);
+        caseData.setClaimantRepresentedQuestion(claimantRepresentedQuestion);
+        caseData.setRepresentativeClaimantType(representedTypeC);
+        assertEquals(expected, NotificationsHelper.isRepresentedClaimantWithMyHmctsCase(caseData));
+    }
+
+    private static Stream<Arguments> isRepresentedClaimantWithMyHmctsCaseParameter() {
+        Organisation organisation = Organisation.builder()
+            .organisationID("dummyId")
+            .build();
+        RepresentedTypeC representedTypeC = new RepresentedTypeC();
+        representedTypeC.setMyHmctsOrganisation(organisation);
+        return Stream.of(
+            Arguments.of("ET1", NO, null, false),
+            Arguments.of("ET1", NO, representedTypeC, false),
+            Arguments.of("ET1", YES, null, false),
+            Arguments.of("ET1", YES, representedTypeC, false),
+            Arguments.of("MyHMCTS", NO, null, false),
+            Arguments.of("MyHMCTS", NO, representedTypeC, false),
+            Arguments.of("MyHMCTS", YES, null, false),
+            Arguments.of("MyHMCTS", YES, representedTypeC, true)
+        );
     }
 }
