@@ -42,7 +42,7 @@ public final class NotificationsHelper {
 
     private static final String INVALID_DATE = "Invalid date";
     private static final String EMPLOYER_CONTRACT_CLAIM = "Employer Contract Claim";
-    private static final String MY_HMCTS = "MyHMCTS";
+    public static final String MY_HMCTS = "MyHMCTS";
 
     /**
      * Format all respondent names into one string.

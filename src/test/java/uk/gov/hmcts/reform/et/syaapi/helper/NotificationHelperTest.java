@@ -27,6 +27,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.MY_HMCTS;
 
 class NotificationHelperTest {
 
@@ -203,7 +205,7 @@ class NotificationHelperTest {
     }
 
     @ParameterizedTest
-    @MethodSource("isRepresentedClaimantWithMyHmctsCaseParameter")
+    @MethodSource("caseParametersForIsRepresentedClaimantWithMyHmctsCaseParameter")
     void isRepresentedClaimantWithMyHmctsCase(String caseSource, String claimantRepresentedQuestion,
                                               RepresentedTypeC representedTypeC, boolean expected) {
         CaseData caseData = new CaseData();
@@ -213,21 +215,21 @@ class NotificationHelperTest {
         assertEquals(expected, NotificationsHelper.isRepresentedClaimantWithMyHmctsCase(caseData));
     }
 
-    private static Stream<Arguments> isRepresentedClaimantWithMyHmctsCaseParameter() {
+    private static Stream<Arguments> caseParametersForIsRepresentedClaimantWithMyHmctsCaseParameter() {
         Organisation organisation = Organisation.builder()
             .organisationID("dummyId")
             .build();
         RepresentedTypeC representedTypeC = new RepresentedTypeC();
         representedTypeC.setMyHmctsOrganisation(organisation);
         return Stream.of(
-            Arguments.of("ET1", NO, null, false),
-            Arguments.of("ET1", NO, representedTypeC, false),
-            Arguments.of("ET1", YES, null, false),
-            Arguments.of("ET1", YES, representedTypeC, false),
-            Arguments.of("MyHMCTS", NO, null, false),
-            Arguments.of("MyHMCTS", NO, representedTypeC, false),
-            Arguments.of("MyHMCTS", YES, null, false),
-            Arguments.of("MyHMCTS", YES, representedTypeC, true)
+            Arguments.of(ET1, NO, null, false),
+            Arguments.of(ET1, NO, representedTypeC, false),
+            Arguments.of(ET1, YES, null, false),
+            Arguments.of(ET1, YES, representedTypeC, false),
+            Arguments.of(MY_HMCTS, NO, null, false),
+            Arguments.of(MY_HMCTS, NO, representedTypeC, false),
+            Arguments.of(MY_HMCTS, YES, null, false),
+            Arguments.of(MY_HMCTS, YES, representedTypeC, true)
         );
     }
 }
