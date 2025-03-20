@@ -337,11 +337,16 @@ public class NotificationService {
         boolean isWelsh = isWelshLanguage(respondent);
         String hearingDate = getHearingDate(details.hearingDate(), isWelsh);
         Map<String, Object> respondentParameters = prepareEmailParameters(details, hearingDate, isWelsh);
+
         String linkToCase = isRespondent
-            ? getRespondentPortalLink(details.caseId(), isWelsh) : getRespondentRepPortalLink(details.caseId());
+            ? getRespondentPortalLink(details.caseId(), isWelsh)
+            : getRespondentRepPortalLink(details.caseId());
 
         respondentParameters.put(SEND_EMAIL_PARAMS_APPLICANT_NAME_KEY, applicantName);
-        respondentParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY, linkToCase);
+        respondentParameters.put(
+            isRespondent ? SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY : SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+            linkToCase
+        );
 
         boolean isApplicant =
             respondentApplication.getRespondentIdamId().equals(respondent.getValue().getIdamId()) && isRespondent;
@@ -417,7 +422,7 @@ public class NotificationService {
     }
 
     private String getRespondentRepPortalLink(String caseId) {
-        return notificationsProperties.getRespondentPortalLink() + caseId;
+        return notificationsProperties.getExuiCaseDetailsLink() + caseId;
     }
 
     private SendEmailResponse sendEmailToClaimant(CaseData caseData, String caseId, String emailTemplate,
@@ -510,7 +515,7 @@ public class NotificationService {
         claimantParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
                                  notificationsProperties.getExuiCaseDetailsLink() + details.caseId());
         claimantParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
-                                 notificationsProperties.getExuiCaseDetailsLink() + details.caseId());
+                                 notificationsProperties.getCitizenPortalLink() + details.caseId());
 
         boolean isWelsh = isWelshLanguage(caseData);
         String emailToClaimantTemplate = getNonApplicantTemplateId(respondentTse, isWelsh);
