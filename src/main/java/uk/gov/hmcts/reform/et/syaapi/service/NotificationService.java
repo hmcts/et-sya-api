@@ -79,6 +79,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.THE_RESPOND
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getCurrentRespondentName;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentAndRespRepEmailAddressesMap;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.isRepresentedClaimantWithMyHmctsCase;
 import static uk.gov.service.notify.NotificationClient.prepareUpload;
 
 /**
