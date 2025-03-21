@@ -59,18 +59,6 @@ public final class NotificationsHelper {
             .collect(Collectors.joining(", "));
     }
 
-    public static String getEmailAddressForRespondent(CaseData caseData, RespondentSumType respondent) {
-        RepresentedTypeR representative = getRespondentRepresentative(caseData, respondent);
-        if (representative != null) {
-            String repEmail = representative.getRepresentativeEmailAddress();
-            if (!isNullOrEmpty(repEmail)) {
-                return repEmail;
-            }
-        }
-
-        return isNullOrEmpty(respondent.getRespondentEmail()) ? "" : respondent.getRespondentEmail();
-    }
-
     /**
      * Retrieves a map of email addresses for a respondent and their representative.
      * The map contains email addresses as keys and a boolean value indicating whether
@@ -100,6 +88,10 @@ public final class NotificationsHelper {
         }
 
         return emailAddressesMap;
+    }
+
+    public static List<String> getEmailAddressesForRespondent(CaseData caseData, RespondentSumType respondent) {
+        return getRespondentAndRespRepEmailAddressesMap(caseData, respondent).keySet().stream().toList();
     }
 
     private static RepresentedTypeR getRespondentRepresentative(CaseData caseData, RespondentSumType respondent) {

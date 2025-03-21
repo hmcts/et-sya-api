@@ -1097,25 +1097,28 @@ public class NotificationService {
 
         caseData.getRespondentCollection()
             .forEach(resp -> {
-                String respondentEmailAddress = NotificationsHelper.getEmailAddressForRespondent(
+                List<String> respondentEmailAddress = NotificationsHelper.getEmailAddressesForRespondent(
                     caseData,
                     resp.getValue()
                 );
-                if (isNullOrEmpty(respondentEmailAddress)) {
-                    log.info("Respondent does not not have an email address associated with their account");
-                } else {
-                    try {
-                        notificationClient.sendEmail(
-                            emailToRespondentTemplate,
-                            respondentEmailAddress,
-                            respondentParameters,
-                            caseId
-                        );
-                        log.info("Sent email to respondent");
-                    } catch (NotificationClientException ne) {
-                        throw new NotificationException(ne);
+
+                respondentEmailAddress.forEach(email -> {
+                    if (isNullOrEmpty(email)) {
+                        log.info("Respondent does not not have an email address associated with their account");
+                    } else {
+                        try {
+                            notificationClient.sendEmail(
+                                emailToRespondentTemplate,
+                                email,
+                                respondentParameters,
+                                caseId
+                            );
+                            log.info("Sent email to respondent");
+                        } catch (NotificationClientException ne) {
+                            throw new NotificationException(ne);
+                        }
                     }
-                }
+                });
             });
     }
 

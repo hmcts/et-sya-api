@@ -68,7 +68,7 @@ class NotificationHelperTest {
         caseData.setRepCollection(itemList);
 
         // When
-        String email = NotificationsHelper.getEmailAddressForRespondent(
+        String email = NotificationsHelper.getEmailAddressesForRespondent(
             caseData,
             caseData.getRespondentCollection().get(0).getValue()
         );
@@ -94,7 +94,7 @@ class NotificationHelperTest {
         caseData.setRepCollection(itemList);
 
         // When
-        String email = NotificationsHelper.getEmailAddressForRespondent(
+        String email = NotificationsHelper.getEmailAddressesForRespondent(
             caseData,
             caseData.getRespondentCollection().get(0).getValue()
         );
@@ -110,7 +110,7 @@ class NotificationHelperTest {
         caseData.getRespondentCollection().get(0).getValue().setRespondentEmail(null);
 
         // When
-        String email = NotificationsHelper.getEmailAddressForRespondent(
+        String email = NotificationsHelper.getEmailAddressesForRespondent(
             caseData,
             caseData.getRespondentCollection().get(0).getValue()
         );
