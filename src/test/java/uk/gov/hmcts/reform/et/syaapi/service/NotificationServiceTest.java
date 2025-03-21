@@ -1715,5 +1715,94 @@ class NotificationServiceTest {
             );
         }
     }
+
+    @Nested
+    class SendRespondentAppAcknowledgementEmailToClaimants {
+        @BeforeEach
+        void setUp() {
+            details = new CoreEmailDetails(
+                caseTestData.getCaseData(),
+                CLAIMANT,
+                "1",
+                "Test Respondent Organisation -1-," +
+                    " Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez",
+                NOT_SET,
+                caseTestData.getExpectedDetails().getId().toString()
+            );
+        }
+
+        @Test
+        void shouldSendEmailToClaimantTypeBPersonalisationCheck() throws NotificationClientException {
+            caseTestData.getRespondentApplication().setContactApplicationType("Change my personal details");
+            given(notificationsProperties.getRespondentTseTypeBClaimantAckTemplateId())
+                .willReturn("B");
+            notificationService.sendRespondentAppAcknowledgementEmailToClaimant(
+                details,
+                null,
+                caseTestData.getRespondentApplication()
+            );
+
+            verify(notificationClient, times(1)).sendEmail(any(), any(),
+                                                           respondentParametersCaptor.capture(), any()
+            );
+        }
+
+        @Test
+        void shouldSendEmailToClaimantTypeB() throws NotificationClientException {
+            caseTestData.getRespondentApplication().setContactApplicationType("Change my personal details");
+            given(notificationsProperties.getRespondentTseTypeBClaimantAckTemplateId())
+                .willReturn("B");
+            notificationService.sendRespondentAppAcknowledgementEmailToClaimant(
+                details,
+                null,
+                caseTestData.getRespondentApplication()
+            );
+
+            verify(notificationClient, times(1)).sendEmail(
+                eq("B"),
+                any(),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            );
+        }
+
+        @SneakyThrows
+        @Test
+        void shouldSendEmailToClaimantTypeA() {
+            caseTestData.getClaimantApplication().setContactApplicationType("Amend the Response");
+            given(notificationsProperties.getRespondentTseTypeAClaimantAckTemplateId())
+                .willReturn("A");
+            notificationService.sendRespondentAppAcknowledgementEmailToClaimant(
+                details,
+                null,
+                caseTestData.getRespondentApplication()
+            );
+
+            verify(notificationClient, times(1)).sendEmail(
+                eq("A"),
+                any(),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            );
+        }
+
+        @Test
+        void shouldNotSendEmailToClaimantTypeC() throws NotificationClientException {
+            caseTestData.getRespondentApplication()
+                .setContactApplicationType("Order a witness to attend to give evidence");
+            notificationService.sendRespondentAppAcknowledgementEmailToClaimant(
+                details,
+                null,
+                caseTestData.getRespondentApplication()
+            );
+
+            verify(notificationClient, times(0)).sendEmail(
+                any(),
+                eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            );
+        }
+    }
 }
 

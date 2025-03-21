@@ -222,6 +222,8 @@ class NotificationHelperTest {
             .build();
         RepresentedTypeC representedTypeC = new RepresentedTypeC();
         representedTypeC.setMyHmctsOrganisation(organisation);
+
+        RepresentedTypeC representedTypeCWithoutOrganisation = new RepresentedTypeC();
         return Stream.of(
             Arguments.of(ET1, NO, null, false),
             Arguments.of(ET1, NO, representedTypeC, false),
@@ -230,7 +232,15 @@ class NotificationHelperTest {
             Arguments.of(MY_HMCTS, NO, null, false),
             Arguments.of(MY_HMCTS, NO, representedTypeC, false),
             Arguments.of(MY_HMCTS, YES, null, false),
-            Arguments.of(MY_HMCTS, YES, representedTypeC, true)
+            Arguments.of(MY_HMCTS, YES, representedTypeC, true),
+            Arguments.of(ET1, NO, null, false),
+            Arguments.of(ET1, NO, representedTypeCWithoutOrganisation, false),
+            Arguments.of(ET1, YES, null, false),
+            Arguments.of(ET1, YES, representedTypeCWithoutOrganisation, false),
+            Arguments.of(MY_HMCTS, NO, null, false),
+            Arguments.of(MY_HMCTS, NO, representedTypeCWithoutOrganisation, false),
+            Arguments.of(MY_HMCTS, YES, null, false),
+            Arguments.of(MY_HMCTS, YES, representedTypeCWithoutOrganisation, false)
         );
     }
 }
