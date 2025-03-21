@@ -40,6 +40,7 @@ import static org.apache.tika.utils.StringUtils.isBlank;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_ABBREVIATED_MONTHS_MAP;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_APP_TYPE_MAP;
+import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_RESPONDENT_APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CASE_ID_NOT_FOUND;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.FILE_NOT_EXISTS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.HEARING_DOCUMENTS_PATH;
@@ -79,6 +80,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.THE_RESPOND
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getCurrentRespondentName;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentAndRespRepEmailAddressesMap;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.isRepresentedClaimantWithMyHmctsCase;
 import static uk.gov.service.notify.NotificationClient.prepareUpload;
 
 /**
@@ -337,11 +339,16 @@ public class NotificationService {
         boolean isWelsh = isWelshLanguage(respondent);
         String hearingDate = getHearingDate(details.hearingDate(), isWelsh);
         Map<String, Object> respondentParameters = prepareEmailParameters(details, hearingDate, isWelsh);
+
         String linkToCase = isRespondent
-            ? getRespondentPortalLink(details.caseId(), isWelsh) : getRespondentRepPortalLink(details.caseId());
+            ? getRespondentPortalLink(details.caseId(), isWelsh)
+            : getRespondentRepPortalLink(details.caseId());
 
         respondentParameters.put(SEND_EMAIL_PARAMS_APPLICANT_NAME_KEY, applicantName);
-        respondentParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY, linkToCase);
+        respondentParameters.put(
+            isRespondent ? SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY : SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+            linkToCase
+        );
 
         boolean isApplicant =
             respondentApplication.getRespondentIdamId().equals(respondent.getValue().getIdamId()) && isRespondent;
@@ -417,7 +424,7 @@ public class NotificationService {
     }
 
     private String getRespondentRepPortalLink(String caseId) {
-        return notificationsProperties.getRespondentPortalLink() + caseId;
+        return notificationsProperties.getExuiCaseDetailsLink() + caseId;
     }
 
     private SendEmailResponse sendEmailToClaimant(CaseData caseData, String caseId, String emailTemplate,
@@ -493,8 +500,10 @@ public class NotificationService {
                             details.caseId(),
                             details.caseNumber());
 
-        String appTypeByLanguage = getApplicationTypeTextByLanguage(respondentTse.getContactApplicationClaimantType(),
-                                                                 isWelshLanguage(details.caseData()));
+        String appTypeByLanguage =
+            isWelshLanguage(details.caseData())
+                                ? CY_RESPONDENT_APP_TYPE_MAP.get(respondentTse.getContactApplicationType())
+                                : respondentTse.getContactApplicationType();
 
         CaseData caseData = details.caseData();
         String applicantName = getCurrentRespondentName(caseData, respondentTse.getRespondentIdamId());
@@ -507,10 +516,13 @@ public class NotificationService {
         claimantParameters.put(SEND_EMAIL_PARAMS_LINK_DOC_KEY,
                                  Objects.requireNonNullElse(documentJson, ""));
         // will have to handle claimant and claimant representative emails
-        claimantParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
-                                 notificationsProperties.getExuiCaseDetailsLink() + details.caseId());
-        claimantParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
-                                 notificationsProperties.getExuiCaseDetailsLink() + details.caseId());
+        if (isRepresentedClaimantWithMyHmctsCase(caseData)) {
+            claimantParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+                                   notificationsProperties.getExuiCaseDetailsLink() + details.caseId());
+        } else {
+            claimantParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+                                   notificationsProperties.getCitizenPortalLink() + details.caseId());
+        }
 
         boolean isWelsh = isWelshLanguage(caseData);
         String emailToClaimantTemplate = getNonApplicantTemplateId(respondentTse, isWelsh);
@@ -526,16 +538,6 @@ public class NotificationService {
             return isWelsh
                 ? notificationsProperties.getCyRespondentTseTypeAClaimantAckTemplateId()
                 : notificationsProperties.getRespondentTseTypeAClaimantAckTemplateId();
-        }
-    }
-
-    private String getApplicationTypeTextByLanguage(String text, boolean isWelsh) {
-        if (isWelsh) {
-            log.info("Notification service - app type is Welsh and param text is: " + text);
-            return CY_APP_TYPE_MAP.values().stream().filter(t -> t.equals(text)).findFirst().orElse(null);
-        } else {
-            log.info("Notification service - app type is EW and param text is: " + text);
-            return APP_TYPE_MAP.values().stream().filter(t -> t.equals(text)).findFirst().orElse(null);
         }
     }
 
@@ -1095,25 +1097,28 @@ public class NotificationService {
 
         caseData.getRespondentCollection()
             .forEach(resp -> {
-                String respondentEmailAddress = NotificationsHelper.getEmailAddressForRespondent(
+                List<String> respondentEmailAddress = NotificationsHelper.getEmailAddressesForRespondent(
                     caseData,
                     resp.getValue()
                 );
-                if (isNullOrEmpty(respondentEmailAddress)) {
-                    log.info("Respondent does not not have an email address associated with their account");
-                } else {
-                    try {
-                        notificationClient.sendEmail(
-                            emailToRespondentTemplate,
-                            respondentEmailAddress,
-                            respondentParameters,
-                            caseId
-                        );
-                        log.info("Sent email to respondent");
-                    } catch (NotificationClientException ne) {
-                        throw new NotificationException(ne);
+
+                respondentEmailAddress.forEach(email -> {
+                    if (isNullOrEmpty(email)) {
+                        log.info("Respondent does not not have an email address associated with their account");
+                    } else {
+                        try {
+                            notificationClient.sendEmail(
+                                emailToRespondentTemplate,
+                                email,
+                                respondentParameters,
+                                caseId
+                            );
+                            log.info("Sent email to respondent");
+                        } catch (NotificationClientException ne) {
+                            throw new NotificationException(ne);
+                        }
                     }
-                }
+                });
             });
     }
 
