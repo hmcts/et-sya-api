@@ -1724,8 +1724,8 @@ class NotificationServiceTest {
                 caseTestData.getCaseData(),
                 CLAIMANT,
                 "1",
-                "Test Respondent Organisation -1-," +
-                    " Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez",
+                "Test Respondent Organisation -1-,"
+                    + " Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez",
                 NOT_SET,
                 caseTestData.getExpectedDetails().getId().toString()
             );
