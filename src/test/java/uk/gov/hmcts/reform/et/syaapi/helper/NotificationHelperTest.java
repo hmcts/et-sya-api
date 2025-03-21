@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1;
@@ -68,13 +69,13 @@ class NotificationHelperTest {
         caseData.setRepCollection(itemList);
 
         // When
-        String email = NotificationsHelper.getEmailAddressesForRespondent(
+        List<String> emails = NotificationsHelper.getEmailAddressesForRespondent(
             caseData,
             caseData.getRespondentCollection().get(0).getValue()
         );
 
         //Then
-        assertThat(email).isEqualTo(repEmail);
+        assertTrue(emails.contains(repEmail));
     }
 
     @Test
@@ -94,13 +95,13 @@ class NotificationHelperTest {
         caseData.setRepCollection(itemList);
 
         // When
-        String email = NotificationsHelper.getEmailAddressesForRespondent(
+        List<String> emails = NotificationsHelper.getEmailAddressesForRespondent(
             caseData,
             caseData.getRespondentCollection().get(0).getValue()
         );
 
         // Then
-        assertThat(email).isEmpty();
+        assertTrue(emails.isEmpty());
     }
 
     @Test
@@ -110,13 +111,13 @@ class NotificationHelperTest {
         caseData.getRespondentCollection().get(0).getValue().setRespondentEmail(null);
 
         // When
-        String email = NotificationsHelper.getEmailAddressesForRespondent(
+        List<String> emails = NotificationsHelper.getEmailAddressesForRespondent(
             caseData,
             caseData.getRespondentCollection().get(0).getValue()
         );
 
         // Then
-        assertThat(email).isEmpty();
+        assertTrue(emails.isEmpty());
     }
 
     @Test
