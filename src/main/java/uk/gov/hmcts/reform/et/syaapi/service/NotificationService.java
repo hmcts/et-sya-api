@@ -40,6 +40,7 @@ import static org.apache.tika.utils.StringUtils.isBlank;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_ABBREVIATED_MONTHS_MAP;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_APP_TYPE_MAP;
+import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_RESPONDENT_APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CASE_ID_NOT_FOUND;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.FILE_NOT_EXISTS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.HEARING_DOCUMENTS_PATH;
@@ -499,8 +500,10 @@ public class NotificationService {
                             details.caseId(),
                             details.caseNumber());
 
-        String appTypeByLanguage = getApplicationTypeTextByLanguage(respondentTse.getContactApplicationClaimantType(),
-                                                                 isWelshLanguage(details.caseData()));
+        String appTypeByLanguage =
+            isWelshLanguage(details.caseData())
+                                ? CY_RESPONDENT_APP_TYPE_MAP.get(respondentTse.getContactApplicationType())
+                                : respondentTse.getContactApplicationType();
 
         CaseData caseData = details.caseData();
         String applicantName = getCurrentRespondentName(caseData, respondentTse.getRespondentIdamId());
@@ -517,7 +520,7 @@ public class NotificationService {
             claimantParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
                                    notificationsProperties.getExuiCaseDetailsLink() + details.caseId());
         } else {
-            claimantParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
+            claimantParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
                                    notificationsProperties.getCitizenPortalLink() + details.caseId());
         }
 
@@ -535,16 +538,6 @@ public class NotificationService {
             return isWelsh
                 ? notificationsProperties.getCyRespondentTseTypeAClaimantAckTemplateId()
                 : notificationsProperties.getRespondentTseTypeAClaimantAckTemplateId();
-        }
-    }
-
-    private String getApplicationTypeTextByLanguage(String text, boolean isWelsh) {
-        if (isWelsh) {
-            log.info("Notification service - app type is Welsh and param text is: " + text);
-            return CY_APP_TYPE_MAP.values().stream().filter(t -> t.equals(text)).findFirst().orElse(null);
-        } else {
-            log.info("Notification service - app type is EW and param text is: " + text);
-            return APP_TYPE_MAP.values().stream().filter(t -> t.equals(text)).findFirst().orElse(null);
         }
     }
 

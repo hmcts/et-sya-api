@@ -408,14 +408,10 @@ public class CaseService {
             docList = new ArrayList<>();
         }
 
-        String extension = FilenameUtils.getExtension(contactApplicationFile.getDocumentFilename());
-        String docName = "Application %d - %s - Attachment.%s".formatted(
-            ApplicationService.getNextApplicationNumber(caseData),
-            APP_TYPE_MAP.get(contactApplicationType),
-            extension);
         String applicationDocMapping;
         String typeOfDocument;
         String shortDescription;
+
         if (userType.equals(CLAIMANT_TITLE)) {
             applicationDocMapping = DocumentHelper.claimantApplicationTypeToDocType(contactApplicationType);
             typeOfDocument = CLAIMANT_CORRESPONDENCE;
@@ -427,6 +423,12 @@ public class CaseService {
             typeOfDocument = RESPONDENT_CORRESPONDENCE;
             shortDescription = contactApplicationType;
         }
+
+        String extension = FilenameUtils.getExtension(contactApplicationFile.getDocumentFilename());
+        String docName = "Application %d - %s - Attachment.%s".formatted(
+            ApplicationService.getNextApplicationNumber(caseData),
+            shortDescription,
+            extension);
 
         String topLevel = DocumentHelper.getTopLevelDocument(applicationDocMapping);
         contactApplicationFile.setDocumentFilename(docName);

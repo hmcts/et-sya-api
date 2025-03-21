@@ -32,10 +32,8 @@ import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
@@ -441,7 +439,7 @@ public class ApplicationService {
             caseService.uploadTseSupportingDocument(
                 caseDetails,
                 contactApplicationFile,
-                getAppTypeMapKeyByValue(respondentTse.getContactApplicationClaimantType()),
+                respondentTse.getContactApplicationType(),
                 RESPONDENT_TITLE, Optional.of(respondentTse.getContactApplicationType())
             );
         }
@@ -459,14 +457,6 @@ public class ApplicationService {
 
         sendRespondentAppAcknowledgementEmails(authorization, request, finalCaseDetails);
         return finalCaseDetails;
-    }
-
-    private String getAppTypeMapKeyByValue(String appTypeValue) {
-        Map<String, String> swappedMap = new ConcurrentHashMap<>();
-        for (Map.Entry<String, String> entry : ClaimantTse.APP_TYPE_MAP.entrySet()) {
-            swappedMap.put(entry.getValue(), entry.getKey());
-        }
-        return swappedMap.get(appTypeValue);
     }
 
 
