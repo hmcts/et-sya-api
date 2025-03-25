@@ -90,6 +90,7 @@ public class CaseService {
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
     private final CaseOfficeService caseOfficeService;
     private static final String ALL_CASES_QUERY = "{\"size\":10000,\"query\":{\"match_all\": {}}}";
+    private static final String VARY_OR_REVOKE_ORDER_APP_TYPE = "Vary/revoke an order";
     private final FeatureToggleService featureToggleService;
 
     /**
@@ -408,11 +409,14 @@ public class CaseService {
             docList = new ArrayList<>();
         }
 
+        String contactAppType = APP_TYPE_MAP.get(contactApplicationType);
+        String applicationType = VARY_OR_REVOKE_ORDER_APP_TYPE.equals(
+            contactAppType) ? contactAppType.replace("/", " or ") : contactAppType;
+
         String extension = FilenameUtils.getExtension(contactApplicationFile.getDocumentFilename());
         String docName = "Application %d - %s - Attachment.%s".formatted(
             ApplicationService.getNextApplicationNumber(caseData),
-            APP_TYPE_MAP.get(contactApplicationType),
-            extension);
+            applicationType, extension);
         String applicationDocMapping;
         String typeOfDocument;
         String shortDescription;
@@ -550,8 +554,13 @@ public class CaseService {
             docList = new ArrayList<>();
         }
 
+        String applicationType = VARY_OR_REVOKE_ORDER_APP_TYPE.equals(
+            respondentTse.getContactApplicationClaimantType())
+            ? respondentTse.getContactApplicationClaimantType().replace("/", " or ") :
+            respondentTse.getContactApplicationClaimantType();
+
         String docName = "Application %d - %s.pdf".formatted(
-            ApplicationService.getNextApplicationNumber(caseData), respondentTse.getContactApplicationClaimantType());
+            ApplicationService.getNextApplicationNumber(caseData), applicationType);
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             pdfUploadService.convertRespondentTseIntoMultipartFile(respondentTse,
                                                                  caseData.getEthosCaseReference(),
