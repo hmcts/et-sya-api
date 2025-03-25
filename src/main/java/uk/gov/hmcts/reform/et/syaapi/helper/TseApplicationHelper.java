@@ -192,7 +192,8 @@ public final class TseApplicationHelper {
         if (CLAIMANT_TITLE.equals(applicationType.getApplicant())) {
             return uk.gov.hmcts.ecm.common.helpers.DocumentHelper.claimantApplicationTypeToDocType(
                 getClaimantApplicationType(applicationType));
-        } else if (Constants.RESPONDENT_TITLE.equals(applicationType.getApplicant())) {
+        } else if (Constants.RESPONDENT_TITLE.equals(applicationType.getApplicant()) 
+                   || "Respondent Representative".equals(applicationType.getApplicant())) {
             return uk.gov.hmcts.ecm.common.helpers.DocumentHelper.respondentApplicationToDocType(
                 applicationType.getType());
         } else {
