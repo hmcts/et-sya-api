@@ -1090,11 +1090,6 @@ public class NotificationService {
 
     private void sendRespondentEmails(CaseData caseData, String caseId, Map<String, Object> respondentParameters,
                                       String emailToRespondentTemplate) {
-        if (!isSystemUser(caseData.getRepCollection())) {
-            log.info("No email sent to respondents as no representative is using the system");
-            return;
-        }
-
         caseData.getRespondentCollection()
             .forEach(resp -> {
                 List<String> respondentEmailAddress = NotificationsHelper.getEmailAddressesForRespondent(
