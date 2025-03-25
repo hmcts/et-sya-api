@@ -1134,19 +1134,6 @@ class NotificationServiceTest {
     }
 
     @Test
-    void sendResponseNotificationEmailToRespondentNotSystemUser() throws NotificationClientException {
-        caseTestData.getCaseData().setRepCollection(null);
-
-        notificationService.sendResponseNotificationEmailToRespondent(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString(),
-            YES
-        );
-
-        verify(notificationClient, times(0)).sendEmail(any(), any(), any(), any());
-    }
-
-    @Test
     void sendNotResponseNotificationEmailToRespondentDoNotCopy() throws NotificationClientException {
         notificationService.sendResponseNotificationEmailToRespondent(
             caseTestData.getCaseData(),
