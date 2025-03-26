@@ -5,12 +5,14 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
+import uk.gov.hmcts.ecm.common.model.helper.Constants;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.TseAdminRecordDecisionTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.TseRespondTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.TseStatusTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.TseRespondType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
@@ -25,8 +27,9 @@ import java.util.UUID;
 
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.OLD_DATE_TIME_PATTERN;
-import static uk.gov.hmcts.ecm.common.model.helper.Constants.RESPONDENT_TITLE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CLAIMANT_CORRESPONDENCE_DOCUMENT;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.UPDATED;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.CLAIMANT_CORRESPONDENCE;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.RESPONDENT_CORRESPONDENCE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UK_LOCAL_DATE_PATTERN;
 
 @Slf4j
@@ -34,7 +37,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UK_LOCAL_DA
 @SuppressWarnings({"checkstyle:HideUtilityClassConstructor"})
 public final class TseApplicationHelper {
 
-    public static final String CLAIMANT = "Claimant";
     public static final String WAITING_FOR_TRIBUNAL = "waitingForTheTribunal";
 
     /**
@@ -123,17 +125,18 @@ public final class TseApplicationHelper {
      * @param caseData - case data
      * @param caseDocumentService - case document service to create pdf of response
      */
-    public static void setRespondentApplicationWithResponse(RespondToApplicationRequest request,
-                                                            GenericTseApplicationType appToModify,
-                                                            CaseData caseData,
-                                                            CaseDocumentService caseDocumentService,
-                                                            boolean isWorkAllocationEnabled) {
+    public static void setApplicationWithResponse(RespondToApplicationRequest request,
+                                                  GenericTseApplicationType appToModify,
+                                                  CaseData caseData,
+                                                  CaseDocumentService caseDocumentService,
+                                                  boolean isWorkAllocationEnabled,
+                                                  String responseUserType) {
         if (CollectionUtils.isEmpty(appToModify.getRespondCollection())) {
             appToModify.setRespondCollection(new ArrayList<>());
         }
         TseRespondType responseToAdd = request.getResponse();
         responseToAdd.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
-        responseToAdd.setFrom(CLAIMANT);
+        responseToAdd.setFrom(responseUserType);
 
         if (isWorkAllocationEnabled) {
             responseToAdd.setDateTime(getCurrentDateTime());
@@ -141,8 +144,12 @@ public final class TseApplicationHelper {
         }
 
         if (request.getSupportingMaterialFile() != null) {
+            String documentType = CLAIMANT_TITLE.equals(responseUserType)
+                ? CLAIMANT_CORRESPONDENCE
+                : RESPONDENT_CORRESPONDENCE;
+
             DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(
-                CLAIMANT_CORRESPONDENCE_DOCUMENT,
+                documentType,
                 request.getSupportingMaterialFile()
             );
             documentTypeItem.getValue().setShortDescription("Response to " + appToModify.getType());
@@ -173,6 +180,7 @@ public final class TseApplicationHelper {
         appToModify.setResponsesCount(
             String.valueOf(appToModify.getRespondCollection().size()));
         appToModify.setApplicationState(WAITING_FOR_TRIBUNAL);
+        TseApplicationHelper.setRespondentApplicationState(appToModify, UPDATED);
     }
 
     /**
@@ -184,7 +192,8 @@ public final class TseApplicationHelper {
         if (CLAIMANT_TITLE.equals(applicationType.getApplicant())) {
             return uk.gov.hmcts.ecm.common.helpers.DocumentHelper.claimantApplicationTypeToDocType(
                 getClaimantApplicationType(applicationType));
-        } else if (RESPONDENT_TITLE.equals(applicationType.getApplicant())) {
+        } else if (Constants.RESPONDENT_TITLE.equals(applicationType.getApplicant()) 
+                   || "Respondent Representative".equals(applicationType.getApplicant())) {
             return uk.gov.hmcts.ecm.common.helpers.DocumentHelper.respondentApplicationToDocType(
                 applicationType.getType());
         } else {
@@ -200,5 +209,22 @@ public final class TseApplicationHelper {
             .findFirst()
             .orElse("");
 
+    }
+
+    /**
+     * Update Respondent Application State list.
+     * @param applicationType application in GenericTseApplicationType
+     * @param newState new state
+     */
+    public static void setRespondentApplicationState(GenericTseApplicationType applicationType, String newState) {
+        List<TseStatusTypeItem> respondentStateList = applicationType.getRespondentState();
+        if (CollectionUtils.isEmpty(respondentStateList)) {
+            return;
+        }
+        for (TseStatusTypeItem statusItem : respondentStateList) {
+            if (statusItem != null && statusItem.getValue() != null) {
+                statusItem.getValue().setApplicationState(newState);
+            }
+        }
     }
 }

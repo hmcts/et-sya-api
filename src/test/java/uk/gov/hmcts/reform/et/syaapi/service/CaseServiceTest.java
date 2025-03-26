@@ -41,6 +41,7 @@ import uk.gov.service.notify.SendEmailResponse;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,7 +57,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.ENGLANDWALES_CASE_TYPE_ID;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.RESPONDENT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.DocumentCategoryConstants.ET1_PDF_DOC_CATEGORY;
@@ -435,12 +438,27 @@ class CaseServiceTest {
         void setsShortDescriptionCorrectly() {
             CaseDetails caseDetails = CaseDetails.builder().data(new HashMap<>()).build();
             String contactApplicationType = "withdraw";
-            caseService.uploadTseSupportingDocument(caseDetails, new UploadedDocumentType(), contactApplicationType);
+            caseService.uploadTseSupportingDocument(caseDetails, new UploadedDocumentType(),
+                                                    contactApplicationType, CLAIMANT_TITLE,
+                                                    Optional.empty());
 
             CaseData caseData = convertCaseDataMapToCaseDataObject(caseDetails.getData());
             String actual = caseData.getDocumentCollection().get(0).getValue().getShortDescription();
             String expected = "Withdraw all/part of claim";
             assertThat(actual).isEqualTo(expected);
+        }
+
+        @Test
+        void setsShortDescriptionCorrectlyRespondentTse() {
+            CaseDetails caseDetails = CaseDetails.builder().data(new HashMap<>()).build();
+            String contactApplicationType = "Amend response";
+            caseService.uploadTseSupportingDocument(caseDetails, new UploadedDocumentType(),
+                                                    contactApplicationType, RESPONDENT_TITLE,
+                                                    Optional.of("Amend response"));
+
+            CaseData caseData = convertCaseDataMapToCaseDataObject(caseDetails.getData());
+            String actual = caseData.getDocumentCollection().get(0).getValue().getShortDescription();
+            assertThat(actual).isEqualTo(contactApplicationType);
         }
     }
 
@@ -618,5 +636,31 @@ class CaseServiceTest {
                                       SCOTLAND_CASE_TYPE,
                                       caseRequest.getCaseData())).thenReturn(caseDetails);
         assertThat(caseService.updateCaseSubmitted(TEST_SERVICE_AUTH_TOKEN, caseRequest)).isEqualTo(caseDetails);
+    }
+
+    @Test
+    void shouldInvokeRespondentTsePdf()
+        throws DocumentGenerationException {
+        when(pdfUploadService.convertRespondentTseIntoMultipartFile(any(), any(), anyString())).thenReturn(
+            tsePdfMultipartFileMock);
+
+        assertDoesNotThrow(() ->
+                               caseService.uploadRespondentTseAsPdf(
+                                   TEST_SERVICE_AUTH_TOKEN,
+                                   caseTestData.getCaseDetails(),
+                                   caseTestData.getRespondentTse(),
+                                   "TEST"
+                               )
+        );
+    }
+
+    @SneakyThrows
+    @Test
+    void givenPdfServiceErrorProducesDocumentGenerationExceptionForRespondentTse() {
+        when(pdfUploadService.convertRespondentTseIntoMultipartFile(any(), any(), anyString())).thenThrow(
+            new DocumentGenerationException(TEST));
+
+        assertThrows(DocumentGenerationException.class, () -> caseService.uploadRespondentTseAsPdf(
+            "", caseTestData.getCaseDetails(), caseTestData.getRespondentTse(), ""));
     }
 }

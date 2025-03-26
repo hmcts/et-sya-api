@@ -10,6 +10,8 @@ import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ecm.common.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
+import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.RespondentTse;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
@@ -23,9 +25,12 @@ import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
@@ -43,6 +48,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ACAS_PDF3_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ACAS_PDF4_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ACAS_PDF5_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_APPLICANT_NAME_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CASE_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CASE_NUMBER_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY;
@@ -57,6 +63,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_HEARING_DATE_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_LASTNAME_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_LINK_DOC_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_RESPONDING_USER_NAME_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SHORTTEXT_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SUBJECTLINE_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_SERVICE_OWNER_NAME_KEY;
@@ -67,6 +74,10 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGU
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.RESPONDING_USER_EMAIL_STRING;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.THE_RESPONDENT_EMAIL_STRING;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getCurrentRespondentName;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentAndRespRepEmailAddressesMap;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
 import static uk.gov.service.notify.NotificationClient.prepareUpload;
 
@@ -77,7 +88,7 @@ import static uk.gov.service.notify.NotificationClient.prepareUpload;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.CyclomaticComplexity"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.CyclomaticComplexity", "PMD.GodClass"})
 public class NotificationService {
     static final String NOT_SET = "Not set";
 
@@ -87,12 +98,16 @@ public class NotificationService {
 
     private final String[] typeA =
         {"strike", "amend", "non-compliance", "other", "postpone", "vary", "respondent", "publicity"};
-    private final String[] typeB = {"withdraw", "change-details", "reconsider-decision", "reconsider-judgement"};
+    private final String[] typeB = {"withdraw", "change-details", "reconsider-decision", "reconsider-judgement",
+        "Change my personal details", "Consider a decision afresh",
+        "Reconsider judgment"};
     private static final String TYPE_C = "witness";
+    private static final String TYPE_C_RESPONDENT = "Order a witness to attend to give evidence";
     private static final String DONT_SEND_COPY = "No";
     public static final String HEARING_DATE_KEY = "hearingDate";
     private static final String NO_CLAIMANT_EMAIL_FOUND =
         "No claimant email found - Application response acknowledgment not being sent";
+    private static final String HEARING_DATE_NOT_SET_WELSH = "Heb ei anfon";
 
     /**
      * Record containing core details of an email.
@@ -282,55 +297,138 @@ public class NotificationService {
      * @return Gov notify email format
      */
     SendEmailResponse sendAcknowledgementEmailToClaimant(CoreEmailDetails details, ClaimantTse claimantApplication) {
-        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
-        boolean welshFlagEnabled = featureToggleService.isWelshEnabled();
-        log.info("Welsh feature flag is set to " + welshFlagEnabled);
-        boolean isWelsh = welshFlagEnabled && WELSH_LANGUAGE.equals(
-            details.caseData().getClaimantHearingPreference().getContactLanguage());
-        String hearingDate = details.hearingDate;
+        boolean isWelsh = isWelshLanguage(details.caseData());
+        String hearingDate = getHearingDate(details.hearingDate(), isWelsh);
+        Map<String, Object> claimantParameters = prepareEmailParameters(details, hearingDate, isWelsh);
+        String emailToClaimantTemplate = getAndSetAckEmailTemplate(claimantApplication, hearingDate,
+                                                                   claimantParameters, isWelsh, false);
+        return sendEmailToClaimant(details.caseData(), details.caseId(), emailToClaimantTemplate, claimantParameters);
+    }
 
-        if (NOT_SET.equals(hearingDate) && isWelsh) {
-            hearingDate = "Heb ei anfon";
-        } else if (isWelsh) {
-            hearingDate = translateHearingDateToWelsh(hearingDate);
+    /**
+     * Format details of respondent request and retrieve case data, then send email to confirmation to respondent.
+     *
+     * @param details             core details of the email
+     * @param respondentApplication application request data
+     */
+    void sendRespondentAppAcknowledgementEmailToRespondent(CoreEmailDetails details,
+                                                           RespondentTse respondentApplication,
+                                                           JSONObject documentJson) {
+        CaseData caseData = details.caseData();
+        Set<String> sentEmailAddresses = new HashSet<>();
+        String applicantName = getCurrentRespondentName(caseData, respondentApplication.getRespondentIdamId());
+
+        caseData.getRespondentCollection().forEach(resp -> {
+            Map<String, Boolean> emailAddressesMap =
+                getRespondentAndRespRepEmailAddressesMap(caseData, resp.getValue());
+
+            emailAddressesMap.forEach((email, isRespondent) -> {
+                if (sentEmailAddresses.add(email)) {
+                    prepareAndSendEmail(details, resp, respondentApplication, email,
+                                        isRespondent, applicantName, documentJson);
+                }
+            });
+        });
+    }
+
+    private void prepareAndSendEmail(CoreEmailDetails details, RespondentSumTypeItem respondent,
+                                     RespondentTse respondentApplication, String email, boolean isRespondent,
+                                     String applicantName, JSONObject documentJson) {
+        boolean isWelsh = isWelshLanguage(respondent);
+        String hearingDate = getHearingDate(details.hearingDate(), isWelsh);
+        Map<String, Object> respondentParameters = prepareEmailParameters(details, hearingDate, isWelsh);
+        String linkToCase = isRespondent
+            ? getRespondentPortalLink(details.caseId(), isWelsh) : getRespondentRepPortalLink(details.caseId());
+
+        respondentParameters.put(SEND_EMAIL_PARAMS_APPLICANT_NAME_KEY, applicantName);
+        respondentParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY, linkToCase);
+
+        boolean isApplicant =
+            respondentApplication.getRespondentIdamId().equals(respondent.getValue().getIdamId()) && isRespondent;
+        String emailToRespondentTemplate;
+        if (isApplicant) {
+            emailToRespondentTemplate = getAndSetAckEmailTemplate(respondentApplication, hearingDate,
+                                                                  respondentParameters, isWelsh,
+                                                                  true);
+        } else {
+            emailToRespondentTemplate = getNonApplicantTemplateId(respondentApplication, isWelsh);
+            String applicationType = getApplicationType(respondentApplication, true);
+            respondentParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, applicationType);
+            respondentParameters.put(SEND_EMAIL_PARAMS_DATEPLUS7_KEY,
+                                    LocalDate.now().plusDays(7).format(UK_LOCAL_DATE_PATTERN));
+            respondentParameters.put(SEND_EMAIL_PARAMS_LINK_DOC_KEY, Objects.requireNonNullElse(documentJson, ""));
+
         }
+        sendEmailToRespondent(email, emailToRespondentTemplate, respondentParameters, details.caseId());
+    }
 
-        claimantParameters.put(HEARING_DATE_KEY, hearingDate);
-
-        addCommonParameters(
-            claimantParameters,
-            details.claimant,
-            details.respondentNames,
-            details.caseId,
-            details.caseNumber
-        );
-
-        String citizenPortalLink = notificationsProperties.getCitizenPortalLink() + details.caseId
-            + (isWelsh ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
-        claimantParameters.put(
-            SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
-            citizenPortalLink
-        );
-
-        String emailToClaimantTemplate = getAndSetRule92EmailTemplate(
-            claimantApplication,
-            hearingDate,
-            claimantParameters,
-            isWelsh
-        );
-
-        SendEmailResponse claimantEmail;
+    private void sendEmailToRespondent(String respondentEmailAddress, String emailTemplate,
+                                       Map<String, Object> parameters, String caseId) {
         try {
-            claimantEmail = notificationClient.sendEmail(
-                emailToClaimantTemplate,
-                details.caseData.getClaimantType().getClaimantEmailAddress(),
-                claimantParameters,
-                details.caseId
-            );
+            notificationClient.sendEmail(emailTemplate, respondentEmailAddress, parameters, caseId);
+            log.info("Sent email to respondent");
         } catch (NotificationClientException ne) {
             throw new NotificationException(ne);
         }
-        return claimantEmail;
+    }
+
+    private Map<String, Object> prepareEmailParameters(CoreEmailDetails details, String hearingDate, boolean isWelsh) {
+        Map<String, Object> parameters = new ConcurrentHashMap<>();
+        parameters.put(HEARING_DATE_KEY, hearingDate);
+        addCommonParameters(parameters, details.claimant(), details.respondentNames(), details.caseId(),
+                            details.caseNumber());
+        // citizenPortalLink
+        String citizenPortalLink = getCitizenPortalLink(details.caseId(), isWelsh);
+        parameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, citizenPortalLink);
+        return parameters;
+    }
+
+    private boolean isWelshLanguage(CaseData caseData) {
+        boolean welshFlagEnabled = featureToggleService.isWelshEnabled();
+        log.info("Welsh feature flag is set to {}", welshFlagEnabled);
+        if (caseData.getClaimantHearingPreference() == null) {
+            log.warn("Claimant hearing preference is not set");
+            return false;
+        }
+        return welshFlagEnabled && WELSH_LANGUAGE.equals(caseData.getClaimantHearingPreference().getContactLanguage());
+    }
+
+    private boolean isWelshLanguage(RespondentSumTypeItem respondent) {
+        boolean welshFlagEnabled = featureToggleService.isWelshEnabled();
+        log.info("Welsh feature flag is set to {}", welshFlagEnabled);
+        return welshFlagEnabled && WELSH_LANGUAGE.equals(respondent.getValue().getEt3ResponseLanguagePreference());
+    }
+
+    private String getHearingDate(String hearingDate, boolean isWelsh) {
+        if (NOT_SET.equals(hearingDate)) {
+            return isWelsh ? HEARING_DATE_NOT_SET_WELSH : NOT_SET;
+        }
+        return isWelsh ? translateHearingDateToWelsh(hearingDate) : hearingDate;
+    }
+
+    private String getCitizenPortalLink(String caseId, boolean isWelsh) {
+        return notificationsProperties.getCitizenPortalLink() + caseId + (isWelsh
+            ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
+    }
+
+    private String getRespondentPortalLink(String caseId, boolean isWelsh) {
+        return notificationsProperties.getRespondentPortalLink() + caseId + (isWelsh
+            ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
+    }
+
+    private String getRespondentRepPortalLink(String caseId) {
+        return notificationsProperties.getRespondentPortalLink() + caseId;
+    }
+
+    private SendEmailResponse sendEmailToClaimant(CaseData caseData, String caseId, String emailTemplate,
+                                                  Map<String, Object> parameters) {
+        try {
+            String claimantEmail = caseData.getClaimantType().getClaimantEmailAddress();
+            return notificationClient.sendEmail(emailTemplate, claimantEmail, parameters, caseId);
+        } catch (NotificationClientException e) {
+            log.error("Failed to send acknowledgment email to claimant", e);
+            throw new NotificationException(e);
+        }
     }
 
     private String translateHearingDateToWelsh(String hearingDate) {
@@ -347,56 +445,98 @@ public class NotificationService {
      * @param details             core details of the email
      * @param claimantApplication application request data
      */
-    void sendAcknowledgementEmailToRespondents(
-        CoreEmailDetails details,
-        JSONObject documentJson,
-        ClaimantTse claimantApplication
-    ) {
+    void sendAcknowledgementEmailToRespondents(CoreEmailDetails details,
+                                               JSONObject documentJson,
+                                               ClaimantTse claimantApplication) {
         if (TYPE_C.equals(claimantApplication.getContactApplicationType())
             || DONT_SEND_COPY.equals(claimantApplication.getCopyToOtherPartyYesOrNo())) {
             log.info("Acknowledgement email not sent to respondents for this application type");
             return;
         }
+
         Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
-        addCommonParameters(
-            respondentParameters,
-            details.claimant,
-            details.respondentNames,
-            details.caseId,
-            details.caseNumber
-        );
-        respondentParameters.put(
-            SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
-            details.hearingDate
-        );
-        respondentParameters.put(
-            SEND_EMAIL_PARAMS_SHORTTEXT_KEY,
-            APP_TYPE_MAP.get(claimantApplication.getContactApplicationType())
-        );
-        respondentParameters.put(
-            SEND_EMAIL_PARAMS_DATEPLUS7_KEY,
-            LocalDate.now().plusDays(7).format(UK_LOCAL_DATE_PATTERN)
-        );
+        addCommonParameters(respondentParameters,
+                            details.claimant(),
+                            details.respondentNames(),
+                            details.caseId(),
+                            details.caseNumber());
+        respondentParameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, details.hearingDate());
+        respondentParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, APP_TYPE_MAP.get(
+            claimantApplication.getContactApplicationType()));
+        respondentParameters.put(SEND_EMAIL_PARAMS_DATEPLUS7_KEY,
+                                 LocalDate.now().plusDays(7).format(UK_LOCAL_DATE_PATTERN));
+        respondentParameters.put(SEND_EMAIL_PARAMS_LINK_DOC_KEY,
+                                 Objects.requireNonNullElse(documentJson, ""));
+        respondentParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+                                 notificationsProperties.getExuiCaseDetailsLink() + details.caseId());
 
-        String emailToRespondentTemplate;
-        if (Stream.of(typeB).anyMatch(appType -> Objects.equals(
-            appType,
-            claimantApplication.getContactApplicationType()
-        ))) {
-            emailToRespondentTemplate = notificationsProperties.getRespondentTseEmailTypeBTemplateId();
-        } else {
-            emailToRespondentTemplate = notificationsProperties.getRespondentTseEmailTypeATemplateId();
+        String emailToRespondentTemplate = Stream.of(typeB).anyMatch(
+            appType -> Objects.equals(appType, claimantApplication.getContactApplicationType()))
+            ? notificationsProperties.getRespondentTseEmailTypeBTemplateId()
+            : notificationsProperties.getRespondentTseEmailTypeATemplateId();
+
+        sendRespondentEmails(details.caseData(), details.caseId(), respondentParameters, emailToRespondentTemplate);
+    }
+
+    void sendRespondentAppAcknowledgementEmailToClaimant(CoreEmailDetails details,
+                                               JSONObject documentJson,
+                                               RespondentTse respondentTse) {
+        if (TYPE_C_RESPONDENT.equals(respondentTse.getContactApplicationType())
+            || DONT_SEND_COPY.equals(respondentTse.getCopyToOtherPartyYesOrNo())) {
+            log.info("Acknowledgement email not sent to claimant for this application type");
+            return;
         }
-        respondentParameters.put(
-            SEND_EMAIL_PARAMS_LINK_DOC_KEY,
-            Objects.requireNonNullElse(documentJson, "")
-        );
-        respondentParameters.put(
-            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
-            notificationsProperties.getExuiCaseDetailsLink() + details.caseId
-        );
+        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
+        addCommonParameters(claimantParameters,
+                            details.claimant(),
+                            details.respondentNames(),
+                            details.caseId(),
+                            details.caseNumber());
 
-        sendRespondentEmails(details.caseData, details.caseId, respondentParameters, emailToRespondentTemplate);
+        String appTypeByLanguage = getApplicationTypeTextByLanguage(respondentTse.getContactApplicationClaimantType(),
+                                                                 isWelshLanguage(details.caseData()));
+
+        CaseData caseData = details.caseData();
+        String applicantName = getCurrentRespondentName(caseData, respondentTse.getRespondentIdamId());
+
+        claimantParameters.put(SEND_EMAIL_PARAMS_APPLICANT_NAME_KEY, applicantName);
+        claimantParameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, details.hearingDate());
+        claimantParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, appTypeByLanguage);
+        claimantParameters.put(SEND_EMAIL_PARAMS_DATEPLUS7_KEY,
+                                 LocalDate.now().plusDays(7).format(UK_LOCAL_DATE_PATTERN));
+        claimantParameters.put(SEND_EMAIL_PARAMS_LINK_DOC_KEY,
+                                 Objects.requireNonNullElse(documentJson, ""));
+        // will have to handle claimant and claimant representative emails
+        claimantParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+                                 notificationsProperties.getExuiCaseDetailsLink() + details.caseId());
+        claimantParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
+                                 notificationsProperties.getExuiCaseDetailsLink() + details.caseId());
+
+        boolean isWelsh = isWelshLanguage(caseData);
+        String emailToClaimantTemplate = getNonApplicantTemplateId(respondentTse, isWelsh);
+        sendEmailToClaimant(caseData, details.caseId(), emailToClaimantTemplate, claimantParameters);
+    }
+
+    private String getNonApplicantTemplateId(RespondentTse respondentTse, boolean isWelsh) {
+        if (Stream.of(typeB).anyMatch(appType -> Objects.equals(appType, respondentTse.getContactApplicationType()))) {
+            return isWelsh
+                ? notificationsProperties.getCyRespondentTseTypeBClaimantAckTemplateId()
+                : notificationsProperties.getRespondentTseTypeBClaimantAckTemplateId();
+        } else {
+            return isWelsh
+                ? notificationsProperties.getCyRespondentTseTypeAClaimantAckTemplateId()
+                : notificationsProperties.getRespondentTseTypeAClaimantAckTemplateId();
+        }
+    }
+
+    private String getApplicationTypeTextByLanguage(String text, boolean isWelsh) {
+        if (isWelsh) {
+            log.info("Notification service - app type is Welsh and param text is: " + text);
+            return CY_APP_TYPE_MAP.values().stream().filter(t -> t.equals(text)).findFirst().orElse(null);
+        } else {
+            log.info("Notification service - app type is EW and param text is: " + text);
+            return APP_TYPE_MAP.values().stream().filter(t -> t.equals(text)).findFirst().orElse(null);
+        }
     }
 
     /**
@@ -405,16 +545,17 @@ public class NotificationService {
      * @param details         core details of the email
      * @param applicationType type of application
      */
-    void sendAcknowledgementEmailToTribunal(CoreEmailDetails details, String applicationType) {
+    void sendAcknowledgementEmailToTribunal(CoreEmailDetails details, String applicationType, boolean isRespondentApp) {
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
 
+        String applicationTypeName = isRespondentApp ? applicationType : APP_TYPE_MAP.get(applicationType);
         addCommonParameters(
             tribunalParameters,
             details.claimant,
             details.respondentNames,
             details.caseId,
             details.caseNumber,
-            String.join(" ", details.caseNumber, APP_TYPE_MAP.get(applicationType))
+            String.join(" ", details.caseNumber, applicationTypeName)
         );
         tribunalParameters.put(
             SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
@@ -494,9 +635,11 @@ public class NotificationService {
      * @param copyToOtherParty             whether to notify other party
      * @param isRespondingToRequestOrOrder indicates whether the reply is to a tribunal order or not
      */
-    void sendResponseEmailToClaimant(CoreEmailDetails details, String applicationType, String copyToOtherParty,
-                                     boolean isRespondingToRequestOrOrder) {
-        if (TYPE_C.equals(applicationType)) {
+    void sendResponseEmailToClaimant(CoreEmailDetails details,
+                                               String applicationType,
+                                               String copyToOtherParty,
+                                               boolean isRespondingToRequestOrOrder) {
+        if (TYPE_C.equals(applicationType) || TYPE_C_RESPONDENT.equals(applicationType)) {
             log.info("Type C application -  Claimant is only notified of "
                          + "Type A/B application responses, email not being sent");
             return;
@@ -506,18 +649,8 @@ public class NotificationService {
             log.info(NO_CLAIMANT_EMAIL_FOUND);
             return;
         }
-        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
+        Map<String, Object> claimantParameters = prepareResponseEmailCommonParameters(details, applicationType);
 
-        addCommonParameters(
-            claimantParameters,
-            details.claimant,
-            details.respondentNames,
-            details.caseId,
-            details.caseNumber,
-            String.join(" ", details.caseNumber, applicationType),
-            applicationType
-        );
-        claimantParameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, details.hearingDate);
         claimantParameters.put(
             SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
             notificationsProperties.getCitizenPortalLink() + details.caseId
@@ -548,6 +681,104 @@ public class NotificationService {
 
     /**
      * Send acknowledgment email to the respondent when they are responding to
+     * an application (type A/B) made by the Claimant.
+     *
+     * @param details                      core details of the email
+     * @param applicationType              type of application
+     * @param copyToOtherParty             whether to notify other party
+     * @param isRespondingToRequestOrOrder indicates whether the reply is to a tribunal order or not
+     */
+    void sendRespondentResponseEmailToRespondent(CoreEmailDetails details, String applicationType,
+                                                 String copyToOtherParty, boolean isRespondingToRequestOrOrder,
+                                                 String respondingUserIdamId) {
+        if (TYPE_C.equals(applicationType) || TYPE_C_RESPONDENT.equals(applicationType)) {
+            log.info("Type C application -  Respondent is only notified of "
+                         + "Type A/B application responses, email not being sent");
+            return;
+        }
+
+        String emailTemplate = getRespondentResponseEmailTemplate(isRespondingToRequestOrOrder,
+                                                                  copyToOtherParty);
+        Set<String> sentEmailAddresses = new HashSet<>();
+
+        CaseData caseData = details.caseData();
+        String respondingUserName = getCurrentRespondentName(details.caseData(), respondingUserIdamId);
+        caseData.getRespondentCollection()
+            .forEach(resp -> {
+
+                Map<String, Boolean> emailAddressesMap =
+                    getRespondentAndRespRepEmailAddressesMap(caseData, resp.getValue());
+
+                emailAddressesMap.forEach((emailAddress, isRespondent) -> {
+                    if (sentEmailAddresses.add(emailAddress)) {
+                        prepareAndSendRespondingToAppEmail(details, isRespondent, applicationType, emailAddress,
+                                                           emailTemplate, respondingUserName, resp,
+                                                           respondingUserIdamId);
+                    }
+                });
+            });
+    }
+
+    private void prepareAndSendRespondingToAppEmail(CoreEmailDetails details, boolean isRespondent,
+                                                    String applicationType, String emailAddress, String emailTemplate,
+                                                    String respondingUserName, RespondentSumTypeItem respondent,
+                                                    String respondingUserIdamId) {
+        Map<String, Object> emailParameters = prepareResponseEmailCommonParameters(details, applicationType);
+
+        boolean isRespondingUser =
+            respondingUserIdamId.equals(respondent.getValue().getIdamId()) && isRespondent;
+
+        if (isRespondingUser) {
+            emailParameters.put(SEND_EMAIL_PARAMS_RESPONDING_USER_NAME_KEY, RESPONDING_USER_EMAIL_STRING);
+        } else {
+            emailParameters.put(SEND_EMAIL_PARAMS_RESPONDING_USER_NAME_KEY,
+                                THE_RESPONDENT_EMAIL_STRING + respondingUserName);
+        }
+
+        String linkToCase = isRespondent
+            ? getRespondentPortalLink(details.caseId(), false)
+            : getRespondentRepPortalLink(details.caseId());
+        emailParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, linkToCase);
+
+
+        sendEmailToRespondent(emailAddress, emailTemplate, emailParameters, details.caseId);
+    }
+
+    private Map<String, Object> prepareResponseEmailCommonParameters(CoreEmailDetails details,
+                                                                     String applicationType) {
+        Map<String, Object> emailParameters = new ConcurrentHashMap<>();
+
+        addCommonParameters(
+            emailParameters,
+            details.claimant,
+            details.respondentNames,
+            details.caseId,
+            details.caseNumber,
+            String.join(" ", details.caseNumber, applicationType),
+            applicationType
+        );
+        emailParameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, details.hearingDate);
+
+        return emailParameters;
+    }
+
+    private String getRespondentResponseEmailTemplate(boolean isRespondingToRequestOrOrder, String copyToOtherParty) {
+        String emailTemplate;
+        if (isRespondingToRequestOrOrder) {
+            emailTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
+                ? notificationsProperties.getTseRespondentResponseToRequestNoTemplateId()
+                : notificationsProperties.getTseRespondentResponseToRequestYesTemplateId();
+        } else {
+            emailTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
+                ? notificationsProperties.getTseRespondentResponseNoTemplateId()
+                : notificationsProperties.getTseRespondentResponseYesTemplateId();
+        }
+
+        return emailTemplate;
+    }
+
+    /**
+     * Send acknowledgment email to the respondent when they are responding to
      * an application (type A/B) made by the Respondent.
      *
      * @param details          core details of the email
@@ -555,7 +786,8 @@ public class NotificationService {
      * @param copyToOtherParty should copy response to other party
      */
     void sendResponseEmailToRespondent(CoreEmailDetails details, String applicationType, String copyToOtherParty) {
-        if (TYPE_C.equals(applicationType) || DONT_SEND_COPY.equals(copyToOtherParty)) {
+        if (TYPE_C.equals(applicationType) || DONT_SEND_COPY.equals(copyToOtherParty)
+            || TYPE_C_RESPONDENT.equals(applicationType)) {
             log.info("Acknowledgement email not sent to respondents for this application type");
             return;
         }
@@ -609,6 +841,104 @@ public class NotificationService {
         String emailToRespondentTemplate = notificationsProperties.getTseReplyToTribunalToRespondentTemplateId();
 
         sendRespondentEmails(caseData, caseId, respondentParameters, emailToRespondentTemplate);
+    }
+
+    /**
+     * Email claimant when respondent responds to a request for info from the tribunal on a TSE application.
+     *
+     * @param caseData   existing case details
+     * @param caseNumber ethos case reference
+     * @param caseId     16 digit case id
+     */
+    void sendReplyEmailToClaimant(
+        CaseData caseData,
+        String caseNumber,
+        String caseId,
+        String copyToOtherParty
+    ) {
+        if (DONT_SEND_COPY.equals(copyToOtherParty)) {
+            log.info("Answered no for Rule 92, not sending email to claimant");
+            return;
+        }
+
+        String claimantEmailAddress = caseData.getClaimantType().getClaimantEmailAddress();
+        if (isBlank(claimantEmailAddress)) {
+            log.info(NO_CLAIMANT_EMAIL_FOUND);
+            return;
+        }
+
+        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
+        claimantParameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
+        claimantParameters.put(
+            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+            notificationsProperties.getCitizenPortalLink() + caseId
+        );
+
+        String emailTemplate = notificationsProperties.getTseReplyToTribunalToRespondentTemplateId();
+
+        try {
+            notificationClient.sendEmail(
+                emailTemplate,
+                claimantEmailAddress,
+                claimantParameters,
+                caseId
+            );
+        } catch (NotificationClientException ne) {
+            throw new NotificationException(ne);
+        }
+    }
+
+    /**
+     * Send acknowledgment email to the respondent when they are responding to
+     * an application (type A/B) made by the Respondent.
+     *
+     * @param details          core details of the email
+     * @param applicationType  type of application
+     * @param copyToOtherParty should copy response to other party
+     */
+    void sendRespondentResponseEmailToClaimant(CoreEmailDetails details, String applicationType,
+                                               String copyToOtherParty) {
+        if (TYPE_C.equals(applicationType) || TYPE_C_RESPONDENT.equals(applicationType)
+            || DONT_SEND_COPY.equals(copyToOtherParty)) {
+            log.info("Acknowledgement email not sent to claimants for this application type");
+            return;
+        }
+
+        String claimantEmailAddress = details.caseData.getClaimantType().getClaimantEmailAddress();
+        if (isBlank(claimantEmailAddress)) {
+            log.info(NO_CLAIMANT_EMAIL_FOUND);
+            return;
+        }
+
+        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
+
+        addCommonParameters(
+            claimantParameters,
+            details.claimant,
+            details.respondentNames,
+            details.caseId,
+            details.caseNumber,
+            String.join(" ", details.caseNumber, applicationType),
+            applicationType
+        );
+        claimantParameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, details.hearingDate);
+        claimantParameters.put(
+            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+            notificationsProperties.getCitizenPortalLink() + details.caseId
+        );
+
+        String emailTemplate = notificationsProperties.getTseRespondentResponseTemplateId();
+
+        try {
+            notificationClient.sendEmail(
+                emailTemplate,
+                claimantEmailAddress,
+                claimantParameters,
+                details.caseId
+            );
+        } catch (NotificationClientException ne) {
+            throw new NotificationException(ne);
+        }
     }
 
     void sendResponseNotificationEmailToTribunal(CaseData caseData, String caseId) {
@@ -904,42 +1234,93 @@ public class NotificationService {
         addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber, caseNumber);
     }
 
-    String getAndSetRule92EmailTemplate(ClaimantTse claimantApplication,
-                                        String hearingDate,
-                                        Map<String, Object> parameters,
-                                        boolean isWelsh) {
-        // Type C
-        if (TYPE_C.equals(claimantApplication.getContactApplicationType())) {
-            return isWelsh
-                ? notificationsProperties.getCyClaimantTseEmailTypeCTemplateId()
-                : notificationsProperties.getClaimantTseEmailTypeCTemplateId();
-        }
-
+    String getAndSetAckEmailTemplate(Object application, String hearingDate, Map<String, Object> parameters,
+                                     boolean isWelsh, boolean isRespondentOrRep) {
         parameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, hearingDate);
         Map<String, String> selectedMap = isWelsh ? CY_APP_TYPE_MAP : APP_TYPE_MAP;
-        String shortText = selectedMap.get(claimantApplication.getContactApplicationType());
+        String applicationType = getApplicationType(application, isRespondentOrRep);
+        String shortText = isRespondentOrRep ? applicationType : selectedMap.get(applicationType);
         parameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
 
-        // CopyToOtherParty = No
-        if (DONT_SEND_COPY.equals(claimantApplication.getCopyToOtherPartyYesOrNo())) {
-            return isWelsh
-                ? notificationsProperties.getCyClaimantTseEmailNoTemplateId()
+        String copyToOtherParty = getCopyToOtherParty(application, isRespondentOrRep);
+        return getTemplateId(applicationType, copyToOtherParty, isWelsh, isRespondentOrRep);
+    }
+
+    private String getApplicationType(Object application, boolean isRespondent) {
+        return isRespondent
+            ? ((RespondentTse) application).getContactApplicationType()
+            : ((ClaimantTse) application).getContactApplicationType();
+    }
+
+    private String getCopyToOtherParty(Object application, boolean isRespondent) {
+        return isRespondent
+            ? ((RespondentTse) application).getCopyToOtherPartyYesOrNo()
+            : ((ClaimantTse) application).getCopyToOtherPartyYesOrNo();
+    }
+
+    private String getTemplateId(String applicationType, String copyToOtherParty,
+                                 boolean isWelsh, boolean isApplicant) {
+        if (TYPE_C.equals(applicationType) || TYPE_C_RESPONDENT.equals(applicationType)) {
+            return getTypeCTemplateId(isWelsh, isApplicant);
+        }
+
+        if (DONT_SEND_COPY.equals(copyToOtherParty)) {
+            return getNoCopyTemplateId(isWelsh, isApplicant);
+        }
+
+        if (Arrays.asList(typeB).contains(applicationType)) {
+            return getTypeBTemplateId(isWelsh, isApplicant);
+        }
+
+        return getTypeATemplateId(isWelsh, isApplicant);
+    }
+
+    private String getTypeCTemplateId(boolean isWelsh, boolean isRespondent) {
+        if (isWelsh) {
+            return isRespondent
+                ? notificationsProperties.getCyRespondentTseTypeCRespAckTemplateId()
+                : notificationsProperties.getCyClaimantTseEmailTypeCTemplateId();
+        } else {
+            return isRespondent
+                ? notificationsProperties.getRespondentTseTypeCRespAckTemplateId()
+                : notificationsProperties.getClaimantTseEmailTypeCTemplateId();
+        }
+    }
+
+    private String getNoCopyTemplateId(boolean isWelsh, boolean isRespondent) {
+        if (isWelsh) {
+            return isRespondent
+                ? notificationsProperties.getCyRespondentTseNoRespAckTemplateId()
+                : notificationsProperties.getCyClaimantTseEmailNoTemplateId();
+        } else {
+            return isRespondent
+                ? notificationsProperties.getRespondentTseNoRespAckTemplateId()
                 : notificationsProperties.getClaimantTseEmailNoTemplateId();
         }
+    }
 
-        // Type B
-        if (Stream.of(typeB).anyMatch(appType -> Objects
-            .equals(appType, claimantApplication.getContactApplicationType())
-        )) {
-            return isWelsh
-                ? notificationsProperties.getCyClaimantTseEmailTypeBTemplateId()
+    private String getTypeBTemplateId(boolean isWelsh, boolean isRespondent) {
+        if (isWelsh) {
+            return isRespondent
+                ? notificationsProperties.getCyRespondentTseTypeBRespAckTemplateId()
+                : notificationsProperties.getCyClaimantTseEmailTypeBTemplateId();
+        } else {
+            return isRespondent
+                ? notificationsProperties.getRespondentTseTypeBRespAckTemplateId()
                 : notificationsProperties.getClaimantTseEmailTypeBTemplateId();
         }
+    }
 
-        // Type A
-        return isWelsh
-            ? notificationsProperties.getCyClaimantTseEmailTypeATemplateId()
-            : notificationsProperties.getClaimantTseEmailTypeATemplateId();
+    private String getTypeATemplateId(boolean isWelsh, boolean isRespondent) {
+        if (isWelsh) {
+            return isRespondent
+                ? notificationsProperties.getCyRespondentTseTypeARespAckTemplateId()
+                : notificationsProperties.getCyClaimantTseEmailTypeATemplateId();
+        } else {
+            return isRespondent
+                ? notificationsProperties.getRespondentTseTypeARespAckTemplateId()
+                : notificationsProperties.getClaimantTseEmailTypeATemplateId();
+        }
     }
 
     public void sendEt3ConfirmationEmail(String email, CaseData caseData, String caseId) {
