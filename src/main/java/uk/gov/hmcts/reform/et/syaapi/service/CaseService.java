@@ -90,6 +90,8 @@ public class CaseService {
     private final JurisdictionCodesMapper jurisdictionCodesMapper;
     private final CaseOfficeService caseOfficeService;
     private static final String ALL_CASES_QUERY = "{\"size\":10000,\"query\":{\"match_all\": {}}}";
+    private static final String VARY_REVOKE_AN_ORDER = "Vary/revoke an order";
+    private static final String VARY_OR_REVOKE_AN_ORDER_APP_TYPE = "Vary or revoke an order";
     private final FeatureToggleService featureToggleService;
 
     /**
@@ -408,11 +410,14 @@ public class CaseService {
             docList = new ArrayList<>();
         }
 
+        String contactAppType = APP_TYPE_MAP.get(contactApplicationType);
+        String applicationType = VARY_REVOKE_AN_ORDER.equals(
+            contactAppType) ? VARY_OR_REVOKE_AN_ORDER_APP_TYPE : contactAppType;
+
         String extension = FilenameUtils.getExtension(contactApplicationFile.getDocumentFilename());
         String docName = "Application %d - %s - Attachment.%s".formatted(
             ApplicationService.getNextApplicationNumber(caseData),
-            APP_TYPE_MAP.get(contactApplicationType),
-            extension);
+            applicationType, extension);
         String applicationDocMapping;
         String typeOfDocument;
         String shortDescription;
@@ -550,8 +555,13 @@ public class CaseService {
             docList = new ArrayList<>();
         }
 
+        String applicationType = VARY_REVOKE_AN_ORDER.equals(
+            respondentTse.getContactApplicationClaimantType())
+            ? VARY_OR_REVOKE_AN_ORDER_APP_TYPE :
+            respondentTse.getContactApplicationClaimantType();
+
         String docName = "Application %d - %s.pdf".formatted(
-            ApplicationService.getNextApplicationNumber(caseData), respondentTse.getContactApplicationClaimantType());
+            ApplicationService.getNextApplicationNumber(caseData), applicationType);
         PdfDecodedMultipartFile pdfDecodedMultipartFile =
             pdfUploadService.convertRespondentTseIntoMultipartFile(respondentTse,
                                                                  caseData.getEthosCaseReference(),
