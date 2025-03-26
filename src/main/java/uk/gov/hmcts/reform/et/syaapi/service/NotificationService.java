@@ -1102,7 +1102,7 @@ public class NotificationService {
                         log.info("Respondent does not not have an email address associated with their account");
                     } else {
 
-                        String linkToCase = isRespondent
+                        String linkToCase = Boolean.TRUE.equals(isRespondent)
                             ? getRespondentPortalLink(caseId, isWelsh)
                             : getRespondentRepPortalLink(caseId);
                         respondentParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY, linkToCase);
