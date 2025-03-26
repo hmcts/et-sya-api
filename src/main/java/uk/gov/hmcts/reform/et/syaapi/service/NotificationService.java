@@ -430,7 +430,9 @@ public class NotificationService {
     private SendEmailResponse sendEmailToClaimant(CaseData caseData, String caseId, String emailTemplate,
                                                   Map<String, Object> parameters) {
         try {
-            String claimantEmail = caseData.getClaimantType().getClaimantEmailAddress();
+            String claimantEmail = isRepresentedClaimantWithMyHmctsCase(caseData)
+                ? caseData.getRepresentativeClaimantType().getRepresentativeEmailAddress()
+                : caseData.getClaimantType().getClaimantEmailAddress();
             return notificationClient.sendEmail(emailTemplate, claimantEmail, parameters, caseId);
         } catch (NotificationClientException e) {
             log.error("Failed to send acknowledgment email to claimant", e);
@@ -1092,15 +1094,18 @@ public class NotificationService {
                                       String emailToRespondentTemplate) {
         caseData.getRespondentCollection()
             .forEach(resp -> {
-                List<String> respondentEmailAddress = NotificationsHelper.getEmailAddressesForRespondent(
-                    caseData,
-                    resp.getValue()
-                );
-
-                respondentEmailAddress.forEach(email -> {
+                Map<String, Boolean> respondentEmailAddress =
+                    getRespondentAndRespRepEmailAddressesMap(caseData, resp.getValue());
+                boolean isWelsh = isWelshLanguage(resp);
+                respondentEmailAddress.forEach((email, isRespondent) -> {
                     if (isNullOrEmpty(email)) {
                         log.info("Respondent does not not have an email address associated with their account");
                     } else {
+
+                        String linkToCase = isRespondent
+                            ? getRespondentPortalLink(caseId, isWelsh)
+                            : getRespondentRepPortalLink(caseId);
+                        respondentParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY, linkToCase);
                         try {
                             notificationClient.sendEmail(
                                 emailToRespondentTemplate,
