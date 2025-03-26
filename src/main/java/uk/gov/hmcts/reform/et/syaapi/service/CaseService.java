@@ -434,12 +434,6 @@ public class CaseService {
             shortDescription = contactApplicationType;
         }
 
-        String extension = FilenameUtils.getExtension(contactApplicationFile.getDocumentFilename());
-        String docName = "Application %d - %s - Attachment.%s".formatted(
-            ApplicationService.getNextApplicationNumber(caseData),
-            shortDescription,
-            extension);
-
         String topLevel = DocumentHelper.getTopLevelDocument(applicationDocMapping);
         contactApplicationFile.setDocumentFilename(docName);
 
