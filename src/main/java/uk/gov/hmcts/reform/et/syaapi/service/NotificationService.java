@@ -341,7 +341,7 @@ public class NotificationService {
         Map<String, Object> respondentParameters = prepareEmailParameters(details, hearingDate, isWelsh);
 
         String linkToCase = isRespondent
-            ? getRespondentPortalLink(details.caseId(), isWelsh)
+            ? getRespondentPortalLink(details.caseId(), respondent.getId(), isWelsh)
             : getRespondentRepPortalLink(details.caseId());
 
         respondentParameters.put(SEND_EMAIL_PARAMS_APPLICANT_NAME_KEY, applicantName);
@@ -418,8 +418,8 @@ public class NotificationService {
             ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
     }
 
-    private String getRespondentPortalLink(String caseId, boolean isWelsh) {
-        return notificationsProperties.getRespondentPortalLink() + caseId + (isWelsh
+    private String getRespondentPortalLink(String caseId, String respondentId, boolean isWelsh) {
+        return notificationsProperties.getRespondentPortalLink() + caseId + "/" + respondentId + (isWelsh
             ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
     }
 
@@ -740,7 +740,7 @@ public class NotificationService {
         }
 
         String linkToCase = isRespondent
-            ? getRespondentPortalLink(details.caseId(), false)
+            ? getRespondentPortalLink(details.caseId(), respondent.getId(), false)
             : getRespondentRepPortalLink(details.caseId());
         emailParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, linkToCase);
 
@@ -1103,7 +1103,7 @@ public class NotificationService {
                     } else {
 
                         String linkToCase = Boolean.TRUE.equals(isRespondent)
-                            ? getRespondentPortalLink(caseId, isWelsh)
+                            ? getRespondentPortalLink(caseId, resp.getId(), isWelsh)
                             : getRespondentRepPortalLink(caseId);
                         respondentParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY, linkToCase);
                         try {
