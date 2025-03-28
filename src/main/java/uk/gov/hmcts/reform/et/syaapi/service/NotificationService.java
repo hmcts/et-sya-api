@@ -650,7 +650,10 @@ public class NotificationService {
                          + "Type A/B application responses, email not being sent");
             return;
         }
-        String claimantEmailAddress = isRepresentedClaimantWithMyHmctsCase(details.caseData)
+
+        boolean isClaimantRepresented = isRepresentedClaimantWithMyHmctsCase(details.caseData);
+
+        String claimantEmailAddress = Boolean.TRUE.equals(isClaimantRepresented)
             ? details.caseData.getRepresentativeClaimantType().getRepresentativeEmailAddress()
             : details.caseData.getClaimantType().getClaimantEmailAddress();
 
@@ -662,9 +665,12 @@ public class NotificationService {
 
         Map<String, Object> claimantParameters = prepareResponseEmailCommonParameters(details, applicationType);
 
+        String caseLink = Boolean.TRUE.equals(isClaimantRepresented)
+            ? notificationsProperties.getExuiCaseDetailsLink() + details.caseId
+            : notificationsProperties.getCitizenPortalLink() + details.caseId;
         claimantParameters.put(
             SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
-            notificationsProperties.getCitizenPortalLink() + details.caseId
+            caseLink
         );
 
         String emailToClaimantTemplate;
