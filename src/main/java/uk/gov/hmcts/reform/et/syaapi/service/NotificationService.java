@@ -110,7 +110,6 @@ public class NotificationService {
     private static final String NO_CLAIMANT_EMAIL_FOUND =
         "No claimant email found - Application response acknowledgment not being sent";
     private static final String HEARING_DATE_NOT_SET_WELSH = "Heb ei anfon";
-    private final CaseService caseService;
 
     /**
      * Record containing core details of an email.
@@ -434,6 +433,11 @@ public class NotificationService {
             String claimantEmail = isRepresentedClaimantWithMyHmctsCase(caseData)
                 ? caseData.getRepresentativeClaimantType().getRepresentativeEmailAddress()
                 : caseData.getClaimantType().getClaimantEmailAddress();
+
+            if (isBlank(claimantEmail)) {
+                log.info(NO_CLAIMANT_EMAIL_FOUND);
+                return null;
+            }
             return notificationClient.sendEmail(emailTemplate, claimantEmail, parameters, caseId);
         } catch (NotificationClientException e) {
             log.error("Failed to send acknowledgment email to claimant", e);
@@ -652,6 +656,11 @@ public class NotificationService {
         String claimantEmailAddress = isRepresentedClaimantWithMyHmctsCase(details.caseData)
             ? details.caseData.getRepresentativeClaimantType().getRepresentativeEmailAddress()
             : details.caseData.getClaimantType().getClaimantEmailAddress();
+
+        if (isBlank(claimantEmailAddress)) {
+            log.info(NO_CLAIMANT_EMAIL_FOUND);
+            return;
+        }
 
         Map<String, Object> claimantParameters = prepareResponseEmailCommonParameters(details, applicationType);
 
