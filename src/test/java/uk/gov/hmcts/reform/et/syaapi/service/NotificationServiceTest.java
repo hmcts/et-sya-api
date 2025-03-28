@@ -27,6 +27,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantHearingPreference;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
+import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationType;
@@ -870,6 +871,26 @@ class NotificationServiceTest {
         @Test
         void shouldNotSendResponseWhenClaimantEmailDoesNotExist() throws NotificationClientException {
             caseTestData.getCaseData().getClaimantType().setClaimantEmailAddress("");
+            notificationService.sendResponseEmailToClaimant(
+                details,
+                CHANGE_DETAILS_APPLICATION_TYPE,
+                "No",
+                false
+            );
+
+            verify(notificationClient, times(0)).sendEmail(
+                any(),
+                eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            );
+        }
+
+        @Test
+        void shouldNotSendResponseWhenClaimantOrClaimantRepEmailDoesNotExist() throws NotificationClientException {
+            caseTestData.getCaseData().getClaimantType().setClaimantEmailAddress("");
+            caseData.setRepresentativeClaimantType(new RepresentedTypeC());
+            caseData.getRepresentativeClaimantType().setRepresentativeEmailAddress("");
             notificationService.sendResponseEmailToClaimant(
                 details,
                 CHANGE_DETAILS_APPLICATION_TYPE,
