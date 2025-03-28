@@ -52,7 +52,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.CLAIMANT_TS
 public final class TseApplicationHelper {
 
     public static final String WAITING_FOR_TRIBUNAL = "waitingForTheTribunal";
-    public static final Map<String, String> APPLICATION_TYPE_MAP = new ConcurrentHashMap<>();
+    private static final Map<String, String> APPLICATION_TYPE_MAP = new ConcurrentHashMap<>();
 
     static {
         APPLICATION_TYPE_MAP.put(CLAIMANT_TSE_AMEND_CLAIM, "amend");

@@ -493,6 +493,26 @@ class NotificationServiceTest {
         }
 
         @Test
+        void shouldNotSendEmailWhenNoClaimantOrClaimantRepEmail() throws NotificationClientException, IOException {
+            caseTestData.getCaseData().getClaimantType().setClaimantEmailAddress("");
+            caseTestData.getCaseData().setRepresentativeClaimantType(new RepresentedTypeC());
+            caseTestData.getCaseData().getRepresentativeClaimantType()
+                .setRepresentativeEmailAddress("");
+
+            notificationService.sendAcknowledgementEmailToClaimant(
+                details,
+                caseTestData.getClaimantApplication()
+            );
+
+            verify(notificationClient, times(0)).sendEmail(
+                any(),
+                eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            );
+        }
+
+        @Test
         void shouldSendCopyNoEmail() throws NotificationClientException, IOException {
             caseTestData.getClaimantApplication().setCopyToOtherPartyYesOrNo("No");
             when(notificationClient.sendEmail(
