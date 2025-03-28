@@ -189,10 +189,11 @@ public final class TseApplicationHelper {
      * @return the document type
      */
     public static String getApplicationDoc(GenericTseApplicationType applicationType) {
-        if (CLAIMANT_TITLE.equals(applicationType.getApplicant())) {
+        if (CLAIMANT_TITLE.equals(applicationType.getApplicant() )
+                                      || "Claimant Representative".equals(applicationType.getApplicant())) {
             return uk.gov.hmcts.ecm.common.helpers.DocumentHelper.claimantApplicationTypeToDocType(
                 getClaimantApplicationType(applicationType));
-        } else if (Constants.RESPONDENT_TITLE.equals(applicationType.getApplicant()) 
+        } else if (Constants.RESPONDENT_TITLE.equals(applicationType.getApplicant())
                    || "Respondent Representative".equals(applicationType.getApplicant())) {
             return uk.gov.hmcts.ecm.common.helpers.DocumentHelper.respondentApplicationToDocType(
                 applicationType.getType());
