@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.OLD_DATE_TIME_PATTERN;
@@ -31,6 +32,19 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.UPDATED;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.CLAIMANT_CORRESPONDENCE;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.RESPONDENT_CORRESPONDENCE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UK_LOCAL_DATE_PATTERN;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.CLAIMANT_TSE_AMEND_CLAIM;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.CLAIMANT_TSE_CHANGE_PERSONAL_DETAILS;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.CLAIMANT_TSE_CONSIDER_DECISION_AFRESH;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.CLAIMANT_TSE_CONTACT_THE_TRIBUNAL;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.CLAIMANT_TSE_ORDER_A_WITNESS_TO_ATTEND;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.CLAIMANT_TSE_ORDER_OTHER_PARTY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.CLAIMANT_TSE_POSTPONE_A_HEARING;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.CLAIMANT_TSE_RECONSIDER_JUDGMENT;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.CLAIMANT_TSE_RESPONDENT_NOT_COMPLIED;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.CLAIMANT_TSE_RESTRICT_PUBLICITY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.CLAIMANT_TSE_STRIKE_OUT_ALL_OR_PART;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.CLAIMANT_TSE_VARY_OR_REVOKE_AN_ORDER;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.CLAIMANT_TSE_WITHDRAW_CLAIM;
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -38,6 +52,23 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UK_LOCAL_DA
 public final class TseApplicationHelper {
 
     public static final String WAITING_FOR_TRIBUNAL = "waitingForTheTribunal";
+    public static final Map<String, String> APPLICATION_TYPE_MAP = new ConcurrentHashMap<>();
+
+    static {
+        APPLICATION_TYPE_MAP.put(CLAIMANT_TSE_AMEND_CLAIM, "amend");
+        APPLICATION_TYPE_MAP.put(CLAIMANT_TSE_CHANGE_PERSONAL_DETAILS, "change-details");
+        APPLICATION_TYPE_MAP.put(CLAIMANT_TSE_CONSIDER_DECISION_AFRESH, "reconsider-decision");
+        APPLICATION_TYPE_MAP.put(CLAIMANT_TSE_ORDER_A_WITNESS_TO_ATTEND, "witness");
+        APPLICATION_TYPE_MAP.put(CLAIMANT_TSE_ORDER_OTHER_PARTY, "respondent");
+        APPLICATION_TYPE_MAP.put(CLAIMANT_TSE_POSTPONE_A_HEARING, "postpone");
+        APPLICATION_TYPE_MAP.put(CLAIMANT_TSE_RECONSIDER_JUDGMENT, "reconsider-judgement");
+        APPLICATION_TYPE_MAP.put(CLAIMANT_TSE_RESPONDENT_NOT_COMPLIED, "non-compliance");
+        APPLICATION_TYPE_MAP.put(CLAIMANT_TSE_RESTRICT_PUBLICITY, "publicity");
+        APPLICATION_TYPE_MAP.put(CLAIMANT_TSE_STRIKE_OUT_ALL_OR_PART, "strike");
+        APPLICATION_TYPE_MAP.put(CLAIMANT_TSE_VARY_OR_REVOKE_AN_ORDER, "vary");
+        APPLICATION_TYPE_MAP.put(CLAIMANT_TSE_WITHDRAW_CLAIM, "withdraw");
+        APPLICATION_TYPE_MAP.put(CLAIMANT_TSE_CONTACT_THE_TRIBUNAL, "other");
+    }
 
     /**
      * Gives current date in string format.
@@ -190,16 +221,28 @@ public final class TseApplicationHelper {
      * @return the document type
      */
     public static String getApplicationDoc(GenericTseApplicationType applicationType) {
-        if (CLAIMANT_TITLE.equals(applicationType.getApplicant())
-                                      || "Claimant Representative".equals(applicationType.getApplicant())) {
+        if (CLAIMANT_TITLE.equals(applicationType.getApplicant())) {
             return uk.gov.hmcts.ecm.common.helpers.DocumentHelper.claimantApplicationTypeToDocType(
                 getClaimantApplicationType(applicationType));
+        } else if ("Claimant Representative".equals(applicationType.getApplicant())) {
+            log.info("Claimant Representative application type: {}", applicationType.getType());
+            String appType = claimantSelectApplicationToType(applicationType.getType());
+            return uk.gov.hmcts.ecm.common.helpers.DocumentHelper.claimantApplicationTypeToDocType(appType);
         } else if (Constants.RESPONDENT_TITLE.equals(applicationType.getApplicant())
                    || "Respondent Representative".equals(applicationType.getApplicant())) {
             return uk.gov.hmcts.ecm.common.helpers.DocumentHelper.respondentApplicationToDocType(
                 applicationType.getType());
         } else {
             throw new IllegalArgumentException("Invalid applicant type: " + applicationType.getApplicant());
+        }
+    }
+
+    private static String claimantSelectApplicationToType(String selectApplication) {
+        String type = APPLICATION_TYPE_MAP.get(selectApplication);
+        if (type != null) {
+            return type;
+        } else {
+            throw new IllegalArgumentException(String.format("Unexpected application type %s", selectApplication));
         }
     }
 
