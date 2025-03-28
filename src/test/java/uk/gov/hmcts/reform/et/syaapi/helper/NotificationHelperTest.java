@@ -2,9 +2,14 @@ package uk.gov.hmcts.reform.et.syaapi.helper;
 
 import org.apache.tika.utils.StringUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.HearingTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
+import uk.gov.hmcts.et.common.model.ccd.types.Organisation;
+import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 
@@ -15,9 +20,16 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.MY_HMCTS;
 
 class NotificationHelperTest {
 
@@ -57,13 +69,13 @@ class NotificationHelperTest {
         caseData.setRepCollection(itemList);
 
         // When
-        String email = NotificationsHelper.getEmailAddressForRespondent(
+        List<String> emails = NotificationsHelper.getEmailAddressesForRespondent(
             caseData,
             caseData.getRespondentCollection().get(0).getValue()
         );
 
         //Then
-        assertThat(email).isEqualTo(repEmail);
+        assertTrue(emails.contains(repEmail));
     }
 
     @Test
@@ -83,13 +95,13 @@ class NotificationHelperTest {
         caseData.setRepCollection(itemList);
 
         // When
-        String email = NotificationsHelper.getEmailAddressForRespondent(
+        List<String> emails = NotificationsHelper.getEmailAddressesForRespondent(
             caseData,
             caseData.getRespondentCollection().get(0).getValue()
         );
 
         // Then
-        assertThat(email).isEmpty();
+        assertTrue(emails.isEmpty());
     }
 
     @Test
@@ -99,13 +111,13 @@ class NotificationHelperTest {
         caseData.getRespondentCollection().get(0).getValue().setRespondentEmail(null);
 
         // When
-        String email = NotificationsHelper.getEmailAddressForRespondent(
+        List<String> emails = NotificationsHelper.getEmailAddressesForRespondent(
             caseData,
             caseData.getRespondentCollection().get(0).getValue()
         );
 
         // Then
-        assertThat(email).isEmpty();
+        assertTrue(emails.isEmpty());
     }
 
     @Test
@@ -191,5 +203,44 @@ class NotificationHelperTest {
                 "123345"
             ));
         assertThat(exception.getMessage()).isEqualTo("Hearing does not have any future dates");
+    }
+
+    @ParameterizedTest
+    @MethodSource("caseParametersForIsRepresentedClaimantWithMyHmctsCaseParameter")
+    void isRepresentedClaimantWithMyHmctsCase(String caseSource, String claimantRepresentedQuestion,
+                                              RepresentedTypeC representedTypeC, boolean expected) {
+        CaseData caseData = new CaseData();
+        caseData.setCaseSource(caseSource);
+        caseData.setClaimantRepresentedQuestion(claimantRepresentedQuestion);
+        caseData.setRepresentativeClaimantType(representedTypeC);
+        assertEquals(expected, NotificationsHelper.isRepresentedClaimantWithMyHmctsCase(caseData));
+    }
+
+    private static Stream<Arguments> caseParametersForIsRepresentedClaimantWithMyHmctsCaseParameter() {
+        Organisation organisation = Organisation.builder()
+            .organisationID("dummyId")
+            .build();
+        RepresentedTypeC representedTypeC = new RepresentedTypeC();
+        representedTypeC.setMyHmctsOrganisation(organisation);
+
+        RepresentedTypeC representedTypeCWithoutOrganisation = new RepresentedTypeC();
+        return Stream.of(
+            Arguments.of(ET1, NO, null, false),
+            Arguments.of(ET1, NO, representedTypeC, false),
+            Arguments.of(ET1, YES, null, false),
+            Arguments.of(ET1, YES, representedTypeC, false),
+            Arguments.of(MY_HMCTS, NO, null, false),
+            Arguments.of(MY_HMCTS, NO, representedTypeC, false),
+            Arguments.of(MY_HMCTS, YES, null, false),
+            Arguments.of(MY_HMCTS, YES, representedTypeC, true),
+            Arguments.of(ET1, NO, null, false),
+            Arguments.of(ET1, NO, representedTypeCWithoutOrganisation, false),
+            Arguments.of(ET1, YES, null, false),
+            Arguments.of(ET1, YES, representedTypeCWithoutOrganisation, false),
+            Arguments.of(MY_HMCTS, NO, null, false),
+            Arguments.of(MY_HMCTS, NO, representedTypeCWithoutOrganisation, false),
+            Arguments.of(MY_HMCTS, YES, null, false),
+            Arguments.of(MY_HMCTS, YES, representedTypeCWithoutOrganisation, false)
+        );
     }
 }

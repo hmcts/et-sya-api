@@ -26,7 +26,9 @@ import uk.gov.hmcts.et.common.model.ccd.items.PseResponseTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantHearingPreference;
+import uk.gov.hmcts.et.common.model.ccd.types.Organisation;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
+import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationType;
@@ -74,6 +76,7 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_ABBREVIATED_MONTHS_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.MY_HMCTS;
 import static uk.gov.hmcts.reform.et.syaapi.service.NotificationService.HEARING_DATE_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOTIFICATION_CONFIRMATION_ID;
@@ -461,6 +464,52 @@ class NotificationServiceTest {
                 details,
                 caseTestData.getClaimantApplication()
             ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
+        }
+
+        @Test
+        void shouldSendEmailToClaimantRep() throws NotificationClientException, IOException {
+            caseTestData.getCaseData().getClaimantType().setClaimantEmailAddress("");
+            caseTestData.getCaseData().setCaseSource(MY_HMCTS);
+            Organisation org = Organisation.builder()
+                .organisationID("my org")
+                .organisationName("New Organisation").build();
+            caseTestData.getCaseData().setRepresentativeClaimantType(new RepresentedTypeC());
+            caseTestData.getCaseData().getRepresentativeClaimantType()
+                .setRepresentativeEmailAddress("claimantRep@gmail.com");
+            caseTestData.getCaseData().getRepresentativeClaimantType().setMyHmctsOrganisation(org);
+
+            when(notificationClient.sendEmail(
+                eq(YES),
+                eq(caseTestData.getCaseData().getRepresentativeClaimantType()
+                       .getRepresentativeEmailAddress()),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            )).thenReturn(caseTestData.getSendEmailResponse());
+
+            assertThat(notificationService.sendAcknowledgementEmailToClaimant(
+                details,
+                caseTestData.getClaimantApplication()
+            ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
+        }
+
+        @Test
+        void shouldNotSendEmailWhenNoClaimantOrClaimantRepEmail() throws NotificationClientException {
+            caseTestData.getCaseData().getClaimantType().setClaimantEmailAddress("");
+            caseTestData.getCaseData().setRepresentativeClaimantType(new RepresentedTypeC());
+            caseTestData.getCaseData().getRepresentativeClaimantType()
+                .setRepresentativeEmailAddress("");
+
+            notificationService.sendAcknowledgementEmailToClaimant(
+                details,
+                caseTestData.getClaimantApplication()
+            );
+
+            verify(notificationClient, times(0)).sendEmail(
+                any(),
+                eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            );
         }
 
         @Test
@@ -868,8 +917,56 @@ class NotificationServiceTest {
         }
 
         @Test
+        void shouldSendResponseEmailToClaimantRep() throws NotificationClientException {
+            caseTestData.getCaseData().setCaseSource(MY_HMCTS);
+            caseTestData.getCaseData().getClaimantType().setClaimantEmailAddress("");
+
+            Organisation org = Organisation.builder()
+                .organisationID("my org")
+                .organisationName("New Organisation").build();
+            caseTestData.getCaseData().setRepresentativeClaimantType(new RepresentedTypeC());
+            caseTestData.getCaseData().getRepresentativeClaimantType()
+                .setRepresentativeEmailAddress("claimantRep@gmail.com");
+            caseTestData.getCaseData().getRepresentativeClaimantType().setMyHmctsOrganisation(org);
+            notificationService.sendResponseEmailToClaimant(
+                details,
+                CHANGE_DETAILS_APPLICATION_TYPE,
+                "No",
+                false
+            );
+
+            verify(notificationClient, times(1)).sendEmail(
+                any(),
+                eq(caseTestData.getCaseData().getRepresentativeClaimantType()
+                       .getRepresentativeEmailAddress()),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            );
+        }
+
+        @Test
         void shouldNotSendResponseWhenClaimantEmailDoesNotExist() throws NotificationClientException {
             caseTestData.getCaseData().getClaimantType().setClaimantEmailAddress("");
+            notificationService.sendResponseEmailToClaimant(
+                details,
+                CHANGE_DETAILS_APPLICATION_TYPE,
+                "No",
+                false
+            );
+
+            verify(notificationClient, times(0)).sendEmail(
+                any(),
+                eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            );
+        }
+
+        @Test
+        void shouldNotSendResponseWhenClaimantOrClaimantRepEmailDoesNotExist() throws NotificationClientException {
+            caseTestData.getCaseData().getClaimantType().setClaimantEmailAddress("");
+            caseData.setRepresentativeClaimantType(new RepresentedTypeC());
+            caseData.getRepresentativeClaimantType().setRepresentativeEmailAddress("");
             notificationService.sendResponseEmailToClaimant(
                 details,
                 CHANGE_DETAILS_APPLICATION_TYPE,
@@ -1131,19 +1228,6 @@ class NotificationServiceTest {
             any(),
             eq(caseTestData.getExpectedDetails().getId().toString())
         );
-    }
-
-    @Test
-    void sendResponseNotificationEmailToRespondentNotSystemUser() throws NotificationClientException {
-        caseTestData.getCaseData().setRepCollection(null);
-
-        notificationService.sendResponseNotificationEmailToRespondent(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString(),
-            YES
-        );
-
-        verify(notificationClient, times(0)).sendEmail(any(), any(), any(), any());
     }
 
     @Test
@@ -1705,6 +1789,95 @@ class NotificationServiceTest {
                 details,
                 WITNESS,
                 YES
+            );
+
+            verify(notificationClient, times(0)).sendEmail(
+                any(),
+                eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            );
+        }
+    }
+
+    @Nested
+    class SendRespondentAppAcknowledgementEmailToClaimants {
+        @BeforeEach
+        void setUp() {
+            details = new CoreEmailDetails(
+                caseTestData.getCaseData(),
+                CLAIMANT,
+                "1",
+                "Test Respondent Organisation -1-,"
+                    + " Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez",
+                NOT_SET,
+                caseTestData.getExpectedDetails().getId().toString()
+            );
+        }
+
+        @Test
+        void shouldSendEmailToClaimantTypeBPersonalisationCheck() throws NotificationClientException {
+            caseTestData.getRespondentApplication().setContactApplicationType("Change my personal details");
+            given(notificationsProperties.getRespondentTseTypeBClaimantAckTemplateId())
+                .willReturn("B");
+            notificationService.sendRespondentAppAcknowledgementEmailToClaimant(
+                details,
+                null,
+                caseTestData.getRespondentApplication()
+            );
+
+            verify(notificationClient, times(1)).sendEmail(any(), any(),
+                                                           respondentParametersCaptor.capture(), any()
+            );
+        }
+
+        @Test
+        void shouldSendEmailToClaimantTypeB() throws NotificationClientException {
+            caseTestData.getRespondentApplication().setContactApplicationType("Change my personal details");
+            given(notificationsProperties.getRespondentTseTypeBClaimantAckTemplateId())
+                .willReturn("B");
+            notificationService.sendRespondentAppAcknowledgementEmailToClaimant(
+                details,
+                null,
+                caseTestData.getRespondentApplication()
+            );
+
+            verify(notificationClient, times(1)).sendEmail(
+                eq("B"),
+                any(),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            );
+        }
+
+        @SneakyThrows
+        @Test
+        void shouldSendEmailToClaimantTypeA() {
+            caseTestData.getClaimantApplication().setContactApplicationType("Amend the Response");
+            given(notificationsProperties.getRespondentTseTypeAClaimantAckTemplateId())
+                .willReturn("A");
+            notificationService.sendRespondentAppAcknowledgementEmailToClaimant(
+                details,
+                null,
+                caseTestData.getRespondentApplication()
+            );
+
+            verify(notificationClient, times(1)).sendEmail(
+                eq("A"),
+                any(),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            );
+        }
+
+        @Test
+        void shouldNotSendEmailToClaimantTypeC() throws NotificationClientException {
+            caseTestData.getRespondentApplication()
+                .setContactApplicationType("Order a witness to attend to give evidence");
+            notificationService.sendRespondentAppAcknowledgementEmailToClaimant(
+                details,
+                null,
+                caseTestData.getRespondentApplication()
             );
 
             verify(notificationClient, times(0)).sendEmail(
