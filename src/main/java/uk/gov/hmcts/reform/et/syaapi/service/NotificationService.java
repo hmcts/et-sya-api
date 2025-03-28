@@ -110,6 +110,7 @@ public class NotificationService {
     private static final String NO_CLAIMANT_EMAIL_FOUND =
         "No claimant email found - Application response acknowledgment not being sent";
     private static final String HEARING_DATE_NOT_SET_WELSH = "Heb ei anfon";
+    private final CaseService caseService;
 
     /**
      * Record containing core details of an email.
@@ -648,11 +649,10 @@ public class NotificationService {
                          + "Type A/B application responses, email not being sent");
             return;
         }
-        String claimantEmailAddress = details.caseData.getClaimantType().getClaimantEmailAddress();
-        if (isBlank(claimantEmailAddress)) {
-            log.info(NO_CLAIMANT_EMAIL_FOUND);
-            return;
-        }
+        String claimantEmailAddress = isRepresentedClaimantWithMyHmctsCase(details.caseData)
+            ? details.caseData.getRepresentativeClaimantType().getRepresentativeEmailAddress()
+            : details.caseData.getClaimantType().getClaimantEmailAddress();
+
         Map<String, Object> claimantParameters = prepareResponseEmailCommonParameters(details, applicationType);
 
         claimantParameters.put(
