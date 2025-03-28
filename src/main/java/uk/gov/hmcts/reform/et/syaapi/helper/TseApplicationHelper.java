@@ -158,6 +158,7 @@ public final class TseApplicationHelper {
             responseToAdd.getSupportingMaterial().add(documentTypeItem);
 
             String applicationDoc = getApplicationDoc(appToModify);
+            log.info(applicationDoc);
             String extension = FilenameUtils.getExtension(request.getSupportingMaterialFile().getDocumentFilename());
             String docName = "Application %s - %s - Attachment.%s".formatted(
                 appToModify.getNumber(),

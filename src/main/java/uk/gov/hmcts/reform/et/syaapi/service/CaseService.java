@@ -509,6 +509,7 @@ public class CaseService {
                                                                          respondingUserType);
 
         String applicationDoc = TseApplicationHelper.getApplicationDoc(application);
+        log.info("Application doc: {}", applicationDoc);
         String topLevel = DocumentHelper.getTopLevelDocument(applicationDoc);
         DocumentTypeItem responsePdf = caseDocumentService.createDocumentTypeItemLevels(
             authorization,
