@@ -242,6 +242,7 @@ public final class NotificationsHelper {
 
 
     public static boolean isRepresentedClaimantWithMyHmctsCase(CaseData caseData) {
+        log.info("caseData {}", caseData.toString());
         return MY_HMCTS.equals(caseData.getCaseSource())
             && YES.equals(caseData.getClaimantRepresentedQuestion())
             && ObjectUtils.isNotEmpty(caseData.getRepresentativeClaimantType())
