@@ -467,6 +467,31 @@ class NotificationServiceTest {
         }
 
         @Test
+        void shouldSendEmailToClaimantRep() throws NotificationClientException, IOException {
+            caseTestData.getCaseData().getClaimantType().setClaimantEmailAddress("");
+            caseTestData.getCaseData().setCaseSource(MY_HMCTS);
+            Organisation org = Organisation.builder()
+                .organisationID("my org")
+                .organisationName("New Organisation").build();
+            caseTestData.getCaseData().setRepresentativeClaimantType(new RepresentedTypeC());
+            caseTestData.getCaseData().getRepresentativeClaimantType()
+                .setRepresentativeEmailAddress("claimantRep@gmail.com");
+            caseTestData.getCaseData().getRepresentativeClaimantType().setMyHmctsOrganisation(org);
+
+            when(notificationClient.sendEmail(
+                eq(YES),
+                eq("claimantRep@gmail.com"),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            )).thenReturn(caseTestData.getSendEmailResponse());
+
+            assertThat(notificationService.sendAcknowledgementEmailToClaimant(
+                details,
+                caseTestData.getClaimantApplication()
+            ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
+        }
+
+        @Test
         void shouldSendCopyNoEmail() throws NotificationClientException, IOException {
             caseTestData.getClaimantApplication().setCopyToOtherPartyYesOrNo("No");
             when(notificationClient.sendEmail(
@@ -879,7 +904,8 @@ class NotificationServiceTest {
                 .organisationID("my org")
                 .organisationName("New Organisation").build();
             caseTestData.getCaseData().setRepresentativeClaimantType(new RepresentedTypeC());
-            caseTestData.getCaseData().getRepresentativeClaimantType().setRepresentativeEmailAddress("claimantRep@gmail.com");
+            caseTestData.getCaseData().getRepresentativeClaimantType()
+                .setRepresentativeEmailAddress("claimantRep@gmail.com");
             caseTestData.getCaseData().getRepresentativeClaimantType().setMyHmctsOrganisation(org);
             notificationService.sendResponseEmailToClaimant(
                 details,
