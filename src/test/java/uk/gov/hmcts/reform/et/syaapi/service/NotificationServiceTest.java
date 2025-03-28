@@ -26,6 +26,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.PseResponseTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.ClaimantHearingPreference;
+import uk.gov.hmcts.et.common.model.ccd.types.Organisation;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
@@ -75,6 +76,7 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_ABBREVIATED_MONTHS_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.MY_HMCTS;
 import static uk.gov.hmcts.reform.et.syaapi.service.NotificationService.HEARING_DATE_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOTIFICATION_CONFIRMATION_ID;
@@ -863,6 +865,32 @@ class NotificationServiceTest {
             verify(notificationClient, times(1)).sendEmail(
                 any(),
                 eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+                any(),
+                eq(caseTestData.getExpectedDetails().getId().toString())
+            );
+        }
+
+        @Test
+        void shouldSendResponseEmailToClaimantRep() throws NotificationClientException {
+            caseTestData.getCaseData().setCaseSource(MY_HMCTS);
+            caseTestData.getCaseData().getClaimantType().setClaimantEmailAddress("");
+
+            Organisation org = Organisation.builder()
+                .organisationID("my org")
+                .organisationName("New Organisation").build();
+            caseTestData.getCaseData().setRepresentativeClaimantType(new RepresentedTypeC());
+            caseTestData.getCaseData().getRepresentativeClaimantType().setRepresentativeEmailAddress("claimantRep@gmail.com");
+            caseTestData.getCaseData().getRepresentativeClaimantType().setMyHmctsOrganisation(org);
+            notificationService.sendResponseEmailToClaimant(
+                details,
+                CHANGE_DETAILS_APPLICATION_TYPE,
+                "No",
+                false
+            );
+
+            verify(notificationClient, times(1)).sendEmail(
+                any(),
+                eq("claimantRep@gmail.com"),
                 any(),
                 eq(caseTestData.getExpectedDetails().getId().toString())
             );
