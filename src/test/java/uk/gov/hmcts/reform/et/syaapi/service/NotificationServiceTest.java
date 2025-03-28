@@ -480,7 +480,8 @@ class NotificationServiceTest {
 
             when(notificationClient.sendEmail(
                 eq(YES),
-                eq("claimantRep@gmail.com"),
+                eq(caseTestData.getCaseData().getRepresentativeClaimantType()
+                       .getRepresentativeEmailAddress()),
                 any(),
                 eq(caseTestData.getExpectedDetails().getId().toString())
             )).thenReturn(caseTestData.getSendEmailResponse());
@@ -916,7 +917,8 @@ class NotificationServiceTest {
 
             verify(notificationClient, times(1)).sendEmail(
                 any(),
-                eq("claimantRep@gmail.com"),
+                eq(caseTestData.getCaseData().getRepresentativeClaimantType()
+                       .getRepresentativeEmailAddress()),
                 any(),
                 eq(caseTestData.getExpectedDetails().getId().toString())
             );
