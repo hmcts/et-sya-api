@@ -493,7 +493,7 @@ class NotificationServiceTest {
         }
 
         @Test
-        void shouldNotSendEmailWhenNoClaimantOrClaimantRepEmail() throws NotificationClientException, IOException {
+        void shouldNotSendEmailWhenNoClaimantOrClaimantRepEmail() throws NotificationClientException {
             caseTestData.getCaseData().getClaimantType().setClaimantEmailAddress("");
             caseTestData.getCaseData().setRepresentativeClaimantType(new RepresentedTypeC());
             caseTestData.getCaseData().getRepresentativeClaimantType()

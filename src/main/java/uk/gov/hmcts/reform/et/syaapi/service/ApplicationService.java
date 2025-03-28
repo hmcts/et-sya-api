@@ -320,13 +320,9 @@ public class ApplicationService {
         notificationService.sendResponseEmailToTribunal(details, type, isRespondingToRequestOrOrder);
 
         if (respondingUserType.equals(RESPONDENT_TITLE)) {
-            log.info("sendResponseToApplicationEmails {}, sendRespondentResponseToApplicationEmails",
-                     respondingUserType);
             sendRespondentResponseToApplicationEmails(caseData, details, caseId, type, copyToOtherParty,
                                                      isRespondingToRequestOrOrder, respondingUserIdamId);
         } else {
-            log.info("sendResponseToApplicationEmails {}, sendClaimantResponseToApplicationEmails",
-                     respondingUserType);
             sendClaimantResponseToApplicationEmails(caseData, details, type, caseId, copyToOtherParty,
                                                     isRespondingToRequestOrOrder);
         }

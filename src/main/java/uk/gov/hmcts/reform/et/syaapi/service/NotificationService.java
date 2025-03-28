@@ -657,7 +657,6 @@ public class NotificationService {
             ? details.caseData.getRepresentativeClaimantType().getRepresentativeEmailAddress()
             : details.caseData.getClaimantType().getClaimantEmailAddress();
 
-        log.info("Claimant email address: {}", claimantEmailAddress);
         if (isBlank(claimantEmailAddress)) {
             log.info(NO_CLAIMANT_EMAIL_FOUND);
             return;
@@ -692,7 +691,6 @@ public class NotificationService {
                 details.caseId
             );
         } catch (NotificationClientException ne) {
-            log.info("sending claimant email failed {}", ne);
             throw new NotificationException(ne);
         }
     }
