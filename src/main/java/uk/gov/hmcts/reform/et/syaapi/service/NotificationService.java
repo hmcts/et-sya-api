@@ -879,7 +879,12 @@ public class NotificationService {
             return;
         }
 
-        String claimantEmailAddress = caseData.getClaimantType().getClaimantEmailAddress();
+        boolean isClaimantRepresented = isRepresentedClaimantWithMyHmctsCase(caseData);
+
+        String claimantEmailAddress = Boolean.TRUE.equals(isClaimantRepresented)
+            ? caseData.getRepresentativeClaimantType().getRepresentativeEmailAddress()
+            : caseData.getClaimantType().getClaimantEmailAddress();
+
         if (isBlank(claimantEmailAddress)) {
             log.info(NO_CLAIMANT_EMAIL_FOUND);
             return;
@@ -887,9 +892,13 @@ public class NotificationService {
 
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
         claimantParameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
+
+        String caseLink = Boolean.TRUE.equals(isClaimantRepresented)
+            ? notificationsProperties.getExuiCaseDetailsLink() + caseId
+            : notificationsProperties.getCitizenPortalLink() + caseId;
         claimantParameters.put(
             SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
-            notificationsProperties.getCitizenPortalLink() + caseId
+            caseLink
         );
 
         String emailTemplate = notificationsProperties.getTseReplyToTribunalToRespondentTemplateId();
