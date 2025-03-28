@@ -28,7 +28,8 @@ public final class DocumentUtil {
         DocumentConstants.COT3,
         DocumentConstants.TRIBUNAL_CASE_FILE,
         DocumentConstants.INITIAL_CONSIDERATION,
-        DocumentConstants.OTHER
+        DocumentConstants.OTHER,
+        DocumentConstants.NEEDS_UPDATING
     );
 
     private static final List<String> RESPONDENT_APPLICATION_DOC_TYPE = List.of(
@@ -72,7 +73,8 @@ public final class DocumentUtil {
         DocumentConstants.COT3,
         DocumentConstants.TRIBUNAL_CASE_FILE,
         DocumentConstants.INITIAL_CONSIDERATION,
-        DocumentConstants.OTHER
+        DocumentConstants.OTHER,
+        DocumentConstants.NEEDS_UPDATING
     );
 
     private DocumentUtil() {
@@ -140,8 +142,7 @@ public final class DocumentUtil {
             String lowerCaseDocumentType = documentType.toLowerCase(Locale.UK).trim();
             List<String> mergedList = getMergedListByCaseUserRole(caseUserRole);
             return mergedList.stream()
-                .map(type -> type.toLowerCase(Locale.UK))
-                .anyMatch(type -> type.equals(lowerCaseDocumentType));
+                .anyMatch(type -> type.equalsIgnoreCase(lowerCaseDocumentType));
         }
         return false;
     }
