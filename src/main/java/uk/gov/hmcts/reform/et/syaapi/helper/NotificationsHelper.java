@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.et.syaapi.helper;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -41,6 +42,7 @@ public final class NotificationsHelper {
 
     private static final String INVALID_DATE = "Invalid date";
     private static final String EMPLOYER_CONTRACT_CLAIM = "Employer Contract Claim";
+    public static final String MY_HMCTS = "MyHMCTS";
 
     /**
      * Format all respondent names into one string.
@@ -55,18 +57,6 @@ public final class NotificationsHelper {
         return caseData.getRespondentCollection().stream()
             .map(o -> o.getValue().getRespondentName())
             .collect(Collectors.joining(", "));
-    }
-
-    public static String getEmailAddressForRespondent(CaseData caseData, RespondentSumType respondent) {
-        RepresentedTypeR representative = getRespondentRepresentative(caseData, respondent);
-        if (representative != null) {
-            String repEmail = representative.getRepresentativeEmailAddress();
-            if (!isNullOrEmpty(repEmail)) {
-                return repEmail;
-            }
-        }
-
-        return isNullOrEmpty(respondent.getRespondentEmail()) ? "" : respondent.getRespondentEmail();
     }
 
     /**
@@ -98,6 +88,10 @@ public final class NotificationsHelper {
         }
 
         return emailAddressesMap;
+    }
+
+    public static List<String> getEmailAddressesForRespondent(CaseData caseData, RespondentSumType respondent) {
+        return getRespondentAndRespRepEmailAddressesMap(caseData, respondent).keySet().stream().toList();
     }
 
     private static RepresentedTypeR getRespondentRepresentative(CaseData caseData, RespondentSumType respondent) {
@@ -244,5 +238,13 @@ public final class NotificationsHelper {
         // so respective zonedDateTimes should be compared.
         return !isNullOrEmpty(date) && LocalDateTime.parse(date).atZone(ZoneId.of("Europe/London"))
             .isAfter(now.atZone(ZoneId.of("UTC")));
+    }
+
+
+    public static boolean isRepresentedClaimantWithMyHmctsCase(CaseData caseData) {
+        return MY_HMCTS.equals(caseData.getCaseSource())
+            && YES.equals(caseData.getClaimantRepresentedQuestion())
+            && ObjectUtils.isNotEmpty(caseData.getRepresentativeClaimantType())
+            && ObjectUtils.isNotEmpty(caseData.getRepresentativeClaimantType().getMyHmctsOrganisation());
     }
 }

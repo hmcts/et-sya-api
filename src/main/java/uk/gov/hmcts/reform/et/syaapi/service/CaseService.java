@@ -410,17 +410,10 @@ public class CaseService {
             docList = new ArrayList<>();
         }
 
-        String contactAppType = APP_TYPE_MAP.get(contactApplicationType);
-        String applicationType = VARY_REVOKE_AN_ORDER.equals(
-            contactAppType) ? VARY_OR_REVOKE_AN_ORDER_APP_TYPE : contactAppType;
-
-        String extension = FilenameUtils.getExtension(contactApplicationFile.getDocumentFilename());
-        String docName = "Application %d - %s - Attachment.%s".formatted(
-            ApplicationService.getNextApplicationNumber(caseData),
-            applicationType, extension);
         String applicationDocMapping;
         String typeOfDocument;
         String shortDescription;
+
         if (userType.equals(CLAIMANT_TITLE)) {
             applicationDocMapping = DocumentHelper.claimantApplicationTypeToDocType(contactApplicationType);
             typeOfDocument = CLAIMANT_CORRESPONDENCE;
@@ -433,6 +426,11 @@ public class CaseService {
             shortDescription = contactApplicationType;
         }
 
+        String extension = FilenameUtils.getExtension(contactApplicationFile.getDocumentFilename());
+        String docName = "Application %d - %s - Attachment.%s".formatted(
+            ApplicationService.getNextApplicationNumber(caseData),
+            shortDescription,
+            extension);
         String topLevel = DocumentHelper.getTopLevelDocument(applicationDocMapping);
         contactApplicationFile.setDocumentFilename(docName);
 
@@ -520,7 +518,6 @@ public class CaseService {
             CASE_MANAGEMENT_DOC_CATEGORY,
             multipartResponsePdf
         );
-
         if (CollectionUtils.isEmpty(caseData.getDocumentCollection())) {
             caseData.setDocumentCollection(new ArrayList<>());
         }
