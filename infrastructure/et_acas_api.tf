@@ -71,7 +71,7 @@ resource "azurerm_key_vault_secret" "et_acas_subscription_key" {
   value        = azurerm_api_management_subscription.et_acas_subscription.primary_key
 }
 
-resource "azurerm_key_vault_secret" "et_acas_subscription_key" {
+resource "azurerm_key_vault_secret" "et_acas_subscription_secondary_key" {
   key_vault_id = module.key-vault.key_vault_id
   name         = "etacas-subscription-secondary-key"
   value        = azurerm_api_management_subscription.et_acas_subscription.secondary_key
