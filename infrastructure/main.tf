@@ -57,6 +57,7 @@ module "key-vault" {
   managed_identity_object_ids = [data.azurerm_user_assigned_identity.et-identity.principal_id]
 }
 
+
 resource "azurerm_key_vault_secret" "et_sya_api_s2s_secret" {
   name         = "et-sya-api-s2s-secret"
   value        = data.azurerm_key_vault_secret.et_sya_api_s2s_key.value
