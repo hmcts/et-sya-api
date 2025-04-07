@@ -58,7 +58,6 @@ module "mdl-et-acas-policy" {
 resource "azurerm_api_management_subscription" "et_acas_subscription" {
   api_management_name = local.api_mgmt_name
   resource_group_name = local.api_mgmt_rg
-  user_id             = azurerm_api_management_user.et_api_management_user.id
   product_id          = module.api-et-acas-mgmt-product.id
   display_name        = "ET SYA ACAS Subscription"
   state               = "active"
@@ -69,4 +68,10 @@ resource "azurerm_key_vault_secret" "et_acas_subscription_key" {
   key_vault_id = module.key-vault.key_vault_id
   name         = "etacas-subscription-key"
   value        = azurerm_api_management_subscription.et_acas_subscription.primary_key
+}
+
+resource "azurerm_key_vault_secret" "et_acas_subscription_secondary_key" {
+  key_vault_id = module.key-vault.key_vault_id
+  name         = "etacas-subscription-secondary-key"
+  value        = azurerm_api_management_subscription.et_acas_subscription.secondary_key
 }

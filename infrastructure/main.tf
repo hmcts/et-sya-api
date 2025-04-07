@@ -68,16 +68,6 @@ data "azurerm_key_vault_secret" "s2s_client_id" {
   name         = "et-sya-api-s2s-client-id"
 }
 
-resource "azurerm_api_management_user" "et_api_management_user" {
-  api_management_name = local.api_mgmt_name
-  resource_group_name = local.api_mgmt_rg
-  user_id             = "5931a75ae4bbd512288c888c"
-  provider            = azurerm.aks-cftapps
-  email               = "Peter.Moores@hmcts.net"
-  first_name          = "Peter"
-  last_name           = "Moores"
-}
-
 data "azurerm_key_vault" "et-msg-handler-vault" {
   name                = "et-msg-handler-${var.env}"
   resource_group_name = "et-msg-handler-${var.env}"

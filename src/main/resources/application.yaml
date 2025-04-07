@@ -69,7 +69,7 @@ notifications:
   govNotifyApiKey: ${GOV_NOTIFY_API_KEY:AAAAAAAAAAAAAAAAA}
 
   citizenPortalLink: ${CITIZEN_PORTAL_LINK:https://localhost:3001/citizen-hub/}
-  respondentPortalLink: ${RESPONDENT_PORTAL_LINK:https://localhost:3003/}
+  respondentPortalLink: ${RESPONDENT_PORTAL_LINK:https://localhost:3003/case-details/}
   exuiCaseDetailsLink: ${EXUI_CASE_DETAILS_URL:http://localhost:3455/cases/case-details/}
 
   et1ServiceOwnerNotificationEmail: ${ET1_SERVICE_OWNER_NOTIFICATION_EMAIL:test-et1-service@email.com}
