@@ -12,7 +12,6 @@ public final class ElasticSearchQueryBuilder {
         = "data.respondentCollection.value.respondent_name.keyword";
     private static final String FIELD_NAME_RESPONDENT = "data.respondent.keyword";
     private static final String FIELD_NAME_SUBMISSION_REFERENCE = "reference.keyword";
-    private static final String FIELD_NAME_ETHOS_CASE_REFERENCE = "data.ethosCaseReference.keyword";
     private static final String FIELD_NAME_CLAIMANT_FIRST_NAMES = "data.claimantIndType.claimant_first_names.keyword";
     private static final String FIELD_NAME_CLAIMANT_LAST_NAME = "data.claimantIndType.claimant_last_name.keyword";
     private static final String FIELD_NAME_CLAIMANT_FULL_NAME = "data.claimant.keyword";
@@ -154,13 +153,31 @@ public final class ElasticSearchQueryBuilder {
      * @return the string value of the elastic search query
      */
     public static String buildByEthosCaseReference(String ethosCaseReference) {
-        /*BoolQueryBuilder boolQueryBuilder = boolQuery()
-            .must(new MatchQueryBuilder(FIELD_NAME_ETHOS_CASE_REFERENCE, ethosCaseReference));
-        return new SearchSourceBuilder()
-            .size(ES_SIZE)
-            .query(boolQueryBuilder).toString();*/
-        return "{\"size\":1,\"query\":{\"bool\":{\"must\":"
-            + "[{\"match\":{\"" + FIELD_NAME_ETHOS_CASE_REFERENCE + "\":{\"query\":\"" + ethosCaseReference
-            + "\"}}}],\"boost\":1.0}}}";
+        return """
+            {
+              "size": 1,
+              "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "match": {
+                        "data.ethosCaseReference.keyword": {
+                          "query": "%s"
+                        }
+                      }
+                    }
+                  ],
+                  "must_not": [
+                    {
+                      "match": {
+                        "data.migratedFromEcm": {
+                          "query": "Yes"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }""".formatted(ethosCaseReference);
     }
 }
