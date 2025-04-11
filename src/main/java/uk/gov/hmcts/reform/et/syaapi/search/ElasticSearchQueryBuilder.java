@@ -178,6 +178,7 @@ public final class ElasticSearchQueryBuilder {
                   ]
                 }
               }
-            }""".formatted(ethosCaseReference);
+            }
+            """.formatted(ethosCaseReference);
     }
 }
