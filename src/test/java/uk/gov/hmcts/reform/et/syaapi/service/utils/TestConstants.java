@@ -116,8 +116,33 @@ public final class TestConstants {
     public static final String TEST_MODIFICATION_TYPE_REVOKE = "Revoke";
     public static final String TEST_JURISDICTION_ID_EMPLOYMENT = "EMPLOYMENT";
     public static final String TEST_ETHOS_CASE_REFERENCE = "6000032/2024";
-    public static final String EXPECTED_QUERY_BY_ETHOS_CASE_REFERENCE = "{\"size\":1,\"query\":{\"bool\":{\"must\":"
-        + "[{\"match\":{\"data.ethosCaseReference.keyword\":{\"query\":\"6000032/2024\"}}}],\"boost\":1.0}}}";
+    public static final String EXPECTED_QUERY_BY_ETHOS_CASE_REFERENCE = """
+        {
+          "size": 1,
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "match": {
+                    "data.ethosCaseReference.keyword": {
+                      "query": "6000032/2024"
+                    }
+                  }
+                }
+              ],
+              "must_not": [
+                {
+                  "match": {
+                    "data.migratedFromEcm": {
+                      "query": "Yes"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+        """;
     public static final String EXPECTED_QUERY_BY_ID = "{\"size\":1,\"query\":{\"bool\":{\"must\":[{\"match\":"
         + "{\"reference.keyword\":{\"query\":\"1234567890123456\"}}},{\"match\":{\"state.keyword\":{\"query\""
                                                       + ":\"Accepted\"}}}],\"boost\":1.0}}}";
