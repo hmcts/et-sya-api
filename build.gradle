@@ -202,6 +202,7 @@ repositories {
 ext {
   reformLoggingVersion = "5.1.9"
   log4JVersion = "2.24.3"
+  springFrameworkVersion = "5.3.33"
 }
 
 dependencies {
@@ -223,6 +224,15 @@ dependencies {
   implementation group: 'org.springframework.retry', name: 'spring-retry', version: '2.0.11'
   implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.18.2'
   implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.2'
+
+  // Override Spring Framework dependencies to latest stable 5.3.x ideally need to look at upgrading spring-boot soon
+  implementation group: 'org.springframework', name: 'spring-core', version: springFrameworkVersion
+  implementation group: 'org.springframework', name: 'spring-context', version: springFrameworkVersion
+  implementation group: 'org.springframework', name: 'spring-beans', version: springFrameworkVersion
+  implementation group: 'org.springframework', name: 'spring-aop', version: springFrameworkVersion
+  implementation group: 'org.springframework', name: 'spring-expression', version: springFrameworkVersion
+  implementation group: 'org.springframework', name: 'spring-web', version: springFrameworkVersion
+  implementation group: 'org.springframework', name: 'spring-webmvc', version: springFrameworkVersion
 
   implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.8.0'
 
