@@ -74,7 +74,8 @@ class ET3FormServiceTest {
         et3FormService.generateET3WelshAndEnglishForms(TEST_SERVICE_AUTH_TOKEN,
                                                        caseData,
                                                        caseData.getRespondentCollection().get(0));
-        assertThat(caseData.getDocumentCollection()).contains(caseTestData.getUploadDocumentResponse().get(0));
+        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3Form().getDocumentFilename()).isEqualTo(
+            caseTestData.getUploadDocumentResponse().get(0).getValue().getUploadedDocument().getDocumentFilename());
     }
 
     @ParameterizedTest
