@@ -145,9 +145,6 @@ public class ET3FormService {
             if (CollectionUtils.isEmpty(caseData.getDocumentCollection())) {
                 caseData.setDocumentCollection(new ArrayList<>());
             }
-            // According to RET-5483 (https://tools.hmcts.net/jira/browse/RET-5483) ET3 documents
-            // should not be added to document collection to show them in the documents tab before approval.
-            // caseData.getDocumentCollection().add(englishDocument);
             selectedRespondent.getValue().setEt3Form(englishDocument.getValue().getUploadedDocument());
             if (ET3_RESPONSE_LANGUAGE_PREFERENCE_WELSH.equals(
                 selectedRespondent.getValue().getEt3ResponseLanguagePreference())) {
@@ -171,9 +168,6 @@ public class ET3FormService {
                     ET3_PDF_DOC_CATEGORY,
                     welshET3Form
                 );
-                // According to RET-5483 (https://tools.hmcts.net/jira/browse/RET-5483) ET3 documents
-                // should not be added to document collection to show them in the documents tab before approval.
-                // caseData.getDocumentCollection().add(welshDocument);
                 selectedRespondent.getValue().setEt3FormWelsh(welshDocument.getValue().getUploadedDocument());
             }
         } catch (PdfServiceException | CaseDocumentException e) {
