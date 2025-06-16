@@ -21,7 +21,7 @@ allprojects {
 
 java {
   toolchain {
-    languageVersion = JavaLanguageVersion.of(17)
+    languageVersion = JavaLanguageVersion.of(21)
   }
 }
 
@@ -77,7 +77,7 @@ configurations {
   contractTestRuntimeOnly.extendsFrom runtimeOnly
 }
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
   options.compilerArgs << "-Xlint:unchecked" << "-Werror"
 }
 
@@ -85,7 +85,7 @@ tasks.withType(JavaExec).configureEach {
   javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
 }
 
-tasks.withType(Test) {
+tasks.withType(Test).configureEach {
   useJUnitPlatform()
 
   testLogging {
@@ -97,14 +97,14 @@ test {
   failFast = true
 }
 
-task functional(type: Test) {
+tasks.register('functional', Test) {
   description = "Runs functional tests"
   group = "Verification"
   testClassesDirs = sourceSets.functionalTest.output.classesDirs
   classpath = sourceSets.functionalTest.runtimeClasspath
 }
 
-task integration(type: Test) {
+tasks.register('integration', Test) {
   description = "Runs integration tests"
   group = "Verification"
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
@@ -112,13 +112,13 @@ task integration(type: Test) {
   failFast = true
 }
 
-task smoke(type: Test) {
+tasks.register('smoke', Test) {
   description = "Runs Smoke Tests"
   testClassesDirs = sourceSets.smokeTest.output.classesDirs
   classpath = sourceSets.smokeTest.runtimeClasspath
 }
 
-task contract(type: Test) {
+tasks.register('contract', Test) {
   useJUnitPlatform()
   description = "Runs pact contract tests"
   group = "Delivery pipeline"
@@ -283,7 +283,7 @@ dependencies {
   testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit', version: '4.1.0'
 
   testImplementation 'com.github.hmcts:fortify-client:1.4.8:all'
-
+  testImplementation 'net.bytebuddy:byte-buddy:1.14.12'
   // Pact Contract Tests
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: '4.1.41'
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'java8', version: '4.1.41'
@@ -324,7 +324,7 @@ wrapper {
   distributionType = Wrapper.DistributionType.ALL
 }
 
-task runAndPublishConsumerPactTests(type: Test) {
+tasks.register('runAndPublishConsumerPactTests', Test) {
   logger.lifecycle("Runs pact Tests")
   testClassesDirs = sourceSets.contractTest.output.classesDirs
   classpath = sourceSets.contractTest.runtimeClasspath
@@ -338,7 +338,7 @@ project.ext {
   pactVersion = getCheckedOutGitCommitHash()
 }
 
-task fortifyScan(type: JavaExec) {
+tasks.register('fortifyScan', JavaExec) {
   // main = "uk.gov.hmcts.fortifyclient.FortifyClientMainApp"
   mainClass.set("uk.gov.hmcts.fortifyclient.FortifyClientMainApp")
   classpath += sourceSets.test.runtimeClasspath
