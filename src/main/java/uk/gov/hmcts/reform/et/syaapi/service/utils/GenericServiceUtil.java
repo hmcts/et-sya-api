@@ -83,7 +83,7 @@ public final class GenericServiceUtil {
             }
         } else {
             if (hasPdfFile(pdfFileList, 0)) {
-                return pdfFileList.get(0).getBytes();
+                return pdfFileList.getFirst().getBytes();
             } else {
                 return new byte[0];
             }
