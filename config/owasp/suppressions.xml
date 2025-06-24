@@ -14,4 +14,7 @@
   <suppress>
     <cve>CVE-2024-22259</cve>
   </suppress>
+  <suppress>
+    <cve>CVE-2024-38808</cve>
+  </suppress>
 </suppressions>
