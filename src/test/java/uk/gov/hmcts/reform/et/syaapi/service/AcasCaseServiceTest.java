@@ -8,6 +8,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.task.TaskExecutor;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -59,6 +60,8 @@ class AcasCaseServiceTest {
     private IdamClient idamClient;
     @Mock
     private CaseDocumentService caseDocumentService;
+    @Mock
+    private TaskExecutor taskExecutor;
     @InjectMocks
     private AcasCaseService acasCaseService;
     private final CaseTestData testData;
@@ -72,6 +75,10 @@ class AcasCaseServiceTest {
     void setUp() {
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         lenient().when(idamClient.getAccessToken(any(), any())).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        lenient().doAnswer(invocation -> {
+            ((Runnable) invocation.getArgument(0)).run();
+            return null;
+        }).when(taskExecutor).execute(any(Runnable.class));
     }
 
     @Test
@@ -147,13 +154,18 @@ class AcasCaseServiceTest {
                     {
                       "range": {
                         "last_modified": {
-                          "gte": "%s",
-                          "boost": 1.0
+                          "gte": "%s"
                         }
                       }
                     }
                   ],
-                  "boost": 1.0
+                  "must_not": [
+                    {
+                      "term": {
+                        "data.migratedFromEcm": "Yes"
+                      }
+                    }
+                  ]
                 }
               },
               "_source": [
