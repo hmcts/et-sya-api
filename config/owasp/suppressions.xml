@@ -7,8 +7,14 @@
     <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
     <cve>CVE-2023-35116</cve>
   </suppress>
-  <!-- Suppressing due to CVE-2024-38820. Will resolve when we move to Spring Boot 3.2.x -->
+  <!-- Suppressing due to CVE-2024-38820. Will resolve when we move to Spring Boot 3.x https://tools.hmcts.net/jira/browse/RET-5770-->
   <suppress>
     <cve>CVE-2024-38820</cve>
+  </suppress>
+  <suppress>
+    <cve>CVE-2024-22259</cve>
+  </suppress>
+  <suppress>
+    <cve>CVE-2024-38808</cve>
   </suppress>
 </suppressions>
