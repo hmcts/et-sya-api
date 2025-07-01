@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -13,8 +14,6 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.models.AdminDecisionNotificationStateUpdateRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.AdminDecisionNotificationService;
-
-import javax.validation.constraints.NotNull;
 
 import static org.springframework.http.ResponseEntity.ok;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;

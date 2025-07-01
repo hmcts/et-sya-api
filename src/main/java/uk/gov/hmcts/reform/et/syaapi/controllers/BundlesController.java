@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -16,8 +17,6 @@ import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantBundlesRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.BundlesService;
 import uk.gov.hmcts.reform.et.syaapi.service.FeatureToggleService;
-
-import javax.validation.constraints.NotNull;
 
 import static org.springframework.http.ResponseEntity.ok;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
