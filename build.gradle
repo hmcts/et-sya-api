@@ -216,7 +216,7 @@ dependencies {
     exclude group: 'commons-io', module: 'commons-io'
   }
 
-  implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.5'
+  implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.6.0'
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
@@ -235,7 +235,7 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '4.1.2'
 
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '4.1.1-RELEASE'
-  implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.5'
+  implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.6.0'
   implementation group: 'com.google.guava', name: 'guava', version: '33.4.8-jre'
 
   implementation 'org.apache.tika:tika-core:3.1.0'
