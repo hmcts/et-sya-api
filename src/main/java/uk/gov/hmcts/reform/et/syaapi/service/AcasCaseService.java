@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
@@ -28,6 +29,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
@@ -56,6 +59,7 @@ public class AcasCaseService {
     private final CoreCaseDataApi ccdApiClient;
     private final IdamClient idamClient;
     private final CaseDocumentService caseDocumentService;
+    private final TaskExecutor taskExecutor;
 
     @Value("${caseWorkerUserName}")
     private String caseWorkerUserName;
@@ -80,13 +84,18 @@ public class AcasCaseService {
                     {
                       "range": {
                         "last_modified": {
-                          "gte": "%s",
-                          "boost": 1.0
+                          "gte": "%s"
                         }
                       }
                     }
                   ],
-                  "boost": 1.0
+                  "must_not": [
+                    {
+                      "term": {
+                        "data.migratedFromEcm": "Yes"
+                      }
+                    }
+                  ]
                 }
               },
               "_source": [
@@ -94,7 +103,6 @@ public class AcasCaseService {
               ]
             }
             """.formatted(MAX_ES_SIZE, requestDateTime.toString());
-
         return searchEnglandScotlandCases(authorisation, query)
             .stream()
             .map(CaseDetails::getId)
@@ -289,11 +297,28 @@ public class AcasCaseService {
         return caseDataList;
     }
 
+    /**
+     * Searches for cases in both England and Scotland case types based on the provided query. Note that this method
+     * is a synchronous operation that combines results from both case types to optimize performance.
+     * @param authorisation used for IDAM authentication for the query
+     * @param query the query string to search for cases
+     * @return a list of case details that match the query from both England and Scotland case types
+     */
     private List<CaseDetails> searchEnglandScotlandCases(String authorisation, String query) {
-        List<CaseDetails> caseDetailsList = new ArrayList<>();
-        caseDetailsList.addAll(searchCaseType(authorisation, ENGLAND_CASE_TYPE, query));
-        caseDetailsList.addAll(searchCaseType(authorisation, SCOTLAND_CASE_TYPE, query));
-        return caseDetailsList;
+        CompletableFuture<List<CaseDetails>> englandSearchFuture = CompletableFuture.supplyAsync(() ->
+                        searchCaseType(authorisation, ENGLAND_CASE_TYPE, query),
+                taskExecutor
+        );
+
+        CompletableFuture<List<CaseDetails>> scotlandSearchFuture = CompletableFuture.supplyAsync(() ->
+                        searchCaseType(authorisation, SCOTLAND_CASE_TYPE, query),
+                taskExecutor
+        );
+
+        return englandSearchFuture.thenCombine(scotlandSearchFuture,
+                (englandResults, scotlandResults) -> Stream.concat(englandResults.stream(), scotlandResults.stream())
+                .toList())
+                .join();
     }
 
     private List<CaseDetails> searchCaseType(String authorisation, String caseTypeId, String query) {
