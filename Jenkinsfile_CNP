@@ -44,6 +44,7 @@ withPipeline(type, product, component) {
   disableLegacyDeployment()
   enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
   syncBranchesWithMaster(branchesToSync)
+  enablePerformanceTestStages()
   //enableSlackNotifications('#et-builds')
 
   before('smoketest:preview') {
