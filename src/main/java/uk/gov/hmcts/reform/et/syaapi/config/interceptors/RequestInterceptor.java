@@ -32,7 +32,6 @@ public class RequestInterceptor implements HandlerInterceptor {
      * @param handler chosen handler to execute, for type and/or instance evaluation
      * @return true if the token is verified
      */
-    // Spring Boot 3.x HandlerInterceptor: preHandle is default method, do not use @Override
     public boolean preHandle(HttpServletRequest requestServlet, HttpServletResponse responseServlet, 
                              Object handler) throws Exception {
         if (UNAUTHORIZED_APIS.contains(requestServlet.getRequestURI())) {
