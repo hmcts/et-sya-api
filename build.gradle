@@ -147,7 +147,7 @@ jacocoTestReport {
   reports {
     xml.required = true
     csv.required = false
-    xml.destination file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
+    xml.outputLocation = file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
   }
 }
 
@@ -197,7 +197,7 @@ repositories {
   mavenLocal()
   mavenCentral()
   maven {
-    url 'https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/maven/v1'
+    url = 'https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/maven/v1'
   }
 }
 
@@ -308,7 +308,9 @@ dependencies {
   contractTestImplementation sourceSets.test.runtimeClasspath
 }
 
-mainClassName = 'uk.gov.hmcts.reform.et.syaapi.SyaApiApplication'
+application {
+    mainClass = 'uk.gov.hmcts.reform.et.syaapi.SyaApiApplication'
+}
 
 bootJar {
   archiveFileName = "et-sya-api.jar"
