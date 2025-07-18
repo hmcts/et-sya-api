@@ -61,151 +61,151 @@ withPipeline(type, product, component) {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/reports/tests/functional/**/*'
   }
 
-  afterAlways('functionalTest:preview') {
+//   afterAlways('functionalTest:preview') {
 
-        //==========================================
-        // Load Performance Test Config
-        //==========================================
-        stage('Performance Test - Load Config & Utils') {
-            echo "Loading Performance test configuration and utilities from the test/performance directory..."
-            //echo "TEST ENV VARS: \nGIT URL:${env.GIT_URL} \nSlack Channel:${env.BUILD_NOTICE_SLACK_CHANNEL}\nBuildID:${env.BUILD_ID}\nBuild Display Name:${env.BUILD_DISPLAY_NAME}\nJob Name:${env.JOB_NAME}\nJob Base Name:${env.JOB_BASE_NAME}\nBuild Tag:${env.BUILD_TAG}\nChange URL:${env.CHANGE_URL}\nChange ID:${env.CHANGE_ID}\nBuild URL:${env.BUILD_URL}\nJob URL:${env.JOB_URL}\n GIT COMMIT ID:${env.GIT_COMMIT}"
+//         //==========================================
+//         // Load Performance Test Config
+//         //==========================================
+//         stage('Performance Test - Load Config & Utils') {
+//             echo "Loading Performance test configuration and utilities from the test/performance directory..."
+//             //echo "TEST ENV VARS: \nGIT URL:${env.GIT_URL} \nSlack Channel:${env.BUILD_NOTICE_SLACK_CHANNEL}\nBuildID:${env.BUILD_ID}\nBuild Display Name:${env.BUILD_DISPLAY_NAME}\nJob Name:${env.JOB_NAME}\nJob Base Name:${env.JOB_BASE_NAME}\nBuild Tag:${env.BUILD_TAG}\nChange URL:${env.CHANGE_URL}\nChange ID:${env.CHANGE_ID}\nBuild URL:${env.BUILD_URL}\nJob URL:${env.JOB_URL}\n GIT COMMIT ID:${env.GIT_COMMIT}"
             
-            envName = "aat" ///**
-            script {
-                try {
-                    config = load 'src/test/performance/config/config.groovy'
-                    utils = load 'src/test/performance/utils/utils.groovy'
-                    utils.setEnvironmentConfig(config, envName)
-                } catch (Exception e) {
-                    echo "Error Message: ${e.message}"
-                }
-                if (utils?.Test) {
-                    echo "API Host: ${config.Test}"
-                } else {
-                echo "utils is null or Test is not defined"
-                }
-                echo "API Host: ${config.Test}"
-            }
-        }
-        stage('Performance Test') {
+//             envName = "aat" ///**
+//             script {
+//                 try {
+//                     config = load 'src/test/performance/config/config.groovy'
+//                     utils = load 'src/test/performance/utils/utils.groovy'
+//                     utils.setEnvironmentConfig(config, envName)
+//                 } catch (Exception e) {
+//                     echo "Error Message: ${e.message}"
+//                 }
+//                 if (utils?.Test) {
+//                     echo "API Host: ${config.Test}"
+//                 } else {
+//                 echo "utils is null or Test is not defined"
+//                 }
+//                 echo "API Host: ${config.Test}"
+//             }
+//         }
+//         stage('Performance Test') {
 
-        loadVaultSecrets(secrets) // Load Perf secrets
+//         loadVaultSecrets(secrets) // Load Perf secrets
 
-        echo "Starting performance test stage..."
-        // Log details of the build
-        echo "Workspace: ${env.WORKSPACE}\nBranch: ${env.BRANCH_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nDate/Time: ${new Date().format('yyyy-MM-dd HH:mm:ss')}"
-        //Check token:
-        echo "Token: ${env.PERF_SYNTHETIC_MONITOR_TOKEN}"
+//         echo "Starting performance test stage..."
+//         // Log details of the build
+//         echo "Workspace: ${env.WORKSPACE}\nBranch: ${env.BRANCH_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nDate/Time: ${new Date().format('yyyy-MM-dd HH:mm:ss')}"
+//         //Check token:
+//         echo "Token: ${env.PERF_SYNTHETIC_MONITOR_TOKEN}"
 
-        //==========================================
-        //Trigger Custom DT Event with Info:
-        //==========================================
-        script {
-            echo "Posting Custom DT Event:\nCONFIG\n DT Host: ${config.dynatraceApiHost}\nSynthetic Perftest: ${config.dynatraceSyntheticTest}\n EntitySelector: ${config.dynatraceEntitySelector}\n EventEndpoint: ${config.dynatraceEventIngestEndpoint}\nDashboard: ${config.dynatraceDashboardURL}"
+//         //==========================================
+//         //Trigger Custom DT Event with Info:
+//         //==========================================
+//         script {
+//             echo "Posting Custom DT Event:\nCONFIG\n DT Host: ${config.dynatraceApiHost}\nSynthetic Perftest: ${config.dynatraceSyntheticTest}\n EntitySelector: ${config.dynatraceEntitySelector}\n EventEndpoint: ${config.dynatraceEventIngestEndpoint}\nDashboard: ${config.dynatraceDashboardURL}"
             
-            def postDTEvent = utils.postDynatraceEvent (
-                        config.dynatraceApiHost,
-                        config.dynatraceSyntheticTest,
-                        config.dynatraceDashboardId,
-                        config.dynatraceEntitySelector
-                )
+//             def postDTEvent = utils.postDynatraceEvent (
+//                         config.dynatraceApiHost,
+//                         config.dynatraceSyntheticTest,
+//                         config.dynatraceDashboardId,
+//                         config.dynatraceEntitySelector
+//                 )
 
-        //==========================================    
-        /// POST Metric to highlight a deployment
-        //==========================================
-            echo "Posting Custom DT Metric:\nCONFIG\nDT Host: ${config.dynatraceApiHost}\nDT Endpoint: ${config.dynatraceMetricIngestEndpoint}\n MetricType: ${config.dynatraceMetricType}\n MetricTag: ${config.dynatraceMetricTag}\n Environment: perftest"
-            try {
-                def postDynatraceMetric = utils.postDynatraceMetric (
-                            config.dynatraceApiHost,
-                            config.dynatraceMetricIngestEndpoint,
-                            config.dynatraceMetricType,
-                            config.dynatraceMetricTag,
-                            envName
-                )
-            } catch (Exception e)
-            {
-                echo "Failure posting Dynatrace Metric: ${e.message}"
-            }
+//         //==========================================    
+//         /// POST Metric to highlight a deployment
+//         //==========================================
+//             echo "Posting Custom DT Metric:\nCONFIG\nDT Host: ${config.dynatraceApiHost}\nDT Endpoint: ${config.dynatraceMetricIngestEndpoint}\n MetricType: ${config.dynatraceMetricType}\n MetricTag: ${config.dynatraceMetricTag}\n Environment: perftest"
+//             try {
+//                 def postDynatraceMetric = utils.postDynatraceMetric (
+//                             config.dynatraceApiHost,
+//                             config.dynatraceMetricIngestEndpoint,
+//                             config.dynatraceMetricType,
+//                             config.dynatraceMetricTag,
+//                             envName
+//                 )
+//             } catch (Exception e)
+//             {
+//                 echo "Failure posting Dynatrace Metric: ${e.message}"
+//             }
 
-        //==================================================================
-        // For Preview -> Update the DT Synthetic Test with the correct URL & enable
-        //==================================================================
-        /*    def getAndPutDTSynthetic = null
-            try {
-                getAndPutDTSynthetic = utils.getDynatraceSyntheticBody (
-                            config.dynatraceApiHost,
-                            config.dynatraceUpdateSyntheticEndpoint,
-                            config.dynatraceSyntheticTest,
-                            "true")
-            } catch (Exception e)
-            {
-                echo "Failure Getting & Updating Dynatrace Synthetic: ${e.message}"
-            }
-        //
-        //==================================================================
-        // For Preview -> Update the DT Synthetic Test with the correct URL & enable
-        //==================================================================
+//         //==================================================================
+//         // For Preview -> Update the DT Synthetic Test with the correct URL & enable
+//         //==================================================================
+//         /*    def getAndPutDTSynthetic = null
+//             try {
+//                 getAndPutDTSynthetic = utils.getDynatraceSyntheticBody (
+//                             config.dynatraceApiHost,
+//                             config.dynatraceUpdateSyntheticEndpoint,
+//                             config.dynatraceSyntheticTest,
+//                             "true")
+//             } catch (Exception e)
+//             {
+//                 echo "Failure Getting & Updating Dynatrace Synthetic: ${e.message}"
+//             }
+//         //
+//         //==================================================================
+//         // For Preview -> Update the DT Synthetic Test with the correct URL & enable
+//         //==================================================================
         
-            echo "Updating Dynatrace Synthetic Test:\nCONFIG\nDT Host: ${config.dynatraceApiHost}\nDT Endpoint: ${config.dynatraceUpdateSyntheticEndpoint}\nSyntheticTest: SYNTHETIC_TEST-58D99F542AAB721C\nPreviewURL: ${env.AKS_TEST_URL}\nEnvironment: perftest"
-            def putDynatraceSyntheticTest = null
-            try {
-                putDynatraceSyntheticTest = utils.putDynatraceSyntheticTest (
-                            config.dynatraceApiHost,
-                            config.dynatraceUpdateSyntheticEndpoint,
-                            "SYNTHETIC_TEST-58D99F542AAB721C",
-                            "true",
-                            env.AKS_TEST_URL,
-                            "et_cui_applicant_preview")
-            } catch (Exception e)
-            {
-                echo "Failure Updating Dynatrace Synthetic: ${e.message}"
-            }
-        */
-        //==========================================   
-        //Trigger Dynatrace Synthetic Test
-        //==========================================    
-            echo "Triggering Dynatrace Synthetic Test:\nCONFIG\nDT Host: ${config.dynatraceApiHost}\nDT Endpoint: ${config.dynatraceTriggerSyntheticEndpoint}\n SyntheticTest: ${config.dynatraceSyntheticTest}\n Dashboard: ${config.dynatraceDashboardURL}\n Environment: perftest"
-            def postDynatraceSyntheticTest = null 
-            try {
-                postDynatraceSyntheticTest = utils.postDynatraceSyntheticTest (
-                            config.dynatraceApiHost,
-                            config.dynatraceTriggerSyntheticEndpoint,
-                            config.dynatraceSyntheticTest
-                )
-            } catch (Exception e)
-            {
-                echo "Failure Triggering Dynatrace Synthetic: ${e.message}"
-            }
+//             echo "Updating Dynatrace Synthetic Test:\nCONFIG\nDT Host: ${config.dynatraceApiHost}\nDT Endpoint: ${config.dynatraceUpdateSyntheticEndpoint}\nSyntheticTest: SYNTHETIC_TEST-58D99F542AAB721C\nPreviewURL: ${env.AKS_TEST_URL}\nEnvironment: perftest"
+//             def putDynatraceSyntheticTest = null
+//             try {
+//                 putDynatraceSyntheticTest = utils.putDynatraceSyntheticTest (
+//                             config.dynatraceApiHost,
+//                             config.dynatraceUpdateSyntheticEndpoint,
+//                             "SYNTHETIC_TEST-58D99F542AAB721C",
+//                             "true",
+//                             env.AKS_TEST_URL,
+//                             "et_cui_applicant_preview")
+//             } catch (Exception e)
+//             {
+//                 echo "Failure Updating Dynatrace Synthetic: ${e.message}"
+//             }
+//         */
+//         //==========================================   
+//         //Trigger Dynatrace Synthetic Test
+//         //==========================================    
+//             echo "Triggering Dynatrace Synthetic Test:\nCONFIG\nDT Host: ${config.dynatraceApiHost}\nDT Endpoint: ${config.dynatraceTriggerSyntheticEndpoint}\n SyntheticTest: ${config.dynatraceSyntheticTest}\n Dashboard: ${config.dynatraceDashboardURL}\n Environment: perftest"
+//             def postDynatraceSyntheticTest = null 
+//             try {
+//                 postDynatraceSyntheticTest = utils.postDynatraceSyntheticTest (
+//                             config.dynatraceApiHost,
+//                             config.dynatraceTriggerSyntheticEndpoint,
+//                             config.dynatraceSyntheticTest
+//                 )
+//             } catch (Exception e)
+//             {
+//                 echo "Failure Triggering Dynatrace Synthetic: ${e.message}"
+//             }
 
-        //==========================================  
-        //Check for Status of Synthetic Test
-        //========================================== 
-        def status = "TRIGGERED"
-        def checkCount = 1
-        def getDynatraceSyntheticStatus = null 
-        echo "Checking Status of Synthetic....${postDynatraceSyntheticTest.lastExecutionId}"
+//         //==========================================  
+//         //Check for Status of Synthetic Test
+//         //========================================== 
+//         def status = "TRIGGERED"
+//         def checkCount = 1
+//         def getDynatraceSyntheticStatus = null 
+//         echo "Checking Status of Synthetic....${postDynatraceSyntheticTest.lastExecutionId}"
 
-        while (status == "TRIGGERED" && checkCount <= 16) {
-            echo "Checking Status of Synthetic Test:\n TestID: ${postDynatraceSyntheticTest.lastExecutionId}\nStatus: ${config.dynatraceTriggerSyntheticEndpoint} \nCheckCount: ${checkCount} "
-            try {
-                getDynatraceSyntheticStatus = utils.getDynatraceSyntheticStatus (
-                            config.dynatraceApiHost,
-                            postDynatraceSyntheticTest.lastExecutionId
-                )
-                status = getDynatraceSyntheticStatus.executionStatus
-            } catch (Exception e)
-            {
-                echo "Failure posting Dynatrace Metric: ${e.message}"
-                break
-            }
-            if (status == "TRIGGERED") {
-                sleep 20
-                checkCount++
-            }
-        } //End of While
-        } //End of script
-    } //End of Stage
-  } // End of after always
+//         while (status == "TRIGGERED" && checkCount <= 16) {
+//             echo "Checking Status of Synthetic Test:\n TestID: ${postDynatraceSyntheticTest.lastExecutionId}\nStatus: ${config.dynatraceTriggerSyntheticEndpoint} \nCheckCount: ${checkCount} "
+//             try {
+//                 getDynatraceSyntheticStatus = utils.getDynatraceSyntheticStatus (
+//                             config.dynatraceApiHost,
+//                             postDynatraceSyntheticTest.lastExecutionId
+//                 )
+//                 status = getDynatraceSyntheticStatus.executionStatus
+//             } catch (Exception e)
+//             {
+//                 echo "Failure posting Dynatrace Metric: ${e.message}"
+//                 break
+//             }
+//             if (status == "TRIGGERED") {
+//                 sleep 20
+//                 checkCount++
+//             }
+//         } //End of While
+//         } //End of script
+//     } //End of Stage
+//   } // End of after always
 
   before('smoketest:aat') {
     env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
