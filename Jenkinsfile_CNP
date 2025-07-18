@@ -61,7 +61,12 @@ withPipeline(type, product, component) {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/reports/tests/functional/**/*'
   }
 
-//   afterAlways('functionalTest:preview') {
+   afterAlways('functionalTest:preview') {
+
+        stage("Temp Wait to keep Pods") {
+            sleep 1200
+        }
+   }
 
 //         //==========================================
 //         // Load Performance Test Config
