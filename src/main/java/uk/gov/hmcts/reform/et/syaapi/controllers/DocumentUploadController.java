@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.controllers;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -14,8 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocument;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentException;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
-
-import javax.validation.constraints.NotNull;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATION;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
