@@ -9,7 +9,7 @@ this.dynatraceMetricTag = 'namespace:et'
 this.dynatraceSyntheticTest = ""
 this.dynatraceDashboardId = ""
 this.dynatraceDashboardURL = ""
-this.dynatraceEntitySelector = ""
+this.dynatraceEntitySelector = " "
 //Preview Config
 this.dynatraceSyntheticTestPreview = "SYNTHETIC_TEST-008CAF328F244320"
 this.dynatraceDashboardIdPreview = "a4576442-06a9-4a76-baa5-5342a525679f"
