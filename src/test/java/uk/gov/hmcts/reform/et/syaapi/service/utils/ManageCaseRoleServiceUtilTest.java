@@ -8,6 +8,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
+import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRolesRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
@@ -21,10 +22,15 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CASE_ID;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_CASE_ID_LONG;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_CASE_ID_STRING;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_CASE_USER_ROLE_DEFENDANT;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_CASE_USER_ROLE_INVALID;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_CCD_DATA_STORE_BASE_URL;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_CLAIMANT_SOLICITOR_IDAM_ID;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.USER_ID;
 
 class ManageCaseRoleServiceUtilTest {
@@ -136,5 +142,32 @@ class ManageCaseRoleServiceUtilTest {
             new Exception("Test Exception"))).isFalse();
         assertThat(ManageCaseRoleServiceUtil.isCaseRoleAssignmentExceptionForSameUser(
             new Exception("You have already been assigned to this case caseId, "))).isTrue();
+    }
+
+    @Test
+    void theBuildCaseUserRoleRequestByUserIdamIdCaseDetailsAndCaseRole() {
+        CaseAssignmentUserRolesRequest expectedCaseAssignmentUserRolesRequest = CaseAssignmentUserRolesRequest.builder()
+            .caseAssignmentUserRoles(List.of(CaseAssignmentUserRole.builder()
+                                                 .caseDataId(TEST_CASE_ID_STRING)
+                                                 .userId(TEST_CLAIMANT_SOLICITOR_IDAM_ID)
+                                                 .caseRole(CASE_USER_ROLE_CLAIMANT_SOLICITOR).build())).build();
+        CaseAssignmentUserRolesRequest actualCaseAssignmentUserRolesRequest = ManageCaseRoleServiceUtil
+            .buildCaseUserRoleRequestByUserIdamIdCaseDetailsAndCaseRole(
+                TEST_CLAIMANT_SOLICITOR_IDAM_ID,
+                CaseDetails.builder().id(TEST_CASE_ID_LONG).build(),
+                CASE_USER_ROLE_CLAIMANT_SOLICITOR);
+        assertThat(expectedCaseAssignmentUserRolesRequest.getCaseAssignmentUserRoles().getFirst().getCaseDataId())
+            .isEqualTo(actualCaseAssignmentUserRolesRequest.getCaseAssignmentUserRoles().getFirst().getCaseDataId());
+        assertThat(expectedCaseAssignmentUserRolesRequest.getCaseAssignmentUserRoles().getFirst().getCaseRole())
+            .isEqualTo(actualCaseAssignmentUserRolesRequest.getCaseAssignmentUserRoles().getFirst().getCaseRole());
+        assertThat(expectedCaseAssignmentUserRolesRequest.getCaseAssignmentUserRoles().getFirst().getUserId())
+            .isEqualTo(actualCaseAssignmentUserRolesRequest.getCaseAssignmentUserRoles().getFirst().getUserId());
+    }
+
+    @Test
+    void theBuildCaseAccessUrl() {
+        String expectedCaseAccessUrl = "http://localhost:8080/ccd/data-store/case-users?case_ids=1234567890123456";
+        assertThat(ManageCaseRoleServiceUtil.buildCaseAccessUrl(TEST_CCD_DATA_STORE_BASE_URL, TEST_CASE_ID_STRING))
+            .isEqualTo(expectedCaseAccessUrl);
     }
 }

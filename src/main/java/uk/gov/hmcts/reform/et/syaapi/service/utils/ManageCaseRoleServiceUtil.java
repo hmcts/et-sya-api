@@ -17,10 +17,11 @@ import java.util.List;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_STATE_ACCEPTED;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USERS_API_URL;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USERS_RETRIEVE_API;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_IDAM_ID_ALREADY_EXISTS_SAME_USER;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.FIRST_INDEX;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFY_CASE_ROLE_EMPTY_REQUEST;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFY_CASE_USER_ROLE_ITEM_INVALID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.STRING_AMPERSAND;
@@ -162,7 +163,8 @@ public final class ManageCaseRoleServiceUtil {
     private static boolean isCaseRoleInvalid(String caseRole) {
         return StringUtils.isBlank(caseRole)
             || !CASE_USER_ROLE_DEFENDANT.equals(caseRole)
-            && !CASE_USER_ROLE_CREATOR.equals(caseRole);
+            && !CASE_USER_ROLE_CREATOR.equals(caseRole)
+            && !CASE_USER_ROLE_CLAIMANT_SOLICITOR.equals(caseRole);
     }
 
     /**
@@ -203,11 +205,54 @@ public final class ManageCaseRoleServiceUtil {
 
     public static CaseDetails checkCaseDetailsList(List<CaseDetails> caseDetailsList) {
         if (CollectionUtils.isNotEmpty(caseDetailsList)) {
-            CaseDetails caseDetails = caseDetailsList.get(FIRST_INDEX);
+            CaseDetails caseDetails = caseDetailsList.getFirst();
             if (CASE_STATE_ACCEPTED.equals(caseDetails.getState())) {
                 return caseDetails;
             }
         }
         return null;
+    }
+
+    /**
+     * Builds a {@link CaseAssignmentUserRolesRequest} using the provided {@link UserInfo},
+     * {@link CaseDetails}, and case role.
+     *
+     *  <p>
+     *      This method constructs a single {@link CaseAssignmentUserRole} that associates the given user
+     *      with the specified case and role. The constructed role assignment is wrapped in a
+     *      {@link CaseAssignmentUserRolesRequest} and returned.
+     *  </p>
+     *
+     * @param userIdamId  the user IDAM ID
+     * @param caseDetails the case details, including the case ID
+     * @param caseRole    the role to assign to the user for the given case (e.g., "[CLAIMANT]", "[DEFENDANT]")
+     * @return a {@link CaseAssignmentUserRolesRequest} containing the role assignment
+     */
+    public static CaseAssignmentUserRolesRequest buildCaseUserRoleRequestByUserIdamIdCaseDetailsAndCaseRole(
+        String userIdamId, CaseDetails caseDetails, String caseRole) {
+        List<CaseAssignmentUserRole> caseAssignmentUserRoles = new ArrayList<>();
+        caseAssignmentUserRoles.add(CaseAssignmentUserRole
+                                        .builder()
+                                        .caseDataId(String.valueOf(caseDetails.getId()))
+                                        .userId(userIdamId)
+                                        .caseRole(caseRole)
+                                        .build());
+        return CaseAssignmentUserRolesRequest.builder().caseAssignmentUserRoles(caseAssignmentUserRoles).build();
+    }
+
+    /**
+     * Builds the URL used to retrieve case user access information from the CCD Data Store API.
+     *
+     * <p>This method formats a predefined endpoint URL by injecting the given CCD Data Store API base URL
+     * and the case ID into the appropriate placeholders. The resulting URL is intended for retrieving
+     * user assignments or access roles associated with the specified case.</p>
+     *
+     * @param ccdDataStoreApiBaseUrl the base URL of the CCD Data Store API
+     * @param caseId the unique identifier of the case for which access details are being retrieved
+     * @return a fully formed URL as a {@link String} to call the case user access retrieval API
+     */
+    public static String buildCaseAccessUrl(String ccdDataStoreApiBaseUrl,
+                                            String caseId) {
+        return String.format(CASE_USERS_RETRIEVE_API, ccdDataStoreApiBaseUrl, caseId);
     }
 }

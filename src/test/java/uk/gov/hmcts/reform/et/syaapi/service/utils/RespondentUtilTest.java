@@ -24,7 +24,6 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.FIRST_INDEX;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.RespondentUtil.setRespondentIdamIdAndDefaultLinkStatuses;
 
 class RespondentUtilTest {
@@ -66,50 +65,52 @@ class RespondentUtilTest {
                                                   modificationType);
         caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
         if (TestConstants.TEST_MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
-            assertThat(caseData.getRespondentCollection().get(0).getValue().getIdamId()).isEqualTo(idamId);
+            assertThat(caseData.getRespondentCollection().getFirst().getValue().getIdamId()).isEqualTo(idamId);
         } else {
-            assertThat(caseData.getRespondentCollection().get(0).getValue().getIdamId()).isEqualTo(StringUtils.EMPTY);
+            assertThat(caseData.getRespondentCollection().getFirst().getValue().getIdamId())
+                .isEqualTo(StringUtils.EMPTY);
         }
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
+        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
                        .getPersonalDetails())
             .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
+        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
                        .getEt1ClaimForm()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_VIEWED_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
+        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
                        .getRespondentResponse())
             .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
+        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
                        .getHearingDetails()).isEqualTo(
                            TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
+        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
                        .getRespondentRequestsAndApplications())
             .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
+        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
                        .getClaimantApplications()).isEqualTo(
                            TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
+        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
                        .getContactTribunal()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_OPTIONAL);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
+        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
                        .getTribunalOrders())
             .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
+        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
                        .getTribunalJudgements()).isEqualTo(
                            TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
+        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
                        .getDocuments()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_OPTIONAL);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3HubLinksStatuses()
+        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3HubLinksStatuses()
                        .getContactDetails()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3HubLinksStatuses()
+        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3HubLinksStatuses()
                        .getEmployerDetails()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3HubLinksStatuses()
+        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3HubLinksStatuses()
                        .getConciliationAndEmployeeDetails())
             .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3HubLinksStatuses()
+        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3HubLinksStatuses()
                        .getPayPensionBenefitDetails())
             .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3HubLinksStatuses()
+        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3HubLinksStatuses()
                        .getContestClaim()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3HubLinksStatuses().getCheckYorAnswers())
+        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3HubLinksStatuses()
+                       .getCheckYorAnswers())
             .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_CANNOT_START_YET);
     }
 
@@ -128,8 +129,8 @@ class RespondentUtilTest {
             return true;
         }
 
-        if (ObjectUtils.isEmpty(respondentCollection.get(0))
-            || ObjectUtils.isEmpty(((LinkedHashMap<?, ?>) respondentCollection.get(0))
+        if (ObjectUtils.isEmpty(respondentCollection.getFirst())
+            || ObjectUtils.isEmpty(((LinkedHashMap<?, ?>) respondentCollection.getFirst())
                                        .get(TestConstants.TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_VALUE_KEY))
             || StringUtils.isBlank(respondentName)) {
             assertThat(assertThrows(RuntimeException.class, () ->
@@ -148,7 +149,7 @@ class RespondentUtilTest {
                                                       String respondentName,
                                                       String idamId,
                                                       String modificationType) {
-        if (!checkRespondentName(caseData.getRespondentCollection().get(0).getValue(), respondentName)) {
+        if (!checkRespondentName(caseData.getRespondentCollection().getFirst().getValue(), respondentName)) {
             assertThat(assertThrows(RuntimeException.class, () ->
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
@@ -175,8 +176,8 @@ class RespondentUtilTest {
             return true;
         }
 
-        if (StringUtils.isNotBlank(caseData.getRespondentCollection().get(0).getValue().getIdamId())
-            && !idamId.equals(caseData.getRespondentCollection().get(0).getValue().getIdamId())) {
+        if (StringUtils.isNotBlank(caseData.getRespondentCollection().getFirst().getValue().getIdamId())
+            && !idamId.equals(caseData.getRespondentCollection().getFirst().getValue().getIdamId())) {
             assertThat(assertThrows(RuntimeException.class, () ->
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
@@ -236,36 +237,39 @@ class RespondentUtilTest {
 
         CaseDetails caseDetailsWithCorrectRespondentName = new CaseTestData().getCaseDetailsWithCaseData();
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
-        caseData.getRespondentCollection().get(0).getValue().setRespondentName(TestConstants.TEST_RESPONDENT_NAME);
+        caseData.getRespondentCollection().getFirst().getValue().setRespondentName(TestConstants.TEST_RESPONDENT_NAME);
         caseDetailsWithCorrectRespondentName.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
 
         CaseDetails caseDetailsWithCorrectOrganisationName = new CaseTestData().getCaseDetailsWithCaseData();
         caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
-        caseData.getRespondentCollection().get(0).getValue()
+        caseData.getRespondentCollection().getFirst().getValue()
             .setRespondentOrganisation(TestConstants.TEST_RESPONDENT_NAME);
         caseDetailsWithCorrectOrganisationName.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
 
         caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
-        caseData.getRespondentCollection().get(0).getValue().setRespondentFirstName(TestConstants.TEST_RESPONDENT_NAME);
-        caseData.getRespondentCollection().get(0).getValue().setRespondentLastName(StringUtils.EMPTY);
+        caseData.getRespondentCollection().getFirst().getValue()
+            .setRespondentFirstName(TestConstants.TEST_RESPONDENT_NAME);
+        caseData.getRespondentCollection().getFirst().getValue().setRespondentLastName(StringUtils.EMPTY);
         CaseDetails caseDetailsWithCorrectFirstName = new CaseTestData().getCaseDetailsWithCaseData();
         caseDetailsWithCorrectFirstName.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
 
         caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
-        caseData.getRespondentCollection().get(0).getValue().setRespondentLastName(TestConstants.TEST_RESPONDENT_NAME);
-        caseData.getRespondentCollection().get(0).getValue().setRespondentFirstName(StringUtils.EMPTY);
+        caseData.getRespondentCollection().getFirst().getValue()
+            .setRespondentLastName(TestConstants.TEST_RESPONDENT_NAME);
+        caseData.getRespondentCollection().getFirst().getValue().setRespondentFirstName(StringUtils.EMPTY);
         CaseDetails caseDetailsWithCorrectLastName = new CaseTestData().getCaseDetailsWithCaseData();
         caseDetailsWithCorrectLastName.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
 
         caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
-        caseData.getRespondentCollection().get(0).getValue().setRespondentFirstName("Respondent");
-        caseData.getRespondentCollection().get(0).getValue().setRespondentLastName("Name");
+        caseData.getRespondentCollection().getFirst().getValue().setRespondentFirstName("Respondent");
+        caseData.getRespondentCollection().getFirst().getValue().setRespondentLastName("Name");
         CaseDetails caseDetailsWithCorrectFirstAndLastName = new CaseTestData().getCaseDetailsWithCaseData();
         caseDetailsWithCorrectFirstAndLastName.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
 
         caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
-        caseData.getRespondentCollection().get(0).getValue().setRespondentName(TestConstants.TEST_RESPONDENT_NAME);
-        caseData.getRespondentCollection().get(0).getValue().setRespondentName(TestConstants.TEST_RESPONDENT_IDAM_ID_2);
+        caseData.getRespondentCollection().getFirst().getValue().setRespondentName(TestConstants.TEST_RESPONDENT_NAME);
+        caseData.getRespondentCollection().getFirst().getValue()
+            .setRespondentName(TestConstants.TEST_RESPONDENT_IDAM_ID_2);
         CaseDetails caseDetailsWithDifferentIdamId = new CaseTestData().getCaseDetailsWithCaseData();
         caseDetailsWithCorrectRespondentName.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
 
@@ -336,7 +340,7 @@ class RespondentUtilTest {
         if (ObjectUtils.isNotEmpty(caseAssignedUserRolesResponse)
             && CollectionUtils.isNotEmpty(caseAssignedUserRolesResponse.getCaseAssignedUserRoles())
             && CASE_USER_ROLE_CREATOR.equals(caseAssignedUserRolesResponse
-                                                 .getCaseAssignedUserRoles().get(FIRST_INDEX).getCaseRole())) {
+                                                 .getCaseAssignedUserRoles().getFirst().getCaseRole())) {
             assertThat(RespondentUtil.checkIsUserCreator(caseAssignedUserRolesResponse)).isTrue();
             return;
         }

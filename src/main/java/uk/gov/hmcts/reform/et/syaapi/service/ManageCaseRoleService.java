@@ -7,6 +7,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Retryable;
@@ -19,11 +20,15 @@ import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesResponse;
 import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRolesRequest;
 import uk.gov.hmcts.ecm.common.model.ccd.SearchCaseAssignedUserRolesRequest;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.CaseUserAssignment;
+import uk.gov.hmcts.et.common.model.ccd.CaseUserAssignmentData;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
+import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.DocumentUtil;
@@ -39,10 +44,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static uk.gov.hmcts.ecm.common.client.CcdClient.EXPERIMENTAL;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CLAIMANT_SOLICITOR;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_ET3_FORM;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.RemoteServiceUtil.buildHeaders;
 
 /**
  * Provides services for role modification.
@@ -65,6 +76,27 @@ public class ManageCaseRoleService {
 
     @Value("${core_case_data.api.url}")
     private String ccdApiUrl;
+
+    /**
+     * Fetches the user role assignments associated with a given case ID from the CCD Data Store API.
+     *
+     * <p>This method constructs the appropriate API endpoint URL, obtains an admin authorization token,
+     * and sends a GET request to retrieve user assignments for the specified case. The response is deserialized
+     * into a {@link CaseUserAssignmentData} object, which includes user-role mappings for the case.</p>
+     *
+     * @param caseId the unique identifier of the case whose user assignments are to be retrieved
+     * @return a {@link CaseUserAssignmentData} object containing the list of user assignments for the case
+     * @throws IOException if there is a failure during URL construction or API communication
+     */
+    public CaseUserAssignmentData fetchCaseUserAssignmentsByCaseId(String caseId) throws IOException {
+        String uri = ManageCaseRoleServiceUtil
+            .buildCaseAccessUrl(ccdApiUrl, caseId);
+        String authToken = adminUserService.getAdminUserToken();
+        HttpHeaders httpHeaders = buildHeaders(authToken, authTokenGenerator.generate());
+        httpHeaders.add(EXPERIMENTAL, "true");
+        HttpEntity<String> request = new HttpEntity<>(httpHeaders);
+        return restTemplate.exchange(uri, HttpMethod.GET, request, CaseUserAssignmentData.class).getBody();
+    }
 
     /**
      * Gets case with the user entered details, caseId, respondentName, claimantFirstNames and claimantSurname.
@@ -136,9 +168,9 @@ public class ManageCaseRoleService {
      * @return list of case details that are assigned to the user.
      * @throws IOException Exception when any problem occurs while calling case assignment api (/case-users)
      */
-    public List<CaseDetails> modifyUserCaseRoles(String authorisation,
-                                                 ModifyCaseUserRolesRequest modifyCaseUserRolesRequest,
-                                                 String modificationType)
+    public List<CaseDetails> modifyUserCaseRolesForRespondents(String authorisation,
+                                                               ModifyCaseUserRolesRequest modifyCaseUserRolesRequest,
+                                                               String modificationType)
         throws IOException {
         List<CaseDetails> caseDetailsList = new ArrayList<>();
         // Checks modifyCaseUserRolesRequest parameter if it is empty or not and it's objects.
@@ -189,7 +221,7 @@ public class ManageCaseRoleService {
             String adminToken = adminUserService.getAdminUserToken();
             HttpEntity<CaseAssignmentUserRolesRequest> requestEntity =
                 new HttpEntity<>(caseAssignmentUserRolesRequest,
-                                 RemoteServiceUtil.buildHeaders(adminToken, this.authTokenGenerator.generate()));
+                                 buildHeaders(adminToken, this.authTokenGenerator.generate()));
             restTemplate.exchange(ccdApiUrl + ManageCaseRoleConstants.CASE_USERS_API_URL,
                                   httpMethod,
                                   requestEntity,
@@ -270,7 +302,7 @@ public class ManageCaseRoleService {
         ResponseEntity<CaseAssignedUserRolesResponse> response;
         try {
             HttpEntity<Object> requestEntity =
-                new HttpEntity<>(RemoteServiceUtil.buildHeaders(authorization, this.authTokenGenerator.generate()));
+                new HttpEntity<>(buildHeaders(authorization, this.authTokenGenerator.generate()));
             response = restTemplate.exchange(
                 aacApiUri,
                 HttpMethod.GET,
@@ -315,7 +347,7 @@ public class ManageCaseRoleService {
         try {
             HttpEntity<SearchCaseAssignedUserRolesRequest> requestHttpEntity =
                 new HttpEntity<>(searchCaseAssignedUserRolesRequest,
-                                 RemoteServiceUtil.buildHeaders(authorization, this.authTokenGenerator.generate()));
+                                 buildHeaders(authorization, this.authTokenGenerator.generate()));
             response = restTemplate
                 .postForObject(ccdApiUrl + ManageCaseRoleConstants.CASE_USER_ROLE_CCD_API_POST_METHOD_NAME,
                                requestHttpEntity,
@@ -348,7 +380,7 @@ public class ManageCaseRoleService {
         List<CaseDetails> caseDetailsListByCaseUserRole =
             getCasesByCaseDetailsListAuthorizationAndCaseUserRole(List.of(caseDetails), authorization, caseUserRole);
         return CollectionUtils.isNotEmpty(caseDetailsListByCaseUserRole)
-            ? caseDetailsListByCaseUserRole.get(ManageCaseRoleConstants.FIRST_INDEX)
+            ? caseDetailsListByCaseUserRole.getFirst()
             : null;
     }
 
@@ -391,5 +423,129 @@ public class ManageCaseRoleService {
             throw new ManageCaseRoleException(e);
         }
         return caseDetailsListByRole;
+    }
+
+    /**
+     * Revokes the claimant solicitor role from a case identified by the given submission reference.
+     *
+     * <p>This method performs the following steps:
+     * <ul>
+     *     <li>Logs the intention to revoke the claimant solicitor role for the specified submission reference.</li>
+     *     <li>Retrieves the {@link CaseDetails} where the current user holds the "creator" role.</li>
+     *     <li>If the case is found, revokes the "[CLAIMANT_SOLICITOR]" role assigned to that case.</li>
+     *     <li>Removes the claimant representative data from the case.</li>
+     * </ul>
+     * If the case is not found, a {@link ManageCaseRoleException} is thrown.</p>
+     *
+     * @param authorisation the authorization token of the user performing the operation
+     * @param caseSubmissionReference the unique reference used to locate the case
+     * @return the updated {@link CaseDetails} object with the claimant representative removed
+     * @throws IOException if there is an error during retrieval or revocation of user roles
+     * @throws ManageCaseRoleException if no matching case is found for the provided reference
+     */
+    public CaseDetails revokeClaimantSolicitorRole(String authorisation, String caseSubmissionReference)
+        throws IOException {
+        log.info("Revoke claimant solicitor role for case submission reference: {}", caseSubmissionReference);
+        CaseDetails caseDetails =
+            getUserCaseByCaseUserRole(authorisation, caseSubmissionReference, CASE_USER_ROLE_CREATOR);
+        if (ObjectUtils.isEmpty(caseDetails)) {
+            log.error("Unable to find case details for case submission reference: {}",
+                      caseSubmissionReference);
+            throw new ManageCaseRoleException(new Exception(String.format(
+                ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND, caseSubmissionReference)));
+        }
+        revokeCaseUserRole(caseDetails, CASE_USER_ROLE_CLAIMANT_SOLICITOR);
+        return removeClaimantRepresentativeFromCaseData(authorisation, caseDetails);
+    }
+
+    /**
+     * Revokes a specific user role from a case by removing the user's assignment for the given role.
+     *
+     * <p>This method locates the user assigned to the specified case role within the provided
+     * {@link CaseDetails}. If the user assignment is found, it constructs a request to revoke
+     * the user's role and invokes an external API call to perform the revocation. If the role
+     * assignment is not found, a {@link ManageCaseRoleException} is thrown.</p>
+     *
+     * @param caseDetails the case from which the user role should be revoked
+     * @param role the case role to revoke (e.g., "[CLAIMANT_SOLICITOR]")
+     * @throws IOException if an error occurs while retrieving user assignments or during the HTTP call
+     * @throws ManageCaseRoleException if no matching user-role assignment is found for the given case and role
+     */
+    public void revokeCaseUserRole(CaseDetails caseDetails, String role) throws IOException {
+        CaseUserAssignment caseUserAssignment = findCaseUserAssignmentByRoleAndCase(
+            role, caseDetails);
+        if (ObjectUtils.isEmpty(caseUserAssignment)) {
+            log.error("Unable to find case user role for case id: {} and case role: {}",
+                      caseDetails.getId(), CASE_USER_ROLE_CLAIMANT_SOLICITOR);
+            throw new ManageCaseRoleException(new Exception(
+                String.format(ManageCaseRoleConstants.EXCEPTION_CASE_USER_ROLES_NOT_FOUND, caseDetails.getId())));
+        }
+        CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest = ManageCaseRoleServiceUtil
+            .buildCaseUserRoleRequestByUserIdamIdCaseDetailsAndCaseRole(
+                caseUserAssignment.getUserId(),
+                caseDetails,
+                role);
+        HttpMethod httpMethod = RemoteServiceUtil.getHttpMethodByCaseUserRoleModificationType(
+            ManageCaseRoleConstants.MODIFICATION_TYPE_REVOKE);
+        restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, httpMethod);
+    }
+
+    /**
+     * Finds a {@link CaseUserAssignment} that matches the specified case role within the given case.
+     *
+     * <p>This method retrieves all user role assignments associated with the provided case ID
+     * and searches for one that matches the specified case role. If no assignments are found
+     * for the case or the response is empty, a {@link ManageCaseRoleException} is thrown.
+     * If no matching role is found among the assignments, {@code null} is returned.</p>
+     *
+     * @param caseRole the role to match (e.g., "[APPLICANT]", "[RESPONDENT]")
+     * @param caseDetails the case from which to retrieve user assignments
+     * @return the matching {@link CaseUserAssignment}, or {@code null} if no match is found
+     * @throws IOException if an error occurs while retrieving user assignments
+     * @throws ManageCaseRoleException if no user assignments are found for the case
+     */
+    public CaseUserAssignment findCaseUserAssignmentByRoleAndCase(String caseRole, CaseDetails caseDetails)
+        throws IOException {
+        CaseUserAssignmentData caseUserAssignmentData =
+            fetchCaseUserAssignmentsByCaseId(caseDetails.getId().toString());
+        if (ObjectUtils.isEmpty(caseUserAssignmentData)
+            || CollectionUtils.isEmpty(caseUserAssignmentData.getCaseUserAssignments())) {
+            log.error("Unable to find case user roles for case id: {}", caseDetails.getId());
+            throw new ManageCaseRoleException(new Exception(
+                String.format(ManageCaseRoleConstants.EXCEPTION_CASE_USER_ROLES_NOT_FOUND, caseDetails.getId())));
+        }
+        for (CaseUserAssignment caseAssignedUserRole : caseUserAssignmentData.getCaseUserAssignments()) {
+            if (caseRole.equals(caseAssignedUserRole.getCaseRole())) {
+                return caseAssignedUserRole;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Removes the claimant representative information from the provided case data.
+     *
+     * <p>This method updates the given {@link CaseDetails} object by:
+     * <ul>
+     *     <li>Deserializing the case data into a {@link CaseData} object.</li>
+     *     <li>Setting the claimant represented question to {@code NO}.</li>
+     *     <li>Clearing the {@code representativeClaimantType} field.</li>
+     *     <li>Serializing the updated {@code CaseData} back into the case details map structure.</li>
+     * </ul>
+     * Finally, it calls the ET3 service to persist the updated case details, returning the updated
+     * {@link CaseDetails} object.</p>
+     *
+     * @param authorisation the authorization token of the user performing the update
+     * @param caseDetails the {@link CaseDetails} object containing the case to update
+     * @return the updated {@link CaseDetails} with claimant representative fields removed
+     */
+    public CaseDetails removeClaimantRepresentativeFromCaseData(String authorisation, CaseDetails caseDetails) {
+        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
+        caseData.setClaimantRepresentedQuestion(NO);
+        caseData.setRepresentativeClaimantType(null);
+        caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+        return et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(authorisation,
+                                                                              caseDetails,
+                                                                              UPDATE_CASE_SUBMITTED);
     }
 }

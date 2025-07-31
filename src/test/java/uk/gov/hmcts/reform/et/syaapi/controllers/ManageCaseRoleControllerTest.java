@@ -81,7 +81,7 @@ class ManageCaseRoleControllerTest {
                 .builder()
                 .modifyCaseUserRoles(List.of(modifyCaseUserRole))
                 .build();
-        when(manageCaseRoleService.modifyUserCaseRoles(any(), any(), any())).thenReturn(
+        when(manageCaseRoleService.modifyUserCaseRolesForRespondents(any(), any(), any())).thenReturn(
             List.of(new CaseTestData().getCaseDetails()));
         mockMvc.perform(post(POST_MODIFY_CASE_USER_ROLE_URL)
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
@@ -100,7 +100,7 @@ class ManageCaseRoleControllerTest {
             .caseAssignmentUserRoles(List.of(caseAssignmentUserRole))
             .build();
 
-        when(manageCaseRoleService.modifyUserCaseRoles(any(), any(), any())).thenReturn(
+        when(manageCaseRoleService.modifyUserCaseRolesForRespondents(any(), any(), any())).thenReturn(
             List.of(new CaseTestData().getCaseDetails()));
         mockMvc.perform(post(POST_MODIFY_CASE_USER_ROLE_URL)
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
