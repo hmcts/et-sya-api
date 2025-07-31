@@ -375,7 +375,7 @@ public class ManageCaseRoleService {
         CaseDetails caseDetails = ccdApi.getCase(authorization, authTokenGenerator.generate(), caseId);
         if (ObjectUtils.isEmpty(caseDetails)) {
             throw new ManageCaseRoleException(
-                new Exception("Unable to find user case by case id: " + caseDetails.getId()));
+                new Exception("Unable to find user case by case id: " + caseId));
         }
         List<CaseDetails> caseDetailsListByCaseUserRole =
             getCasesByCaseDetailsListAuthorizationAndCaseUserRole(List.of(caseDetails), authorization, caseUserRole);
