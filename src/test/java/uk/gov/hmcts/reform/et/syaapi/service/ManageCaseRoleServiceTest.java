@@ -716,9 +716,10 @@ class ManageCaseRoleServiceTest {
                                    any(HttpEntity.class),
                                    eq(CaseUserAssignmentData.class))).thenReturn(
                                        new ResponseEntity<>(null, HttpStatus.OK));
+        CaseDetails caseDetails = CaseDetails.builder().id(TEST_CASE_ID_LONG).build();
         ManageCaseRoleException caseRoleException = assertThrows(ManageCaseRoleException.class, () ->
             manageCaseRoleService.findCaseUserAssignmentByRoleAndCase(
-                CASE_USER_ROLE_CLAIMANT_SOLICITOR, CaseDetails.builder().id(TEST_CASE_ID_LONG).build()));
+                CASE_USER_ROLE_CLAIMANT_SOLICITOR, caseDetails));
         assertThat(caseRoleException.getMessage())
             .isEqualTo("java.lang.Exception: Case user roles not found for caseId: 1234567890123456");
         CaseUserAssignmentData caseUserAssignmentData = CaseUserAssignmentData.builder()
@@ -745,17 +746,10 @@ class ManageCaseRoleServiceTest {
     @Test
     @SneakyThrows
     void theRevokeCaseUserRole() {
+        ReflectionTestUtils.setField(manageCaseRoleService,
+                                     CCD_API_URL_PARAMETER_NAME,
+                                     CCD_API_URL_PARAMETER_TEST_VALUE);
         when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
-        when(restTemplate.exchange(anyString(),
-                                   eq(HttpMethod.GET),
-                                   any(HttpEntity.class),
-                                   eq(CaseUserAssignmentData.class))).thenReturn(
-                                       new ResponseEntity<>(null, HttpStatus.OK));
-        ManageCaseRoleException caseRoleException = assertThrows(ManageCaseRoleException.class, () ->
-            manageCaseRoleService.findCaseUserAssignmentByRoleAndCase(
-                CASE_USER_ROLE_CLAIMANT_SOLICITOR, CaseDetails.builder().id(TEST_CASE_ID_LONG).build()));
-        assertThat(caseRoleException.getMessage())
-            .isEqualTo("java.lang.Exception: Case user roles not found for caseId: 1234567890123456");
         CaseUserAssignmentData caseUserAssignmentData = CaseUserAssignmentData.builder()
             .caseUserAssignments(List.of(CaseUserAssignment.builder()
                                              .caseId(CASE_ID)
@@ -763,18 +757,21 @@ class ManageCaseRoleServiceTest {
                                              .caseRole(CASE_USER_ROLE_CLAIMANT_SOLICITOR)
                                              .build()))
             .build();
-        when(restTemplate.exchange(anyString(),
+        String getCaseUserAssignmentsUrl = "https://test.url.com/case-users?case_ids=1234567890123456";
+        when(restTemplate.exchange(eq(getCaseUserAssignmentsUrl),
                                    eq(HttpMethod.GET),
                                    any(HttpEntity.class),
                                    eq(CaseUserAssignmentData.class))).thenReturn(
                                        new ResponseEntity<>(caseUserAssignmentData, HttpStatus.OK));
-        assertThat(manageCaseRoleService.findCaseUserAssignmentByRoleAndCase(CASE_USER_ROLE_CREATOR,
-                                                                             CaseDetails.builder().id(TEST_CASE_ID_LONG)
-                                                                                 .build()))
-            .isNull();
-        assertThat(manageCaseRoleService.findCaseUserAssignmentByRoleAndCase(CASE_USER_ROLE_CLAIMANT_SOLICITOR,
-                                                                             CaseDetails.builder().id(TEST_CASE_ID_LONG)
-                                                                                 .build()))
-            .isNotNull();
+        CaseDetails caseDetails = CaseDetails.builder().id(TEST_CASE_ID_LONG).build();
+        // When the case user role is being tried to be revoked with invalid case user role
+        ManageCaseRoleException manageCaseRoleException =
+            assertThrows(ManageCaseRoleException.class,() -> manageCaseRoleService
+                .revokeCaseUserRole(caseDetails, CASE_USER_ROLE_CREATOR));
+        String expectedMessage = "java.lang.Exception: Case user roles not found for caseId: 1234567890123456";
+        assertThat(manageCaseRoleException.getMessage()).isEqualTo(expectedMessage);
+        // When the case user role is successfully revoked
+        assertDoesNotThrow(() -> manageCaseRoleService
+            .revokeCaseUserRole(caseDetails, CASE_USER_ROLE_CLAIMANT_SOLICITOR));
     }
 }
