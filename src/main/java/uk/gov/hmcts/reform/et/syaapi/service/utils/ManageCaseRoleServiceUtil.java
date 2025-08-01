@@ -149,20 +149,26 @@ public final class ManageCaseRoleServiceUtil {
     }
 
     private static void checkModifyCaseUserRole(ModifyCaseUserRole modifyCaseUserRole) {
-        if (ObjectUtils.isEmpty(modifyCaseUserRole)
-            && StringUtils.isBlank(modifyCaseUserRole.getUserId())
+        if (ObjectUtils.isEmpty(modifyCaseUserRole)) {
+            throw new ManageCaseRoleException(new Exception(String.format(MODIFY_CASE_USER_ROLE_ITEM_INVALID,
+                                                                          "ModifyCaseUserRole is empty")));
+        }
+        if (StringUtils.isBlank(modifyCaseUserRole.getUserId())
             && StringUtils.isBlank(modifyCaseUserRole.getCaseTypeId())
             && StringUtils.isBlank(modifyCaseUserRole.getCaseDataId())
             && StringUtils.isBlank(modifyCaseUserRole.getRespondentName())
-            && isCaseRoleInvalid(modifyCaseUserRole.getCaseRole())) {
+            && StringUtils.isBlank(modifyCaseUserRole.getCaseRole())) {
+            throw new ManageCaseRoleException(
+                new Exception(String.format(MODIFY_CASE_USER_ROLE_ITEM_INVALID, modifyCaseUserRole.getCaseDataId())));
+        }
+        if (isCaseRoleInvalid(modifyCaseUserRole.getCaseRole())) {
             throw new ManageCaseRoleException(
                 new Exception(String.format(MODIFY_CASE_USER_ROLE_ITEM_INVALID, modifyCaseUserRole.getCaseDataId())));
         }
     }
 
     private static boolean isCaseRoleInvalid(String caseRole) {
-        return StringUtils.isBlank(caseRole)
-            || !CASE_USER_ROLE_DEFENDANT.equals(caseRole)
+        return !CASE_USER_ROLE_DEFENDANT.equals(caseRole)
             && !CASE_USER_ROLE_CREATOR.equals(caseRole)
             && !CASE_USER_ROLE_CLAIMANT_SOLICITOR.equals(caseRole);
     }
