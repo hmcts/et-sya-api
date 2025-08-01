@@ -185,9 +185,11 @@ class ManageCaseRoleServiceUtilTest {
         assertThrows(ManageCaseRoleException.class, () -> ManageCaseRoleServiceUtil.checkModifyCaseUserRolesRequest(
             modifyCaseUserRolesRequestWithNullModifyCaseUserRole));
         // Should throw exception when modifyCaseUserRolesRequest has empty modifyCaseUserRole
-        assertThrows(ManageCaseRoleException.class, () -> ManageCaseRoleServiceUtil.checkModifyCaseUserRolesRequest(
+        ModifyCaseUserRolesRequest modifyCaseUserRolesRequest =
             ModifyCaseUserRolesRequest.builder().modifyCaseUserRoles(
-                List.of(ModifyCaseUserRole.builder().build())).build()));
+                List.of(ModifyCaseUserRole.builder().build())).build();
+        assertThrows(ManageCaseRoleException.class,
+                     () -> ManageCaseRoleServiceUtil.checkModifyCaseUserRolesRequest(modifyCaseUserRolesRequest));
         // Should not throw exception when modifyCaseUserRolesRequest has modifyCaseUserRole with not empty userId,
         // and valid caseRole
         ModifyCaseUserRole modifyCaseUserRoleNotEmptyUserId = ModifyCaseUserRole.builder()
@@ -253,9 +255,10 @@ class ManageCaseRoleServiceUtilTest {
         ModifyCaseUserRole modifyCaseUserRoleNotEmptyCaseRoleInvalid = ModifyCaseUserRole.builder()
             .caseRole(TEST_CASE_USER_ROLE_INVALID)
             .build();
-        assertThrows(ManageCaseRoleException.class, () -> ManageCaseRoleServiceUtil.checkModifyCaseUserRolesRequest(
-            ModifyCaseUserRolesRequest.builder().modifyCaseUserRoles(
-                List.of(modifyCaseUserRoleNotEmptyCaseRoleInvalid)).build()));
-
+        ModifyCaseUserRolesRequest modifyCaseUserRolesRequestNotEmptyCaseRoleInvalid =
+            ModifyCaseUserRolesRequest.builder()
+                .modifyCaseUserRoles(List.of(modifyCaseUserRoleNotEmptyCaseRoleInvalid)).build();
+        assertThrows(ManageCaseRoleException.class, () -> ManageCaseRoleServiceUtil
+            .checkModifyCaseUserRolesRequest(modifyCaseUserRolesRequestNotEmptyCaseRoleInvalid));
     }
 }
