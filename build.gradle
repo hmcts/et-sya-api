@@ -208,10 +208,10 @@ ext {
 
 dependencies {
   implementation group: 'jakarta.validation', name: 'jakarta.validation-api', version: '3.1.1'
-  implementation group: 'org.hibernate.validator', name: 'hibernate-validator', version: '8.0.1.Final'
+  implementation group: 'org.hibernate.validator', name: 'hibernate-validator', version: '8.0.2.Final'
   implementation group: 'org.glassfish', name: 'jakarta.el', version: '4.0.2'
   implementation group: 'org.glassfish', name: 'jakarta.el', version: '4.0.2'
-  implementation group: 'org.hibernate.validator', name: 'hibernate-validator', version: '8.0.1.Final'
+  implementation group: 'org.hibernate.validator', name: 'hibernate-validator', version: '8.0.2.Final'
   implementation group: 'jakarta.validation', name: 'jakarta.validation-api', version: '3.1.1'
 
   implementation group: 'com.github.hmcts', name: 'et-data-model', version:'4.2.17'
