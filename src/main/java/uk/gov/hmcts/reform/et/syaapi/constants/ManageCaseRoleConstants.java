@@ -19,9 +19,9 @@ public final class ManageCaseRoleConstants {
     public static final String MODIFICATION_TYPE_ASSIGNMENT = "Assignment";
     public static final String MODIFICATION_TYPE_UPDATE = "update";
     public static final String MODIFICATION_TYPE_REVOKE = "Revoke";
-    public static final int FIRST_INDEX = 0;
     public static final String CASE_USER_ROLE_CREATOR = "[CREATOR]";
     public static final String CASE_USER_ROLE_DEFENDANT = "[DEFENDANT]";
+    public static final String CASE_USER_ROLE_CLAIMANT_SOLICITOR = "[CLAIMANTSOLICITOR]";
     public static final String STRING_AMPERSAND = "&";
     public static final String STRING_EQUAL = "=";
     public static final String STRING_QUESTION_MARK = "?";
@@ -32,6 +32,7 @@ public final class ManageCaseRoleConstants {
     public static final String STRING_RIGHT_SQUARE_BRACKET = "]";
     public static final String CASE_USER_ROLE_API_PARAMETER_NAME = "case_user_role";
     public static final String CASE_USER_ROLE_CCD_API_POST_METHOD_NAME = "/case-users/search";
+    public static final String CASE_USERS_RETRIEVE_API = "%s/case-users?case_ids=%s";
     public static final String LINK_STATUS_NOT_STARTED_YET = "notStartedYet";
     public static final String ET3_STATUS_IN_PROGRESS = "inProgress";
     public static final String SECTION_STATUS_COMPLETED = "completed";
@@ -70,6 +71,7 @@ public final class ManageCaseRoleConstants {
     public static final String ET3_STATUS_SUBMITTED = "submitted";
     public static final String RESPONSE_STATUS_COMPLETED = "completed";
     public static final String ET3_RESPONSE_LANGUAGE_PREFERENCE_WELSH = "Welsh";
+    public static final String EXCEPTION_CASE_USER_ROLES_NOT_FOUND = "Case user roles not found for caseId: %s";
 
     private ManageCaseRoleConstants() {
         // restrict instantiation
