@@ -23,6 +23,7 @@ import uk.gov.hmcts.ecm.common.model.ccd.SearchCaseAssignedUserRolesRequest;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.CaseUserAssignment;
 import uk.gov.hmcts.et.common.model.ccd.CaseUserAssignmentData;
+import uk.gov.hmcts.et.common.model.ccd.types.OrganisationPolicy;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -48,6 +49,7 @@ import static uk.gov.hmcts.ecm.common.client.CcdClient.EXPERIMENTAL;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
@@ -542,7 +544,11 @@ public class ManageCaseRoleService {
     public CaseDetails removeClaimantRepresentativeFromCaseData(String authorisation, CaseDetails caseDetails) {
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
         caseData.setClaimantRepresentedQuestion(NO);
+        caseData.setClaimantRepresentativeRemoved(YES);
         caseData.setRepresentativeClaimantType(null);
+        OrganisationPolicy organisationPolicy = OrganisationPolicy.builder()
+            .orgPolicyCaseAssignedRole(CASE_USER_ROLE_CLAIMANT_SOLICITOR).build();
+        caseData.setClaimantRepresentativeOrganisationPolicy(organisationPolicy);
         caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
         return et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(authorisation,
                                                                               caseDetails,
