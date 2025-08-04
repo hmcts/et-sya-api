@@ -293,7 +293,7 @@ dependencies {
   testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit', version: '4.1.1'
 
   testImplementation 'com.github.hmcts:fortify-client:1.4.9:all'
-  testImplementation 'net.bytebuddy:byte-buddy:1.14.12'
+  testImplementation 'net.bytebuddy:byte-buddy:1.17.6'
   // Pact Contract Tests
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: '4.1.41'
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'java8', version: '4.1.41'
