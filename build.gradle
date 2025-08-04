@@ -269,7 +269,7 @@ dependencies {
   implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.5.18'
   implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.5.18'
 
-  implementation group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.0.0'
+  implementation group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.1.0'
 
   compileOnly 'org.projectlombok:lombok'
   annotationProcessor group: 'org.projectlombok', name: 'lombok'
@@ -281,7 +281,7 @@ dependencies {
   testImplementation group: 'org.mockito', name: 'mockito-inline', version: '5.2.0'
   testImplementation(platform('org.junit:junit-bom:5.12.2'))
   testImplementation group: 'org.projectlombok', name: 'lombok'
-  testImplementation group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.0.0'
+  testImplementation group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.1.0'
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
     exclude group: 'junit', module: 'junit'
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
