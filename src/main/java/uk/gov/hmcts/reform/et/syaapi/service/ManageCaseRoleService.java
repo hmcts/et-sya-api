@@ -478,7 +478,7 @@ public class ManageCaseRoleService {
             role, caseDetails);
         if (ObjectUtils.isEmpty(caseUserAssignment)) {
             log.error("Unable to find case user role for case id: {} and case role: {}",
-                      caseDetails.getId(), CASE_USER_ROLE_CLAIMANT_SOLICITOR);
+                      caseDetails.getId(), role);
             throw new ManageCaseRoleException(new Exception(
                 String.format(ManageCaseRoleConstants.EXCEPTION_CASE_USER_ROLES_NOT_FOUND, caseDetails.getId())));
         }
