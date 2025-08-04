@@ -710,7 +710,7 @@ class ManageCaseRoleServiceTest {
 
     @Test
     @SneakyThrows
-    void theFindCaseUserAssignmentByRoleAndCase() {
+    void theFindCaseUserAssignmentsByRoleAndCase() {
         when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
         when(restTemplate.exchange(anyString(),
                                    eq(HttpMethod.GET),
@@ -719,7 +719,7 @@ class ManageCaseRoleServiceTest {
                                        new ResponseEntity<>(null, HttpStatus.OK));
         CaseDetails caseDetails = CaseDetails.builder().id(TEST_CASE_ID_LONG).build();
         ManageCaseRoleException caseRoleException = assertThrows(ManageCaseRoleException.class, () ->
-            manageCaseRoleService.findCaseUserAssignmentByRoleAndCase(
+            manageCaseRoleService.findCaseUserAssignmentsByRoleAndCase(
                 CASE_USER_ROLE_CLAIMANT_SOLICITOR, caseDetails));
         assertThat(caseRoleException.getMessage())
             .isEqualTo("java.lang.Exception: Case user roles not found for caseId: 1234567890123456");
@@ -735,12 +735,13 @@ class ManageCaseRoleServiceTest {
                                    any(HttpEntity.class),
                                    eq(CaseUserAssignmentData.class))).thenReturn(
                                        new ResponseEntity<>(caseUserAssignmentData, HttpStatus.OK));
-        assertThat(manageCaseRoleService.findCaseUserAssignmentByRoleAndCase(CASE_USER_ROLE_CREATOR,
-                                                                  CaseDetails.builder().id(TEST_CASE_ID_LONG).build()))
-            .isNull();
-        assertThat(manageCaseRoleService.findCaseUserAssignmentByRoleAndCase(CASE_USER_ROLE_CLAIMANT_SOLICITOR,
-                                                                             CaseDetails.builder().id(TEST_CASE_ID_LONG)
-                                                                                 .build()))
+        assertThat(manageCaseRoleService.findCaseUserAssignmentsByRoleAndCase(CASE_USER_ROLE_CREATOR,
+                                                                              CaseDetails.builder()
+                                                                                  .id(TEST_CASE_ID_LONG).build()))
+            .isNullOrEmpty();
+        assertThat(manageCaseRoleService.findCaseUserAssignmentsByRoleAndCase(CASE_USER_ROLE_CLAIMANT_SOLICITOR,
+                                                                              CaseDetails.builder()
+                                                                                  .id(TEST_CASE_ID_LONG).build()))
             .isNotNull();
     }
 

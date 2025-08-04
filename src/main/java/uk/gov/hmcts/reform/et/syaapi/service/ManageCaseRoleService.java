@@ -474,22 +474,25 @@ public class ManageCaseRoleService {
      * @throws ManageCaseRoleException if no matching user-role assignment is found for the given case and role
      */
     public void revokeCaseUserRole(CaseDetails caseDetails, String role) throws IOException {
-        CaseUserAssignment caseUserAssignment = findCaseUserAssignmentByRoleAndCase(
+        List<CaseUserAssignment> caseUserAssignments = findCaseUserAssignmentsByRoleAndCase(
             role, caseDetails);
-        if (ObjectUtils.isEmpty(caseUserAssignment)) {
+        if (CollectionUtils.isEmpty(caseUserAssignments)) {
             log.error("Unable to find case user role for case id: {} and case role: {}",
                       caseDetails.getId(), role);
             throw new ManageCaseRoleException(new Exception(
                 String.format(ManageCaseRoleConstants.EXCEPTION_CASE_USER_ROLES_NOT_FOUND, caseDetails.getId())));
         }
-        CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest = ManageCaseRoleServiceUtil
-            .buildCaseUserRoleRequestByUserIdamIdCaseDetailsAndCaseRole(
-                caseUserAssignment.getUserId(),
-                caseDetails,
-                role);
-        HttpMethod httpMethod = RemoteServiceUtil.getHttpMethodByCaseUserRoleModificationType(
-            ManageCaseRoleConstants.MODIFICATION_TYPE_REVOKE);
-        restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, httpMethod);
+        for (CaseUserAssignment caseUserAssignment : caseUserAssignments) {
+            CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest = ManageCaseRoleServiceUtil
+                .buildCaseUserRoleRequestByUserIdamIdCaseDetailsAndCaseRole(
+                    caseUserAssignment.getUserId(),
+                    caseDetails,
+                    role
+                );
+            HttpMethod httpMethod = RemoteServiceUtil.getHttpMethodByCaseUserRoleModificationType(
+                ManageCaseRoleConstants.MODIFICATION_TYPE_REVOKE);
+            restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, httpMethod);
+        }
     }
 
     /**
@@ -506,7 +509,7 @@ public class ManageCaseRoleService {
      * @throws IOException if an error occurs while retrieving user assignments
      * @throws ManageCaseRoleException if no user assignments are found for the case
      */
-    public CaseUserAssignment findCaseUserAssignmentByRoleAndCase(String caseRole, CaseDetails caseDetails)
+    public List<CaseUserAssignment> findCaseUserAssignmentsByRoleAndCase(String caseRole, CaseDetails caseDetails)
         throws IOException {
         CaseUserAssignmentData caseUserAssignmentData =
             fetchCaseUserAssignmentsByCaseId(caseDetails.getId().toString());
@@ -516,12 +519,13 @@ public class ManageCaseRoleService {
             throw new ManageCaseRoleException(new Exception(
                 String.format(ManageCaseRoleConstants.EXCEPTION_CASE_USER_ROLES_NOT_FOUND, caseDetails.getId())));
         }
+        List<CaseUserAssignment> selectedCaseUserAssignments = new ArrayList<>();
         for (CaseUserAssignment caseAssignedUserRole : caseUserAssignmentData.getCaseUserAssignments()) {
             if (caseRole.equals(caseAssignedUserRole.getCaseRole())) {
-                return caseAssignedUserRole;
+                selectedCaseUserAssignments.add(caseAssignedUserRole);
             }
         }
-        return null;
+        return selectedCaseUserAssignments;
     }
 
     /**
