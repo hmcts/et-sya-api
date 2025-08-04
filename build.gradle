@@ -244,7 +244,7 @@ dependencies {
   implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.6.0'
   implementation group: 'com.google.guava', name: 'guava', version: '33.4.8-jre'
 
-  implementation 'org.apache.tika:tika-core:3.1.0'
+  implementation 'org.apache.tika:tika-core:3.2.1'
 
   implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '3.0.0-RC1'
   implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: log4JVersion
