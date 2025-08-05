@@ -83,7 +83,7 @@ public final class RespondentUtil {
             return;
 
         }
-        throw new RuntimeException(new Exception(String.format(
+        throw new ManageCaseRoleException(new Exception(String.format(
             EXCEPTION_EMPTY_RESPONDENT_COLLECTION_NOT_ABLE_TO_ADD_RESPONDENT,
             caseDetails.getId())));
     }

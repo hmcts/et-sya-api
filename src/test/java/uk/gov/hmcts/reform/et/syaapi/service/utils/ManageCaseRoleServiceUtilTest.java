@@ -55,6 +55,7 @@ class ManageCaseRoleServiceUtilTest {
     private static final String EXCEPTION_CASE_USER_ROLE_NOT_FOUND =
         "java.lang.Exception: Case user role not found for caseId: %s";
     public static final String EXCEPTION_INVALID_CASE_USER_ROLE = "java.lang.Exception: Invalid case user role: %s";
+    private static final String STRING_MINUS_ONE = "-1";
     private static final String STRING_NINE = "9";
     private static final String STRING_TEN = "10";
     private static final String INVALID_INTEGER = "abc";
@@ -288,9 +289,8 @@ class ManageCaseRoleServiceUtilTest {
 
         // Invalid: negative index
         ManageCaseRoleException ex1 = assertThrows(ManageCaseRoleException.class, () ->
-            ManageCaseRoleServiceUtil.getRespondentSolicitorTypeFromIndex(NumberUtils.INTEGER_MINUS_ONE.toString()));
-        assertThat(ex1.getMessage()).isEqualTo(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX,
-                                                             NumberUtils.INTEGER_MINUS_ONE.toString()));
+            ManageCaseRoleServiceUtil.getRespondentSolicitorTypeFromIndex(STRING_MINUS_ONE));
+        assertThat(ex1.getMessage()).isEqualTo(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, STRING_MINUS_ONE));
 
         // Invalid: index greater than 9
         ManageCaseRoleException ex2 = assertThrows(ManageCaseRoleException.class, () ->
@@ -335,7 +335,7 @@ class ManageCaseRoleServiceUtilTest {
         ManageCaseRoleServiceUtil.resetOrganizationPolicy(claimantCase, CASE_USER_ROLE_CLAIMANT_SOLICITOR, caseId);
         OrganisationPolicy claimantPolicy = claimantCase.getClaimantRepresentativeOrganisationPolicy();
         assertThat(claimantPolicy).isNotNull();
-        assertThat(CASE_USER_ROLE_CLAIMANT_SOLICITOR).isEqualTo(claimantPolicy.getOrgPolicyCaseAssignedRole());
+        assertThat(claimantPolicy.getOrgPolicyCaseAssignedRole()).isEqualTo(CASE_USER_ROLE_CLAIMANT_SOLICITOR);
 
         // -- Test 4: Valid respondent solicitor roles --
         List<String> roles = List.of(
@@ -375,8 +375,9 @@ class ManageCaseRoleServiceUtilTest {
             assertThat(role).isEqualTo(actualPolicy.getOrgPolicyCaseAssignedRole());
         }
         // -- Test 5: Invalid role --
+        CaseData claimantCase2 = new CaseData();
         ManageCaseRoleException ex5 = assertThrows(ManageCaseRoleException.class, () ->
-            ManageCaseRoleServiceUtil.resetOrganizationPolicy(new CaseData(), CASE_USER_ROLE_INVALID, caseId));
+            ManageCaseRoleServiceUtil.resetOrganizationPolicy(claimantCase2, CASE_USER_ROLE_INVALID, caseId));
         assertThat(ex5.getMessage()).isEqualTo(String.format(EXCEPTION_INVALID_CASE_USER_ROLE, CASE_USER_ROLE_INVALID));
     }
 }

@@ -38,7 +38,9 @@ class RespondentUtilTest {
 
     private static final String EXCEPTION_INVALID_RESPONDENT_INDEX =
         "java.lang.Exception: Respondent index is not valid: %s";
+    private static final String STRING_ZERO = "0";
     private static final String STRING_NINE = "9";
+    private static final String STRING_MINUS_ONE = "-1";
     private static final String INVALID_INTEGER = "abc";
     private static final String EXCEPTION_INVALID_RESPONDENT_INDEX_WITH_CASE_ID =
         "java.lang.Exception: Respondent not exists for case: %s";
@@ -393,8 +395,8 @@ class RespondentUtilTest {
         assertThrows(
             ManageCaseRoleException.class, () ->
                 RespondentUtil.findRespondentSumTypeItemByIndex(null,
-                                                                           NumberUtils.INTEGER_ZERO.toString(),
-                                                                           CASE_ID));
+                                                                STRING_MINUS_ONE,
+                                                                CASE_ID));
         // Setup valid list
         List<RespondentSumTypeItem> validList = new ArrayList<>();
         RespondentSumType validType0 = new RespondentSumType(); // assume default is non-empty
@@ -428,17 +430,13 @@ class RespondentUtilTest {
 
         // Test invalid: null list
         assertThrows(ManageCaseRoleException.class, () ->
-            RespondentUtil.findRespondentSumTypeItemByIndex(new ArrayList<>(),
-                                                                       NumberUtils.INTEGER_ZERO.toString(),
-                                                                       CASE_ID));
+            RespondentUtil.findRespondentSumTypeItemByIndex(new ArrayList<>(), STRING_MINUS_ONE, CASE_ID));
 
         // Test invalid: null item in list
         List<RespondentSumTypeItem> listWithNull = new ArrayList<>();
         listWithNull.add(null);
         ManageCaseRoleException ex4 = assertThrows(ManageCaseRoleException.class, () ->
-            RespondentUtil.findRespondentSumTypeItemByIndex(listWithNull,
-                                                                       NumberUtils.INTEGER_ZERO.toString(),
-                                                                       CASE_ID));
+            RespondentUtil.findRespondentSumTypeItemByIndex(listWithNull, STRING_ZERO, CASE_ID));
         assertThat(ex4.getMessage()).contains(String.format(
             EXCEPTION_RESPONDENT_NOT_FOUND_WITH_INDEX,
             NumberUtils.INTEGER_ZERO));
@@ -449,12 +447,8 @@ class RespondentUtilTest {
         itemWithNullValue.setValue(null);
         listWithNullValue.add(itemWithNullValue);
         ManageCaseRoleException ex5 = assertThrows(ManageCaseRoleException.class, () ->
-            RespondentUtil.findRespondentSumTypeItemByIndex(listWithNullValue,
-                                                                       NumberUtils.INTEGER_ZERO.toString(),
-                                                                       CASE_ID));
-        assertThat(ex5.getMessage()).contains(String.format(
-            EXCEPTION_RESPONDENT_NOT_FOUND_WITH_INDEX,
-            NumberUtils.INTEGER_ZERO));
+            RespondentUtil.findRespondentSumTypeItemByIndex(listWithNullValue, STRING_MINUS_ONE, CASE_ID));
+        assertThat(ex5.getMessage()).contains(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, STRING_MINUS_ONE));
     }
 
     @Test
@@ -494,8 +488,9 @@ class RespondentUtilTest {
         assertThat(ex1.getMessage()).isEqualTo(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX_WITH_CASE_ID, caseId));
 
         // Test empty representative list
+        List<RepresentedTypeRItem> emptyRepresentativeList = new ArrayList<>();
         ManageCaseRoleException ex2 = assertThrows(ManageCaseRoleException.class, () ->
-            RespondentUtil.findRespondentRepresentative(respondent, new ArrayList<>(), caseId));
+            RespondentUtil.findRespondentRepresentative(respondent, emptyRepresentativeList, caseId));
         assertThat(ex2.getMessage()).isEqualTo(String.format(EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND, caseId));
 
         // Test no match
