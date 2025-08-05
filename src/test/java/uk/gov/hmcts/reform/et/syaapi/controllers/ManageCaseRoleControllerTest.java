@@ -44,6 +44,7 @@ class ManageCaseRoleControllerTest {
     private static final String AUTH_TOKEN = "some-token";
     private static final String POST_MODIFY_CASE_USER_ROLE_URL = "/manageCaseRole/modifyCaseUserRoles";
     private static final String REVOKE_CLAIMANT_SOLICITOR_ROLE_URL = "/manageCaseRole/revokeClaimantSolicitorRole";
+    private static final String REVOKE_RESPONDENT_SOLICITOR_ROLE_URL = "/manageCaseRole/revokeRespondentSolicitorRole";
     private static final String POST_FIND_CASE_FOR_ROLE_MODIFICATION
         = "/manageCaseRole/findCaseForRoleModification";
     private static final String MODIFICATION_TYPE_PARAMETER_NAME = "modificationType";
@@ -52,6 +53,7 @@ class ManageCaseRoleControllerTest {
     private static final String RESPONDENT_NAME = "Respondent Name";
     private static final String CLAIMANT_FIRST_NAMES = "Claimant First Names";
     private static final String CLAIMANT_LAST_NAME = "Claimant Last Name";
+    private static final String STRING_ZERO = "0";
 
     @Autowired
     private WebApplicationContext webApplicationContext;
@@ -142,10 +144,23 @@ class ManageCaseRoleControllerTest {
     void revokeClaimantSolicitorRole() {
         when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
 
-        when(manageCaseRoleService.revokeClaimantSolicitorRole(any(), any())).thenReturn(
+        when(manageCaseRoleService.revokeClaimantSolicitorRole(AUTH_TOKEN, CASE_ID)).thenReturn(
             new CaseTestData().getCaseDetails());
         mockMvc.perform(post(REVOKE_CLAIMANT_SOLICITOR_ROLE_URL
-                                 + "?caseSubmissionReference=1234567890123456")
+                                 + "?caseSubmissionReference=" + CASE_ID)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @SneakyThrows
+    void revokeRespondentSolicitorRole() {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+
+        when(manageCaseRoleService.revokeRespondentSolicitorRole(AUTH_TOKEN, CASE_ID, STRING_ZERO)).thenReturn(
+            new CaseTestData().getCaseDetails());
+        mockMvc.perform(post(REVOKE_RESPONDENT_SOLICITOR_ROLE_URL
+                                 + "?caseSubmissionReference=" + CASE_ID + "&respondentIndex=" + STRING_ZERO)
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN))
             .andExpect(status().isOk());
     }

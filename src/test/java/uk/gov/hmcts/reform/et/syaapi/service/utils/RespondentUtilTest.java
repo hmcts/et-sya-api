@@ -429,8 +429,9 @@ class RespondentUtilTest {
         assertThat(ex2.getMessage()).contains(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, STRING_NINE));
 
         // Test invalid: null list
+        List<RespondentSumTypeItem> emptyList = new ArrayList<>();
         assertThrows(ManageCaseRoleException.class, () ->
-            RespondentUtil.findRespondentSumTypeItemByIndex(new ArrayList<>(), STRING_MINUS_ONE, CASE_ID));
+            RespondentUtil.findRespondentSumTypeItemByIndex(emptyList, STRING_MINUS_ONE, CASE_ID));
 
         // Test invalid: null item in list
         List<RespondentSumTypeItem> listWithNull = new ArrayList<>();
