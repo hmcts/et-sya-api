@@ -94,4 +94,22 @@ public class ManageCaseRoleController {
         }
         return ok(caseDetails);
     }
+
+    @PostMapping("/revokeRespondentSolicitorRole")
+    @Operation(summary = "Modifies user roles of the case")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> revokeRespondentSolicitorRole(
+        @RequestHeader(AUTHORIZATION) String authorisation,
+        @RequestParam(name = "caseSubmissionReference") String caseSubmissionReference,
+        @RequestParam(name = "respondentIndex") String respondentIndex) {
+        CaseDetails caseDetails;
+        try {
+            caseDetails = manageCaseRoleService.revokeRespondentSolicitorRole(authorisation,
+                                                                              caseSubmissionReference,
+                                                                              respondentIndex);
+        } catch (Exception e) {
+            throw new ManageCaseRoleException(e);
+        }
+        return ok(caseDetails);
+    }
 }

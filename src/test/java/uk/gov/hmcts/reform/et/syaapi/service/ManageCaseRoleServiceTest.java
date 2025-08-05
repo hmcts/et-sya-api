@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +30,9 @@ import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRolesRequest;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.CaseUserAssignment;
 import uk.gov.hmcts.et.common.model.ccd.CaseUserAssignmentData;
+import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
+import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
+import uk.gov.hmcts.et.common.model.enums.RespondentSolicitorType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -834,6 +838,99 @@ class ManageCaseRoleServiceTest {
                                                .caseDataId(TEST_CASE_ID_STRING)
                                                .userId(DUMMY_USER_ID)
                                                .caseRole(CASE_USER_ROLE_CLAIMANT_SOLICITOR)
+                                               .build()))
+            .build();
+        when(restTemplate.postForObject(eq(CCD_API_URL_PARAMETER_TEST_VALUE
+                                               + ManageCaseRoleConstants.CASE_USER_ROLE_CCD_API_POST_METHOD_NAME),
+                                        any(HttpEntity.class),
+                                        eq(CaseAssignedUserRolesResponse.class)))
+            .thenReturn(caseAssignedUserRolesResponseInvalid);
+        assertThrows(ManageCaseRoleException.class, () -> manageCaseRoleService.revokeClaimantSolicitorRole(
+            DUMMY_AUTHORISATION_TOKEN, TEST_CASE_ID_STRING));
+    }
+
+    @Test
+    @SneakyThrows
+    void theRemoveRespondentRepresentativeFromCaseData() {
+        // This test is for the removeRespondentRepresentativeFromCaseData method which is used to remove the
+        // respondent representative from a case's data. It sets up the necessary mocks and verifies that the method
+        // can be called without throwing any exceptions.
+        CaseDetails caseDetails = new CaseTestData().getCaseDetailsWithCaseData();
+        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
+        caseData.getRespondentCollection().getFirst().setId(USER_ID);
+        caseData.setRepCollection(List.of(RepresentedTypeRItem.builder().value(
+            RepresentedTypeR.builder().respondentId(USER_ID).build()).build()));
+        caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+
+        when(et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(
+            eq(DUMMY_AUTHORISATION_TOKEN), any(CaseDetails.class), eq(UPDATE_CASE_SUBMITTED))).thenReturn(caseDetails);
+        CaseDetails updatedCaseDetails = manageCaseRoleService.removeRespondentRepresentativeFromCaseData(
+            DUMMY_AUTHORISATION_TOKEN, caseDetails, "0", "[SOLICITORA]");
+        assertThat(updatedCaseDetails).isNotNull();
+    }
+
+    @Test
+    @SneakyThrows
+    void theRevokeRespondentSolicitorRole() {
+        // This test is for the revokeClaimantSolicitorRole method which is used to revoke the claimant solicitor
+        // role from a case. It sets up the necessary mocks and verifies that the method can be called without throwing
+        // any exceptions.
+        ReflectionTestUtils.setField(manageCaseRoleService,
+                                     CCD_API_URL_PARAMETER_NAME,
+                                     CCD_API_URL_PARAMETER_TEST_VALUE);
+        when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        CaseAssignedUserRolesResponse caseAssignedUserRolesResponse = CaseAssignedUserRolesResponse.builder()
+            .caseAssignedUserRoles(List.of(CaseAssignmentUserRole.builder()
+                                               .caseDataId(TEST_CASE_ID_STRING)
+                                               .userId(DUMMY_USER_ID)
+                                               .caseRole(CASE_ROLE_DEFENDANT)
+                                               .build()))
+            .build();
+        when(restTemplate.postForObject(eq(CCD_API_URL_PARAMETER_TEST_VALUE
+                                               + ManageCaseRoleConstants.CASE_USER_ROLE_CCD_API_POST_METHOD_NAME),
+                                        any(HttpEntity.class),
+                                        eq(CaseAssignedUserRolesResponse.class)))
+            .thenReturn(caseAssignedUserRolesResponse);
+        CaseDetails caseDetails = new CaseTestData().getCaseDetailsWithCaseData();
+        caseDetails.setId(TEST_CASE_ID_LONG);
+        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
+        caseData.getRespondentCollection().getFirst().setId(USER_ID);
+        caseData.setRepCollection(List.of(RepresentedTypeRItem.builder().value(
+            RepresentedTypeR.builder().respondentId(USER_ID).build()).build()));
+        caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+        when(authTokenGenerator.generate()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(new CaseTestData().getUserInfo());
+        when(ccdApi.getCase(DUMMY_AUTHORISATION_TOKEN, DUMMY_AUTHORISATION_TOKEN, TEST_CASE_ID_STRING))
+            .thenReturn(caseDetails);
+        CaseUserAssignmentData caseUserAssignmentData = CaseUserAssignmentData.builder()
+            .caseUserAssignments(List.of(CaseUserAssignment.builder()
+                                             .caseId(TEST_CASE_ID_STRING)
+                                             .userId(DUMMY_USER_ID)
+                                             .caseRole(RespondentSolicitorType.SOLICITORA.getLabel())
+                                             .build()))
+            .build();
+        when(restTemplate.exchange(eq("https://test.url.com/case-users?case_ids=1234567890123456"),
+                                   eq(HttpMethod.GET),
+                                   any(HttpEntity.class),
+                                   eq(CaseUserAssignmentData.class))).thenReturn(
+                                       new ResponseEntity<>(caseUserAssignmentData, HttpStatus.OK));
+        when(restTemplate.exchange(eq("https://test.url.com/case-users"),
+                                   eq(HttpMethod.DELETE),
+                                   any(HttpEntity.class),
+                                   eq(CaseAssignmentUserRolesResponse.class))).thenReturn(
+                                       new ResponseEntity<>(CaseAssignmentUserRolesResponse.builder().build(),
+                                                            HttpStatus.OK));
+        when(et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(
+            eq(DUMMY_AUTHORISATION_TOKEN), any(CaseDetails.class), eq(UPDATE_CASE_SUBMITTED)))
+            .thenReturn(caseDetails);
+        assertDoesNotThrow(() -> manageCaseRoleService.revokeRespondentSolicitorRole(
+            DUMMY_AUTHORISATION_TOKEN, TEST_CASE_ID_STRING, NumberUtils.INTEGER_ZERO.toString()));
+        // When invalid case role then should not return any case details and should throw exception
+        CaseAssignedUserRolesResponse caseAssignedUserRolesResponseInvalid = CaseAssignedUserRolesResponse.builder()
+            .caseAssignedUserRoles(List.of(CaseAssignmentUserRole.builder()
+                                               .caseDataId(TEST_CASE_ID_STRING)
+                                               .userId(DUMMY_USER_ID)
+                                               .caseRole(USER_CASE_ROLE_DEFENDANT)
                                                .build()))
             .build();
         when(restTemplate.postForObject(eq(CCD_API_URL_PARAMETER_TEST_VALUE

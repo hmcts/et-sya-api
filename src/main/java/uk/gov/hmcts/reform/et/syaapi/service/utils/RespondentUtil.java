@@ -8,11 +8,13 @@ import org.apache.commons.lang3.StringUtils;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignedUserRolesResponse;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.et3links.ET3CaseDetailsLinksStatuses;
 import uk.gov.hmcts.et.common.model.ccd.types.et3links.ET3HubLinksStatuses;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 
 import java.util.ArrayList;
@@ -22,11 +24,16 @@ import java.util.Map;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.ET3_STATUS_IN_PROGRESS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DATA_NOT_FOUND;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_EMPTY_RESPONDENT_COLLECTION;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_EMPTY_RESPONDENT_COLLECTION_NOT_ABLE_TO_ADD_RESPONDENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_IDAM_ID_ALREADY_EXISTS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_IDAM_ID_ALREADY_EXISTS_SAME_USER;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_INVALID_IDAM_ID;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_INVALID_RESPONDENT_INDEX;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_NO_RESPONDENT_DEFINED;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_RESPONDENT_NOT_EXISTS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_RESPONDENT_NOT_FOUND;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_RESPONDENT_NOT_FOUND_WITH_INDEX;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_CANNOT_START_YET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_NOT_AVAILABLE_YET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.LINK_STATUS_NOT_STARTED_YET;
@@ -76,8 +83,9 @@ public final class RespondentUtil {
             return;
 
         }
-        throw new RuntimeException(new Exception(String.format(EXCEPTION_EMPTY_RESPONDENT_COLLECTION,
-                                                                caseDetails.getId())));
+        throw new RuntimeException(new Exception(String.format(
+            EXCEPTION_EMPTY_RESPONDENT_COLLECTION_NOT_ABLE_TO_ADD_RESPONDENT,
+            caseDetails.getId())));
     }
 
     private static List<RespondentSumTypeItem> findRespondentSumTypeItems(
@@ -207,5 +215,112 @@ public final class RespondentUtil {
             }
         }
         return false;
+    }
+
+    /**
+     * Retrieves a {@link RespondentSumTypeItem} from the provided list based on the specified respondent index.
+     *
+     * <p>
+     * The {@code respondentIndex} must be a string representation of an integer. This index is used to access
+     * the corresponding item in the {@code respondentSumTypeItems} list. The method ensures that:
+     * <ul>
+     *   <li>The list is not null or empty</li>
+     *   <li>The index is a valid integer and within list bounds</li>
+     *   <li>The item at the given index and its value are not null or empty</li>
+     * </ul>
+     * If any of these validations fail, a {@link ManageCaseRoleException} is thrown with a context-specific message.
+     * </p>
+     *
+     * <p>
+     * The {@code caseId} is used in exception messages to provide context for logging and debugging.
+     * </p>
+     *
+     * @param respondentSumTypeItems the list of respondent items to retrieve from
+     * @param respondentIndex the index (as a string) of the desired respondent in the list
+     * @param caseId the case identifier used for error context
+     * @return the {@code RespondentSumTypeItem} at the specified index
+     * @throws ManageCaseRoleException if:
+     *         <ul>
+     *           <li>the list is null or empty</li>
+     *           <li>the index is not a valid integer</li>
+     *           <li>the index is out of bounds</li>
+     *           <li>the item or its value at the index is null or empty</li>
+     *         </ul>
+     */
+    public static RespondentSumTypeItem findRespondentSumTypeItemByIndex(
+        List<RespondentSumTypeItem> respondentSumTypeItems, String respondentIndex, String caseId) {
+        try {
+            if (CollectionUtils.isEmpty(respondentSumTypeItems)) {
+                throw new ManageCaseRoleException(new Exception(
+                    String.format(EXCEPTION_NO_RESPONDENT_DEFINED, caseId)));
+            }
+            int index = Integer.parseInt(respondentIndex);
+            RespondentSumTypeItem respondentSumTypeItem = respondentSumTypeItems.get(index);
+            if (ObjectUtils.isEmpty(respondentSumTypeItem)
+                || ObjectUtils.isEmpty(respondentSumTypeItem.getValue())) {
+                throw new ManageCaseRoleException(new Exception(
+                    String.format(EXCEPTION_RESPONDENT_NOT_FOUND_WITH_INDEX, respondentIndex)));
+            }
+            return respondentSumTypeItem;
+        } catch (NumberFormatException | IndexOutOfBoundsException e) {
+            throw new ManageCaseRoleException(
+                new Exception(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, respondentIndex)));
+        }
+    }
+
+    /**
+     * Finds and returns the {@link RepresentedTypeRItem} (i.e., the representative) associated with the given
+     * {@link RespondentSumTypeItem} from the provided collection of representatives.
+     *
+     * <p>
+     * The method matches the respondent by comparing the respondent's ID (from {@code respondentSumTypeItem})
+     * with the {@code respondentId} field of each {@link RepresentedTypeRItem}'s value.
+     * </p>
+     *
+     * <p>
+     * Several validations are performed:
+     * <ul>
+     *   <li>Checks if the provided {@code respondentSumTypeItem} is not null or empty.</li>
+     *   <li>Ensures the {@code representativeCollection} is not null or empty.</li>
+     *   <li>Iterates through the collection to find a non-empty representative whose {@code respondentId} matches the
+     *   respondent’s ID.</li>
+     * </ul>
+     * If no match is found, or if input validations fail, a {@link ManageCaseRoleException} is thrown with a
+     * context-specific error message.
+     * </p>
+     *
+     * @param respondentSumTypeItem the respondent item whose representative is to be found
+     * @param representativeCollection the list of potential respondent representatives
+     * @param caseId the case identifier used for contextual exception messages
+     * @return the {@link RepresentedTypeRItem} that represents the provided respondent
+     * @throws ManageCaseRoleException if:
+     *         <ul>
+     *           <li>{@code respondentSumTypeItem} is null or empty</li>
+     *           <li>{@code representativeCollection} is null or empty</li>
+     *           <li>no matching representative is found for the respondent</li>
+     *         </ul>
+     */
+    public static RepresentedTypeRItem findRespondentRepresentative(RespondentSumTypeItem respondentSumTypeItem,
+                                                                    List<RepresentedTypeRItem> representativeCollection,
+                                                                    String caseId) {
+        if (ObjectUtils.isEmpty(respondentSumTypeItem)) {
+            throw new ManageCaseRoleException(new Exception(
+                String.format(EXCEPTION_RESPONDENT_NOT_EXISTS, caseId)));
+        }
+        if (CollectionUtils.isEmpty(representativeCollection)) {
+            throw new ManageCaseRoleException(new Exception(
+                String.format(EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND, caseId)));
+        }
+        for (RepresentedTypeRItem representativeType : representativeCollection) {
+            if (ObjectUtils.isNotEmpty(representativeType)
+                && ObjectUtils.isNotEmpty(representativeType.getValue())
+                && StringUtils.isNotBlank(representativeType.getValue().getRespondentId())
+                && representativeType.getValue().getRespondentId()
+                .equals(respondentSumTypeItem.getId())) {
+                return representativeType;
+            }
+        }
+        throw new ManageCaseRoleException(new Exception(
+            String.format(EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND, caseId)));
     }
 }

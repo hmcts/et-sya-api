@@ -8,6 +8,9 @@ import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRolesRequest;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.types.OrganisationPolicy;
+import uk.gov.hmcts.et.common.model.enums.RespondentSolicitorType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -21,7 +24,11 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CA
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DATA_NOT_FOUND;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_USER_ROLE_NOT_FOUND;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_IDAM_ID_ALREADY_EXISTS_SAME_USER;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_INVALID_RESPONDENT_INDEX;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.INVALID_CASE_USER_ROLE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFY_CASE_ROLE_EMPTY_REQUEST;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFY_CASE_USER_ROLE_ITEM_INVALID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.STRING_AMPERSAND;
@@ -261,4 +268,121 @@ public final class ManageCaseRoleServiceUtil {
                                             String caseId) {
         return String.format(CASE_USERS_RETRIEVE_API, ccdDataStoreApiBaseUrl, caseId);
     }
+
+    /**
+     * Returns the {@link RespondentSolicitorType} corresponding to the given respondent index.
+     *
+     * <p>
+     * The index must be a string representation of an integer between 0 and 9 (inclusive),
+     * where each value maps to a specific {@code RespondentSolicitorType} in declaration order.
+     * </p>
+     *
+     * <p>
+     * If the input string is not a valid integer or falls outside the accepted range, a
+     * {@link ManageCaseRoleException} is thrown.
+     * </p>
+     *
+     * @param respondentIndex a string representing the respondent index (expected values: "0" to "9")
+     * @return the {@code RespondentSolicitorType} mapped to the provided index
+     * @throws ManageCaseRoleException if the input is not a valid integer or outside the range 0–9
+     */
+    public static RespondentSolicitorType getRespondentSolicitorTypeFromIndex(String respondentIndex) {
+        try {
+            int index = Integer.parseInt(respondentIndex);
+            if (index < 0 || index > 9) {
+                throw new ManageCaseRoleException(new Exception(
+                    String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, respondentIndex)));
+            }
+            return RespondentSolicitorType.getByIndex(index);
+        } catch (NumberFormatException | IndexOutOfBoundsException e) {
+            throw new ManageCaseRoleException(new Exception(
+                String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, respondentIndex)));
+        }
+    }
+
+    /**
+     * Resets the {@link OrganisationPolicy} on the provided {@link CaseData} instance based on the given
+     * case user role.
+     *
+     * <p>
+     * If the case user role corresponds to the claimant solicitor (i.e., {@code CASE_USER_ROLE_CLAIMANT_SOLICITOR}),
+     * the method sets a new {@link OrganisationPolicy} with that role in the claimant's representative policy field.
+     * </p>
+     *
+     * <p>
+     * If the role corresponds to a respondent solicitor (e.g., [SOLICITORA] to [SOLICITORJ]),
+     * the method determines the appropriate {@link RespondentSolicitorType} from the label and sets
+     * an empty {@code OrganisationPolicy} with the role assigned to the corresponding respondent organisation policy
+     * field (e.g., {@code respondentOrganisationPolicy0}, {@code respondentOrganisationPolicy1}, etc.).
+     * </p>
+     *
+     * <p>
+     * Input validation is performed to ensure that {@code caseData} is not null or empty,
+     * and that {@code caseUserRole} is not blank. If the role is unrecognized, a {@link ManageCaseRoleException}
+     * is thrown.
+     * </p>
+     *
+     * @param caseData     the {@link CaseData} object to modify
+     * @param caseUserRole the case user role string label (e.g., "[CLAIMANT]", "[SOLICITORA]", etc.)
+     * @param caseId       the case ID, used for error messaging context
+     *
+     * @throws ManageCaseRoleException if:
+     *      <ul>
+     *          <li>{@code caseData} is null or empty</li>
+     *          <li>{@code caseUserRole} is blank</li>
+     *          <li>{@code caseUserRole} does not match any valid {@link RespondentSolicitorType} or claimant role</li>
+     *      </ul>
+     */
+    public static void resetOrganizationPolicy(CaseData caseData, String caseUserRole, String caseId) {
+        if (ObjectUtils.isEmpty(caseData)) {
+            throw new ManageCaseRoleException(new Exception(String.format(EXCEPTION_CASE_DATA_NOT_FOUND, caseId)));
+        }
+
+        if (StringUtils.isBlank(caseUserRole)) {
+            throw new ManageCaseRoleException(new Exception(String.format(EXCEPTION_CASE_USER_ROLE_NOT_FOUND, caseId)));
+        }
+
+        if (CASE_USER_ROLE_CLAIMANT_SOLICITOR.equals(caseUserRole)) {
+            OrganisationPolicy organisationPolicy = OrganisationPolicy.builder()
+                .orgPolicyCaseAssignedRole(CASE_USER_ROLE_CLAIMANT_SOLICITOR).build();
+            caseData.setClaimantRepresentativeOrganisationPolicy(organisationPolicy);
+            return;
+        }
+        try {
+            RespondentSolicitorType caseUserRoleEnum = RespondentSolicitorType.fromLabel(caseUserRole);
+            switch (caseUserRoleEnum) {
+                case RespondentSolicitorType.SOLICITORA ->
+                    caseData.setRespondentOrganisationPolicy0(createEmptyOrganisationPolicyByRole(caseUserRole));
+                case RespondentSolicitorType.SOLICITORB ->
+                    caseData.setRespondentOrganisationPolicy1(createEmptyOrganisationPolicyByRole(caseUserRole));
+                case RespondentSolicitorType.SOLICITORC ->
+                    caseData.setRespondentOrganisationPolicy2(createEmptyOrganisationPolicyByRole(caseUserRole));
+                case RespondentSolicitorType.SOLICITORD ->
+                    caseData.setRespondentOrganisationPolicy3(createEmptyOrganisationPolicyByRole(caseUserRole));
+                case RespondentSolicitorType.SOLICITORE ->
+                    caseData.setRespondentOrganisationPolicy4(createEmptyOrganisationPolicyByRole(caseUserRole));
+                case RespondentSolicitorType.SOLICITORF ->
+                    caseData.setRespondentOrganisationPolicy5(createEmptyOrganisationPolicyByRole(caseUserRole));
+                case RespondentSolicitorType.SOLICITORG ->
+                    caseData.setRespondentOrganisationPolicy6(createEmptyOrganisationPolicyByRole(caseUserRole));
+                case RespondentSolicitorType.SOLICITORH ->
+                    caseData.setRespondentOrganisationPolicy7(createEmptyOrganisationPolicyByRole(caseUserRole));
+                case RespondentSolicitorType.SOLICITORI ->
+                    caseData.setRespondentOrganisationPolicy8(createEmptyOrganisationPolicyByRole(caseUserRole));
+                case RespondentSolicitorType.SOLICITORJ ->
+                    caseData.setRespondentOrganisationPolicy9(createEmptyOrganisationPolicyByRole(caseUserRole));
+                default -> throw new ManageCaseRoleException(new Exception(String.format(
+                    INVALID_CASE_USER_ROLE,
+                    caseUserRole
+                )));
+            }
+        } catch (IllegalArgumentException e) {
+            throw new ManageCaseRoleException(new Exception(String.format(INVALID_CASE_USER_ROLE, caseUserRole)));
+        }
+    }
+
+    private static OrganisationPolicy createEmptyOrganisationPolicyByRole(String caseUserRole) {
+        return OrganisationPolicy.builder().orgPolicyCaseAssignedRole(caseUserRole).build();
+    }
+
 }

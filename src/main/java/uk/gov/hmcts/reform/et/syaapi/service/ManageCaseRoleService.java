@@ -23,7 +23,8 @@ import uk.gov.hmcts.ecm.common.model.ccd.SearchCaseAssignedUserRolesRequest;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.CaseUserAssignment;
 import uk.gov.hmcts.et.common.model.ccd.CaseUserAssignmentData;
-import uk.gov.hmcts.et.common.model.ccd.types.OrganisationPolicy;
+import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
+import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -52,6 +53,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CA
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_ET3_FORM;
@@ -461,6 +463,51 @@ public class ManageCaseRoleService {
     }
 
     /**
+     * Revokes the case user role associated with a respondent solicitor and removes their representative
+     * from the case data for the specified case.
+     *
+     * <p>
+     * The method performs the following operations:
+     * <ul>
+     *   <li>Determines the case user role label for the given respondent index.</li>
+     *   <li>Retrieves the {@link CaseDetails} where that role is currently assigned using the provided authorisation
+     *   token.</li>
+     *   <li>Validates that the case was found and not already unlinked.</li>
+     *   <li>Removes the representative associated with the respondent from the case data.</li>
+     *   <li>Revokes the case user role for the respondent solicitor.</li>
+     * </ul>
+     * </p>
+     *
+     * @param authorisation           the authorisation token to authenticate the request
+     * @param caseSubmissionReference the unique submission reference of the case
+     * @param respondentIndex         the index (as a string) identifying which respondent's role is to be revoked
+     * @return the updated {@link CaseDetails} after the representative has been removed and the role revoked
+     * @throws IOException                 if an I/O error occurs during case retrieval or update
+     * @throws ManageCaseRoleException    if case details could not be found or role revocation fails
+     */
+    public CaseDetails revokeRespondentSolicitorRole(String authorisation,
+                                                     String caseSubmissionReference,
+                                                     String respondentIndex)
+        throws IOException {
+        log.info("Revoke respondent solicitor role for case submission reference: {}", caseSubmissionReference);
+        CaseDetails caseDetails =
+            getUserCaseByCaseUserRole(authorisation, caseSubmissionReference, CASE_USER_ROLE_DEFENDANT);
+        if (ObjectUtils.isEmpty(caseDetails) || caseDetails.getId() == null) {
+            log.error("Unable to find case details for case submission reference: {} and case user role: {}",
+                      caseSubmissionReference, CASE_USER_ROLE_DEFENDANT);
+            throw new ManageCaseRoleException(new Exception(String.format(
+                ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND, caseSubmissionReference)));
+        }
+        String caseUserRole = ManageCaseRoleServiceUtil.getRespondentSolicitorTypeFromIndex(respondentIndex).getLabel();
+        CaseDetails casedetails = removeRespondentRepresentativeFromCaseData(authorisation,
+                                                                             caseDetails,
+                                                                             respondentIndex,
+                                                                             caseUserRole);
+        revokeCaseUserRole(caseDetails, caseUserRole);
+        return casedetails;
+    }
+
+    /**
      * Revokes a specific user role from a case by removing the user's assignment for the given role.
      *
      * <p>This method locates the user assigned to the specified case role within the provided
@@ -550,12 +597,58 @@ public class ManageCaseRoleService {
         caseData.setClaimantRepresentedQuestion(NO);
         caseData.setClaimantRepresentativeRemoved(YES);
         caseData.setRepresentativeClaimantType(null);
-        OrganisationPolicy organisationPolicy = OrganisationPolicy.builder()
-            .orgPolicyCaseAssignedRole(CASE_USER_ROLE_CLAIMANT_SOLICITOR).build();
-        caseData.setClaimantRepresentativeOrganisationPolicy(organisationPolicy);
+        ManageCaseRoleServiceUtil.resetOrganizationPolicy(caseData,
+                                                          CASE_USER_ROLE_CLAIMANT_SOLICITOR,
+                                                          caseDetails.getId().toString());
         caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
         return et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(authorisation,
                                                                               caseDetails,
                                                                               UPDATE_CASE_SUBMITTED);
+    }
+
+    /**
+     * Removes the representative associated with a specific respondent from the given {@link CaseDetails} object,
+     * resets the organisation policy for that respondent, and submits the updated case for assignment.
+     *
+     * <p>
+     * This method performs the following steps:
+     * <ul>
+     *   <li>Converts the raw case data map into a {@link CaseData} object.</li>
+     *   <li>Finds the respondent in the collection based on the provided {@code respondentIndex}.</li>
+     *   <li>Identifies and removes the representative linked to that respondent.</li>
+     *   <li>Resets the organisation policy for the respondent using the given {@code caseUserRole}.</li>
+     *   <li>Maps the updated {@code CaseData} back into the {@code CaseDetails} object.</li>
+     *   <li>Submits the updated case using the {@code et3Service}.</li>
+     * </ul>
+     * </p>
+     *
+     * @param authorisation   the authentication token used for case assignment
+     * @param caseDetails     the {@link CaseDetails} object containing case metadata and data
+     * @param respondentIndex a string index representing the respondent whose representative is to be removed
+     * @param caseUserRole    the case user role (e.g., "[SOLICITORA]") used to determine which policy to reset
+     * @return the updated {@link CaseDetails} after removing the representative and updating the organisation policy
+     */
+    public CaseDetails removeRespondentRepresentativeFromCaseData(String authorisation,
+                                                                  CaseDetails caseDetails,
+                                                                  String respondentIndex,
+                                                                  String caseUserRole) {
+        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
+        RespondentSumTypeItem respondentSumTypeItem =
+            RespondentUtil.findRespondentSumTypeItemByIndex(caseData.getRespondentCollection(),
+                                                            respondentIndex,
+                                                            caseDetails.getId().toString());
+        RepresentedTypeRItem representativeRItem =
+            RespondentUtil.findRespondentRepresentative(respondentSumTypeItem,
+                                                        caseData.getRepCollection(),
+                                                        respondentIndex);
+        respondentSumTypeItem.getValue().setRepresentativeRemoved(YES);
+        caseData.getRepCollection().remove(representativeRItem);
+        ManageCaseRoleServiceUtil.resetOrganizationPolicy(caseData, caseUserRole, caseDetails.getId().toString());
+        caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+        return et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(
+            authorisation,
+            caseDetails,
+            UPDATE_CASE_SUBMITTED
+        );
     }
 }

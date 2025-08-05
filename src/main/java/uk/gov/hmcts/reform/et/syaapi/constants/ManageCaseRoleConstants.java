@@ -56,7 +56,7 @@ public final class ManageCaseRoleConstants {
         "Case details not found because caseId or caseTypeId value is empty";
     public static final String EXCEPTION_CASE_DATA_NOT_FOUND =
         "Case details with Case Id, %s doesn't have case data values";
-    public static final String EXCEPTION_EMPTY_RESPONDENT_COLLECTION =
+    public static final String EXCEPTION_EMPTY_RESPONDENT_COLLECTION_NOT_ABLE_TO_ADD_RESPONDENT =
         "Unable to add respondent idam id because there is not respondent defined in the case case with id, %s";
     public static final String EXCEPTION_IDAM_ID_ALREADY_EXISTS =
         "Unable to add respondent idam id because case has already been assigned "
@@ -72,6 +72,16 @@ public final class ManageCaseRoleConstants {
     public static final String RESPONSE_STATUS_COMPLETED = "completed";
     public static final String ET3_RESPONSE_LANGUAGE_PREFERENCE_WELSH = "Welsh";
     public static final String EXCEPTION_CASE_USER_ROLES_NOT_FOUND = "Case user roles not found for caseId: %s";
+    public static final String EXCEPTION_CASE_USER_ROLE_NOT_FOUND = "Case user role not found for caseId: %s";
+    public static final String EXCEPTION_INVALID_RESPONDENT_INDEX = "Respondent index is not valid: %s";
+    public static final String EXCEPTION_RESPONDENT_NOT_FOUND_WITH_INDEX = "There is no respondent with index: %s";
+    public static final String EXCEPTION_RESPONDENT_NOT_EXISTS =
+        "Respondent not exists for case: %s";
+    public static final String EXCEPTION_NO_RESPONDENT_DEFINED =
+        "There is no respondent defined in the case with id: %s";
+    public static final String EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND =
+        "Respondent representative not found for case: %s";
+    public static final String INVALID_CASE_USER_ROLE = "Invalid case user role: %s";
 
     private ManageCaseRoleConstants() {
         // restrict instantiation

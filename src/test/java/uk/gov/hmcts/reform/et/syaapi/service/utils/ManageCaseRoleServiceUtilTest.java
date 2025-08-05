@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.et.syaapi.service.utils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -11,6 +12,9 @@ import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRolesRequest;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.types.OrganisationPolicy;
+import uk.gov.hmcts.et.common.model.enums.RespondentSolicitorType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
@@ -24,7 +28,6 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CASE_ID;
@@ -45,6 +48,19 @@ class ManageCaseRoleServiceUtilTest {
     private static final String EXPECTED_AAC_URI_WITH_CASE_AND_USER_IDS =
         "https://test.url.com/case-users?case_ids=1646225213651533&case_ids=1646225213651512&"
             + "user_ids=123456789012345678901234567890&user_ids=123456789012345678901234567890";
+    private static final String EXCEPTION_INVALID_RESPONDENT_INDEX =
+        "java.lang.Exception: Respondent index is not valid: %s";
+    private static final String EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA =
+        "java.lang.Exception: Case details with Case Id, %s doesn't have case data values";
+    private static final String EXCEPTION_CASE_USER_ROLE_NOT_FOUND =
+        "java.lang.Exception: Case user role not found for caseId: %s";
+    public static final String EXCEPTION_INVALID_CASE_USER_ROLE = "java.lang.Exception: Invalid case user role: %s";
+    private static final String STRING_NINE = "9";
+    private static final String STRING_TEN = "10";
+    private static final String INVALID_INTEGER = "abc";
+    private static final String STRING_NULL = "null";
+    private static final String CASE_USER_ROLE_CLAIMANT_SOLICITOR = "[CLAIMANTSOLICITOR]";
+    private static final String CASE_USER_ROLE_INVALID = "[INVALID]";
 
     @ParameterizedTest
     @MethodSource("provideTheCreateAacSearchCaseUsersUriByCaseAndUserIdsTestData")
@@ -260,5 +276,107 @@ class ManageCaseRoleServiceUtilTest {
                 .modifyCaseUserRoles(List.of(modifyCaseUserRoleNotEmptyCaseRoleInvalid)).build();
         assertThrows(ManageCaseRoleException.class, () -> ManageCaseRoleServiceUtil
             .checkModifyCaseUserRolesRequest(modifyCaseUserRolesRequestNotEmptyCaseRoleInvalid));
+    }
+
+    @Test
+    void theGetRespondentSolicitorTypeFromIndex() {
+        // Valid indexes
+        assertThat(ManageCaseRoleServiceUtil.getRespondentSolicitorTypeFromIndex(NumberUtils.INTEGER_ZERO.toString()))
+            .isEqualTo(RespondentSolicitorType.getByIndex(NumberUtils.INTEGER_ZERO));
+        assertThat(ManageCaseRoleServiceUtil.getRespondentSolicitorTypeFromIndex(STRING_NINE))
+            .isEqualTo(RespondentSolicitorType.getByIndex(9));
+
+        // Invalid: negative index
+        ManageCaseRoleException ex1 = assertThrows(ManageCaseRoleException.class, () ->
+            ManageCaseRoleServiceUtil.getRespondentSolicitorTypeFromIndex(NumberUtils.INTEGER_MINUS_ONE.toString()));
+        assertThat(ex1.getMessage()).isEqualTo(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX,
+                                                             NumberUtils.INTEGER_MINUS_ONE.toString()));
+
+        // Invalid: index greater than 9
+        ManageCaseRoleException ex2 = assertThrows(ManageCaseRoleException.class, () ->
+            ManageCaseRoleServiceUtil.getRespondentSolicitorTypeFromIndex(STRING_TEN));
+        assertThat(ex2.getMessage()).isEqualTo(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, STRING_TEN));
+
+        // Invalid: non-numeric string
+        ManageCaseRoleException ex3 = assertThrows(ManageCaseRoleException.class, () ->
+            ManageCaseRoleServiceUtil.getRespondentSolicitorTypeFromIndex(INVALID_INTEGER));
+        assertThat(ex3.getMessage()).isEqualTo(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, INVALID_INTEGER));
+
+        // Invalid: null input
+        ManageCaseRoleException ex4 = assertThrows(ManageCaseRoleException.class, () ->
+            ManageCaseRoleServiceUtil.getRespondentSolicitorTypeFromIndex(null));
+        assertThat(ex4.getMessage()).isEqualTo(EXCEPTION_INVALID_RESPONDENT_INDEX, STRING_NULL);
+
+        // Invalid: empty string
+        ManageCaseRoleException ex5 = assertThrows(ManageCaseRoleException.class, () ->
+            ManageCaseRoleServiceUtil.getRespondentSolicitorTypeFromIndex(""));
+        assertThat(ex5.getMessage()).isEqualTo(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, StringUtils.EMPTY));
+    }
+
+    @Test
+    void testResetOrganizationPolicy_AllScenarios() {
+        String caseId = "CASE-001";
+
+        // -- Test 1: Null caseData --
+        ManageCaseRoleException ex1 = assertThrows(ManageCaseRoleException.class, () ->
+            ManageCaseRoleServiceUtil.resetOrganizationPolicy(null,
+                                                              CASE_USER_ROLE_CLAIMANT_SOLICITOR,
+                                                              caseId));
+        assertThat(ex1.getMessage()).isEqualTo(String.format(EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA, caseId));
+
+        // -- Test 2: Blank caseUserRole --
+        CaseData blankRoleCase = new CaseData();
+        ManageCaseRoleException ex2 = assertThrows(ManageCaseRoleException.class, () ->
+            ManageCaseRoleServiceUtil.resetOrganizationPolicy(blankRoleCase, StringUtils.EMPTY, caseId));
+        assertThat(ex2.getMessage()).isEqualTo(String.format(EXCEPTION_CASE_USER_ROLE_NOT_FOUND, caseId));
+
+        // -- Test 3: Valid claimant role --
+        CaseData claimantCase = new CaseData();
+        ManageCaseRoleServiceUtil.resetOrganizationPolicy(claimantCase, CASE_USER_ROLE_CLAIMANT_SOLICITOR, caseId);
+        OrganisationPolicy claimantPolicy = claimantCase.getClaimantRepresentativeOrganisationPolicy();
+        assertThat(claimantPolicy).isNotNull();
+        assertThat(CASE_USER_ROLE_CLAIMANT_SOLICITOR).isEqualTo(claimantPolicy.getOrgPolicyCaseAssignedRole());
+
+        // -- Test 4: Valid respondent solicitor roles --
+        List<String> roles = List.of(
+            RespondentSolicitorType.SOLICITORA.getLabel(),
+            RespondentSolicitorType.SOLICITORB.getLabel(),
+            RespondentSolicitorType.SOLICITORC.getLabel(),
+            RespondentSolicitorType.SOLICITORD.getLabel(),
+            RespondentSolicitorType.SOLICITORE.getLabel(),
+            RespondentSolicitorType.SOLICITORF.getLabel(),
+            RespondentSolicitorType.SOLICITORG.getLabel(),
+            RespondentSolicitorType.SOLICITORH.getLabel(),
+            RespondentSolicitorType.SOLICITORI.getLabel(),
+            RespondentSolicitorType.SOLICITORJ.getLabel()
+        );
+
+        for (int i = 0; i < roles.size(); i++) {
+            String role = roles.get(i);
+            CaseData caseData = new CaseData();
+            ManageCaseRoleServiceUtil.resetOrganizationPolicy(caseData, role, caseId);
+
+            OrganisationPolicy actualPolicy = switch (i) {
+                case 0 -> caseData.getRespondentOrganisationPolicy0();
+                case 1 -> caseData.getRespondentOrganisationPolicy1();
+                case 2 -> caseData.getRespondentOrganisationPolicy2();
+                case 3 -> caseData.getRespondentOrganisationPolicy3();
+                case 4 -> caseData.getRespondentOrganisationPolicy4();
+                case 5 -> caseData.getRespondentOrganisationPolicy5();
+                case 6 -> caseData.getRespondentOrganisationPolicy6();
+                case 7 -> caseData.getRespondentOrganisationPolicy7();
+                case 8 -> caseData.getRespondentOrganisationPolicy8();
+                case 9 -> caseData.getRespondentOrganisationPolicy9();
+                default -> throw new ManageCaseRoleException(new Exception(
+                    String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, i)));
+            };
+
+            assertThat(actualPolicy).isNotNull();
+            assertThat(role).isEqualTo(actualPolicy.getOrgPolicyCaseAssignedRole());
+        }
+        // -- Test 5: Invalid role --
+        ManageCaseRoleException ex5 = assertThrows(ManageCaseRoleException.class, () ->
+            ManageCaseRoleServiceUtil.resetOrganizationPolicy(new CaseData(), CASE_USER_ROLE_INVALID, caseId));
+        assertThat(ex5.getMessage()).isEqualTo(String.format(EXCEPTION_INVALID_CASE_USER_ROLE, CASE_USER_ROLE_INVALID));
     }
 }
