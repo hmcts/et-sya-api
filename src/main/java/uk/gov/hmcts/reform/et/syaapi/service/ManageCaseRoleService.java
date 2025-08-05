@@ -487,8 +487,7 @@ public class ManageCaseRoleService {
      */
     public CaseDetails revokeRespondentSolicitorRole(String authorisation,
                                                      String caseSubmissionReference,
-                                                     String respondentIndex)
-        throws IOException {
+                                                     String respondentIndex) throws IOException {
         log.info("Revoke respondent solicitor role for case submission reference: {}", caseSubmissionReference);
         CaseDetails caseDetails =
             getUserCaseByCaseUserRole(authorisation, caseSubmissionReference, CASE_USER_ROLE_DEFENDANT);
