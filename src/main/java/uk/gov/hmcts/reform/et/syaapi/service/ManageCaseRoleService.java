@@ -640,7 +640,7 @@ public class ManageCaseRoleService {
         RepresentedTypeRItem representativeRItem =
             RespondentUtil.findRespondentRepresentative(respondentSumTypeItem,
                                                         caseData.getRepCollection(),
-                                                        respondentIndex);
+                                                        caseDetails.getId().toString());
         respondentSumTypeItem.getValue().setRepresentativeRemoved(YES);
         caseData.getRepCollection().remove(representativeRItem);
         ManageCaseRoleServiceUtil.resetOrganizationPolicy(caseData, caseUserRole, caseDetails.getId().toString());
