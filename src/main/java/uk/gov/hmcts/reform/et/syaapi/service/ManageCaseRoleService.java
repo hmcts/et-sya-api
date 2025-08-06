@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -27,9 +28,14 @@ import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.ccd.client.model.Event;
+import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
+import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
+import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
@@ -48,6 +54,7 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.ecm.common.client.CcdClient.EXPERIMENTAL;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
@@ -74,6 +81,7 @@ public class ManageCaseRoleService {
     private final IdamClient idamClient;
     private final ET3Service et3Service;
     private final CaseService caseService;
+    private final CaseDetailsConverter caseDetailsConverter;
 
     @Value("${assign_case_access_api_url}")
     private String aacUrl;
@@ -498,12 +506,11 @@ public class ManageCaseRoleService {
                 ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND, caseSubmissionReference)));
         }
         String caseUserRole = ManageCaseRoleServiceUtil.getRespondentSolicitorTypeFromIndex(respondentIndex).getLabel();
-        CaseDetails casedetails = removeRespondentRepresentativeFromCaseData(authorisation,
-                                                                             caseDetails,
-                                                                             respondentIndex,
-                                                                             caseUserRole);
         revokeCaseUserRole(caseDetails, caseUserRole);
-        return casedetails;
+        return removeRespondentRepresentativeFromCaseData(authorisation,
+                                                          caseDetails,
+                                                          respondentIndex,
+                                                          caseUserRole);
     }
 
     /**
@@ -631,6 +638,13 @@ public class ManageCaseRoleService {
                                                                   CaseDetails caseDetails,
                                                                   String respondentIndex,
                                                                   String caseUserRole) {
+        StartEventResponse startEventResponse = caseService.startUpdate(
+            authorisation,
+            caseDetails.getId().toString(),
+            caseDetails.getCaseTypeId(),
+            UPDATE_CASE_SUBMITTED
+        );
+        caseDetails = startEventResponse.getCaseDetails();
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
         RespondentSumTypeItem respondentSumTypeItem =
             RespondentUtil.findRespondentSumTypeItemByIndex(caseData.getRespondentCollection(),
@@ -640,14 +654,18 @@ public class ManageCaseRoleService {
             RespondentUtil.findRespondentRepresentative(respondentSumTypeItem,
                                                         caseData.getRepCollection(),
                                                         caseDetails.getId().toString());
+        ManageCaseRoleServiceUtil.resetOrganizationPolicy(caseData, caseUserRole, caseDetails.getId().toString());
         respondentSumTypeItem.getValue().setRepresentativeRemoved(YES);
         caseData.getRepCollection().remove(representativeRItem);
-        ManageCaseRoleServiceUtil.resetOrganizationPolicy(caseData, caseUserRole, caseDetails.getId().toString());
-        caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
-        return et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(
+
+        CaseDataContent caseDataContent = caseDetailsConverter.caseDataContent(
+            startEventResponse, caseData
+        );
+        return caseService.submitUpdate(
             authorisation,
-            caseDetails,
-            UPDATE_CASE_SUBMITTED
+            caseDetails.getId().toString(),
+            caseDataContent,
+            caseDetails.getCaseTypeId()
         );
     }
 }
