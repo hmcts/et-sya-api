@@ -867,7 +867,6 @@ class ManageCaseRoleServiceTest {
         caseData.setRepCollection(List.of(RepresentedTypeRItem.builder().value(
             RepresentedTypeR.builder().respondentId(USER_ID).build()).build()));
         caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
-        UserInfo userInfo = new CaseTestData().getUserInfo();
         when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
         when(authTokenGenerator.generate()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
         StartEventResponse startEventResponse = StartEventResponse.builder()
