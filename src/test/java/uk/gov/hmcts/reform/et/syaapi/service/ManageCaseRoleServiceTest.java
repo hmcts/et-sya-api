@@ -37,8 +37,10 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
+import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
+import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
@@ -62,6 +64,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.EMPLOYMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CCD_API_POST_METHOD_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
@@ -92,6 +95,8 @@ class ManageCaseRoleServiceTest {
     ET3Service et3Service;
     @Mock
     CaseService caseService;
+    @Mock
+    CaseDetailsConverter caseDetailsConverter;
 
     private ManageCaseRoleService manageCaseRoleService;
     private UserInfo userInfo;
@@ -138,7 +143,8 @@ class ManageCaseRoleServiceTest {
     void setup() {
         caseTestData = new CaseTestData();
         manageCaseRoleService = new ManageCaseRoleService(
-            adminUserService, restTemplate, authTokenGenerator, ccdApi, idamClient, et3Service, caseService);
+            adminUserService, restTemplate, authTokenGenerator, ccdApi, idamClient, et3Service, caseService,
+            caseDetailsConverter);
         userInfo = new CaseTestData().getUserInfo();
         caseAssignmentUserRole1 = CaseAssignmentUserRole.builder()
             .userId(DUMMY_USER_ID)
@@ -861,9 +867,29 @@ class ManageCaseRoleServiceTest {
         caseData.setRepCollection(List.of(RepresentedTypeRItem.builder().value(
             RepresentedTypeR.builder().respondentId(USER_ID).build()).build()));
         caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
-
-        when(et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(
-            eq(DUMMY_AUTHORISATION_TOKEN), any(CaseDetails.class), eq(UPDATE_CASE_SUBMITTED))).thenReturn(caseDetails);
+        UserInfo userInfo = new CaseTestData().getUserInfo();
+        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
+        when(authTokenGenerator.generate()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        StartEventResponse startEventResponse = StartEventResponse.builder()
+            .caseDetails(caseDetails).eventId(UPDATE_CASE_SUBMITTED.name()).token(DUMMY_AUTHORISATION_TOKEN).build();
+        when(ccdApi.startEventForCitizen(
+            DUMMY_AUTHORISATION_TOKEN,
+            DUMMY_AUTHORISATION_TOKEN,
+            userInfo.getUid(),
+            EMPLOYMENT,
+            caseDetails.getCaseTypeId(),
+            caseDetails.getId().toString(),
+            UPDATE_CASE_SUBMITTED.name()
+        )).thenReturn(startEventResponse);
+        when(caseDetailsConverter.caseDataContent(eq(startEventResponse), any(CaseData.class)))
+            .thenReturn(null);
+        when(caseService.submitUpdate(
+            DUMMY_AUTHORISATION_TOKEN,
+            caseDetails.getId().toString(),
+            null,
+            caseDetails.getCaseTypeId()
+        ))
+            .thenReturn(caseDetails);
         CaseDetails updatedCaseDetails = manageCaseRoleService.removeRespondentRepresentativeFromCaseData(
             DUMMY_AUTHORISATION_TOKEN, caseDetails, "0", "[SOLICITORA]");
         assertThat(updatedCaseDetails).isNotNull();
@@ -920,8 +946,25 @@ class ManageCaseRoleServiceTest {
                                    eq(CaseAssignmentUserRolesResponse.class))).thenReturn(
                                        new ResponseEntity<>(CaseAssignmentUserRolesResponse.builder().build(),
                                                             HttpStatus.OK));
-        when(et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(
-            eq(DUMMY_AUTHORISATION_TOKEN), any(CaseDetails.class), eq(UPDATE_CASE_SUBMITTED)))
+        StartEventResponse startEventResponse = StartEventResponse.builder()
+            .caseDetails(caseDetails).eventId(UPDATE_CASE_SUBMITTED.name()).token(DUMMY_AUTHORISATION_TOKEN).build();
+        when(ccdApi.startEventForCitizen(
+            DUMMY_AUTHORISATION_TOKEN,
+            DUMMY_AUTHORISATION_TOKEN,
+            userInfo.getUid(),
+            EMPLOYMENT,
+            caseDetails.getCaseTypeId(),
+            caseDetails.getId().toString(),
+            UPDATE_CASE_SUBMITTED.name()
+        )).thenReturn(startEventResponse);
+        when(caseDetailsConverter.caseDataContent(eq(startEventResponse), any(CaseData.class)))
+            .thenReturn(null);
+        when(caseService.submitUpdate(
+            DUMMY_AUTHORISATION_TOKEN,
+            caseDetails.getId().toString(),
+            null,
+            caseDetails.getCaseTypeId()
+        ))
             .thenReturn(caseDetails);
         assertDoesNotThrow(() -> manageCaseRoleService.revokeRespondentSolicitorRole(
             DUMMY_AUTHORISATION_TOKEN, TEST_CASE_ID_STRING, NumberUtils.INTEGER_ZERO.toString()));

@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -28,12 +27,9 @@ import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
-import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
@@ -53,8 +49,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static uk.gov.hmcts.ecm.common.client.CcdClient.EXPERIMENTAL;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.EMPLOYMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
@@ -638,11 +634,15 @@ public class ManageCaseRoleService {
                                                                   CaseDetails caseDetails,
                                                                   String respondentIndex,
                                                                   String caseUserRole) {
-        StartEventResponse startEventResponse = caseService.startUpdate(
+        UserInfo userInfo = idamClient.getUserInfo(authorisation);
+        StartEventResponse startEventResponse = ccdApi.startEventForCitizen(
             authorisation,
-            caseDetails.getId().toString(),
+            authTokenGenerator.generate(),
+            userInfo.getUid(),
+            EMPLOYMENT,
             caseDetails.getCaseTypeId(),
-            UPDATE_CASE_SUBMITTED
+            caseDetails.getId().toString(),
+            UPDATE_CASE_SUBMITTED.name()
         );
         caseDetails = startEventResponse.getCaseDetails();
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
@@ -657,14 +657,13 @@ public class ManageCaseRoleService {
         ManageCaseRoleServiceUtil.resetOrganizationPolicy(caseData, caseUserRole, caseDetails.getId().toString());
         respondentSumTypeItem.getValue().setRepresentativeRemoved(YES);
         caseData.getRepCollection().remove(representativeRItem);
-
-        CaseDataContent caseDataContent = caseDetailsConverter.caseDataContent(
-            startEventResponse, caseData
-        );
+        if (caseData.getRepCollection().isEmpty()) {
+            caseData.setRepCollection(null);
+        }
         return caseService.submitUpdate(
             authorisation,
             caseDetails.getId().toString(),
-            caseDataContent,
+            caseDetailsConverter.caseDataContent(startEventResponse, caseData),
             caseDetails.getCaseTypeId()
         );
     }
