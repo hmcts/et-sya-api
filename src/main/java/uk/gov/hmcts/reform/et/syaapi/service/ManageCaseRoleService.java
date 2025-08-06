@@ -595,6 +595,17 @@ public class ManageCaseRoleService {
      * @return the updated {@link CaseDetails} with claimant representative fields removed
      */
     public CaseDetails removeClaimantRepresentativeFromCaseData(String authorisation, CaseDetails caseDetails) {
+        UserInfo userInfo = idamClient.getUserInfo(authorisation);
+        StartEventResponse startEventResponse = ccdApi.startEventForCitizen(
+            authorisation,
+            authTokenGenerator.generate(),
+            userInfo.getUid(),
+            EMPLOYMENT,
+            caseDetails.getCaseTypeId(),
+            caseDetails.getId().toString(),
+            UPDATE_CASE_SUBMITTED.name()
+        );
+        caseDetails = startEventResponse.getCaseDetails();
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
         caseData.setClaimantRepresentedQuestion(NO);
         caseData.setClaimantRepresentativeRemoved(YES);
@@ -603,9 +614,12 @@ public class ManageCaseRoleService {
                                                           CASE_USER_ROLE_CLAIMANT_SOLICITOR,
                                                           caseDetails.getId().toString());
         caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
-        return et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(authorisation,
-                                                                              caseDetails,
-                                                                              UPDATE_CASE_SUBMITTED);
+        return caseService.submitUpdate(
+            authorisation,
+            caseDetails.getId().toString(),
+            caseDetailsConverter.caseDataContent(startEventResponse, caseData),
+            caseDetails.getCaseTypeId()
+        );
     }
 
     /**

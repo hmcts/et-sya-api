@@ -683,8 +683,27 @@ class ManageCaseRoleServiceTest {
         caseData.setClaimantRepresentedQuestion(YES);
         caseData.getRepresentativeClaimantType().setRepresentativeId(USER_ID);
         caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
-        when(et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(
-            eq(DUMMY_AUTHORISATION_TOKEN), any(CaseDetails.class), eq(UPDATE_CASE_SUBMITTED))).thenReturn(caseDetails);
+        StartEventResponse startEventResponse = StartEventResponse.builder()
+            .caseDetails(caseDetails).eventId(UPDATE_CASE_SUBMITTED.name()).token(DUMMY_AUTHORISATION_TOKEN).build();
+        when(ccdApi.startEventForCitizen(
+            DUMMY_AUTHORISATION_TOKEN,
+            DUMMY_AUTHORISATION_TOKEN,
+            userInfo.getUid(),
+            EMPLOYMENT,
+            caseDetails.getCaseTypeId(),
+            caseDetails.getId().toString(),
+            UPDATE_CASE_SUBMITTED.name()
+        )).thenReturn(startEventResponse);
+        when(caseDetailsConverter.caseDataContent(eq(startEventResponse), any(CaseData.class)))
+            .thenReturn(null);
+        when(caseService.submitUpdate(
+            DUMMY_AUTHORISATION_TOKEN,
+            caseDetails.getId().toString(),
+            null,
+            caseDetails.getCaseTypeId()
+        )).thenReturn(caseDetails);
+        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(new CaseTestData().getUserInfo());
+        when(authTokenGenerator.generate()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
         CaseDetails updatedCaseDetails = manageCaseRoleService.removeClaimantRepresentativeFromCaseData(
             DUMMY_AUTHORISATION_TOKEN, caseDetails);
         assertThat(updatedCaseDetails).isNotNull();
@@ -833,9 +852,27 @@ class ManageCaseRoleServiceTest {
                                    eq(CaseAssignmentUserRolesResponse.class))).thenReturn(
                                        new ResponseEntity<>(CaseAssignmentUserRolesResponse.builder().build(),
                                                             HttpStatus.OK));
-        when(et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(
-            eq(DUMMY_AUTHORISATION_TOKEN), any(CaseDetails.class), eq(UPDATE_CASE_SUBMITTED)))
-            .thenReturn(caseDetails);
+        StartEventResponse startEventResponse = StartEventResponse.builder()
+            .caseDetails(caseDetails).eventId(UPDATE_CASE_SUBMITTED.name()).token(DUMMY_AUTHORISATION_TOKEN).build();
+        when(ccdApi.startEventForCitizen(
+            DUMMY_AUTHORISATION_TOKEN,
+            DUMMY_AUTHORISATION_TOKEN,
+            userInfo.getUid(),
+            EMPLOYMENT,
+            caseDetails.getCaseTypeId(),
+            caseDetails.getId().toString(),
+            UPDATE_CASE_SUBMITTED.name()
+        )).thenReturn(startEventResponse);
+        when(caseDetailsConverter.caseDataContent(eq(startEventResponse), any(CaseData.class)))
+            .thenReturn(null);
+        when(caseService.submitUpdate(
+            DUMMY_AUTHORISATION_TOKEN,
+            caseDetails.getId().toString(),
+            null,
+            caseDetails.getCaseTypeId()
+        )).thenReturn(caseDetails);
+        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(new CaseTestData().getUserInfo());
+        when(authTokenGenerator.generate()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
         assertDoesNotThrow(() -> manageCaseRoleService.revokeClaimantSolicitorRole(
             DUMMY_AUTHORISATION_TOKEN, TEST_CASE_ID_STRING));
         // When invalid case role then should not return any case details and should throw exception
