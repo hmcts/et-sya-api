@@ -21,11 +21,11 @@ public class ManageCaseRoleException extends RuntimeException {
      */
     public ManageCaseRoleException(Exception cause) {
         super(cause);
-        String errorMessage = "Error occurred while modifying case role: " + cause.getMessage();
-        log.error("************ ManageCaseRoleException ************");
+        String errorMessage = "************ ManageCaseRoleException ************"
+            + "Error occurred while modifying case role: " + cause.getMessage()
+            + "\nStack trace: " + Arrays.toString(cause.getStackTrace())
+            + "***************************************************";
         log.error(errorMessage);
-        log.error(Arrays.toString(cause.getStackTrace()));
-        log.error("***************************************************");
     }
 
 }
