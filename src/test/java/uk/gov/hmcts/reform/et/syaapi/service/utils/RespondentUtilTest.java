@@ -43,7 +43,7 @@ class RespondentUtilTest {
     private static final String STRING_MINUS_ONE = "-1";
     private static final String INVALID_INTEGER = "abc";
     private static final String EXCEPTION_INVALID_RESPONDENT_INDEX_WITH_CASE_ID =
-        "java.lang.Exception: Respondent not exists for case: %s";
+        "java.lang.Exception: Respondent does not exist for case: %s";
     private static final String EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND =
         "java.lang.Exception: Respondent representative not found for case: %s";
 
