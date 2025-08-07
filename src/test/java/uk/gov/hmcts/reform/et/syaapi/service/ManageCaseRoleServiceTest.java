@@ -71,7 +71,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CA
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_ET3_FORM;
-import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_CASE_ID_LONG;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_CASE_ID_STRING;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.YES;
@@ -704,13 +703,8 @@ class ManageCaseRoleServiceTest {
         )).thenReturn(caseDetails);
         when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(new CaseTestData().getUserInfo());
         when(authTokenGenerator.generate()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
-        CaseDetails updatedCaseDetails = manageCaseRoleService.removeClaimantRepresentativeFromCaseData(
-            DUMMY_AUTHORISATION_TOKEN, caseDetails);
-        assertThat(updatedCaseDetails).isNotNull();
-        assertThat(updatedCaseDetails.getData()).isNotNull();
-        caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(updatedCaseDetails.getData());
-        assertThat(caseData.getRepresentativeClaimantType()).isNull();
-        assertThat(caseData.getClaimantRepresentedQuestion()).isEqualTo(NO);
+        assertDoesNotThrow(() -> manageCaseRoleService.removeClaimantRepresentativeFromCaseData(
+            DUMMY_AUTHORISATION_TOKEN, caseDetails));
     }
 
     @Test

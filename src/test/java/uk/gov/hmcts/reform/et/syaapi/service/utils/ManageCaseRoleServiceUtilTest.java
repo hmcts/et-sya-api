@@ -158,14 +158,14 @@ class ManageCaseRoleServiceUtilTest {
     }
 
     @Test
-    void theBuildCaseUserRoleRequestByUserIdamIdCaseDetailsAndCaseRole() {
+    void theCreateCaseUserRoleRequest() {
         CaseAssignmentUserRolesRequest expectedCaseAssignmentUserRolesRequest = CaseAssignmentUserRolesRequest.builder()
             .caseAssignmentUserRoles(List.of(CaseAssignmentUserRole.builder()
                                                  .caseDataId(TEST_CASE_ID_STRING)
                                                  .userId(TEST_CLAIMANT_SOLICITOR_IDAM_ID)
                                                  .caseRole(CASE_USER_ROLE_CLAIMANT_SOLICITOR).build())).build();
         CaseAssignmentUserRolesRequest actualCaseAssignmentUserRolesRequest = ManageCaseRoleServiceUtil
-            .buildCaseUserRoleRequestByUserIdamIdCaseDetailsAndCaseRole(
+            .createCaseUserRoleRequest(
                 TEST_CLAIMANT_SOLICITOR_IDAM_ID,
                 CaseDetails.builder().id(TEST_CASE_ID_LONG).build(),
                 CASE_USER_ROLE_CLAIMANT_SOLICITOR);

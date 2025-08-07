@@ -457,8 +457,6 @@ public class ManageCaseRoleService {
         CaseDetails caseDetails =
             getUserCaseByCaseUserRole(authorisation, caseSubmissionReference, CASE_USER_ROLE_CREATOR);
         if (ObjectUtils.isEmpty(caseDetails)) {
-            log.error("Unable to find case details for case submission reference: {}",
-                      caseSubmissionReference);
             throw new ManageCaseRoleException(new Exception(String.format(
                 ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND, caseSubmissionReference)));
         }
@@ -496,8 +494,6 @@ public class ManageCaseRoleService {
         CaseDetails caseDetails =
             getUserCaseByCaseUserRole(authorisation, caseSubmissionReference, CASE_USER_ROLE_DEFENDANT);
         if (ObjectUtils.isEmpty(caseDetails) || caseDetails.getId() == null) {
-            log.error("Unable to find case details for case submission reference: {} and case user role: {}",
-                      caseSubmissionReference, CASE_USER_ROLE_DEFENDANT);
             throw new ManageCaseRoleException(new Exception(String.format(
                 ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND, caseSubmissionReference)));
         }
@@ -526,14 +522,12 @@ public class ManageCaseRoleService {
         List<CaseUserAssignment> caseUserAssignments = findCaseUserAssignmentsByRoleAndCase(
             role, caseDetails);
         if (CollectionUtils.isEmpty(caseUserAssignments)) {
-            log.error("Unable to find case user role for case id: {} and case role: {}",
-                      caseDetails.getId(), role);
             throw new ManageCaseRoleException(new Exception(
                 String.format(ManageCaseRoleConstants.EXCEPTION_CASE_USER_ROLES_NOT_FOUND, caseDetails.getId())));
         }
         for (CaseUserAssignment caseUserAssignment : caseUserAssignments) {
             CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest = ManageCaseRoleServiceUtil
-                .buildCaseUserRoleRequestByUserIdamIdCaseDetailsAndCaseRole(
+                .createCaseUserRoleRequest(
                     caseUserAssignment.getUserId(),
                     caseDetails,
                     role
@@ -564,7 +558,6 @@ public class ManageCaseRoleService {
             fetchCaseUserAssignmentsByCaseId(caseDetails.getId().toString());
         if (ObjectUtils.isEmpty(caseUserAssignmentData)
             || CollectionUtils.isEmpty(caseUserAssignmentData.getCaseUserAssignments())) {
-            log.error("Unable to find case user roles for case id: {}", caseDetails.getId());
             throw new ManageCaseRoleException(new Exception(
                 String.format(ManageCaseRoleConstants.EXCEPTION_CASE_USER_ROLES_NOT_FOUND, caseDetails.getId())));
         }
@@ -613,7 +606,6 @@ public class ManageCaseRoleService {
         ManageCaseRoleServiceUtil.resetOrganizationPolicy(caseData,
                                                           CASE_USER_ROLE_CLAIMANT_SOLICITOR,
                                                           caseDetails.getId().toString());
-        caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
         return caseService.submitUpdate(
             authorisation,
             caseDetails.getId().toString(),

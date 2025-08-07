@@ -241,7 +241,7 @@ public final class ManageCaseRoleServiceUtil {
      * @param caseRole    the role to assign to the user for the given case (e.g., "[CLAIMANT]", "[DEFENDANT]")
      * @return a {@link CaseAssignmentUserRolesRequest} containing the role assignment
      */
-    public static CaseAssignmentUserRolesRequest buildCaseUserRoleRequestByUserIdamIdCaseDetailsAndCaseRole(
+    public static CaseAssignmentUserRolesRequest createCaseUserRoleRequest(
         String userIdamId, CaseDetails caseDetails, String caseRole) {
         List<CaseAssignmentUserRole> caseAssignmentUserRoles = new ArrayList<>();
         caseAssignmentUserRoles.add(CaseAssignmentUserRole
@@ -351,25 +351,25 @@ public final class ManageCaseRoleServiceUtil {
         try {
             RespondentSolicitorType caseUserRoleEnum = RespondentSolicitorType.fromLabel(caseUserRole);
             switch (caseUserRoleEnum) {
-                case RespondentSolicitorType.SOLICITORA ->
+                case SOLICITORA ->
                     caseData.setRespondentOrganisationPolicy0(createEmptyOrganisationPolicyByRole(caseUserRole));
-                case RespondentSolicitorType.SOLICITORB ->
+                case SOLICITORB ->
                     caseData.setRespondentOrganisationPolicy1(createEmptyOrganisationPolicyByRole(caseUserRole));
-                case RespondentSolicitorType.SOLICITORC ->
+                case SOLICITORC ->
                     caseData.setRespondentOrganisationPolicy2(createEmptyOrganisationPolicyByRole(caseUserRole));
-                case RespondentSolicitorType.SOLICITORD ->
+                case SOLICITORD ->
                     caseData.setRespondentOrganisationPolicy3(createEmptyOrganisationPolicyByRole(caseUserRole));
-                case RespondentSolicitorType.SOLICITORE ->
+                case SOLICITORE ->
                     caseData.setRespondentOrganisationPolicy4(createEmptyOrganisationPolicyByRole(caseUserRole));
-                case RespondentSolicitorType.SOLICITORF ->
+                case SOLICITORF ->
                     caseData.setRespondentOrganisationPolicy5(createEmptyOrganisationPolicyByRole(caseUserRole));
-                case RespondentSolicitorType.SOLICITORG ->
+                case SOLICITORG ->
                     caseData.setRespondentOrganisationPolicy6(createEmptyOrganisationPolicyByRole(caseUserRole));
-                case RespondentSolicitorType.SOLICITORH ->
+                case SOLICITORH ->
                     caseData.setRespondentOrganisationPolicy7(createEmptyOrganisationPolicyByRole(caseUserRole));
-                case RespondentSolicitorType.SOLICITORI ->
+                case SOLICITORI ->
                     caseData.setRespondentOrganisationPolicy8(createEmptyOrganisationPolicyByRole(caseUserRole));
-                case RespondentSolicitorType.SOLICITORJ ->
+                case SOLICITORJ ->
                     caseData.setRespondentOrganisationPolicy9(createEmptyOrganisationPolicyByRole(caseUserRole));
                 default -> throw new ManageCaseRoleException(new Exception(String.format(
                     INVALID_CASE_USER_ROLE,
