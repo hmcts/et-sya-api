@@ -27,6 +27,8 @@ public final class ResponseUtil {
         // restrict instantiation
     }
 
+    public static final String ET3_RESPONSE_RECEIVED_INITIAL_VALUE = "1";
+
     public static void checkModifyEt3DataParameters(String authorisation, Et3Request et3Request) {
         if (StringUtils.isBlank(authorisation)) {
             throw new ET3Exception(new Exception(ResponseConstants.EXCEPTION_AUTHORISATION_TOKEN_BLANK));
@@ -96,5 +98,9 @@ public final class ResponseUtil {
             ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
         respondentSumType.setResponseReceived(EtSyaConstants.YES);
         respondentSumType.setResponseReceivedDate(LocalDate.now().toString());
+        respondentSumType.setResponseReceived(StringUtils.isBlank(respondentSumType.getResponseReceivedCount())
+                                                   ? ET3_RESPONSE_RECEIVED_INITIAL_VALUE
+                                                   : Integer.toString(Integer.parseInt(
+                                                       respondentSumType.getResponseReceivedCount()) + 1));
     }
 }
