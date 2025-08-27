@@ -96,11 +96,12 @@ public class ManageCaseRoleService {
      * @return a {@link CaseUserAssignmentData} object containing the list of user assignments for the case
      * @throws IOException if there is a failure during URL construction or API communication
      */
-    public CaseUserAssignmentData fetchCaseUserAssignmentsByCaseId(String caseId) throws IOException {
+    public CaseUserAssignmentData fetchCaseUserAssignmentsByCaseId(String caseId, String authorisationToken)
+        throws IOException {
         String uri = ManageCaseRoleServiceUtil
             .buildCaseAccessUrl(ccdApiUrl, caseId);
         String authToken = adminUserService.getAdminUserToken();
-        HttpHeaders httpHeaders = buildHeaders(authToken, authTokenGenerator.generate());
+        HttpHeaders httpHeaders = buildHeaders(authToken, authorisationToken);
         httpHeaders.add(EXPERIMENTAL, "true");
         HttpEntity<String> request = new HttpEntity<>(httpHeaders);
         return restTemplate.exchange(uri, HttpMethod.GET, request, CaseUserAssignmentData.class).getBody();
@@ -200,7 +201,8 @@ public class ManageCaseRoleService {
             ManageCaseRoleServiceUtil.generateCaseAssignmentUserRolesRequestByModifyCaseUserRolesRequest(
                 modifyCaseUserRolesRequest);
         log.info("assigning case");
-        restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, httpMethod);
+        String authorisationToken = authTokenGenerator.generate();
+        restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, httpMethod, authorisationToken);
         // If modification type assignment sets idam id, case details links statuses and respondent hub links
         // statuses to respondent. Because after assigning role we are able to update respondent data.
         // Doesn't do anything after revoking user roles.
@@ -214,7 +216,7 @@ public class ManageCaseRoleService {
             if (!ManageCaseRoleServiceUtil.isCaseRoleAssignmentExceptionForSameUser(e)) {
                 // If unable to update existing respondent data with idamId, case details link statuses
                 // and response hub links statuses after assigning user case role, revokes assigned role!....
-                restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, HttpMethod.DELETE);
+                restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, HttpMethod.DELETE, authorisationToken);
             }
             throw new ManageCaseRoleException(e);
         }
@@ -223,13 +225,13 @@ public class ManageCaseRoleService {
     }
 
     private void restCallToModifyUserCaseRoles(
-        CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest, HttpMethod httpMethod)
+        CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest, HttpMethod httpMethod, String authorisationToken)
         throws IOException {
         try {
             String adminToken = adminUserService.getAdminUserToken();
             HttpEntity<CaseAssignmentUserRolesRequest> requestEntity =
                 new HttpEntity<>(caseAssignmentUserRolesRequest,
-                                 buildHeaders(adminToken, this.authTokenGenerator.generate()));
+                                 buildHeaders(adminToken, authorisationToken));
             restTemplate.exchange(ccdApiUrl + ManageCaseRoleConstants.CASE_USERS_API_URL,
                                   httpMethod,
                                   requestEntity,
@@ -460,7 +462,8 @@ public class ManageCaseRoleService {
             throw new ManageCaseRoleException(new Exception(String.format(
                 ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND, caseSubmissionReference)));
         }
-        revokeCaseUserRole(caseDetails, CASE_USER_ROLE_CLAIMANT_SOLICITOR);
+        String authorisationToken = authTokenGenerator.generate();
+        revokeCaseUserRole(caseDetails, CASE_USER_ROLE_CLAIMANT_SOLICITOR, authorisationToken);
         return removeClaimantRepresentativeFromCaseData(authorisation, caseDetails);
     }
 
@@ -498,7 +501,8 @@ public class ManageCaseRoleService {
                 ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND, caseSubmissionReference)));
         }
         String caseUserRole = ManageCaseRoleServiceUtil.getRespondentSolicitorTypeFromIndex(respondentIndex).getLabel();
-        revokeCaseUserRole(caseDetails, caseUserRole);
+        String authorisationToken = authTokenGenerator.generate();
+        revokeCaseUserRole(caseDetails, caseUserRole, authorisationToken);
         return removeRespondentRepresentativeFromCaseData(authorisation,
                                                           caseDetails,
                                                           respondentIndex,
@@ -518,9 +522,9 @@ public class ManageCaseRoleService {
      * @throws IOException if an error occurs while retrieving user assignments or during the HTTP call
      * @throws ManageCaseRoleException if no matching user-role assignment is found for the given case and role
      */
-    public void revokeCaseUserRole(CaseDetails caseDetails, String role) throws IOException {
+    public void revokeCaseUserRole(CaseDetails caseDetails, String role, String authorisationToken) throws IOException {
         List<CaseUserAssignment> caseUserAssignments = findCaseUserAssignmentsByRoleAndCase(
-            role, caseDetails);
+            role, caseDetails, authorisationToken);
         if (CollectionUtils.isEmpty(caseUserAssignments)) {
             throw new ManageCaseRoleException(new Exception(
                 String.format(ManageCaseRoleConstants.EXCEPTION_CASE_USER_ROLES_NOT_FOUND, caseDetails.getId())));
@@ -534,7 +538,7 @@ public class ManageCaseRoleService {
                 );
             HttpMethod httpMethod = RemoteServiceUtil.getHttpMethodByCaseUserRoleModificationType(
                 ManageCaseRoleConstants.MODIFICATION_TYPE_REVOKE);
-            restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, httpMethod);
+            restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, httpMethod, authorisationToken);
         }
     }
 
@@ -552,10 +556,12 @@ public class ManageCaseRoleService {
      * @throws IOException if an error occurs while retrieving user assignments
      * @throws ManageCaseRoleException if no user assignments are found for the case
      */
-    public List<CaseUserAssignment> findCaseUserAssignmentsByRoleAndCase(String caseRole, CaseDetails caseDetails)
+    public List<CaseUserAssignment> findCaseUserAssignmentsByRoleAndCase(String caseRole,
+                                                                         CaseDetails caseDetails,
+                                                                         String authorisationToken)
         throws IOException {
         CaseUserAssignmentData caseUserAssignmentData =
-            fetchCaseUserAssignmentsByCaseId(caseDetails.getId().toString());
+            fetchCaseUserAssignmentsByCaseId(caseDetails.getId().toString(), authorisationToken);
         if (ObjectUtils.isEmpty(caseUserAssignmentData)
             || CollectionUtils.isEmpty(caseUserAssignmentData.getCaseUserAssignments())) {
             throw new ManageCaseRoleException(new Exception(
