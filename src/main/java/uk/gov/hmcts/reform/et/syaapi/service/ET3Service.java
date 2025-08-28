@@ -11,7 +11,6 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et1CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et3Request;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
-import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
@@ -25,7 +24,6 @@ import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
 import uk.gov.hmcts.reform.et.syaapi.service.pdf.ET3FormService;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.HubLinksUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.util.Collection;
@@ -49,10 +47,8 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.ResponseUtil.findSelec
 @RequiredArgsConstructor
 public class ET3Service {
 
-    private final AdminUserService adminUserService;
-    private final AuthTokenGenerator authTokenGenerator;
+    private final CachedIdamService cachedIdamService;
     private final CoreCaseDataApi ccdApi;
-    private final IdamClient idamClient;
     private final CaseService caseService;
     private final ET3FormService et3FormService;
     private final NotificationService notificationService;
@@ -69,8 +65,8 @@ public class ET3Service {
         if (isBlank(submissionReference)) {
             throw new RuntimeException(ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS);
         }
-        CaseDetails caseDetails = ccdApi.getCase(adminUserService.getAdminUserToken(),
-                                                 authTokenGenerator.generate(),
+        CaseDetails caseDetails = ccdApi.getCase(cachedIdamService.getAdminUserToken(),
+                                                 cachedIdamService.getAuthorisationToken(),
                                                  submissionReference);
         if (ObjectUtils.isNotEmpty(caseDetails)) {
             return caseDetails;
@@ -98,7 +94,7 @@ public class ET3Service {
     }
 
     private CaseDetails getCaseDetails(String elasticSearchQuery) {
-        String adminUserToken = adminUserService.getAdminUserToken();
+        String adminUserToken = cachedIdamService.getAdminUserToken();
         CaseDetails englandCase = findCaseByCaseType(adminUserToken,
                                                      EtSyaConstants.ENGLAND_CASE_TYPE, elasticSearchQuery
         );
@@ -133,7 +129,7 @@ public class ET3Service {
                                            String elasticSearchQuery) {
         List<CaseDetails> caseDetailsList = Optional.ofNullable(ccdApi.searchCases(
             adminUserToken,
-            authTokenGenerator.generate(),
+            cachedIdamService.getAuthorisationToken(),
             caseType,
             elasticSearchQuery
         ).getCases()).orElse(Collections.emptyList());
@@ -210,21 +206,21 @@ public class ET3Service {
     // covers all runtime exceptions.
     @Retryable
     protected List<CaseDetails> getAllUserCasesForET3(String authorization) {
-        UserInfo userInfo = idamClient.getUserInfo(authorization);
+        UserInfo userInfo = cachedIdamService.getUserInfo(authorization);
         if (ObjectUtils.isEmpty(userInfo)) {
             log.info("Unable to get user info from idam for listing user cases");
             throw new ManageCaseRoleException(new Exception("Unable to get user info for listing user cases"));
         }
         List<CaseDetails> englandCases = ccdApi.searchForCitizen(
             authorization,
-            authTokenGenerator.generate(),
+            cachedIdamService.getAuthorisationToken(),
             userInfo.getUid(),
             EtSyaConstants.JURISDICTION_ID,
             EtSyaConstants.ENGLAND_CASE_TYPE,
             new HashMap<>());
         List<CaseDetails> scotlandCases = ccdApi.searchForCitizen(
             authorization,
-            authTokenGenerator.generate(),
+            cachedIdamService.getAuthorisationToken(),
             userInfo.getUid(),
             EtSyaConstants.JURISDICTION_ID,
             EtSyaConstants.SCOTLAND_CASE_TYPE,
@@ -249,7 +245,7 @@ public class ET3Service {
         HubLinksUtil.setLinkStatuses(caseData, selectedRespondent.getValue(), et3Request);
         if (MODIFICATION_TYPE_SUBMIT.equals(et3Request.getRequestType())) {
             if (isBlank(selectedRespondent.getValue().getResponseRespondentEmail())) {
-                UserInfo userInfo = idamClient.getUserInfo(authorisation);
+                UserInfo userInfo = cachedIdamService.getUserInfo(authorisation);
                 selectedRespondent.getValue().setResponseRespondentEmail(userInfo.getSub());
             }
             et3FormService.generateET3WelshAndEnglishForms(authorisation, caseData, selectedRespondent);
