@@ -214,8 +214,8 @@ class ResponseUtilTest {
         respondentWithExistingCount.setResponseReceivedCount("2");
 
         return Stream.of(
-            Arguments.of(respondentWithNullCount, null),
-            Arguments.of(respondentWithExistingCount, "2")
+            Arguments.of(respondentWithNullCount, "1"),
+            Arguments.of(respondentWithExistingCount, "3")
         );
     }
 }

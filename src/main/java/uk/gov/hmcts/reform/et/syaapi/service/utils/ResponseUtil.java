@@ -98,7 +98,7 @@ public final class ResponseUtil {
             ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
         respondentSumType.setResponseReceived(EtSyaConstants.YES);
         respondentSumType.setResponseReceivedDate(LocalDate.now().toString());
-        respondentSumType.setResponseReceived(StringUtils.isBlank(respondentSumType.getResponseReceivedCount())
+        respondentSumType.setResponseReceivedCount(StringUtils.isBlank(respondentSumType.getResponseReceivedCount())
                                                    ? ET3_RESPONSE_RECEIVED_INITIAL_VALUE
                                                    : Integer.toString(Integer.parseInt(
                                                        respondentSumType.getResponseReceivedCount()) + 1));
