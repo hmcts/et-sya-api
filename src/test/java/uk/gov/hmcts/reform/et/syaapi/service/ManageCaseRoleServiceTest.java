@@ -33,7 +33,6 @@ import uk.gov.hmcts.et.common.model.ccd.CaseUserAssignmentData;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.et.common.model.enums.RespondentSolicitorType;
-import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
@@ -48,7 +47,6 @@ import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ManageCaseRoleServiceUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.IOException;
@@ -83,13 +81,9 @@ class ManageCaseRoleServiceTest {
     @Mock
     RestTemplate restTemplate;
     @Mock
-    AdminUserService adminUserService;
-    @Mock
     CoreCaseDataApi ccdApi;
     @Mock
-    AuthTokenGenerator authTokenGenerator;
-    @Mock
-    IdamClient idamClient;
+    CachedIdamService cachedIdamService;
     @Mock
     ET3Service et3Service;
     @Mock
@@ -141,9 +135,12 @@ class ManageCaseRoleServiceTest {
     @BeforeEach
     void setup() {
         caseTestData = new CaseTestData();
-        manageCaseRoleService = new ManageCaseRoleService(
-            adminUserService, restTemplate, authTokenGenerator, ccdApi, idamClient, et3Service, caseService,
-            caseDetailsConverter);
+        manageCaseRoleService = new ManageCaseRoleService(cachedIdamService,
+                                                          restTemplate,
+                                                          ccdApi,
+                                                          et3Service,
+                                                          caseService,
+                                                          caseDetailsConverter);
         userInfo = new CaseTestData().getUserInfo();
         caseAssignmentUserRole1 = CaseAssignmentUserRole.builder()
             .userId(DUMMY_USER_ID)
@@ -223,8 +220,8 @@ class ManageCaseRoleServiceTest {
         }
         CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
 
-        when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(cachedIdamService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        when(cachedIdamService.getAuthorisationToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         if (CASE_USER_ROLE_DEFENDANT.equals(modifyCaseUserRolesRequest
                                                 .getModifyCaseUserRoles()
                                                 .getFirst().getCaseRole())) {
@@ -327,9 +324,9 @@ class ManageCaseRoleServiceTest {
         String elasticSearchQuery = ElasticSearchQueryBuilder.buildByFindCaseForRoleModificationRequest(
             findCaseForRoleModificationRequest
         );
-        when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new CaseTestData().getUserInfo());
+        when(cachedIdamService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(cachedIdamService.getAuthorisationToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(cachedIdamService.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new CaseTestData().getUserInfo());
         when(ccdApi.searchCases(TEST_SERVICE_AUTH_TOKEN,
                                 TEST_SERVICE_AUTH_TOKEN,
                                 TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES,
@@ -363,9 +360,9 @@ class ManageCaseRoleServiceTest {
         String elasticSearchQuery = ElasticSearchQueryBuilder.buildByFindCaseForRoleModificationRequest(
             findCaseForRoleModificationRequest
         );
-        when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new CaseTestData().getUserInfo());
+        when(cachedIdamService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(cachedIdamService.getAuthorisationToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(cachedIdamService.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new CaseTestData().getUserInfo());
         when(ccdApi.searchCases(TEST_SERVICE_AUTH_TOKEN,
                                 TEST_SERVICE_AUTH_TOKEN,
                                 TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES,
@@ -401,8 +398,8 @@ class ManageCaseRoleServiceTest {
         String elasticSearchQuery = ElasticSearchQueryBuilder.buildByFindCaseForRoleModificationRequest(
             findCaseForRoleModificationRequest
         );
-        when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(cachedIdamService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(cachedIdamService.getAuthorisationToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(ccdApi.searchCases(TEST_SERVICE_AUTH_TOKEN,
                                 TEST_SERVICE_AUTH_TOKEN,
                                 TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES,
@@ -434,7 +431,7 @@ class ManageCaseRoleServiceTest {
             .build();
         ModifyCaseUserRolesRequest modifyCaseUserRolesRequest = ModifyCaseUserRolesRequest.builder()
             .modifyCaseUserRoles(List.of(modifyCaseUserRoleWithoutUserId, modifyCaseUserRoleWithUserId)).build();
-        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
+        when(cachedIdamService.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
         ModifyCaseUserRolesRequest  actualModifyCaseUserRolesRequest =
             manageCaseRoleService.generateModifyCaseUserRolesRequest(
                 DUMMY_AUTHORISATION_TOKEN, modifyCaseUserRolesRequest);
@@ -456,7 +453,7 @@ class ManageCaseRoleServiceTest {
         CaseAssignedUserRolesResponse expectedCaseAssignedUserRolesResponse = CaseAssignedUserRolesResponse.builder()
             .caseAssignedUserRoles(List.of(caseAssignmentUserRole))
             .build();
-        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
+        when(cachedIdamService.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
         when(restTemplate.exchange(
             ArgumentMatchers.anyString(),
             eq(HttpMethod.GET),
@@ -475,7 +472,7 @@ class ManageCaseRoleServiceTest {
     @SneakyThrows
     void theGetCaseUserRolesByCaseAndUserIdsAacThrowsExceptionWhenCaseDetailsEmpty() {
         ReflectionTestUtils.setField(manageCaseRoleService, AAC_URL_PARAMETER_NAME, AAC_URL_PARAMETER_TEST_VALUE);
-        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
+        when(cachedIdamService.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
         String message = assertThrows(
             ManageCaseRoleException.class,
             () -> manageCaseRoleService
@@ -496,7 +493,7 @@ class ManageCaseRoleServiceTest {
         CaseAssignedUserRolesResponse expectedCaseAssignedUserRolesResponse = CaseAssignedUserRolesResponse.builder()
             .caseAssignedUserRoles(List.of(caseAssignmentUserRole))
             .build();
-        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
+        when(cachedIdamService.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
         when(restTemplate.postForObject(
             eq(CCD_API_URL_PARAMETER_TEST_VALUE
                    + CASE_USER_ROLE_CCD_API_POST_METHOD_NAME),
@@ -611,8 +608,8 @@ class ManageCaseRoleServiceTest {
         ReflectionTestUtils.setField(manageCaseRoleService,
                                      CCD_API_URL_PARAMETER_NAME,
                                      CCD_API_URL_PARAMETER_TEST_VALUE);
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserInfo(ArgumentMatchers.anyString())).thenReturn(userInfo);
+        when(cachedIdamService.getAuthorisationToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(cachedIdamService.getUserInfo(ArgumentMatchers.anyString())).thenReturn(userInfo);
         when(ccdApi.getCase(
             TEST_SERVICE_AUTH_TOKEN,
             TEST_SERVICE_AUTH_TOKEN,
@@ -645,11 +642,11 @@ class ManageCaseRoleServiceTest {
         ReflectionTestUtils.setField(manageCaseRoleService,
                                      CCD_API_URL_PARAMETER_NAME,
                                      CCD_API_URL_PARAMETER_TEST_VALUE);
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(cachedIdamService.getAuthorisationToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         List<CaseDetails> allCaseDetails = caseTestData.getSearchResultRequestCaseDataListScotland().getCases();
         allCaseDetails.addAll(caseTestData.getSearchResultRequestCaseDataListEngland().getCases());
         when(caseService.getAllUserCases(TEST_SERVICE_AUTH_TOKEN)).thenReturn(allCaseDetails);
-        when(idamClient.getUserInfo(ArgumentMatchers.anyString())).thenReturn(userInfo);
+        when(cachedIdamService.getUserInfo(ArgumentMatchers.anyString())).thenReturn(userInfo);
         List<CaseDetails> expectedCaseDetails = caseTestData.getExpectedCaseDataListCombined();
 
         when(restTemplate.postForObject(
@@ -701,8 +698,8 @@ class ManageCaseRoleServiceTest {
             null,
             caseDetails.getCaseTypeId()
         )).thenReturn(caseDetails);
-        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(new CaseTestData().getUserInfo());
-        when(authTokenGenerator.generate()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        when(cachedIdamService.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(new CaseTestData().getUserInfo());
+        when(cachedIdamService.getAuthorisationToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
         assertDoesNotThrow(() -> manageCaseRoleService.removeClaimantRepresentativeFromCaseData(
             DUMMY_AUTHORISATION_TOKEN, caseDetails));
     }
@@ -720,7 +717,7 @@ class ManageCaseRoleServiceTest {
                                              .caseRole(CASE_USER_ROLE_CLAIMANT_SOLICITOR)
                                              .build()))
             .build();
-        when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        when(cachedIdamService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
         when(restTemplate.exchange(anyString(),
                                    eq(HttpMethod.GET),
                                    any(HttpEntity.class),
@@ -734,7 +731,7 @@ class ManageCaseRoleServiceTest {
     @Test
     @SneakyThrows
     void theFindCaseUserAssignmentsByRoleAndCase() {
-        when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        when(cachedIdamService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
         when(restTemplate.exchange(anyString(),
                                    eq(HttpMethod.GET),
                                    any(HttpEntity.class),
@@ -774,7 +771,7 @@ class ManageCaseRoleServiceTest {
         ReflectionTestUtils.setField(manageCaseRoleService,
                                      CCD_API_URL_PARAMETER_NAME,
                                      CCD_API_URL_PARAMETER_TEST_VALUE);
-        when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        when(cachedIdamService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
         CaseUserAssignmentData caseUserAssignmentData = CaseUserAssignmentData.builder()
             .caseUserAssignments(List.of(CaseUserAssignment.builder()
                                              .caseId(CASE_ID)
@@ -809,7 +806,7 @@ class ManageCaseRoleServiceTest {
         ReflectionTestUtils.setField(manageCaseRoleService,
                                      CCD_API_URL_PARAMETER_NAME,
                                      CCD_API_URL_PARAMETER_TEST_VALUE);
-        when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        when(cachedIdamService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
         CaseAssignedUserRolesResponse caseAssignedUserRolesResponse = CaseAssignedUserRolesResponse.builder()
             .caseAssignedUserRoles(List.of(CaseAssignmentUserRole.builder()
                                                .caseDataId(TEST_CASE_ID_STRING)
@@ -824,8 +821,8 @@ class ManageCaseRoleServiceTest {
             .thenReturn(caseAssignedUserRolesResponse);
         CaseDetails caseDetails = CaseDetails.builder().id(TEST_CASE_ID_LONG)
             .data(new CaseTestData().getCaseDetails().getData()).build();
-        when(authTokenGenerator.generate()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
-        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(new CaseTestData().getUserInfo());
+        when(cachedIdamService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        when(cachedIdamService.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(new CaseTestData().getUserInfo());
         when(ccdApi.getCase(DUMMY_AUTHORISATION_TOKEN, DUMMY_AUTHORISATION_TOKEN, TEST_CASE_ID_STRING))
             .thenReturn(caseDetails);
         CaseUserAssignmentData caseUserAssignmentData = CaseUserAssignmentData.builder()
@@ -865,8 +862,8 @@ class ManageCaseRoleServiceTest {
             null,
             caseDetails.getCaseTypeId()
         )).thenReturn(caseDetails);
-        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(new CaseTestData().getUserInfo());
-        when(authTokenGenerator.generate()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        when(cachedIdamService.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(new CaseTestData().getUserInfo());
+        when(cachedIdamService.getAuthorisationToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
         assertDoesNotThrow(() -> manageCaseRoleService.revokeClaimantSolicitorRole(
             DUMMY_AUTHORISATION_TOKEN, TEST_CASE_ID_STRING));
         // When invalid case role then should not return any case details and should throw exception
@@ -898,8 +895,8 @@ class ManageCaseRoleServiceTest {
         caseData.setRepCollection(List.of(RepresentedTypeRItem.builder().value(
             RepresentedTypeR.builder().respondentId(USER_ID).build()).build()));
         caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
-        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
-        when(authTokenGenerator.generate()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        when(cachedIdamService.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
+        when(cachedIdamService.getAuthorisationToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
         StartEventResponse startEventResponse = StartEventResponse.builder()
             .caseDetails(caseDetails).eventId(UPDATE_CASE_SUBMITTED.name()).token(DUMMY_AUTHORISATION_TOKEN).build();
         when(ccdApi.startEventForCitizen(
@@ -934,7 +931,7 @@ class ManageCaseRoleServiceTest {
         ReflectionTestUtils.setField(manageCaseRoleService,
                                      CCD_API_URL_PARAMETER_NAME,
                                      CCD_API_URL_PARAMETER_TEST_VALUE);
-        when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        when(cachedIdamService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
         CaseAssignedUserRolesResponse caseAssignedUserRolesResponse = CaseAssignedUserRolesResponse.builder()
             .caseAssignedUserRoles(List.of(CaseAssignmentUserRole.builder()
                                                .caseDataId(TEST_CASE_ID_STRING)
@@ -954,8 +951,8 @@ class ManageCaseRoleServiceTest {
         caseData.setRepCollection(List.of(RepresentedTypeRItem.builder().value(
             RepresentedTypeR.builder().respondentId(USER_ID).build()).build()));
         caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
-        when(authTokenGenerator.generate()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
-        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(new CaseTestData().getUserInfo());
+        when(cachedIdamService.getAuthorisationToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        when(cachedIdamService.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(new CaseTestData().getUserInfo());
         when(ccdApi.getCase(DUMMY_AUTHORISATION_TOKEN, DUMMY_AUTHORISATION_TOKEN, TEST_CASE_ID_STRING))
             .thenReturn(caseDetails);
         CaseUserAssignmentData caseUserAssignmentData = CaseUserAssignmentData.builder()
