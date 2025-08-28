@@ -5,10 +5,11 @@ java:
   aadIdentityName: et
   keyVaults:
     et-cos:
-      - name: cos-system-user
-        alias: CASEWORKER_USER_NAME
-      - name: cos-system-user-password
-        alias: CASEWORKER_PASSWORD
+      secrets:
+        - name: cos-system-user
+          alias: CASEWORKER_USER_NAME
+        - name: cos-system-user-password
+          alias: CASEWORKER_PASSWORD
     et-sya-api:
       secrets:
         - name: et-sya-api-s2s-secret
