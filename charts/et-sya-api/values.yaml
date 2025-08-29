@@ -4,18 +4,16 @@ java:
   ingressHost: et-sya-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
   aadIdentityName: et
   keyVaults:
-    et-cos:
-      secrets:
-        - name: cos-system-user
-          alias: CASEWORKER_USER_NAME
-        - name: cos-system-user-password
-          alias: CASEWORKER_PASSWORD
     et-sya-api:
       secrets:
         - name: et-sya-api-s2s-secret
           alias: ET_SYA_S2S_SECRET
         - name: Ocp-Apim-Subscription-Key
           alias: ACAS_KEY
+        - name: et-api-caseworker-user-name
+          alias: CASEWORKER_USER_NAME
+        - name: et-api-caseworker-password
+          alias: CASEWORKER_PASSWORD
         - name: acas-idam-client-secret
           alias: IDAM_CLIENT_SECRET
         - name: et1-service-owner-notification-email
