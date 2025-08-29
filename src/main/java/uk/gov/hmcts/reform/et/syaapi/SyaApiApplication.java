@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.et.syaapi;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import uk.gov.hmcts.reform.authorisation.ServiceAuthorisationApi;
 import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.idam.client.IdamApi;
         CaseAssignmentApi.class,
     }
 )
+@EnableCaching
 public class SyaApiApplication {
 
     public static void main(final String[] args) {
