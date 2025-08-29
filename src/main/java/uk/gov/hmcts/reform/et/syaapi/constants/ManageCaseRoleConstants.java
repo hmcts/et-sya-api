@@ -19,9 +19,9 @@ public final class ManageCaseRoleConstants {
     public static final String MODIFICATION_TYPE_ASSIGNMENT = "Assignment";
     public static final String MODIFICATION_TYPE_UPDATE = "update";
     public static final String MODIFICATION_TYPE_REVOKE = "Revoke";
-    public static final int FIRST_INDEX = 0;
     public static final String CASE_USER_ROLE_CREATOR = "[CREATOR]";
     public static final String CASE_USER_ROLE_DEFENDANT = "[DEFENDANT]";
+    public static final String CASE_USER_ROLE_CLAIMANT_SOLICITOR = "[CLAIMANTSOLICITOR]";
     public static final String STRING_AMPERSAND = "&";
     public static final String STRING_EQUAL = "=";
     public static final String STRING_QUESTION_MARK = "?";
@@ -32,6 +32,7 @@ public final class ManageCaseRoleConstants {
     public static final String STRING_RIGHT_SQUARE_BRACKET = "]";
     public static final String CASE_USER_ROLE_API_PARAMETER_NAME = "case_user_role";
     public static final String CASE_USER_ROLE_CCD_API_POST_METHOD_NAME = "/case-users/search";
+    public static final String CASE_USERS_RETRIEVE_API = "%s/case-users?case_ids=%s";
     public static final String LINK_STATUS_NOT_STARTED_YET = "notStartedYet";
     public static final String ET3_STATUS_IN_PROGRESS = "inProgress";
     public static final String SECTION_STATUS_COMPLETED = "completed";
@@ -55,7 +56,7 @@ public final class ManageCaseRoleConstants {
         "Case details not found because caseId or caseTypeId value is empty";
     public static final String EXCEPTION_CASE_DATA_NOT_FOUND =
         "Case details with Case Id, %s doesn't have case data values";
-    public static final String EXCEPTION_EMPTY_RESPONDENT_COLLECTION =
+    public static final String EXCEPTION_EMPTY_RESPONDENT_COLLECTION_NOT_ABLE_TO_ADD_RESPONDENT =
         "Unable to add respondent idam id because there is not respondent defined in the case case with id, %s";
     public static final String EXCEPTION_IDAM_ID_ALREADY_EXISTS =
         "Unable to add respondent idam id because case has already been assigned "
@@ -70,6 +71,17 @@ public final class ManageCaseRoleConstants {
     public static final String ET3_STATUS_SUBMITTED = "submitted";
     public static final String RESPONSE_STATUS_COMPLETED = "completed";
     public static final String ET3_RESPONSE_LANGUAGE_PREFERENCE_WELSH = "Welsh";
+    public static final String EXCEPTION_CASE_USER_ROLES_NOT_FOUND = "Case user roles not found for caseId: %s";
+    public static final String EXCEPTION_CASE_USER_ROLE_NOT_FOUND = "Case user role not found for caseId: %s";
+    public static final String EXCEPTION_INVALID_RESPONDENT_INDEX = "Respondent index is not valid: %s";
+    public static final String EXCEPTION_RESPONDENT_NOT_FOUND_WITH_INDEX = "There is no respondent with index: %s";
+    public static final String EXCEPTION_RESPONDENT_NOT_EXISTS =
+        "Respondent does not exist for case: %s";
+    public static final String EXCEPTION_NO_RESPONDENT_DEFINED =
+        "There is no respondent defined in the case with id: %s";
+    public static final String EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND =
+        "Respondent representative not found for case: %s";
+    public static final String INVALID_CASE_USER_ROLE = "Invalid case user role: %s";
 
     private ManageCaseRoleConstants() {
         // restrict instantiation
