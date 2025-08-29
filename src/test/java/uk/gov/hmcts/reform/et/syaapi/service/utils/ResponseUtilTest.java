@@ -12,11 +12,16 @@ import org.junit.jupiter.params.provider.ValueSource;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.Et3Request;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
+import uk.gov.hmcts.et.common.model.ccd.types.et3links.ET3HubLinksStatuses;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
+import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.ET3Exception;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 
+import java.time.LocalDate;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -185,4 +190,32 @@ class ResponseUtilTest {
             StartEventResponse.builder().build()));
     }
 
+    @ParameterizedTest
+    @MethodSource("provideSetET3SubmitValuesTestData")
+    void setET3SubmitValuesUpdatesFieldsCorrectly(RespondentSumType respondentSumType,
+                                                  String expectedResponseReceivedCount) {
+        ResponseUtil.setET3SubmitValues(respondentSumType);
+
+        assertThat(respondentSumType.getEt3Status()).isEqualTo(ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
+        assertThat(respondentSumType.getEt3HubLinksStatuses().getCheckYorAnswers())
+            .isEqualTo(ManageCaseRoleConstants.RESPONSE_STATUS_COMPLETED);
+        assertThat(respondentSumType.getResponseReceivedDate()).isEqualTo(LocalDate.now().toString());
+        assertThat(respondentSumType.getResponseReceivedCount()).isEqualTo(expectedResponseReceivedCount);
+    }
+
+    private static Stream<Arguments> provideSetET3SubmitValuesTestData() {
+        RespondentSumType respondentWithNullCount = new RespondentSumType();
+        respondentWithNullCount.setEt3HubLinksStatuses(new ET3HubLinksStatuses());
+        respondentWithNullCount.setResponseReceived(EtSyaConstants.YES);
+        respondentWithNullCount.setResponseReceivedCount(null);
+
+        RespondentSumType respondentWithExistingCount = new RespondentSumType();
+        respondentWithExistingCount.setEt3HubLinksStatuses(new ET3HubLinksStatuses());
+        respondentWithExistingCount.setResponseReceivedCount("2");
+
+        return Stream.of(
+            Arguments.of(respondentWithNullCount, "1"),
+            Arguments.of(respondentWithExistingCount, "3")
+        );
+    }
 }
