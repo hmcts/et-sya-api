@@ -25,6 +25,7 @@ import uk.gov.hmcts.et.common.model.ccd.CaseUserAssignment;
 import uk.gov.hmcts.et.common.model.ccd.CaseUserAssignmentData;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
@@ -38,6 +39,7 @@ import uk.gov.hmcts.reform.et.syaapi.service.utils.DocumentUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ManageCaseRoleServiceUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.RemoteServiceUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.RespondentUtil;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.IOException;
@@ -67,7 +69,9 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.RemoteServiceUtil.buil
 @Service
 @RequiredArgsConstructor
 public class ManageCaseRoleService {
-    private final CachedIdamService cachedIdamService;
+    private final AdminUserService adminUserService;
+    private final AuthTokenGenerator authTokenGenerator;
+    private final IdamClient idamClient;
     private final RestTemplate restTemplate;
     private final CoreCaseDataApi ccdApi;
     private final ET3Service et3Service;
@@ -94,8 +98,8 @@ public class ManageCaseRoleService {
     public CaseUserAssignmentData fetchCaseUserAssignmentsByCaseId(String caseId) throws IOException {
         String uri = ManageCaseRoleServiceUtil
             .buildCaseAccessUrl(ccdApiUrl, caseId);
-        String authToken = cachedIdamService.getAdminUserToken();
-        HttpHeaders httpHeaders = buildHeaders(authToken, cachedIdamService.getAuthorisationToken());
+        String authToken = adminUserService.getAdminUserToken();
+        HttpHeaders httpHeaders = buildHeaders(authToken, authTokenGenerator.generate());
         httpHeaders.add(EXPERIMENTAL, "true");
         HttpEntity<String> request = new HttpEntity<>(httpHeaders);
         return restTemplate.exchange(uri, HttpMethod.GET, request, CaseUserAssignmentData.class).getBody();
@@ -115,7 +119,7 @@ public class ManageCaseRoleService {
         String authorisation) throws IOException {
         log.info("Trying to receive case for role modification. Submission Reference: {}",
                  findCaseForRoleModificationRequest.getCaseSubmissionReference());
-        String adminUserToken = cachedIdamService.getAdminUserToken();
+        String adminUserToken = adminUserService.getAdminUserToken();
         String elasticSearchQuery = ElasticSearchQueryBuilder
             .buildByFindCaseForRoleModificationRequest(findCaseForRoleModificationRequest);
         CaseDetails englandCase = findCaseByCaseType(adminUserToken,
@@ -144,7 +148,7 @@ public class ManageCaseRoleService {
                                            String authorisation) throws IOException {
         List<CaseDetails> caseDetailsList = Optional.ofNullable(ccdApi.searchCases(
             adminUserToken,
-            cachedIdamService.getAuthorisationToken(),
+            authTokenGenerator.generate(),
             caseType,
             elasticSearchQuery
         ).getCases()).orElse(Collections.emptyList());
@@ -221,10 +225,10 @@ public class ManageCaseRoleService {
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest, HttpMethod httpMethod)
         throws IOException {
         try {
-            String adminToken = cachedIdamService.getAdminUserToken();
+            String adminToken = adminUserService.getAdminUserToken();
             HttpEntity<CaseAssignmentUserRolesRequest> requestEntity =
                 new HttpEntity<>(caseAssignmentUserRolesRequest,
-                                 buildHeaders(adminToken, cachedIdamService.getAuthorisationToken()));
+                                 buildHeaders(adminToken, authTokenGenerator.generate()));
             restTemplate.exchange(ccdApiUrl + ManageCaseRoleConstants.CASE_USERS_API_URL,
                                   httpMethod,
                                   requestEntity,
@@ -268,7 +272,7 @@ public class ManageCaseRoleService {
      */
     public ModifyCaseUserRolesRequest generateModifyCaseUserRolesRequest(
         String authorisation, ModifyCaseUserRolesRequest modifyCaseUserRolesRequest) {
-        UserInfo userInfo = cachedIdamService.getUserInfo(authorisation);
+        UserInfo userInfo = idamClient.getUserInfo(authorisation);
         List<ModifyCaseUserRole> tmpModifyCaseUserRoles = new ArrayList<>();
         for (ModifyCaseUserRole modifyCaseUserRole : modifyCaseUserRolesRequest.getModifyCaseUserRoles()) {
             ModifyCaseUserRole tmpModifyCaseUserRole = ModifyCaseUserRole.builder()
@@ -294,7 +298,7 @@ public class ManageCaseRoleService {
      */
     public CaseAssignedUserRolesResponse getCaseUserRolesByCaseAndUserIdsAac(
         String authorization, List<CaseDetails> caseDetailsList) throws IOException {
-        UserInfo userInfo = cachedIdamService.getUserInfo(authorization);
+        UserInfo userInfo = idamClient.getUserInfo(authorization);
         String aacApiUri = ManageCaseRoleServiceUtil
             .createAacSearchCaseUsersUriByCaseAndUserIds(aacUrl, caseDetailsList, List.of(userInfo));
         if (StringUtils.isBlank(aacApiUri)) {
@@ -305,7 +309,7 @@ public class ManageCaseRoleService {
         ResponseEntity<CaseAssignedUserRolesResponse> response;
         try {
             HttpEntity<Object> requestEntity =
-                new HttpEntity<>(buildHeaders(authorization, cachedIdamService.getAuthorisationToken()));
+                new HttpEntity<>(buildHeaders(authorization, authTokenGenerator.generate()));
             response = restTemplate.exchange(
                 aacApiUri,
                 HttpMethod.GET,
@@ -340,7 +344,7 @@ public class ManageCaseRoleService {
         if (CollectionUtils.isEmpty(caseIds)) {
             return CaseAssignedUserRolesResponse.builder().build();
         }
-        UserInfo userInfo = cachedIdamService.getUserInfo(authorization);
+        UserInfo userInfo = idamClient.getUserInfo(authorization);
         SearchCaseAssignedUserRolesRequest searchCaseAssignedUserRolesRequest = SearchCaseAssignedUserRolesRequest
             .builder()
             .caseIds(caseIds)
@@ -350,7 +354,7 @@ public class ManageCaseRoleService {
         try {
             HttpEntity<SearchCaseAssignedUserRolesRequest> requestHttpEntity =
                 new HttpEntity<>(searchCaseAssignedUserRolesRequest,
-                                 buildHeaders(authorization, cachedIdamService.getAuthorisationToken()));
+                                 buildHeaders(authorization, authTokenGenerator.generate()));
             response = restTemplate
                 .postForObject(ccdApiUrl + ManageCaseRoleConstants.CASE_USER_ROLE_CCD_API_POST_METHOD_NAME,
                                requestHttpEntity,
@@ -375,7 +379,7 @@ public class ManageCaseRoleService {
     public CaseDetails getUserCaseByCaseUserRole(String authorization,
                                                  String caseId,
                                                  String caseUserRole) {
-        CaseDetails caseDetails = ccdApi.getCase(authorization, cachedIdamService.getAuthorisationToken(), caseId);
+        CaseDetails caseDetails = ccdApi.getCase(authorization, authTokenGenerator.generate(), caseId);
         if (ObjectUtils.isEmpty(caseDetails)) {
             throw new ManageCaseRoleException(
                 new Exception("Unable to find user case by case id: " + caseId));
@@ -583,10 +587,10 @@ public class ManageCaseRoleService {
      * @return the updated {@link CaseDetails} with claimant representative fields removed
      */
     public CaseDetails removeClaimantRepresentativeFromCaseData(String authorisation, CaseDetails caseDetails) {
-        UserInfo userInfo = cachedIdamService.getUserInfo(authorisation);
+        UserInfo userInfo = idamClient.getUserInfo(authorisation);
         StartEventResponse startEventResponse = ccdApi.startEventForCitizen(
             authorisation,
-            cachedIdamService.getAuthorisationToken(),
+            authTokenGenerator.generate(),
             userInfo.getUid(),
             EMPLOYMENT,
             caseDetails.getCaseTypeId(),
@@ -635,10 +639,10 @@ public class ManageCaseRoleService {
                                                                   CaseDetails caseDetails,
                                                                   String respondentIndex,
                                                                   String caseUserRole) {
-        UserInfo userInfo = cachedIdamService.getUserInfo(authorisation);
+        UserInfo userInfo = idamClient.getUserInfo(authorisation);
         StartEventResponse startEventResponse = ccdApi.startEventForCitizen(
             authorisation,
-            cachedIdamService.getAuthorisationToken(),
+            authTokenGenerator.generate(),
             userInfo.getUid(),
             EMPLOYMENT,
             caseDetails.getCaseTypeId(),

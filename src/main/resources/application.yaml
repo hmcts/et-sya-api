@@ -150,5 +150,4 @@ launchdarkly:
 
 assign_case_access_api_url: ${AAC_URL:http://localhost:4454
 caching:
-  spring:
-    idamTTL: ${IDAM_TTL:21600000}
+  adminUserTokenTTL: ${ADMIN_USER_TOKEN_TTL:21600000}
