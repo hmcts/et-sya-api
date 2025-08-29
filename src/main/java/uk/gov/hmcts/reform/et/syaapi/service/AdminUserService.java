@@ -23,8 +23,8 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
  *
  * <h2>Configuration</h2>
  * <ul>
- *   <li><b>caseWorkerUserName</b>: Username for the case worker user.</li>
- *   <li><b>caseWorkerPassword</b>: Password for the case worker user.</li>
+ *   <li><b>caseWorkerUserName</b>: Username for the caseworker user.</li>
+ *   <li><b>caseWorkerPassword</b>: Password for the caseworker user.</li>
  *   <li><b>caching.adminUserTokenTTL</b>: Interval in milliseconds for scheduled cache eviction.</li>
  * </ul>
  *
