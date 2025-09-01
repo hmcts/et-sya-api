@@ -9,18 +9,6 @@ def product = "et"
 def component = "sya-api"
 def branchesToSync = ['demo', 'ithc']
 
-//Perf Vars
-def config
-def utils
-def dynatraceApiHost
-def envName
-def dynatraceEventIngestEndpoint
-def dynatraceMetricIngestEndpoint
-def dynatraceTriggerSyntheticEndpoint
-def dynatraceSyntheticTest
-def dynatraceDashboardId
-def dynatraceEntitySelector
-
 def secrets = [
     'et-${env}': [
         secret('perf-synthetic-monitor-token', 'PERF_SYNTHETIC_MONITOR_TOKEN'),
@@ -44,8 +32,18 @@ withPipeline(type, product, component) {
   disableLegacyDeployment()
   enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
   syncBranchesWithMaster(branchesToSync)
-  enablePerformanceTestStages()
+  enablePerformanceTestStages(timeout: 15)
   //enableSlackNotifications('#et-builds')
+
+  enableGatlingLoadTests([
+    repo: 'https://github.com/hmcts/performance-testing.git',
+    branch: 'master', //*SHould be master 
+    simulation: 'updateCaseScenario',
+    users: 5,
+    rampDuration: '60s',
+    testDuration: '300s',
+    timeout: 10
+  ])
 
   before('smoketest:preview') {
     env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
