@@ -8,25 +8,32 @@ import uk.gov.hmcts.ecm.common.helpers.UtilHelper;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.types.ClaimantIndType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
+import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
-import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondentApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
+import uk.gov.service.notify.NotificationClient;
+import uk.gov.service.notify.NotificationClientException;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.RESPONDENT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED_STATE;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
-import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CASE_NUMBER_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SHORTTEXT_KEY;
 
 @RequiredArgsConstructor
 @Service
@@ -34,10 +41,10 @@ import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespon
 public class StoreRespondentTseService {
     private final CaseService caseService;
     private final CaseDetailsConverter caseDetailsConverter;
-    private final NotificationService notificationService;
+    private final NotificationsProperties notificationsProperties;
+    private final NotificationClient notificationClient;
 
-    private static final String NOT_SET = "Not set";
-    private static final String FINAL_CASE_DETAILS_NOT_FOUND = "submitUpdate finalCaseDetails not found";
+    private static final String CASE_DETAILS_NOT_FOUND = "submitUpdate CaseDetails not found";
 
     /**
      * Store Respondent Application to Tell Something Else.
@@ -76,7 +83,7 @@ public class StoreRespondentTseService {
 
         // Send acknowledgement email to respondent
         if (finalCaseDetails == null) {
-            throw new IllegalArgumentException(FINAL_CASE_DETAILS_NOT_FOUND);
+            throw new IllegalArgumentException(CASE_DETAILS_NOT_FOUND);
         }
         sendAcknowledgementEmails(request, finalCaseDetails);
 
@@ -108,21 +115,33 @@ public class StoreRespondentTseService {
         RespondentApplicationRequest request,
         CaseDetails finalCaseDetails
     ) {
-        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(finalCaseDetails.getData());
+        String emailTemplate = notificationsProperties.getClaimantTseEmailStoredTemplateId();
 
-        ClaimantIndType claimantIndType = caseData.getClaimantIndType();
-        NotificationService.CoreEmailDetails details = new NotificationService.CoreEmailDetails(
-            caseData,
-            claimantIndType.getClaimantFirstNames() + " " + claimantIndType.getClaimantLastName(),
-            caseData.getEthosCaseReference(),
-            getRespondentNames(caseData),
-            NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET),
-            finalCaseDetails.getId().toString()
-        );
+        String emailAddress = "";
+
+        Map<String, Object> emailParameters = new ConcurrentHashMap<>();
+
+        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(finalCaseDetails.getData());
+        String caseNumber = caseData.getEthosCaseReference();
+        emailParameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
 
         RespondentTse respondentTse = request.getRespondentTse();
+        String shortText = defaultIfEmpty(APP_TYPE_MAP.get(respondentTse.getContactApplicationType()), "");
+        emailParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
 
-        notificationService.sendStoredEmailToRespondent(
-            details, APP_TYPE_MAP.get(respondentTse.getContactApplicationType()));
+        String caseId = finalCaseDetails.getId().toString();
+        String link = notificationsProperties.getRespondentPortalLink() + caseId;
+        emailParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, link);
+
+        try {
+            notificationClient.sendEmail(
+                emailTemplate,
+                emailAddress,
+                emailParameters,
+                caseId
+            );
+        } catch (NotificationClientException ne) {
+            throw new NotificationException(ne);
+        }
     }
 }

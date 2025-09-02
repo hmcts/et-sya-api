@@ -1072,15 +1072,6 @@ public class NotificationService {
         );
     }
 
-    void sendStoredEmailToRespondent(CoreEmailDetails details, String shortText) {
-        // TODO: send to respondent instead of claimant
-        sendStoreConfirmationEmail(
-            notificationsProperties.getClaimantTseEmailStoredTemplateId(),
-            details,
-            shortText
-        );
-    }
-
     CoreEmailDetails formatCoreEmailDetails(CaseData caseData, String caseId) {
         return new CoreEmailDetails(
             caseData,

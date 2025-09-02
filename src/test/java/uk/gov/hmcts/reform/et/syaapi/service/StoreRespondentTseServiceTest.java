@@ -14,6 +14,8 @@ import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondentApplicationRequest;
+import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
+import uk.gov.service.notify.NotificationClient;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -41,7 +43,7 @@ class StoreRespondentTseServiceTest {
 
     private final TestData testData;
 
-    private static final String FINAL_CASE_DETAILS_NOT_FOUND = "submitUpdate finalCaseDetails not found";
+    private static final String CASE_DETAILS_NOT_FOUND = "submitUpdate CaseDetails not found";
     private static final long CASE_ID = 1_646_225_213_651_590L;
     private static final String CASE_TYPE_ID = "ET_EnglandWales";
 
@@ -57,7 +59,8 @@ class StoreRespondentTseServiceTest {
         storeRespondentTseService = new StoreRespondentTseService(
             caseService,
             caseDetailsConverter,
-            mock(NotificationService.class)
+            mock(NotificationsProperties.class),
+            mock(NotificationClient.class)
         );
     }
 
@@ -135,6 +138,6 @@ class StoreRespondentTseServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
             storeRespondentTseService.storeApplication(TEST_SERVICE_AUTH_TOKEN, testRequest));
         assertThat(exception.getMessage())
-            .isEqualTo(FINAL_CASE_DETAILS_NOT_FOUND);
+            .isEqualTo(CASE_DETAILS_NOT_FOUND);
     }
 }
