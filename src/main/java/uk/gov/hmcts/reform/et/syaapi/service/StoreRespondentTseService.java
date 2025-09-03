@@ -122,24 +122,22 @@ public class StoreRespondentTseService {
         RespondentTse respondentTse,
         CaseDetails finalCaseDetails
     ) {
-        Map<String, Object> emailParameters = new ConcurrentHashMap<>();
+        // email template (using the same template as claimant)
+        String emailTemplate = notificationsProperties.getClaimantTseEmailStoredTemplateId();
 
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(finalCaseDetails.getData());
-        String caseId = finalCaseDetails.getId().toString();
-
         RespondentSumTypeItem respondent = getRespondent(caseData, respondentTse.getRespondentIdamId());
         if (respondent == null) {
             throw new IllegalArgumentException(RESPONDENT_NOT_FOUND);
         }
-
-        // email template (using the same template as claimant)
-        String emailTemplate = notificationsProperties.getClaimantTseEmailStoredTemplateId();
 
         // email address
         String emailAddress = getRespondentEmail(respondent.getValue());
         if (emailAddress == null) {
             throw new IllegalArgumentException(RESPONDENT_EMAIL_ADDRESS_OT_FOUND);
         }
+
+        Map<String, Object> emailParameters = new ConcurrentHashMap<>();
 
         // email parameter: caseNumber
         String caseNumber = caseData.getEthosCaseReference();
@@ -150,6 +148,7 @@ public class StoreRespondentTseService {
         emailParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
 
         // email parameter: citizenPortalLink
+        String caseId = finalCaseDetails.getId().toString();
         String link = getPortalLink(caseId, respondent);
         emailParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, link);
 
