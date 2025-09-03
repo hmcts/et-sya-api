@@ -148,6 +148,7 @@ launchdarkly:
   offline-mode: false
   env: ${LAUNCH_DARKLY_ENV:default}
 
-assign_case_access_api_url: ${AAC_URL:http://localhost:4454
+assign_case_access_api_url: ${AAC_URL:http://localhost:4454}
+
 caching:
   adminUserTokenTTL: ${ADMIN_USER_TOKEN_TTL:21600000}
