@@ -1,8 +1,8 @@
 #!groovy
 import uk.gov.hmcts.contino.AppPipelineDsl
-//te
+
 //@Library("Infrastructure")
-@Library('Infrastructure@add-perftest-vars') _
+@Library("Infrastructure@test-performance-repo") _   //add-perftest-vars
 
 def type = "java"
 def product = "et"
@@ -36,9 +36,9 @@ withPipeline(type, product, component) {
   //enableSlackNotifications('#et-builds')
 
   enableGatlingLoadTests([
-    repo: 'https://github.com/hmcts/performance-testing.git',
-    branch: 'master', //*SHould be master 
-    simulation: 'updateCaseScenario',
+    repo: 'https://github.com/hmcts/performance-testing.git', //https://github.com/hmcts/et-performance.git
+    branch: 'master', //*SHould be master //add-buildpipeline-code
+    simulation: 'et.simulations.EtApiSimulation', // ETCreateClaim
     users: 5,
     rampDuration: '60s',
     testDuration: '300s',
