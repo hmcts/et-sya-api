@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.et.syaapi.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
@@ -16,9 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
 import uk.gov.hmcts.reform.et.syaapi.service.AcasCaseService;
+import uk.gov.hmcts.reform.et.syaapi.service.AdminUserService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 import uk.gov.hmcts.reform.et.syaapi.service.FeatureToggleService;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,13 +37,8 @@ public class AcasController {
 
     private final AcasCaseService acasCaseService;
     private final CaseDocumentService caseDocumentService;
-    private final IdamClient idamClient;
+    private final AdminUserService adminUserService;
     private final FeatureToggleService featureToggleService;
-
-    @Value("${caseWorkerUserName}")
-    private String caseWorkerUserName;
-    @Value("${caseWorkerPassword}")
-    private String caseWorkerPassword;
 
     /**
      * Given a datetime, this method will return a list of caseIds which have been modified since the datetime
@@ -111,7 +105,7 @@ public class AcasController {
     public ResponseEntity<ByteArrayResource> getDocumentBinaryContent(
         @RequestParam(name = "documentId") final UUID documentId,
         @RequestHeader(AUTHORIZATION) String authToken) {
-        String accessToken = idamClient.getAccessToken(caseWorkerUserName, caseWorkerPassword);
+        String accessToken = adminUserService.getAdminUserToken();
         return caseDocumentService.downloadDocument(accessToken, documentId);
     }
 
