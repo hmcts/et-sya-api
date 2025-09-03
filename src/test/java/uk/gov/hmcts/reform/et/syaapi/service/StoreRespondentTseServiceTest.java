@@ -68,6 +68,7 @@ class StoreRespondentTseServiceTest {
     void storeApplicationShouldReturnCaseDetails() {
         RespondentTse respondentTse = new RespondentTse();
         respondentTse.setContactApplicationType("withdraw");
+        respondentTse.setRespondentIdamId("test");
 
         RespondentApplicationRequest testRequest = RespondentApplicationRequest.builder()
             .caseId(String.valueOf(CASE_ID))

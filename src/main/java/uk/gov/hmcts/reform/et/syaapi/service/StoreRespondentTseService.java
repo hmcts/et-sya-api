@@ -3,11 +3,13 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ecm.common.helpers.UtilHelper;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
@@ -85,7 +87,7 @@ public class StoreRespondentTseService {
         if (finalCaseDetails == null) {
             throw new IllegalArgumentException(CASE_DETAILS_NOT_FOUND);
         }
-        sendAcknowledgementEmails(request, finalCaseDetails);
+        sendAcknowledgementEmails(request.getRespondentTse(), finalCaseDetails);
 
         return finalCaseDetails;
     }
@@ -112,27 +114,32 @@ public class StoreRespondentTseService {
     }
 
     private void sendAcknowledgementEmails(
-        RespondentApplicationRequest request,
+        RespondentTse respondentTse,
         CaseDetails finalCaseDetails
     ) {
+        Map<String, Object> emailParameters = new ConcurrentHashMap<>();
+        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(finalCaseDetails.getData());
+
+        // email template (using the same template as claimant)
         String emailTemplate = notificationsProperties.getClaimantTseEmailStoredTemplateId();
 
-        String emailAddress = "";
+        // email address
+        String emailAddress = findRespondentEmailAddress(caseData, respondentTse.getRespondentIdamId());
 
-        Map<String, Object> emailParameters = new ConcurrentHashMap<>();
-
-        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(finalCaseDetails.getData());
+        // email parameter: caseNumber
         String caseNumber = caseData.getEthosCaseReference();
         emailParameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
 
-        RespondentTse respondentTse = request.getRespondentTse();
+        // email parameter: shortText
         String shortText = defaultIfEmpty(APP_TYPE_MAP.get(respondentTse.getContactApplicationType()), "");
         emailParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
 
+        // email parameter: citizenPortalLink
         String caseId = finalCaseDetails.getId().toString();
         String link = notificationsProperties.getRespondentPortalLink() + caseId;
         emailParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, link);
 
+        // send email
         try {
             notificationClient.sendEmail(
                 emailTemplate,
@@ -143,5 +150,25 @@ public class StoreRespondentTseService {
         } catch (NotificationClientException ne) {
             throw new NotificationException(ne);
         }
+    }
+
+    private String findRespondentEmailAddress(CaseData caseData, String applicantIdamId) {
+        return caseData.getRespondentCollection().stream()
+            .filter(r -> applicantIdamId.equals(r.getValue().getIdamId()))
+            .findFirst()
+            .map(r -> getRespondentEmail(r.getValue()))
+            .orElse(null);
+    }
+
+    private String getRespondentEmail(RespondentSumType respondent) {
+        String responseEmail = respondent.getResponseRespondentEmail();
+        if (StringUtils.isNotBlank(responseEmail)) {
+            return responseEmail;
+        }
+        String respondentEmail = respondent.getRespondentEmail();
+        if (StringUtils.isNotBlank(respondentEmail)) {
+            return respondentEmail;
+        }
+        return null;
     }
 }
