@@ -20,10 +20,10 @@ import uk.gov.hmcts.reform.et.syaapi.SyaApiApplication;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
 import uk.gov.hmcts.reform.et.syaapi.service.AcasCaseService;
+import uk.gov.hmcts.reform.et.syaapi.service.AdminUserService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 import uk.gov.hmcts.reform.et.syaapi.service.FeatureToggleService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -65,7 +65,7 @@ class AcasControllerTest {
     private CaseDocumentService caseDocumentService;
 
     @MockBean
-    private IdamClient idamClient;
+    private AdminUserService adminUserService;
 
     private MockMvc mockMvc;
 
@@ -191,7 +191,7 @@ class AcasControllerTest {
     @Test
     void downloadAcasDocumentsDocumentsFound() throws Exception {
         when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
-        when(idamClient.getAccessToken(anyString(), anyString())).thenReturn(AUTH_TOKEN);
+        when(adminUserService.getAdminUserToken()).thenReturn(AUTH_TOKEN);
         when(caseDocumentService.downloadDocument(anyString(), any())).thenReturn(getDocumentBinaryContent());
         mockMvc.perform(get(DOWNLOAD_ACAS_DOCUMENTS_URL)
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)

@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -57,14 +56,10 @@ public class AcasCaseService {
 
     private final AuthTokenGenerator authTokenGenerator;
     private final CoreCaseDataApi ccdApiClient;
+    private final AdminUserService adminUserService;
     private final IdamClient idamClient;
     private final CaseDocumentService caseDocumentService;
     private final TaskExecutor taskExecutor;
-
-    @Value("${caseWorkerUserName}")
-    private String caseWorkerUserName;
-    @Value("${caseWorkerPassword}")
-    private String caseWorkerPassword;
 
     /**
      * Given a datetime, this method will return a list of caseIds which have been modified since the datetime
@@ -139,7 +134,7 @@ public class AcasCaseService {
     }
 
     private List<CaseDocumentAcasResponse> getDocumentUuids(String query) {
-        String authorisation = idamClient.getAccessToken(caseWorkerUserName, caseWorkerPassword);
+        String authorisation = adminUserService.getAdminUserToken();
         List<CaseData> caseDataList = searchAndReturnCaseDataList(authorisation, query);
 
         List<CaseDocumentAcasResponse> documents = new ArrayList<>();
@@ -340,7 +335,7 @@ public class AcasCaseService {
      * @return the case details
      */
     public CaseDetails vetAndAcceptCase(String caseId) {
-        String authorization = idamClient.getAccessToken(caseWorkerUserName, caseWorkerPassword);
+        String authorization = adminUserService.getAdminUserToken();
         CaseDetails caseDetails = ccdApiClient.getCase(authorization, authTokenGenerator.generate(), caseId);
         if (ObjectUtils.isEmpty(caseDetails)) {
             throw new IllegalArgumentException("Case not found");

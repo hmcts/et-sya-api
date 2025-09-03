@@ -58,6 +58,8 @@ class AcasCaseServiceTest {
     @Mock
     private IdamClient idamClient;
     @Mock
+    private AdminUserService adminUserService;
+    @Mock
     private CaseDocumentService caseDocumentService;
     @Mock
     private TaskExecutor taskExecutor;
@@ -73,7 +75,7 @@ class AcasCaseServiceTest {
     @BeforeEach
     void setUp() {
         when(authTokenGenerator.generate()).thenReturn(TestConstants.TEST_SERVICE_AUTH_TOKEN);
-        lenient().when(idamClient.getAccessToken(any(), any())).thenReturn(TestConstants.TEST_SERVICE_AUTH_TOKEN);
+        lenient().when(adminUserService.getAdminUserToken()).thenReturn(TestConstants.TEST_SERVICE_AUTH_TOKEN);
         lenient().doAnswer(invocation -> {
             ((Runnable) invocation.getArgument(0)).run();
             return null;
@@ -316,7 +318,7 @@ class AcasCaseServiceTest {
                 argumentCaptor.capture());
 
         // Check Vetting Data
-        CaseData caseData = (CaseData) argumentCaptor.getAllValues().get(0).getData();
+        CaseData caseData = (CaseData) argumentCaptor.getAllValues().getFirst().getData();
         assertThat(caseData.getAreTheseCodesCorrect()).isEqualTo(TestConstants.YES);
         assertThat(caseData.getEt1VettingCanServeClaimYesOrNo()).isEqualTo(TestConstants.YES);
         // Check Pre Acceptance Data
