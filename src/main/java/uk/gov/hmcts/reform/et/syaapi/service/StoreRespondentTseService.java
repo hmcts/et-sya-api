@@ -9,6 +9,7 @@ import uk.gov.hmcts.ecm.common.helpers.UtilHelper;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentTse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -36,6 +37,8 @@ import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CASE_NUMBER_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SHORTTEXT_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH;
 
 @RequiredArgsConstructor
 @Service
@@ -47,6 +50,8 @@ public class StoreRespondentTseService {
     private final NotificationClient notificationClient;
 
     private static final String CASE_DETAILS_NOT_FOUND = "submitUpdate CaseDetails not found";
+    private static final String RESPONDENT_NOT_FOUND = "Respondent not found";
+    private static final String RESPONDENT_EMAIL_ADDRESS_OT_FOUND = "Respondent email address ot found";
 
     /**
      * Store Respondent Application to Tell Something Else.
@@ -118,13 +123,23 @@ public class StoreRespondentTseService {
         CaseDetails finalCaseDetails
     ) {
         Map<String, Object> emailParameters = new ConcurrentHashMap<>();
+
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(finalCaseDetails.getData());
+        String caseId = finalCaseDetails.getId().toString();
+
+        RespondentSumTypeItem respondent = getRespondent(caseData, respondentTse.getRespondentIdamId());
+        if (respondent == null) {
+            throw new IllegalArgumentException(RESPONDENT_NOT_FOUND);
+        }
 
         // email template (using the same template as claimant)
         String emailTemplate = notificationsProperties.getClaimantTseEmailStoredTemplateId();
 
         // email address
-        String emailAddress = findRespondentEmailAddress(caseData, respondentTse.getRespondentIdamId());
+        String emailAddress = getRespondentEmail(respondent.getValue());
+        if (emailAddress == null) {
+            throw new IllegalArgumentException(RESPONDENT_EMAIL_ADDRESS_OT_FOUND);
+        }
 
         // email parameter: caseNumber
         String caseNumber = caseData.getEthosCaseReference();
@@ -135,8 +150,7 @@ public class StoreRespondentTseService {
         emailParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
 
         // email parameter: citizenPortalLink
-        String caseId = finalCaseDetails.getId().toString();
-        String link = notificationsProperties.getRespondentPortalLink() + caseId;
+        String link = getPortalLink(caseId, respondent);
         emailParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, link);
 
         // send email
@@ -152,11 +166,10 @@ public class StoreRespondentTseService {
         }
     }
 
-    private String findRespondentEmailAddress(CaseData caseData, String applicantIdamId) {
+    private RespondentSumTypeItem getRespondent(CaseData caseData, String userIdamId) {
         return caseData.getRespondentCollection().stream()
-            .filter(r -> applicantIdamId.equals(r.getValue().getIdamId()))
+            .filter(r -> userIdamId.equals(r.getValue().getIdamId()))
             .findFirst()
-            .map(r -> getRespondentEmail(r.getValue()))
             .orElse(null);
     }
 
@@ -170,5 +183,11 @@ public class StoreRespondentTseService {
             return respondentEmail;
         }
         return null;
+    }
+
+    private String getPortalLink(String caseId, RespondentSumTypeItem respondent) {
+        boolean isWelsh = WELSH_LANGUAGE.equals(respondent.getValue().getEt3ResponseLanguagePreference());
+        return notificationsProperties.getRespondentPortalLink() + caseId + "/" + respondent.getId()
+            + (isWelsh ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
     }
 }

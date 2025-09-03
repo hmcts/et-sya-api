@@ -10,11 +10,13 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentTse;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondentApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import uk.gov.service.notify.NotificationClient;
 
 import java.time.LocalDate;
@@ -47,6 +49,11 @@ class StoreRespondentTseServiceTest {
     private static final long CASE_ID = 1_646_225_213_651_590L;
     private static final String CASE_TYPE_ID = "ET_EnglandWales";
 
+    private final CaseDetails caseDetailsWithStoreRespondent = ResourceLoader.fromString(
+        "responses/caseDetailsWithStoreRespondent.json",
+        CaseDetails.class
+    );
+
     StoreRespondentTseServiceTest() {
         testData = new TestData();
     }
@@ -68,7 +75,7 @@ class StoreRespondentTseServiceTest {
     void storeApplicationShouldReturnCaseDetails() {
         RespondentTse respondentTse = new RespondentTse();
         respondentTse.setContactApplicationType("withdraw");
-        respondentTse.setRespondentIdamId("test");
+        respondentTse.setRespondentIdamId("5c3384d4-55e5-428a-ac37-cb6d42bc561c");
 
         RespondentApplicationRequest testRequest = RespondentApplicationRequest.builder()
             .caseId(String.valueOf(CASE_ID))
@@ -81,14 +88,14 @@ class StoreRespondentTseServiceTest {
             testRequest.getCaseId(),
             testRequest.getCaseTypeId(),
             CaseEvent.STORE_RESPONDENT_TSE
-        )).thenReturn(testData.getSendNotificationCollectionResponse());
+        )).thenReturn(testData.getStartEventResponse());
 
         when(caseService.submitUpdate(
             eq(TEST_SERVICE_AUTH_TOKEN),
             eq(testRequest.getCaseId()),
             any(),
             eq(testRequest.getCaseTypeId())
-        )).thenReturn(testData.getCaseDetailsWithData());
+        )).thenReturn(caseDetailsWithStoreRespondent);
 
         storeRespondentTseService.storeApplication(TEST_SERVICE_AUTH_TOKEN, testRequest);
 
