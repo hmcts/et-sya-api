@@ -134,7 +134,7 @@ public class StoreRespondentTseService {
         // email address
         String emailAddress = getRespondentEmail(respondent.getValue());
         if (emailAddress == null) {
-            throw new IllegalArgumentException(RESPONDENT_EMAIL_ADDRESS_OT_FOUND);
+            return;
         }
 
         Map<String, Object> emailParameters = new ConcurrentHashMap<>();
