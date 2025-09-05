@@ -37,7 +37,7 @@ withPipeline(type, product, component) {
 
   enableGatlingLoadTests([
     repo: 'https://github.com/hmcts/performance-testing.git', //https://github.com/hmcts/et-performance.git
-    branch: 'employmenttribunal-updates', //*SHould be master //add-buildpipeline-code
+    branch: 'master', //*SHould be master //add-buildpipeline-code employmenttribunal-updates
     simulation: 'et.simulations.EtApiSimulation', // ETCreateClaim
     users: 5,
     rampDuration: '60s',
