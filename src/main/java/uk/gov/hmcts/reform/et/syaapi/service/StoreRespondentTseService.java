@@ -29,11 +29,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.RESPONDENT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED_STATE;
-import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
+import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_RESPONDENT_APP_TYPE_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CASE_NUMBER_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SHORTTEXT_KEY;
@@ -51,7 +50,6 @@ public class StoreRespondentTseService {
 
     private static final String CASE_DETAILS_NOT_FOUND = "submitUpdate CaseDetails not found";
     private static final String RESPONDENT_NOT_FOUND = "Respondent not found";
-    private static final String RESPONDENT_EMAIL_ADDRESS_OT_FOUND = "Respondent email address ot found";
 
     /**
      * Store Respondent Application to Tell Something Else.
@@ -144,12 +142,16 @@ public class StoreRespondentTseService {
         emailParameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
 
         // email parameter: shortText
-        String shortText = defaultIfEmpty(APP_TYPE_MAP.get(respondentTse.getContactApplicationType()), "");
-        emailParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
+        boolean isWelsh = WELSH_LANGUAGE.equals(respondent.getValue().getEt3ResponseLanguagePreference());
+        String appTypeByLanguage = isWelsh
+            ? CY_RESPONDENT_APP_TYPE_MAP.get(respondentTse.getContactApplicationType())
+            : respondentTse.getContactApplicationType();
+        emailParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, appTypeByLanguage);
 
         // email parameter: citizenPortalLink
         String caseId = finalCaseDetails.getId().toString();
-        String link = getPortalLink(caseId, respondent);
+        String link = notificationsProperties.getRespondentPortalLink() + caseId + "/" + respondent.getId()
+            + (isWelsh ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
         emailParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, link);
 
         // send email
@@ -182,11 +184,5 @@ public class StoreRespondentTseService {
             return respondentEmail;
         }
         return null;
-    }
-
-    private String getPortalLink(String caseId, RespondentSumTypeItem respondent) {
-        boolean isWelsh = WELSH_LANGUAGE.equals(respondent.getValue().getEt3ResponseLanguagePreference());
-        return notificationsProperties.getRespondentPortalLink() + caseId + "/" + respondent.getId()
-            + (isWelsh ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
     }
 }

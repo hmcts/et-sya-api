@@ -74,7 +74,8 @@ class StoreRespondentTseServiceTest {
     @Test
     void storeApplicationShouldReturnCaseDetails() {
         RespondentTse respondentTse = new RespondentTse();
-        respondentTse.setContactApplicationType("withdraw");
+        respondentTse.setContactApplicationType("Change personal details");
+        respondentTse.setContactApplicationClaimantType("Change my personal details");
         respondentTse.setRespondentIdamId("5c3384d4-55e5-428a-ac37-cb6d42bc561c");
 
         RespondentApplicationRequest testRequest = RespondentApplicationRequest.builder()
