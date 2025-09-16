@@ -14,7 +14,7 @@ this.dynatraceMetricTag = 'namespace:et'
 this.dynatraceSyntheticTestPreview = "HTTP_CHECK-467146A25406C026"
 this.dynatraceDashboardIdPreview = "f44ff1f7-e13a-4a6a-95b9-4e3ab44e6587"
 this.dynatraceDashboardURLPreview = "https://yrk32651.live.dynatrace.com/#dashboard;id=f44ff1f7-e13a-4a6a-95b9-4e3ab44e6587;applyDashboardDefaults=true"
-this.dynatraceEntitySelectorPreview = 'type(service),tag(\\"[Kubernetes]namespace:et\\"),tag(\\"Environment:Preview\\"),entityId(\\"SERVICE-85A65FBFF3C9F37E\\")'
+this.dynatraceEntitySelectorPreview = 'type(service),tag(\\"[Kubernetes]namespace:et\\"),tag(\\"Environment:Preview\\"),entityId(\\"SERVICE-94E67F588E12D9D6\\")' //SERVICE-85A65FBFF3C9F37E
 //AAT Config
 this.dynatraceSyntheticTestAAT = "HTTP_CHECK-8BD69A31834A24FC"
 this.dynatraceDashboardIdAAT = "a529a685-8c36-4e8c-8137-67de8bfcf104"
