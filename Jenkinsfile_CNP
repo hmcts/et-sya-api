@@ -51,7 +51,7 @@ withPipeline(type, product, component) {
   }
 
   before('gatlingLoadTests:preview') {
-    env.CCD_DATA_STORE_API_PR_URL = "https://TEST-URL-FOR-JON"
+    env.CCD_DATA_STORE_API_PR_URL = "http://ccd-data-store-api-aat.service.core-compute-aat.internal"
   }
 
   before('functionalTest:preview') {
