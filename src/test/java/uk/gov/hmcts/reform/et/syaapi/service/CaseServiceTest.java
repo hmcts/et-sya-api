@@ -379,7 +379,7 @@ class CaseServiceTest {
              + "ownerDocument=null, creationDate=null, "
              + "shortDescription=null, topLevelDocuments=null, startingClaimDocuments=null, "
              + "responseClaimDocuments=null, initialConsiderationDocuments=null, "
-             + "caseManagementDocuments=null, withdrawalSettledDocuments=null, hearingsDocuments=null, "
+             + "caseManagementDocuments=null, eccDocuments=null, withdrawalSettledDocuments=null, hearingsDocuments=null, "
              + "judgmentAndReasonsDocuments=null, reconsiderationDocuments=null, miscDocuments=null, "
              + "documentType=null, dateOfCorrespondence=null, docNumber=null, tornadoEmbeddedPdfUrl=null, "
              + "excludeFromDcf=null, documentIndex=null)",
