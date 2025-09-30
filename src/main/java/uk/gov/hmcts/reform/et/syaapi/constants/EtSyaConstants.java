@@ -51,6 +51,7 @@ public final class EtSyaConstants {
     public static final String SEND_EMAIL_PARAMS_CASE_NUMBER_KEY = "caseNumber";
     public static final String SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY = "citizenPortalLink";
     public static final String SEND_EMAIL_PARAMS_EXUI_LINK_KEY = "exuiCaseDetailsLink";
+    public static final String LINK_TO_CITIZEN_HUB = "linkToCitizenHub";
     public static final String SEND_EMAIL_PARAMS_EXUI_HEARING_DOCUMENTS_LINK = "exuiHearingDocumentsLink";
     public static final String HEARING_DOCUMENTS_PATH = "#Hearing%20Documents";
     public static final String SEND_EMAIL_PARAMS_CLAIM_DESCRIPTION_FILE_LINK_KEY = "link_to_claim_description_file";
