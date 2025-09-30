@@ -1,0 +1,109 @@
+{
+  "id": 1646225213651590,
+  "jurisdiction": "EMPLOYMENT",
+  "state": "AWAITING_SUBMISSION_TO_HMCTS",
+  "case_type_id": "ET_Scotland",
+  "created_date": "2022-03-02T12:46:53.673626",
+  "last_modified": "2022-03-02T12:46:53.676743",
+  "case_data": {
+    "caseType": "Single",
+    "caseSource": "Manually Created",
+    "claimantRepresentedQuestion": "No",
+    "claimantWorkAddressQuestion": "Yes",
+    "claimantIndType": {
+      "claimant_last_name": "Claimant",
+      "claimant_first_names": "Charlie",
+      "claimant_date_of_birth": "2000-01-01",
+      "claimant_preferred_title": "Mr"
+    },
+    "claimantType": {
+      "claimant_addressUK": {
+        "Country": "United Kingdom",
+        "PostCode": "AB1 2DE",
+        "PostTown": "Leeds",
+        "AddressLine1": "2 Mock Street"
+      }
+    },
+    "respondentCollection": [
+      {
+        "id": "2d734da5-d72d-4b4b-8bfd-d133aa6c3c90",
+        "value": {
+          "idamId": "5c3384d4-55e5-428a-ac37-cb6d42bc561c",
+          "et3Status": "inProgress",
+          "respondentType": "Organisation",
+          "respondent_ACAS": "R131232/12/12",
+          "respondent_name": "Ricky Respondent",
+          "respondent_email": "respondent@test.hmcts.net",
+          "responseContinue": "Yes",
+          "responseReceived": "No",
+          "responseStruckOut": "No",
+          "extensionRequested": "No",
+          "respondent_address": {
+            "Country": "United Kingdom",
+            "PostCode": "AB1 2DE",
+            "PostTown": "Leeds",
+            "AddressLine1": "1 Test Street"
+          },
+          "et3HubLinksStatuses": {
+            "contestClaim": "notStartedYet",
+            "contactDetails": "notStartedYet",
+            "checkYorAnswers": "cannotStartYet",
+            "employerDetails": "notStartedYet",
+            "payPensionBenefitDetails": "notStartedYet",
+            "conciliationAndEmployeeDetails": "notStartedYet"
+          },
+          "respondentOrganisation": "Respondent Organisation",
+          "respondent_ACAS_question": "Yes",
+          "et3CaseDetailsLinksStatuses": {
+            "documents": "optional",
+            "et1ClaimForm": "notViewedYet",
+            "hearingDetails": "notAvailableYet",
+            "tribunalOrders": "notAvailableYet",
+            "contactTribunal": "optional",
+            "personalDetails": "notAvailableYet",
+            "respondentResponse": "notStartedYet",
+            "tribunalJudgements": "notAvailableYet",
+            "claimantApplications": "notAvailableYet",
+            "respondentRequestsAndApplications": "notAvailableYet"
+          }
+        }
+      }
+    ],
+    "claimantWorkAddress": {
+      "claimant_work_address": {
+        "Country": "United Kingdom",
+        "PostCode": "AB1 2DE",
+        "PostTown": "Leeds",
+        "AddressLine1": "1 Test Street"
+      }
+    },
+    "managingOffice": "Leeds",
+    "claimantHearingPreference": {
+      "hearing_preferences": [
+        "Video",
+        "Phone"
+      ]
+    },
+    "ethosCaseReference": "6057258/2022",
+    "receiptDate": "2025-08-11",
+    "documentCollection": [
+      {
+        "id": "63c37493-7fa2-45ad-a59a-49774b7be463",
+        "value": {
+          "docNumber": "1",
+          "documentType": "ET1 Vetting",
+          "uploadedDocument": {
+            "document_url": "https://document.binary.url/bd5cb660-a252-4b1a-9dcc-695ad572c070",
+            "document_filename": "ET1 Vetting - Charlie Claimant.pdf",
+            "document_binary_url": "https://document.binary.url/bd5cb660-a252-4b1a-9dcc-695ad572c070/binary"
+          },
+          "topLevelDocuments": "Starting a Claim",
+          "dateOfCorrespondence": "2025-08-22",
+          "startingClaimDocuments": "ET1 Vetting"
+        }
+      }
+    ]
+  },
+  "security_classification": "PUBLIC",
+  "callback_response_status": null
+}

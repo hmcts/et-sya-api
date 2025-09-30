@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondentApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.RespondentTseService;
+import uk.gov.hmcts.reform.et.syaapi.service.StoreRespondentTseService;
 import uk.gov.service.notify.NotificationClientException;
 
 import static org.springframework.http.ResponseEntity.ok;
@@ -30,6 +31,7 @@ public class RespondentTseController {
 
     private final ApplicationService applicationService;
     private final RespondentTseService respondentTseService;
+    private final StoreRespondentTseService storeRespondentTseService;
 
     /**
      * Submit a Respondent Application.
@@ -51,6 +53,30 @@ public class RespondentTseController {
         );
 
         CaseDetails finalCaseDetails = applicationService.submitRespondentApplication(authorization, request);
+
+        return ok(finalCaseDetails);
+    }
+
+    /**
+     * Store a Respondent Application.
+     *
+     * @param authorization jwt of the user
+     * @param request       the request object which contains the appId and respondent
+     *                      application passed from sya-frontend
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    @PutMapping("/store-respondent-application")
+    @Operation(summary = "Store a respondent application")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> storeRespondentApplication(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody RespondentApplicationRequest request
+    ) {
+        log.info("Received store respondent application request - caseTypeId: {} caseId: {}",
+                 request.getCaseTypeId(), request.getCaseId()
+        );
+
+        CaseDetails finalCaseDetails = storeRespondentTseService.storeApplication(authorization, request);
 
         return ok(finalCaseDetails);
     }
