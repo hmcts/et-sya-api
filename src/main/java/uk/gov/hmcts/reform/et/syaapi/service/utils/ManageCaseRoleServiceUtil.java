@@ -2,17 +2,21 @@ package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRolesRequest;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.OrganisationPolicy;
 import uk.gov.hmcts.et.common.model.enums.RespondentSolicitorType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
+import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.util.ArrayList;
@@ -24,10 +28,15 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CA
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DATA_NOT_FOUND;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_USER_ROLE_NOT_FOUND;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_EMPTY_RESPONDENT_COLLECTION;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_IDAM_ID_ALREADY_EXISTS_SAME_USER;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_INVALID_RESPONDENT_INDEX;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_NOTICE_OF_CHANGE_ANSWER_NOT_FOUND;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_RESPONDENT_NOT_EXISTS;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_RESPONDENT_SOLICITOR_TYPE_NOT_FOUND;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.INVALID_CASE_USER_ROLE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFY_CASE_ROLE_EMPTY_REQUEST;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFY_CASE_USER_ROLE_ITEM_INVALID;
@@ -270,34 +279,115 @@ public final class ManageCaseRoleServiceUtil {
     }
 
     /**
-     * Returns the {@link RespondentSolicitorType} corresponding to the given respondent index.
+     * Resolves the {@link RespondentSolicitorType} for a specific respondent in the given case.
      *
      * <p>
-     * The index must be a string representation of an integer between 0 and 9 (inclusive),
-     * where each value maps to a specific {@code RespondentSolicitorType} in declaration order.
+     * This method performs multiple validation checks to ensure that both the case details
+     * and the respondent information are valid before attempting to determine the solicitor type:
+     * <ul>
+     *   <li>Validates that {@link CaseDetails} is not {@code null} or empty.</li>
+     *   <li>Ensures that case data exists within the case details.</li>
+     *   <li>Checks that the {@code respondentIndex} is not blank, is numeric, and is non-negative.</li>
+     *   <li>Validates that a {@link CaseData} object can be constructed from the case details.</li>
+     *   <li>Verifies that the respondent collection is not empty and that the given index is within bounds.</li>
+     *   <li>Ensures that a respondent exists at the specified index and has a valid respondent name.</li>
+     *   <li>Resolves the Notice of Change answer index for the respondent name.</li>
+     *   <li>Finds the corresponding {@link RespondentSolicitorType} based on the resolved index.</li>
+     * </ul>
      * </p>
      *
      * <p>
-     * If the input string is not a valid integer or falls outside the accepted range, a
-     * {@link ManageCaseRoleException} is thrown.
+     * If any of the above validations fail, a {@link ManageCaseRoleException} is thrown
+     * with a descriptive error message including the case ID for traceability.
      * </p>
      *
-     * @param respondentIndex a string representing the respondent index (expected values: "0" to "9")
-     * @return the {@code RespondentSolicitorType} mapped to the provided index
-     * @throws ManageCaseRoleException if the input is not a valid integer or outside the range 0–9
+     * @param caseDetails     the case details containing case ID and case data; must not be {@code null} or empty
+     * @param respondentIndex the index of the respondent in the collection (as a string); must represent a valid
+     *                        non-negative integer
+     * @return the {@link RespondentSolicitorType} associated with the respondent at the given index
+     *
+     * @throws ManageCaseRoleException if:
+     *      <ul>
+     *          <li>{@code caseDetails} is null or empty,</li>
+     *          <li>the case data is missing or cannot be mapped,</li>
+     *          <li>the respondent collection is empty or the index is out of bounds,</li>
+     *          <li>the respondent at the given index does not exist or has no name,</li>
+     *          <li>no Notice of Change answer can be found for the respondent, or</li>
+     *          <li>the solicitor type cannot be resolved from the Notice of Change index.</li>
+     *      </ul>
+     *
+     * @see RespondentSolicitorType
+     * @see NoticeOfChangeUtil#findNoticeOfChangeAnswerIndex(CaseData, String)
+     * @see NoticeOfChangeUtil#findRespondentSolicitorTypeByIndex(int)
      */
-    public static RespondentSolicitorType getRespondentSolicitorTypeFromIndex(String respondentIndex) {
-        try {
-            int index = Integer.parseInt(respondentIndex);
-            if (index < 0 || index > 9) {
-                throw new ManageCaseRoleException(new Exception(
-                    String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, respondentIndex)));
-            }
-            return RespondentSolicitorType.getByIndex(index);
-        } catch (NumberFormatException | IndexOutOfBoundsException e) {
-            throw new ManageCaseRoleException(new Exception(
-                String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, respondentIndex)));
+    public static RespondentSolicitorType getRespondentSolicitorType(CaseDetails caseDetails, String respondentIndex) {
+        // Check if caseDetails is null or empty
+        if (ObjectUtils.isEmpty(caseDetails)) {
+            throw new ManageCaseRoleException(new Exception(String.format(EXCEPTION_CASE_DETAILS_NOT_FOUND,
+                                                                          StringUtils.EMPTY)));
         }
+
+        String caseId = ObjectUtils.isNotEmpty(
+            caseDetails.getId()) ? caseDetails.getId().toString() : StringUtils.EMPTY;
+        // Check if caseDetails has no case data
+        if (MapUtils.isEmpty(caseDetails.getData())) {
+            throw new ManageCaseRoleException(new Exception(String.format(EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA,
+                                                                          caseId)));
+        }
+
+        // Check if respondentIndex is blank or not a valid number
+        if (StringUtils.isBlank(respondentIndex)
+            || !NumberUtils.isCreatable(respondentIndex)
+            || NumberUtils.createInteger(respondentIndex) < 0) {
+            throw new ManageCaseRoleException(new Exception(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX,
+                                                                          respondentIndex,
+                                                                          caseId)));
+        }
+        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
+        // Check if caseData is null or empty
+        if (ObjectUtils.isEmpty(caseData)) {
+            throw new ManageCaseRoleException(new Exception(String.format(EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA,
+                                                                          caseId)));
+        }
+
+        // Check if respondentCollection is null or empty
+        if (CollectionUtils.isEmpty(caseData.getRespondentCollection())) {
+            throw new ManageCaseRoleException(new Exception(String.format(EXCEPTION_EMPTY_RESPONDENT_COLLECTION,
+                                                                          caseId)));
+        }
+
+        // Check if respondentIndex is within bounds of respondentCollection
+        if (NumberUtils.createInteger(respondentIndex) >= caseData.getRespondentCollection().size()) {
+            throw new ManageCaseRoleException(new Exception(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX,
+                                                                          respondentIndex,
+                                                                          caseId)));
+        }
+
+        // Check if caseData has respondent at the given index
+        RespondentSumTypeItem respondentSumTypeItem = caseData.getRespondentCollection()
+            .get(NumberUtils.createInteger(respondentIndex));
+        if (ObjectUtils.isEmpty(respondentSumTypeItem)
+            || ObjectUtils.isEmpty(respondentSumTypeItem.getValue())
+            || StringUtils.isBlank(respondentSumTypeItem.getValue().getRespondentName())) {
+            throw new ManageCaseRoleException(new Exception(String.format(EXCEPTION_RESPONDENT_NOT_EXISTS,
+                                                                          caseId)));
+        }
+
+        int noticeOfChangeAnswerIndex = NoticeOfChangeUtil
+            .findNoticeOfChangeAnswerIndex(caseData, respondentSumTypeItem.getValue().getRespondentName());
+        if (noticeOfChangeAnswerIndex == -1) {
+            throw new ManageCaseRoleException(new Exception(
+                String.format(EXCEPTION_NOTICE_OF_CHANGE_ANSWER_NOT_FOUND,
+                              respondentSumTypeItem.getValue().getRespondentName(),
+                              caseId)));
+        }
+        RespondentSolicitorType respondentSolicitorType = NoticeOfChangeUtil
+            .findRespondentSolicitorTypeByIndex(noticeOfChangeAnswerIndex);
+        if (ObjectUtils.isEmpty(respondentSolicitorType)) {
+            throw new ManageCaseRoleException(new Exception(String.format(
+                EXCEPTION_RESPONDENT_SOLICITOR_TYPE_NOT_FOUND, caseId, noticeOfChangeAnswerIndex)));
+        }
+        return respondentSolicitorType;
     }
 
     /**
@@ -335,7 +425,8 @@ public final class ManageCaseRoleServiceUtil {
      */
     public static void resetOrganizationPolicy(CaseData caseData, String caseUserRole, String caseId) {
         if (ObjectUtils.isEmpty(caseData)) {
-            throw new ManageCaseRoleException(new Exception(String.format(EXCEPTION_CASE_DATA_NOT_FOUND, caseId)));
+            throw new ManageCaseRoleException(new Exception(String.format(EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA,
+                                                                          caseId)));
         }
 
         if (StringUtils.isBlank(caseUserRole)) {

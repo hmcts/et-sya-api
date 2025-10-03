@@ -6,6 +6,44 @@ import java.util.List;
  * Defines case role management constants.
  */
 public final class ManageCaseRoleConstants {
+    // Exceptions
+    public static final String EXCEPTION_AUTHORISATION_TOKEN_REGEX = "authToken regex exception";
+    public static final String EXCEPTION_INVALID_MODIFICATION_TYPE = "Invalid modification type";
+    public static final String EXCEPTION_CASE_DETAILS_NOT_FOUND =
+        "Case details not found with the given caseId, %s";
+    public static final String EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS =
+        "Case details not found because caseId or caseTypeId value is empty";
+    public static final String EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA =
+        "Case details with Case Id, %s doesn't have case data values";
+    public static final String EXCEPTION_EMPTY_RESPONDENT_COLLECTION =
+        "Respondent collection not found for the case with id, %s";
+    public static final String EXCEPTION_EMPTY_RESPONDENT_COLLECTION_NOT_ABLE_TO_ADD_RESPONDENT =
+        "Unable to add respondent idam id because there is not respondent defined in the case case with id, %s";
+    public static final String EXCEPTION_IDAM_ID_ALREADY_EXISTS =
+        "Unable to add respondent idam id because case has already been assigned "
+            + "caseId, %s";
+    public static final String EXCEPTION_IDAM_ID_ALREADY_EXISTS_SAME_USER =
+        "You have already been assigned to this case caseId, %s ";
+    public static final String EXCEPTION_RESPONDENT_NOT_FOUND =
+        "Unable to add respondent idam id because there isn't any respondent with name %s";
+    public static final String EXCEPTION_NOTICE_OF_CHANGE_ANSWER_NOT_FOUND =
+        "Notice of change answer not found for the respondent with name, %s for the case with id, %s";
+    public static final String EXCEPTION_RESPONDENT_SOLICITOR_TYPE_NOT_FOUND =
+        "Respondent solicitor type not found for case with id, %s and respondent organisation policy index, %s";
+    public static final String EXCEPTION_INVALID_IDAM_ID = "Invalid Idam ID";
+    public static final String EXCEPTION_CASE_USER_ROLES_NOT_FOUND = "Case user roles not found for caseId: %s";
+    public static final String EXCEPTION_CASE_USER_ROLE_NOT_FOUND = "Case user role not found for caseId: %s";
+    public static final String EXCEPTION_INVALID_RESPONDENT_INDEX
+        = "Respondent index, %s is not valid for the case with id, %s";
+    public static final String EXCEPTION_RESPONDENT_NOT_FOUND_WITH_INDEX = "There is no respondent with index: %s";
+    public static final String EXCEPTION_RESPONDENT_NOT_EXISTS =
+        "Respondent does not exist for case: %s";
+    public static final String EXCEPTION_NO_RESPONDENT_DEFINED =
+        "There is no respondent defined in the case with id: %s";
+    public static final String EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND =
+        "Respondent representative not found for case: %s";
+
+
     public static final String MODIFY_CASE_ROLE_EMPTY_REQUEST = "Request to modify roles is empty";
     public static final String MODIFY_CASE_USER_ROLE_ITEM_INVALID = "One of the case user role modification item is "
         + "invalid. Invalid Data is For CaseId: %s";
@@ -14,8 +52,6 @@ public final class ManageCaseRoleConstants {
     public static final String HEADER_SERVICE_AUTHORIZATION = "ServiceAuthorization";
     public static final String HEADER_VALUE_APPLICATION_JSON = "application/json";
     public static final String AUTHORISATION_TOKEN_REGEX = "[a-zA-Z0-9._\\s\\S]+$";
-    public static final String EXCEPTION_AUTHORISATION_TOKEN_REGEX = "authToken regex exception";
-    public static final String EXCEPTION_INVALID_MODIFICATION_TYPE = "Invalid modification type";
     public static final String MODIFICATION_TYPE_ASSIGNMENT = "Assignment";
     public static final String MODIFICATION_TYPE_UPDATE = "update";
     public static final String MODIFICATION_TYPE_REVOKE = "Revoke";
@@ -50,37 +86,11 @@ public final class ManageCaseRoleConstants {
     public static final String CASE_STATE_ACCEPTED = "Accepted";
     public static final String STRING_TRUE = "true";
     public static final String STRING_FALSE = "false";
-    public static final String EXCEPTION_CASE_DETAILS_NOT_FOUND =
-        "Case details not found with the given caseId, %s";
-    public static final String EXCEPTION_CASE_DETAILS_NOT_FOUND_EMPTY_PARAMETERS =
-        "Case details not found because caseId or caseTypeId value is empty";
-    public static final String EXCEPTION_CASE_DATA_NOT_FOUND =
-        "Case details with Case Id, %s doesn't have case data values";
-    public static final String EXCEPTION_EMPTY_RESPONDENT_COLLECTION_NOT_ABLE_TO_ADD_RESPONDENT =
-        "Unable to add respondent idam id because there is not respondent defined in the case case with id, %s";
-    public static final String EXCEPTION_IDAM_ID_ALREADY_EXISTS =
-        "Unable to add respondent idam id because case has already been assigned "
-            + "caseId, %s";
-    public static final String EXCEPTION_IDAM_ID_ALREADY_EXISTS_SAME_USER =
-        "You have already been assigned to this case caseId, %s ";
-    public static final String EXCEPTION_RESPONDENT_NOT_FOUND =
-        "Unable to add respondent idam id because there isn't any respondent with name %s";
-    public static final String EXCEPTION_INVALID_IDAM_ID = "Invalid Idam ID";
     public static final List<String> UNAUTHORIZED_APIS = List.of("/et3/findCaseByEthosCaseReference");
     public static final String MODIFICATION_TYPE_SUBMIT = "submit";
     public static final String ET3_STATUS_SUBMITTED = "submitted";
     public static final String RESPONSE_STATUS_COMPLETED = "completed";
     public static final String ET3_RESPONSE_LANGUAGE_PREFERENCE_WELSH = "Welsh";
-    public static final String EXCEPTION_CASE_USER_ROLES_NOT_FOUND = "Case user roles not found for caseId: %s";
-    public static final String EXCEPTION_CASE_USER_ROLE_NOT_FOUND = "Case user role not found for caseId: %s";
-    public static final String EXCEPTION_INVALID_RESPONDENT_INDEX = "Respondent index is not valid: %s";
-    public static final String EXCEPTION_RESPONDENT_NOT_FOUND_WITH_INDEX = "There is no respondent with index: %s";
-    public static final String EXCEPTION_RESPONDENT_NOT_EXISTS =
-        "Respondent does not exist for case: %s";
-    public static final String EXCEPTION_NO_RESPONDENT_DEFINED =
-        "There is no respondent defined in the case with id: %s";
-    public static final String EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND =
-        "Respondent representative not found for case: %s";
     public static final String INVALID_CASE_USER_ROLE = "Invalid case user role: %s";
 
     private ManageCaseRoleConstants() {

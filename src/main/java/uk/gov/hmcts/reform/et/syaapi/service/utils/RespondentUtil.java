@@ -23,7 +23,7 @@ import java.util.Map;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.ET3_STATUS_IN_PROGRESS;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DATA_NOT_FOUND;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_EMPTY_RESPONDENT_COLLECTION_NOT_ABLE_TO_ADD_RESPONDENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_IDAM_ID_ALREADY_EXISTS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_IDAM_ID_ALREADY_EXISTS_SAME_USER;
@@ -63,7 +63,7 @@ public final class RespondentUtil {
                                                                  String modificationType) {
         Map<String, Object> existingCaseData = caseDetails.getData();
         if (MapUtils.isEmpty(existingCaseData)) {
-            throw new RuntimeException(String.format(EXCEPTION_CASE_DATA_NOT_FOUND, caseDetails.getId()));
+            throw new RuntimeException(String.format(EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA, caseDetails.getId()));
         }
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(existingCaseData);
         if (CollectionUtils.isNotEmpty(caseData.getRespondentCollection())) {
@@ -264,7 +264,7 @@ public final class RespondentUtil {
             return respondentSumTypeItem;
         } catch (NumberFormatException | IndexOutOfBoundsException e) {
             throw new ManageCaseRoleException(
-                new Exception(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, respondentIndex)));
+                new Exception(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, respondentIndex, caseId)));
         }
     }
 

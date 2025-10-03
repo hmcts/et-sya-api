@@ -37,7 +37,7 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CASE_ID;
 class RespondentUtilTest {
 
     private static final String EXCEPTION_INVALID_RESPONDENT_INDEX =
-        "java.lang.Exception: Respondent index is not valid: %s";
+        "java.lang.Exception: Respondent index, %s is not valid for the case with id, %s";
     private static final String STRING_ZERO = "0";
     private static final String STRING_NINE = "9";
     private static final String STRING_MINUS_ONE = "-1";
@@ -421,12 +421,16 @@ class RespondentUtilTest {
         // Test invalid: non-numeric input
         ManageCaseRoleException ex1 = assertThrows(ManageCaseRoleException.class, () ->
             RespondentUtil.findRespondentSumTypeItemByIndex(validList, INVALID_INTEGER, CASE_ID));
-        assertThat(ex1.getMessage()).contains(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, INVALID_INTEGER));
+        assertThat(ex1.getMessage()).contains(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX,
+                                                            INVALID_INTEGER,
+                                                            CASE_ID));
 
         // Test invalid: index out of bounds
         ManageCaseRoleException ex2 = assertThrows(ManageCaseRoleException.class, () ->
             RespondentUtil.findRespondentSumTypeItemByIndex(validList, STRING_NINE, CASE_ID));
-        assertThat(ex2.getMessage()).contains(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, STRING_NINE));
+        assertThat(ex2.getMessage()).contains(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX,
+                                                            STRING_NINE,
+                                                            CASE_ID));
 
         // Test invalid: null list
         List<RespondentSumTypeItem> emptyList = new ArrayList<>();
@@ -449,7 +453,9 @@ class RespondentUtilTest {
         listWithNullValue.add(itemWithNullValue);
         ManageCaseRoleException ex5 = assertThrows(ManageCaseRoleException.class, () ->
             RespondentUtil.findRespondentSumTypeItemByIndex(listWithNullValue, STRING_MINUS_ONE, CASE_ID));
-        assertThat(ex5.getMessage()).contains(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, STRING_MINUS_ONE));
+        assertThat(ex5.getMessage()).contains(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX,
+                                                            STRING_MINUS_ONE,
+                                                            CASE_ID));
     }
 
     @Test

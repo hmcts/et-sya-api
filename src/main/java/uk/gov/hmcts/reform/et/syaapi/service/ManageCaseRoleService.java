@@ -483,12 +483,11 @@ public class ManageCaseRoleService {
      * @param caseSubmissionReference the unique submission reference of the case
      * @param respondentIndex         the index (as a string) identifying which respondent's role is to be revoked
      * @return the updated {@link CaseDetails} after the representative has been removed and the role revoked
-     * @throws IOException                 if an I/O error occurs during case retrieval or update
      * @throws ManageCaseRoleException    if case details could not be found or role revocation fails
      */
     public CaseDetails revokeRespondentSolicitorRole(String authorisation,
                                                      String caseSubmissionReference,
-                                                     String respondentIndex) throws IOException {
+                                                     String respondentIndex) {
         log.info("Revoke respondent solicitor role for case submission reference: {}", caseSubmissionReference);
         CaseDetails caseDetails =
             getUserCaseByCaseUserRole(authorisation, caseSubmissionReference, CASE_USER_ROLE_DEFENDANT);
@@ -496,8 +495,30 @@ public class ManageCaseRoleService {
             throw new ManageCaseRoleException(new Exception(String.format(
                 ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_FOUND, caseSubmissionReference)));
         }
-        String caseUserRole = ManageCaseRoleServiceUtil.getRespondentSolicitorTypeFromIndex(respondentIndex).getLabel();
-        revokeCaseUserRole(caseDetails, caseUserRole);
+        String caseUserRole = null;
+        try {
+            caseUserRole = ManageCaseRoleServiceUtil.getRespondentSolicitorType(
+                caseDetails,
+                respondentIndex
+            ).getLabel();
+        } catch (ManageCaseRoleException e) {
+            log.info("Case user role not found for respondent index: {}, in case with submission reference: {}. "
+                         + "This maybe because respondent representative does not have any organisation defined in "
+                         + "ref data.",
+                     respondentIndex, caseSubmissionReference);
+        }
+        if (StringUtils.isNotBlank(caseUserRole)) {
+            try {
+                revokeCaseUserRole(caseDetails, caseUserRole);
+            } catch (IOException | ManageCaseRoleException e) {
+                log.info(
+                    "No case user role revoked for respondent index: {}, in case with submission reference: {}. "
+                        + "This maybe because respondent representative does not have any organisation defined in "
+                        + "ref data.",
+                    respondentIndex, caseSubmissionReference
+                );
+            }
+        }
         return removeRespondentRepresentativeFromCaseData(authorisation,
                                                           caseDetails,
                                                           respondentIndex,
@@ -659,12 +680,16 @@ public class ManageCaseRoleService {
             RespondentUtil.findRespondentRepresentative(respondentSumTypeItem,
                                                         caseData.getRepCollection(),
                                                         caseDetails.getId().toString());
-        ManageCaseRoleServiceUtil.resetOrganizationPolicy(caseData, caseUserRole, caseDetails.getId().toString());
+        if (StringUtils.isNotBlank(caseUserRole)) {
+            ManageCaseRoleServiceUtil.resetOrganizationPolicy(caseData, caseUserRole, caseDetails.getId().toString());
+        }
         respondentSumTypeItem.getValue().setRepresentativeRemoved(YES);
         caseData.getRepCollection().remove(representativeRItem);
         if (caseData.getRepCollection().isEmpty()) {
             caseData.setRepCollection(null);
         }
+        caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+
         return caseService.submitUpdate(
             authorisation,
             caseDetails.getId().toString(),

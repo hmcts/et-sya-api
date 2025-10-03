@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.MockedStatic;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRole;
@@ -18,6 +19,7 @@ import uk.gov.hmcts.et.common.model.enums.RespondentSolicitorType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
+import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
@@ -28,6 +30,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mockStatic;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CASE_ID;
@@ -48,18 +51,34 @@ class ManageCaseRoleServiceUtilTest {
     private static final String EXPECTED_AAC_URI_WITH_CASE_AND_USER_IDS =
         "https://test.url.com/case-users?case_ids=1646225213651533&case_ids=1646225213651512&"
             + "user_ids=123456789012345678901234567890&user_ids=123456789012345678901234567890";
-    private static final String EXCEPTION_INVALID_RESPONDENT_INDEX =
-        "java.lang.Exception: Respondent index is not valid: %s";
+    private static final String EXCEPTION_INVALID_RESPONDENT_INDEX_EMPTY =
+        "java.lang.Exception: Respondent index,  is not valid for the case with id, 1646225213651590";
+    private static final String EXCEPTION_INVALID_RESPONDENT_INDEX_NOT_NUMERIC =
+        "java.lang.Exception: Respondent index, abc is not valid for the case with id, 1646225213651590";
+    private static final String EXCEPTION_INVALID_RESPONDENT_INDEX_NEGATIVE =
+        "java.lang.Exception: Respondent index, -1 is not valid for the case with id, 1646225213651590";
+    private static final String EXCEPTION_INVALID_RESPONDENT_INDEX_NOT_WITHIN_BOUNDS =
+        "java.lang.Exception: Respondent index, 10 is not valid for the case with id, 1646225213651590";
     private static final String EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA =
         "java.lang.Exception: Case details with Case Id, %s doesn't have case data values";
     private static final String EXCEPTION_CASE_USER_ROLE_NOT_FOUND =
         "java.lang.Exception: Case user role not found for caseId: %s";
     public static final String EXCEPTION_INVALID_CASE_USER_ROLE = "java.lang.Exception: Invalid case user role: %s";
-    private static final String STRING_MINUS_ONE = "-1";
-    private static final String STRING_NINE = "9";
+    private static final String EXCEPTION_CASE_DETAILS_NOT_FOUND =
+        "java.lang.Exception: Case details not found with the given caseId, ";
+    private static final String EXCEPTION_EMPTY_RESPONDENT_COLLECTION =
+        "java.lang.Exception: Respondent collection not found for the case with id, 1646225213651590";
+    private static final String EXCEPTION_NOTICE_OF_CHANGE_ANSWER_NOT_FOUND =
+        "java.lang.Exception: Notice of change answer not found for the respondent with name, Test respondent name"
+            + " for the case with id, 1646225213651590";
+    private static final String EXCEPTION_RESPONDENT_SOLICITOR_TYPE_NOT_FOUND =
+        "java.lang.Exception: Respondent solicitor type not found for case with id, 1646225213651590 and "
+            + "respondent organisation policy index, 10";
+
+    private static final Long TEST_CASE_ID = 1646225213651590L;
     private static final String STRING_TEN = "10";
     private static final String INVALID_INTEGER = "abc";
-    private static final String STRING_NULL = "null";
+    private static final String TEST_RESPONDENT_NAME = "Test respondent name";
     private static final String CASE_USER_ROLE_CLAIMANT_SOLICITOR = "[CLAIMANTSOLICITOR]";
     private static final String CASE_USER_ROLE_INVALID = "[INVALID]";
 
@@ -281,36 +300,96 @@ class ManageCaseRoleServiceUtilTest {
 
     @Test
     void theGetRespondentSolicitorTypeFromIndex() {
-        // Valid indexes
-        assertThat(ManageCaseRoleServiceUtil.getRespondentSolicitorTypeFromIndex(NumberUtils.INTEGER_ZERO.toString()))
-            .isEqualTo(RespondentSolicitorType.getByIndex(NumberUtils.INTEGER_ZERO));
-        assertThat(ManageCaseRoleServiceUtil.getRespondentSolicitorTypeFromIndex(STRING_NINE))
-            .isEqualTo(RespondentSolicitorType.getByIndex(9));
+        // Should throw ManageCaseRoleException when caseDetails is null or empty
+        ManageCaseRoleException manageCaseRoleException =
+            assertThrows(ManageCaseRoleException.class, () ->
+                ManageCaseRoleServiceUtil.getRespondentSolicitorType(null,
+                                                                     NumberUtils.INTEGER_ONE.toString()));
+        assertThat(manageCaseRoleException.getMessage()).isEqualTo(EXCEPTION_CASE_DETAILS_NOT_FOUND);
 
-        // Invalid: negative index
-        ManageCaseRoleException ex1 = assertThrows(ManageCaseRoleException.class, () ->
-            ManageCaseRoleServiceUtil.getRespondentSolicitorTypeFromIndex(STRING_MINUS_ONE));
-        assertThat(ex1.getMessage()).isEqualTo(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, STRING_MINUS_ONE));
+        // Should throw ManageCaseRoleException when caseDetails not have case data
+        final CaseDetails caseDetailsWithoutCaseData = CaseDetails.builder().id(TEST_CASE_ID).build();
+        manageCaseRoleException =
+            assertThrows(ManageCaseRoleException.class, () ->
+                ManageCaseRoleServiceUtil.getRespondentSolicitorType(caseDetailsWithoutCaseData,
+                                                                     NumberUtils.INTEGER_ONE.toString()));
+        assertThat(manageCaseRoleException.getMessage()).isEqualTo(
+            String.format(EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA, TEST_CASE_ID));
 
-        // Invalid: index greater than 9
-        ManageCaseRoleException ex2 = assertThrows(ManageCaseRoleException.class, () ->
-            ManageCaseRoleServiceUtil.getRespondentSolicitorTypeFromIndex(STRING_TEN));
-        assertThat(ex2.getMessage()).isEqualTo(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, STRING_TEN));
+        // Should throw ManageCaseRoleException when respondentIndex is empty
+        final CaseDetails caseDetails = new CaseTestData().getCaseDetails();
+        manageCaseRoleException = assertThrows(
+            ManageCaseRoleException.class, () -> ManageCaseRoleServiceUtil
+                .getRespondentSolicitorType(caseDetails, StringUtils.EMPTY));
+        assertThat(manageCaseRoleException.getMessage()).isEqualTo(EXCEPTION_INVALID_RESPONDENT_INDEX_EMPTY);
 
-        // Invalid: non-numeric string
-        ManageCaseRoleException ex3 = assertThrows(ManageCaseRoleException.class, () ->
-            ManageCaseRoleServiceUtil.getRespondentSolicitorTypeFromIndex(INVALID_INTEGER));
-        assertThat(ex3.getMessage()).isEqualTo(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, INVALID_INTEGER));
+        // Should throw ManageCaseRoleException when respondentIndex is not numeric
+        manageCaseRoleException = assertThrows(
+            ManageCaseRoleException.class, () -> ManageCaseRoleServiceUtil
+                .getRespondentSolicitorType(caseDetails, INVALID_INTEGER));
+        assertThat(manageCaseRoleException.getMessage()).isEqualTo(EXCEPTION_INVALID_RESPONDENT_INDEX_NOT_NUMERIC);
 
-        // Invalid: null input
-        ManageCaseRoleException ex4 = assertThrows(ManageCaseRoleException.class, () ->
-            ManageCaseRoleServiceUtil.getRespondentSolicitorTypeFromIndex(null));
-        assertThat(ex4.getMessage()).isEqualTo(EXCEPTION_INVALID_RESPONDENT_INDEX, STRING_NULL);
+        // Should throw ManageCaseRoleException when respondentIndex is negative
+        manageCaseRoleException = assertThrows(
+            ManageCaseRoleException.class, () -> ManageCaseRoleServiceUtil
+                .getRespondentSolicitorType(caseDetails, NumberUtils.INTEGER_MINUS_ONE.toString()));
+        assertThat(manageCaseRoleException.getMessage()).isEqualTo(EXCEPTION_INVALID_RESPONDENT_INDEX_NEGATIVE);
 
-        // Invalid: empty string
-        ManageCaseRoleException ex5 = assertThrows(ManageCaseRoleException.class, () ->
-            ManageCaseRoleServiceUtil.getRespondentSolicitorTypeFromIndex(""));
-        assertThat(ex5.getMessage()).isEqualTo(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, StringUtils.EMPTY));
+
+        // Should throw ManageCaseRoleException when not able to map case details' case data map to case data object
+        MockedStatic<EmployeeObjectMapper> employeeObjectMapper = mockStatic(EmployeeObjectMapper.class);
+        employeeObjectMapper.when(
+            () -> EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData())).thenReturn(null);
+        manageCaseRoleException = assertThrows(ManageCaseRoleException.class, () -> ManageCaseRoleServiceUtil
+            .getRespondentSolicitorType(caseDetails, NumberUtils.INTEGER_ZERO.toString()));
+        assertThat(manageCaseRoleException.getMessage()).isEqualTo(
+            String.format(EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA, TEST_CASE_ID));
+
+
+        // Should throw ManageCaseRoleException when caseDetails' caseData doesn't have respondent collection
+        final CaseData caseDataWithoutRespondentCollection = new CaseData();
+        employeeObjectMapper.when(
+            () -> EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData()))
+            .thenReturn(caseDataWithoutRespondentCollection);
+        manageCaseRoleException = assertThrows(ManageCaseRoleException.class, () -> ManageCaseRoleServiceUtil
+            .getRespondentSolicitorType(caseDetails, NumberUtils.INTEGER_ZERO.toString()));
+        assertThat(manageCaseRoleException.getMessage()).isEqualTo(EXCEPTION_EMPTY_RESPONDENT_COLLECTION);
+
+        // Should throw ManageCaseRoleException when respondent not found with the given index
+        employeeObjectMapper.close();
+        manageCaseRoleException = assertThrows(ManageCaseRoleException.class, () -> ManageCaseRoleServiceUtil
+            .getRespondentSolicitorType(caseDetails, STRING_TEN));
+        assertThat(manageCaseRoleException.getMessage()).isEqualTo(
+            EXCEPTION_INVALID_RESPONDENT_INDEX_NOT_WITHIN_BOUNDS);
+
+        // Should throw ManageCaseRoleException when notice of change answer not found
+        final CaseData validCaseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
+        MockedStatic<NoticeOfChangeUtil> noticeOfChangeUtil = mockStatic(NoticeOfChangeUtil.class);
+        noticeOfChangeUtil.when(() -> NoticeOfChangeUtil.findNoticeOfChangeAnswerIndex(validCaseData,
+                                                                                       TEST_RESPONDENT_NAME))
+            .thenReturn(NumberUtils.INTEGER_MINUS_ONE);
+        manageCaseRoleException = assertThrows(ManageCaseRoleException.class, () -> ManageCaseRoleServiceUtil
+            .getRespondentSolicitorType(caseDetails, NumberUtils.INTEGER_ZERO.toString()));
+        assertThat(manageCaseRoleException.getMessage()).isEqualTo(
+            EXCEPTION_NOTICE_OF_CHANGE_ANSWER_NOT_FOUND);
+
+        // Should throw ManageCaseRoleException when respondent solicitor type not found
+        noticeOfChangeUtil.when(() -> NoticeOfChangeUtil.findNoticeOfChangeAnswerIndex(validCaseData,
+                                                                                       TEST_RESPONDENT_NAME))
+            .thenReturn(NumberUtils.createInteger(STRING_TEN));
+        manageCaseRoleException = assertThrows(ManageCaseRoleException.class, () -> ManageCaseRoleServiceUtil
+            .getRespondentSolicitorType(caseDetails, NumberUtils.INTEGER_ZERO.toString()));
+        assertThat(manageCaseRoleException.getMessage()).isEqualTo(
+            EXCEPTION_RESPONDENT_SOLICITOR_TYPE_NOT_FOUND);
+
+        // Should return valid respondent solicitor type
+        noticeOfChangeUtil.when(() -> NoticeOfChangeUtil.findNoticeOfChangeAnswerIndex(validCaseData,
+                                                                                       TEST_RESPONDENT_NAME))
+            .thenReturn(NumberUtils.INTEGER_ZERO);
+        noticeOfChangeUtil.when(() -> NoticeOfChangeUtil.findRespondentSolicitorTypeByIndex(
+            NumberUtils.INTEGER_ZERO)).thenReturn(RespondentSolicitorType.SOLICITORA);
+        assertThat(ManageCaseRoleServiceUtil.getRespondentSolicitorType(
+            caseDetails, NumberUtils.INTEGER_ZERO.toString())).isEqualTo(RespondentSolicitorType.SOLICITORA);
     }
 
     @Test
@@ -368,7 +447,7 @@ class ManageCaseRoleServiceUtilTest {
                 case 8 -> caseData.getRespondentOrganisationPolicy8();
                 case 9 -> caseData.getRespondentOrganisationPolicy9();
                 default -> throw new ManageCaseRoleException(new Exception(
-                    String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, i)));
+                    EXCEPTION_INVALID_RESPONDENT_INDEX_EMPTY));
             };
 
             assertThat(actualPolicy).isNotNull();

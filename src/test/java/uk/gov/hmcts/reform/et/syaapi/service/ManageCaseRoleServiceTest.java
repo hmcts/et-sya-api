@@ -31,6 +31,7 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.CaseUserAssignment;
 import uk.gov.hmcts.et.common.model.ccd.CaseUserAssignmentData;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
+import uk.gov.hmcts.et.common.model.ccd.types.NoticeOfChangeAnswers;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.et.common.model.enums.RespondentSolicitorType;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -122,6 +123,7 @@ class ManageCaseRoleServiceTest {
     private static final String CASE_ROLE_CREATOR = "[CREATOR]";
     private static final String CASE_SUBMISSION_REFERENCE = "1234567890123456";
     private static final String RESPONDENT_NAME = "Respondent Name";
+    private static final String TEST_RESPONDENT_ORGANISATION_NAME = "Test Respondent Organisation -1-";
     private static final String CLAIMANT_FIRST_NAMES = "Claimant First Names";
     private static final String CLAIMANT_LAST_NAME = "Claimant Last Name";
     private static final String DUMMY_CASE_SUBMISSION_REFERENCE = "1234567890123456";
@@ -958,6 +960,8 @@ class ManageCaseRoleServiceTest {
         caseData.getRespondentCollection().getFirst().setId(USER_ID);
         caseData.setRepCollection(List.of(RepresentedTypeRItem.builder().value(
             RepresentedTypeR.builder().respondentId(USER_ID).build()).build()));
+        caseData.setNoticeOfChangeAnswers0(
+            NoticeOfChangeAnswers.builder().respondentName(TEST_RESPONDENT_ORGANISATION_NAME).build());
         caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
         when(authTokenGenerator.generate()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
         when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(new CaseTestData().getUserInfo());
