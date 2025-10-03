@@ -272,6 +272,6 @@ public class SendNotificationService {
                                                                   .notificationState(newState)
                                                                   .build())
                                                        .build())
-            );
+        );
     }
 }

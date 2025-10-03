@@ -88,7 +88,8 @@ public class SendNotificationController {
                  request.getCaseTypeId(), request.getCaseId()
         );
 
-        CaseDetails finalCaseDetails = sendNotificationService.changeRespondentNotificationStatus(authorization, request);
+        CaseDetails finalCaseDetails =
+            sendNotificationService.changeRespondentNotificationStatus(authorization, request);
 
         return ok(finalCaseDetails);
     }
