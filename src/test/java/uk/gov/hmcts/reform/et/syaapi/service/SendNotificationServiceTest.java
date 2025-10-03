@@ -298,11 +298,11 @@ class SendNotificationServiceTest {
             eq(MOCK_TOKEN), eq("11"), contentCaptor.capture(), eq(CASE_ID));
 
         CaseData data = (CaseData) contentCaptor.getValue().getData();
-        List<PseResponseTypeItem> expectedResponses = items.get(0).getValue().getRespondCollection();
-        PseResponseType expected = expectedResponses.get(0).getValue();
+        List<PseResponseTypeItem> expectedResponses = items.getFirst().getValue().getRespondCollection();
+        PseResponseType expected = expectedResponses.getFirst().getValue();
 
-        SendNotificationType notification = data.getSendNotificationCollection().get(0).getValue();
-        PseResponseType actual = notification.getRespondCollection().get(0).getValue();
+        SendNotificationType notification = data.getSendNotificationCollection().getFirst().getValue();
+        PseResponseType actual = notification.getRespondCollection().getFirst().getValue();
 
 
         assertEquals(expected.getResponse(), actual.getResponse());
@@ -312,7 +312,7 @@ class SendNotificationServiceTest {
         assertEquals(SUBMITTED, notification.getNotificationState());
 
         GenericTypeItem<RespondNotificationType> tribunalResponse =
-            notification.getRespondNotificationTypeCollection().get(0);
+            notification.getRespondNotificationTypeCollection().getFirst();
         assertEquals(SUBMITTED, tribunalResponse.getValue().getState());
         assertNull(tribunalResponse.getValue().getIsClaimantResponseDue());
         assertEquals(AUTHOR, actual.getAuthor());
@@ -372,11 +372,11 @@ class SendNotificationServiceTest {
             eq(MOCK_TOKEN), eq("11"), contentCaptor.capture(), eq(CASE_ID));
 
         CaseData data = (CaseData) contentCaptor.getValue().getData();
-        List<PseResponseTypeItem> expectedResponses = items.get(0).getValue().getRespondCollection();
-        PseResponseType expected = expectedResponses.get(0).getValue();
+        List<PseResponseTypeItem> expectedResponses = items.getFirst().getValue().getRespondCollection();
+        PseResponseType expected = expectedResponses.getFirst().getValue();
 
-        SendNotificationType notification = data.getSendNotificationCollection().get(0).getValue();
-        PseResponseType actual = notification.getRespondCollection().get(0).getValue();
+        SendNotificationType notification = data.getSendNotificationCollection().getFirst().getValue();
+        PseResponseType actual = notification.getRespondCollection().getFirst().getValue();
 
         assertEquals(expected.getResponse(), actual.getResponse());
         assertEquals(expected.getFrom(), actual.getFrom());
@@ -385,7 +385,7 @@ class SendNotificationServiceTest {
         assertEquals(SUBMITTED, notification.getNotificationState());
 
         GenericTypeItem<RespondNotificationType> tribunalResponse =
-            notification.getRespondNotificationTypeCollection().get(0);
+            notification.getRespondNotificationTypeCollection().getFirst();
         assertNull(tribunalResponse.getValue().getIsClaimantResponseDue());
 
         assertEquals(NO, actual.getIsECC());
@@ -420,7 +420,7 @@ class SendNotificationServiceTest {
         verify(caseService, times(1)).submitUpdate(
             eq(MOCK_TOKEN), eq("11"), contentCaptor.capture(), eq(CASE_ID));
 
-        List<PseResponseTypeItem> expectedResponses = items.get(0).getValue().getRespondCollection();
+        List<PseResponseTypeItem> expectedResponses = items.getFirst().getValue().getRespondCollection();
 
         assertNull(expectedResponses);
     }
@@ -451,7 +451,7 @@ class SendNotificationServiceTest {
     @SuppressWarnings("unchecked")
     private static void removeResponses(StartEventResponse startEventResponse1) {
         Object notifications = startEventResponse1.getCaseDetails().getData().get("sendNotificationCollection");
-        ((List<LinkedHashMap<String, LinkedHashMap<String, Object>>>) notifications).get(0).get("value")
+        ((List<LinkedHashMap<String, LinkedHashMap<String, Object>>>) notifications).getFirst().get("value")
             .remove("respondNotificationTypeCollection");
     }
 
@@ -459,7 +459,7 @@ class SendNotificationServiceTest {
     private static void addNotificationSubject(
         StartEventResponse startEventResponse1, List<String> notificationSubject) {
         Object notifications = startEventResponse1.getCaseDetails().getData().get("sendNotificationCollection");
-        ((List<LinkedHashMap<String, LinkedHashMap<String, Object>>>) notifications).get(0).get("value")
+        ((List<LinkedHashMap<String, LinkedHashMap<String, Object>>>) notifications).getFirst().get("value")
             .put("sendNotificationSubject", notificationSubject);
     }
 }
