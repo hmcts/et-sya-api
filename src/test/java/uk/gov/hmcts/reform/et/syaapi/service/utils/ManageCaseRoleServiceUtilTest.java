@@ -390,6 +390,7 @@ class ManageCaseRoleServiceUtilTest {
             NumberUtils.INTEGER_ZERO)).thenReturn(RespondentSolicitorType.SOLICITORA);
         assertThat(ManageCaseRoleServiceUtil.getRespondentSolicitorType(
             caseDetails, NumberUtils.INTEGER_ZERO.toString())).isEqualTo(RespondentSolicitorType.SOLICITORA);
+        noticeOfChangeUtil.close();
     }
 
     @Test

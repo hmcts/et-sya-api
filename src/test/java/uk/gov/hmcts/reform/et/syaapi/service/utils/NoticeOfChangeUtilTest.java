@@ -85,6 +85,7 @@ public class NoticeOfChangeUtilTest {
 
     @Test
     void theFindNoticeOfChangeAnswerIndex() {
+
         // Should return -1 if caseData is null
         assertThat(NoticeOfChangeUtil.findNoticeOfChangeAnswerIndex(null, TEST_RESPONDENT_NAME_0))
             .isEqualTo(NumberUtils.INTEGER_MINUS_ONE);

@@ -920,11 +920,15 @@ class ManageCaseRoleServiceTest {
         )).thenReturn(startEventResponse);
         when(caseDetailsConverter.caseDataContent(eq(startEventResponse), any(CaseData.class)))
             .thenReturn(null);
-        when(caseService.submitUpdate(
+        when(ccdApi.submitEventForCitizen(
             DUMMY_AUTHORISATION_TOKEN,
+            DUMMY_AUTHORISATION_TOKEN,
+            userInfo.getUid(),
+            EMPLOYMENT,
+            caseDetails.getCaseTypeId(),
             caseDetails.getId().toString(),
-            null,
-            caseDetails.getCaseTypeId()
+            true,
+            null
         ))
             .thenReturn(caseDetails);
         CaseDetails updatedCaseDetails = manageCaseRoleService.removeRespondentRepresentativeFromCaseData(
@@ -998,15 +1002,20 @@ class ManageCaseRoleServiceTest {
         )).thenReturn(startEventResponse);
         when(caseDetailsConverter.caseDataContent(eq(startEventResponse), any(CaseData.class)))
             .thenReturn(null);
-        when(caseService.submitUpdate(
+        when(ccdApi.submitEventForCitizen(
             DUMMY_AUTHORISATION_TOKEN,
+            DUMMY_AUTHORISATION_TOKEN,
+            userInfo.getUid(),
+            EMPLOYMENT,
+            caseDetails.getCaseTypeId(),
             caseDetails.getId().toString(),
-            null,
-            caseDetails.getCaseTypeId()
+            true,
+            null
         ))
             .thenReturn(caseDetails);
-        assertDoesNotThrow(() -> manageCaseRoleService.revokeRespondentSolicitorRole(
-            DUMMY_AUTHORISATION_TOKEN, TEST_CASE_ID_STRING, NumberUtils.INTEGER_ZERO.toString()));
+        assertThat(manageCaseRoleService.revokeRespondentSolicitorRole(
+            DUMMY_AUTHORISATION_TOKEN, TEST_CASE_ID_STRING, NumberUtils.INTEGER_ZERO.toString()))
+            .isNotNull().isEqualTo(caseDetails);
         // When invalid case role then should not return any case details and should throw exception
         CaseAssignedUserRolesResponse caseAssignedUserRolesResponseInvalid = CaseAssignedUserRolesResponse.builder()
             .caseAssignedUserRoles(List.of(CaseAssignmentUserRole.builder()
