@@ -62,7 +62,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CA
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_ET3_FORM;
-import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_HUBLINK_STATUS;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.RemoteServiceUtil.buildHeaders;
 
 /**
@@ -671,7 +670,7 @@ public class ManageCaseRoleService {
             EMPLOYMENT,
             caseDetails.getCaseTypeId(),
             caseDetails.getId().toString(),
-            UPDATE_HUBLINK_STATUS.name()
+            UPDATE_CASE_SUBMITTED.name()
         );
         caseDetails = startEventResponse.getCaseDetails();
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
@@ -701,11 +700,5 @@ public class ManageCaseRoleService {
                                        caseDetails.getId().toString(),
                                        true,
                                        caseDataContent);
-        /*return caseService.submitUpdate(
-            authorisation,
-            caseDetails.getId().toString(),
-            caseDataContent,
-            caseDetails.getCaseTypeId()
-        );*/
     }
 }
