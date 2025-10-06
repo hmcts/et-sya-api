@@ -27,6 +27,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
@@ -51,6 +52,7 @@ import java.util.Optional;
 import static uk.gov.hmcts.ecm.common.client.CcdClient.EXPERIMENTAL;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.EMPLOYMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SCOTLAND_CASE_TYPE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
@@ -60,6 +62,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CA
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_ET3_FORM;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_HUBLINK_STATUS;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.RemoteServiceUtil.buildHeaders;
 
 /**
@@ -668,7 +671,7 @@ public class ManageCaseRoleService {
             EMPLOYMENT,
             caseDetails.getCaseTypeId(),
             caseDetails.getId().toString(),
-            UPDATE_CASE_SUBMITTED.name()
+            UPDATE_HUBLINK_STATUS.name()
         );
         caseDetails = startEventResponse.getCaseDetails();
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
@@ -689,12 +692,20 @@ public class ManageCaseRoleService {
             caseData.setRepCollection(null);
         }
         caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
-
-        return caseService.submitUpdate(
+        CaseDataContent caseDataContent =  caseDetailsConverter.caseDataContent(startEventResponse, caseData);
+        return ccdApi.submitEventForCitizen(authorisation,
+                                       authTokenGenerator.generate(),
+                                       userInfo.getUid(),
+                                       JURISDICTION_ID,
+                                       caseDetails.getCaseTypeId(),
+                                       caseDetails.getId().toString(),
+                                       true,
+                                       caseDataContent);
+        /*return caseService.submitUpdate(
             authorisation,
             caseDetails.getId().toString(),
-            caseDetailsConverter.caseDataContent(startEventResponse, caseData),
+            caseDataContent,
             caseDetails.getCaseTypeId()
-        );
+        );*/
     }
 }
