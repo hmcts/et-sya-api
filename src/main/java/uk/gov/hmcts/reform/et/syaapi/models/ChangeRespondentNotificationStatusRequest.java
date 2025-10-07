@@ -13,8 +13,8 @@ public class ChangeRespondentNotificationStatusRequest {
     private String caseId;
     @JsonProperty("case_type_id")
     private String caseTypeId;
-    @JsonProperty("application_id")
-    private String applicationId;
+    @JsonProperty("notification_id")
+    private String notificationId;
     @JsonProperty("user_idam_id")
     private String userIdamId;
     @JsonProperty("new_status")

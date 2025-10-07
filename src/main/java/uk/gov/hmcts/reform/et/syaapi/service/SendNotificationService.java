@@ -239,7 +239,7 @@ public class SendNotificationService {
 
         SendNotificationTypeItem itemToModify = NotificationsHelper.getSelectedNotification(
             caseData.getSendNotificationCollection(),
-            request.getApplicationId()
+            request.getNotificationId()
         );
 
         if (itemToModify == null) {
