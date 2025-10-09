@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -270,6 +271,7 @@ public class SendNotificationService {
                                                        .value(PseStatusType.builder()
                                                                   .userIdamId(userIdamId)
                                                                   .notificationState(newState)
+                                                                  .dateTime(LocalDateTime.now().toString())
                                                                   .build())
                                                        .build())
         );
