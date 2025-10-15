@@ -8,17 +8,23 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DateListedTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.GenericTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.HearingTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
+import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationTypeItem;
+import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -34,6 +40,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.HEARING_STATUS_LISTED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.CLAIMANT_CORRESPONDENCE;
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.getCurrentDateTime;
 
 @Slf4j
@@ -262,5 +269,27 @@ public final class NotificationsHelper {
             .filter(a -> a.getId().equals(notificationId))
             .findAny()
             .orElse(null);
+    }
+
+    /**
+     * Sets the supporting material for the PSE response.
+     * @param request the request containing the supporting material file
+     * @param pseResponseType the PSE response to update
+     * @param caseDocumentService service to handle document creation
+     */
+    public static void setSupportingMaterial(SendNotificationAddResponseRequest request,
+                                             PseResponseType pseResponseType, CaseDocumentService caseDocumentService) {
+        if (request.getSupportingMaterialFile() != null) {
+            DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(
+                CLAIMANT_CORRESPONDENCE,
+                request.getSupportingMaterialFile()
+            );
+            var documentTypeItems = new ArrayList<GenericTypeItem<DocumentType>>();
+            documentTypeItems.add(documentTypeItem);
+            pseResponseType.setSupportingMaterial(documentTypeItems);
+            pseResponseType.setHasSupportingMaterial(YES);
+        } else {
+            pseResponseType.setHasSupportingMaterial(NO);
+        }
     }
 }

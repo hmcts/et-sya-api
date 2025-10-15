@@ -5,11 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
-import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.PseResponseTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.PseStatusTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.et.common.model.ccd.types.PseStatusType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondNotificationType;
@@ -36,12 +34,10 @@ import java.util.UUID;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
-import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NOT_VIEWED_YET;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.VIEWED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
-import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.CLAIMANT_CORRESPONDENCE;
 
 @Service
 @Slf4j
@@ -149,7 +145,8 @@ public class SendNotificationService {
         );
     }
 
-    private void addResponseToNotification(String authorization, SendNotificationAddResponseRequest request, CaseData caseData) {
+    private void addResponseToNotification(String authorization, SendNotificationAddResponseRequest request,
+                                           CaseData caseData) {
         SendNotificationType sendNotificationType =
             caseData.getSendNotificationCollection()
                 .stream()
@@ -185,18 +182,7 @@ public class SendNotificationService {
             pseResponseType.setAuthor(idamClient.getUserInfo(authorization).getName());
         }
 
-        if (request.getSupportingMaterialFile() != null) {
-            DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(
-                CLAIMANT_CORRESPONDENCE,
-                request.getSupportingMaterialFile()
-            );
-            var documentTypeItems = new ArrayList<GenericTypeItem<DocumentType>>();
-            documentTypeItems.add(documentTypeItem);
-            pseResponseType.setSupportingMaterial(documentTypeItems);
-            pseResponseType.setHasSupportingMaterial(YES);
-        } else {
-            pseResponseType.setHasSupportingMaterial(NO);
-        }
+        NotificationsHelper.setSupportingMaterial(request, pseResponseType, caseDocumentService);
 
         NotificationsHelper.updateWorkAllocationFields(
             featureToggleService.isEccEnabled(),
