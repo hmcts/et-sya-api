@@ -131,21 +131,53 @@ public class SendNotificationService {
 
         CaseData caseData = EmployeeObjectMapper
             .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
-        var sendNotificationTypeItem =
+
+        addResponseToNotification(authorization, request, caseData);
+
+        CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
+        sendAddResponseSendNotificationEmails(
+            caseData,
+            caseId,
+            request.getPseResponseType().getCopyToOtherParty()
+        );
+
+        return caseService.submitUpdate(
+            authorization,
+            caseId,
+            content,
+            caseTypeId
+        );
+    }
+
+    private void addResponseToNotification(String authorization, SendNotificationAddResponseRequest request, CaseData caseData) {
+        SendNotificationType sendNotificationType =
             caseData.getSendNotificationCollection()
                 .stream()
                 .filter(notification -> notification.getId().equals(request.getSendNotificationId()))
-                .findFirst();
-        if (sendNotificationTypeItem.isEmpty()) {
-            throw new IllegalArgumentException("SendNotification Id is incorrect");
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("SendNotification Id is incorrect"))
+                .getValue();
+
+        if (CollectionUtils.isEmpty(sendNotificationType.getRespondCollection())) {
+            sendNotificationType.setRespondCollection(new ArrayList<>());
         }
 
-        SendNotificationType sendNotificationType = sendNotificationTypeItem.get().getValue();
+        PseResponseType pseResponseType = getPseResponseType(authorization, request, sendNotificationType);
+        PseResponseTypeItem pseResponseTypeItem =
+            PseResponseTypeItem.builder()
+                .id(UUID.randomUUID().toString())
+                .value(pseResponseType)
+                .build();
 
-        var pseRespondCollection = sendNotificationType.getRespondCollection();
-        if (CollectionUtils.isEmpty(pseRespondCollection)) {
-            sendNotificationTypeItem.get().getValue().setRespondCollection(new ArrayList<>());
-        }
+        sendNotificationType.getRespondCollection().add(pseResponseTypeItem);
+        sendNotificationType.setSendNotificationResponsesCount(
+            String.valueOf(sendNotificationType.getRespondCollection().size()));
+        sendNotificationType.setNotificationState(SUBMITTED);
+        setResponsesAsRespondedTo(sendNotificationType.getRespondNotificationTypeCollection());
+    }
+
+    private PseResponseType getPseResponseType(String authorization, SendNotificationAddResponseRequest request,
+                                               SendNotificationType sendNotificationType) {
         PseResponseType pseResponseType = request.getPseResponseType();
         pseResponseType.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
         pseResponseType.setFrom(CLAIMANT_TITLE);
@@ -171,30 +203,7 @@ public class SendNotificationService {
             pseResponseType,
             sendNotificationType.getSendNotificationSubject());
 
-        PseResponseTypeItem pseResponseTypeItem =
-            PseResponseTypeItem.builder()
-                .id(UUID.randomUUID().toString())
-                .value(pseResponseType)
-                .build();
-
-        sendNotificationType.getRespondCollection().add(pseResponseTypeItem);
-        sendNotificationType.setSendNotificationResponsesCount(String.valueOf(
-            sendNotificationType.getRespondCollection().size()));
-        sendNotificationType.setNotificationState(SUBMITTED);
-        setResponsesAsRespondedTo(sendNotificationType.getRespondNotificationTypeCollection());
-
-        CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
-        sendAddResponseSendNotificationEmails(
-            caseData,
-            caseId,
-            request.getPseResponseType().getCopyToOtherParty()
-        );
-        return caseService.submitUpdate(
-            authorization,
-            caseId,
-            content,
-            caseTypeId
-        );
+        return pseResponseType;
     }
 
     private void sendAddResponseSendNotificationEmails(CaseData caseData,

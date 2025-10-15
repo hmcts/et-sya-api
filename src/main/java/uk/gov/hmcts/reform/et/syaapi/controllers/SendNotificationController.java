@@ -93,4 +93,25 @@ public class SendNotificationController {
 
         return ok(finalCaseDetails);
     }
+
+    /**
+     * Adds pseResponse from respondent to a sendNotification object.
+     *
+     * @param authorization jwt of the user
+     * @param request       the request object which contains sendNotification id and the new response
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    @PutMapping("/add-respondent-respond-to-notification")
+    @Operation(summary = "add respondent response to send notification")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> addRespondentRespondToNotification(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody SendNotificationAddResponseRequest request
+    ) {
+        log.info("Received response from respondent for case - caseTypeId: {} caseId: {}",
+                 request.getCaseTypeId(), request.getCaseId()
+        );
+        CaseDetails finalCaseDetails = sendNotificationService.addResponseSendNotification(authorization, request);
+        return ok(finalCaseDetails);
+    }
 }
