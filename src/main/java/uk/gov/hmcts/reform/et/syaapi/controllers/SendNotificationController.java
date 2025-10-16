@@ -67,7 +67,7 @@ public class SendNotificationController {
         log.info("Received response for case - caseTypeId: {} caseId: {}",
                  request.getCaseTypeId(), request.getCaseId()
         );
-        CaseDetails finalCaseDetails = sendNotificationService.addResponseSendNotification(authorization, request);
+        CaseDetails finalCaseDetails = sendNotificationService.addClaimantResponseNotification(authorization, request);
         return ok(finalCaseDetails);
     }
 
@@ -111,7 +111,8 @@ public class SendNotificationController {
         log.info("Received response from respondent for case - caseTypeId: {} caseId: {}",
                  request.getCaseTypeId(), request.getCaseId()
         );
-        CaseDetails finalCaseDetails = sendNotificationService.addResponseSendNotification(authorization, request);
+        CaseDetails finalCaseDetails =
+            sendNotificationService.addRespondentResponseNotification(authorization, request);
         return ok(finalCaseDetails);
     }
 }

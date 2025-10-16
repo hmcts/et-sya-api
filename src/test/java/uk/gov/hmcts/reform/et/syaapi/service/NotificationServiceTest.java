@@ -1215,8 +1215,8 @@ class NotificationServiceTest {
     }
 
     @Test
-    void sendResponseNotificationEmailToRespondent() throws NotificationClientException {
-        notificationService.sendResponseNotificationEmailToRespondent(
+    void sendClaimantResponseNotificationEmailToRespondent() throws NotificationClientException {
+        notificationService.sendClaimantResponseNotificationEmailToRespondent(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
             YES
@@ -1232,7 +1232,7 @@ class NotificationServiceTest {
 
     @Test
     void sendNotResponseNotificationEmailToRespondentDoNotCopy() throws NotificationClientException {
-        notificationService.sendResponseNotificationEmailToRespondent(
+        notificationService.sendClaimantResponseNotificationEmailToRespondent(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
             NO
@@ -1251,7 +1251,7 @@ class NotificationServiceTest {
         for (RespondentSumTypeItem respondentSumTypeItem : caseTestData.getCaseData().getRespondentCollection()) {
             respondentSumTypeItem.getValue().setRespondentEmail(null);
         }
-        notificationService.sendResponseNotificationEmailToRespondent(
+        notificationService.sendClaimantResponseNotificationEmailToRespondent(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
             YES
@@ -1266,8 +1266,8 @@ class NotificationServiceTest {
     }
 
     @Test
-    void sendResponseNotificationEmailToClaimant() throws NotificationClientException {
-        notificationService.sendResponseNotificationEmailToClaimant(
+    void sendClaimantResponseNotificationEmailToClaimant() throws NotificationClientException {
+        notificationService.sendClaimantResponseNotificationEmailToClaimant(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
             YES
@@ -1282,8 +1282,8 @@ class NotificationServiceTest {
     }
 
     @Test
-    void sendResponseNotificationEmailToClaimantDoNotCopy() throws NotificationClientException {
-        notificationService.sendResponseNotificationEmailToClaimant(
+    void sendClaimantResponseNotificationEmailToClaimantDoNotCopy() throws NotificationClientException {
+        notificationService.sendClaimantResponseNotificationEmailToClaimant(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
             NO
@@ -1300,7 +1300,7 @@ class NotificationServiceTest {
     @Test
     void sendNotResponseNotificationEmailToClaimantMissingEmail() throws NotificationClientException {
         caseTestData.getCaseData().getClaimantType().setClaimantEmailAddress(null);
-        notificationService.sendResponseNotificationEmailToClaimant(
+        notificationService.sendClaimantResponseNotificationEmailToClaimant(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
             YES

@@ -114,13 +114,14 @@ public class SendNotificationService {
     }
 
     /**
-     * Adds a pseResponse to a notification.
+     * Adds a claimant pseResponse to a notification.
      *
      * @param authorization - authorization
      * @param request       - request containing the response, and the notification details
      * @return the associated {@link CaseDetails}
      */
-    public CaseDetails addResponseSendNotification(String authorization, SendNotificationAddResponseRequest request) {
+    public CaseDetails addClaimantResponseNotification(String authorization,
+                                                       SendNotificationAddResponseRequest request) {
         String caseId = request.getCaseId();
         String caseTypeId = request.getCaseTypeId();
 
@@ -140,7 +141,7 @@ public class SendNotificationService {
         setResponsesAsRespondedTo(sendNotificationType.getRespondNotificationTypeCollection());
 
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
-        sendAddResponseSendNotificationEmails(
+        sendAddClaimantResponseSendNotificationEmails(
             caseData,
             caseId,
             request.getPseResponseType().getCopyToOtherParty()
@@ -195,15 +196,9 @@ public class SendNotificationService {
             pseResponseType.setAuthor(idamClient.getUserInfo(authorization).getName());
         }
 
-        String typeOfDocument =  isClaimant ? CLAIMANT_CORRESPONDENCE : RESPONDENT_CORRESPONDENCE;
         if (request.getSupportingMaterialFile() != null) {
-            DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(
-                typeOfDocument,
-                request.getSupportingMaterialFile()
-            );
-            var documentTypeItems = new ArrayList<GenericTypeItem<DocumentType>>();
-            documentTypeItems.add(documentTypeItem);
-            pseResponseType.setSupportingMaterial(documentTypeItems);
+            String typeOfDocument =  isClaimant ? CLAIMANT_CORRESPONDENCE : RESPONDENT_CORRESPONDENCE;
+            pseResponseType.setSupportingMaterial(getDocumentTypeItems(request, typeOfDocument));
             pseResponseType.setHasSupportingMaterial(YES);
         } else {
             pseResponseType.setHasSupportingMaterial(NO);
@@ -215,6 +210,17 @@ public class SendNotificationService {
             sendNotificationType.getSendNotificationSubject());
 
         return pseResponseType;
+    }
+
+    private ArrayList<GenericTypeItem<DocumentType>> getDocumentTypeItems(SendNotificationAddResponseRequest request,
+                                                                          String typeOfDocument) {
+        DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(
+            typeOfDocument,
+            request.getSupportingMaterialFile()
+        );
+        var documentTypeItems = new ArrayList<GenericTypeItem<DocumentType>>();
+        documentTypeItems.add(documentTypeItem);
+        return documentTypeItems;
     }
 
     private void setResponsesAsRespondedTo(List<GenericTypeItem<RespondNotificationType>> responses) {
@@ -231,12 +237,12 @@ public class SendNotificationService {
         }
     }
 
-    private void sendAddResponseSendNotificationEmails(CaseData caseData,
-                                                       String caseId,
-                                                       String copyToOtherParty) {
+    private void sendAddClaimantResponseSendNotificationEmails(CaseData caseData,
+                                                               String caseId,
+                                                               String copyToOtherParty) {
         notificationService.sendResponseNotificationEmailToTribunal(caseData, caseId);
-        notificationService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty);
-        notificationService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty);
+        notificationService.sendClaimantResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty);
+        notificationService.sendClaimantResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty);
     }
 
     /**
@@ -298,5 +304,52 @@ public class SendNotificationService {
                 status -> status.getValue().setNotificationState(newState),
                 () -> app.getRespondentState().add(pseStatusTypeItem)
         );
+    }
+
+    /**
+     * Adds a pseResponse to a notification.
+     *
+     * @param authorization - authorization
+     * @param request       - request containing the response, and the notification details
+     * @return the associated {@link CaseDetails}
+     */
+    public CaseDetails addRespondentResponseNotification(String authorization,
+                                                         SendNotificationAddResponseRequest request) {
+        String caseId = request.getCaseId();
+        String caseTypeId = request.getCaseTypeId();
+
+        StartEventResponse startEventResponse = caseService.startUpdate(
+            authorization,
+            caseId,
+            caseTypeId,
+            CaseEvent.UPDATE_NOTIFICATION_RESPONSE
+        );
+
+        CaseData caseData = EmployeeObjectMapper
+            .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
+        SendNotificationType sendNotificationType = getSendNotification(request, caseData);
+
+        updateSendNotificationType(authorization, request, sendNotificationType, false);
+
+        CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
+        sendAddRespondentResponseSendNotificationEmails(
+            caseData,
+            caseId,
+            request.getPseResponseType().getCopyToOtherParty()
+        );
+
+        return caseService.submitUpdate(
+            authorization,
+            caseId,
+            content,
+            caseTypeId
+        );
+    }
+
+    private void sendAddRespondentResponseSendNotificationEmails(CaseData caseData, String caseId,
+                                                                 String copyToOtherParty) {
+        notificationService.sendResponseNotificationEmailToTribunal(caseData, caseId);
+        notificationService.sendRespondentResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty);
+        notificationService.sendRespondentResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty);
     }
 }

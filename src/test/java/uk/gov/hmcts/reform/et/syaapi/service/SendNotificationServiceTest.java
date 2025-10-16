@@ -240,7 +240,7 @@ class SendNotificationServiceTest {
     }
 
     @Test
-    void shouldUpdateAddResponseSendNotification() {
+    void shouldUpdateAddClaimantResponseNotification() {
         when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(
             UserInfo.builder()
                 .name(AUTHOR)
@@ -276,7 +276,7 @@ class SendNotificationServiceTest {
                     .build()
             ).build();
 
-        sendNotificationService.addResponseSendNotification(MOCK_TOKEN, request);
+        sendNotificationService.addClaimantResponseNotification(MOCK_TOKEN, request);
 
         ArgumentCaptor<CaseData> argumentCaptor = ArgumentCaptor.forClass(CaseData.class);
         verify(caseDetailsConverter).caseDataContent(any(), argumentCaptor.capture());
@@ -316,7 +316,7 @@ class SendNotificationServiceTest {
     }
 
     @Test
-    void shouldUpdateAddResponseSendNotificationNoResponsesOutstanding() {
+    void shouldUpdateAddClaimantResponseNotificationNoResponsesOutstanding() {
         SendNotificationAddResponseRequest request = testData.getSendNotificationAddResponseRequest();
 
         StartEventResponse startEventResponse = updateCaseEventResponseSubmittedNotification();
@@ -331,7 +331,7 @@ class SendNotificationServiceTest {
 
         when(featureToggleService.isEccEnabled()).thenReturn(true);
 
-        sendNotificationService.addResponseSendNotification(MOCK_TOKEN, request);
+        sendNotificationService.addClaimantResponseNotification(MOCK_TOKEN, request);
 
         ArgumentCaptor<CaseData> argumentCaptor = ArgumentCaptor.forClass(CaseData.class);
         verify(caseDetailsConverter).caseDataContent(any(), argumentCaptor.capture());
@@ -396,7 +396,7 @@ class SendNotificationServiceTest {
 
         when(featureToggleService.isEccEnabled()).thenReturn(true);
 
-        sendNotificationService.addResponseSendNotification(MOCK_TOKEN, request);
+        sendNotificationService.addClaimantResponseNotification(MOCK_TOKEN, request);
 
         ArgumentCaptor<CaseData> argumentCaptor = ArgumentCaptor.forClass(CaseData.class);
         verify(caseDetailsConverter).caseDataContent(any(), argumentCaptor.capture());

@@ -655,7 +655,7 @@ public class NotificationService {
 
         boolean isClaimantRepresented = isRepresentedClaimantWithMyHmctsCase(details.caseData);
 
-        String claimantEmailAddress = Boolean.TRUE.equals(isClaimantRepresented)
+        String claimantEmailAddress = isClaimantRepresented
             ? details.caseData.getRepresentativeClaimantType().getRepresentativeEmailAddress()
             : details.caseData.getClaimantType().getClaimantEmailAddress();
 
@@ -666,7 +666,7 @@ public class NotificationService {
 
         Map<String, Object> claimantParameters = prepareResponseEmailCommonParameters(details, applicationType);
 
-        String caseLink = Boolean.TRUE.equals(isClaimantRepresented)
+        String caseLink = isClaimantRepresented
             ? notificationsProperties.getExuiCaseDetailsLink() + details.caseId
             : notificationsProperties.getCitizenPortalLink() + details.caseId;
         claimantParameters.put(
@@ -881,7 +881,7 @@ public class NotificationService {
 
         boolean isClaimantRepresented = isRepresentedClaimantWithMyHmctsCase(caseData);
 
-        String claimantEmailAddress = Boolean.TRUE.equals(isClaimantRepresented)
+        String claimantEmailAddress = isClaimantRepresented
             ? caseData.getRepresentativeClaimantType().getRepresentativeEmailAddress()
             : caseData.getClaimantType().getClaimantEmailAddress();
 
@@ -893,7 +893,7 @@ public class NotificationService {
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
         claimantParameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
 
-        String caseLink = Boolean.TRUE.equals(isClaimantRepresented)
+        String caseLink = isClaimantRepresented
             ? notificationsProperties.getExuiCaseDetailsLink() + caseId
             : notificationsProperties.getCitizenPortalLink() + caseId;
         claimantParameters.put(
@@ -990,7 +990,7 @@ public class NotificationService {
         );
     }
 
-    void sendResponseNotificationEmailToRespondent(
+    void sendClaimantResponseNotificationEmailToRespondent(
         CaseData caseData,
         String caseId,
         String copyToOtherParty
@@ -1018,7 +1018,7 @@ public class NotificationService {
         );
     }
 
-    void sendResponseNotificationEmailToClaimant(
+    void sendClaimantResponseNotificationEmailToClaimant(
         CaseData caseData,
         String caseId,
         String copyToOtherParty
@@ -1055,6 +1055,22 @@ public class NotificationService {
         } catch (NotificationClientException ne) {
             throw new NotificationException(ne);
         }
+    }
+
+    void sendRespondentResponseNotificationEmailToRespondent(
+        CaseData caseData,
+        String caseId,
+        String copyToOtherParty
+    ) {
+
+    }
+
+    void sendRespondentResponseNotificationEmailToClaimant(
+        CaseData caseData,
+        String caseId,
+        String copyToOtherParty
+    ) {
+
     }
 
     void sendStoredEmailToClaimant(CoreEmailDetails details, String shortText) {
