@@ -349,7 +349,7 @@ public class CaseDocumentService {
     }
 
     /**
-     * Accepts a {@link UploadedDocumentType} and wraps it in a {@link DocumentTypeItem} and assigns a randon UUID.
+     * Accepts a {@link UploadedDocumentType} and wraps it in a {@link DocumentTypeItem} and assigns a random UUID.
      *
      * @param typeOfDocument specifies the relevance of the document to the case
      * @param uploadedDoc    is to be wrapped and returned

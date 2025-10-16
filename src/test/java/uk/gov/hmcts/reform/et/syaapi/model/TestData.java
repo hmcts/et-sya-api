@@ -182,7 +182,7 @@ public final class TestData {
                          TestConstants.WELSH_LANGUAGE, TestConstants.EMPTY_BYTE_ARRAY),
             Arguments.of(NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
                          TestConstants.ENGLISH_LANGUAGE,
-                         NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST.get(0).getBytes()),
+                         NOT_EMPTY_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST.getFirst().getBytes()),
             Arguments.of(MULTIPLE_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST,
                          TestConstants.WELSH_LANGUAGE,
                          MULTIPLE_BYTE_ARRAY_PDF_DECODED_MULTIPART_FILE_LIST.get(1).getBytes()),

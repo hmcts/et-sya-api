@@ -91,7 +91,7 @@ class SendNotificationControllerTest {
 
     @SneakyThrows
     @Test
-    void shouldAddResponseSendNotification() {
+    void shouldAddClaimantResponseSendNotification() {
         SendNotificationAddResponseRequest request = SendNotificationAddResponseRequest.builder()
             .caseTypeId(CASE_TYPE)
             .caseId(CASE_ID)
@@ -109,7 +109,7 @@ class SendNotificationControllerTest {
                 .content(ResourceLoader.toJson(request))
         ).andExpect(status().isOk());
 
-        verify(sendNotificationService, times(1)).addResponseSendNotification(
+        verify(sendNotificationService, times(1)).addClaimantResponseSendNotification(
             TEST_SERVICE_AUTH_TOKEN,
             request
         );
