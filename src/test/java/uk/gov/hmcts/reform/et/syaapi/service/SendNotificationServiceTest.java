@@ -16,6 +16,7 @@ import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationTypeItem;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
+import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeRespondentNotificationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
@@ -24,6 +25,7 @@ import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
@@ -40,6 +42,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NOT_VIEWED_YET;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.RESPONDENT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.VIEWED;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_NOTIFICATION_RESPONSE;
@@ -104,6 +107,18 @@ class SendNotificationServiceTest {
             UPDATE_NOTIFICATION_STATE
         )).thenReturn(updateCaseEventResponse);
 
+        sendNotificationService.updateSendNotificationState(MOCK_TOKEN, request);
+
+        ArgumentCaptor<CaseData> argumentCaptor = ArgumentCaptor.forClass(CaseData.class);
+        verify(caseDetailsConverter).caseDataContent(any(), argumentCaptor.capture());
+        CaseData data = argumentCaptor.getValue();
+
+        ListTypeItem<RespondNotificationType> from = ListTypeItem.from(
+            GenericTypeItem.from(ID, RespondNotificationType.builder()
+                .state(VIEWED).isClaimantResponseDue(YES).build()
+            )
+        );
+
         List<PseResponseTypeItem> pseResponseItems = List.of(PseResponseTypeItem.builder().id(ID).value(
             PseResponseType.builder()
                 .from(CLAIMANT_TITLE)
@@ -112,18 +127,6 @@ class SendNotificationServiceTest {
                 .responseState(null)
                 .build()).build()
         );
-
-        ListTypeItem<RespondNotificationType> from = ListTypeItem.from(
-            GenericTypeItem.from(ID, RespondNotificationType.builder()
-                .state(VIEWED).isClaimantResponseDue(YES).build()
-            )
-        );
-
-        sendNotificationService.updateSendNotificationState(MOCK_TOKEN, request);
-
-        ArgumentCaptor<CaseData> argumentCaptor = ArgumentCaptor.forClass(CaseData.class);
-        verify(caseDetailsConverter).caseDataContent(any(), argumentCaptor.capture());
-        CaseData data = argumentCaptor.getValue();
 
         List<SendNotificationTypeItem> items = List.of(
             SendNotificationTypeItem.builder()
@@ -266,40 +269,11 @@ class SendNotificationServiceTest {
         verify(caseDetailsConverter).caseDataContent(any(), argumentCaptor.capture());
         CaseData data = argumentCaptor.getValue();
 
-        PseResponseTypeItem buildResponse = PseResponseTypeItem.builder()
-            .id(ID)
-            .value(
-                PseResponseType.builder()
-                    .from(CLAIMANT_TITLE)
-                    .response("RESPONSE")
-                    .hasSupportingMaterial(NO)
-                    .build()
-            ).build();
-
-        ListTypeItem<RespondNotificationType> from = ListTypeItem.from(
-            GenericTypeItem.from(ID, RespondNotificationType.builder()
-                .state(VIEWED).isClaimantResponseDue(YES).build()
-            )
-        );
-
-        List<SendNotificationTypeItem> items = List.of(
-            SendNotificationTypeItem.builder()
-                .id(ID)
-                .value(SendNotificationType.builder()
-                           .sendNotificationSubject(NOTIFICATION_SUBJECT_IS_ECC)
-                           .respondCollection(List.of(buildResponse))
-                           .respondNotificationTypeCollection(from)
-                           .build())
-                .build()
-        );
-        List<PseResponseTypeItem> expectedResponses = items.getFirst().getValue().getRespondCollection();
-        PseResponseType expected = expectedResponses.getFirst().getValue();
-
         SendNotificationType notification = data.getSendNotificationCollection().getFirst().getValue();
         PseResponseType actual = notification.getRespondCollection().getFirst().getValue();
 
-        assertEquals(expected.getResponse(), actual.getResponse());
-        assertEquals(expected.getFrom(), actual.getFrom());
+        assertEquals("RESPONSE", actual.getResponse());
+        assertEquals(CLAIMANT_TITLE, actual.getFrom());
         assertTrue(actual.getDate().matches("^\\d{1,2} [A-Za-z]{3,4} \\d{4}$"));
         assertEquals(NO, actual.getHasSupportingMaterial());
         assertEquals(SUBMITTED, notification.getNotificationState());
@@ -336,40 +310,11 @@ class SendNotificationServiceTest {
         verify(caseDetailsConverter).caseDataContent(any(), argumentCaptor.capture());
         CaseData data = argumentCaptor.getValue();
 
-        PseResponseTypeItem buildResponse = PseResponseTypeItem.builder()
-            .id(ID)
-            .value(
-                PseResponseType.builder()
-                    .from(CLAIMANT_TITLE)
-                    .hasSupportingMaterial(YES)
-                    .response("RESPONSE")
-                    .build()
-            ).build();
-
-        ListTypeItem<RespondNotificationType> from = ListTypeItem.from(
-            GenericTypeItem.from(ID, RespondNotificationType.builder()
-                .state(VIEWED).build()
-            )
-        );
-
-        List<SendNotificationTypeItem> items = List.of(
-            SendNotificationTypeItem.builder()
-                .id(ID)
-                .value(SendNotificationType.builder()
-                           .sendNotificationSubject(NOTIFICATION_SUBJECT_IS_NOT_ECC)
-                           .respondCollection(List.of(buildResponse))
-                           .respondNotificationTypeCollection(from)
-                           .build())
-                .build()
-        );
-        List<PseResponseTypeItem> expectedResponses = items.getFirst().getValue().getRespondCollection();
-        PseResponseType expected = expectedResponses.getFirst().getValue();
-
         SendNotificationType notification = data.getSendNotificationCollection().getFirst().getValue();
         PseResponseType actual = notification.getRespondCollection().getFirst().getValue();
 
-        assertEquals(expected.getResponse(), actual.getResponse());
-        assertEquals(expected.getFrom(), actual.getFrom());
+        assertEquals("RESPONSE", actual.getResponse());
+        assertEquals(CLAIMANT_TITLE, actual.getFrom());
         assertTrue(actual.getDate().matches("^\\d{1,2} [A-Za-z]{3,4} \\d{4}$"));
         assertEquals(NO, actual.getHasSupportingMaterial());
         assertEquals(SUBMITTED, notification.getNotificationState());
@@ -461,6 +406,37 @@ class SendNotificationServiceTest {
             .changeRespondentNotificationStatus(TEST_SERVICE_AUTH_TOKEN, request))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Notification id provided is incorrect");
+    }
+
+    @Test
+    void shouldAddRespondentResponseNotification() {
+        SendNotificationAddResponseRequest request = testData.getSendNotificationAddResponseRequest();
+        StartEventResponse startEventResponse = testData.getUpdateCaseEventResponse();
+
+        when(caseService.startUpdate(
+            TEST_SERVICE_AUTH_TOKEN,
+            request.getCaseId(),
+            request.getCaseTypeId(),
+            UPDATE_NOTIFICATION_RESPONSE
+        )).thenReturn(startEventResponse);
+
+        when(featureToggleService.isEccEnabled()).thenReturn(true);
+
+        sendNotificationService.addRespondentResponseNotification(MOCK_TOKEN, request);
+
+        ArgumentCaptor<CaseData> argumentCaptor = ArgumentCaptor.forClass(CaseData.class);
+        verify(caseDetailsConverter).caseDataContent(any(), argumentCaptor.capture());
+        CaseData data = argumentCaptor.getValue();
+
+        SendNotificationType actualNotification = data.getSendNotificationCollection().getFirst().getValue();
+        PseResponseType actualResponse = actualNotification.getRespondCollection().getFirst().getValue();
+
+        assertEquals("RESPONSE", actualResponse.getResponse());
+        assertEquals(RESPONDENT_TITLE, actualResponse.getFrom());
+        assertEquals(TseApplicationHelper.formatCurrentDate(LocalDate.now()), actualResponse.getDate());
+        assertDoesNotThrow(() -> LocalDateTime.parse(actualResponse.getDateTime(), formatter));
+        assertEquals(NO, actualResponse.getHasSupportingMaterial());
+        assertEquals(SUBMITTED, actualNotification.getRespondentState().getFirst().getValue().getNotificationState());
     }
 
     public StartEventResponse updateCaseEventResponseNoNotificationResponses() {

@@ -331,6 +331,12 @@ public class SendNotificationService {
 
         updateSendNotificationType(authorization, request, sendNotificationType, false);
 
+        updateRespondentState(
+            sendNotificationType,
+            request.getPseResponseType().getFromIdamId(),
+            SUBMITTED
+        );
+
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
         sendAddRespondentResponseSendNotificationEmails(
             caseData,
