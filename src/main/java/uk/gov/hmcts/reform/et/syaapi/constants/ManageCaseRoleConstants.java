@@ -92,6 +92,8 @@ public final class ManageCaseRoleConstants {
     public static final String RESPONSE_STATUS_COMPLETED = "completed";
     public static final String ET3_RESPONSE_LANGUAGE_PREFERENCE_WELSH = "Welsh";
     public static final String INVALID_CASE_USER_ROLE = "Invalid case user role: %s";
+    public static final String INVALID_NOTICE_OF_CHANGE_ANSWER_INDEX = "Invalid notice of change answer index, %s "
+        + "entered for the case with id: %s";
 
     private ManageCaseRoleConstants() {
         // restrict instantiation

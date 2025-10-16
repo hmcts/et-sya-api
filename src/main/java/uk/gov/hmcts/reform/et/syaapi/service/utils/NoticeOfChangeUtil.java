@@ -6,10 +6,13 @@ import org.apache.commons.lang3.StringUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.NoticeOfChangeAnswers;
 import uk.gov.hmcts.et.common.model.enums.RespondentSolicitorType;
+import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.INVALID_NOTICE_OF_CHANGE_ANSWER_INDEX;
 
 public class NoticeOfChangeUtil {
 
@@ -160,5 +163,52 @@ public class NoticeOfChangeUtil {
             return null;
         }
         return RespondentSolicitorType.getByIndex(respondentSolicitorTypeIndex);
+    }
+
+    /**
+     * Resets a specific Notice of Change (NoC) answer field in the given {@link CaseData} instance
+     * based on the provided index.
+     *
+     * <p>
+     * This method sets the corresponding Notice of Change answer (from index 0 to 9)
+     * to {@code null}, effectively clearing any existing data for that field.
+     * If the {@code caseData} is {@code null} or empty, or if the index is outside
+     * the valid range (0–9), the method performs no action.
+     * </p>
+     *
+     * <p>
+     * The valid mapping between indices and fields is as follows:
+     * <ul>
+     *     <li>0 → {@code caseData.setNoticeOfChangeAnswers0(null)}</li>
+     *     <li>1 → {@code caseData.setNoticeOfChangeAnswers1(null)}</li>
+     *     <li>...</li>
+     *     <li>9 → {@code caseData.setNoticeOfChangeAnswers9(null)}</li>
+     * </ul>
+     * </p>
+     *
+     * @param caseData the {@link CaseData} object whose Notice of Change answer is to be reset;
+     *                 ignored if {@code null} or empty
+     * @param index    the index (0–9) of the Notice of Change answer to reset
+     * @throws ManageCaseRoleException if the index is outside the range 0–9
+     *                                 and does not match any defined answer field
+     */
+    public static void resetNoticeOfChangeAnswerByIndex(CaseData caseData, int index) {
+        if (ObjectUtils.isEmpty(caseData) || index < 0 || index > 9) {
+            return;
+        }
+        switch (index) {
+            case 0 -> caseData.setNoticeOfChangeAnswers0(null);
+            case 1 -> caseData.setNoticeOfChangeAnswers1(null);
+            case 2 -> caseData.setNoticeOfChangeAnswers2(null);
+            case 3 -> caseData.setNoticeOfChangeAnswers3(null);
+            case 4 -> caseData.setNoticeOfChangeAnswers4(null);
+            case 5 -> caseData.setNoticeOfChangeAnswers5(null);
+            case 6 -> caseData.setNoticeOfChangeAnswers6(null);
+            case 7 -> caseData.setNoticeOfChangeAnswers7(null);
+            case 8 -> caseData.setNoticeOfChangeAnswers8(null);
+            case 9 -> caseData.setNoticeOfChangeAnswers9(null);
+            default -> throw new ManageCaseRoleException(
+                new Exception(String.format(INVALID_NOTICE_OF_CHANGE_ANSWER_INDEX, index, caseData.getCcdID())));
+        }
     }
 }

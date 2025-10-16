@@ -60,6 +60,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CA
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.REMOVE_OWN_REPRESENTATIVE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_ET3_FORM;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.RemoteServiceUtil.buildHeaders;
@@ -670,7 +671,7 @@ public class ManageCaseRoleService {
             EMPLOYMENT,
             caseDetails.getCaseTypeId(),
             caseDetails.getId().toString(),
-            UPDATE_CASE_SUBMITTED.name()
+            REMOVE_OWN_REPRESENTATIVE.name()
         );
         caseDetails = startEventResponse.getCaseDetails();
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
@@ -678,17 +679,16 @@ public class ManageCaseRoleService {
             RespondentUtil.findRespondentSumTypeItemByIndex(caseData.getRespondentCollection(),
                                                             respondentIndex,
                                                             caseDetails.getId().toString());
-        RepresentedTypeRItem representativeRItem =
-            RespondentUtil.findRespondentRepresentative(respondentSumTypeItem,
-                                                        caseData.getRepCollection(),
-                                                        caseDetails.getId().toString());
         if (StringUtils.isNotBlank(caseUserRole)) {
             ManageCaseRoleServiceUtil.resetOrganizationPolicy(caseData, caseUserRole, caseDetails.getId().toString());
         }
         respondentSumTypeItem.getValue().setRepresentativeRemoved(YES);
-        caseData.getRepCollection().remove(representativeRItem);
-        if (caseData.getRepCollection().isEmpty()) {
-            caseData.setRepCollection(null);
+        RepresentedTypeRItem representativeRItem =
+            RespondentUtil.findRespondentRepresentative(respondentSumTypeItem,
+                                                        caseData.getRepCollection(),
+                                                        caseDetails.getId().toString());
+        if (ObjectUtils.isNotEmpty(representativeRItem)) {
+            caseData.setRepCollectionToRemove(List.of(representativeRItem));
         }
         caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
         CaseDataContent caseDataContent =  caseDetailsConverter.caseDataContent(startEventResponse, caseData);

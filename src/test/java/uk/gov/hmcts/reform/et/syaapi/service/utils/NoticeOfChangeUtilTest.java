@@ -174,4 +174,65 @@ public class NoticeOfChangeUtilTest {
             assertThat(respondentSolicitorType).isEqualTo(RespondentSolicitorType.values()[i]);
         }
     }
+
+    @Test
+    void theResetNoticeOfChangeAnswerByIndex() {
+        // Should do nothing if caseData is null
+        NoticeOfChangeUtil.resetNoticeOfChangeAnswerByIndex(null, NumberUtils.INTEGER_ZERO);
+
+        // Should do nothing if index is less than 0
+        NoticeOfChangeUtil.resetNoticeOfChangeAnswerByIndex(TEST_CASE_DATA_WITH_NOTICE_OF_CHANGE_ANSWERS,
+                                                            NumberUtils.INTEGER_MINUS_ONE);
+
+        // Should do nothing if index is greater than 9
+        NoticeOfChangeUtil.resetNoticeOfChangeAnswerByIndex(TEST_CASE_DATA_WITH_NOTICE_OF_CHANGE_ANSWERS,
+                                                            INTEGER_TEN);
+
+        // Should reset the correct notice of change answer for the given index
+        for (int i = 0; i < INTEGER_TEN; i++) {
+            CaseData caseDataCopy = new CaseData();
+            caseDataCopy.setNoticeOfChangeAnswers0(
+                NoticeOfChangeAnswers.builder().respondentName(TEST_RESPONDENT_NAME_0)
+                    .claimantFirstName(TEST_CLAIMANT_FIRST_NAME_0).claimantLastName(TEST_CLAIMANT_LAST_NAME_0).build());
+            caseDataCopy.setNoticeOfChangeAnswers1(
+                NoticeOfChangeAnswers.builder().respondentName(TEST_RESPONDENT_NAME_1)
+                    .claimantFirstName(TEST_CLAIMANT_FIRST_NAME_1).claimantLastName(TEST_CLAIMANT_LAST_NAME_1).build());
+            caseDataCopy.setNoticeOfChangeAnswers2(
+                NoticeOfChangeAnswers.builder().respondentName(TEST_RESPONDENT_NAME_2)
+                    .claimantFirstName(TEST_CLAIMANT_FIRST_NAME_2).claimantLastName(TEST_CLAIMANT_LAST_NAME_2).build());
+            caseDataCopy.setNoticeOfChangeAnswers3(
+                NoticeOfChangeAnswers.builder().respondentName(TEST_RESPONDENT_NAME_3)
+                    .claimantFirstName(TEST_CLAIMANT_FIRST_NAME_3).claimantLastName(TEST_CLAIMANT_LAST_NAME_3).build());
+            caseDataCopy.setNoticeOfChangeAnswers4(
+                NoticeOfChangeAnswers.builder().respondentName(TEST_RESPONDENT_NAME_4)
+                    .claimantFirstName(TEST_CLAIMANT_FIRST_NAME_4).claimantLastName(TEST_CLAIMANT_LAST_NAME_4).build());
+            caseDataCopy.setNoticeOfChangeAnswers5(
+                NoticeOfChangeAnswers.builder().respondentName(TEST_RESPONDENT_NAME_5)
+                    .claimantFirstName(TEST_CLAIMANT_FIRST_NAME_5).claimantLastName(TEST_CLAIMANT_LAST_NAME_5).build());
+            caseDataCopy.setNoticeOfChangeAnswers6(
+                NoticeOfChangeAnswers.builder().respondentName(TEST_RESPONDENT_NAME_6)
+                    .claimantFirstName(TEST_CLAIMANT_FIRST_NAME_6).claimantLastName(TEST_CLAIMANT_LAST_NAME_6).build());
+            caseDataCopy.setNoticeOfChangeAnswers7(
+                NoticeOfChangeAnswers.builder().respondentName(TEST_RESPONDENT_NAME_7)
+                    .claimantFirstName(TEST_CLAIMANT_FIRST_NAME_7).claimantLastName(TEST_CLAIMANT_LAST_NAME_7).build());
+            caseDataCopy.setNoticeOfChangeAnswers8(
+                NoticeOfChangeAnswers.builder().respondentName(TEST_RESPONDENT_NAME_8)
+                    .claimantFirstName(TEST_CLAIMANT_FIRST_NAME_8).claimantLastName(TEST_CLAIMANT_LAST_NAME_8).build());
+            caseDataCopy.setNoticeOfChangeAnswers9(
+                NoticeOfChangeAnswers.builder().respondentName(TEST_RESPONDENT_NAME_9)
+                    .claimantFirstName(TEST_CLAIMANT_FIRST_NAME_9).claimantLastName(TEST_CLAIMANT_LAST_NAME_9).build());
+            NoticeOfChangeUtil.resetNoticeOfChangeAnswerByIndex(caseDataCopy, i);
+            for (int j = 0; j < INTEGER_TEN; j++) {
+                NoticeOfChangeAnswers answer = NoticeOfChangeUtil.getNoticeOfChangeAnswer(caseDataCopy, j);
+                if (i == j) {
+                    assertThat(answer).isNull();
+                } else {
+                    assertThat(answer).isNotNull();
+                    assertThat(answer.getRespondentName()).isEqualTo("Test respondent name " + j);
+                    assertThat(answer.getClaimantFirstName()).isEqualTo("Test claimant first name " + j);
+                    assertThat(answer.getClaimantLastName()).isEqualTo("Test claimant last name " + j);
+                }
+            }
+        }
+    }
 }
