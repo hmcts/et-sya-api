@@ -155,7 +155,7 @@ public final class NotificationsHelper {
      * so we need to update some WA Enablers for the DMNs to read.
      *
      * @param isEccEnabled          is ECC Enabled
-     * @param responseToUpdate      Claimant Response to update
+     * @param responseToUpdate      Response to update
      * @param notificationSubject   Notification Subjects
      */
     public static void updateWorkAllocationFields(boolean isEccEnabled,

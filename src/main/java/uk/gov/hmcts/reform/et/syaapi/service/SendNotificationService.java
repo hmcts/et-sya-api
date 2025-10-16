@@ -38,10 +38,12 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NOT_VIEWED_YET;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.RESPONDENT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.VIEWED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.CLAIMANT_CORRESPONDENCE;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.RESPONDENT_CORRESPONDENCE;
 
 @Service
 @Slf4j
@@ -131,27 +133,72 @@ public class SendNotificationService {
 
         CaseData caseData = EmployeeObjectMapper
             .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
-        SendNotificationType sendNotificationType =
-            caseData.getSendNotificationCollection()
-                .stream()
-                .filter(notification -> notification.getId().equals(request.getSendNotificationId()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("SendNotification Id is incorrect"))
-                .getValue();
+        SendNotificationType sendNotificationType = getSendNotification(request, caseData);
 
+        updateSendNotificationType(authorization, request, sendNotificationType, true);
+
+        setResponsesAsRespondedTo(sendNotificationType.getRespondNotificationTypeCollection());
+
+        CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
+        sendAddResponseSendNotificationEmails(
+            caseData,
+            caseId,
+            request.getPseResponseType().getCopyToOtherParty()
+        );
+
+        return caseService.submitUpdate(
+            authorization,
+            caseId,
+            content,
+            caseTypeId
+        );
+    }
+
+    private SendNotificationType getSendNotification(SendNotificationAddResponseRequest request, CaseData caseData) {
+        return caseData.getSendNotificationCollection()
+            .stream()
+            .filter(notification -> notification.getId().equals(request.getSendNotificationId()))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("SendNotification Id is incorrect"))
+            .getValue();
+    }
+
+    private void updateSendNotificationType(String authorization, SendNotificationAddResponseRequest request,
+                                            SendNotificationType sendNotificationType, boolean isClaimant) {
         if (CollectionUtils.isEmpty(sendNotificationType.getRespondCollection())) {
             sendNotificationType.setRespondCollection(new ArrayList<>());
         }
+
+        PseResponseType pseResponseType = getPseResponseType(authorization, request, sendNotificationType, isClaimant);
+        PseResponseTypeItem pseResponseTypeItem = PseResponseTypeItem.builder()
+            .id(UUID.randomUUID().toString())
+            .value(pseResponseType)
+            .build();
+        sendNotificationType.getRespondCollection().add(pseResponseTypeItem);
+
+        sendNotificationType.setSendNotificationResponsesCount(
+            String.valueOf(sendNotificationType.getRespondCollection().size()));
+        sendNotificationType.setNotificationState(SUBMITTED);
+    }
+
+    private PseResponseType getPseResponseType(String authorization, SendNotificationAddResponseRequest request,
+                                               SendNotificationType sendNotificationType, boolean isClaimant) {
         PseResponseType pseResponseType = request.getPseResponseType();
+
         pseResponseType.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
-        pseResponseType.setFrom(CLAIMANT_TITLE);
+        pseResponseType.setDateTime(TseApplicationHelper.getCurrentDateTime());
+
+        String from =  isClaimant ? CLAIMANT_TITLE : RESPONDENT_TITLE;
+        pseResponseType.setFrom(from);
+
         if (featureToggleService.isMultiplesEnabled()) {
             pseResponseType.setAuthor(idamClient.getUserInfo(authorization).getName());
         }
 
+        String typeOfDocument =  isClaimant ? CLAIMANT_CORRESPONDENCE : RESPONDENT_CORRESPONDENCE;
         if (request.getSupportingMaterialFile() != null) {
             DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(
-                CLAIMANT_CORRESPONDENCE,
+                typeOfDocument,
                 request.getSupportingMaterialFile()
             );
             var documentTypeItems = new ArrayList<GenericTypeItem<DocumentType>>();
@@ -167,38 +214,7 @@ public class SendNotificationService {
             pseResponseType,
             sendNotificationType.getSendNotificationSubject());
 
-        PseResponseTypeItem pseResponseTypeItem =
-            PseResponseTypeItem.builder()
-                .id(UUID.randomUUID().toString())
-                .value(pseResponseType)
-                .build();
-
-        sendNotificationType.getRespondCollection().add(pseResponseTypeItem);
-        sendNotificationType.setSendNotificationResponsesCount(String.valueOf(
-            sendNotificationType.getRespondCollection().size()));
-        sendNotificationType.setNotificationState(SUBMITTED);
-        setResponsesAsRespondedTo(sendNotificationType.getRespondNotificationTypeCollection());
-
-        CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
-        sendAddResponseSendNotificationEmails(
-            caseData,
-            caseId,
-            request.getPseResponseType().getCopyToOtherParty()
-        );
-        return caseService.submitUpdate(
-            authorization,
-            caseId,
-            content,
-            caseTypeId
-        );
-    }
-
-    private void sendAddResponseSendNotificationEmails(CaseData caseData,
-                                                       String caseId,
-                                                       String copyToOtherParty) {
-        notificationService.sendResponseNotificationEmailToTribunal(caseData, caseId);
-        notificationService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty);
-        notificationService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty);
+        return pseResponseType;
     }
 
     private void setResponsesAsRespondedTo(List<GenericTypeItem<RespondNotificationType>> responses) {
@@ -213,6 +229,14 @@ public class SendNotificationService {
                 item.getValue().setState(SUBMITTED);
             }
         }
+    }
+
+    private void sendAddResponseSendNotificationEmails(CaseData caseData,
+                                                       String caseId,
+                                                       String copyToOtherParty) {
+        notificationService.sendResponseNotificationEmailToTribunal(caseData, caseId);
+        notificationService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty);
+        notificationService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty);
     }
 
     /**
