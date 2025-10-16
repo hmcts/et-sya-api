@@ -260,11 +260,11 @@ class SendNotificationServiceTest {
 
         when(featureToggleService.isEccEnabled()).thenReturn(true);
 
-        ListTypeItem<RespondNotificationType> from = ListTypeItem.from(
-            GenericTypeItem.from(ID, RespondNotificationType.builder()
-                .state(VIEWED).isClaimantResponseDue(YES).build()
-            )
-        );
+        sendNotificationService.addClaimantResponseNotification(MOCK_TOKEN, request);
+
+        ArgumentCaptor<CaseData> argumentCaptor = ArgumentCaptor.forClass(CaseData.class);
+        verify(caseDetailsConverter).caseDataContent(any(), argumentCaptor.capture());
+        CaseData data = argumentCaptor.getValue();
 
         PseResponseTypeItem buildResponse = PseResponseTypeItem.builder()
             .id(ID)
@@ -276,11 +276,11 @@ class SendNotificationServiceTest {
                     .build()
             ).build();
 
-        sendNotificationService.addClaimantResponseNotification(MOCK_TOKEN, request);
-
-        ArgumentCaptor<CaseData> argumentCaptor = ArgumentCaptor.forClass(CaseData.class);
-        verify(caseDetailsConverter).caseDataContent(any(), argumentCaptor.capture());
-        CaseData data = argumentCaptor.getValue();
+        ListTypeItem<RespondNotificationType> from = ListTypeItem.from(
+            GenericTypeItem.from(ID, RespondNotificationType.builder()
+                .state(VIEWED).isClaimantResponseDue(YES).build()
+            )
+        );
 
         List<SendNotificationTypeItem> items = List.of(
             SendNotificationTypeItem.builder()
@@ -297,7 +297,6 @@ class SendNotificationServiceTest {
 
         SendNotificationType notification = data.getSendNotificationCollection().getFirst().getValue();
         PseResponseType actual = notification.getRespondCollection().getFirst().getValue();
-
 
         assertEquals(expected.getResponse(), actual.getResponse());
         assertEquals(expected.getFrom(), actual.getFrom());

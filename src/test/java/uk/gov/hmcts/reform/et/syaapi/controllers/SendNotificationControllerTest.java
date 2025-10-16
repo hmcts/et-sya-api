@@ -141,4 +141,28 @@ class SendNotificationControllerTest {
             .changeRespondentNotificationStatus(anyString(), any(ChangeRespondentNotificationStatusRequest.class));
     }
 
+    @SneakyThrows
+    @Test
+    void shouldAddRespondentRespondToNotification() {
+        SendNotificationAddResponseRequest request = SendNotificationAddResponseRequest.builder()
+            .caseTypeId(CASE_TYPE)
+            .caseId(CASE_ID)
+            .sendNotificationId("1")
+            .pseResponseType(PseResponseType.builder().build())
+            .build();
+
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+
+        mockMvc.perform(
+            put("/sendNotification/add-respondent-respond-to-notification", CASE_ID)
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ResourceLoader.toJson(request))
+        ).andExpect(status().isOk());
+
+        verify(sendNotificationService, times(1)).addRespondentResponseNotification(
+            TEST_SERVICE_AUTH_TOKEN,
+            request
+        );
+    }
 }
