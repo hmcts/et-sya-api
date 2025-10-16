@@ -131,20 +131,16 @@ public class SendNotificationService {
 
         CaseData caseData = EmployeeObjectMapper
             .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
-        var sendNotificationTypeItem =
+        SendNotificationType sendNotificationType =
             caseData.getSendNotificationCollection()
                 .stream()
                 .filter(notification -> notification.getId().equals(request.getSendNotificationId()))
-                .findFirst();
-        if (sendNotificationTypeItem.isEmpty()) {
-            throw new IllegalArgumentException("SendNotification Id is incorrect");
-        }
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("SendNotification Id is incorrect"))
+                .getValue();
 
-        SendNotificationType sendNotificationType = sendNotificationTypeItem.get().getValue();
-
-        var pseRespondCollection = sendNotificationType.getRespondCollection();
-        if (CollectionUtils.isEmpty(pseRespondCollection)) {
-            sendNotificationTypeItem.get().getValue().setRespondCollection(new ArrayList<>());
+        if (CollectionUtils.isEmpty(sendNotificationType.getRespondCollection())) {
+            sendNotificationType.setRespondCollection(new ArrayList<>());
         }
         PseResponseType pseResponseType = request.getPseResponseType();
         pseResponseType.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
