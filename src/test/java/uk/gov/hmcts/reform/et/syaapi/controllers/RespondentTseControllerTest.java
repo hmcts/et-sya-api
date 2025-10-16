@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.RespondToApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.RespondentApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.RespondentTseService;
+import uk.gov.hmcts.reform.et.syaapi.service.StoreRespondentTseService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 
@@ -47,6 +48,9 @@ class RespondentTseControllerTest {
     @MockBean
     private RespondentTseService respondentTseService;
 
+    @MockBean
+    private StoreRespondentTseService storeRespondentTseService;
+
     RespondentTseControllerTest() {
         expectedDetails = ResourceLoader.fromString(
             "responses/caseDetails.json",
@@ -75,6 +79,32 @@ class RespondentTseControllerTest {
         ).andExpect(status().isOk());
 
         verify(applicationService, times(1)).submitRespondentApplication(
+            TEST_SERVICE_AUTH_TOKEN,
+            respondentApplicationRequest
+        );
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldStoreRespondentApplication() {
+        RespondentApplicationRequest respondentApplicationRequest = RespondentApplicationRequest.builder()
+            .caseId(CASE_ID)
+            .caseTypeId(CASE_TYPE)
+            .respondentTse(new RespondentTse())
+            .build();
+
+        // when
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+        when(storeRespondentTseService.storeApplication(any(), any())).thenReturn(expectedDetails);
+
+        mockMvc.perform(
+            put("/respondentTSE/store-respondent-application", CASE_ID)
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ResourceLoader.toJson(respondentApplicationRequest))
+        ).andExpect(status().isOk());
+
+        verify(storeRespondentTseService, times(1)).storeApplication(
             TEST_SERVICE_AUTH_TOKEN,
             respondentApplicationRequest
         );
