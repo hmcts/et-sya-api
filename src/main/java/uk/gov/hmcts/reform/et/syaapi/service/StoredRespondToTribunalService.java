@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.PseResponseTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondNotificationType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationType;
@@ -27,8 +29,11 @@ import java.util.List;
 import java.util.UUID;
 
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.VIEWED;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.CLAIMANT_CORRESPONDENCE;
 
 @RequiredArgsConstructor
 @Service
@@ -116,7 +121,18 @@ public class StoredRespondToTribunalService {
         pseResponseType.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
         pseResponseType.setFrom(CLAIMANT_TITLE);
 
-        NotificationsHelper.setSupportingMaterial(request, pseResponseType, caseDocumentService);
+        if (request.getSupportingMaterialFile() != null) {
+            DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(
+                CLAIMANT_CORRESPONDENCE,
+                request.getSupportingMaterialFile()
+            );
+            var documentTypeItems = new ArrayList<GenericTypeItem<DocumentType>>();
+            documentTypeItems.add(documentTypeItem);
+            pseResponseType.setSupportingMaterial(documentTypeItems);
+            pseResponseType.setHasSupportingMaterial(YES);
+        } else {
+            pseResponseType.setHasSupportingMaterial(NO);
+        }
         return pseResponseType;
     }
 

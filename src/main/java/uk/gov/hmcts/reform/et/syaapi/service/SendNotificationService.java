@@ -5,9 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.PseResponseTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.PseStatusTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.et.common.model.ccd.types.PseStatusType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondNotificationType;
@@ -34,10 +36,12 @@ import java.util.UUID;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NOT_VIEWED_YET;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.VIEWED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
+import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.CLAIMANT_CORRESPONDENCE;
 
 @Service
 @Slf4j
@@ -127,54 +131,21 @@ public class SendNotificationService {
 
         CaseData caseData = EmployeeObjectMapper
             .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
-
-        addResponseToNotification(authorization, request, caseData);
-
-        CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
-        sendAddResponseSendNotificationEmails(
-            caseData,
-            caseId,
-            request.getPseResponseType().getCopyToOtherParty()
-        );
-
-        return caseService.submitUpdate(
-            authorization,
-            caseId,
-            content,
-            caseTypeId
-        );
-    }
-
-    private void addResponseToNotification(String authorization, SendNotificationAddResponseRequest request,
-                                           CaseData caseData) {
-        SendNotificationType sendNotificationType =
+        var sendNotificationTypeItem =
             caseData.getSendNotificationCollection()
                 .stream()
                 .filter(notification -> notification.getId().equals(request.getSendNotificationId()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("SendNotification Id is incorrect"))
-                .getValue();
-
-        if (CollectionUtils.isEmpty(sendNotificationType.getRespondCollection())) {
-            sendNotificationType.setRespondCollection(new ArrayList<>());
+                .findFirst();
+        if (sendNotificationTypeItem.isEmpty()) {
+            throw new IllegalArgumentException("SendNotification Id is incorrect");
         }
 
-        PseResponseType pseResponseType = getPseResponseType(authorization, request, sendNotificationType);
-        PseResponseTypeItem pseResponseTypeItem =
-            PseResponseTypeItem.builder()
-                .id(UUID.randomUUID().toString())
-                .value(pseResponseType)
-                .build();
+        SendNotificationType sendNotificationType = sendNotificationTypeItem.get().getValue();
 
-        sendNotificationType.getRespondCollection().add(pseResponseTypeItem);
-        sendNotificationType.setSendNotificationResponsesCount(
-            String.valueOf(sendNotificationType.getRespondCollection().size()));
-        sendNotificationType.setNotificationState(SUBMITTED);
-        setResponsesAsRespondedTo(sendNotificationType.getRespondNotificationTypeCollection());
-    }
-
-    private PseResponseType getPseResponseType(String authorization, SendNotificationAddResponseRequest request,
-                                               SendNotificationType sendNotificationType) {
+        var pseRespondCollection = sendNotificationType.getRespondCollection();
+        if (CollectionUtils.isEmpty(pseRespondCollection)) {
+            sendNotificationTypeItem.get().getValue().setRespondCollection(new ArrayList<>());
+        }
         PseResponseType pseResponseType = request.getPseResponseType();
         pseResponseType.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
         pseResponseType.setFrom(CLAIMANT_TITLE);
@@ -182,14 +153,48 @@ public class SendNotificationService {
             pseResponseType.setAuthor(idamClient.getUserInfo(authorization).getName());
         }
 
-        NotificationsHelper.setSupportingMaterial(request, pseResponseType, caseDocumentService);
+        if (request.getSupportingMaterialFile() != null) {
+            DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(
+                CLAIMANT_CORRESPONDENCE,
+                request.getSupportingMaterialFile()
+            );
+            var documentTypeItems = new ArrayList<GenericTypeItem<DocumentType>>();
+            documentTypeItems.add(documentTypeItem);
+            pseResponseType.setSupportingMaterial(documentTypeItems);
+            pseResponseType.setHasSupportingMaterial(YES);
+        } else {
+            pseResponseType.setHasSupportingMaterial(NO);
+        }
 
         NotificationsHelper.updateWorkAllocationFields(
             featureToggleService.isEccEnabled(),
             pseResponseType,
             sendNotificationType.getSendNotificationSubject());
 
-        return pseResponseType;
+        PseResponseTypeItem pseResponseTypeItem =
+            PseResponseTypeItem.builder()
+                .id(UUID.randomUUID().toString())
+                .value(pseResponseType)
+                .build();
+
+        sendNotificationType.getRespondCollection().add(pseResponseTypeItem);
+        sendNotificationType.setSendNotificationResponsesCount(String.valueOf(
+            sendNotificationType.getRespondCollection().size()));
+        sendNotificationType.setNotificationState(SUBMITTED);
+        setResponsesAsRespondedTo(sendNotificationType.getRespondNotificationTypeCollection());
+
+        CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
+        sendAddResponseSendNotificationEmails(
+            caseData,
+            caseId,
+            request.getPseResponseType().getCopyToOtherParty()
+        );
+        return caseService.submitUpdate(
+            authorization,
+            caseId,
+            content,
+            caseTypeId
+        );
     }
 
     private void sendAddResponseSendNotificationEmails(CaseData caseData,
@@ -256,19 +261,22 @@ public class SendNotificationService {
         if (app.getRespondentState() == null) {
             app.setRespondentState(new ArrayList<>());
         }
+
+        PseStatusTypeItem pseStatusTypeItem = PseStatusTypeItem.builder()
+            .id(UUID.randomUUID().toString())
+            .value(PseStatusType.builder()
+                       .userIdamId(userIdamId)
+                       .notificationState(newState)
+                       .dateTime(LocalDateTime.now().toString())
+                       .build())
+            .build();
+
         app.getRespondentState().stream()
             .filter(status -> status.getValue().getUserIdamId().equals(userIdamId))
             .findFirst()
             .ifPresentOrElse(
                 status -> status.getValue().setNotificationState(newState),
-                () -> app.getRespondentState().add(PseStatusTypeItem.builder()
-                                                       .id(UUID.randomUUID().toString())
-                                                       .value(PseStatusType.builder()
-                                                                  .userIdamId(userIdamId)
-                                                                  .notificationState(newState)
-                                                                  .dateTime(LocalDateTime.now().toString())
-                                                                  .build())
-                                                       .build())
+                () -> app.getRespondentState().add(pseStatusTypeItem)
         );
     }
 }
