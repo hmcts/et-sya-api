@@ -8,8 +8,10 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.PseResponseTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.PseStatusTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
+import uk.gov.hmcts.et.common.model.ccd.types.PseStatusType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondNotificationType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationTypeItem;
@@ -21,11 +23,13 @@ import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
+import uk.gov.hmcts.reform.et.syaapi.models.ChangeRespondentNotificationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -228,5 +232,67 @@ public class SendNotificationService {
         notificationService.sendResponseNotificationEmailToTribunal(caseData, caseId);
         notificationService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty);
         notificationService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty);
+    }
+
+
+    /**
+     * Update Respondent's application state.
+     *
+     * @param authorization - authorization
+     * @param request - request with application's id
+     * @return the associated {@link CaseDetails} for the ID provided in request
+     */
+    public CaseDetails changeRespondentNotificationStatus(String authorization,
+                                                          ChangeRespondentNotificationStatusRequest request) {
+        StartEventResponse startEventResponse = caseService.startUpdate(
+            authorization,
+            request.getCaseId(),
+            request.getCaseTypeId(),
+            CaseEvent.UPDATE_RESPONDENT_NOTIFICATION_STATE
+        );
+
+        CaseData caseData = EmployeeObjectMapper
+            .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
+
+        SendNotificationTypeItem itemToModify = NotificationsHelper.getSelectedNotification(
+            caseData.getSendNotificationCollection(),
+            request.getNotificationId()
+        );
+
+        if (itemToModify == null) {
+            throw new IllegalArgumentException("Notification id provided is incorrect");
+        }
+
+        updateRespondentState(itemToModify.getValue(), request.getUserIdamId(), request.getNewStatus());
+
+        return caseService.submitUpdate(
+            authorization,
+            request.getCaseId(),
+            caseDetailsConverter.caseDataContent(startEventResponse, caseData),
+            request.getCaseTypeId()
+        );
+    }
+
+    private void updateRespondentState(SendNotificationType app, String userIdamId, String newState) {
+        if (app.getRespondentState() == null) {
+            app.setRespondentState(new ArrayList<>());
+        }
+
+        PseStatusTypeItem pseStatusTypeItem = PseStatusTypeItem.builder()
+            .id(UUID.randomUUID().toString())
+            .value(PseStatusType.builder()
+                       .userIdamId(userIdamId)
+                       .notificationState(newState)
+                       .dateTime(LocalDateTime.now().toString())
+                       .build())
+            .build();
+
+        app.getRespondentState().stream()
+            .filter(status -> status.getValue().getUserIdamId().equals(userIdamId))
+            .findFirst()
+            .ifPresentOrElse(
+                status -> status.getValue().setNotificationState(newState),
+                () -> app.getRespondentState().add(pseStatusTypeItem)
+        );
     }
 }

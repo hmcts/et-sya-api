@@ -13,6 +13,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
+import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationTypeItem;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -246,5 +247,20 @@ public final class NotificationsHelper {
             && YES.equals(caseData.getClaimantRepresentedQuestion())
             && ObjectUtils.isNotEmpty(caseData.getRepresentativeClaimantType())
             && ObjectUtils.isNotEmpty(caseData.getRepresentativeClaimantType().getMyHmctsOrganisation());
+    }
+
+    /**
+     * Finds the notification by ID.
+     * @param notifications - list of all notifications attached to the case
+     * @param notificationId - id of notification we're trying to find
+     * @return the {@link SendNotificationTypeItem} to be updated
+     */
+    public static SendNotificationTypeItem getSelectedNotification(
+        List<SendNotificationTypeItem> notifications,
+        String notificationId) {
+        return notifications.stream()
+            .filter(a -> a.getId().equals(notificationId))
+            .findAny()
+            .orElse(null);
     }
 }

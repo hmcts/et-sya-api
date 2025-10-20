@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.et.syaapi.models.ChangeRespondentNotificationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
@@ -115,4 +116,28 @@ class SendNotificationControllerTest {
         );
     }
 
+    @Test
+    void shouldReturnOk_whenChangeRespondentNotificationStatus() throws Exception {
+        ChangeRespondentNotificationStatusRequest request = ChangeRespondentNotificationStatusRequest.builder()
+            .caseId(CASE_ID)
+            .caseTypeId(CASE_TYPE)
+            .notificationId("777")
+            .userIdamId("user1")
+            .newStatus("viewed")
+            .build();
+
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+        when(sendNotificationService.changeRespondentNotificationStatus(
+            anyString(), any(ChangeRespondentNotificationStatusRequest.class)))
+            .thenReturn(expectedDetails);
+
+        mockMvc.perform(put("/sendNotification/change-respondent-notification-status")
+                            .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(ResourceLoader.toJson(request)))
+            .andExpect(status().isOk());
+
+        verify(sendNotificationService, times(1))
+            .changeRespondentNotificationStatus(anyString(), any(ChangeRespondentNotificationStatusRequest.class));
+    }
 }
