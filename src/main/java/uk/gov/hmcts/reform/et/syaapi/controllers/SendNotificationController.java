@@ -50,7 +50,7 @@ public class SendNotificationController {
     }
 
     /**
-     * Adds pseResponse to a sendNotification object.
+     * Adds claimant pseResponse to a sendNotification object.
      *
      * @param authorization jwt of the user
      * @param request       the request object which contains sendNotification id and the new response
@@ -59,14 +59,15 @@ public class SendNotificationController {
     @PutMapping("/add-response-send-notification")
     @Operation(summary = "add response to send notification")
     @ApiResponseGroup
-    public ResponseEntity<CaseDetails> addResponseSendNotification(
+    public ResponseEntity<CaseDetails> addClaimantResponseSendNotification(
         @RequestHeader(AUTHORIZATION) String authorization,
         @NotNull @RequestBody SendNotificationAddResponseRequest request
     ) {
         log.info("Received response for case - caseTypeId: {} caseId: {}",
                  request.getCaseTypeId(), request.getCaseId()
         );
-        CaseDetails finalCaseDetails = sendNotificationService.addResponseSendNotification(authorization, request);
+        CaseDetails finalCaseDetails =
+            sendNotificationService.addClaimantResponseSendNotification(authorization, request);
         return ok(finalCaseDetails);
     }
 }

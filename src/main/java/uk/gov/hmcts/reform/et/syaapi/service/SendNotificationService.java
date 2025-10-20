@@ -108,13 +108,14 @@ public class SendNotificationService {
     }
 
     /**
-     * Adds a pseResponse to a notification.
+     * Adds a claimant pseResponse to a notification.
      *
      * @param authorization - authorization
      * @param request       - request containing the response, and the notification details
      * @return the associated {@link CaseDetails}
      */
-    public CaseDetails addResponseSendNotification(String authorization, SendNotificationAddResponseRequest request) {
+    public CaseDetails addClaimantResponseSendNotification(String authorization,
+                                                           SendNotificationAddResponseRequest request) {
         String caseId = request.getCaseId();
         String caseTypeId = request.getCaseTypeId();
 
@@ -127,56 +128,16 @@ public class SendNotificationService {
 
         CaseData caseData = EmployeeObjectMapper
             .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
-        var sendNotificationTypeItem =
+
+        SendNotificationType sendNotificationType =
             caseData.getSendNotificationCollection()
                 .stream()
                 .filter(notification -> notification.getId().equals(request.getSendNotificationId()))
-                .findFirst();
-        if (sendNotificationTypeItem.isEmpty()) {
-            throw new IllegalArgumentException("SendNotification Id is incorrect");
-        }
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("SendNotification Id is incorrect"))
+                .getValue();
 
-        SendNotificationType sendNotificationType = sendNotificationTypeItem.get().getValue();
-
-        var pseRespondCollection = sendNotificationType.getRespondCollection();
-        if (CollectionUtils.isEmpty(pseRespondCollection)) {
-            sendNotificationTypeItem.get().getValue().setRespondCollection(new ArrayList<>());
-        }
-        PseResponseType pseResponseType = request.getPseResponseType();
-        pseResponseType.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
-        pseResponseType.setFrom(CLAIMANT_TITLE);
-        if (featureToggleService.isMultiplesEnabled()) {
-            pseResponseType.setAuthor(idamClient.getUserInfo(authorization).getName());
-        }
-
-        if (request.getSupportingMaterialFile() != null) {
-            DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(
-                CLAIMANT_CORRESPONDENCE,
-                request.getSupportingMaterialFile()
-            );
-            var documentTypeItems = new ArrayList<GenericTypeItem<DocumentType>>();
-            documentTypeItems.add(documentTypeItem);
-            pseResponseType.setSupportingMaterial(documentTypeItems);
-            pseResponseType.setHasSupportingMaterial(YES);
-        } else {
-            pseResponseType.setHasSupportingMaterial(NO);
-        }
-
-        NotificationsHelper.updateWorkAllocationFields(
-            featureToggleService.isEccEnabled(),
-            pseResponseType,
-            sendNotificationType.getSendNotificationSubject());
-
-        PseResponseTypeItem pseResponseTypeItem =
-            PseResponseTypeItem.builder()
-                .id(UUID.randomUUID().toString())
-                .value(pseResponseType)
-                .build();
-
-        sendNotificationType.getRespondCollection().add(pseResponseTypeItem);
-        sendNotificationType.setSendNotificationResponsesCount(String.valueOf(
-            sendNotificationType.getRespondCollection().size()));
-        sendNotificationType.setNotificationState(SUBMITTED);
+        updateSendNotificationType(authorization, request, sendNotificationType);
         setResponsesAsRespondedTo(sendNotificationType.getRespondNotificationTypeCollection());
 
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
@@ -193,12 +154,58 @@ public class SendNotificationService {
         );
     }
 
-    private void sendAddResponseSendNotificationEmails(CaseData caseData,
-                                                       String caseId,
-                                                       String copyToOtherParty) {
-        notificationService.sendResponseNotificationEmailToTribunal(caseData, caseId);
-        notificationService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty);
-        notificationService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty);
+    private void updateSendNotificationType(String authorization, SendNotificationAddResponseRequest request,
+                                            SendNotificationType sendNotificationType) {
+        if (CollectionUtils.isEmpty(sendNotificationType.getRespondCollection())) {
+            sendNotificationType.setRespondCollection(new ArrayList<>());
+        }
+
+        PseResponseType pseResponseType = getPseResponseType(authorization, request, sendNotificationType);
+        PseResponseTypeItem pseResponseTypeItem =
+            PseResponseTypeItem.builder()
+                .id(UUID.randomUUID().toString())
+                .value(pseResponseType)
+                .build();
+
+        sendNotificationType.getRespondCollection().add(pseResponseTypeItem);
+        sendNotificationType.setSendNotificationResponsesCount(
+            String.valueOf(sendNotificationType.getRespondCollection().size()));
+        sendNotificationType.setNotificationState(SUBMITTED);
+    }
+
+    private PseResponseType getPseResponseType(String authorization, SendNotificationAddResponseRequest request,
+                                               SendNotificationType sendNotificationType) {
+        PseResponseType pseResponseType = request.getPseResponseType();
+
+        pseResponseType.setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
+        pseResponseType.setFrom(CLAIMANT_TITLE);
+        if (featureToggleService.isMultiplesEnabled()) {
+            pseResponseType.setAuthor(idamClient.getUserInfo(authorization).getName());
+        }
+
+        if (request.getSupportingMaterialFile() != null) {
+            pseResponseType.setSupportingMaterial(getSupportingMaterial(request));
+            pseResponseType.setHasSupportingMaterial(YES);
+        } else {
+            pseResponseType.setHasSupportingMaterial(NO);
+        }
+
+        NotificationsHelper.updateWorkAllocationFields(
+            featureToggleService.isEccEnabled(),
+            pseResponseType,
+            sendNotificationType.getSendNotificationSubject());
+
+        return pseResponseType;
+    }
+
+    private ArrayList<GenericTypeItem<DocumentType>> getSupportingMaterial(SendNotificationAddResponseRequest request) {
+        DocumentTypeItem documentTypeItem = caseDocumentService.createDocumentTypeItem(
+            CLAIMANT_CORRESPONDENCE,
+            request.getSupportingMaterialFile()
+        );
+        var documentTypeItems = new ArrayList<GenericTypeItem<DocumentType>>();
+        documentTypeItems.add(documentTypeItem);
+        return documentTypeItems;
     }
 
     private void setResponsesAsRespondedTo(List<GenericTypeItem<RespondNotificationType>> responses) {
@@ -213,5 +220,13 @@ public class SendNotificationService {
                 item.getValue().setState(SUBMITTED);
             }
         }
+    }
+
+    private void sendAddResponseSendNotificationEmails(CaseData caseData,
+                                                       String caseId,
+                                                       String copyToOtherParty) {
+        notificationService.sendResponseNotificationEmailToTribunal(caseData, caseId);
+        notificationService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty);
+        notificationService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty);
     }
 }
