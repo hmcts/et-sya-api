@@ -8,10 +8,8 @@ import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DocumentTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.PseResponseTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.items.PseStatusTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.DocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
-import uk.gov.hmcts.et.common.model.ccd.types.PseStatusType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondNotificationType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationTypeItem;
@@ -22,6 +20,7 @@ import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
+import uk.gov.hmcts.reform.et.syaapi.helper.PseNotificationHelper;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeRespondentNotificationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
@@ -29,7 +28,6 @@ import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -254,11 +252,10 @@ public class SendNotificationService {
         CaseData caseData = EmployeeObjectMapper
             .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
 
-        SendNotificationTypeItem itemToModify = NotificationsHelper.getSelectedNotification(
+        SendNotificationTypeItem itemToModify = PseNotificationHelper.getSelectedNotification(
             caseData.getSendNotificationCollection(),
             request.getNotificationId()
         );
-
         if (itemToModify == null) {
             throw new IllegalArgumentException("Notification id provided is incorrect");
         }
@@ -278,21 +275,12 @@ public class SendNotificationService {
             app.setRespondentState(new ArrayList<>());
         }
 
-        PseStatusTypeItem pseStatusTypeItem = PseStatusTypeItem.builder()
-            .id(UUID.randomUUID().toString())
-            .value(PseStatusType.builder()
-                       .userIdamId(userIdamId)
-                       .notificationState(newState)
-                       .dateTime(LocalDateTime.now().toString())
-                       .build())
-            .build();
-
         app.getRespondentState().stream()
             .filter(status -> status.getValue().getUserIdamId().equals(userIdamId))
             .findFirst()
             .ifPresentOrElse(
                 status -> status.getValue().setNotificationState(newState),
-                () -> app.getRespondentState().add(pseStatusTypeItem)
+                () -> app.getRespondentState().add(PseNotificationHelper.buildPseStatusTypeItem(userIdamId, newState))
         );
     }
 }
