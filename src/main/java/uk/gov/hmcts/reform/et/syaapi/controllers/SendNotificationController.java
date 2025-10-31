@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
+import uk.gov.hmcts.reform.et.syaapi.models.ChangeRespondentNotificationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.SendNotificationService;
@@ -68,6 +69,27 @@ public class SendNotificationController {
         );
         CaseDetails finalCaseDetails =
             sendNotificationService.addClaimantResponseSendNotification(authorization, request);
+        return ok(finalCaseDetails);
+    }
+
+    /**
+     * Change respondent notification status in syr.
+     * @param authorization jwt of the user
+     * @param request       the request object which contains the appId and new status
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    @PutMapping("/change-respondent-notification-status")
+    @Operation(summary = "Change respondent notification status")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> changeRespondentNotificationStatus(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody ChangeRespondentNotificationStatusRequest request
+    ) {
+        log.info("Received a change respondent notification status request - caseTypeId: {} caseId: {}",
+                 request.getCaseTypeId(), request.getCaseId()
+        );
+        CaseDetails finalCaseDetails =
+            sendNotificationService.changeRespondentNotificationStatus(authorization, request);
         return ok(finalCaseDetails);
     }
 }
