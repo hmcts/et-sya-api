@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.et.syaapi.helper;
 
+import uk.gov.hmcts.et.common.model.ccd.items.PseResponseTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.PseStatusTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.et.common.model.ccd.types.PseStatusType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationTypeItem;
 
@@ -42,5 +44,17 @@ public final class PseNotificationHelper {
                        .dateTime(LocalDateTime.now().toString())
                        .build())
             .build();
+    }
+
+    /**
+     * Build new PseResponseTypeItem with given response type.
+     * @param pseResponseType PseStatusTypeItem
+     * @return PseResponseTypeItem
+     */
+    public static PseResponseTypeItem getPseResponseTypeItem(PseResponseType pseResponseType) {
+        return PseResponseTypeItem.builder()
+                .id(UUID.randomUUID().toString())
+                .value(pseResponseType)
+                .build();
     }
 }
