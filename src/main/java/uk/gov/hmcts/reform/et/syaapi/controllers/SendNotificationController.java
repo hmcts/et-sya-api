@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeRespondentNotificationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.SendNotificationRespondentService;
 import uk.gov.hmcts.reform.et.syaapi.service.SendNotificationService;
 
 import static org.springframework.http.ResponseEntity.ok;
@@ -27,6 +28,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 public class SendNotificationController {
 
     private final SendNotificationService sendNotificationService;
+    private final SendNotificationRespondentService sendNotificationRespondentService;
 
     /**
      * Updates SendNotification status.
@@ -89,7 +91,7 @@ public class SendNotificationController {
                  request.getCaseTypeId(), request.getCaseId()
         );
         CaseDetails finalCaseDetails =
-            sendNotificationService.changeRespondentNotificationStatus(authorization, request);
+            sendNotificationRespondentService.changeRespondentNotificationStatus(authorization, request);
         return ok(finalCaseDetails);
     }
 }

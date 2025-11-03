@@ -15,7 +15,6 @@ import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationTypeItem;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.model.TestData;
-import uk.gov.hmcts.reform.et.syaapi.models.ChangeRespondentNotificationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
@@ -27,8 +26,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -43,7 +40,6 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.VIEWED;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_NOTIFICATION_RESPONSE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_NOTIFICATION_STATE;
-import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_RESPONDENT_NOTIFICATION_STATE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.YES;
@@ -55,8 +51,6 @@ class SendNotificationServiceTest {
     private TestData testData;
     private static final String MOCK_TOKEN = "Bearer TestServiceAuth";
     private static final String ID = "777";
-    private static final String CASE_ID = "1234";
-    private static final String CASE_TYPE = "ET_EnglandWales";
     private static final List<String> NOTIFICATION_SUBJECT_IS_ECC =
         List.of("Employer Contract Claim", "Case management orders / requests");
     private static final List<String> NOTIFICATION_SUBJECT_IS_NOT_ECC =
@@ -313,57 +307,6 @@ class SendNotificationServiceTest {
         );
 
         assertEquals("SendNotification Id is incorrect", exception.getMessage());
-    }
-
-    @Test
-    void shouldAddRespondentNotificationStatus() {
-        ChangeRespondentNotificationStatusRequest request = ChangeRespondentNotificationStatusRequest.builder()
-            .caseId(CASE_ID)
-            .caseTypeId(CASE_TYPE)
-            .notificationId("777")
-            .userIdamId("e67fae0a-7a75-4f45-abc8-6f9d2a79801f")
-            .newStatus("viewed")
-            .build();
-
-        when(caseService.startUpdate(
-            TEST_SERVICE_AUTH_TOKEN,
-            request.getCaseId(),
-            request.getCaseTypeId(),
-            UPDATE_RESPONDENT_NOTIFICATION_STATE
-        )).thenReturn(testData.getUpdateCaseEventResponse());
-
-        sendNotificationService.changeRespondentNotificationStatus(TEST_SERVICE_AUTH_TOKEN, request);
-
-        ArgumentCaptor<CaseData> argumentCaptor = ArgumentCaptor.forClass(CaseData.class);
-        verify(caseDetailsConverter).caseDataContent(any(), argumentCaptor.capture());
-        String actualState = argumentCaptor.getValue()
-            .getSendNotificationCollection().getFirst().getValue()
-            .getRespondentState().getFirst().getValue()
-            .getNotificationState();
-        assertThat(actualState).isEqualTo("viewed");
-    }
-
-    @Test
-    void shouldThrowException_whenNotificationIdIsIncorrect() {
-        ChangeRespondentNotificationStatusRequest request = ChangeRespondentNotificationStatusRequest.builder()
-            .caseId(CASE_ID)
-            .caseTypeId(CASE_TYPE)
-            .notificationId("invalidAppId")
-            .userIdamId("e67fae0a-7a75-4f45-abc8-6f9d2a79801f")
-            .newStatus("viewed")
-            .build();
-
-        when(caseService.startUpdate(
-            TEST_SERVICE_AUTH_TOKEN,
-            request.getCaseId(),
-            request.getCaseTypeId(),
-            UPDATE_RESPONDENT_NOTIFICATION_STATE)
-        ).thenReturn(testData.getUpdateCaseEventResponse());
-
-        assertThatThrownBy(() -> sendNotificationService
-            .changeRespondentNotificationStatus(TEST_SERVICE_AUTH_TOKEN, request))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("Notification id provided is incorrect");
     }
 
     public StartEventResponse updateCaseEventResponseNoNotificationResponses() {
