@@ -374,7 +374,7 @@ class SendNotificationServiceTest {
                 UPDATE_RESPONDENT_NOTIFICATION_STATE
         )).thenReturn(testData.getUpdateCaseEventResponse());
 
-        sendNotificationService.changeRespondentNotificationStatus(TEST_SERVICE_AUTH_TOKEN, request);
+        sendNotificationService.updateRespondentNotificationStatus(TEST_SERVICE_AUTH_TOKEN, request);
 
         ArgumentCaptor<CaseData> argumentCaptor = ArgumentCaptor.forClass(CaseData.class);
         verify(caseDetailsConverter).caseDataContent(any(), argumentCaptor.capture());
@@ -403,7 +403,7 @@ class SendNotificationServiceTest {
         ).thenReturn(testData.getUpdateCaseEventResponse());
 
         assertThatThrownBy(() -> sendNotificationService
-                .changeRespondentNotificationStatus(TEST_SERVICE_AUTH_TOKEN, request))
+                .updateRespondentNotificationStatus(TEST_SERVICE_AUTH_TOKEN, request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Notification id provided is incorrect");
     }

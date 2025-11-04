@@ -127,7 +127,7 @@ class SendNotificationControllerTest {
             .build();
 
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(sendNotificationService.changeRespondentNotificationStatus(
+        when(sendNotificationService.updateRespondentNotificationStatus(
             anyString(), any(ChangeRespondentNotificationStatusRequest.class)))
             .thenReturn(expectedDetails);
 
@@ -138,6 +138,6 @@ class SendNotificationControllerTest {
             .andExpect(status().isOk());
 
         verify(sendNotificationService, times(1))
-            .changeRespondentNotificationStatus(anyString(), any(ChangeRespondentNotificationStatusRequest.class));
+            .updateRespondentNotificationStatus(anyString(), any(ChangeRespondentNotificationStatusRequest.class));
     }
 }

@@ -246,7 +246,7 @@ public class SendNotificationService {
      * @param request - request with application's id
      * @return the associated {@link CaseDetails} for the ID provided in request
      */
-    public CaseDetails changeRespondentNotificationStatus(String authorization,
+    public CaseDetails updateRespondentNotificationStatus(String authorization,
                                                           ChangeRespondentNotificationStatusRequest request) {
         StartEventResponse startEventResponse = caseService.startUpdate(
                 authorization,
@@ -308,7 +308,7 @@ public class SendNotificationService {
                 authorization,
                 caseId,
                 caseTypeId,
-                CaseEvent.UPDATE_NOTIFICATION_RESPONSE
+                CaseEvent.ADD_RESPONDENT_NOTIFICATION_RESPONSE
         );
 
         CaseData caseData = EmployeeObjectMapper

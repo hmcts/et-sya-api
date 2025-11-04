@@ -90,7 +90,7 @@ public class SendNotificationController {
                  request.getCaseTypeId(), request.getCaseId()
         );
         CaseDetails finalCaseDetails =
-            sendNotificationService.changeRespondentNotificationStatus(authorization, request);
+            sendNotificationService.updateRespondentNotificationStatus(authorization, request);
         return ok(finalCaseDetails);
     }
 
