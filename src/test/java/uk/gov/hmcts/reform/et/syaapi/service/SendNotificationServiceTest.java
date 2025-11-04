@@ -44,6 +44,7 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.NOT_VIEWED_YET;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.RESPONDENT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.VIEWED;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.ADD_RESPONDENT_NOTIFICATION_RESPONSE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_NOTIFICATION_RESPONSE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_NOTIFICATION_STATE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_RESPONDENT_NOTIFICATION_STATE;
@@ -417,7 +418,7 @@ class SendNotificationServiceTest {
                 TEST_SERVICE_AUTH_TOKEN,
                 request.getCaseId(),
                 request.getCaseTypeId(),
-                UPDATE_NOTIFICATION_RESPONSE
+                ADD_RESPONDENT_NOTIFICATION_RESPONSE
         )).thenReturn(startEventResponse);
 
         sendNotificationService.addRespondentResponseNotification(MOCK_TOKEN, request);
