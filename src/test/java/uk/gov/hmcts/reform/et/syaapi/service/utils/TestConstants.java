@@ -81,6 +81,9 @@ public final class TestConstants {
     public static final String TEST_CASE_USER_ROLE_INVALID = "[INVALID]";
     public static final String TEST_RESPONDENT_NAME = "Respondent Name";
     public static final String TEST_RESPONDENT_IDAM_ID_1 = "test_respondent_idam_id_1";
+    public static final String TEST_CLAIMANT_SOLICITOR_IDAM_ID = "test_claimant_solicitor_idam_id";
+    public static final String TEST_CASE_ID_STRING = "1234567890123456";
+    public static final long TEST_CASE_ID_LONG = 1234567890123456L;
     public static final String TEST_RESPONDENT_IDAM_ID_2 = "test_respondent_idam_id_2";
     public static final String TEST_RESPONDENT_COLLECTION_KEY = "respondentCollection";
     public static final String TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_ID_KEY = "id";
@@ -89,6 +92,7 @@ public final class TestConstants {
     public static final String POST_SERVICE_MODIFY_ET3_DATA_URL = "/et3/modifyEt3Data";
     public static final String GET_SERVICE_FIND_CASE_FOR_ROLE_MODIFICATION_URL
         = "/et3/findCaseByEthosCaseReference";
+    public static final String TEST_CCD_DATA_STORE_BASE_URL = "http://localhost:8080/ccd/data-store";
     public static final String PARAMETER_NAME_ETHOS_CASE_REFERENCE = "ethosCaseReference";
 
     public static final String TEST_EXCEPTION_INVALID_MODIFICATION_TYPE =
