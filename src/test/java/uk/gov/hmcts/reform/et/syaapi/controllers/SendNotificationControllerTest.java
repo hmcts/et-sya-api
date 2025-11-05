@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
-import uk.gov.hmcts.reform.et.syaapi.service.SendNotificationRespondentService;
 import uk.gov.hmcts.reform.et.syaapi.service.SendNotificationService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
@@ -46,9 +45,6 @@ class SendNotificationControllerTest {
 
     @MockBean
     private SendNotificationService sendNotificationService;
-
-    @MockBean
-    private SendNotificationRespondentService sendNotificationRespondentService;
 
     private static final String CASE_ID = "1646225213651590";
     private static final String CASE_TYPE = "ET_Scotland";
@@ -88,7 +84,7 @@ class SendNotificationControllerTest {
                 .content(ResourceLoader.toJson(request))
         ).andExpect(status().isOk());
 
-        verify(sendNotificationService, times(1)).updateSendNotificationState(
+        verify(sendNotificationService, times(1)).updateClaimantSendNotificationState(
             TEST_SERVICE_AUTH_TOKEN,
             request
         );
@@ -131,7 +127,7 @@ class SendNotificationControllerTest {
             .build();
 
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
-        when(sendNotificationRespondentService.changeRespondentNotificationStatus(
+        when(sendNotificationService.updateRespondentNotificationStatus(
             anyString(), any(ChangeRespondentNotificationStatusRequest.class)))
             .thenReturn(expectedDetails);
 
@@ -141,7 +137,7 @@ class SendNotificationControllerTest {
                             .content(ResourceLoader.toJson(request)))
             .andExpect(status().isOk());
 
-        verify(sendNotificationRespondentService, times(1))
-            .changeRespondentNotificationStatus(anyString(), any(ChangeRespondentNotificationStatusRequest.class));
+        verify(sendNotificationService, times(1))
+            .updateRespondentNotificationStatus(anyString(), any(ChangeRespondentNotificationStatusRequest.class));
     }
 }

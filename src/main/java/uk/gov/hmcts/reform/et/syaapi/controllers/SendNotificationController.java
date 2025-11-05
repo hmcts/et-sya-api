@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeRespondentNotificationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
-import uk.gov.hmcts.reform.et.syaapi.service.SendNotificationRespondentService;
 import uk.gov.hmcts.reform.et.syaapi.service.SendNotificationService;
 
 import static org.springframework.http.ResponseEntity.ok;
@@ -28,7 +27,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.AUTHORIZATI
 public class SendNotificationController {
 
     private final SendNotificationService sendNotificationService;
-    private final SendNotificationRespondentService sendNotificationRespondentService;
 
     /**
      * Updates SendNotification status.
@@ -48,7 +46,8 @@ public class SendNotificationController {
         log.info("Received update sendNotification state request - caseTypeId: {} caseId: {}",
                  request.getCaseTypeId(), request.getCaseId()
         );
-        CaseDetails finalCaseDetails = sendNotificationService.updateSendNotificationState(authorization, request);
+        CaseDetails finalCaseDetails =
+            sendNotificationService.updateClaimantSendNotificationState(authorization, request);
         return ok(finalCaseDetails);
     }
 
@@ -91,7 +90,29 @@ public class SendNotificationController {
                  request.getCaseTypeId(), request.getCaseId()
         );
         CaseDetails finalCaseDetails =
-            sendNotificationRespondentService.changeRespondentNotificationStatus(authorization, request);
+            sendNotificationService.updateRespondentNotificationStatus(authorization, request);
+        return ok(finalCaseDetails);
+    }
+
+    /**
+     * Adds pseResponse from respondent to a sendNotification object.
+     *
+     * @param authorization jwt of the user
+     * @param request       the request object which contains sendNotification id and the new response
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    @PutMapping("/add-respondent-respond-to-notification")
+    @Operation(summary = "add respondent response to send notification")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> addRespondentRespondToNotification(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody SendNotificationAddResponseRequest request
+    ) {
+        log.info("Received response from respondent for case - caseTypeId: {} caseId: {}",
+                 request.getCaseTypeId(), request.getCaseId()
+        );
+        CaseDetails finalCaseDetails =
+            sendNotificationService.addRespondentResponseNotification(authorization, request);
         return ok(finalCaseDetails);
     }
 }
