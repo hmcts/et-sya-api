@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRolesRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -69,7 +70,7 @@ public class ManageCaseRoleController {
     ) {
         List<CaseDetails> caseDetailsList;
         try {
-            caseDetailsList = manageCaseRoleService.modifyUserCaseRoles(
+            caseDetailsList = manageCaseRoleService.modifyUserCaseRolesForRespondents(
                 authorisation, manageCaseRoleService.generateModifyCaseUserRolesRequest(authorisation,
                                                                                         modifyCaseUserRolesRequest),
                 modificationType);
@@ -77,5 +78,38 @@ public class ManageCaseRoleController {
             throw new ManageCaseRoleException(e);
         }
         return ok(caseDetailsList);
+    }
+
+    @PostMapping("/revokeClaimantSolicitorRole")
+    @Operation(summary = "Modifies user roles of the case")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> revokeClaimantSolicitorRole(
+        @RequestHeader(AUTHORIZATION) String authorisation,
+        @RequestParam(name = "caseSubmissionReference") String caseSubmissionReference) {
+        CaseDetails caseDetails;
+        try {
+            caseDetails = manageCaseRoleService.revokeClaimantSolicitorRole(authorisation, caseSubmissionReference);
+        } catch (Exception e) {
+            throw new ManageCaseRoleException(e);
+        }
+        return ok(caseDetails);
+    }
+
+    @PostMapping("/revokeRespondentSolicitorRole")
+    @Operation(summary = "Modifies user roles of the case")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> revokeRespondentSolicitorRole(
+        @RequestHeader(AUTHORIZATION) String authorisation,
+        @RequestParam(name = "caseSubmissionReference") String caseSubmissionReference,
+        @RequestParam(name = "respondentIndex") String respondentIndex) {
+        CaseDetails caseDetails;
+        try {
+            caseDetails = manageCaseRoleService.revokeRespondentSolicitorRole(authorisation,
+                                                                              caseSubmissionReference,
+                                                                              respondentIndex);
+        } catch (Exception e) {
+            throw new ManageCaseRoleException(e);
+        }
+        return ok(caseDetails);
     }
 }

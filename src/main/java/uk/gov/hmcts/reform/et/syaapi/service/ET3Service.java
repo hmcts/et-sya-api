@@ -138,7 +138,7 @@ public class ET3Service {
             elasticSearchQuery
         ).getCases()).orElse(Collections.emptyList());
         return CollectionUtils.isNotEmpty(caseDetailsList)
-            ? caseDetailsList.get(ManageCaseRoleConstants.FIRST_INDEX)
+            ? caseDetailsList.getFirst()
             : null;
     }
 
