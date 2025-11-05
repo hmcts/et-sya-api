@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.helper;
 
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.et.common.model.ccd.items.PseResponseTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.PseStatusTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
@@ -56,5 +57,21 @@ public final class PseNotificationHelper {
                 .id(UUID.randomUUID().toString())
                 .value(pseResponseType)
                 .build();
+    }
+
+    /**
+     * Finds the stored PSE response by ID.
+     * @param responds stored collection of PSE responses
+     * @param respondId id of the response to find
+     * @return the selected PSE response
+     */
+    public static PseResponseTypeItem getSelectedResponseInPse(List<PseResponseTypeItem> responds, String respondId) {
+        if (CollectionUtils.isEmpty(responds)) {
+            return null;
+        }
+        return responds.stream()
+            .filter(a -> a.getId().equals(respondId))
+            .findAny()
+            .orElse(null);
     }
 }

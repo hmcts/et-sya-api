@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.PseNotificationHelper;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeRespondentNotificationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SubmitRespondentPseRespondRequest;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -30,8 +31,10 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.RESPONDENT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.VIEWED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.RESPONDENT_CORRESPONDENCE;
+import static uk.gov.hmcts.reform.et.syaapi.helper.PseNotificationHelper.getSelectedResponseInPse;
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.getCurrentDateTime;
 
 @Service
@@ -44,12 +47,14 @@ public class SendNotificationRespondentService {
     private final CaseDocumentService caseDocumentService;
 
     private static final String SEND_NOTIFICATION_ID_INCORRECT = "Notification id provided is incorrect";
+    private static final String RESPOND_EMPTY = "Respond collection is empty";
+    private static final String RESPOND_ID_INCORRECT = "Respond id provided is incorrect";
 
     /**
-     * Update Respondent's application state.
+     * Update respondent's notification state.
      *
      * @param authorization - authorization
-     * @param request - request with application's id
+     * @param request - request with notification's id
      * @return the associated {@link CaseDetails} for the ID provided in request
      */
     public CaseDetails updateRespondentNotificationStatus(String authorization,
@@ -193,7 +198,7 @@ public class SendNotificationRespondentService {
     }
 
     /**
-     * Store a pseResponse to a notification.
+     * Store a respondent pseResponse to a notification.
      *
      * @param authorization - authorization
      * @param request - request containing the response, and the notification details
@@ -204,7 +209,7 @@ public class SendNotificationRespondentService {
             authorization,
             request.getCaseId(),
             request.getCaseTypeId(),
-            CaseEvent.STORE_PSE_RESPONSE
+            CaseEvent.STORE_RESPONDENT_PSE_RESPONSE
         );
 
         CaseData caseData = EmployeeObjectMapper
@@ -222,7 +227,7 @@ public class SendNotificationRespondentService {
 
         // store PseResponseTypeItem
         if (CollectionUtils.isEmpty(modifyValue.getRespondentRespondStoredCollection())) {
-            modifyValue.setRespondStoredCollection(new ArrayList<>());
+            modifyValue.setRespondentRespondStoredCollection(new ArrayList<>());
         }
         PseResponseType pseResponseType = getPseResponseType(request);
         PseResponseTypeItem pseResponseTypeItem = PseNotificationHelper.getPseResponseTypeItem(pseResponseType);
@@ -247,5 +252,75 @@ public class SendNotificationRespondentService {
             content,
             request.getCaseTypeId()
         );
+    }
+
+    /**
+     * Submit stored respondent response to tribunal notification.
+     *
+     * @param authorization - authorization
+     * @param request - response from the claimant
+     * @return the associated {@link CaseDetails} for the ID provided in request
+     */
+    public CaseDetails submitRespondToTribunal(String authorization, SubmitRespondentPseRespondRequest request) {
+        String caseId = request.getCaseId();
+        String caseTypeId = request.getCaseTypeId();
+
+        StartEventResponse startEventResponse = caseService.startUpdate(
+            authorization,
+            caseId,
+            caseTypeId,
+            CaseEvent.SUBMIT_RESPONDENT_PSE_RESPONSE
+        );
+
+        CaseData caseData = EmployeeObjectMapper
+            .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
+
+        // get selected SendNotificationType
+        SendNotificationTypeItem itemToModify = PseNotificationHelper.getSelectedNotification(
+            caseData.getSendNotificationCollection(),
+            request.getOrderId()
+        );
+        if (itemToModify == null) {
+            throw new IllegalArgumentException(SEND_NOTIFICATION_ID_INCORRECT);
+        }
+        SendNotificationType modifyValue = itemToModify.getValue();
+
+        // get selected PseResponseTypeItem
+        PseResponseTypeItem responseToModify = getSelectedResponseInPse(
+            modifyValue.getRespondentRespondStoredCollection(), request.getStoredRespondId()
+        );
+        if (responseToModify == null) {
+            throw new IllegalArgumentException(RESPOND_ID_INCORRECT);
+        }
+
+        // update date
+        responseToModify.getValue().setDate(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
+        responseToModify.getValue().setDateTime(getCurrentDateTime());
+
+        // add response
+        if (CollectionUtils.isEmpty(modifyValue.getRespondCollection())) {
+            modifyValue.setRespondCollection(new ArrayList<>());
+        }
+        modifyValue.getRespondCollection().add(responseToModify);
+
+        // update responses count
+        modifyValue.setSendNotificationResponsesCount(String.valueOf(modifyValue.getRespondCollection().size()));
+
+        // update respondent state
+        updateRespondentState(
+            modifyValue,
+            request.getFromIdamId(),
+            VIEWED
+        );
+
+        // Remove Stored Response
+        modifyValue.getRespondentRespondStoredCollection()
+            .removeIf(item -> item.getId().equals(request.getStoredRespondId()));
+
+        // Send confirmation emails
+        // TODO: send notification emails
+
+        return caseService.submitUpdate(
+            authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
     }
 }

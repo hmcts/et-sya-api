@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.ChangeRespondentNotificationStatusRe
 import uk.gov.hmcts.reform.et.syaapi.models.ClaimantApplicationRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SubmitRespondentPseRespondRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ApplicationService;
 import uk.gov.hmcts.reform.et.syaapi.service.SendNotificationRespondentService;
 import uk.gov.hmcts.reform.et.syaapi.service.SendNotificationService;
@@ -144,9 +145,8 @@ class SendNotificationControllerTest {
             .updateRespondentNotificationStatus(anyString(), any(ChangeRespondentNotificationStatusRequest.class));
     }
 
-    @SneakyThrows
     @Test
-    void shouldAddRespondentRespondToNotification() {
+    void shouldAddRespondentRespondToNotification() throws Exception {
         SendNotificationAddResponseRequest request = SendNotificationAddResponseRequest.builder()
             .caseTypeId(CASE_TYPE)
             .caseId(CASE_ID)
@@ -156,14 +156,60 @@ class SendNotificationControllerTest {
 
         when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
 
-        mockMvc.perform(
-            put("/sendNotification/add-respondent-respond-to-notification", CASE_ID)
+        mockMvc.perform(put("/sendNotification/add-respondent-respond-to-notification", CASE_ID)
                 .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(ResourceLoader.toJson(request))
         ).andExpect(status().isOk());
 
         verify(sendNotificationRespondentService, times(1)).addRespondentResponseNotification(
+            TEST_SERVICE_AUTH_TOKEN,
+            request
+        );
+    }
+
+    @Test
+    void shouldStoreRespondentRespondToNotification() throws Exception {
+        SendNotificationAddResponseRequest request = SendNotificationAddResponseRequest.builder()
+            .caseTypeId(CASE_TYPE)
+            .caseId(CASE_ID)
+            .sendNotificationId("1")
+            .pseResponseType(PseResponseType.builder().build())
+            .build();
+
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+
+        mockMvc.perform(put("/sendNotification/store-respondent-respond-to-notification", CASE_ID)
+                            .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(ResourceLoader.toJson(request))
+        ).andExpect(status().isOk());
+
+        verify(sendNotificationRespondentService, times(1)).storeResponseSendNotification(
+            TEST_SERVICE_AUTH_TOKEN,
+            request
+        );
+    }
+
+    @Test
+    void shouldSubmitRespondentRespondToNotification() throws Exception {
+        SubmitRespondentPseRespondRequest request = SubmitRespondentPseRespondRequest.builder()
+            .caseTypeId(CASE_TYPE)
+            .caseId(CASE_ID)
+            .fromIdamId("idam-id")
+            .orderId("1")
+            .storedRespondId("2")
+            .build();
+
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+
+        mockMvc.perform(put("/sendNotification/submit-respondent-respond-to-notification", CASE_ID)
+                            .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(ResourceLoader.toJson(request))
+        ).andExpect(status().isOk());
+
+        verify(sendNotificationRespondentService, times(1)).submitRespondToTribunal(
             TEST_SERVICE_AUTH_TOKEN,
             request
         );

@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeRespondentNotificationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationStateUpdateRequest;
+import uk.gov.hmcts.reform.et.syaapi.models.SubmitRespondentPseRespondRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.SendNotificationRespondentService;
 import uk.gov.hmcts.reform.et.syaapi.service.SendNotificationService;
 
@@ -135,6 +136,28 @@ public class SendNotificationController {
         );
         CaseDetails finalCaseDetails =
             sendNotificationRespondentService.storeResponseSendNotification(authorization, request);
+        return ok(finalCaseDetails);
+    }
+
+    /**
+     * Stores pseResponse from respondent to a sendNotification object.
+     *
+     * @param authorization jwt of the user
+     * @param request       the request object which contains sendNotification id and the new response
+     * @return the new updated case wrapped in a {@link CaseDetails}
+     */
+    @PutMapping("/submit-respondent-respond-to-notification")
+    @Operation(summary = "add respondent response to send notification")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> submitRespondentRespondToNotification(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody SubmitRespondentPseRespondRequest request
+    ) {
+        log.info("Received submit response from respondent for case - caseTypeId: {} caseId: {}",
+                 request.getCaseTypeId(), request.getCaseId()
+        );
+        CaseDetails finalCaseDetails =
+            sendNotificationRespondentService.submitRespondToTribunal(authorization, request);
         return ok(finalCaseDetails);
     }
 }
