@@ -16,8 +16,8 @@ public class SubmitRespondentPseRespondRequest {
     private String caseTypeId;
     @JsonProperty("from_idam_id")
     private String fromIdamId;
-    @JsonProperty("order_id")
-    private String orderId;
+    @JsonProperty("notification_id")
+    private String notificationId;
     @JsonProperty("stored_response_id")
     private String storedRespondId;
 }

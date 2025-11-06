@@ -182,7 +182,7 @@ class SendNotificationRespondentServiceTest {
             .caseId(CASE_ID)
             .caseTypeId(ENGLAND_CASE_TYPE)
             .fromIdamId("550e8400-e29b-41d4-a716-446655440000")
-            .orderId("d20bbe0e-66a1-46e2-8073-727b5dd08b45")
+            .notificationId("d20bbe0e-66a1-46e2-8073-727b5dd08b45")
             .storedRespondId("9b1deb4d-3b7d-4d6f-9b7f-9e8a2c4d5e6f")
             .build();
 

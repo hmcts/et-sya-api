@@ -277,7 +277,7 @@ public class SendNotificationRespondentService {
         // get selected SendNotificationType
         SendNotificationTypeItem itemToModify = PseNotificationHelper.getSelectedNotification(
             caseData.getSendNotificationCollection(),
-            request.getOrderId()
+            request.getNotificationId()
         );
         if (itemToModify == null) {
             throw new IllegalArgumentException(SEND_NOTIFICATION_ID_INCORRECT);

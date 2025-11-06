@@ -197,7 +197,7 @@ class SendNotificationControllerTest {
             .caseTypeId(CASE_TYPE)
             .caseId(CASE_ID)
             .fromIdamId("idam-id")
-            .orderId("1")
+            .notificationId("1")
             .storedRespondId("2")
             .build();
 
