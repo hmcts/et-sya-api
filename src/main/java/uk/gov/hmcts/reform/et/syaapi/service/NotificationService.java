@@ -76,6 +76,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGU
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.RESPONDING_USER_EMAIL_STRING;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.THE_RESPONDENT_EMAIL_STRING;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getCurrentRespondent;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getCurrentRespondentName;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentAndRespRepEmailAddressesMap;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
@@ -319,16 +320,37 @@ public class NotificationService {
         Set<String> sentEmailAddresses = new HashSet<>();
         String applicantName = getCurrentRespondentName(caseData, respondentApplication.getRespondentIdamId());
 
-        caseData.getRespondentCollection().forEach(resp -> {
-            Map<String, Boolean> emailAddressesMap =
-                getRespondentAndRespRepEmailAddressesMap(caseData, resp.getValue());
+        if (DONT_SEND_COPY.equals(respondentApplication.getCopyToOtherPartyYesOrNo())) {
+            RespondentSumTypeItem currentRespondent =
+                getCurrentRespondent(caseData, respondentApplication.getRespondentIdamId());
+            handleAndSendRespondentsAndRespRepsEmails(caseData, respondentApplication, details,
+                                                       sentEmailAddresses, applicantName, documentJson,
+                                                       currentRespondent);
+        } else {
+            caseData.getRespondentCollection().forEach(resp ->
+                handleAndSendRespondentsAndRespRepsEmails(
+                    caseData, respondentApplication, details,
+                    sentEmailAddresses, applicantName, documentJson, resp
+                )
+            );
+        }
+    }
 
-            emailAddressesMap.forEach((email, isRespondent) -> {
-                if (sentEmailAddresses.add(email)) {
-                    prepareAndSendEmail(details, resp, respondentApplication, email,
-                                        isRespondent, applicantName, documentJson);
-                }
-            });
+    private void handleAndSendRespondentsAndRespRepsEmails(CaseData caseData,
+                                                           RespondentTse respondentApplication,
+                                                           CoreEmailDetails details,
+                                                           Set<String> sentEmailAddresses,
+                                                           String applicantName,
+                                                           JSONObject documentJson,
+                                                           RespondentSumTypeItem respondent) {
+        Map<String, Boolean> emailAddressesMap =
+            getRespondentAndRespRepEmailAddressesMap(caseData, respondent.getValue());
+
+        emailAddressesMap.forEach((email, isRespondent) -> {
+            if (sentEmailAddresses.add(email)) {
+                prepareAndSendEmail(details, respondent, respondentApplication, email,
+                                    isRespondent, applicantName, documentJson);
+            }
         });
     }
 
