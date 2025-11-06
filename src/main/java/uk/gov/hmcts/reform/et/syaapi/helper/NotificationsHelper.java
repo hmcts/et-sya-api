@@ -190,6 +190,13 @@ public final class NotificationsHelper {
             .orElse(null);
     }
 
+    /**
+     * Get the current respondent object.
+     *
+     * @param caseData      existing case data
+     * @param applicantIdamId idam id of the applicant
+     * @return respondent object
+     */
     public static RespondentSumTypeItem getCurrentRespondent(CaseData caseData, String applicantIdamId) {
         return caseData.getRespondentCollection().stream()
             .filter(r -> applicantIdamId.equals(r.getValue().getIdamId()))
