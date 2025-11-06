@@ -31,7 +31,6 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.RESPONDENT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.STORED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.SUBMITTED;
-import static uk.gov.hmcts.ecm.common.model.helper.Constants.VIEWED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.ecm.common.model.helper.DocumentConstants.RESPONDENT_CORRESPONDENCE;
 import static uk.gov.hmcts.reform.et.syaapi.helper.PseNotificationHelper.getSelectedResponseInPse;
@@ -310,7 +309,7 @@ public class SendNotificationRespondentService {
         updateRespondentState(
             modifyValue,
             request.getFromIdamId(),
-            VIEWED
+            SUBMITTED
         );
 
         // Remove Stored Response
