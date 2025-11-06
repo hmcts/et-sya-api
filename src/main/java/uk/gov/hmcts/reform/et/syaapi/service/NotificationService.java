@@ -104,7 +104,7 @@ public class NotificationService {
         "Change my personal details", "Consider a decision afresh",
         "Reconsider judgment"};
     private static final String TYPE_C = "witness";
-    private static final String TYPE_C_RESPONDENT = "Order a witness to attend to give evidence";
+    public static final String TYPE_C_RESPONDENT = "Order a witness to attend to give evidence";
     private static final String DONT_SEND_COPY = "No";
     public static final String HEARING_DATE_KEY = "hearingDate";
     private static final String NO_CLAIMANT_EMAIL_FOUND =
@@ -320,7 +320,8 @@ public class NotificationService {
         Set<String> sentEmailAddresses = new HashSet<>();
         String applicantName = getCurrentRespondentName(caseData, respondentApplication.getRespondentIdamId());
 
-        if (DONT_SEND_COPY.equals(respondentApplication.getCopyToOtherPartyYesOrNo())) {
+        if (TYPE_C_RESPONDENT.equals(respondentApplication.getContactApplicationType())
+            || DONT_SEND_COPY.equals(respondentApplication.getCopyToOtherPartyYesOrNo())) {
             RespondentSumTypeItem currentRespondent =
                 getCurrentRespondent(caseData, respondentApplication.getRespondentIdamId());
             handleAndSendRespondentsAndRespRepsEmails(caseData, respondentApplication, details,

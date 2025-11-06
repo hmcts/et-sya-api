@@ -78,6 +78,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.MY_HMCTS;
 import static uk.gov.hmcts.reform.et.syaapi.service.NotificationService.HEARING_DATE_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.service.NotificationService.TYPE_C_RESPONDENT;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOTIFICATION_CONFIRMATION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SUBMIT_CASE_PDF_FILE_RESPONSE;
@@ -1479,7 +1480,7 @@ class NotificationServiceTest {
 
         @Test
         void shouldSendCopyNoEmail() throws NotificationClientException, IOException {
-            caseTestData.getClaimantApplication().setCopyToOtherPartyYesOrNo("No");
+            caseTestData.getRespondentApplication().setCopyToOtherPartyYesOrNo("No");
             when(notificationClient.sendEmail(
                 eq("No"),
                 eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
@@ -1491,7 +1492,7 @@ class NotificationServiceTest {
                 details,
                 caseTestData.getRespondentApplication(), null);
 
-            verify(notificationClient, times(5)).sendEmail(
+            verify(notificationClient, times(1)).sendEmail(
                 any(),
                 any(),
                 respondentParametersCaptor.capture(),
@@ -1501,7 +1502,7 @@ class NotificationServiceTest {
 
         @Test
         void shouldSendTypeCEmail() throws NotificationClientException, IOException {
-            caseTestData.getClaimantApplication().setContactApplicationType(WITNESS);
+            caseTestData.getRespondentApplication().setContactApplicationType(TYPE_C_RESPONDENT);
             when(notificationClient.sendEmail(
                 eq("C"),
                 eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
@@ -1513,7 +1514,7 @@ class NotificationServiceTest {
                 details,
                 caseTestData.getRespondentApplication(), null);
 
-            verify(notificationClient, times(5)).sendEmail(
+            verify(notificationClient, times(1)).sendEmail(
                 any(),
                 any(),
                 respondentParametersCaptor.capture(),
