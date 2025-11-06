@@ -34,6 +34,7 @@ import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseAssignmentResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.DocumentUtil;
@@ -59,7 +60,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.REMOVE_OWN_REPRESENTATIVE;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_ET3_FORM;
@@ -175,53 +175,98 @@ public class ManageCaseRoleService {
      *                                   respondent. It also has the idam id of the respondent and the case id
      *                                   of the case that will be assigned
      * @param modificationType this value could be Assignment or Revoke.
-     * @return list of case details that are assigned to the user.
+     * @return CaseAssignmentResponse containing case details and assignment status.
      * @throws IOException Exception when any problem occurs while calling case assignment api (/case-users)
      */
-    public List<CaseDetails> modifyUserCaseRolesForRespondents(String authorisation,
-                                                               ModifyCaseUserRolesRequest modifyCaseUserRolesRequest,
-                                                               String modificationType)
+    public CaseAssignmentResponse modifyUserCaseRoles(String authorisation,
+                                                      ModifyCaseUserRolesRequest modifyCaseUserRolesRequest,
+                                                      String modificationType)
         throws IOException {
-        List<CaseDetails> caseDetailsList = new ArrayList<>();
         // Checks modifyCaseUserRolesRequest parameter if it is empty or not and it's objects.
         // If there is any problem throws ManageCaseRoleException.
         ManageCaseRoleServiceUtil.checkModifyCaseUserRolesRequest(modifyCaseUserRolesRequest);
         // Gets httpMethod by modification type. If modification type is Assignment, method is POST, if Revoke, method
         // is DELETE. Null if modification type is different then Assignment and Revoke.
         HttpMethod httpMethod = RemoteServiceUtil.getHttpMethodByCaseUserRoleModificationType(modificationType);
+
         // If modification type revoke, removes idam id from Respondent. Because after revoking roles
         // from user, we will not be able to modify respondent data.
-        // If modification type assignment, only checks the data if assignable to the given Respondent
-        // because before assigning any data we are not able to modify respondent data.
         if (ManageCaseRoleConstants.MODIFICATION_TYPE_REVOKE.equals(modificationType)) {
-            caseDetailsList = updateAllRespondentsIdamIdAndDefaultLinkStatuses(authorisation,
-                                                                               modifyCaseUserRolesRequest,
-                                                                               modificationType);
+            List<CaseDetails> caseDetailsList = updateAllRespondentsIdamIdAndDefaultLinkStatuses(
+                authorisation,
+                modifyCaseUserRolesRequest,
+                modificationType);
+
+            CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest =
+                ManageCaseRoleServiceUtil.generateCaseAssignmentUserRolesRequestByModifyCaseUserRolesRequest(
+                    modifyCaseUserRolesRequest);
+            log.info("Processing case revocation request");
+            restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, httpMethod);
+
+            return CaseAssignmentResponse.builder()
+                .caseDetails(caseDetailsList)
+                .status(CaseAssignmentResponse.AssignmentStatus.ASSIGNED)
+                .message("User role revoked successfully")
+                .build();
         }
+
+        // Handle assignment case
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest =
             ManageCaseRoleServiceUtil.generateCaseAssignmentUserRolesRequestByModifyCaseUserRolesRequest(
                 modifyCaseUserRolesRequest);
-        log.info("assigning case");
+        log.info("Processing case assignment request");
         restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, httpMethod);
-        // If modification type assignment sets idam id, case details links statuses and respondent hub links
-        // statuses to respondent. Because after assigning role we are able to update respondent data.
-        // Doesn't do anything after revoking user roles.
+
+        // After assigning role, update respondent data with idam id, case details links statuses
+        // and respondent hub links statuses.
+        List<CaseDetails> caseDetailsList;
+        boolean alreadyAssigned;
         try {
-            if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
-                caseDetailsList = updateAllRespondentsIdamIdAndDefaultLinkStatuses(authorisation,
-                                                                                   modifyCaseUserRolesRequest,
-                                                                                   modificationType);
+            List<CaseDetails> updatedCases = new ArrayList<>();
+            boolean wasAlreadyAssigned = false;
+
+            for (ModifyCaseUserRole modifyCaseUserRole : modifyCaseUserRolesRequest.getModifyCaseUserRoles()) {
+                if (ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT.equals(modifyCaseUserRole.getCaseRole())) {
+                    CaseDetails caseDetails =
+                        et3Service.findCaseBySubmissionReference(modifyCaseUserRole.getCaseDataId());
+                    boolean isAlreadyAssigned = RespondentUtil.setRespondentIdamIdAndDefaultLinkStatuses(
+                        caseDetails,
+                        modifyCaseUserRole.getRespondentName(),
+                        modifyCaseUserRole.getUserId(),
+                        modificationType
+                    );
+                    wasAlreadyAssigned = wasAlreadyAssigned || isAlreadyAssigned;
+                    updatedCases.add(
+                        et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(authorisation,
+                                                                                       caseDetails,
+                                                                                       UPDATE_ET3_FORM));
+                }
             }
+
+            caseDetailsList = updatedCases;
+            alreadyAssigned = wasAlreadyAssigned;
         } catch (Exception e) {
-            if (!ManageCaseRoleServiceUtil.isCaseRoleAssignmentExceptionForSameUser(e)) {
-                // If unable to update existing respondent data with idamId, case details link statuses
-                // and response hub links statuses after assigning user case role, revokes assigned role!....
-                restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, HttpMethod.DELETE);
-            }
+            // If unable to update existing respondent data with idamId, case details link statuses
+            // and response hub links statuses after assigning user case role, revokes assigned role!....
+            restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, HttpMethod.DELETE);
             throw new ManageCaseRoleException(e);
         }
+
+        if (alreadyAssigned) {
+            log.info("User already assigned - returning existing case details");
+            return CaseAssignmentResponse.builder()
+                .caseDetails(caseDetailsList)
+                .status(CaseAssignmentResponse.AssignmentStatus.ALREADY_ASSIGNED)
+                .message("User was already assigned to this case")
+                .build();
+        }
+
         log.info("Case assignment successfully completed");
-        return caseDetailsList;
+        return CaseAssignmentResponse.builder()
+            .caseDetails(caseDetailsList)
+            .status(CaseAssignmentResponse.AssignmentStatus.ASSIGNED)
+            .message("User successfully assigned to case")
+            .build();
     }
 
     private void restCallToModifyUserCaseRoles(
