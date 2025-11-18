@@ -160,7 +160,12 @@ public class SendNotificationRespondentService {
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
 
         // send email
-        // TODO: Send notification emails
+        // Send confirmation emails
+        sendAddResponseSendNotificationEmails(
+            caseData,
+            caseId,
+            pseResponseTypeItem.getValue().getCopyToOtherParty()
+        );
 
         return caseService.submitUpdate(
             authorization,
