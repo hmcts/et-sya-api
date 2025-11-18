@@ -47,6 +47,8 @@ class SendNotificationRespondentServiceTest {
     private CaseDocumentService caseDocumentService;
     @Mock
     private CaseDetailsConverter caseDetailsConverter;
+    @Mock
+    private NotificationService notificationService;
 
     private SendNotificationRespondentService sendNotificationRespondentService;
 
@@ -59,7 +61,8 @@ class SendNotificationRespondentServiceTest {
         sendNotificationRespondentService = new SendNotificationRespondentService(
             caseService,
             caseDetailsConverter,
-            caseDocumentService
+            caseDocumentService,
+            notificationService
         );
         testData = new TestData();
     }

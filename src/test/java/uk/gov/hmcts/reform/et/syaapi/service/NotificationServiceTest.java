@@ -1219,7 +1219,8 @@ class NotificationServiceTest {
         notificationService.sendResponseNotificationEmailToRespondent(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
-            YES
+            YES,
+            true
         );
 
         verify(notificationClient, times(1)).sendEmail(
@@ -1235,7 +1236,8 @@ class NotificationServiceTest {
         notificationService.sendResponseNotificationEmailToRespondent(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
-            NO
+            NO,
+            true
         );
 
         verify(notificationClient, times(0)).sendEmail(
@@ -1254,7 +1256,8 @@ class NotificationServiceTest {
         notificationService.sendResponseNotificationEmailToRespondent(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
-            YES
+            YES,
+            true
         );
 
         verify(notificationClient, times(0)).sendEmail(
@@ -1270,7 +1273,8 @@ class NotificationServiceTest {
         notificationService.sendResponseNotificationEmailToClaimant(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
-            YES
+            YES,
+            true
         );
 
         verify(notificationClient, times(1)).sendEmail(
@@ -1286,7 +1290,8 @@ class NotificationServiceTest {
         notificationService.sendResponseNotificationEmailToClaimant(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
-            NO
+            NO,
+            true
         );
 
         verify(notificationClient, times(1)).sendEmail(
@@ -1303,7 +1308,8 @@ class NotificationServiceTest {
         notificationService.sendResponseNotificationEmailToClaimant(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
-            YES
+            YES,
+            true
         );
 
         verify(notificationClient, times(0)).sendEmail(

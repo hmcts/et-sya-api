@@ -993,12 +993,23 @@ public class NotificationService {
     void sendResponseNotificationEmailToRespondent(
         CaseData caseData,
         String caseId,
-        String copyToOtherParty
+        String copyToOtherParty,
+        boolean isClaimantPseResponse
     ) {
-
-        if (DONT_SEND_COPY.equals(copyToOtherParty) || copyToOtherParty == null) {
+        // don't send email to respondents if this is a claimant PSE response and they opted out
+        if ((DONT_SEND_COPY.equals(copyToOtherParty) && isClaimantPseResponse)
+            || copyToOtherParty == null) {
             log.info("Acknowledgement email not sent to respondents");
             return;
+        }
+
+        String emailTemplate;
+        if (isClaimantPseResponse) {
+            emailTemplate = notificationsProperties.getPseRespondentResponseTemplateId();
+        } else {
+            emailTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
+                ? notificationsProperties.getPseClaimantResponseNoTemplateId()
+                : notificationsProperties.getPseClaimantResponseYesTemplateId();
         }
 
         Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
@@ -1013,25 +1024,35 @@ public class NotificationService {
             notificationsProperties.getExuiCaseDetailsLink() + caseId
         );
 
-        sendRespondentEmails(caseData, caseId, respondentParameters,
-                             notificationsProperties.getPseRespondentResponseTemplateId()
-        );
+        sendRespondentEmails(caseData, caseId, respondentParameters, emailTemplate);
     }
 
     void sendResponseNotificationEmailToClaimant(
         CaseData caseData,
         String caseId,
-        String copyToOtherParty
+        String copyToOtherParty,
+        boolean isClaimantPseResponse
     ) {
 
-        if (isBlank(caseData.getClaimantType().getClaimantEmailAddress())) {
-            log.info(NO_CLAIMANT_EMAIL_FOUND);
+        String claimantEmail = isRepresentedClaimantWithMyHmctsCase(caseData)
+            ? caseData.getRepresentativeClaimantType().getRepresentativeEmailAddress()
+            : caseData.getClaimantType().getClaimantEmailAddress();
+
+        // don't send email to claimant if this is a respondent PSE response and they opted out
+        if ((DONT_SEND_COPY.equals(copyToOtherParty) && !isClaimantPseResponse)
+            || copyToOtherParty == null || isBlank(claimantEmail)) {
+            log.info("Acknowledgement email not sent to claimants");
             return;
         }
 
-        String emailToClaimantTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
-            ? notificationsProperties.getPseClaimantResponseNoTemplateId()
-            : notificationsProperties.getPseClaimantResponseYesTemplateId();
+        String emailToClaimantTemplate;
+        if (isClaimantPseResponse) {
+            emailToClaimantTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
+                ? notificationsProperties.getPseClaimantResponseNoTemplateId()
+                : notificationsProperties.getPseClaimantResponseYesTemplateId();
+        } else {
+            emailToClaimantTemplate = notificationsProperties.getPseRespondentResponseTemplateId();
+        }
 
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
         addCommonParameters(claimantParameters, caseData, caseId);
@@ -1048,7 +1069,7 @@ public class NotificationService {
         try {
             notificationClient.sendEmail(
                 emailToClaimantTemplate,
-                caseData.getClaimantType().getClaimantEmailAddress(),
+                claimantEmail,
                 claimantParameters,
                 caseId
             );

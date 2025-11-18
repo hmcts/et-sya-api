@@ -44,6 +44,7 @@ public class SendNotificationRespondentService {
     private final CaseService caseService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final CaseDocumentService caseDocumentService;
+    private final NotificationService notificationService;
 
     private static final String SEND_NOTIFICATION_ID_INCORRECT = "Notification id provided is incorrect";
     private static final String RESPOND_EMPTY = "Respond collection is empty";
@@ -243,7 +244,11 @@ public class SendNotificationRespondentService {
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
 
         // send email
-        // TODO: send notification emails
+        sendAddResponseSendNotificationEmails(
+            caseData,
+            request.getCaseId(),
+            request.getPseResponseType().getCopyToOtherParty()
+        );
 
         return caseService.submitUpdate(
             authorization,
@@ -317,9 +322,22 @@ public class SendNotificationRespondentService {
             .removeIf(item -> item.getId().equals(request.getStoredRespondId()));
 
         // Send confirmation emails
-        // TODO: send notification emails
+        sendAddResponseSendNotificationEmails(
+            caseData,
+            caseId,
+            responseToModify.getValue().getCopyToOtherParty()
+        );
 
         return caseService.submitUpdate(
             authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
     }
+
+    private void sendAddResponseSendNotificationEmails(CaseData caseData,
+                                                       String caseId,
+                                                       String copyToOtherParty) {
+        notificationService.sendResponseNotificationEmailToTribunal(caseData, caseId);
+        notificationService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty, false);
+        notificationService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty, false);
+    }
+
 }
