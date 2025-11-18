@@ -243,13 +243,6 @@ public class SendNotificationRespondentService {
         // convert to CaseDataContent
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
 
-        // send email
-        sendAddResponseSendNotificationEmails(
-            caseData,
-            request.getCaseId(),
-            request.getPseResponseType().getCopyToOtherParty()
-        );
-
         return caseService.submitUpdate(
             authorization,
             request.getCaseId(),
