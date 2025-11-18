@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ecm.common.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentTse;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
@@ -993,12 +994,23 @@ public class NotificationService {
     void sendResponseNotificationEmailToRespondent(
         CaseData caseData,
         String caseId,
-        String copyToOtherParty
+        String copyToOtherParty,
+        boolean isClaimantPseResponse
     ) {
-
-        if (DONT_SEND_COPY.equals(copyToOtherParty) || copyToOtherParty == null) {
+        // don't send email to respondents if this is a claimant PSE response and they opted out
+        if ((DONT_SEND_COPY.equals(copyToOtherParty) && isClaimantPseResponse)
+            || copyToOtherParty == null) {
             log.info("Acknowledgement email not sent to respondents");
             return;
+        }
+
+        String emailTemplate;
+        if (isClaimantPseResponse) {
+            emailTemplate = notificationsProperties.getPseRespondentResponseTemplateId();
+        } else {
+            emailTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
+                ? notificationsProperties.getPseClaimantResponseNoTemplateId()
+                : notificationsProperties.getPseClaimantResponseYesTemplateId();
         }
 
         Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
@@ -1013,25 +1025,40 @@ public class NotificationService {
             notificationsProperties.getExuiCaseDetailsLink() + caseId
         );
 
-        sendRespondentEmails(caseData, caseId, respondentParameters,
-                             notificationsProperties.getPseRespondentResponseTemplateId()
-        );
+        sendRespondentEmails(caseData, caseId, respondentParameters, emailTemplate);
     }
 
     void sendResponseNotificationEmailToClaimant(
         CaseData caseData,
         String caseId,
-        String copyToOtherParty
+        String copyToOtherParty,
+        boolean isClaimantPseResponse
     ) {
 
-        if (isBlank(caseData.getClaimantType().getClaimantEmailAddress())) {
-            log.info(NO_CLAIMANT_EMAIL_FOUND);
+        String claimantEmail;
+        if (isClaimantPseResponse && caseData.getClaimantType() != null) {
+            claimantEmail = caseData.getClaimantType().getClaimantEmailAddress();
+        } else {
+            claimantEmail = isRepresentedClaimantWithMyHmctsCase(caseData)
+                ? caseData.getRepresentativeClaimantType().getRepresentativeEmailAddress()
+                : caseData.getClaimantType().getClaimantEmailAddress();
+        }
+
+        // don't send email to claimant if this is a respondent PSE response and they opted out
+        if ((DONT_SEND_COPY.equals(copyToOtherParty) && !isClaimantPseResponse)
+            || copyToOtherParty == null || isBlank(claimantEmail)) {
+            log.info("Acknowledgement email not sent to claimants");
             return;
         }
 
-        String emailToClaimantTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
-            ? notificationsProperties.getPseClaimantResponseNoTemplateId()
-            : notificationsProperties.getPseClaimantResponseYesTemplateId();
+        String emailToClaimantTemplate;
+        if (isClaimantPseResponse) {
+            emailToClaimantTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
+                ? notificationsProperties.getPseClaimantResponseNoTemplateId()
+                : notificationsProperties.getPseClaimantResponseYesTemplateId();
+        } else {
+            emailToClaimantTemplate = notificationsProperties.getPseRespondentResponseTemplateId();
+        }
 
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
         addCommonParameters(claimantParameters, caseData, caseId);
@@ -1048,7 +1075,7 @@ public class NotificationService {
         try {
             notificationClient.sendEmail(
                 emailToClaimantTemplate,
-                caseData.getClaimantType().getClaimantEmailAddress(),
+                claimantEmail,
                 claimantParameters,
                 caseId
             );
@@ -1364,5 +1391,88 @@ public class NotificationService {
         } catch (NotificationClientException ne) {
             throw new NotificationException(ne);
         }
+    }
+
+    void sendNotificationStoredEmailToClaimant(CoreEmailDetails details, String shortText) {
+        String emailAddress = details.caseData.getClaimantType().getClaimantEmailAddress();
+        if (isBlank(emailAddress)) {
+            log.info(NO_CLAIMANT_EMAIL_FOUND);
+            return;
+        }
+
+        sendNotificationStoredEmail(
+            notificationsProperties.getClaimantTseEmailStoredTemplateId(),
+            details,
+            shortText,
+            emailAddress,
+            notificationsProperties.getCitizenPortalLink() + details.caseId
+        );
+    }
+
+    void sendNotificationStoredEmailToRespondent(CoreEmailDetails details, String shortText, String respondentIdamId) {
+        RespondentSumTypeItem respondent = getRespondent(details.caseData, respondentIdamId);
+        if (respondent == null) {
+            log.info("Respondent not found for stored email notification");
+            return;
+        }
+
+        String emailAddress = getRespondentEmail(respondent.getValue());
+        String portalLink = notificationsProperties.getRespondentPortalLink()
+            + details.caseId + "/" + respondent.getId()
+            + (isWelshLanguage(respondent) ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
+
+        sendNotificationStoredEmail(
+            notificationsProperties.getClaimantTseEmailStoredTemplateId(),
+            details,
+            shortText,
+            emailAddress,
+            portalLink
+        );
+    }
+
+    private void sendNotificationStoredEmail(String emailTemplate, CoreEmailDetails details,
+                                            String shortText, String emailAddress, String portalLinkKey) {
+
+        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
+
+        addCommonParameters(
+            claimantParameters,
+            details.claimant,
+            details.respondentNames,
+            details.caseId,
+            details.caseNumber
+        );
+        claimantParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, defaultIfEmpty(shortText, ""));
+        claimantParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, portalLinkKey);
+
+        try {
+            notificationClient.sendEmail(
+                emailTemplate,
+                emailAddress,
+                claimantParameters,
+                details.caseId
+            );
+        } catch (NotificationClientException ne) {
+            throw new NotificationException(ne);
+        }
+    }
+
+    private RespondentSumTypeItem getRespondent(CaseData caseData, String userIdamId) {
+        return caseData.getRespondentCollection().stream()
+            .filter(r -> userIdamId.equals(r.getValue().getIdamId()))
+            .findFirst()
+            .orElse(null);
+    }
+
+    private String getRespondentEmail(RespondentSumType respondent) {
+        String responseEmail = respondent.getResponseRespondentEmail();
+        if (StringUtils.isNotBlank(responseEmail)) {
+            return responseEmail;
+        }
+        String respondentEmail = respondent.getRespondentEmail();
+        if (StringUtils.isNotBlank(respondentEmail)) {
+            return respondentEmail;
+        }
+        return null;
     }
 }
