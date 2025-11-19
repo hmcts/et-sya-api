@@ -1220,7 +1220,8 @@ class NotificationServiceTest {
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
             YES,
-            true
+            true,
+            null
         );
 
         verify(notificationClient, times(1)).sendEmail(
@@ -1237,7 +1238,8 @@ class NotificationServiceTest {
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
             NO,
-            true
+            true,
+            null
         );
 
         verify(notificationClient, times(0)).sendEmail(
@@ -1257,7 +1259,8 @@ class NotificationServiceTest {
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
             YES,
-            true
+            true,
+            null
         );
 
         verify(notificationClient, times(0)).sendEmail(

@@ -164,7 +164,8 @@ public class SendNotificationRespondentService {
         sendAddResponseSendNotificationEmails(
             caseData,
             caseId,
-            pseResponseTypeItem.getValue().getCopyToOtherParty()
+            pseResponseTypeItem.getValue().getCopyToOtherParty(),
+            request.getPseResponseType().getFromIdamId()
         );
 
         return caseService.submitUpdate(
@@ -332,7 +333,8 @@ public class SendNotificationRespondentService {
         sendAddResponseSendNotificationEmails(
             caseData,
             caseId,
-            responseToModify.getValue().getCopyToOtherParty()
+            responseToModify.getValue().getCopyToOtherParty(),
+            request.getFromIdamId()
         );
 
         return caseService.submitUpdate(
@@ -341,9 +343,11 @@ public class SendNotificationRespondentService {
 
     private void sendAddResponseSendNotificationEmails(CaseData caseData,
                                                        String caseId,
-                                                       String copyToOtherParty) {
+                                                       String copyToOtherParty,
+                                                       String respondentIdamId) {
         notificationService.sendResponseNotificationEmailToTribunal(caseData, caseId);
-        notificationService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty, false);
+        notificationService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty,
+                                                                      false, respondentIdamId);
         notificationService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty, false);
     }
 
