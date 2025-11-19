@@ -1922,14 +1922,16 @@ class NotificationServiceTest {
         @Test
         void shouldSendEmailToRespondent_whenResponseEmailPresent() throws NotificationClientException {
             details.caseData().getRespondentCollection().get(5).getValue().setResponseRespondentEmail("test@test.com");
-            notificationService.sendNotificationStoredEmailToRespondent(details, "shortText", "notifications-test-idam-id");
+            notificationService.sendNotificationStoredEmailToRespondent(details, "shortText",
+                                                                        "notifications-test-idam-id");
             verify(notificationClient, times(1)).sendEmail(any(), any(), any(), any());
         }
 
         @Test
         void shouldSendEmailToRespondent_whenEmailNotPresent() throws NotificationClientException {
             details.caseData().getRespondentCollection().get(5).getValue().setResponseRespondentEmail("");
-            notificationService.sendNotificationStoredEmailToRespondent(details, "shortText", "notifications-test-idam-id");
+            notificationService.sendNotificationStoredEmailToRespondent(details, "shortText",
+                                                                        "notifications-test-idam-id");
             verify(notificationClient, times(0)).sendEmail(any(), any(), any(), any());
         }
 
