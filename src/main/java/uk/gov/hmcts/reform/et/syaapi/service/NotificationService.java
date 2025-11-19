@@ -1410,13 +1410,17 @@ public class NotificationService {
     }
 
     void sendNotificationStoredEmailToRespondent(CoreEmailDetails details, String shortText, String respondentIdamId) {
-        RespondentSumTypeItem respondent = getRespondent(details.caseData, respondentIdamId);
+        RespondentSumTypeItem respondent = getRespondent(details.caseData(), respondentIdamId);
         if (respondent == null) {
             log.info("Respondent not found for stored email notification");
             return;
         }
 
         String emailAddress = getRespondentEmail(respondent.getValue());
+        if (isBlank(emailAddress)) {
+            log.info("Respondent does not have an email address associated with their account");
+            return;
+        }
         String portalLink = notificationsProperties.getRespondentPortalLink()
             + details.caseId + "/" + respondent.getId()
             + (isWelshLanguage(respondent) ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
