@@ -995,7 +995,8 @@ public class NotificationService {
         CaseData caseData,
         String caseId,
         String copyToOtherParty,
-        boolean isClaimantPseResponse
+        boolean isClaimantPseResponse,
+        String respondentIdamId
     ) {
         // don't send email to respondents if this is a claimant PSE response and they opted out
         if ((DONT_SEND_COPY.equals(copyToOtherParty) && isClaimantPseResponse)
@@ -1004,28 +1005,47 @@ public class NotificationService {
             return;
         }
 
-        String emailTemplate;
-        if (isClaimantPseResponse) {
-            emailTemplate = notificationsProperties.getPseRespondentResponseTemplateId();
-        } else {
-            emailTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
-                ? notificationsProperties.getPseClaimantResponseNoTemplateId()
-                : notificationsProperties.getPseClaimantResponseYesTemplateId();
-        }
 
         Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
         addCommonParameters(respondentParameters, caseData, caseId);
-
         respondentParameters.put(
             SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
             NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET)
         );
+
+        String emailTemplate;
+        if (isClaimantPseResponse) {
+            emailTemplate = notificationsProperties.getPseRespondentResponseTemplateId();
+            sendRespondentEmails(caseData, caseId, respondentParameters, emailTemplate);
+        } else {
+            // respondent PSE response
+            // only the current respondent gets the email
+            if (DONT_SEND_COPY.equals(copyToOtherParty)) {
+                emailTemplate = notificationsProperties.getPseClaimantResponseNoTemplateId();
+                RespondentSumTypeItem respondent = getRespondent(caseData, respondentIdamId);
+                String emailAddress = getRespondentEmail(respondent.getValue());
+                if (isBlank(emailAddress)) {
+                    log.info("Respondent does not have an email address associated with their account");
+                    return;
+                }
+                sendEmailToRespondent(emailAddress, emailTemplate, respondentParameters, caseId);
+            } else {
+                // send email to all the respondents
+                emailTemplate = notificationsProperties.getPseClaimantResponseYesTemplateId();
+                sendRespondentEmails(caseData, caseId, respondentParameters, emailTemplate);
+            }
+        }
+
+        //
         respondentParameters.put(
             SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
             notificationsProperties.getExuiCaseDetailsLink() + caseId
         );
-
-        sendRespondentEmails(caseData, caseId, respondentParameters, emailTemplate);
+        //
+        respondentParameters.put(
+            SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
+            notificationsProperties.getExuiCaseDetailsLink() + caseId
+        );
     }
 
     void sendResponseNotificationEmailToClaimant(
@@ -1156,17 +1176,8 @@ public class NotificationService {
                             ? getRespondentPortalLink(caseId, resp.getId(), isWelsh)
                             : getRespondentRepPortalLink(caseId);
                         respondentParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY, linkToCase);
-                        try {
-                            notificationClient.sendEmail(
-                                emailToRespondentTemplate,
-                                email,
-                                respondentParameters,
-                                caseId
-                            );
-                            log.info("Sent email to respondent");
-                        } catch (NotificationClientException ne) {
-                            throw new NotificationException(ne);
-                        }
+                        respondentParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, linkToCase);
+                        sendEmailToRespondent(email, emailToRespondentTemplate, respondentParameters, caseId);
                     }
                 });
             });
@@ -1410,13 +1421,13 @@ public class NotificationService {
     }
 
     void sendNotificationStoredEmailToRespondent(CoreEmailDetails details, String shortText, String respondentIdamId) {
-        RespondentSumTypeItem respondent = getRespondent(details.caseData, respondentIdamId);
-        if (respondent == null) {
-            log.info("Respondent not found for stored email notification");
-            return;
-        }
+        RespondentSumTypeItem respondent = getRespondent(details.caseData(), respondentIdamId);
 
         String emailAddress = getRespondentEmail(respondent.getValue());
+        if (isBlank(emailAddress)) {
+            log.info("Respondent does not have an email address associated with their account");
+            return;
+        }
         String portalLink = notificationsProperties.getRespondentPortalLink()
             + details.caseId + "/" + respondent.getId()
             + (isWelshLanguage(respondent) ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
@@ -1465,6 +1476,10 @@ public class NotificationService {
     }
 
     private String getRespondentEmail(RespondentSumType respondent) {
+        if (respondent == null) {
+            return null;
+        }
+
         String responseEmail = respondent.getResponseRespondentEmail();
         if (StringUtils.isNotBlank(responseEmail)) {
             return responseEmail;
