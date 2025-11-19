@@ -168,10 +168,16 @@ public final class RespondentUtil {
         }
         if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
             respondentSumTypeItem.getValue().setIdamId(idamId);
-            respondentSumTypeItem.getValue()
-                .setEt3CaseDetailsLinksStatuses(generateDefaultET3CaseDetailsLinksStatuses());
-            respondentSumTypeItem.getValue().setEt3HubLinksStatuses(generateDefaultET3HubLinksStatuses());
-            respondentSumTypeItem.getValue().setEt3Status(ET3_STATUS_IN_PROGRESS);
+            if (ObjectUtils.isEmpty(respondentSumTypeItem.getValue().getEt3CaseDetailsLinksStatuses())) {
+                respondentSumTypeItem.getValue()
+                    .setEt3CaseDetailsLinksStatuses(generateDefaultET3CaseDetailsLinksStatuses());
+            }
+            if (ObjectUtils.isEmpty(respondentSumTypeItem.getValue().getEt3HubLinksStatuses())) {
+                respondentSumTypeItem.getValue().setEt3HubLinksStatuses(generateDefaultET3HubLinksStatuses());
+            }
+            if (ObjectUtils.isEmpty(respondentSumTypeItem.getValue().getEt3Status())) {
+                respondentSumTypeItem.getValue().setEt3Status(ET3_STATUS_IN_PROGRESS);
+            }
         } else {
             respondentSumTypeItem.getValue().setIdamId(StringUtils.EMPTY);
         }
