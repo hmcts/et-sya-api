@@ -1056,7 +1056,7 @@ public class NotificationService {
     ) {
 
         String claimantEmail;
-        if (isClaimantPseResponse) {
+        if (isClaimantPseResponse && caseData.getClaimantType() != null) {
             claimantEmail = caseData.getClaimantType().getClaimantEmailAddress();
         } else {
             claimantEmail = isRepresentedClaimantWithMyHmctsCase(caseData)
