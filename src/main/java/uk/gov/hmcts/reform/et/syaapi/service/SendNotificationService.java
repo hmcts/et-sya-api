@@ -197,8 +197,9 @@ public class SendNotificationService {
                                                        String caseId,
                                                        String copyToOtherParty) {
         notificationService.sendResponseNotificationEmailToTribunal(caseData, caseId);
-        notificationService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty);
-        notificationService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty);
+        // passing null for respondent solicitor email as it is not needed in this context
+        notificationService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty, true, null);
+        notificationService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty, true);
     }
 
     private void setResponsesAsRespondedTo(List<GenericTypeItem<RespondNotificationType>> responses) {

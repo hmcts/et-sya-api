@@ -1219,7 +1219,9 @@ class NotificationServiceTest {
         notificationService.sendResponseNotificationEmailToRespondent(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
-            YES
+            YES,
+            true,
+            null
         );
 
         verify(notificationClient, times(1)).sendEmail(
@@ -1235,7 +1237,9 @@ class NotificationServiceTest {
         notificationService.sendResponseNotificationEmailToRespondent(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
-            NO
+            NO,
+            true,
+            null
         );
 
         verify(notificationClient, times(0)).sendEmail(
@@ -1254,7 +1258,9 @@ class NotificationServiceTest {
         notificationService.sendResponseNotificationEmailToRespondent(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
-            YES
+            YES,
+            true,
+            null
         );
 
         verify(notificationClient, times(0)).sendEmail(
@@ -1270,7 +1276,8 @@ class NotificationServiceTest {
         notificationService.sendResponseNotificationEmailToClaimant(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
-            YES
+            YES,
+            true
         );
 
         verify(notificationClient, times(1)).sendEmail(
@@ -1286,7 +1293,8 @@ class NotificationServiceTest {
         notificationService.sendResponseNotificationEmailToClaimant(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
-            NO
+            NO,
+            true
         );
 
         verify(notificationClient, times(1)).sendEmail(
@@ -1303,7 +1311,8 @@ class NotificationServiceTest {
         notificationService.sendResponseNotificationEmailToClaimant(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
-            YES
+            YES,
+            true
         );
 
         verify(notificationClient, times(0)).sendEmail(
@@ -1886,6 +1895,80 @@ class NotificationServiceTest {
                 any(),
                 eq(caseTestData.getExpectedDetails().getId().toString())
             );
+        }
+    }
+
+    @Nested
+    class SendNotificationStoredEmailToRespondent {
+        @BeforeEach
+        void setUp() {
+            details = new CoreEmailDetails(
+                caseTestData.getCaseData(),
+                CLAIMANT,
+                "1",
+                "Test Respondent Organisation -1-,"
+                    + " Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez",
+                NOT_SET,
+                caseTestData.getExpectedDetails().getId().toString()
+            );
+        }
+
+        @Test
+        void shouldSendEmailToRespondent_whenEmailPresent() throws NotificationClientException {
+            notificationService.sendNotificationStoredEmailToRespondent(details, "shortText", "1234567890");
+            verify(notificationClient, times(1)).sendEmail(any(), any(), any(), any());
+        }
+
+        @Test
+        void shouldSendEmailToRespondent_whenResponseEmailPresent() throws NotificationClientException {
+            details.caseData().getRespondentCollection().get(5).getValue().setResponseRespondentEmail("test@test.com");
+            notificationService.sendNotificationStoredEmailToRespondent(details, "shortText",
+                                                                        "notifications-test-idam-id");
+            verify(notificationClient, times(1)).sendEmail(any(), any(), any(), any());
+        }
+
+        @Test
+        void shouldSendEmailToRespondent_whenEmailNotPresent() throws NotificationClientException {
+            details.caseData().getRespondentCollection().get(5).getValue().setResponseRespondentEmail("");
+            notificationService.sendNotificationStoredEmailToRespondent(details, "shortText",
+                                                                        "notifications-test-idam-id");
+            verify(notificationClient, times(0)).sendEmail(any(), any(), any(), any());
+        }
+
+        @Test
+        void shouldSendEmailToRespondent_whenRespondentNotPresent() throws NotificationClientException {
+            notificationService.sendNotificationStoredEmailToRespondent(details, "shortText", "dummy");
+            verify(notificationClient, times(0)).sendEmail(any(), any(), any(), any());
+        }
+    }
+
+    @Nested
+    class SendNotificationStoredEmailToClaimant {
+        @BeforeEach
+        void setUp() {
+            details = new CoreEmailDetails(
+                caseTestData.getCaseData(),
+                CLAIMANT,
+                "1",
+                "Test Respondent Organisation -1-,"
+                    + " Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez",
+                NOT_SET,
+                caseTestData.getExpectedDetails().getId().toString()
+            );
+        }
+
+        @Test
+        void shouldSendEmailToClaimant_whenEmailPresent() throws NotificationClientException {
+            notificationService.sendNotificationStoredEmailToClaimant(details, "shortText");
+            verify(notificationClient, times(1)).sendEmail(any(), any(), any(), any());
+        }
+
+
+        @Test
+        void shouldSendEmailToClaimant_whenEmailNotPresent() throws NotificationClientException {
+            details.caseData().getClaimantType().setClaimantEmailAddress("");
+            notificationService.sendNotificationStoredEmailToClaimant(details, "shortText");
+            verify(notificationClient, times(0)).sendEmail(any(), any(), any(), any());
         }
     }
 }
