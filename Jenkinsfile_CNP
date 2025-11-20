@@ -2,7 +2,7 @@
 import uk.gov.hmcts.contino.AppPipelineDsl
 
 //@Library("Infrastructure")
-@Library("Infrastructure@performance-stages-tidy") _   //add-perftest-vars  //test-performance-repo
+@Library("Infrastructure@performance-stages-tidy") _   //add-perftest-vars  //test-performance-repo 
 
 def type = "java"
 def product = "et"
