@@ -1035,17 +1035,6 @@ public class NotificationService {
                 sendRespondentEmails(caseData, caseId, respondentParameters, emailTemplate);
             }
         }
-
-        //
-        respondentParameters.put(
-            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
-            notificationsProperties.getExuiCaseDetailsLink() + caseId
-        );
-        //
-        respondentParameters.put(
-            SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
-            notificationsProperties.getExuiCaseDetailsLink() + caseId
-        );
     }
 
     void sendResponseNotificationEmailToClaimant(
