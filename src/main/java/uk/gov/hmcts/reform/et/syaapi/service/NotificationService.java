@@ -1023,7 +1023,7 @@ public class NotificationService {
             if (DONT_SEND_COPY.equals(copyToOtherParty)) {
                 emailTemplate = notificationsProperties.getPseClaimantResponseNoTemplateId();
                 RespondentSumTypeItem respondent = getRespondent(caseData, respondentIdamId);
-                String emailAddress = getRespondentEmail(respondent.getValue());
+                String emailAddress = getRespondentEmail(respondent);
                 if (isBlank(emailAddress)) {
                     log.info("Respondent does not have an email address associated with their account");
                     return;
@@ -1423,7 +1423,7 @@ public class NotificationService {
     void sendNotificationStoredEmailToRespondent(CoreEmailDetails details, String shortText, String respondentIdamId) {
         RespondentSumTypeItem respondent = getRespondent(details.caseData(), respondentIdamId);
 
-        String emailAddress = getRespondentEmail(respondent.getValue());
+        String emailAddress = getRespondentEmail(respondent);
         if (isBlank(emailAddress)) {
             log.info("Respondent does not have an email address associated with their account");
             return;
@@ -1475,11 +1475,12 @@ public class NotificationService {
             .orElse(null);
     }
 
-    private String getRespondentEmail(RespondentSumType respondent) {
-        if (respondent == null) {
+    private String getRespondentEmail(RespondentSumTypeItem respondentSumTypeItem) {
+        if (respondentSumTypeItem == null || respondentSumTypeItem.getValue() == null) {
             return null;
         }
 
+        RespondentSumType respondent = respondentSumTypeItem.getValue();
         String responseEmail = respondent.getResponseRespondentEmail();
         if (StringUtils.isNotBlank(responseEmail)) {
             return responseEmail;
