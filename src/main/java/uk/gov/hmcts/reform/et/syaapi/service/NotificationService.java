@@ -894,7 +894,7 @@ public class NotificationService {
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
         claimantParameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
 
-        String caseLink = Boolean.TRUE.equals(isClaimantRepresented)
+        String caseLink = isClaimantRepresented
             ? notificationsProperties.getExuiCaseDetailsLink() + caseId
             : notificationsProperties.getCitizenPortalLink() + caseId;
         claimantParameters.put(
