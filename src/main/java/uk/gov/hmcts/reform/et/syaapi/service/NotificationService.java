@@ -1080,6 +1080,10 @@ public class NotificationService {
             SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
             notificationsProperties.getCitizenPortalLink() + caseId
         );
+        claimantParameters.put(
+            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+            notificationsProperties.getCitizenPortalLink() + caseId
+        );
 
         try {
             notificationClient.sendEmail(
