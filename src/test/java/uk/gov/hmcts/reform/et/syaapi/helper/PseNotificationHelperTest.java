@@ -5,11 +5,15 @@ import uk.gov.hmcts.et.common.model.ccd.items.PseStatusTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.PseStatusType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationTypeItem;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 class PseNotificationHelperTest {
+    DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     @Test
     void getSelectedNotification_returnsMatchingNotification() {
@@ -43,6 +47,6 @@ class PseNotificationHelperTest {
         PseStatusType value = item.getValue();
         assertThat(value.getUserIdamId()).isEqualTo(userIdamId);
         assertThat(value.getNotificationState()).isEqualTo(state);
-        assertThat(value.getDateTime()).isNotNull();
+        assertDoesNotThrow(() -> LocalDateTime.parse(value.getDateTime(), formatter));
     }
 }

@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SubmitRespondentPseRespondRequest;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
@@ -98,7 +99,10 @@ public class SendNotificationRespondentService {
             .filter(status -> status.getValue().getUserIdamId().equals(userIdamId))
             .findFirst()
             .ifPresentOrElse(
-                status -> status.getValue().setNotificationState(newState),
+                existing -> {
+                    existing.getValue().setNotificationState(newState);
+                    existing.getValue().setDateTime(LocalDateTime.now().toString());
+                },
                 () -> app.getRespondentState()
                     .add(PseNotificationHelper.buildPseStatusTypeItem(userIdamId, newState))
         );
