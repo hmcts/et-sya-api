@@ -37,6 +37,13 @@ class PseNotificationHelperTest {
     }
 
     @Test
+    void getSelectedNotification_returnsNullIfNull() {
+        SendNotificationTypeItem result = PseNotificationHelper.getSelectedNotification(null, "not-found");
+
+        assertThat(result).isNull();
+    }
+
+    @Test
     void buildPseStatusTypeItem_buildsItemWithCorrectFields() {
         String userIdamId = "user-123";
         String state = "notViewedYet";

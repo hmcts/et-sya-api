@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import static org.apache.commons.collections4.ListUtils.emptyIfNull;
+
 public final class PseNotificationHelper {
     private PseNotificationHelper() {
     }
