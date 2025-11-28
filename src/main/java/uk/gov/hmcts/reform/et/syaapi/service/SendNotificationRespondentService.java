@@ -48,7 +48,6 @@ public class SendNotificationRespondentService {
     private final NotificationService notificationService;
 
     private static final String SEND_NOTIFICATION_ID_INCORRECT = "Notification id provided is incorrect";
-    private static final String RESPOND_EMPTY = "Respond collection is empty";
     private static final String RESPOND_ID_INCORRECT = "Respond id provided is incorrect";
 
     /**
