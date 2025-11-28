@@ -24,7 +24,7 @@ public final class PseNotificationHelper {
     public static SendNotificationTypeItem getSelectedNotification(
         List<SendNotificationTypeItem> notifications,
         String notificationId) {
-        return notifications.stream()
+        return emptyIfNull(notifications).stream()
             .filter(a -> a.getId().equals(notificationId))
             .findAny()
             .orElse(null);
