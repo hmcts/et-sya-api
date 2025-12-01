@@ -35,6 +35,8 @@ import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CASE_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CASE_NUMBER_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CLAIMANT_TITLE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_RESPONDENT_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SHORTTEXT_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SUBJECTLINE_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.getCurrentDateTime;
@@ -262,8 +264,8 @@ public final class NotificationsHelper {
      */
     public static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
                                            String caseId, String caseNumber) {
-        parameters.put("claimant", claimant);
-        parameters.put("respondentNames", respondentNames);
+        parameters.put(SEND_EMAIL_PARAMS_CLAIMANT_TITLE, claimant);
+        parameters.put(SEND_EMAIL_PARAMS_RESPONDENT_NAME, respondentNames);
         parameters.put(SEND_EMAIL_PARAMS_CASE_ID, caseId);
         parameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
     }

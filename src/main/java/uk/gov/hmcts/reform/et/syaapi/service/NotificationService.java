@@ -45,7 +45,6 @@ import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_R
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.CASE_ID_NOT_FOUND;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.FILE_NOT_EXISTS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.HEARING_DOCUMENTS_PATH;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.LINK_TO_CITIZEN_HUB;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ACAS_PDF1_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ACAS_PDF2_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ACAS_PDF3_LINK_KEY;
@@ -55,6 +54,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CASE_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CASE_NUMBER_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CLAIMANT_TITLE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CLAIM_DESCRIPTION_FILE_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_DATEPLUS7_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_ET1PDF_ENGLISH_LINK_KEY;
@@ -66,6 +66,9 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_HEARING_DATE_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_LASTNAME_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_LINK_DOC_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_LINK_TO_CITIZEN_HUB;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_LINK_TO_PORTAL;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_LIST_OF_RESPONDENTS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_RESPONDING_USER_NAME_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SHORTTEXT_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_SERVICE_OWNER_NAME_KEY;
@@ -896,7 +899,7 @@ public class NotificationService {
             ? notificationsProperties.getExuiCaseDetailsLink() + caseId
             : notificationsProperties.getCitizenPortalLink() + caseId;
         claimantParameters.put(
-            LINK_TO_CITIZEN_HUB,
+            SEND_EMAIL_PARAMS_LINK_TO_CITIZEN_HUB,
             caseLink
         );
 
@@ -1346,9 +1349,9 @@ public class NotificationService {
     public void sendEt3ConfirmationEmail(String email, CaseData caseData, String caseId) {
         Map<String, Object> parameters = new ConcurrentHashMap<>();
         parameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseData.getEthosCaseReference());
-        parameters.put("claimant", caseData.getClaimant());
-        parameters.put("list_of_respondents", getRespondentNames(caseData));
-        parameters.put("linkToPortal",
+        parameters.put(SEND_EMAIL_PARAMS_CLAIMANT_TITLE, caseData.getClaimant());
+        parameters.put(SEND_EMAIL_PARAMS_LIST_OF_RESPONDENTS, getRespondentNames(caseData));
+        parameters.put(SEND_EMAIL_PARAMS_LINK_TO_PORTAL,
                        notificationsProperties.getRespondentPortalLink() + "case-details/" + caseId);
 
         try {

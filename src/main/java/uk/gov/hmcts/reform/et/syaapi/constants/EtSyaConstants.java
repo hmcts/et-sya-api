@@ -42,6 +42,7 @@ public final class EtSyaConstants {
     public static final String ET1_ATTACHMENT = "ET1 Attachment";
     public static final String REMOTE_REPO = "https://github.com/hmcts/et-sya-api";
     public static final String RESOURCE_NOT_FOUND = "Resource not found for case id %s, reason: %s";
+
     public static final String SEND_EMAIL_PARAMS_ACAS_PDF1_LINK_KEY = "link_to_acas_cert_pdf_file_1";
     public static final String SEND_EMAIL_PARAMS_ACAS_PDF2_LINK_KEY = "link_to_acas_cert_pdf_file_2";
     public static final String SEND_EMAIL_PARAMS_ACAS_PDF3_LINK_KEY = "link_to_acas_cert_pdf_file_3";
@@ -51,7 +52,8 @@ public final class EtSyaConstants {
     public static final String SEND_EMAIL_PARAMS_CASE_NUMBER_KEY = "caseNumber";
     public static final String SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY = "citizenPortalLink";
     public static final String SEND_EMAIL_PARAMS_EXUI_LINK_KEY = "exuiCaseDetailsLink";
-    public static final String LINK_TO_CITIZEN_HUB = "linkToCitizenHub";
+    public static final String SEND_EMAIL_PARAMS_LINK_TO_CITIZEN_HUB = "linkToCitizenHub";
+    public static final String SEND_EMAIL_PARAMS_LINK_TO_PORTAL = "linkToPortal";
     public static final String SEND_EMAIL_PARAMS_EXUI_HEARING_DOCUMENTS_LINK = "exuiHearingDocumentsLink";
     public static final String HEARING_DOCUMENTS_PATH = "#Hearing%20Documents";
     public static final String SEND_EMAIL_PARAMS_CLAIM_DESCRIPTION_FILE_LINK_KEY = "link_to_claim_description_file";
@@ -67,8 +69,13 @@ public final class EtSyaConstants {
     public static final String SEND_EMAIL_PARAMS_LINK_DOC_KEY = "linkToDocument";
     public static final String SEND_EMAIL_PARAMS_APPLICANT_NAME_KEY = "applicantName";
     public static final String SEND_EMAIL_PARAMS_RESPONDING_USER_NAME_KEY = "respondentName";
+    public static final String SEND_EMAIL_PARAMS_CLAIMANT_TITLE = "Claimant";
+    public static final String SEND_EMAIL_PARAMS_RESPONDENT_NAME = "respondentNames";
+    public static final String SEND_EMAIL_PARAMS_LIST_OF_RESPONDENTS = "list_of_respondents";
+
     public static final String SEND_EMAIL_SERVICE_OWNER_NAME_KEY = "serviceOwnerName";
     public static final String SEND_EMAIL_SERVICE_OWNER_NAME_VALUE = "Service Owner";
+
     public static final String SCOTLAND_CASE_TYPE = "ET_Scotland";
     public static final DateTimeFormatter UK_LOCAL_DATE_PATTERN = DateTimeFormatter.ofPattern("dd MMM yyyy");
     public static final String UNASSIGNED_OFFICE = "Unassigned";
