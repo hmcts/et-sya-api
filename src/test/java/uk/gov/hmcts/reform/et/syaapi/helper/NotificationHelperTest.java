@@ -71,7 +71,7 @@ class NotificationHelperTest {
         // When
         List<String> emails = NotificationsHelper.getEmailAddressesForRespondent(
             caseData,
-            caseData.getRespondentCollection().get(0).getValue()
+            caseData.getRespondentCollection().getFirst().getValue()
         );
 
         //Then
@@ -91,13 +91,13 @@ class NotificationHelperTest {
         itemList.add(repItem);
 
         CaseData caseData = caseTestData.getCaseData();
-        caseData.getRespondentCollection().get(0).getValue().setRespondentEmail(null);
+        caseData.getRespondentCollection().getFirst().getValue().setRespondentEmail(null);
         caseData.setRepCollection(itemList);
 
         // When
         List<String> emails = NotificationsHelper.getEmailAddressesForRespondent(
             caseData,
-            caseData.getRespondentCollection().get(0).getValue()
+            caseData.getRespondentCollection().getFirst().getValue()
         );
 
         // Then
@@ -108,12 +108,12 @@ class NotificationHelperTest {
     void shouldNotReturnRespondentEmail() {
         // Given
         CaseData caseData = caseTestData.getCaseData();
-        caseData.getRespondentCollection().get(0).getValue().setRespondentEmail(null);
+        caseData.getRespondentCollection().getFirst().getValue().setRespondentEmail(null);
 
         // When
         List<String> emails = NotificationsHelper.getEmailAddressesForRespondent(
             caseData,
-            caseData.getRespondentCollection().get(0).getValue()
+            caseData.getRespondentCollection().getFirst().getValue()
         );
 
         // Then
@@ -141,8 +141,8 @@ class NotificationHelperTest {
         CaseData caseData = caseTestData.getCaseData();
 
         String futureDate = LocalDateTime.now().plusDays(5).toString();
-        caseData.getHearingCollection().get(0).getValue().getHearingDateCollection().get(0).getValue().setListedDate(
-            futureDate);
+        caseData.getHearingCollection().getFirst().getValue()
+            .getHearingDateCollection().getFirst().getValue().setListedDate(futureDate);
 
         Date hearingStartDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.ENGLISH).parse(futureDate);
         String simpleDate = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH).format(hearingStartDate);
@@ -163,8 +163,8 @@ class NotificationHelperTest {
         CaseData caseData = caseTestData.getCaseData();
 
         String futureDate = LocalDateTime.now().plusDays(5).toString();
-        caseData.getHearingCollection().get(0).getValue().getHearingDateCollection().get(0).getValue().setListedDate(
-            futureDate);
+        caseData.getHearingCollection().getFirst().getValue()
+            .getHearingDateCollection().getFirst().getValue().setListedDate(futureDate);
 
         Date hearingStartDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.ENGLISH).parse(futureDate);
         String simpleDate = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH).format(hearingStartDate);

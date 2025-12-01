@@ -37,6 +37,7 @@ import java.util.stream.Stream;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static org.apache.tika.utils.StringUtils.isBlank;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.APP_TYPE_MAP;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_ABBREVIATED_MONTHS_MAP;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_APP_TYPE_MAP;
@@ -67,7 +68,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_LINK_DOC_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_RESPONDING_USER_NAME_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SHORTTEXT_KEY;
-import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SUBJECTLINE_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_SERVICE_OWNER_NAME_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_SERVICE_OWNER_NAME_VALUE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UK_LOCAL_DATE_PATTERN;
@@ -105,8 +105,6 @@ public class NotificationService {
         "Reconsider judgment"};
     private static final String TYPE_C = "witness";
     private static final String TYPE_C_RESPONDENT = "Order a witness to attend to give evidence";
-    private static final String DONT_SEND_COPY = "No";
-    public static final String HEARING_DATE_KEY = "hearingDate";
     private static final String NO_CLAIMANT_EMAIL_FOUND =
         "No claimant email found - Application response acknowledgment not being sent";
     private static final String HEARING_DATE_NOT_SET_WELSH = "Heb ei anfon";
@@ -381,9 +379,9 @@ public class NotificationService {
 
     private Map<String, Object> prepareEmailParameters(CoreEmailDetails details, String hearingDate, boolean isWelsh) {
         Map<String, Object> parameters = new ConcurrentHashMap<>();
-        parameters.put(HEARING_DATE_KEY, hearingDate);
-        addCommonParameters(parameters, details.claimant(), details.respondentNames(), details.caseId(),
-                            details.caseNumber());
+        parameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, hearingDate);
+        NotificationsHelper.addCommonParameters(parameters, details.claimant(), details.respondentNames(),
+                                                details.caseId(), details.caseNumber());
         // citizenPortalLink
         String citizenPortalLink = getCitizenPortalLink(details.caseId(), isWelsh);
         parameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, citizenPortalLink);
@@ -463,17 +461,17 @@ public class NotificationService {
                                                JSONObject documentJson,
                                                ClaimantTse claimantApplication) {
         if (TYPE_C.equals(claimantApplication.getContactApplicationType())
-            || DONT_SEND_COPY.equals(claimantApplication.getCopyToOtherPartyYesOrNo())) {
+            || NO.equals(claimantApplication.getCopyToOtherPartyYesOrNo())) {
             log.info("Acknowledgement email not sent to respondents for this application type");
             return;
         }
 
         Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
-        addCommonParameters(respondentParameters,
-                            details.claimant(),
-                            details.respondentNames(),
-                            details.caseId(),
-                            details.caseNumber());
+        NotificationsHelper.addCommonParameters(respondentParameters,
+                                                details.claimant(),
+                                                details.respondentNames(),
+                                                details.caseId(),
+                                                details.caseNumber());
         respondentParameters.put(SEND_EMAIL_PARAMS_HEARING_DATE_KEY, details.hearingDate());
         respondentParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, APP_TYPE_MAP.get(
             claimantApplication.getContactApplicationType()));
@@ -496,16 +494,16 @@ public class NotificationService {
                                                JSONObject documentJson,
                                                RespondentTse respondentTse) {
         if (TYPE_C_RESPONDENT.equals(respondentTse.getContactApplicationType())
-            || DONT_SEND_COPY.equals(respondentTse.getCopyToOtherPartyYesOrNo())) {
+            || NO.equals(respondentTse.getCopyToOtherPartyYesOrNo())) {
             log.info("Acknowledgement email not sent to claimant for this application type");
             return;
         }
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
-        addCommonParameters(claimantParameters,
-                            details.claimant(),
-                            details.respondentNames(),
-                            details.caseId(),
-                            details.caseNumber());
+        NotificationsHelper.addCommonParameters(claimantParameters,
+                                                details.claimant(),
+                                                details.respondentNames(),
+                                                details.caseId(),
+                                                details.caseNumber());
 
         String appTypeByLanguage =
             isWelshLanguage(details.caseData())
@@ -558,7 +556,7 @@ public class NotificationService {
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
 
         String applicationTypeName = isRespondentApp ? applicationType : APP_TYPE_MAP.get(applicationType);
-        addCommonParameters(
+        NotificationsHelper.addCommonParameters(
             tribunalParameters,
             details.claimant,
             details.respondentNames,
@@ -604,7 +602,7 @@ public class NotificationService {
                                      boolean isRespondingToRequestOrOrder) {
 
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
-        addCommonParameters(
+        NotificationsHelper.addCommonParameters(
             tribunalParameters,
             details.claimant,
             details.respondentNames,
@@ -656,7 +654,7 @@ public class NotificationService {
 
         boolean isClaimantRepresented = isRepresentedClaimantWithMyHmctsCase(details.caseData);
 
-        String claimantEmailAddress = Boolean.TRUE.equals(isClaimantRepresented)
+        String claimantEmailAddress = isClaimantRepresented
             ? details.caseData.getRepresentativeClaimantType().getRepresentativeEmailAddress()
             : details.caseData.getClaimantType().getClaimantEmailAddress();
 
@@ -667,7 +665,7 @@ public class NotificationService {
 
         Map<String, Object> claimantParameters = prepareResponseEmailCommonParameters(details, applicationType);
 
-        String caseLink = Boolean.TRUE.equals(isClaimantRepresented)
+        String caseLink = isClaimantRepresented
             ? notificationsProperties.getExuiCaseDetailsLink() + details.caseId
             : notificationsProperties.getCitizenPortalLink() + details.caseId;
         claimantParameters.put(
@@ -677,11 +675,11 @@ public class NotificationService {
 
         String emailToClaimantTemplate;
         if (isRespondingToRequestOrOrder) {
-            emailToClaimantTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
+            emailToClaimantTemplate = NO.equals(copyToOtherParty)
                 ? notificationsProperties.getTseClaimantResponseToRequestNoTemplateId()
                 : notificationsProperties.getTseClaimantResponseToRequestYesTemplateId();
         } else {
-            emailToClaimantTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
+            emailToClaimantTemplate = NO.equals(copyToOtherParty)
                 ? notificationsProperties.getTseClaimantResponseNoTemplateId()
                 : notificationsProperties.getTseClaimantResponseYesTemplateId();
         }
@@ -767,7 +765,7 @@ public class NotificationService {
                                                                      String applicationType) {
         Map<String, Object> emailParameters = new ConcurrentHashMap<>();
 
-        addCommonParameters(
+        NotificationsHelper.addCommonParameters(
             emailParameters,
             details.claimant,
             details.respondentNames,
@@ -784,11 +782,11 @@ public class NotificationService {
     private String getRespondentResponseEmailTemplate(boolean isRespondingToRequestOrOrder, String copyToOtherParty) {
         String emailTemplate;
         if (isRespondingToRequestOrOrder) {
-            emailTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
+            emailTemplate = NO.equals(copyToOtherParty)
                 ? notificationsProperties.getTseRespondentResponseToRequestNoTemplateId()
                 : notificationsProperties.getTseRespondentResponseToRequestYesTemplateId();
         } else {
-            emailTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
+            emailTemplate = NO.equals(copyToOtherParty)
                 ? notificationsProperties.getTseRespondentResponseNoTemplateId()
                 : notificationsProperties.getTseRespondentResponseYesTemplateId();
         }
@@ -805,14 +803,14 @@ public class NotificationService {
      * @param copyToOtherParty should copy response to other party
      */
     void sendResponseEmailToRespondent(CoreEmailDetails details, String applicationType, String copyToOtherParty) {
-        if (TYPE_C.equals(applicationType) || DONT_SEND_COPY.equals(copyToOtherParty)
+        if (TYPE_C.equals(applicationType) || NO.equals(copyToOtherParty)
             || TYPE_C_RESPONDENT.equals(applicationType)) {
             log.info("Acknowledgement email not sent to respondents for this application type");
             return;
         }
         Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
 
-        addCommonParameters(
+        NotificationsHelper.addCommonParameters(
             respondentParameters,
             details.claimant,
             details.respondentNames,
@@ -845,7 +843,7 @@ public class NotificationService {
         String caseId,
         String copyToOtherParty
     ) {
-        if (DONT_SEND_COPY.equals(copyToOtherParty)) {
+        if (NO.equals(copyToOtherParty)) {
             log.info("Answered no for Rule 92, not sending email to respondents");
             return;
         }
@@ -875,14 +873,14 @@ public class NotificationService {
         String caseId,
         String copyToOtherParty
     ) {
-        if (DONT_SEND_COPY.equals(copyToOtherParty)) {
+        if (NO.equals(copyToOtherParty)) {
             log.info("Answered no for Rule 92, not sending email to claimant");
             return;
         }
 
         boolean isClaimantRepresented = isRepresentedClaimantWithMyHmctsCase(caseData);
 
-        String claimantEmailAddress = Boolean.TRUE.equals(isClaimantRepresented)
+        String claimantEmailAddress = isClaimantRepresented
             ? caseData.getRepresentativeClaimantType().getRepresentativeEmailAddress()
             : caseData.getClaimantType().getClaimantEmailAddress();
 
@@ -927,7 +925,7 @@ public class NotificationService {
     void sendRespondentResponseEmailToClaimant(CoreEmailDetails details, String applicationType,
                                                String copyToOtherParty) {
         if (TYPE_C.equals(applicationType) || TYPE_C_RESPONDENT.equals(applicationType)
-            || DONT_SEND_COPY.equals(copyToOtherParty)) {
+            || NO.equals(copyToOtherParty)) {
             log.info("Acknowledgement email not sent to claimants for this application type");
             return;
         }
@@ -940,7 +938,7 @@ public class NotificationService {
 
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
 
-        addCommonParameters(
+        NotificationsHelper.addCommonParameters(
             claimantParameters,
             details.claimant,
             details.respondentNames,
@@ -971,7 +969,7 @@ public class NotificationService {
 
     void sendResponseNotificationEmailToTribunal(CaseData caseData, String caseId) {
         Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
-        addCommonParameters(tribunalParameters, caseData, caseId);
+        NotificationsHelper.addCommonParameters(tribunalParameters, caseData, caseId);
 
         tribunalParameters.put(
             SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
@@ -999,7 +997,7 @@ public class NotificationService {
         String respondentIdamId
     ) {
         // don't send email to respondents if this is a claimant PSE response and they opted out
-        if ((DONT_SEND_COPY.equals(copyToOtherParty) && isClaimantPseResponse)
+        if ((NO.equals(copyToOtherParty) && isClaimantPseResponse)
             || copyToOtherParty == null) {
             log.info("Acknowledgement email not sent to respondents");
             return;
@@ -1007,7 +1005,7 @@ public class NotificationService {
 
 
         Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
-        addCommonParameters(respondentParameters, caseData, caseId);
+        NotificationsHelper.addCommonParameters(respondentParameters, caseData, caseId);
         respondentParameters.put(
             SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
             NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET)
@@ -1020,7 +1018,7 @@ public class NotificationService {
         } else {
             // respondent PSE response
             // only the current respondent gets the email
-            if (DONT_SEND_COPY.equals(copyToOtherParty)) {
+            if (NO.equals(copyToOtherParty)) {
                 emailTemplate = notificationsProperties.getPseClaimantResponseNoTemplateId();
                 RespondentSumTypeItem respondent = getRespondent(caseData, respondentIdamId);
                 String emailAddress = getRespondentEmail(respondent);
@@ -1054,7 +1052,7 @@ public class NotificationService {
         }
 
         // don't send email to claimant if this is a respondent PSE response and they opted out
-        if ((DONT_SEND_COPY.equals(copyToOtherParty) && !isClaimantPseResponse)
+        if ((NO.equals(copyToOtherParty) && !isClaimantPseResponse)
             || copyToOtherParty == null || isBlank(claimantEmail)) {
             log.info("Acknowledgement email not sent to claimants");
             return;
@@ -1062,7 +1060,7 @@ public class NotificationService {
 
         String emailToClaimantTemplate;
         if (isClaimantPseResponse) {
-            emailToClaimantTemplate = DONT_SEND_COPY.equals(copyToOtherParty)
+            emailToClaimantTemplate = NO.equals(copyToOtherParty)
                 ? notificationsProperties.getPseClaimantResponseNoTemplateId()
                 : notificationsProperties.getPseClaimantResponseYesTemplateId();
         } else {
@@ -1070,7 +1068,7 @@ public class NotificationService {
         }
 
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
-        addCommonParameters(claimantParameters, caseData, caseId);
+        NotificationsHelper.addCommonParameters(claimantParameters, caseData, caseId);
 
         claimantParameters.put(
             SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
@@ -1186,7 +1184,7 @@ public class NotificationService {
 
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
 
-        addCommonParameters(
+        NotificationsHelper.addCommonParameters(
             claimantParameters,
             details.claimant,
             details.respondentNames,
@@ -1225,7 +1223,7 @@ public class NotificationService {
                                   String hearingId) {
 
         Map<String, Object> emailParameters = new ConcurrentHashMap<>();
-        addCommonParameters(emailParameters, caseData, caseId);
+        NotificationsHelper.addCommonParameters(emailParameters, caseData, caseId);
 
         String hearingDate = NotificationsHelper.getEarliestDateForHearing(
             caseData.getHearingCollection(),
@@ -1254,38 +1252,6 @@ public class NotificationService {
             emailParameters,
             notificationsProperties.getBundlesClaimantSubmittedNotificationTemplateId()
         );
-    }
-
-    private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
-                                            String caseId, String caseNumber) {
-        parameters.put("claimant", claimant);
-        parameters.put("respondentNames", respondentNames);
-        parameters.put(SEND_EMAIL_PARAMS_CASE_ID, caseId);
-        parameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
-    }
-
-    private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
-                                            String caseId, String caseNumber, String subjectLine) {
-        addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber);
-        parameters.put(SEND_EMAIL_PARAMS_SUBJECTLINE_KEY, subjectLine);
-    }
-
-    private static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
-                                            String caseId, String caseNumber, String subjectLine, String shortText) {
-        addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber, subjectLine);
-        parameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
-    }
-
-    private static void addCommonParameters(Map<String, Object> parameters, CaseData caseData, String caseId) {
-        String claimant = String.join(
-            " ",
-            caseData.getClaimantIndType().getClaimantFirstNames(),
-            caseData.getClaimantIndType().getClaimantLastName()
-        );
-        String caseNumber = caseData.getEthosCaseReference();
-        String respondentNames = getRespondentNames(caseData);
-
-        addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber, caseNumber);
     }
 
     String getAndSetAckEmailTemplate(Object application, String hearingDate, Map<String, Object> parameters,
@@ -1318,7 +1284,7 @@ public class NotificationService {
             return getTypeCTemplateId(isWelsh, isApplicant);
         }
 
-        if (DONT_SEND_COPY.equals(copyToOtherParty)) {
+        if (NO.equals(copyToOtherParty)) {
             return getNoCopyTemplateId(isWelsh, isApplicant);
         }
 
@@ -1439,7 +1405,7 @@ public class NotificationService {
 
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
 
-        addCommonParameters(
+        NotificationsHelper.addCommonParameters(
             claimantParameters,
             details.claimant,
             details.respondentNames,

@@ -74,10 +74,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_ABBREVIATED_MONTHS_MAP;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_HEARING_DATE_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.MY_HMCTS;
-import static uk.gov.hmcts.reform.et.syaapi.service.NotificationService.HEARING_DATE_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOTIFICATION_CONFIRMATION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SUBMIT_CASE_PDF_FILE_RESPONSE;
@@ -576,7 +576,8 @@ class NotificationServiceTest {
             notificationService.sendAcknowledgementEmailToClaimant(details, caseTestData.getClaimantApplication());
 
             Map<String, Object> capturedClaimantParameters = claimantParametersCaptor.getValue();
-            String translatedHearingDate = capturedClaimantParameters.get(HEARING_DATE_KEY).toString();
+            String translatedHearingDate =
+                capturedClaimantParameters.get(SEND_EMAIL_PARAMS_HEARING_DATE_KEY).toString();
             assertThat(translatedHearingDate).isEqualTo(DATE_DAY + " " + welshMonth + " " + DATE_YEAR);
         }
 
@@ -628,7 +629,7 @@ class NotificationServiceTest {
             );
 
             Map<String, Object> capturedClaimantParameters = claimantParametersCaptor.getValue();
-            String actualHearingDate = capturedClaimantParameters.get(HEARING_DATE_KEY).toString();
+            String actualHearingDate = capturedClaimantParameters.get(SEND_EMAIL_PARAMS_HEARING_DATE_KEY).toString();
             assertThat(actualHearingDate).isEqualTo(expectedOutcome);
         }
     }
@@ -1100,7 +1101,7 @@ class NotificationServiceTest {
 
             verify(notificationClient, times(1)).sendEmail(
                 any(),
-                eq(caseTestData.getCaseData().getRespondentCollection().get(0).getValue().getRespondentEmail()),
+                eq(caseTestData.getCaseData().getRespondentCollection().getFirst().getValue().getRespondentEmail()),
                 any(),
                 eq(caseTestData.getExpectedDetails().getId().toString())
             );
@@ -1116,7 +1117,7 @@ class NotificationServiceTest {
 
             verify(notificationClient, times(0)).sendEmail(
                 any(),
-                eq(caseTestData.getCaseData().getRespondentCollection().get(0).getValue().getRespondentEmail()),
+                eq(caseTestData.getCaseData().getRespondentCollection().getFirst().getValue().getRespondentEmail()),
                 any(),
                 eq(caseTestData.getExpectedDetails().getId().toString())
             );
@@ -1226,7 +1227,7 @@ class NotificationServiceTest {
 
         verify(notificationClient, times(1)).sendEmail(
             any(),
-            eq(caseTestData.getCaseData().getRespondentCollection().get(0).getValue().getRespondentEmail()),
+            eq(caseTestData.getCaseData().getRespondentCollection().getFirst().getValue().getRespondentEmail()),
             any(),
             eq(caseTestData.getExpectedDetails().getId().toString())
         );
@@ -1375,8 +1376,8 @@ class NotificationServiceTest {
 
         caseData = caseTestData.getCaseData();
         String futureDate = LocalDateTime.now().plusDays(5).toString();
-        caseData.getHearingCollection().get(0).getValue().getHearingDateCollection().get(0).getValue().setListedDate(
-            futureDate);
+        caseData.getHearingCollection().getFirst().getValue()
+            .getHearingDateCollection().getFirst().getValue().setListedDate(futureDate);
 
         notificationService.sendBundlesEmails(
             caseData,
@@ -1566,7 +1567,8 @@ class NotificationServiceTest {
 
             List<Map<String, Object>> capturedParameters = respondentParametersCaptor.getAllValues();
             for (Map<String, Object> params : capturedParameters) {
-                assertEquals(DATE_DAY + " " + welshMonth + " " + DATE_YEAR, params.get(HEARING_DATE_KEY));
+                assertEquals(DATE_DAY + " " + welshMonth + " " + DATE_YEAR,
+                             params.get(SEND_EMAIL_PARAMS_HEARING_DATE_KEY));
             }
         }
 
