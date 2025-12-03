@@ -1129,6 +1129,8 @@ class NotificationServiceTest {
             RespondentSumTypeItem respondentSumTypeItem = new RespondentSumTypeItem();
             respondentSumTypeItem.setId(String.valueOf(UUID.randomUUID()));
             respondentSumTypeItem.setValue(RespondentSumType.builder()
+                                               .respondentEmail("test1@respondent.com")
+                                               .responseRespondentEmail("test2@respondent.com")
                                                .respondentName("RespondentName2")
                                                .build());
 
