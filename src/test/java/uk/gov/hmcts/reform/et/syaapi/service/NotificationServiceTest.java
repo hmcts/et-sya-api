@@ -1038,6 +1038,7 @@ class NotificationServiceTest {
             respondent.setValue(RespondentSumType.builder()
                                     .respondentEmail("email")
                                     .respondentName("RespondentName")
+                                    .idamId("1f3a9b7c-8d4e-4f21-9abc-1234567890ab")
                                     .build());
             caseData.setRespondentCollection(List.of(respondent));
         }
@@ -1126,14 +1127,25 @@ class NotificationServiceTest {
         @Test
         void shouldSendResponseEmailToRespondentResp() throws NotificationClientException {
             RespondentSumTypeItem respondentSumTypeItem = new RespondentSumTypeItem();
-            respondentSumTypeItem.setValue(RespondentSumType.builder()
-                                               .respondentEmail("test@resRep.com")
-                                               .respondentName("RespondentName")
-                                               .build());
             respondentSumTypeItem.setId(String.valueOf(UUID.randomUUID()));
+            respondentSumTypeItem.setValue(RespondentSumType.builder()
+                                               .respondentEmail("test1@respondent.com")
+                                               .responseRespondentEmail("test2@respondent.com")
+                                               .respondentName("RespondentName2")
+                                               .build());
+
+            RepresentedTypeRItem representedTypeRItem = RepresentedTypeRItem.builder()
+                .id(String.valueOf(UUID.randomUUID()))
+                .value(RepresentedTypeR.builder()
+                           .myHmctsYesNo(YES)
+                           .respRepName("RespondentName2")
+                           .representativeEmailAddress("test@resRep.com")
+                           .build())
+                .build();
 
             caseData = caseTestData.getCaseData();
-            caseData.getRespondentCollection().add(respondentSumTypeItem);
+            caseData.setRespondentCollection(List.of(respondentSumTypeItem));
+            caseData.setRepCollection(List.of(representedTypeRItem));
 
             notificationService.sendResponseEmailToRespondent(
                 details,

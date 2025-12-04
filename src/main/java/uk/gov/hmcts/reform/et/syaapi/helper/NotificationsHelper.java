@@ -79,18 +79,23 @@ public final class NotificationsHelper {
                                                                                 RespondentSumType respondent) {
         Map<String, Boolean> emailAddressesMap = new ConcurrentHashMap<>();
 
-        String responseEmail = respondent.getResponseRespondentEmail();
-        String respondentEmail = respondent.getRespondentEmail();
-
-        if (StringUtils.isNotBlank(responseEmail)) {
-            emailAddressesMap.put(responseEmail, true);
-        } else if (StringUtils.isNotBlank(respondentEmail)) {
-            emailAddressesMap.put(respondentEmail, true);
-        }
-
+        // get legal rep email if respondent is represented
         RepresentedTypeR representative = getRespondentRepresentative(caseData, respondent);
         if (representative != null && StringUtils.isNotBlank(representative.getRepresentativeEmailAddress())) {
             emailAddressesMap.put(representative.getRepresentativeEmailAddress(), false);
+            return emailAddressesMap;
+        }
+
+        // get respondent email if respondent online
+        if (respondent.getIdamId() != null) {
+            String responseEmail = respondent.getResponseRespondentEmail();
+            String respondentEmail = respondent.getRespondentEmail();
+
+            if (StringUtils.isNotBlank(responseEmail)) {
+                emailAddressesMap.put(responseEmail, true);
+            } else if (StringUtils.isNotBlank(respondentEmail)) {
+                emailAddressesMap.put(respondentEmail, true);
+            }
         }
 
         return emailAddressesMap;
