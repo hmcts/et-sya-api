@@ -33,6 +33,12 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.HEARING_STATUS_LISTED;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CASE_ID;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CASE_NUMBER_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CLAIMANT_TITLE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_RESPONDENT_NAME;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SHORTTEXT_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SUBJECTLINE_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper.getCurrentDateTime;
 
 @Slf4j
@@ -73,18 +79,23 @@ public final class NotificationsHelper {
                                                                                 RespondentSumType respondent) {
         Map<String, Boolean> emailAddressesMap = new ConcurrentHashMap<>();
 
-        String responseEmail = respondent.getResponseRespondentEmail();
-        String respondentEmail = respondent.getRespondentEmail();
-
-        if (StringUtils.isNotBlank(responseEmail)) {
-            emailAddressesMap.put(responseEmail, true);
-        } else if (StringUtils.isNotBlank(respondentEmail)) {
-            emailAddressesMap.put(respondentEmail, true);
-        }
-
+        // get legal rep email if respondent is represented
         RepresentedTypeR representative = getRespondentRepresentative(caseData, respondent);
         if (representative != null && StringUtils.isNotBlank(representative.getRepresentativeEmailAddress())) {
             emailAddressesMap.put(representative.getRepresentativeEmailAddress(), false);
+            return emailAddressesMap;
+        }
+
+        // get respondent email if respondent online
+        if (respondent.getIdamId() != null) {
+            String responseEmail = respondent.getResponseRespondentEmail();
+            String respondentEmail = respondent.getRespondentEmail();
+
+            if (StringUtils.isNotBlank(responseEmail)) {
+                emailAddressesMap.put(responseEmail, true);
+            } else if (StringUtils.isNotBlank(respondentEmail)) {
+                emailAddressesMap.put(respondentEmail, true);
+            }
         }
 
         return emailAddressesMap;
@@ -246,5 +257,45 @@ public final class NotificationsHelper {
             && YES.equals(caseData.getClaimantRepresentedQuestion())
             && ObjectUtils.isNotEmpty(caseData.getRepresentativeClaimantType())
             && ObjectUtils.isNotEmpty(caseData.getRepresentativeClaimantType().getMyHmctsOrganisation());
+    }
+
+    /**
+     * Adds common parameters to the parameters map.
+     * @param parameters existing parameters map
+     * @param claimant claimant name
+     * @param respondentNames respondent names
+     * @param caseId case id
+     * @param caseNumber case number
+     */
+    public static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
+                                           String caseId, String caseNumber) {
+        parameters.put(SEND_EMAIL_PARAMS_CLAIMANT_TITLE, claimant);
+        parameters.put(SEND_EMAIL_PARAMS_RESPONDENT_NAME, respondentNames);
+        parameters.put(SEND_EMAIL_PARAMS_CASE_ID, caseId);
+        parameters.put(SEND_EMAIL_PARAMS_CASE_NUMBER_KEY, caseNumber);
+    }
+
+    public static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
+                                           String caseId, String caseNumber, String subjectLine) {
+        addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber);
+        parameters.put(SEND_EMAIL_PARAMS_SUBJECTLINE_KEY, subjectLine);
+    }
+
+    public static void addCommonParameters(Map<String, Object> parameters, String claimant, String respondentNames,
+                                           String caseId, String caseNumber, String subjectLine, String shortText) {
+        addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber, subjectLine);
+        parameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, shortText);
+    }
+
+    public static void addCommonParameters(Map<String, Object> parameters, CaseData caseData, String caseId) {
+        String claimant = String.join(
+            " ",
+            caseData.getClaimantIndType().getClaimantFirstNames(),
+            caseData.getClaimantIndType().getClaimantLastName()
+        );
+        String caseNumber = caseData.getEthosCaseReference();
+        String respondentNames = getRespondentNames(caseData);
+
+        addCommonParameters(parameters, claimant, respondentNames, caseId, caseNumber, caseNumber);
     }
 }
