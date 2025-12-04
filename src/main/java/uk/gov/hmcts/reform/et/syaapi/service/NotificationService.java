@@ -1014,28 +1014,38 @@ public class NotificationService {
             NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET)
         );
 
-        String emailTemplate;
         if (isClaimantPseResponse) {
-            emailTemplate = notificationsProperties.getPseRespondentResponseTemplateId();
+            String emailTemplate = notificationsProperties.getPseRespondentResponseTemplateId();
             sendRespondentEmails(caseData, caseId, respondentParameters, emailTemplate);
         } else {
             // respondent PSE response
-            // only the current respondent gets the email
             if (NO.equals(copyToOtherParty)) {
-                emailTemplate = notificationsProperties.getPseClaimantResponseNoTemplateId();
-                RespondentSumTypeItem respondent = getRespondent(caseData, respondentIdamId);
-                String emailAddress = getRespondentEmail(respondent);
-                if (isBlank(emailAddress)) {
-                    log.info("Respondent does not have an email address associated with their account");
-                    return;
-                }
-                sendEmailToRespondent(emailAddress, emailTemplate, respondentParameters, caseId);
+                // only the current respondent gets the email
+                sendPseResponseFromRespondentWithNoCopy(caseData, caseId, respondentIdamId, respondentParameters);
             } else {
                 // send email to all the respondents
-                emailTemplate = notificationsProperties.getPseClaimantResponseYesTemplateId();
+                String emailTemplate = notificationsProperties.getPseClaimantResponseYesTemplateId();
                 sendRespondentEmails(caseData, caseId, respondentParameters, emailTemplate);
             }
         }
+    }
+
+    private void sendPseResponseFromRespondentWithNoCopy(CaseData caseData, String caseId, String respondentIdamId,
+                                                         Map<String, Object> respondentParameters) {
+        String emailTemplate = notificationsProperties.getPseClaimantResponseNoTemplateId();
+
+        RespondentSumTypeItem respondent = getRespondent(caseData, respondentIdamId);
+
+        String emailAddress = getRespondentEmail(respondent);
+        if (isBlank(emailAddress)) {
+            log.info("Respondent does not have an email address associated with their account");
+            return;
+        }
+
+        String linkToCase = getRespondentPortalLink(caseId, respondent.getId(), isWelshLanguage(respondent));
+        respondentParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, linkToCase);
+
+        sendEmailToRespondent(emailAddress, emailTemplate, respondentParameters, caseId);
     }
 
     void sendResponseNotificationEmailToClaimant(
