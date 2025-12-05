@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
@@ -17,6 +18,7 @@ import uk.gov.service.notify.NotificationClientException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static org.apache.tika.utils.StringUtils.isBlank;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
@@ -26,6 +28,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_HEARING_DATE_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SHORTTEXT_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentRepresentative;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.isRepresentedClaimantWithMyHmctsCase;
 
 @Service
@@ -103,32 +106,23 @@ public class NotificationPseService {
             // respondent PSE response
             if (NO.equals(copyToOtherParty)) {
                 // only the current respondent gets the email
-                sendEmailForResponseByRespondentNoCopy(caseData, caseId, respondentIdamId, respondentParameters);
+                sendEmailRespondFromRespondentNoCopy(caseData, caseId, respondentIdamId, respondentParameters);
             } else {
                 // send email to all the respondents
-                String emailTemplate = notificationsProperties.getPseClaimantResponseYesTemplateId();
-                notificationService.sendRespondentEmails(caseData, caseId, respondentParameters, emailTemplate);
+                sendEmailRespondFromRespondentYesCopy(caseData, caseId, respondentIdamId, respondentParameters);
             }
         }
     }
 
-    private void sendEmailForResponseByRespondentNoCopy(CaseData caseData, String caseId, String respondentIdamId,
-                                                        Map<String, Object> respondentParameters) {
+    private void sendEmailRespondFromRespondentNoCopy(
+        CaseData caseData,
+        String caseId,
+        String respondentIdamId,
+        Map<String, Object> respondentParameters
+    ) {
         String emailTemplate = notificationsProperties.getPseClaimantResponseNoTemplateId();
-
         RespondentSumTypeItem respondent = getRespondent(caseData, respondentIdamId);
-
-        String emailAddress = getRespondentEmail(respondent);
-        if (isBlank(emailAddress)) {
-            log.info(NO_RESPONDENT_EMAIL_ADDRESS_ASSOCIATED);
-            return;
-        }
-
-        String linkToCase = notificationService.getRespondentPortalLink(
-            caseId, respondent.getId(), notificationService.isWelshLanguage(respondent));
-        respondentParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, linkToCase);
-
-        notificationService.sendEmailToRespondent(emailAddress, emailTemplate, respondentParameters, caseId);
+        sendEmailToSingleCitizenRespondent(caseId, respondent, respondentParameters, emailTemplate);
     }
 
     private RespondentSumTypeItem getRespondent(CaseData caseData, String userIdamId) {
@@ -136,6 +130,25 @@ public class NotificationPseService {
             .filter(r -> userIdamId.equals(r.getValue().getIdamId()))
             .findFirst()
             .orElse(null);
+    }
+
+    private void sendEmailToSingleCitizenRespondent(
+        String caseId,
+        RespondentSumTypeItem respondent,
+        Map<String, Object> respondentParameters,
+        String emailTemplate
+    ) {
+        String emailAddress = getRespondentEmail(respondent);
+        if (isBlank(emailAddress)) {
+            log.info(NO_RESPONDENT_EMAIL_ADDRESS_ASSOCIATED);
+            return;
+        }
+
+        boolean isWelsh = notificationService.isWelshLanguage(respondent);
+        String linkToCase = notificationService.getRespondentPortalLink(caseId, respondent.getId(), isWelsh);
+        respondentParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, linkToCase);
+
+        notificationService.sendEmailToRespondent(emailAddress, emailTemplate, respondentParameters, caseId);
     }
 
     private String getRespondentEmail(RespondentSumTypeItem respondentSumTypeItem) {
@@ -156,6 +169,81 @@ public class NotificationPseService {
         }
 
         return null;
+    }
+
+    void sendEmailRespondFromRespondentYesCopy(
+        CaseData caseData,
+        String caseId,
+        String respondentIdamId,
+        Map<String, Object> respondentParameters
+    ) {
+        caseData.getRespondentCollection()
+            .forEach(resp -> {
+                sendEmailRespondFromRespondentYesCopyEachResp(
+                    caseData, caseId, respondentIdamId, respondentParameters, resp);
+            });
+    }
+
+    private void sendEmailRespondFromRespondentYesCopyEachResp(
+        CaseData caseData,
+        String caseId,
+        String respondentIdamId,
+        Map<String, Object> respondentParameters,
+        RespondentSumTypeItem resp
+    ) {
+        // respondent is current user who submitted the response
+        if (!isNullOrEmpty(respondentIdamId) && respondentIdamId.equals(resp.getValue().getIdamId())) {
+            String emailToCurrentUserTemplate = notificationsProperties.getPseRespondentResponseTemplateId();
+            sendEmailToSingleCitizenRespondent(
+                caseId,
+                resp,
+                respondentParameters,
+                emailToCurrentUserTemplate
+            );
+            return;
+        }
+
+        // other respondents
+        // check if respondent is represented
+        RepresentedTypeR representative = getRespondentRepresentative(caseData, resp.getValue());
+        boolean isRepresented = representative != null;
+
+        // get email to send to
+        String emailToSend = getEmailToSend(isRepresented, representative, resp);
+        if (isNullOrEmpty(emailToSend)) {
+            log.info("Respondent does not not have an email address associated with their account");
+            return;
+        }
+
+        // get link to case
+        boolean isWelsh = notificationService.isWelshLanguage(resp);
+        String linkToCase = isRepresented
+            ? notificationService.getRespondentRepPortalLink(caseId)
+            : notificationService.getRespondentPortalLink(caseId, resp.getId(), isWelsh);
+        respondentParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY, linkToCase);
+
+        // send email to other respondent
+        String emailToOtherRespondentTemplate = notificationsProperties.getPseClaimantResponseYesTemplateId();
+        notificationService.sendEmailToRespondent(
+            emailToSend,
+            emailToOtherRespondentTemplate,
+            respondentParameters,
+            caseId
+        );
+    }
+
+    private String getEmailToSend(boolean isRepresented, RepresentedTypeR representative, RespondentSumTypeItem resp) {
+        if (isRepresented) {
+            // get legal rep email if respondent is represented
+            return StringUtils.isNotBlank(representative.getRepresentativeEmailAddress())
+                ? representative.getRepresentativeEmailAddress()
+                : null;
+        } else {
+            // if not represented, get respondent email if online
+            return isNullOrEmpty(resp.getValue().getIdamId())
+                ? null
+                : getRespondentEmail(resp);
+        }
     }
 
     /**

@@ -105,7 +105,7 @@ public final class NotificationsHelper {
         return getRespondentAndRespRepEmailAddressesMap(caseData, respondent).keySet().stream().toList();
     }
 
-    private static RepresentedTypeR getRespondentRepresentative(CaseData caseData, RespondentSumType respondent) {
+    public static RepresentedTypeR getRespondentRepresentative(CaseData caseData, RespondentSumType respondent) {
         List<RepresentedTypeRItem> repCollection = caseData.getRepCollection();
 
         if (CollectionUtils.isEmpty(repCollection)) {

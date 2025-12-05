@@ -421,7 +421,7 @@ public class NotificationService {
             ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
     }
 
-    private String getRespondentRepPortalLink(String caseId) {
+    String getRespondentRepPortalLink(String caseId) {
         return notificationsProperties.getExuiCaseDetailsLink() + caseId;
     }
 
