@@ -29,11 +29,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.NOT_SET;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.MY_HMCTS;
 
 class NotificationHelperTest {
 
-    private static final String NOT_SET = "Not set";
     private final CaseTestData caseTestData;
 
     NotificationHelperTest() {

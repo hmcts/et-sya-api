@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -46,7 +47,6 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.YES;
 
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 @ExtendWith(MockitoExtension.class)
 class SendNotificationServiceTest {
     private static final String AUTHOR = "Barry White";
@@ -70,19 +70,11 @@ class SendNotificationServiceTest {
     private FeatureToggleService featureToggleService;
     @Mock
     IdamClient idamClient;
-
+    @InjectMocks
     private SendNotificationService sendNotificationService;
 
     @BeforeEach
     void beforeEach() {
-        sendNotificationService = new SendNotificationService(
-            caseService,
-            caseDocumentService,
-            caseDetailsConverter,
-            notificationService,
-            featureToggleService,
-            idamClient
-        );
         testData = new TestData();
     }
 
