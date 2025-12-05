@@ -74,6 +74,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_ABBREVIATED_MONTHS_MAP;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.NOT_SET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_HEARING_DATE_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
@@ -88,7 +89,6 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WELSH_LA
 @MockitoSettings(strictness = Strictness.WARN)
 class NotificationServiceTest {
     public static final String CLAIMANT = "Michael Jackson";
-    public static final String NOT_SET = "Not set";
     public static final String TEST_RESPONDENT = "Test Respondent";
     private static final String WITNESS = "witness";
     private static final String DATE_DAY = "12";

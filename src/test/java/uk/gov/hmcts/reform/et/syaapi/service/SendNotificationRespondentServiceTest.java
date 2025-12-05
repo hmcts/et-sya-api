@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
@@ -49,7 +50,7 @@ class SendNotificationRespondentServiceTest {
     private CaseDetailsConverter caseDetailsConverter;
     @Mock
     private NotificationService notificationService;
-
+    @InjectMocks
     private SendNotificationRespondentService sendNotificationRespondentService;
 
     private TestData testData;
@@ -58,12 +59,6 @@ class SendNotificationRespondentServiceTest {
 
     @BeforeEach
     void beforeEach() {
-        sendNotificationRespondentService = new SendNotificationRespondentService(
-            caseService,
-            caseDetailsConverter,
-            caseDocumentService,
-            notificationService
-        );
         testData = new TestData();
     }
 
