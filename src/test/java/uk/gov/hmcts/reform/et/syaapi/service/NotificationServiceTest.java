@@ -84,7 +84,6 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOTIFICA
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SUBMIT_CASE_PDF_FILE_RESPONSE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WELSH_LANGUAGE;
 
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.WARN)
 class NotificationServiceTest {
