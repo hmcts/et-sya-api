@@ -11,6 +11,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.types.Organisation;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
+import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 
 import java.text.ParseException;
@@ -52,6 +53,11 @@ class NotificationHelperTest {
         assertThat(respondentNames).isEqualTo(StringUtils.EMPTY);
     }
 
+    List<String> getEmailAddressesForRespondent(CaseData caseData, RespondentSumType respondent) {
+        return NotificationsHelper.getRespondentAndRespRepEmailAddressesMap(caseData, respondent)
+            .keySet().stream().toList();
+    }
+
     @Test
     void shouldReturnRepEmail() {
         // Given
@@ -69,7 +75,7 @@ class NotificationHelperTest {
         caseData.setRepCollection(itemList);
 
         // When
-        List<String> emails = NotificationsHelper.getEmailAddressesForRespondent(
+        List<String> emails = getEmailAddressesForRespondent(
             caseData,
             caseData.getRespondentCollection().getFirst().getValue()
         );
@@ -95,7 +101,7 @@ class NotificationHelperTest {
         caseData.setRepCollection(itemList);
 
         // When
-        List<String> emails = NotificationsHelper.getEmailAddressesForRespondent(
+        List<String> emails = getEmailAddressesForRespondent(
             caseData,
             caseData.getRespondentCollection().getFirst().getValue()
         );
@@ -111,7 +117,7 @@ class NotificationHelperTest {
         caseData.getRespondentCollection().getFirst().getValue().setRespondentEmail(null);
 
         // When
-        List<String> emails = NotificationsHelper.getEmailAddressesForRespondent(
+        List<String> emails = getEmailAddressesForRespondent(
             caseData,
             caseData.getRespondentCollection().getFirst().getValue()
         );
