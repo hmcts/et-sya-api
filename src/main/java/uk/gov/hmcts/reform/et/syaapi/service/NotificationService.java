@@ -1039,6 +1039,7 @@ public class NotificationService {
                             ? getRespondentPortalLink(caseId, resp.getId(), isWelsh)
                             : getRespondentRepPortalLink(caseId);
                         respondentParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY, linkToCase);
+                        respondentParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, linkToCase);
                         sendEmailToRespondent(email, emailToRespondentTemplate, respondentParameters, caseId);
                     }
                 });
