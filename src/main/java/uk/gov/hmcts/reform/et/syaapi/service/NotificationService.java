@@ -1135,7 +1135,7 @@ public class NotificationService {
         );
     }
 
-    private void sendTribunalEmail(CaseData caseData,
+    void sendTribunalEmail(CaseData caseData,
                                    String caseId,
                                    Map<String, Object> tribunalParameters,
                                    String templateId) {

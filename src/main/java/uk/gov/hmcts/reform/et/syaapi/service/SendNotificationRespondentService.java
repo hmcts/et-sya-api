@@ -46,6 +46,7 @@ public class SendNotificationRespondentService {
     private final CaseDetailsConverter caseDetailsConverter;
     private final CaseDocumentService caseDocumentService;
     private final NotificationService notificationService;
+    private final NotificationPseService notificationPseService;
 
     private static final String SEND_NOTIFICATION_ID_INCORRECT = "Notification id provided is incorrect";
     private static final String RESPOND_ID_INCORRECT = "Respond id provided is incorrect";
@@ -348,7 +349,7 @@ public class SendNotificationRespondentService {
                                                        String caseId,
                                                        String copyToOtherParty,
                                                        String respondentIdamId) {
-        notificationService.sendResponseNotificationEmailToTribunal(caseData, caseId);
+        notificationPseService.sendResponseNotificationEmailToTribunal(caseData, caseId);
         notificationService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty,
                                                                       false, respondentIdamId);
         notificationService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty, false);

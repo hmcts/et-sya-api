@@ -50,6 +50,8 @@ class StoredRespondToTribunalServiceTest {
     @Mock
     private NotificationService notificationService;
     @Mock
+    private NotificationPseService notificationPseService;
+    @Mock
     private FeatureToggleService featureToggleService;
     @InjectMocks
     private StoredRespondToTribunalService storedRespondToTribunalService;

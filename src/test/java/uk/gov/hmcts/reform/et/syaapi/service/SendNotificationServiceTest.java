@@ -67,6 +67,8 @@ class SendNotificationServiceTest {
     @Mock
     private NotificationService notificationService;
     @Mock
+    private NotificationPseService notificationPseService;
+    @Mock
     private FeatureToggleService featureToggleService;
     @Mock
     IdamClient idamClient;

@@ -44,6 +44,7 @@ public class StoredRespondToTribunalService {
     private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final NotificationService notificationService;
+    private final NotificationPseService notificationPseService;
     private final FeatureToggleService featureToggleService;
 
     private static final String RESPOND_ID_INCORRECT = "Respond id provided is incorrect";
@@ -228,7 +229,7 @@ public class StoredRespondToTribunalService {
     }
 
     private void sendEmailForRespondToTribunal(CaseData caseData, String caseId, String shortText) {
-        notificationService.sendResponseNotificationEmailToTribunal(caseData, caseId);
+        notificationPseService.sendResponseNotificationEmailToTribunal(caseData, caseId);
         notificationService.sendSubmitStoredEmailToClaimant(
             notificationService.formatCoreEmailDetails(caseData, caseId), shortText);
     }

@@ -1196,38 +1196,6 @@ class NotificationServiceTest {
     }
 
     @Test
-    void sendResponseNotificationEmailToTribunal() throws NotificationClientException {
-        caseTestData.getCaseData().setTribunalCorrespondenceEmail("tribunal@test.com");
-        notificationService.sendResponseNotificationEmailToTribunal(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString()
-        );
-
-        verify(notificationClient, times(1)).sendEmail(
-            any(),
-            eq(caseTestData.getCaseData().getTribunalCorrespondenceEmail()),
-            any(),
-            eq(caseTestData.getExpectedDetails().getId().toString())
-        );
-    }
-
-    @Test
-    void sendNotResponseNotificationEmailToTribunalMissingEmail() throws NotificationClientException {
-        caseTestData.getCaseData().setTribunalCorrespondenceEmail(null);
-        notificationService.sendResponseNotificationEmailToTribunal(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString()
-        );
-
-        verify(notificationClient, times(0)).sendEmail(
-            any(),
-            any(),
-            any(),
-            any()
-        );
-    }
-
-    @Test
     void sendResponseNotificationEmailToRespondent() throws NotificationClientException {
         notificationService.sendResponseNotificationEmailToRespondent(
             caseTestData.getCaseData(),

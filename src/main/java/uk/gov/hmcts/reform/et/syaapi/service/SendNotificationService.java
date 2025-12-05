@@ -48,6 +48,7 @@ public class SendNotificationService {
     private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final NotificationService notificationService;
+    private final NotificationPseService notificationPseService;
     private final FeatureToggleService featureToggleService;
     private final IdamClient idamClient;
 
@@ -196,7 +197,7 @@ public class SendNotificationService {
     private void sendAddResponseSendNotificationEmails(CaseData caseData,
                                                        String caseId,
                                                        String copyToOtherParty) {
-        notificationService.sendResponseNotificationEmailToTribunal(caseData, caseId);
+        notificationPseService.sendResponseNotificationEmailToTribunal(caseData, caseId);
         // passing null for respondent solicitor email as it is not needed in this context
         notificationService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty, true, null);
         notificationService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty, true);

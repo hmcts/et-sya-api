@@ -50,6 +50,8 @@ class SendNotificationRespondentServiceTest {
     private CaseDetailsConverter caseDetailsConverter;
     @Mock
     private NotificationService notificationService;
+    @Mock
+    private NotificationPseService notificationPseService;
     @InjectMocks
     private SendNotificationRespondentService sendNotificationRespondentService;
 
