@@ -8,6 +8,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
+import uk.gov.hmcts.reform.et.syaapi.service.NotificationService.CoreEmailDetails;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 
@@ -20,6 +21,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.NOT_SET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_EXUI_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_HEARING_DATE_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.isRepresentedClaimantWithMyHmctsCase;
 
 @Service
@@ -190,5 +192,32 @@ public class NotificationPseService {
         } else {
             return notificationsProperties.getPseRespondentResponseTemplateId();
         }
+    }
+
+    /**
+     * Sends stored notification email to respondent.
+     * @param details CoreEmailDetails
+     * @param shortText short text
+     * @param respondentIdamId respondent idam id
+     */
+    void sendNotificationStoredEmailToRespondent(CoreEmailDetails details, String shortText, String respondentIdamId) {
+        RespondentSumTypeItem respondent = notificationService.getRespondent(details.caseData(), respondentIdamId);
+
+        String emailAddress = notificationService.getRespondentEmail(respondent);
+        if (isBlank(emailAddress)) {
+            log.info("Respondent does not have an email address associated with their account");
+            return;
+        }
+        String portalLink = notificationsProperties.getRespondentPortalLink()
+            + details.caseId() + "/" + respondent.getId()
+            + (notificationService.isWelshLanguage(respondent) ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
+
+        notificationService.sendNotificationStoredEmail(
+            notificationsProperties.getClaimantTseEmailStoredTemplateId(),
+            details,
+            shortText,
+            emailAddress,
+            portalLink
+        );
     }
 }

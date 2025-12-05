@@ -1,15 +1,18 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
+import uk.gov.hmcts.reform.et.syaapi.service.NotificationService.CoreEmailDetails;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 
@@ -21,6 +24,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.NOT_SET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,9 +36,14 @@ class NotificationPseServiceTest {
     private NotificationsProperties notificationsProperties;
     @Mock
     private FeatureToggleService featureToggleService;
+    @Mock
+    private CoreEmailDetails details;
     private NotificationPseService notificationPseService;
 
+    private CaseData caseData;
     private CaseTestData caseTestData;
+
+    public static final String CLAIMANT = "Jane Doe";
 
     @BeforeEach
     void before() {
@@ -49,6 +58,7 @@ class NotificationPseServiceTest {
             notificationService
         );
 
+        caseData = new CaseData();
         caseTestData = new CaseTestData();
         caseTestData.getCaseData().setRepCollection(List.of(
             RepresentedTypeRItem.builder()
@@ -205,5 +215,49 @@ class NotificationPseServiceTest {
             any(),
             any()
         );
+    }
+
+    @Nested
+    class SendNotificationStoredEmailToRespondent {
+        @BeforeEach
+        void setUp() {
+            details = new CoreEmailDetails(
+                caseTestData.getCaseData(),
+                CLAIMANT,
+                "1",
+                "Test Respondent Organisation -1-,"
+                    + " Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez",
+                NOT_SET,
+                caseTestData.getExpectedDetails().getId().toString()
+            );
+        }
+
+        @Test
+        void shouldSendEmailToRespondent_whenEmailPresent() throws NotificationClientException {
+            notificationPseService.sendNotificationStoredEmailToRespondent(details, "shortText", "1234567890");
+            verify(notificationClient, times(1)).sendEmail(any(), any(), any(), any());
+        }
+
+        @Test
+        void shouldSendEmailToRespondent_whenResponseEmailPresent() throws NotificationClientException {
+            details.caseData().getRespondentCollection().get(5).getValue().setResponseRespondentEmail("test@test.com");
+            notificationPseService.sendNotificationStoredEmailToRespondent(details, "shortText",
+                                                                           "notifications-test-idam-id");
+            verify(notificationClient, times(1)).sendEmail(any(), any(), any(), any());
+        }
+
+        @Test
+        void shouldSendEmailToRespondent_whenEmailNotPresent() throws NotificationClientException {
+            details.caseData().getRespondentCollection().get(5).getValue().setResponseRespondentEmail("");
+            notificationPseService.sendNotificationStoredEmailToRespondent(details, "shortText",
+                                                                           "notifications-test-idam-id");
+            verify(notificationClient, times(0)).sendEmail(any(), any(), any(), any());
+        }
+
+        @Test
+        void shouldSendEmailToRespondent_whenRespondentNotPresent() throws NotificationClientException {
+            notificationPseService.sendNotificationStoredEmailToRespondent(details, "shortText", "dummy");
+            verify(notificationClient, times(0)).sendEmail(any(), any(), any(), any());
+        }
     }
 }

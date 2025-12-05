@@ -257,7 +257,7 @@ public class SendNotificationRespondentService {
         // send email
         CoreEmailDetails details =
             notificationService.formatCoreEmailDetails(caseData, request.getCaseId());
-        notificationService.sendNotificationStoredEmailToRespondent(
+        notificationPseService.sendNotificationStoredEmailToRespondent(
             details,
             request.getPseResponseType().getResponse(),
             request.getPseResponseType().getFromIdamId()

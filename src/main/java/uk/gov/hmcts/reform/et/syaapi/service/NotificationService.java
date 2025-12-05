@@ -1275,28 +1275,7 @@ public class NotificationService {
         );
     }
 
-    void sendNotificationStoredEmailToRespondent(CoreEmailDetails details, String shortText, String respondentIdamId) {
-        RespondentSumTypeItem respondent = getRespondent(details.caseData(), respondentIdamId);
-
-        String emailAddress = getRespondentEmail(respondent);
-        if (isBlank(emailAddress)) {
-            log.info("Respondent does not have an email address associated with their account");
-            return;
-        }
-        String portalLink = notificationsProperties.getRespondentPortalLink()
-            + details.caseId + "/" + respondent.getId()
-            + (isWelshLanguage(respondent) ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
-
-        sendNotificationStoredEmail(
-            notificationsProperties.getClaimantTseEmailStoredTemplateId(),
-            details,
-            shortText,
-            emailAddress,
-            portalLink
-        );
-    }
-
-    private void sendNotificationStoredEmail(String emailTemplate, CoreEmailDetails details,
+    void sendNotificationStoredEmail(String emailTemplate, CoreEmailDetails details,
                                             String shortText, String emailAddress, String portalLinkKey) {
 
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
