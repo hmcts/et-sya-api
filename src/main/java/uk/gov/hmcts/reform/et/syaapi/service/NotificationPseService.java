@@ -84,12 +84,10 @@ public class NotificationPseService {
         String respondentIdamId
     ) {
         // don't send email to respondents if this is a claimant PSE response and they opted out
-        if ((NO.equals(copyToOtherParty) && isClaimantPseResponse)
-            || copyToOtherParty == null) {
+        if (isClaimantPseResponse && (NO.equals(copyToOtherParty) || copyToOtherParty == null)) {
             log.info("Acknowledgement email not sent to respondents");
             return;
         }
-
 
         Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
         NotificationsHelper.addCommonParameters(respondentParameters, caseData, caseId);
@@ -105,7 +103,7 @@ public class NotificationPseService {
             // respondent PSE response
             if (NO.equals(copyToOtherParty)) {
                 // only the current respondent gets the email
-                sendPseResponseFromRespondentWithNoCopy(caseData, caseId, respondentIdamId, respondentParameters);
+                sendEmailForResponseByRespondentNoCopy(caseData, caseId, respondentIdamId, respondentParameters);
             } else {
                 // send email to all the respondents
                 String emailTemplate = notificationsProperties.getPseClaimantResponseYesTemplateId();
@@ -114,8 +112,8 @@ public class NotificationPseService {
         }
     }
 
-    private void sendPseResponseFromRespondentWithNoCopy(CaseData caseData, String caseId, String respondentIdamId,
-                                                         Map<String, Object> respondentParameters) {
+    private void sendEmailForResponseByRespondentNoCopy(CaseData caseData, String caseId, String respondentIdamId,
+                                                        Map<String, Object> respondentParameters) {
         String emailTemplate = notificationsProperties.getPseClaimantResponseNoTemplateId();
 
         RespondentSumTypeItem respondent = getRespondent(caseData, respondentIdamId);
@@ -146,14 +144,17 @@ public class NotificationPseService {
         }
 
         RespondentSumType respondent = respondentSumTypeItem.getValue();
+
         String responseEmail = respondent.getResponseRespondentEmail();
         if (StringUtils.isNotBlank(responseEmail)) {
             return responseEmail;
         }
+
         String respondentEmail = respondent.getRespondentEmail();
         if (StringUtils.isNotBlank(respondentEmail)) {
             return respondentEmail;
         }
+
         return null;
     }
 
@@ -170,19 +171,14 @@ public class NotificationPseService {
         String copyToOtherParty,
         boolean isClaimantPseResponse
     ) {
-
-        String claimantEmail;
-        if (isClaimantPseResponse && caseData.getClaimantType() != null) {
-            claimantEmail = caseData.getClaimantType().getClaimantEmailAddress();
-        } else {
-            claimantEmail = isRepresentedClaimantWithMyHmctsCase(caseData)
-                ? caseData.getRepresentativeClaimantType().getRepresentativeEmailAddress()
-                : caseData.getClaimantType().getClaimantEmailAddress();
+        // don't send email to claimant if this is a respondent PSE response and they opted out
+        if (!isClaimantPseResponse && (NO.equals(copyToOtherParty) || copyToOtherParty == null)) {
+            log.info("Acknowledgement email not sent to claimants");
+            return;
         }
 
-        // don't send email to claimant if this is a respondent PSE response and they opted out
-        if ((NO.equals(copyToOtherParty) && !isClaimantPseResponse)
-            || copyToOtherParty == null || isBlank(claimantEmail)) {
+        String claimantEmail = getClaimantEmail(caseData, isClaimantPseResponse);
+        if (isBlank(claimantEmail)) {
             log.info("Acknowledgement email not sent to claimants");
             return;
         }
@@ -214,6 +210,16 @@ public class NotificationPseService {
             );
         } catch (NotificationClientException ne) {
             throw new NotificationException(ne);
+        }
+    }
+
+    private static String getClaimantEmail(CaseData caseData, boolean isClaimantPseResponse) {
+        if (isClaimantPseResponse && caseData.getClaimantType() != null) {
+            return caseData.getClaimantType().getClaimantEmailAddress();
+        } else {
+            return isRepresentedClaimantWithMyHmctsCase(caseData)
+                ? caseData.getRepresentativeClaimantType().getRepresentativeEmailAddress()
+                : caseData.getClaimantType().getClaimantEmailAddress();
         }
     }
 
@@ -262,6 +268,7 @@ public class NotificationPseService {
             log.info(NO_RESPONDENT_EMAIL_ADDRESS_ASSOCIATED);
             return;
         }
+
         String portalLink = notificationsProperties.getRespondentPortalLink()
             + details.caseId() + "/" + respondent.getId()
             + (notificationService.isWelshLanguage(respondent) ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
@@ -277,7 +284,6 @@ public class NotificationPseService {
 
     private void sendNotificationStoredEmail(String emailTemplate, CoreEmailDetails details,
                                      String shortText, String emailAddress, String portalLinkKey) {
-
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
 
         NotificationsHelper.addCommonParameters(
