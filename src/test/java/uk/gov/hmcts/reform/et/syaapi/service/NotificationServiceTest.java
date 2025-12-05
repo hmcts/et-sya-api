@@ -1196,63 +1196,6 @@ class NotificationServiceTest {
     }
 
     @Test
-    void sendResponseNotificationEmailToRespondent() throws NotificationClientException {
-        notificationService.sendResponseNotificationEmailToRespondent(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString(),
-            YES,
-            true,
-            null
-        );
-
-        verify(notificationClient, times(1)).sendEmail(
-            any(),
-            eq(caseTestData.getCaseData().getRespondentCollection().getFirst().getValue().getRespondentEmail()),
-            any(),
-            eq(caseTestData.getExpectedDetails().getId().toString())
-        );
-    }
-
-    @Test
-    void sendNotResponseNotificationEmailToRespondentDoNotCopy() throws NotificationClientException {
-        notificationService.sendResponseNotificationEmailToRespondent(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString(),
-            NO,
-            true,
-            null
-        );
-
-        verify(notificationClient, times(0)).sendEmail(
-            any(),
-            any(),
-            any(),
-            any()
-        );
-    }
-
-    @Test
-    void sendNotResponseNotificationEmailToRespondentMissingEmail() throws NotificationClientException {
-        for (RespondentSumTypeItem respondentSumTypeItem : caseTestData.getCaseData().getRespondentCollection()) {
-            respondentSumTypeItem.getValue().setRespondentEmail(null);
-        }
-        notificationService.sendResponseNotificationEmailToRespondent(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString(),
-            YES,
-            true,
-            null
-        );
-
-        verify(notificationClient, times(0)).sendEmail(
-            any(),
-            any(),
-            any(),
-            any()
-        );
-    }
-
-    @Test
     void sendResponseNotificationEmailToClaimant() throws NotificationClientException {
         notificationService.sendResponseNotificationEmailToClaimant(
             caseTestData.getCaseData(),

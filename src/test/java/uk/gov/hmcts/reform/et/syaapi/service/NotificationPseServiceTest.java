@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
+import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
@@ -18,6 +19,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 
 @ExtendWith(MockitoExtension.class)
@@ -79,6 +81,63 @@ class NotificationPseServiceTest {
         notificationPseService.sendResponseNotificationEmailToTribunal(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString()
+        );
+
+        verify(notificationClient, times(0)).sendEmail(
+            any(),
+            any(),
+            any(),
+            any()
+        );
+    }
+
+    @Test
+    void sendResponseNotificationEmailToRespondent() throws NotificationClientException {
+        notificationPseService.sendResponseNotificationEmailToRespondent(
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString(),
+            YES,
+            true,
+            null
+        );
+
+        verify(notificationClient, times(1)).sendEmail(
+            any(),
+            eq(caseTestData.getCaseData().getRespondentCollection().getFirst().getValue().getRespondentEmail()),
+            any(),
+            eq(caseTestData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void sendNotResponseNotificationEmailToRespondentDoNotCopy() throws NotificationClientException {
+        notificationPseService.sendResponseNotificationEmailToRespondent(
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString(),
+            NO,
+            true,
+            null
+        );
+
+        verify(notificationClient, times(0)).sendEmail(
+            any(),
+            any(),
+            any(),
+            any()
+        );
+    }
+
+    @Test
+    void sendNotResponseNotificationEmailToRespondentMissingEmail() throws NotificationClientException {
+        for (RespondentSumTypeItem respondentSumTypeItem : caseTestData.getCaseData().getRespondentCollection()) {
+            respondentSumTypeItem.getValue().setRespondentEmail(null);
+        }
+        notificationPseService.sendResponseNotificationEmailToRespondent(
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString(),
+            YES,
+            true,
+            null
         );
 
         verify(notificationClient, times(0)).sendEmail(
