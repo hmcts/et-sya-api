@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeRespondentNotificationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SubmitRespondentPseRespondRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.NotificationService.CoreEmailDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -254,7 +255,7 @@ public class SendNotificationRespondentService {
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
 
         // send email
-        NotificationService.CoreEmailDetails details =
+        CoreEmailDetails details =
             notificationService.formatCoreEmailDetails(caseData, request.getCaseId());
         notificationService.sendNotificationStoredEmailToRespondent(
             details,

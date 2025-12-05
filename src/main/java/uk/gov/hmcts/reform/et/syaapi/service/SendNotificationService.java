@@ -47,7 +47,6 @@ public class SendNotificationService {
     private final CaseService caseService;
     private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
-    private final NotificationService notificationService;
     private final NotificationPseService notificationPseService;
     private final FeatureToggleService featureToggleService;
     private final IdamClient idamClient;

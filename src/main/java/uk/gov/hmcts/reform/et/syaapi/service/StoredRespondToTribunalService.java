@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredRespondToTribunalRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.NotificationService.CoreEmailDetails;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -102,7 +103,7 @@ public class StoredRespondToTribunalService {
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
 
         // send email
-        NotificationService.CoreEmailDetails details =
+        CoreEmailDetails details =
             notificationService.formatCoreEmailDetails(caseData, request.getCaseId());
         notificationService.sendNotificationStoredEmailToClaimant(
             details,
