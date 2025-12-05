@@ -105,7 +105,7 @@ public class StoredRespondToTribunalService {
         // send email
         CoreEmailDetails details =
             notificationService.formatCoreEmailDetails(caseData, request.getCaseId());
-        notificationService.sendNotificationStoredEmailToClaimant(
+        notificationPseService.sendNotificationStoredEmailToClaimant(
             details,
             request.getPseResponseType().getResponse()
         );

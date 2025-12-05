@@ -218,6 +218,36 @@ class NotificationPseServiceTest {
     }
 
     @Nested
+    class SendNotificationStoredEmailToClaimant {
+        @BeforeEach
+        void setUp() {
+            details = new CoreEmailDetails(
+                caseTestData.getCaseData(),
+                CLAIMANT,
+                "1",
+                "Test Respondent Organisation -1-,"
+                    + " Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez",
+                NOT_SET,
+                caseTestData.getExpectedDetails().getId().toString()
+            );
+        }
+
+        @Test
+        void shouldSendEmailToClaimant_whenEmailPresent() throws NotificationClientException {
+            notificationPseService.sendNotificationStoredEmailToClaimant(details, "shortText");
+            verify(notificationClient, times(1)).sendEmail(any(), any(), any(), any());
+        }
+
+
+        @Test
+        void shouldSendEmailToClaimant_whenEmailNotPresent() throws NotificationClientException {
+            details.caseData().getClaimantType().setClaimantEmailAddress("");
+            notificationPseService.sendNotificationStoredEmailToClaimant(details, "shortText");
+            verify(notificationClient, times(0)).sendEmail(any(), any(), any(), any());
+        }
+    }
+
+    @Nested
     class SendNotificationStoredEmailToRespondent {
         @BeforeEach
         void setUp() {

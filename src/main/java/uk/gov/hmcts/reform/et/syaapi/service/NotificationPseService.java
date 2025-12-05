@@ -15,12 +15,14 @@ import uk.gov.service.notify.NotificationClientException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static org.apache.tika.utils.StringUtils.isBlank;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.NOT_SET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_EXUI_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_HEARING_DATE_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SHORTTEXT_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.isRepresentedClaimantWithMyHmctsCase;
 
@@ -31,6 +33,9 @@ public class NotificationPseService {
     private final NotificationClient notificationClient;
     private final NotificationsProperties notificationsProperties;
     private final NotificationService notificationService;
+
+    private static final String NO_CLAIMANT_EMAIL_FOUND =
+        "No claimant email found - Application response acknowledgment not being sent";
 
     /**
      * Sends response notification email to tribunal.
@@ -195,6 +200,27 @@ public class NotificationPseService {
     }
 
     /**
+     * Sends stored notification email to claimant.
+     * @param details CoreEmailDetails
+     * @param shortText short text
+     */
+    void sendNotificationStoredEmailToClaimant(CoreEmailDetails details, String shortText) {
+        String emailAddress = details.caseData().getClaimantType().getClaimantEmailAddress();
+        if (isBlank(emailAddress)) {
+            log.info(NO_CLAIMANT_EMAIL_FOUND);
+            return;
+        }
+
+        sendNotificationStoredEmail(
+            notificationsProperties.getClaimantTseEmailStoredTemplateId(),
+            details,
+            shortText,
+            emailAddress,
+            notificationsProperties.getCitizenPortalLink() + details.caseId()
+        );
+    }
+
+    /**
      * Sends stored notification email to respondent.
      * @param details CoreEmailDetails
      * @param shortText short text
@@ -212,12 +238,39 @@ public class NotificationPseService {
             + details.caseId() + "/" + respondent.getId()
             + (notificationService.isWelshLanguage(respondent) ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
 
-        notificationService.sendNotificationStoredEmail(
+        sendNotificationStoredEmail(
             notificationsProperties.getClaimantTseEmailStoredTemplateId(),
             details,
             shortText,
             emailAddress,
             portalLink
         );
+    }
+
+    void sendNotificationStoredEmail(String emailTemplate, CoreEmailDetails details,
+                                     String shortText, String emailAddress, String portalLinkKey) {
+
+        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
+
+        NotificationsHelper.addCommonParameters(
+            claimantParameters,
+            details.claimant(),
+            details.respondentNames(),
+            details.caseId(),
+            details.caseNumber()
+        );
+        claimantParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, defaultIfEmpty(shortText, ""));
+        claimantParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, portalLinkKey);
+
+        try {
+            notificationClient.sendEmail(
+                emailTemplate,
+                emailAddress,
+                claimantParameters,
+                details.caseId()
+            );
+        } catch (NotificationClientException ne) {
+            throw new NotificationException(ne);
+        }
     }
 }

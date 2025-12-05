@@ -1259,49 +1259,6 @@ public class NotificationService {
         }
     }
 
-    void sendNotificationStoredEmailToClaimant(CoreEmailDetails details, String shortText) {
-        String emailAddress = details.caseData.getClaimantType().getClaimantEmailAddress();
-        if (isBlank(emailAddress)) {
-            log.info(NO_CLAIMANT_EMAIL_FOUND);
-            return;
-        }
-
-        sendNotificationStoredEmail(
-            notificationsProperties.getClaimantTseEmailStoredTemplateId(),
-            details,
-            shortText,
-            emailAddress,
-            notificationsProperties.getCitizenPortalLink() + details.caseId
-        );
-    }
-
-    void sendNotificationStoredEmail(String emailTemplate, CoreEmailDetails details,
-                                            String shortText, String emailAddress, String portalLinkKey) {
-
-        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
-
-        NotificationsHelper.addCommonParameters(
-            claimantParameters,
-            details.claimant,
-            details.respondentNames,
-            details.caseId,
-            details.caseNumber
-        );
-        claimantParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, defaultIfEmpty(shortText, ""));
-        claimantParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, portalLinkKey);
-
-        try {
-            notificationClient.sendEmail(
-                emailTemplate,
-                emailAddress,
-                claimantParameters,
-                details.caseId
-            );
-        } catch (NotificationClientException ne) {
-            throw new NotificationException(ne);
-        }
-    }
-
     RespondentSumTypeItem getRespondent(CaseData caseData, String userIdamId) {
         return caseData.getRespondentCollection().stream()
             .filter(r -> userIdamId.equals(r.getValue().getIdamId()))
