@@ -125,10 +125,12 @@ class NotificationServiceTest {
     void before() throws NotificationClientException {
         parameters.put("firstname", "test");
         parameters.put("references", "123456789");
+
         notificationClient = mock(NotificationClient.class);
         notificationsProperties = mock(NotificationsProperties.class);
         notificationService = new NotificationService(
             notificationClient, notificationsProperties, featureToggleService);
+
         given(notificationClient.sendEmail(anyString(), anyString(), any(), anyString()))
             .willReturn(TestConstants.INPUT_SEND_EMAIL_RESPONSE);
         given(notificationsProperties.getCySubmitCaseEmailTemplateId())
@@ -153,11 +155,6 @@ class NotificationServiceTest {
         given(notificationsProperties.getTribunalAcknowledgementTemplateId()).willReturn("Tribunal");
         given(notificationsProperties.getRespondentTseEmailTypeATemplateId()).willReturn("A");
         given(notificationsProperties.getRespondentTseEmailTypeBTemplateId()).willReturn("B");
-        // todo add pse / tse?
-        given(notificationsProperties.getPseClaimantResponseYesTemplateId())
-            .willReturn("claimantResponseYesTemplateId");
-        given(notificationsProperties.getPseClaimantResponseNoTemplateId())
-            .willReturn("claimantResponseNoTemplateId");
 
         given(notificationsProperties.getTseTribunalResponseToRequestTemplateId())
             .willReturn("tseTribunalResponseToRequestTemplateId");
@@ -169,6 +166,7 @@ class NotificationServiceTest {
             .willReturn("claimantTseEmailStoredTemplateId");
         given(notificationsProperties.getClaimantTseEmailSubmitStoredTemplateId())
             .willReturn("claimantTseEmailSubmitStoredTemplateId");
+
         caseData = new CaseData();
         caseTestData = new CaseTestData();
         caseTestData.getCaseData().setRepCollection(List.of(
@@ -1193,58 +1191,6 @@ class NotificationServiceTest {
                 eq(caseTestData.getExpectedDetails().getId().toString())
             );
         }
-    }
-
-    @Test
-    void sendResponseNotificationEmailToClaimant() throws NotificationClientException {
-        notificationService.sendResponseNotificationEmailToClaimant(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString(),
-            YES,
-            true
-        );
-
-        verify(notificationClient, times(1)).sendEmail(
-            eq("claimantResponseYesTemplateId"),
-            eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
-            any(),
-            eq(caseTestData.getExpectedDetails().getId().toString())
-        );
-    }
-
-    @Test
-    void sendResponseNotificationEmailToClaimantDoNotCopy() throws NotificationClientException {
-        notificationService.sendResponseNotificationEmailToClaimant(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString(),
-            NO,
-            true
-        );
-
-        verify(notificationClient, times(1)).sendEmail(
-            eq("claimantResponseNoTemplateId"),
-            eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
-            any(),
-            eq(caseTestData.getExpectedDetails().getId().toString())
-        );
-    }
-
-    @Test
-    void sendNotResponseNotificationEmailToClaimantMissingEmail() throws NotificationClientException {
-        caseTestData.getCaseData().getClaimantType().setClaimantEmailAddress(null);
-        notificationService.sendResponseNotificationEmailToClaimant(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString(),
-            YES,
-            true
-        );
-
-        verify(notificationClient, times(0)).sendEmail(
-            any(),
-            any(),
-            any(),
-            any()
-        );
     }
 
     @Nested

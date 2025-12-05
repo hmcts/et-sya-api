@@ -17,6 +17,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
@@ -138,6 +139,64 @@ class NotificationPseServiceTest {
             YES,
             true,
             null
+        );
+
+        verify(notificationClient, times(0)).sendEmail(
+            any(),
+            any(),
+            any(),
+            any()
+        );
+    }
+
+    @Test
+    void sendResponseNotificationEmailToClaimant() throws NotificationClientException {
+        given(notificationsProperties.getPseClaimantResponseYesTemplateId())
+            .willReturn("claimantResponseYesTemplateId");
+
+        notificationPseService.sendResponseNotificationEmailToClaimant(
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString(),
+            YES,
+            true
+        );
+
+        verify(notificationClient, times(1)).sendEmail(
+            eq("claimantResponseYesTemplateId"),
+            eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            any(),
+            eq(caseTestData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void sendResponseNotificationEmailToClaimantDoNotCopy() throws NotificationClientException {
+        given(notificationsProperties.getPseClaimantResponseNoTemplateId())
+            .willReturn("claimantResponseNoTemplateId");
+
+        notificationPseService.sendResponseNotificationEmailToClaimant(
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString(),
+            NO,
+            true
+        );
+
+        verify(notificationClient, times(1)).sendEmail(
+            eq("claimantResponseNoTemplateId"),
+            eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            any(),
+            eq(caseTestData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void sendNotResponseNotificationEmailToClaimantMissingEmail() throws NotificationClientException {
+        caseTestData.getCaseData().getClaimantType().setClaimantEmailAddress(null);
+        notificationPseService.sendResponseNotificationEmailToClaimant(
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString(),
+            YES,
+            true
         );
 
         verify(notificationClient, times(0)).sendEmail(

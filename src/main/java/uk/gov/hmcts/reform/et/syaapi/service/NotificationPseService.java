@@ -5,9 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.service.notify.NotificationClient;
+import uk.gov.service.notify.NotificationClientException;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,6 +20,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.NOT_SET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_EXUI_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_HEARING_DATE_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.isRepresentedClaimantWithMyHmctsCase;
 
 @Service
 @Slf4j
@@ -117,5 +120,75 @@ public class NotificationPseService {
         respondentParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, linkToCase);
 
         notificationService.sendEmailToRespondent(emailAddress, emailTemplate, respondentParameters, caseId);
+    }
+
+    /**
+     * Sends response notification email to claimant.
+     * @param caseData caseData
+     * @param caseId case id
+     * @param copyToOtherParty copy to other party
+     * @param isClaimantPseResponse if the response is from claimant
+     */
+    void sendResponseNotificationEmailToClaimant(
+        CaseData caseData,
+        String caseId,
+        String copyToOtherParty,
+        boolean isClaimantPseResponse
+    ) {
+
+        String claimantEmail;
+        if (isClaimantPseResponse && caseData.getClaimantType() != null) {
+            claimantEmail = caseData.getClaimantType().getClaimantEmailAddress();
+        } else {
+            claimantEmail = isRepresentedClaimantWithMyHmctsCase(caseData)
+                ? caseData.getRepresentativeClaimantType().getRepresentativeEmailAddress()
+                : caseData.getClaimantType().getClaimantEmailAddress();
+        }
+
+        // don't send email to claimant if this is a respondent PSE response and they opted out
+        if ((NO.equals(copyToOtherParty) && !isClaimantPseResponse)
+            || copyToOtherParty == null || isBlank(claimantEmail)) {
+            log.info("Acknowledgement email not sent to claimants");
+            return;
+        }
+
+        String emailToClaimantTemplate = getEmailToClaimantTemplate(isClaimantPseResponse, copyToOtherParty);
+
+        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
+        NotificationsHelper.addCommonParameters(claimantParameters, caseData, caseId);
+
+        claimantParameters.put(
+            SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
+            NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET)
+        );
+        claimantParameters.put(
+            SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
+            notificationsProperties.getCitizenPortalLink() + caseId
+        );
+        claimantParameters.put(
+            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
+            notificationsProperties.getCitizenPortalLink() + caseId
+        );
+
+        try {
+            notificationClient.sendEmail(
+                emailToClaimantTemplate,
+                claimantEmail,
+                claimantParameters,
+                caseId
+            );
+        } catch (NotificationClientException ne) {
+            throw new NotificationException(ne);
+        }
+    }
+
+    private String getEmailToClaimantTemplate(boolean isClaimantPseResponse, String copyToOtherParty) {
+        if (isClaimantPseResponse) {
+            return NO.equals(copyToOtherParty)
+                ? notificationsProperties.getPseClaimantResponseNoTemplateId()
+                : notificationsProperties.getPseClaimantResponseYesTemplateId();
+        } else {
+            return notificationsProperties.getPseRespondentResponseTemplateId();
+        }
     }
 }

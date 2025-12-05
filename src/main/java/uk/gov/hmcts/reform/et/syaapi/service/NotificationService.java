@@ -991,66 +991,6 @@ public class NotificationService {
         );
     }
 
-    void sendResponseNotificationEmailToClaimant(
-        CaseData caseData,
-        String caseId,
-        String copyToOtherParty,
-        boolean isClaimantPseResponse
-    ) {
-
-        String claimantEmail;
-        if (isClaimantPseResponse && caseData.getClaimantType() != null) {
-            claimantEmail = caseData.getClaimantType().getClaimantEmailAddress();
-        } else {
-            claimantEmail = isRepresentedClaimantWithMyHmctsCase(caseData)
-                ? caseData.getRepresentativeClaimantType().getRepresentativeEmailAddress()
-                : caseData.getClaimantType().getClaimantEmailAddress();
-        }
-
-        // don't send email to claimant if this is a respondent PSE response and they opted out
-        if ((NO.equals(copyToOtherParty) && !isClaimantPseResponse)
-            || copyToOtherParty == null || isBlank(claimantEmail)) {
-            log.info("Acknowledgement email not sent to claimants");
-            return;
-        }
-
-        String emailToClaimantTemplate;
-        if (isClaimantPseResponse) {
-            emailToClaimantTemplate = NO.equals(copyToOtherParty)
-                ? notificationsProperties.getPseClaimantResponseNoTemplateId()
-                : notificationsProperties.getPseClaimantResponseYesTemplateId();
-        } else {
-            emailToClaimantTemplate = notificationsProperties.getPseRespondentResponseTemplateId();
-        }
-
-        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
-        NotificationsHelper.addCommonParameters(claimantParameters, caseData, caseId);
-
-        claimantParameters.put(
-            SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
-            NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET)
-        );
-        claimantParameters.put(
-            SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
-            notificationsProperties.getCitizenPortalLink() + caseId
-        );
-        claimantParameters.put(
-            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
-            notificationsProperties.getCitizenPortalLink() + caseId
-        );
-
-        try {
-            notificationClient.sendEmail(
-                emailToClaimantTemplate,
-                claimantEmail,
-                claimantParameters,
-                caseId
-            );
-        } catch (NotificationClientException ne) {
-            throw new NotificationException(ne);
-        }
-    }
-
     void sendStoredEmailToClaimant(CoreEmailDetails details, String shortText) {
         sendStoreConfirmationEmail(
             notificationsProperties.getClaimantTseEmailStoredTemplateId(),

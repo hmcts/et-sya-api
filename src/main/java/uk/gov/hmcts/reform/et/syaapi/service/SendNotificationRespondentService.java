@@ -352,7 +352,7 @@ public class SendNotificationRespondentService {
         notificationPseService.sendResponseNotificationEmailToTribunal(caseData, caseId);
         notificationPseService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty,
                                                                       false, respondentIdamId);
-        notificationService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty, false);
+        notificationPseService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty, false);
     }
 
 }
