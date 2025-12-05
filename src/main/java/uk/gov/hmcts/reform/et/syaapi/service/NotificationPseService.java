@@ -245,6 +245,8 @@ public class NotificationPseService {
             return;
         }
 
+        // TODO: don't send email if claimant is offline
+
         String claimantEmail = getClaimantEmail(caseData, isClaimantPseResponse);
         if (isBlank(claimantEmail)) {
             log.info("Acknowledgement email not sent to claimants");
