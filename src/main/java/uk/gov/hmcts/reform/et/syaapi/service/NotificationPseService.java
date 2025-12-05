@@ -28,8 +28,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_HEARING_DATE_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SHORTTEXT_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH;
-import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentRepresentative;
-import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.isRepresentedClaimantWithMyHmctsCase;
 
 @Service
 @Slf4j
@@ -106,23 +104,18 @@ public class NotificationPseService {
             // respondent PSE response
             if (NO.equals(copyToOtherParty)) {
                 // only the current respondent gets the email
-                sendEmailRespondFromRespondentNoCopy(caseData, caseId, respondentIdamId, respondentParameters);
+                String emailTemplate = notificationsProperties.getPseClaimantResponseNoTemplateId();
+                RespondentSumTypeItem respondent = getRespondent(caseData, respondentIdamId);
+                sendEmailToSingleCitizenRespondent(caseId, respondent, respondentParameters, emailTemplate);
             } else {
                 // send email to all the respondents
-                sendEmailRespondFromRespondentYesCopy(caseData, caseId, respondentIdamId, respondentParameters);
+                caseData.getRespondentCollection()
+                    .forEach(resp -> {
+                        sendEmailWhenYesCopyToEachRespondent(
+                            caseData, caseId, respondentIdamId, respondentParameters, resp);
+                    });
             }
         }
-    }
-
-    private void sendEmailRespondFromRespondentNoCopy(
-        CaseData caseData,
-        String caseId,
-        String respondentIdamId,
-        Map<String, Object> respondentParameters
-    ) {
-        String emailTemplate = notificationsProperties.getPseClaimantResponseNoTemplateId();
-        RespondentSumTypeItem respondent = getRespondent(caseData, respondentIdamId);
-        sendEmailToSingleCitizenRespondent(caseId, respondent, respondentParameters, emailTemplate);
     }
 
     private RespondentSumTypeItem getRespondent(CaseData caseData, String userIdamId) {
@@ -171,27 +164,14 @@ public class NotificationPseService {
         return null;
     }
 
-    void sendEmailRespondFromRespondentYesCopy(
-        CaseData caseData,
-        String caseId,
-        String respondentIdamId,
-        Map<String, Object> respondentParameters
-    ) {
-        caseData.getRespondentCollection()
-            .forEach(resp -> {
-                sendEmailRespondFromRespondentYesCopyEachResp(
-                    caseData, caseId, respondentIdamId, respondentParameters, resp);
-            });
-    }
-
-    private void sendEmailRespondFromRespondentYesCopyEachResp(
+    private void sendEmailWhenYesCopyToEachRespondent(
         CaseData caseData,
         String caseId,
         String respondentIdamId,
         Map<String, Object> respondentParameters,
         RespondentSumTypeItem resp
     ) {
-        // respondent is current user who submitted the response
+        // respondent is current citizen user who submitted the response
         if (!isNullOrEmpty(respondentIdamId) && respondentIdamId.equals(resp.getValue().getIdamId())) {
             String emailToCurrentUserTemplate = notificationsProperties.getPseRespondentResponseTemplateId();
             sendEmailToSingleCitizenRespondent(
@@ -205,7 +185,7 @@ public class NotificationPseService {
 
         // other respondents
         // check if respondent is represented
-        RepresentedTypeR representative = getRespondentRepresentative(caseData, resp.getValue());
+        RepresentedTypeR representative = NotificationsHelper.getRespondentRepresentative(caseData, resp.getValue());
         boolean isRepresented = representative != null;
 
         // get email to send to
@@ -305,7 +285,7 @@ public class NotificationPseService {
         if (isClaimantPseResponse && caseData.getClaimantType() != null) {
             return caseData.getClaimantType().getClaimantEmailAddress();
         } else {
-            return isRepresentedClaimantWithMyHmctsCase(caseData)
+            return NotificationsHelper.isRepresentedClaimantWithMyHmctsCase(caseData)
                 ? caseData.getRepresentativeClaimantType().getRepresentativeEmailAddress()
                 : caseData.getClaimantType().getClaimantEmailAddress();
         }
