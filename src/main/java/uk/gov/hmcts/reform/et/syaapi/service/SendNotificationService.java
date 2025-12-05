@@ -138,7 +138,7 @@ public class SendNotificationService {
 
         SendNotificationType sendNotificationType = sendNotificationTypeItem.get().getValue();
 
-        var pseRespondCollection = sendNotificationType.getRespondCollection();
+        List<PseResponseTypeItem> pseRespondCollection = sendNotificationType.getRespondCollection();
         if (CollectionUtils.isEmpty(pseRespondCollection)) {
             sendNotificationTypeItem.get().getValue().setRespondCollection(new ArrayList<>());
         }

@@ -2,9 +2,11 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
@@ -36,6 +38,8 @@ public class NotificationPseService {
 
     private static final String NO_CLAIMANT_EMAIL_FOUND =
         "No claimant email found - Application response acknowledgment not being sent";
+    private static final String NO_RESPONDENT_EMAIL_ADDRESS_ASSOCIATED =
+        "Respondent does not have an email address associated with their account";
 
     /**
      * Sends response notification email to tribunal.
@@ -114,11 +118,11 @@ public class NotificationPseService {
                                                          Map<String, Object> respondentParameters) {
         String emailTemplate = notificationsProperties.getPseClaimantResponseNoTemplateId();
 
-        RespondentSumTypeItem respondent = notificationService.getRespondent(caseData, respondentIdamId);
+        RespondentSumTypeItem respondent = getRespondent(caseData, respondentIdamId);
 
-        String emailAddress = notificationService.getRespondentEmail(respondent);
+        String emailAddress = getRespondentEmail(respondent);
         if (isBlank(emailAddress)) {
-            log.info("Respondent does not have an email address associated with their account");
+            log.info(NO_RESPONDENT_EMAIL_ADDRESS_ASSOCIATED);
             return;
         }
 
@@ -127,6 +131,30 @@ public class NotificationPseService {
         respondentParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, linkToCase);
 
         notificationService.sendEmailToRespondent(emailAddress, emailTemplate, respondentParameters, caseId);
+    }
+
+    private RespondentSumTypeItem getRespondent(CaseData caseData, String userIdamId) {
+        return caseData.getRespondentCollection().stream()
+            .filter(r -> userIdamId.equals(r.getValue().getIdamId()))
+            .findFirst()
+            .orElse(null);
+    }
+
+    private String getRespondentEmail(RespondentSumTypeItem respondentSumTypeItem) {
+        if (respondentSumTypeItem == null || respondentSumTypeItem.getValue() == null) {
+            return null;
+        }
+
+        RespondentSumType respondent = respondentSumTypeItem.getValue();
+        String responseEmail = respondent.getResponseRespondentEmail();
+        if (StringUtils.isNotBlank(responseEmail)) {
+            return responseEmail;
+        }
+        String respondentEmail = respondent.getRespondentEmail();
+        if (StringUtils.isNotBlank(respondentEmail)) {
+            return respondentEmail;
+        }
+        return null;
     }
 
     /**
@@ -227,11 +255,11 @@ public class NotificationPseService {
      * @param respondentIdamId respondent idam id
      */
     void sendNotificationStoredEmailToRespondent(CoreEmailDetails details, String shortText, String respondentIdamId) {
-        RespondentSumTypeItem respondent = notificationService.getRespondent(details.caseData(), respondentIdamId);
+        RespondentSumTypeItem respondent = getRespondent(details.caseData(), respondentIdamId);
 
-        String emailAddress = notificationService.getRespondentEmail(respondent);
+        String emailAddress = getRespondentEmail(respondent);
         if (isBlank(emailAddress)) {
-            log.info("Respondent does not have an email address associated with their account");
+            log.info(NO_RESPONDENT_EMAIL_ADDRESS_ASSOCIATED);
             return;
         }
         String portalLink = notificationsProperties.getRespondentPortalLink()
@@ -247,7 +275,7 @@ public class NotificationPseService {
         );
     }
 
-    void sendNotificationStoredEmail(String emailTemplate, CoreEmailDetails details,
+    private void sendNotificationStoredEmail(String emailTemplate, CoreEmailDetails details,
                                      String shortText, String emailAddress, String portalLinkKey) {
 
         Map<String, Object> claimantParameters = new ConcurrentHashMap<>();

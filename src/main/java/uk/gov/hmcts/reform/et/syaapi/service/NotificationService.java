@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ecm.common.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentTse;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
@@ -390,7 +389,7 @@ public class NotificationService {
         return parameters;
     }
 
-    private boolean isWelshLanguage(CaseData caseData) {
+    boolean isWelshLanguage(CaseData caseData) {
         boolean welshFlagEnabled = featureToggleService.isWelshEnabled();
         log.info("Welsh feature flag is set to {}", welshFlagEnabled);
         if (caseData.getClaimantHearingPreference() == null) {
@@ -969,28 +968,6 @@ public class NotificationService {
         }
     }
 
-    void sendResponseNotificationEmailToTribunal(CaseData caseData, String caseId) {
-        Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
-        NotificationsHelper.addCommonParameters(tribunalParameters, caseData, caseId);
-
-        tribunalParameters.put(
-            SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
-            NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET)
-        );
-
-        tribunalParameters.put(
-            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
-            notificationsProperties.getExuiCaseDetailsLink() + caseId
-        );
-
-        sendTribunalEmail(
-            caseData,
-            caseId,
-            tribunalParameters,
-            notificationsProperties.getPseTribunalResponseTemplateId()
-        );
-    }
-
     void sendStoredEmailToClaimant(CoreEmailDetails details, String shortText) {
         sendStoreConfirmationEmail(
             notificationsProperties.getClaimantTseEmailStoredTemplateId(),
@@ -1257,29 +1234,5 @@ public class NotificationService {
         } catch (NotificationClientException ne) {
             throw new NotificationException(ne);
         }
-    }
-
-    RespondentSumTypeItem getRespondent(CaseData caseData, String userIdamId) {
-        return caseData.getRespondentCollection().stream()
-            .filter(r -> userIdamId.equals(r.getValue().getIdamId()))
-            .findFirst()
-            .orElse(null);
-    }
-
-    String getRespondentEmail(RespondentSumTypeItem respondentSumTypeItem) {
-        if (respondentSumTypeItem == null || respondentSumTypeItem.getValue() == null) {
-            return null;
-        }
-
-        RespondentSumType respondent = respondentSumTypeItem.getValue();
-        String responseEmail = respondent.getResponseRespondentEmail();
-        if (StringUtils.isNotBlank(responseEmail)) {
-            return responseEmail;
-        }
-        String respondentEmail = respondent.getRespondentEmail();
-        if (StringUtils.isNotBlank(respondentEmail)) {
-            return respondentEmail;
-        }
-        return null;
     }
 }
