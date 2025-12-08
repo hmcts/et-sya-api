@@ -13,6 +13,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.RespondentUtil;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -87,7 +88,7 @@ public final class NotificationsHelper {
         }
 
         // get respondent email if respondent online
-        if (respondent.getIdamId() != null) {
+        if (RespondentUtil.isRespondentCitizenUser(respondent)) {
             String responseEmail = respondent.getResponseRespondentEmail();
             String respondentEmail = respondent.getRespondentEmail();
 

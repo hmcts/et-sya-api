@@ -12,13 +12,14 @@ import uk.gov.hmcts.reform.et.syaapi.exception.NotificationException;
 import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.et.syaapi.service.NotificationService.CoreEmailDetails;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.ClaimantUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.RespondentUtil;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
 import static org.apache.tika.utils.StringUtils.isBlank;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
@@ -41,6 +42,8 @@ public class NotificationPseService {
         "No claimant email found - Application response acknowledgment not being sent";
     private static final String NO_RESPONDENT_EMAIL_ADDRESS_ASSOCIATED =
         "Respondent does not have an email address associated with their account";
+    private static final String ACKNOWLEDGEMENT_EMAIL_NOT_SENT_TO_CLAIMANTS =
+        "Acknowledgement email not sent to claimants";
 
     /**
      * Sends response notification email to tribunal.
@@ -110,10 +113,8 @@ public class NotificationPseService {
             } else {
                 // send email to all the respondents
                 caseData.getRespondentCollection()
-                    .forEach(resp -> {
-                        sendEmailWhenYesCopyToEachRespondent(
-                            caseData, caseId, respondentIdamId, respondentParameters, resp);
-                    });
+                    .forEach(resp -> sendEmailWhenYesCopyToEachRespondent(
+                        caseData, caseId, respondentIdamId, respondentParameters, resp));
             }
         }
     }
@@ -172,7 +173,7 @@ public class NotificationPseService {
         RespondentSumTypeItem resp
     ) {
         // respondent is current citizen user who submitted the response
-        if (!isNullOrEmpty(respondentIdamId) && respondentIdamId.equals(resp.getValue().getIdamId())) {
+        if (StringUtils.isNotBlank(respondentIdamId) && respondentIdamId.equals(resp.getValue().getIdamId())) {
             String emailToCurrentUserTemplate = notificationsProperties.getPseRespondentResponseTemplateId();
             sendEmailToSingleCitizenRespondent(
                 caseId,
@@ -190,7 +191,7 @@ public class NotificationPseService {
 
         // get email to send to
         String emailToSend = getEmailToSend(isRepresented, representative, resp);
-        if (isNullOrEmpty(emailToSend)) {
+        if (StringUtils.isNotBlank(emailToSend)) {
             log.info("Respondent does not not have an email address associated with their account");
             return;
         }
@@ -212,7 +213,8 @@ public class NotificationPseService {
         );
     }
 
-    private String getEmailToSend(boolean isRepresented, RepresentedTypeR representative, RespondentSumTypeItem resp) {
+    private String getEmailToSend(boolean isRepresented, RepresentedTypeR representative,
+                                  RespondentSumTypeItem respondent) {
         if (isRepresented) {
             // get legal rep email if respondent is represented
             return StringUtils.isNotBlank(representative.getRepresentativeEmailAddress())
@@ -220,9 +222,9 @@ public class NotificationPseService {
                 : null;
         } else {
             // if not represented, get respondent email if online
-            return isNullOrEmpty(resp.getValue().getIdamId())
-                ? null
-                : getRespondentEmail(resp);
+            return RespondentUtil.isRespondentCitizenUser(respondent.getValue())
+                ? getRespondentEmail(respondent)
+                : null;
         }
     }
 
@@ -239,17 +241,26 @@ public class NotificationPseService {
         String copyToOtherParty,
         boolean isClaimantPseResponse
     ) {
-        // don't send email to claimant if this is a respondent PSE response and they opted out
-        if (!isClaimantPseResponse && (NO.equals(copyToOtherParty) || copyToOtherParty == null)) {
-            log.info("Acknowledgement email not sent to claimants");
-            return;
+        // if this is a respondent PSE response
+        if (!isClaimantPseResponse) {
+            // don't send email if copy to other party is NO
+            if ((NO.equals(copyToOtherParty) || copyToOtherParty == null)) {
+                log.info(ACKNOWLEDGEMENT_EMAIL_NOT_SENT_TO_CLAIMANTS + " - not copy to other party");
+                return;
+            }
+
+            // don't send email if claimant is offline
+            if (ClaimantUtil.isClaimantNonSystemUser(caseData)) {
+                log.info(ACKNOWLEDGEMENT_EMAIL_NOT_SENT_TO_CLAIMANTS + " - claimant offline");
+                return;
+            }
         }
 
-        // TODO: don't send email if claimant is offline
-
+        // get claimant email
         String claimantEmail = getClaimantEmail(caseData, isClaimantPseResponse);
+        // don't send email if no claimant email found
         if (isBlank(claimantEmail)) {
-            log.info("Acknowledgement email not sent to claimants");
+            log.info(ACKNOWLEDGEMENT_EMAIL_NOT_SENT_TO_CLAIMANTS + " - no claimant email found");
             return;
         }
 

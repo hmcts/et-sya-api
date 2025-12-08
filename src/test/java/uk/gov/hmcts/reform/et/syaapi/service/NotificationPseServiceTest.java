@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
@@ -40,7 +39,6 @@ class NotificationPseServiceTest {
     private CoreEmailDetails details;
     private NotificationPseService notificationPseService;
 
-    private CaseData caseData;
     private CaseTestData caseTestData;
 
     public static final String CLAIMANT = "Jane Doe";
@@ -58,7 +56,6 @@ class NotificationPseServiceTest {
             notificationService
         );
 
-        caseData = new CaseData();
         caseTestData = new CaseTestData();
         caseTestData.getCaseData().setRepCollection(List.of(
             RepresentedTypeRItem.builder()
