@@ -47,7 +47,7 @@ public class SendNotificationService {
     private final CaseService caseService;
     private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
-    private final NotificationService notificationService;
+    private final NotificationPseService notificationPseService;
     private final FeatureToggleService featureToggleService;
     private final IdamClient idamClient;
 
@@ -138,7 +138,7 @@ public class SendNotificationService {
 
         SendNotificationType sendNotificationType = sendNotificationTypeItem.get().getValue();
 
-        var pseRespondCollection = sendNotificationType.getRespondCollection();
+        List<PseResponseTypeItem> pseRespondCollection = sendNotificationType.getRespondCollection();
         if (CollectionUtils.isEmpty(pseRespondCollection)) {
             sendNotificationTypeItem.get().getValue().setRespondCollection(new ArrayList<>());
         }
@@ -196,10 +196,11 @@ public class SendNotificationService {
     private void sendAddResponseSendNotificationEmails(CaseData caseData,
                                                        String caseId,
                                                        String copyToOtherParty) {
-        notificationService.sendResponseNotificationEmailToTribunal(caseData, caseId);
+        notificationPseService.sendResponseNotificationEmailToTribunal(caseData, caseId);
         // passing null for respondent solicitor email as it is not needed in this context
-        notificationService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty, true, null);
-        notificationService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty, true);
+        notificationPseService.sendResponseNotificationEmailToRespondent(
+            caseData, caseId, copyToOtherParty, true, null);
+        notificationPseService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty, true);
     }
 
     private void setResponsesAsRespondedTo(List<GenericTypeItem<RespondNotificationType>> responses) {

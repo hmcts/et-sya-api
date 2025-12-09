@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ecm.common.service.pdf.PdfDecodedMultipartFile;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentTse;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse;
@@ -94,7 +93,6 @@ import static uk.gov.service.notify.NotificationClient.prepareUpload;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.CyclomaticComplexity", "PMD.GodClass"})
 public class NotificationService {
     private final NotificationClient notificationClient;
     private final NotificationsProperties notificationsProperties;
@@ -369,7 +367,7 @@ public class NotificationService {
         sendEmailToRespondent(email, emailToRespondentTemplate, respondentParameters, details.caseId());
     }
 
-    private void sendEmailToRespondent(String respondentEmailAddress, String emailTemplate,
+    void sendEmailToRespondent(String respondentEmailAddress, String emailTemplate,
                                        Map<String, Object> parameters, String caseId) {
         try {
             notificationClient.sendEmail(emailTemplate, respondentEmailAddress, parameters, caseId);
@@ -390,7 +388,7 @@ public class NotificationService {
         return parameters;
     }
 
-    private boolean isWelshLanguage(CaseData caseData) {
+    boolean isWelshLanguage(CaseData caseData) {
         boolean welshFlagEnabled = featureToggleService.isWelshEnabled();
         log.info("Welsh feature flag is set to {}", welshFlagEnabled);
         if (caseData.getClaimantHearingPreference() == null) {
@@ -400,7 +398,7 @@ public class NotificationService {
         return welshFlagEnabled && WELSH_LANGUAGE.equals(caseData.getClaimantHearingPreference().getContactLanguage());
     }
 
-    private boolean isWelshLanguage(RespondentSumTypeItem respondent) {
+    boolean isWelshLanguage(RespondentSumTypeItem respondent) {
         boolean welshFlagEnabled = featureToggleService.isWelshEnabled();
         log.info("Welsh feature flag is set to {}", welshFlagEnabled);
         return welshFlagEnabled && WELSH_LANGUAGE.equals(respondent.getValue().getEt3ResponseLanguagePreference());
@@ -418,12 +416,12 @@ public class NotificationService {
             ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
     }
 
-    private String getRespondentPortalLink(String caseId, String respondentId, boolean isWelsh) {
+    String getRespondentPortalLink(String caseId, String respondentId, boolean isWelsh) {
         return notificationsProperties.getRespondentPortalLink() + caseId + "/" + respondentId + (isWelsh
             ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
     }
 
-    private String getRespondentRepPortalLink(String caseId) {
+    String getRespondentRepPortalLink(String caseId) {
         return notificationsProperties.getExuiCaseDetailsLink() + caseId;
     }
 
@@ -969,144 +967,6 @@ public class NotificationService {
         }
     }
 
-    void sendResponseNotificationEmailToTribunal(CaseData caseData, String caseId) {
-        Map<String, Object> tribunalParameters = new ConcurrentHashMap<>();
-        NotificationsHelper.addCommonParameters(tribunalParameters, caseData, caseId);
-
-        tribunalParameters.put(
-            SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
-            NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET)
-        );
-
-        tribunalParameters.put(
-            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
-            notificationsProperties.getExuiCaseDetailsLink() + caseId
-        );
-
-        sendTribunalEmail(
-            caseData,
-            caseId,
-            tribunalParameters,
-            notificationsProperties.getPseTribunalResponseTemplateId()
-        );
-    }
-
-    void sendResponseNotificationEmailToRespondent(
-        CaseData caseData,
-        String caseId,
-        String copyToOtherParty,
-        boolean isClaimantPseResponse,
-        String respondentIdamId
-    ) {
-        // don't send email to respondents if this is a claimant PSE response and they opted out
-        if ((NO.equals(copyToOtherParty) && isClaimantPseResponse)
-            || copyToOtherParty == null) {
-            log.info("Acknowledgement email not sent to respondents");
-            return;
-        }
-
-
-        Map<String, Object> respondentParameters = new ConcurrentHashMap<>();
-        NotificationsHelper.addCommonParameters(respondentParameters, caseData, caseId);
-        respondentParameters.put(
-            SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
-            NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET)
-        );
-
-        if (isClaimantPseResponse) {
-            String emailTemplate = notificationsProperties.getPseRespondentResponseTemplateId();
-            sendRespondentEmails(caseData, caseId, respondentParameters, emailTemplate);
-        } else {
-            // respondent PSE response
-            if (NO.equals(copyToOtherParty)) {
-                // only the current respondent gets the email
-                sendPseResponseFromRespondentWithNoCopy(caseData, caseId, respondentIdamId, respondentParameters);
-            } else {
-                // send email to all the respondents
-                String emailTemplate = notificationsProperties.getPseClaimantResponseYesTemplateId();
-                sendRespondentEmails(caseData, caseId, respondentParameters, emailTemplate);
-            }
-        }
-    }
-
-    private void sendPseResponseFromRespondentWithNoCopy(CaseData caseData, String caseId, String respondentIdamId,
-                                                         Map<String, Object> respondentParameters) {
-        String emailTemplate = notificationsProperties.getPseClaimantResponseNoTemplateId();
-
-        RespondentSumTypeItem respondent = getRespondent(caseData, respondentIdamId);
-
-        String emailAddress = getRespondentEmail(respondent);
-        if (isBlank(emailAddress)) {
-            log.info("Respondent does not have an email address associated with their account");
-            return;
-        }
-
-        String linkToCase = getRespondentPortalLink(caseId, respondent.getId(), isWelshLanguage(respondent));
-        respondentParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, linkToCase);
-
-        sendEmailToRespondent(emailAddress, emailTemplate, respondentParameters, caseId);
-    }
-
-    void sendResponseNotificationEmailToClaimant(
-        CaseData caseData,
-        String caseId,
-        String copyToOtherParty,
-        boolean isClaimantPseResponse
-    ) {
-
-        String claimantEmail;
-        if (isClaimantPseResponse && caseData.getClaimantType() != null) {
-            claimantEmail = caseData.getClaimantType().getClaimantEmailAddress();
-        } else {
-            claimantEmail = isRepresentedClaimantWithMyHmctsCase(caseData)
-                ? caseData.getRepresentativeClaimantType().getRepresentativeEmailAddress()
-                : caseData.getClaimantType().getClaimantEmailAddress();
-        }
-
-        // don't send email to claimant if this is a respondent PSE response and they opted out
-        if ((NO.equals(copyToOtherParty) && !isClaimantPseResponse)
-            || copyToOtherParty == null || isBlank(claimantEmail)) {
-            log.info("Acknowledgement email not sent to claimants");
-            return;
-        }
-
-        String emailToClaimantTemplate;
-        if (isClaimantPseResponse) {
-            emailToClaimantTemplate = NO.equals(copyToOtherParty)
-                ? notificationsProperties.getPseClaimantResponseNoTemplateId()
-                : notificationsProperties.getPseClaimantResponseYesTemplateId();
-        } else {
-            emailToClaimantTemplate = notificationsProperties.getPseRespondentResponseTemplateId();
-        }
-
-        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
-        NotificationsHelper.addCommonParameters(claimantParameters, caseData, caseId);
-
-        claimantParameters.put(
-            SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
-            NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET)
-        );
-        claimantParameters.put(
-            SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
-            notificationsProperties.getCitizenPortalLink() + caseId
-        );
-        claimantParameters.put(
-            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
-            notificationsProperties.getCitizenPortalLink() + caseId
-        );
-
-        try {
-            notificationClient.sendEmail(
-                emailToClaimantTemplate,
-                claimantEmail,
-                claimantParameters,
-                caseId
-            );
-        } catch (NotificationClientException ne) {
-            throw new NotificationException(ne);
-        }
-    }
-
     void sendStoredEmailToClaimant(CoreEmailDetails details, String shortText) {
         sendStoreConfirmationEmail(
             notificationsProperties.getClaimantTseEmailStoredTemplateId(),
@@ -1135,7 +995,7 @@ public class NotificationService {
         );
     }
 
-    private void sendTribunalEmail(CaseData caseData,
+    void sendTribunalEmail(CaseData caseData,
                                    String caseId,
                                    Map<String, Object> tribunalParameters,
                                    String templateId) {
@@ -1163,7 +1023,7 @@ public class NotificationService {
         }
     }
 
-    private void sendRespondentEmails(CaseData caseData, String caseId, Map<String, Object> respondentParameters,
+    void sendRespondentEmails(CaseData caseData, String caseId, Map<String, Object> respondentParameters,
                                       String emailToRespondentTemplate) {
         caseData.getRespondentCollection()
             .forEach(resp -> {
@@ -1373,93 +1233,5 @@ public class NotificationService {
         } catch (NotificationClientException ne) {
             throw new NotificationException(ne);
         }
-    }
-
-    void sendNotificationStoredEmailToClaimant(CoreEmailDetails details, String shortText) {
-        String emailAddress = details.caseData.getClaimantType().getClaimantEmailAddress();
-        if (isBlank(emailAddress)) {
-            log.info(NO_CLAIMANT_EMAIL_FOUND);
-            return;
-        }
-
-        sendNotificationStoredEmail(
-            notificationsProperties.getClaimantTseEmailStoredTemplateId(),
-            details,
-            shortText,
-            emailAddress,
-            notificationsProperties.getCitizenPortalLink() + details.caseId
-        );
-    }
-
-    void sendNotificationStoredEmailToRespondent(CoreEmailDetails details, String shortText, String respondentIdamId) {
-        RespondentSumTypeItem respondent = getRespondent(details.caseData(), respondentIdamId);
-
-        String emailAddress = getRespondentEmail(respondent);
-        if (isBlank(emailAddress)) {
-            log.info("Respondent does not have an email address associated with their account");
-            return;
-        }
-        String portalLink = notificationsProperties.getRespondentPortalLink()
-            + details.caseId + "/" + respondent.getId()
-            + (isWelshLanguage(respondent) ? WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH : "");
-
-        sendNotificationStoredEmail(
-            notificationsProperties.getClaimantTseEmailStoredTemplateId(),
-            details,
-            shortText,
-            emailAddress,
-            portalLink
-        );
-    }
-
-    private void sendNotificationStoredEmail(String emailTemplate, CoreEmailDetails details,
-                                            String shortText, String emailAddress, String portalLinkKey) {
-
-        Map<String, Object> claimantParameters = new ConcurrentHashMap<>();
-
-        NotificationsHelper.addCommonParameters(
-            claimantParameters,
-            details.claimant,
-            details.respondentNames,
-            details.caseId,
-            details.caseNumber
-        );
-        claimantParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, defaultIfEmpty(shortText, ""));
-        claimantParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, portalLinkKey);
-
-        try {
-            notificationClient.sendEmail(
-                emailTemplate,
-                emailAddress,
-                claimantParameters,
-                details.caseId
-            );
-        } catch (NotificationClientException ne) {
-            throw new NotificationException(ne);
-        }
-    }
-
-    private RespondentSumTypeItem getRespondent(CaseData caseData, String userIdamId) {
-        return caseData.getRespondentCollection().stream()
-            .filter(r -> userIdamId.equals(r.getValue().getIdamId()))
-            .findFirst()
-            .orElse(null);
-    }
-
-    private String getRespondentEmail(RespondentSumTypeItem respondentSumTypeItem) {
-        if (respondentSumTypeItem == null || respondentSumTypeItem.getValue() == null) {
-            return null;
-        }
-
-        RespondentSumType respondent = respondentSumTypeItem.getValue();
-        String responseEmail = respondent.getResponseRespondentEmail();
-        if (StringUtils.isNotBlank(responseEmail)) {
-            return responseEmail;
-        }
-        String respondentEmail = respondent.getRespondentEmail();
-        if (StringUtils.isNotBlank(respondentEmail)) {
-            return respondentEmail;
-        }
-        return null;
     }
 }

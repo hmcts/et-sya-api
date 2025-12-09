@@ -65,7 +65,7 @@ class SendNotificationServiceTest {
     @Mock
     private CaseDetailsConverter caseDetailsConverter;
     @Mock
-    private NotificationService notificationService;
+    private NotificationPseService notificationPseService;
     @Mock
     private FeatureToggleService featureToggleService;
     @Mock

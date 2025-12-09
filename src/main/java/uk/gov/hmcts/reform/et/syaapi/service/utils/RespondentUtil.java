@@ -329,4 +329,13 @@ public final class RespondentUtil {
         throw new ManageCaseRoleException(new Exception(
             String.format(EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND, caseId)));
     }
+
+    /**
+     * Checks if the respondent is an online respondent based on the presence of an IDAM ID.
+     * @param respondent the respondent to check
+     * @return true if the respondent is online, false otherwise
+     */
+    public static boolean isRespondentCitizenUser(RespondentSumType respondent) {
+        return StringUtils.isNotBlank(respondent.getIdamId());
+    }
 }

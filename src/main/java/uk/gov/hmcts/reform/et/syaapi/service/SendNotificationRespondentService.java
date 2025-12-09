@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.ChangeRespondentNotificationStatusRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SubmitRespondentPseRespondRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.NotificationService.CoreEmailDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -46,6 +47,7 @@ public class SendNotificationRespondentService {
     private final CaseDetailsConverter caseDetailsConverter;
     private final CaseDocumentService caseDocumentService;
     private final NotificationService notificationService;
+    private final NotificationPseService notificationPseService;
 
     private static final String SEND_NOTIFICATION_ID_INCORRECT = "Notification id provided is incorrect";
     private static final String RESPOND_ID_INCORRECT = "Respond id provided is incorrect";
@@ -253,9 +255,8 @@ public class SendNotificationRespondentService {
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
 
         // send email
-        NotificationService.CoreEmailDetails details =
-            notificationService.formatCoreEmailDetails(caseData, request.getCaseId());
-        notificationService.sendNotificationStoredEmailToRespondent(
+        CoreEmailDetails details = notificationService.formatCoreEmailDetails(caseData, request.getCaseId());
+        notificationPseService.sendNotificationStoredEmailToRespondent(
             details,
             request.getPseResponseType().getResponse(),
             request.getPseResponseType().getFromIdamId()
@@ -348,10 +349,10 @@ public class SendNotificationRespondentService {
                                                        String caseId,
                                                        String copyToOtherParty,
                                                        String respondentIdamId) {
-        notificationService.sendResponseNotificationEmailToTribunal(caseData, caseId);
-        notificationService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty,
+        notificationPseService.sendResponseNotificationEmailToTribunal(caseData, caseId);
+        notificationPseService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty,
                                                                       false, respondentIdamId);
-        notificationService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty, false);
+        notificationPseService.sendResponseNotificationEmailToClaimant(caseData, caseId, copyToOtherParty, false);
     }
 
 }

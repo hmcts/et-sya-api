@@ -84,7 +84,6 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOTIFICA
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SUBMIT_CASE_PDF_FILE_RESPONSE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WELSH_LANGUAGE;
 
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.WARN)
 class NotificationServiceTest {
@@ -125,10 +124,12 @@ class NotificationServiceTest {
     void before() throws NotificationClientException {
         parameters.put("firstname", "test");
         parameters.put("references", "123456789");
+
         notificationClient = mock(NotificationClient.class);
         notificationsProperties = mock(NotificationsProperties.class);
         notificationService = new NotificationService(
             notificationClient, notificationsProperties, featureToggleService);
+
         given(notificationClient.sendEmail(anyString(), anyString(), any(), anyString()))
             .willReturn(TestConstants.INPUT_SEND_EMAIL_RESPONSE);
         given(notificationsProperties.getCySubmitCaseEmailTemplateId())
@@ -153,11 +154,6 @@ class NotificationServiceTest {
         given(notificationsProperties.getTribunalAcknowledgementTemplateId()).willReturn("Tribunal");
         given(notificationsProperties.getRespondentTseEmailTypeATemplateId()).willReturn("A");
         given(notificationsProperties.getRespondentTseEmailTypeBTemplateId()).willReturn("B");
-        // todo add pse / tse?
-        given(notificationsProperties.getPseClaimantResponseYesTemplateId())
-            .willReturn("claimantResponseYesTemplateId");
-        given(notificationsProperties.getPseClaimantResponseNoTemplateId())
-            .willReturn("claimantResponseNoTemplateId");
 
         given(notificationsProperties.getTseTribunalResponseToRequestTemplateId())
             .willReturn("tseTribunalResponseToRequestTemplateId");
@@ -169,6 +165,7 @@ class NotificationServiceTest {
             .willReturn("claimantTseEmailStoredTemplateId");
         given(notificationsProperties.getClaimantTseEmailSubmitStoredTemplateId())
             .willReturn("claimantTseEmailSubmitStoredTemplateId");
+
         caseData = new CaseData();
         caseTestData = new CaseTestData();
         caseTestData.getCaseData().setRepCollection(List.of(
@@ -1195,147 +1192,6 @@ class NotificationServiceTest {
         }
     }
 
-    @Test
-    void sendResponseNotificationEmailToTribunal() throws NotificationClientException {
-        caseTestData.getCaseData().setTribunalCorrespondenceEmail("tribunal@test.com");
-        notificationService.sendResponseNotificationEmailToTribunal(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString()
-        );
-
-        verify(notificationClient, times(1)).sendEmail(
-            any(),
-            eq(caseTestData.getCaseData().getTribunalCorrespondenceEmail()),
-            any(),
-            eq(caseTestData.getExpectedDetails().getId().toString())
-        );
-    }
-
-    @Test
-    void sendNotResponseNotificationEmailToTribunalMissingEmail() throws NotificationClientException {
-        caseTestData.getCaseData().setTribunalCorrespondenceEmail(null);
-        notificationService.sendResponseNotificationEmailToTribunal(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString()
-        );
-
-        verify(notificationClient, times(0)).sendEmail(
-            any(),
-            any(),
-            any(),
-            any()
-        );
-    }
-
-    @Test
-    void sendResponseNotificationEmailToRespondent() throws NotificationClientException {
-        notificationService.sendResponseNotificationEmailToRespondent(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString(),
-            YES,
-            true,
-            null
-        );
-
-        verify(notificationClient, times(1)).sendEmail(
-            any(),
-            eq(caseTestData.getCaseData().getRespondentCollection().getFirst().getValue().getRespondentEmail()),
-            any(),
-            eq(caseTestData.getExpectedDetails().getId().toString())
-        );
-    }
-
-    @Test
-    void sendNotResponseNotificationEmailToRespondentDoNotCopy() throws NotificationClientException {
-        notificationService.sendResponseNotificationEmailToRespondent(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString(),
-            NO,
-            true,
-            null
-        );
-
-        verify(notificationClient, times(0)).sendEmail(
-            any(),
-            any(),
-            any(),
-            any()
-        );
-    }
-
-    @Test
-    void sendNotResponseNotificationEmailToRespondentMissingEmail() throws NotificationClientException {
-        for (RespondentSumTypeItem respondentSumTypeItem : caseTestData.getCaseData().getRespondentCollection()) {
-            respondentSumTypeItem.getValue().setRespondentEmail(null);
-        }
-        notificationService.sendResponseNotificationEmailToRespondent(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString(),
-            YES,
-            true,
-            null
-        );
-
-        verify(notificationClient, times(0)).sendEmail(
-            any(),
-            any(),
-            any(),
-            any()
-        );
-    }
-
-    @Test
-    void sendResponseNotificationEmailToClaimant() throws NotificationClientException {
-        notificationService.sendResponseNotificationEmailToClaimant(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString(),
-            YES,
-            true
-        );
-
-        verify(notificationClient, times(1)).sendEmail(
-            eq("claimantResponseYesTemplateId"),
-            eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
-            any(),
-            eq(caseTestData.getExpectedDetails().getId().toString())
-        );
-    }
-
-    @Test
-    void sendResponseNotificationEmailToClaimantDoNotCopy() throws NotificationClientException {
-        notificationService.sendResponseNotificationEmailToClaimant(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString(),
-            NO,
-            true
-        );
-
-        verify(notificationClient, times(1)).sendEmail(
-            eq("claimantResponseNoTemplateId"),
-            eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
-            any(),
-            eq(caseTestData.getExpectedDetails().getId().toString())
-        );
-    }
-
-    @Test
-    void sendNotResponseNotificationEmailToClaimantMissingEmail() throws NotificationClientException {
-        caseTestData.getCaseData().getClaimantType().setClaimantEmailAddress(null);
-        notificationService.sendResponseNotificationEmailToClaimant(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString(),
-            YES,
-            true
-        );
-
-        verify(notificationClient, times(0)).sendEmail(
-            any(),
-            any(),
-            any(),
-            any()
-        );
-    }
-
     @Nested
     class SendStoreAcknowledgementEmail {
         @BeforeEach
@@ -1909,80 +1765,6 @@ class NotificationServiceTest {
                 any(),
                 eq(caseTestData.getExpectedDetails().getId().toString())
             );
-        }
-    }
-
-    @Nested
-    class SendNotificationStoredEmailToRespondent {
-        @BeforeEach
-        void setUp() {
-            details = new CoreEmailDetails(
-                caseTestData.getCaseData(),
-                CLAIMANT,
-                "1",
-                "Test Respondent Organisation -1-,"
-                    + " Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez",
-                NOT_SET,
-                caseTestData.getExpectedDetails().getId().toString()
-            );
-        }
-
-        @Test
-        void shouldSendEmailToRespondent_whenEmailPresent() throws NotificationClientException {
-            notificationService.sendNotificationStoredEmailToRespondent(details, "shortText", "1234567890");
-            verify(notificationClient, times(1)).sendEmail(any(), any(), any(), any());
-        }
-
-        @Test
-        void shouldSendEmailToRespondent_whenResponseEmailPresent() throws NotificationClientException {
-            details.caseData().getRespondentCollection().get(5).getValue().setResponseRespondentEmail("test@test.com");
-            notificationService.sendNotificationStoredEmailToRespondent(details, "shortText",
-                                                                        "notifications-test-idam-id");
-            verify(notificationClient, times(1)).sendEmail(any(), any(), any(), any());
-        }
-
-        @Test
-        void shouldSendEmailToRespondent_whenEmailNotPresent() throws NotificationClientException {
-            details.caseData().getRespondentCollection().get(5).getValue().setResponseRespondentEmail("");
-            notificationService.sendNotificationStoredEmailToRespondent(details, "shortText",
-                                                                        "notifications-test-idam-id");
-            verify(notificationClient, times(0)).sendEmail(any(), any(), any(), any());
-        }
-
-        @Test
-        void shouldSendEmailToRespondent_whenRespondentNotPresent() throws NotificationClientException {
-            notificationService.sendNotificationStoredEmailToRespondent(details, "shortText", "dummy");
-            verify(notificationClient, times(0)).sendEmail(any(), any(), any(), any());
-        }
-    }
-
-    @Nested
-    class SendNotificationStoredEmailToClaimant {
-        @BeforeEach
-        void setUp() {
-            details = new CoreEmailDetails(
-                caseTestData.getCaseData(),
-                CLAIMANT,
-                "1",
-                "Test Respondent Organisation -1-,"
-                    + " Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez",
-                NOT_SET,
-                caseTestData.getExpectedDetails().getId().toString()
-            );
-        }
-
-        @Test
-        void shouldSendEmailToClaimant_whenEmailPresent() throws NotificationClientException {
-            notificationService.sendNotificationStoredEmailToClaimant(details, "shortText");
-            verify(notificationClient, times(1)).sendEmail(any(), any(), any(), any());
-        }
-
-
-        @Test
-        void shouldSendEmailToClaimant_whenEmailNotPresent() throws NotificationClientException {
-            details.caseData().getClaimantType().setClaimantEmailAddress("");
-            notificationService.sendNotificationStoredEmailToClaimant(details, "shortText");
-            verify(notificationClient, times(0)).sendEmail(any(), any(), any(), any());
         }
     }
 }
