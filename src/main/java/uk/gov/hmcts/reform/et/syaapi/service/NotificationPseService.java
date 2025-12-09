@@ -191,7 +191,7 @@ public class NotificationPseService {
 
         // get email to send to
         String emailToSend = getEmailToSend(isRepresented, representative, resp);
-        if (StringUtils.isNotBlank(emailToSend)) {
+        if (StringUtils.isBlank(emailToSend)) {
             log.info("Respondent does not not have an email address associated with their account");
             return;
         }

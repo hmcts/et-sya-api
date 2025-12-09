@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
@@ -20,6 +22,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
@@ -27,6 +30,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.NOT_SET;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.WARN)
 class NotificationPseServiceTest {
 
     @Mock
@@ -41,7 +45,9 @@ class NotificationPseServiceTest {
 
     private CaseTestData caseTestData;
 
-    public static final String CLAIMANT = "Jane Doe";
+    private static final String CLAIMANT_NAME = "Jane Doe";
+    private static final String RESPONDENT_IDAM_ID = "respondent-idam-id";
+    private static final String REP_EMAIL = "rep@email.com";
 
     @BeforeEach
     void before() {
@@ -56,19 +62,28 @@ class NotificationPseServiceTest {
             notificationService
         );
 
+        given(notificationsProperties.getPseRespondentResponseTemplateId())
+            .willReturn("respondentResponseTemplateId");
+        given(notificationsProperties.getPseClaimantResponseYesTemplateId())
+            .willReturn("claimantResponseYesTemplateId");
+        given(notificationsProperties.getPseClaimantResponseNoTemplateId())
+            .willReturn("claimantResponseNoTemplateId");
+
         caseTestData = new CaseTestData();
+        caseTestData.getCaseData().getRespondentCollection().getFirst().getValue().setIdamId(RESPONDENT_IDAM_ID);
         caseTestData.getCaseData().setRepCollection(List.of(
             RepresentedTypeRItem.builder()
                 .value(RepresentedTypeR.builder()
                            .myHmctsYesNo(YES)
                            .respRepName("RespRepName")
+                           .representativeEmailAddress(REP_EMAIL)
                            .build())
                 .build()
         ));
     }
 
     @Test
-    void sendResponseNotificationEmailToTribunal() throws NotificationClientException {
+    void sendResponseNotificationEmailToTribunal_Normal() throws NotificationClientException {
         caseTestData.getCaseData().setTribunalCorrespondenceEmail("tribunal@test.com");
         notificationPseService.sendResponseNotificationEmailToTribunal(
             caseTestData.getCaseData(),
@@ -100,7 +115,7 @@ class NotificationPseServiceTest {
     }
 
     @Test
-    void sendResponseNotificationEmailToRespondent() throws NotificationClientException {
+    void sendResponseNotificationEmailToRespondent_Copy() throws NotificationClientException {
         notificationPseService.sendResponseNotificationEmailToRespondent(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
@@ -118,7 +133,7 @@ class NotificationPseServiceTest {
     }
 
     @Test
-    void sendNotResponseNotificationEmailToRespondentDoNotCopy() throws NotificationClientException {
+    void sendNotResponseNotificationEmailToRespondent_DoNotCopy() throws NotificationClientException {
         notificationPseService.sendResponseNotificationEmailToRespondent(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
@@ -136,10 +151,11 @@ class NotificationPseServiceTest {
     }
 
     @Test
-    void sendNotResponseNotificationEmailToRespondentMissingEmail() throws NotificationClientException {
+    void sendNotResponseNotificationEmailToRespondent_MissingEmail() throws NotificationClientException {
         for (RespondentSumTypeItem respondentSumTypeItem : caseTestData.getCaseData().getRespondentCollection()) {
             respondentSumTypeItem.getValue().setRespondentEmail(null);
         }
+
         notificationPseService.sendResponseNotificationEmailToRespondent(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
@@ -157,10 +173,108 @@ class NotificationPseServiceTest {
     }
 
     @Test
-    void sendResponseNotificationEmailToClaimant() throws NotificationClientException {
-        given(notificationsProperties.getPseClaimantResponseYesTemplateId())
-            .willReturn("claimantResponseYesTemplateId");
+    void sendResponseNotificationEmailToRespondent_FromRespondent_CopyNo_SendsToCurrent()
+        throws NotificationClientException {
+        notificationPseService.sendResponseNotificationEmailToRespondent(
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString(),
+            NO,
+            false,
+            RESPONDENT_IDAM_ID
+        );
 
+        verify(notificationClient, times(1)).sendEmail(
+            any(),
+            eq(caseTestData.getCaseData().getRespondentCollection().getFirst().getValue().getRespondentEmail()),
+            any(),
+            eq(caseTestData.getExpectedDetails().getId().toString())
+        );
+    }
+
+    @Test
+    void sendResponseNotificationEmailToRespondent_FromRespondent_CopyNo_NoEmail_NoSend()
+        throws NotificationClientException {
+        caseTestData.getCaseData().getRespondentCollection().getFirst().getValue().setRespondentEmail(null);
+
+        notificationPseService.sendResponseNotificationEmailToRespondent(
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString(),
+            NO,
+            false,
+            RESPONDENT_IDAM_ID
+        );
+
+        verify(notificationClient, times(0)).sendEmail(
+            any(),
+            any(),
+            any(),
+            any()
+        );
+    }
+
+    @Test
+    void sendResponseNotificationEmailToRespondent_FromRespondent_CopyYes_AllUnrepresented_AllWithEmail()
+        throws NotificationClientException {
+        notificationPseService.sendResponseNotificationEmailToRespondent(
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString(),
+            YES,
+            false,
+            RESPONDENT_IDAM_ID
+        );
+
+        verify(notificationClient, times(5)).sendEmail(
+            any(),
+            any(),
+            any(),
+            any());
+    }
+
+    @Test
+    void sendResponseNotificationEmailToRespondent_FromRespondent_CopyYes_RepresentedWithEmail()
+        throws NotificationClientException {
+        caseTestData.getCaseData().getRespondentCollection().get(1).getValue().setRespondentName("RespRepName");
+
+        notificationPseService.sendResponseNotificationEmailToRespondent(
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString(),
+            YES,
+            false,
+            RESPONDENT_IDAM_ID
+        );
+
+        verify(notificationClient, times(1)).sendEmail(
+            any(),
+            eq(REP_EMAIL),
+            any(),
+            any()
+        );
+    }
+
+    @Test
+    void sendResponseNotificationEmailToRespondent_RespondentPseResponse_CopyYes_RepresentedNoEmail_NoSend()
+        throws NotificationClientException {
+        caseTestData.getCaseData().getRespondentCollection().get(1).getValue().setRespondentName("RespRepName");
+        caseTestData.getCaseData().getRepCollection().getFirst().getValue().setRepresentativeEmailAddress("");
+
+        notificationPseService.sendResponseNotificationEmailToRespondent(
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString(),
+            YES,
+            false,
+            RESPONDENT_IDAM_ID
+        );
+
+        verify(notificationClient, never()).sendEmail(
+            any(),
+            eq(""),
+            any(),
+            any()
+        );
+    }
+
+    @Test
+    void sendResponseNotificationEmailToClaimant_Copy() throws NotificationClientException {
         notificationPseService.sendResponseNotificationEmailToClaimant(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
@@ -177,10 +291,7 @@ class NotificationPseServiceTest {
     }
 
     @Test
-    void sendResponseNotificationEmailToClaimantDoNotCopy() throws NotificationClientException {
-        given(notificationsProperties.getPseClaimantResponseNoTemplateId())
-            .willReturn("claimantResponseNoTemplateId");
-
+    void sendResponseNotificationEmailToClaimant_DoNotCopy() throws NotificationClientException {
         notificationPseService.sendResponseNotificationEmailToClaimant(
             caseTestData.getCaseData(),
             caseTestData.getExpectedDetails().getId().toString(),
@@ -197,7 +308,7 @@ class NotificationPseServiceTest {
     }
 
     @Test
-    void sendNotResponseNotificationEmailToClaimantMissingEmail() throws NotificationClientException {
+    void sendNotResponseNotificationEmailToClaimant_MissingEmail() throws NotificationClientException {
         caseTestData.getCaseData().getClaimantType().setClaimantEmailAddress(null);
         notificationPseService.sendResponseNotificationEmailToClaimant(
             caseTestData.getCaseData(),
@@ -214,13 +325,59 @@ class NotificationPseServiceTest {
         );
     }
 
+    @Test
+    void sendResponseNotificationEmailToClaimant_FromRespondent_CopyNo_NoEmailSent()
+        throws NotificationClientException {
+        caseTestData.getCaseData().setEt1OnlineSubmission("Yes");
+
+        notificationPseService.sendResponseNotificationEmailToClaimant(
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString(),
+            NO,
+            false
+        );
+
+        verify(notificationClient, never()).sendEmail(any(), any(), any(), any());
+    }
+
+    @Test
+    void sendResponseNotificationEmailToClaimant_FromRespondent_CopyNull_NoEmailSent()
+        throws NotificationClientException {
+        caseTestData.getCaseData().setEt1OnlineSubmission("Yes");
+
+        notificationPseService.sendResponseNotificationEmailToClaimant(
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString(),
+            null,
+            false
+        );
+
+        verify(notificationClient, never()).sendEmail(any(), any(), any(), any());
+    }
+
+    @Test
+    void sendResponseNotificationEmailToClaimant_FromRespondent_ClaimantOffline_NoEmailSent()
+        throws NotificationClientException {
+        caseTestData.getCaseData().setEt1OnlineSubmission(null);
+        caseTestData.getCaseData().setHubLinksStatuses(null);
+
+        notificationPseService.sendResponseNotificationEmailToClaimant(
+            caseTestData.getCaseData(),
+            caseTestData.getExpectedDetails().getId().toString(),
+            YES,
+            false
+        );
+
+        verify(notificationClient, never()).sendEmail(any(), any(), any(), any());
+    }
+
     @Nested
     class SendNotificationStoredEmailToClaimant {
         @BeforeEach
         void setUp() {
             details = new CoreEmailDetails(
                 caseTestData.getCaseData(),
-                CLAIMANT,
+                CLAIMANT_NAME,
                 "1",
                 "Test Respondent Organisation -1-,"
                     + " Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez",
@@ -250,7 +407,7 @@ class NotificationPseServiceTest {
         void setUp() {
             details = new CoreEmailDetails(
                 caseTestData.getCaseData(),
-                CLAIMANT,
+                CLAIMANT_NAME,
                 "1",
                 "Test Respondent Organisation -1-,"
                     + " Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez",
@@ -261,7 +418,7 @@ class NotificationPseServiceTest {
 
         @Test
         void shouldSendEmailToRespondent_whenEmailPresent() throws NotificationClientException {
-            notificationPseService.sendNotificationStoredEmailToRespondent(details, "shortText", "1234567890");
+            notificationPseService.sendNotificationStoredEmailToRespondent(details, "shortText", RESPONDENT_IDAM_ID);
             verify(notificationClient, times(1)).sendEmail(any(), any(), any(), any());
         }
 
