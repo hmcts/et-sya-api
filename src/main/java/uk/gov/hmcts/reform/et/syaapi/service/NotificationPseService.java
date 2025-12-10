@@ -141,6 +141,7 @@ public class NotificationPseService {
         boolean isWelsh = notificationService.isWelshLanguage(respondent);
         String linkToCase = notificationService.getRespondentPortalLink(caseId, respondent.getId(), isWelsh);
         respondentParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, linkToCase);
+        respondentParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY, linkToCase);
 
         notificationService.sendEmailToRespondent(emailAddress, emailTemplate, respondentParameters, caseId);
     }
