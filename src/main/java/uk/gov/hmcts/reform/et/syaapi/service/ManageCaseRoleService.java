@@ -61,6 +61,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.REMOVE_OWN_REP_AS_CLAIMANT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.REMOVE_OWN_REP_AS_RESPONDENT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_ET3_FORM;
@@ -81,6 +82,7 @@ public class ManageCaseRoleService {
     private final ET3Service et3Service;
     private final CaseService caseService;
     private final CaseDetailsConverter caseDetailsConverter;
+    private final FeatureToggleService featureToggleService;
 
     @Value("${assign_case_access_api_url}")
     private String aacUrl;
@@ -170,7 +172,9 @@ public class ManageCaseRoleService {
      * Modifies user case roles by the given modification type. Gets case assignment user roles request which has
      * a list of case_users that contains case id, user id and case role to modify the case. For assigning a new role
      * to the case modification type should be Assignment, to revoke an existing role modification type should be
-     * Revoke
+     * Revoke.
+     * This is a wrapper method that checks the self-assignment feature flag and routes to the appropriate
+     * implementation (old or new behavior).
      * @param authorisation Authorisation token of the user
      * @param modifyCaseUserRolesRequest This is the list of case roles that should be Revoked or Assigned to
      *                                   respondent. It also has the idam id of the respondent and the case id
@@ -182,6 +186,65 @@ public class ManageCaseRoleService {
     public CaseAssignmentResponse modifyUserCaseRoles(String authorisation,
                                                       ModifyCaseUserRolesRequest modifyCaseUserRolesRequest,
                                                       String modificationType)
+        throws IOException {
+        if (featureToggleService.isSelfAssignmentEnabled()) {
+            return modifyUserCaseRolesNew(authorisation, modifyCaseUserRolesRequest, modificationType);
+        } else {
+            return modifyUserCaseRolesOld(authorisation, modifyCaseUserRolesRequest, modificationType);
+        }
+    }
+
+    /**
+     * OLD BEHAVIOR: Original implementation before professional user detection and already-assigned status.
+     * Used when self-assignment feature flag is OFF.
+     */
+    private CaseAssignmentResponse modifyUserCaseRolesOld(String authorisation,
+                                                          ModifyCaseUserRolesRequest modifyCaseUserRolesRequest,
+                                                          String modificationType)
+        throws IOException {
+        List<CaseDetails> caseDetailsList = new ArrayList<>();
+        ManageCaseRoleServiceUtil.checkModifyCaseUserRolesRequest(modifyCaseUserRolesRequest);
+        HttpMethod httpMethod = RemoteServiceUtil.getHttpMethodByCaseUserRoleModificationType(modificationType);
+        
+        if (ManageCaseRoleConstants.MODIFICATION_TYPE_REVOKE.equals(modificationType)) {
+            caseDetailsList = updateAllRespondentsIdamIdAndDefaultLinkStatusesOld(authorisation,
+                                                                               modifyCaseUserRolesRequest,
+                                                                               modificationType);
+        }
+        
+        CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest =
+            ManageCaseRoleServiceUtil.generateCaseAssignmentUserRolesRequestByModifyCaseUserRolesRequest(
+                modifyCaseUserRolesRequest);
+        log.info("assigning case");
+        restCallToModifyUserCaseRolesOld(caseAssignmentUserRolesRequest, httpMethod);
+        
+        try {
+            if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
+                caseDetailsList = updateAllRespondentsIdamIdAndDefaultLinkStatusesOld(authorisation,
+                                                                                   modifyCaseUserRolesRequest,
+                                                                                   modificationType);
+            }
+        } catch (Exception e) {
+            if (!ManageCaseRoleServiceUtil.isCaseRoleAssignmentExceptionForSameUser(e)) {
+                restCallToModifyUserCaseRolesOld(caseAssignmentUserRolesRequest, HttpMethod.DELETE);
+            }
+            throw new ManageCaseRoleException(e);
+        }
+        
+        log.info("Case assignment successfully completed");
+        return CaseAssignmentResponse.builder()
+            .caseDetails(caseDetailsList)
+            .status(CaseAssignmentResponse.AssignmentStatus.ASSIGNED)
+            .build();
+    }
+
+    /**
+     * NEW BEHAVIOR: Enhanced implementation with professional user detection and already-assigned status.
+     * Used when self-assignment feature flag is ON.
+     */
+    private CaseAssignmentResponse modifyUserCaseRolesNew(String authorisation,
+                                                         ModifyCaseUserRolesRequest modifyCaseUserRolesRequest,
+                                                         String modificationType)
         throws IOException {
         // Checks modifyCaseUserRolesRequest parameter if it is empty or not and it's objects.
         // If there is any problem throws ManageCaseRoleException.
@@ -770,5 +833,54 @@ public class ManageCaseRoleService {
                                        caseDetails.getId().toString(),
                                        true,
                                        caseDataContent);
+    }
+
+    /**
+     * OLD BEHAVIOR: Rest call without professional user detection.
+     * Used when self-assignment feature flag is OFF.
+     */
+    private void restCallToModifyUserCaseRolesOld(
+        CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest, HttpMethod httpMethod)
+        throws IOException {
+        try {
+            String adminToken = adminUserService.getAdminUserToken();
+            HttpEntity<CaseAssignmentUserRolesRequest> requestEntity =
+                new HttpEntity<>(caseAssignmentUserRolesRequest,
+                                 buildHeaders(adminToken, authTokenGenerator.generate()));
+            restTemplate.exchange(ccdApiUrl + ManageCaseRoleConstants.CASE_USERS_API_URL,
+                                  httpMethod,
+                                  requestEntity,
+                                  CaseAssignmentUserRolesResponse.class);
+        } catch (RestClientResponseException | IOException exception) {
+            log.info("Error from CCD - {}", exception.getMessage());
+            throw exception;
+        }
+    }
+
+    /**
+     * OLD BEHAVIOR: Update respondents without boolean return (throws exception for already assigned).
+     * Used when self-assignment feature flag is OFF.
+     */
+    private List<CaseDetails> updateAllRespondentsIdamIdAndDefaultLinkStatusesOld(
+        String authorisation, ModifyCaseUserRolesRequest modifyCaseUserRolesRequest, String modificationType) {
+        List<CaseDetails> caseDetailsList = new ArrayList<>();
+        for (ModifyCaseUserRole modifyCaseUserRole : modifyCaseUserRolesRequest.getModifyCaseUserRoles()) {
+            if (ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT.equals(modifyCaseUserRole.getCaseRole())) {
+                CaseDetails caseDetails =
+                    et3Service.findCaseBySubmissionReference(modifyCaseUserRole.getCaseDataId());
+                // Old behavior: setRespondentIdamIdAndDefaultLinkStatuses throws exception for already assigned
+                RespondentUtil.setRespondentIdamIdAndDefaultLinkStatuses(
+                    caseDetails,
+                    modifyCaseUserRole.getRespondentName(),
+                    modifyCaseUserRole.getUserId(),
+                    modificationType
+                );
+                caseDetailsList.add(
+                    et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(authorisation,
+                                                                                   caseDetails,
+                                                                                   UPDATE_ET3_FORM));
+            }
+        }
+        return caseDetailsList;
     }
 }
