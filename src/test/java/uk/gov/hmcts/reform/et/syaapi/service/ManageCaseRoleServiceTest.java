@@ -71,7 +71,8 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CA
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT;
-import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.REMOVE_OWN_REPRESENTATIVE;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.REMOVE_OWN_REP_AS_CLAIMANT;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.REMOVE_OWN_REP_AS_RESPONDENT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_ET3_FORM;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_CASE_ID_LONG;
@@ -742,7 +743,8 @@ class ManageCaseRoleServiceTest {
         caseData.getRepresentativeClaimantType().setRepresentativeId(USER_ID);
         caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
         StartEventResponse startEventResponse = StartEventResponse.builder()
-            .caseDetails(caseDetails).eventId(UPDATE_CASE_SUBMITTED.name()).token(DUMMY_AUTHORISATION_TOKEN).build();
+            .caseDetails(caseDetails).eventId(
+                REMOVE_OWN_REP_AS_CLAIMANT.name()).token(DUMMY_AUTHORISATION_TOKEN).build();
         when(ccdApi.startEventForCitizen(
             DUMMY_AUTHORISATION_TOKEN,
             DUMMY_AUTHORISATION_TOKEN,
@@ -750,7 +752,7 @@ class ManageCaseRoleServiceTest {
             EMPLOYMENT,
             caseDetails.getCaseTypeId(),
             caseDetails.getId().toString(),
-            UPDATE_CASE_SUBMITTED.name()
+            REMOVE_OWN_REP_AS_CLAIMANT.name()
         )).thenReturn(startEventResponse);
         when(caseDetailsConverter.caseDataContent(eq(startEventResponse), any(CaseData.class)))
             .thenReturn(null);
@@ -849,11 +851,7 @@ class ManageCaseRoleServiceTest {
                                        new ResponseEntity<>(caseUserAssignmentData, HttpStatus.OK));
         CaseDetails caseDetails = CaseDetails.builder().id(TEST_CASE_ID_LONG).build();
         // When the case user role is being tried to be revoked with invalid case user role
-        ManageCaseRoleException manageCaseRoleException =
-            assertThrows(ManageCaseRoleException.class,() -> manageCaseRoleService
-                .revokeCaseUserRole(caseDetails, CASE_USER_ROLE_CREATOR));
-        String expectedMessage = "java.lang.Exception: Case user roles not found for caseId: 1234567890123456";
-        assertThat(manageCaseRoleException.getMessage()).isEqualTo(expectedMessage);
+        assertDoesNotThrow(() -> manageCaseRoleService.revokeCaseUserRole(caseDetails, CASE_USER_ROLE_CREATOR));
         // When the case user role is successfully revoked
         assertDoesNotThrow(() -> manageCaseRoleService
             .revokeCaseUserRole(caseDetails, CASE_USER_ROLE_CLAIMANT_SOLICITOR));
@@ -914,7 +912,7 @@ class ManageCaseRoleServiceTest {
             EMPLOYMENT,
             caseDetails.getCaseTypeId(),
             caseDetails.getId().toString(),
-            UPDATE_CASE_SUBMITTED.name()
+            REMOVE_OWN_REP_AS_CLAIMANT.name()
         )).thenReturn(startEventResponse);
         when(caseDetailsConverter.caseDataContent(eq(startEventResponse), any(CaseData.class)))
             .thenReturn(null);
@@ -968,7 +966,7 @@ class ManageCaseRoleServiceTest {
             EMPLOYMENT,
             caseDetails.getCaseTypeId(),
             caseDetails.getId().toString(),
-            REMOVE_OWN_REPRESENTATIVE.name()
+            REMOVE_OWN_REP_AS_RESPONDENT.name()
         )).thenReturn(startEventResponse);
         when(caseDetailsConverter.caseDataContent(eq(startEventResponse), any(CaseData.class)))
             .thenReturn(null);
@@ -1050,7 +1048,7 @@ class ManageCaseRoleServiceTest {
             EMPLOYMENT,
             caseDetails.getCaseTypeId(),
             caseDetails.getId().toString(),
-            REMOVE_OWN_REPRESENTATIVE.name()
+            REMOVE_OWN_REP_AS_RESPONDENT.name()
         )).thenReturn(startEventResponse);
         when(caseDetailsConverter.caseDataContent(eq(startEventResponse), any(CaseData.class)))
             .thenReturn(null);

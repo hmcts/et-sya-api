@@ -61,7 +61,10 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.REMOVE_OWN_REPRESENTATIVE;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.REMOVE_OWN_REP_AS_CLAIMANT;
+import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.REMOVE_OWN_REP_AS_RESPONDENT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_ET3_FORM;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.RemoteServiceUtil.buildHeaders;
@@ -616,8 +619,8 @@ public class ManageCaseRoleService {
         List<CaseUserAssignment> caseUserAssignments = findCaseUserAssignmentsByRoleAndCase(
             role, caseDetails);
         if (CollectionUtils.isEmpty(caseUserAssignments)) {
-            throw new ManageCaseRoleException(new Exception(
-                String.format(ManageCaseRoleConstants.EXCEPTION_CASE_USER_ROLES_NOT_FOUND, caseDetails.getId())));
+            log.info("No case user assignment found for case {}, role: {}", caseDetails.getId(), role);
+            return;
         }
         for (CaseUserAssignment caseUserAssignment : caseUserAssignments) {
             CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest = ManageCaseRoleServiceUtil
@@ -690,13 +693,12 @@ public class ManageCaseRoleService {
             EMPLOYMENT,
             caseDetails.getCaseTypeId(),
             caseDetails.getId().toString(),
-            UPDATE_CASE_SUBMITTED.name()
+            REMOVE_OWN_REP_AS_CLAIMANT.name()
         );
         caseDetails = startEventResponse.getCaseDetails();
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
         caseData.setClaimantRepresentedQuestion(NO);
         caseData.setClaimantRepresentativeRemoved(YES);
-        caseData.setRepresentativeClaimantType(null);
         ManageCaseRoleServiceUtil.resetOrganizationPolicy(caseData,
                                                           CASE_USER_ROLE_CLAIMANT_SOLICITOR,
                                                           caseDetails.getId().toString());
@@ -742,7 +744,7 @@ public class ManageCaseRoleService {
             EMPLOYMENT,
             caseDetails.getCaseTypeId(),
             caseDetails.getId().toString(),
-            REMOVE_OWN_REPRESENTATIVE.name()
+            REMOVE_OWN_REP_AS_RESPONDENT.name()
         );
         caseDetails = startEventResponse.getCaseDetails();
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());

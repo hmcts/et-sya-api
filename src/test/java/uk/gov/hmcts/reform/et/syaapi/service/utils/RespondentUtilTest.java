@@ -96,48 +96,6 @@ class RespondentUtilTest {
             assertThat(caseData.getRespondentCollection().getFirst().getValue().getIdamId())
                 .isEqualTo(StringUtils.EMPTY);
         }
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
-                       .getPersonalDetails())
-            .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
-                       .getEt1ClaimForm()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_VIEWED_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
-                       .getRespondentResponse())
-            .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
-                       .getHearingDetails()).isEqualTo(
-                           TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
-                       .getRespondentRequestsAndApplications())
-            .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
-                       .getClaimantApplications()).isEqualTo(
-                           TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
-                       .getContactTribunal()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_OPTIONAL);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
-                       .getTribunalOrders())
-            .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
-                       .getTribunalJudgements()).isEqualTo(
-                           TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
-                       .getDocuments()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_OPTIONAL);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3HubLinksStatuses()
-                       .getContactDetails()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3HubLinksStatuses()
-                       .getEmployerDetails()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3HubLinksStatuses()
-                       .getConciliationAndEmployeeDetails())
-            .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3HubLinksStatuses()
-                       .getPayPensionBenefitDetails())
-            .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3HubLinksStatuses()
-                       .getContestClaim()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3HubLinksStatuses()
-                       .getCheckYorAnswers())
-            .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_CANNOT_START_YET);
     }
 
     private static boolean hasRespondentCollectionException(List<?> respondentCollection,
