@@ -45,6 +45,11 @@ public class CaseAssignmentResponse {
         /**
          * User was already assigned to the case (no new assignment made).
          */
-        ALREADY_ASSIGNED
+        ALREADY_ASSIGNED,
+        
+        /**
+         * User is a professional user (legal representative) and should use MyHMCTS.
+         */
+        PROFESSIONAL_USER
     }
 }

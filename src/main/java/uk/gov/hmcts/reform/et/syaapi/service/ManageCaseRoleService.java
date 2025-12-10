@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
+import uk.gov.hmcts.reform.et.syaapi.exception.ProfessionalUserException;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseAssignmentResponse;
@@ -215,7 +216,21 @@ public class ManageCaseRoleService {
             ManageCaseRoleServiceUtil.generateCaseAssignmentUserRolesRequestByModifyCaseUserRolesRequest(
                 modifyCaseUserRolesRequest);
         log.info("Processing case assignment request");
-        restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, httpMethod);
+
+        try {
+            restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, httpMethod);
+        } catch (ProfessionalUserException e) {
+            return CaseAssignmentResponse.builder()
+                .status(CaseAssignmentResponse.AssignmentStatus.PROFESSIONAL_USER)
+                .message(e.getMessage())
+                .build();
+        } catch (RestClientResponseException e) {
+            log.error("RestClientResponseException during case assignment: {}", e.getMessage());
+            throw e;
+        } catch (IOException e) {
+            log.error("IOException during case assignment: {}", e.getMessage());
+            throw e;
+        }
 
         // After assigning role, update respondent data with idam id, case details links statuses
         // and respondent hub links statuses.
@@ -281,8 +296,19 @@ public class ManageCaseRoleService {
                                   httpMethod,
                                   requestEntity,
                                   CaseAssignmentUserRolesResponse.class);
-        } catch (RestClientResponseException | IOException exception) {
-            log.info("Error from CCD - {}", exception.getMessage());
+        } catch (RestClientResponseException exception) {
+            // Check if the error is due to a professional user (roleCategory: PROFESSIONAL)
+            // The response contains double-escaped JSON (nested JSON in error message)
+            String responseBody = exception.getResponseBodyAsString();
+            if (responseBody != null && responseBody.contains("\\\"roleCategory\\\":\\\"PROFESSIONAL\\\"")) {
+                log.info("Professional user detected - user will be redirected to use MyHMCTS instead.");
+                throw new ProfessionalUserException(
+                    "User is a professional user - user will be redirected to use MyHMCTS.");
+            }
+            log.error("Error from CCD - {}", exception.getMessage());
+            throw exception;
+        } catch (IOException exception) {
+            log.error("Error from CCD - {}", exception.getMessage());
             throw exception;
         }
     }
