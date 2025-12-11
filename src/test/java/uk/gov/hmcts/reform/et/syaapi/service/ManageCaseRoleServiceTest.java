@@ -365,7 +365,7 @@ class ManageCaseRoleServiceTest {
                                                                      TEST_SERVICE_AUTH_TOKEN)).isNotNull();
         assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest,
                                                                      TEST_SERVICE_AUTH_TOKEN).getId().toString())
-            .isEqualTo(CASE_SUBMISSION_REFERENCE);
+            .hasToString(CASE_SUBMISSION_REFERENCE);
         assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest,
                                                                      TEST_SERVICE_AUTH_TOKEN).getCaseTypeId())
             .isEqualTo(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES);
@@ -404,7 +404,7 @@ class ManageCaseRoleServiceTest {
                                                                      TEST_SERVICE_AUTH_TOKEN)).isNotNull();
         assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest,
                                                                      TEST_SERVICE_AUTH_TOKEN).getId().toString())
-            .isEqualTo(CASE_SUBMISSION_REFERENCE);
+            .hasToString(CASE_SUBMISSION_REFERENCE);
         assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest,
                                                                      TEST_SERVICE_AUTH_TOKEN).getCaseTypeId())
             .isEqualTo(SCOTLAND_CASE_TYPE);
@@ -1096,18 +1096,6 @@ class ManageCaseRoleServiceTest {
         // Reset the feature toggle to return false (old behavior)
         when(featureToggleService.isEt3SelfAssignmentEnabled()).thenReturn(false);
 
-        ModifyCaseUserRole modifyCaseUserRole = ModifyCaseUserRole.builder()
-            .userId(USER_ID)
-            .caseDataId(CASE_ID)
-            .caseRole(CASE_ROLE_DEFENDANT)
-            .caseTypeId(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES)
-            .respondentName(RESPONDENT_NAME)
-            .build();
-
-        ModifyCaseUserRolesRequest request = ModifyCaseUserRolesRequest.builder()
-            .modifyCaseUserRoles(List.of(modifyCaseUserRole))
-            .build();
-
         CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(expectedCaseDetails.getData());
         caseData.getRespondentCollection().getFirst().getValue().setRespondentName(RESPONDENT_NAME);
@@ -1128,6 +1116,18 @@ class ManageCaseRoleServiceTest {
                                    eq(CaseAssignmentUserRolesResponse.class)))
             .thenReturn(new ResponseEntity<>(HttpStatus.OK));
 
+        ModifyCaseUserRole modifyCaseUserRole = ModifyCaseUserRole.builder()
+            .userId(USER_ID)
+            .caseDataId(CASE_ID)
+            .caseRole(CASE_ROLE_DEFENDANT)
+            .caseTypeId(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES)
+            .respondentName(RESPONDENT_NAME)
+            .build();
+
+        ModifyCaseUserRolesRequest request = ModifyCaseUserRolesRequest.builder()
+            .modifyCaseUserRoles(List.of(modifyCaseUserRole))
+            .build();
+
         CaseAssignmentResponse response = manageCaseRoleService.modifyUserCaseRoles(
             DUMMY_AUTHORISATION_TOKEN,
             request,
@@ -1145,18 +1145,6 @@ class ManageCaseRoleServiceTest {
     void shouldUseOldBehaviorForRevokeWhenFeatureFlagIsOff() {
         // Reset the feature toggle to return false (old behavior)
         when(featureToggleService.isEt3SelfAssignmentEnabled()).thenReturn(false);
-
-        ModifyCaseUserRole modifyCaseUserRole = ModifyCaseUserRole.builder()
-            .userId(USER_ID)
-            .caseDataId(CASE_ID)
-            .caseRole(CASE_ROLE_DEFENDANT)
-            .caseTypeId(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES)
-            .respondentName(RESPONDENT_NAME)
-            .build();
-
-        ModifyCaseUserRolesRequest request = ModifyCaseUserRolesRequest.builder()
-            .modifyCaseUserRoles(List.of(modifyCaseUserRole))
-            .build();
 
         CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(expectedCaseDetails.getData());
@@ -1178,6 +1166,18 @@ class ManageCaseRoleServiceTest {
                                    any(),
                                    eq(CaseAssignmentUserRolesResponse.class)))
             .thenReturn(new ResponseEntity<>(HttpStatus.OK));
+
+        ModifyCaseUserRole modifyCaseUserRole = ModifyCaseUserRole.builder()
+            .userId(USER_ID)
+            .caseDataId(CASE_ID)
+            .caseRole(CASE_ROLE_DEFENDANT)
+            .caseTypeId(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES)
+            .respondentName(RESPONDENT_NAME)
+            .build();
+
+        ModifyCaseUserRolesRequest request = ModifyCaseUserRolesRequest.builder()
+            .modifyCaseUserRoles(List.of(modifyCaseUserRole))
+            .build();
 
         CaseAssignmentResponse response = manageCaseRoleService.modifyUserCaseRoles(
             DUMMY_AUTHORISATION_TOKEN,
