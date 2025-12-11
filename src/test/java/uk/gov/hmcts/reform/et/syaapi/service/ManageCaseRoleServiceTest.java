@@ -65,6 +65,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.EMPLOYMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CCD_API_POST_METHOD_NAME;
@@ -100,6 +101,8 @@ class ManageCaseRoleServiceTest {
     CaseService caseService;
     @Mock
     CaseDetailsConverter caseDetailsConverter;
+    @Mock
+    FeatureToggleService featureToggleService;
 
     private ManageCaseRoleService manageCaseRoleService;
     private UserInfo userInfo;
@@ -153,7 +156,11 @@ class ManageCaseRoleServiceTest {
                                                           ccdApi,
                                                           et3Service,
                                                           caseService,
-                                                          caseDetailsConverter);
+                                                          caseDetailsConverter,
+                                                          featureToggleService);
+        // Mock feature flag to be enabled for these tests (new behavior)
+        // Using lenient() because not all tests call modifyUserCaseRoles
+        lenient().when(featureToggleService.isEt3SelfAssignmentEnabled()).thenReturn(true);
         userInfo = new CaseTestData().getUserInfo();
         caseAssignmentUserRole1 = CaseAssignmentUserRole.builder()
             .userId(DUMMY_USER_ID)

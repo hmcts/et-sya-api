@@ -64,7 +64,7 @@ public class FeatureToggleService {
      *
      * @return true if the feature toggle is enabled, false otherwise
      */
-    public boolean isSelfAssignmentEnabled() {
+    public boolean isEt3SelfAssignmentEnabled() {
         return this.featureToggleApi.isFeatureEnabled("et3-self-assignment");
     }
 

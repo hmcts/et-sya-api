@@ -50,6 +50,8 @@ class ManageCaseRoleServiceProfessionalUserTest {
     private CaseService caseService;
     @Mock
     private CaseDetailsConverter caseDetailsConverter;
+    @Mock
+    private FeatureToggleService featureToggleService;
 
     private ManageCaseRoleService manageCaseRoleService;
 
@@ -80,12 +82,15 @@ class ManageCaseRoleServiceProfessionalUserTest {
             ccdApi,
             et3Service,
             caseService,
-            caseDetailsConverter
+            caseDetailsConverter,
+            featureToggleService
         );
         ReflectionTestUtils.setField(manageCaseRoleService, "ccdApiUrl", CCD_API_URL);
 
         when(adminUserService.getAdminUserToken()).thenReturn(ADMIN_TOKEN);
         when(authTokenGenerator.generate()).thenReturn(SERVICE_TOKEN);
+        // Mock feature flag to be enabled (new behavior with professional user detection)
+        when(featureToggleService.isEt3SelfAssignmentEnabled()).thenReturn(true);
     }
 
     @Test
@@ -197,7 +202,7 @@ class ManageCaseRoleServiceProfessionalUserTest {
             eq(CaseAssignmentUserRolesResponse.class)
         )).thenThrow(exception);
 
-        assertThrows(HttpClientErrorException.class, () -> 
+        assertThrows(HttpClientErrorException.class, () ->
             manageCaseRoleService.modifyUserCaseRoles(
                 AUTHORISATION,
                 request,

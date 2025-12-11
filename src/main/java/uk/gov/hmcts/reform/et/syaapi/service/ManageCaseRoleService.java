@@ -187,7 +187,7 @@ public class ManageCaseRoleService {
                                                       ModifyCaseUserRolesRequest modifyCaseUserRolesRequest,
                                                       String modificationType)
         throws IOException {
-        if (featureToggleService.isSelfAssignmentEnabled()) {
+        if (featureToggleService.isEt3SelfAssignmentEnabled()) {
             return modifyUserCaseRolesNew(authorisation, modifyCaseUserRolesRequest, modificationType);
         } else {
             return modifyUserCaseRolesOld(authorisation, modifyCaseUserRolesRequest, modificationType);
@@ -205,19 +205,19 @@ public class ManageCaseRoleService {
         List<CaseDetails> caseDetailsList = new ArrayList<>();
         ManageCaseRoleServiceUtil.checkModifyCaseUserRolesRequest(modifyCaseUserRolesRequest);
         HttpMethod httpMethod = RemoteServiceUtil.getHttpMethodByCaseUserRoleModificationType(modificationType);
-        
+
         if (ManageCaseRoleConstants.MODIFICATION_TYPE_REVOKE.equals(modificationType)) {
             caseDetailsList = updateAllRespondentsIdamIdAndDefaultLinkStatusesOld(authorisation,
                                                                                modifyCaseUserRolesRequest,
                                                                                modificationType);
         }
-        
+
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest =
             ManageCaseRoleServiceUtil.generateCaseAssignmentUserRolesRequestByModifyCaseUserRolesRequest(
                 modifyCaseUserRolesRequest);
         log.info("assigning case");
         restCallToModifyUserCaseRolesOld(caseAssignmentUserRolesRequest, httpMethod);
-        
+
         try {
             if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
                 caseDetailsList = updateAllRespondentsIdamIdAndDefaultLinkStatusesOld(authorisation,
@@ -230,7 +230,7 @@ public class ManageCaseRoleService {
             }
             throw new ManageCaseRoleException(e);
         }
-        
+
         log.info("Case assignment successfully completed");
         return CaseAssignmentResponse.builder()
             .caseDetails(caseDetailsList)
