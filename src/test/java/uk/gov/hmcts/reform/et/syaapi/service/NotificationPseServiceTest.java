@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.Organisation;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.notification.NotificationsProperties;
@@ -18,6 +19,7 @@ import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -71,12 +73,17 @@ class NotificationPseServiceTest {
 
         caseTestData = new CaseTestData();
         caseTestData.getCaseData().getRespondentCollection().getFirst().getValue().setIdamId(RESPONDENT_IDAM_ID);
+        Organisation organisation = Organisation.builder()
+            .organisationID("my org")
+            .organisationName("New Organisation").build();
         caseTestData.getCaseData().setRepCollection(List.of(
             RepresentedTypeRItem.builder()
+                .id(String.valueOf(UUID.randomUUID()))
                 .value(RepresentedTypeR.builder()
                            .myHmctsYesNo(YES)
                            .respRepName("RespRepName")
                            .representativeEmailAddress(REP_EMAIL)
+                           .respondentOrganisation(organisation)
                            .build())
                 .build()
         ));
