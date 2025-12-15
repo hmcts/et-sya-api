@@ -132,17 +132,20 @@ public class NotificationPseService {
         Map<String, Object> respondentParameters,
         String emailTemplate
     ) {
+        // get respondent email
         String emailAddress = getRespondentEmail(respondent);
         if (isBlank(emailAddress)) {
             log.info(NO_RESPONDENT_EMAIL_ADDRESS_ASSOCIATED);
             return;
         }
 
+        // get link to case
         boolean isWelsh = notificationService.isWelshLanguage(respondent);
         String linkToCase = notificationService.getRespondentPortalLink(caseId, respondent.getId(), isWelsh);
         respondentParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, linkToCase);
         respondentParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY, linkToCase);
 
+        // send email to respondent
         notificationService.sendEmailToRespondent(emailAddress, emailTemplate, respondentParameters, caseId);
     }
 
@@ -187,7 +190,7 @@ public class NotificationPseService {
 
         // other respondents
         // check if respondent is represented
-        RepresentedTypeR representative = NotificationsHelper.getRespondentRepresentative(caseData, resp.getValue());
+        RepresentedTypeR representative = RespondentUtil.getRespondentRepresentative(caseData, resp.getValue());
         boolean isRepresented = representative != null;
 
         // get email to send to
@@ -204,8 +207,10 @@ public class NotificationPseService {
             : notificationService.getRespondentPortalLink(caseId, resp.getId(), isWelsh);
         respondentParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY, linkToCase);
 
-        // send email to other respondent
+        // get email template
         String emailToOtherRespondentTemplate = notificationsProperties.getPseClaimantResponseYesTemplateId();
+
+        // send email to other respondent
         notificationService.sendEmailToRespondent(
             emailToSend,
             emailToOtherRespondentTemplate,
@@ -217,12 +222,12 @@ public class NotificationPseService {
     private String getEmailToSend(boolean isRepresented, RepresentedTypeR representative,
                                   RespondentSumTypeItem respondent) {
         if (isRepresented) {
-            // get legal rep email if respondent is represented
-            return StringUtils.isNotBlank(representative.getRepresentativeEmailAddress())
+            // get legal rep email if online
+            return RespondentUtil.isRespondentLegalRepOnlineWithEmail(representative)
                 ? representative.getRepresentativeEmailAddress()
                 : null;
         } else {
-            // if not represented, get respondent email if online
+            // get respondent email if online
             return RespondentUtil.isRespondentCitizenUser(respondent.getValue())
                 ? getRespondentEmail(respondent)
                 : null;
@@ -274,14 +279,11 @@ public class NotificationPseService {
             SEND_EMAIL_PARAMS_HEARING_DATE_KEY,
             NotificationsHelper.getNearestHearingToReferral(caseData, NOT_SET)
         );
-        claimantParameters.put(
-            SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY,
-            notificationsProperties.getCitizenPortalLink() + caseId
-        );
-        claimantParameters.put(
-            SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
-            notificationsProperties.getCitizenPortalLink() + caseId
-        );
+
+        // get link to case
+        String linkToCase = notificationsProperties.getCitizenPortalLink() + caseId;
+        claimantParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, linkToCase);
+        claimantParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY, linkToCase);
 
         try {
             notificationClient.sendEmail(

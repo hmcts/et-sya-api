@@ -1130,13 +1130,16 @@ class NotificationServiceTest {
                                                .responseRespondentEmail("test2@respondent.com")
                                                .respondentName("RespondentName2")
                                                .build());
-
+            Organisation organisation = Organisation.builder()
+                .organisationID("my org")
+                .organisationName("New Organisation").build();
             RepresentedTypeRItem representedTypeRItem = RepresentedTypeRItem.builder()
                 .id(String.valueOf(UUID.randomUUID()))
                 .value(RepresentedTypeR.builder()
                            .myHmctsYesNo(YES)
                            .respRepName("RespondentName2")
                            .representativeEmailAddress("test@resRep.com")
+                           .respondentOrganisation(organisation)
                            .build())
                 .build();
 

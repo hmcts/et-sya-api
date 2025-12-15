@@ -9,7 +9,6 @@ import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DateListedTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.HearingTypeItem;
-import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
@@ -80,10 +79,15 @@ public final class NotificationsHelper {
                                                                                 RespondentSumType respondent) {
         Map<String, Boolean> emailAddressesMap = new ConcurrentHashMap<>();
 
-        // get legal rep email if respondent is represented
-        RepresentedTypeR representative = getRespondentRepresentative(caseData, respondent);
-        if (representative != null && StringUtils.isNotBlank(representative.getRepresentativeEmailAddress())) {
-            emailAddressesMap.put(representative.getRepresentativeEmailAddress(), false);
+        // check if respondent is represented
+        RepresentedTypeR representative = RespondentUtil.getRespondentRepresentative(caseData, respondent);
+        if (representative != null) {
+
+            // get legal rep email if legal rep online
+            if (RespondentUtil.isRespondentLegalRepOnlineWithEmail(representative)) {
+                emailAddressesMap.put(representative.getRepresentativeEmailAddress(), false);
+            }
+
             return emailAddressesMap;
         }
 
@@ -100,20 +104,6 @@ public final class NotificationsHelper {
         }
 
         return emailAddressesMap;
-    }
-
-    public static RepresentedTypeR getRespondentRepresentative(CaseData caseData, RespondentSumType respondent) {
-        List<RepresentedTypeRItem> repCollection = caseData.getRepCollection();
-
-        if (CollectionUtils.isEmpty(repCollection)) {
-            return null;
-        }
-
-        Optional<RepresentedTypeRItem> respondentRep = repCollection.stream()
-            .filter(o -> respondent.getRespondentName().equals(o.getValue().getRespRepName()))
-            .findFirst();
-
-        return respondentRep.map(RepresentedTypeRItem::getValue).orElse(null);
     }
 
     /**

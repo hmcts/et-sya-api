@@ -62,13 +62,20 @@ class NotificationHelperTest {
     void shouldReturnRepEmail() {
         // Given
         String repEmail = "rep@email.com";
-        var rep = new RepresentedTypeR();
-        rep.setId("11");
-        rep.setRepresentativeEmailAddress(repEmail);
-        rep.setRespRepName("Test Respondent Organisation -1-");
-        RepresentedTypeRItem repItem = new RepresentedTypeRItem();
-        repItem.setId("1");
-        repItem.setValue(rep);
+        Organisation organisation = Organisation.builder()
+            .organisationID("my org")
+            .organisationName("New Organisation").build();
+        RepresentedTypeR rep = RepresentedTypeR.builder()
+            .id("11")
+            .representativeEmailAddress(repEmail)
+            .respRepName("Test Respondent Organisation -1-")
+            .myHmctsYesNo(YES)
+            .respondentOrganisation(organisation)
+            .build();
+        RepresentedTypeRItem repItem = RepresentedTypeRItem.builder()
+            .id("1")
+            .value(rep)
+            .build();
         List<RepresentedTypeRItem> itemList = new ArrayList<>();
         itemList.add(repItem);
         CaseData caseData = caseTestData.getCaseData();
