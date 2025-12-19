@@ -45,6 +45,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.RESPONDENT_TITLE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.NOT_SET;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 
 @SuppressWarnings({"PMD.SingularField", "PMD.TooManyMethods"})
@@ -52,7 +53,6 @@ class ApplicationServiceTest {
 
     public static final String RESPONDENT_LIST =
         "Test Respondent Organisation -1-, Mehmet Tahir Dede, Abuzer Kadayif, Kate Winslet, Jeniffer Lopez";
-    public static final String NOT_SET = "Not set";
     public static final String CASE_REF = "123456/2022";
     public static final String CLAIMANT = "Michael Jackson";
     public static final String CASE_ID = "1646225213651590";
