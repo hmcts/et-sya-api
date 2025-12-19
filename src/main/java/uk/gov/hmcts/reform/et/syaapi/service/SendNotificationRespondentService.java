@@ -166,7 +166,7 @@ public class SendNotificationRespondentService {
 
         // send email
         // Send confirmation emails
-        sendAddResponseSendNotificationEmails(
+        sendResponseNotificationEmails(
             caseData,
             caseId,
             pseResponseTypeItem.getValue().getCopyToOtherParty(),
@@ -334,7 +334,7 @@ public class SendNotificationRespondentService {
             .removeIf(item -> item.getId().equals(request.getStoredRespondId()));
 
         // Send confirmation emails
-        sendAddResponseSendNotificationEmails(
+        sendResponseNotificationEmails(
             caseData,
             caseId,
             responseToModify.getValue().getCopyToOtherParty(),
@@ -345,10 +345,10 @@ public class SendNotificationRespondentService {
             authorization, caseId, caseDetailsConverter.caseDataContent(startEventResponse, caseData), caseTypeId);
     }
 
-    private void sendAddResponseSendNotificationEmails(CaseData caseData,
-                                                       String caseId,
-                                                       String copyToOtherParty,
-                                                       String respondentIdamId) {
+    private void sendResponseNotificationEmails(CaseData caseData,
+                                                String caseId,
+                                                String copyToOtherParty,
+                                                String respondentIdamId) {
         notificationPseService.sendResponseNotificationEmailToTribunal(caseData, caseId);
         notificationPseService.sendResponseNotificationEmailToRespondent(caseData, caseId, copyToOtherParty,
                                                                       false, respondentIdamId);
