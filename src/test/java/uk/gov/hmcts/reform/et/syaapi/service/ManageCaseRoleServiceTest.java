@@ -199,30 +199,55 @@ class ManageCaseRoleServiceTest {
             .build();
     }
 
+    @Test
+    void modifyUserCaseRolesForRespondents_ModificationTypeInvalid() {
+        ManageCaseRoleException exception = assertThrows(ManageCaseRoleException.class, () ->
+            manageCaseRoleService.modifyUserCaseRolesForRespondents(
+                DUMMY_AUTHORISATION_TOKEN,
+                getModifyCaseUserRolesRequestValidDefendant(),
+                "InvalidModificationType"
+            ));
+        assertThat(exception.getMessage()).isEqualTo(INVALID_MODIFICATION_TYPE_EXPECTED_EXCEPTION_MESSAGE);
+    }
+
+    @Test
+    void modifyUserCaseRolesForRespondents_ModificationTypeEmpty() {
+        ManageCaseRoleException exception = assertThrows(ManageCaseRoleException.class, () ->
+            manageCaseRoleService.modifyUserCaseRolesForRespondents(
+                DUMMY_AUTHORISATION_TOKEN,
+                getModifyCaseUserRolesRequestValidDefendant(),
+                StringUtils.EMPTY
+            ));
+        assertThat(exception.getMessage()).isEqualTo(INVALID_MODIFICATION_TYPE_EXPECTED_EXCEPTION_MESSAGE);
+    }
+
+    @Test
+    void modifyUserCaseRolesForRespondents_RequestRoleNull() {
+        ManageCaseRoleException exception = assertThrows(ManageCaseRoleException.class, () ->
+            manageCaseRoleService.modifyUserCaseRolesForRespondents(
+                DUMMY_AUTHORISATION_TOKEN,
+                null,
+                MODIFICATION_TYPE_ASSIGNMENT
+            ));
+        assertThat(exception.getMessage()).isEqualTo(INVALID_CASE_ROLE_REQUEST_EXCEPTION_MESSAGE);
+    }
+
+    @Test
+    void modifyUserCaseRolesForRespondents_RequestRoleEmpty() {
+        ManageCaseRoleException exception = assertThrows(ManageCaseRoleException.class, () ->
+            manageCaseRoleService.modifyUserCaseRolesForRespondents(
+                DUMMY_AUTHORISATION_TOKEN,
+                ModifyCaseUserRolesRequest.builder().build(),
+                MODIFICATION_TYPE_ASSIGNMENT
+            ));
+        assertThat(exception.getMessage()).isEqualTo(INVALID_CASE_ROLE_REQUEST_EXCEPTION_MESSAGE);
+    }
+
     @ParameterizedTest
     @MethodSource("provideModifyUserCaseRolesForRespondentsTestData")
     @SneakyThrows
     void theModifyUserCaseRolesForRespondents(ModifyCaseUserRolesRequest modifyCaseUserRolesRequest,
                                               String modificationType) {
-        if (StringUtils.isEmpty(modificationType)
-            || !MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)
-            && !MODIFICATION_TYPE_REVOKE.equals(modificationType)) {
-            ManageCaseRoleException exception = assertThrows(ManageCaseRoleException.class, () ->
-                manageCaseRoleService.modifyUserCaseRolesForRespondents(DUMMY_AUTHORISATION_TOKEN,
-                                                                        modifyCaseUserRolesRequest,
-                                                                        modificationType));
-            assertThat(exception.getMessage()).isEqualTo(INVALID_MODIFICATION_TYPE_EXPECTED_EXCEPTION_MESSAGE);
-            return;
-        }
-        if (isModifyCaseUserRolesRequestInvalid(modifyCaseUserRolesRequest)) {
-            ManageCaseRoleException exception = assertThrows(ManageCaseRoleException.class, () ->
-                manageCaseRoleService.modifyUserCaseRolesForRespondents(
-                    DUMMY_AUTHORISATION_TOKEN,
-                    modifyCaseUserRolesRequest,
-                    modificationType));
-            assertThat(exception.getMessage()).isEqualTo(INVALID_CASE_ROLE_REQUEST_EXCEPTION_MESSAGE);
-            return;
-        }
         if (isAnyOfTheModifyCaseUserRoleInvalid(modifyCaseUserRolesRequest)) {
             ManageCaseRoleException exception = assertThrows(ManageCaseRoleException.class, () ->
                 manageCaseRoleService.modifyUserCaseRolesForRespondents(
@@ -277,11 +302,6 @@ class ManageCaseRoleServiceTest {
         )).thenReturn(expectedCaseDetails);
     }
 
-    private static boolean isModifyCaseUserRolesRequestInvalid(ModifyCaseUserRolesRequest modifyCaseUserRolesRequest) {
-        return ObjectUtils.isEmpty(modifyCaseUserRolesRequest)
-            || CollectionUtils.isEmpty(modifyCaseUserRolesRequest.getModifyCaseUserRoles());
-    }
-
     private static boolean isAnyOfTheModifyCaseUserRoleInvalid(ModifyCaseUserRolesRequest modifyCaseUserRolesRequest) {
         for (ModifyCaseUserRole modifyCaseUserRole : modifyCaseUserRolesRequest.getModifyCaseUserRoles()) {
             if (ObjectUtils.isEmpty(modifyCaseUserRole)
@@ -297,20 +317,12 @@ class ManageCaseRoleServiceTest {
     }
 
     private static Stream<Arguments> provideModifyUserCaseRolesForRespondentsTestData() {
-        ModifyCaseUserRolesRequest modifyCaseUserRolesRequestValidDefendant =
-            getModifyCaseUserRolesRequestValidDefendant();
-        ModifyCaseUserRolesRequest modifyCaseUserRolesRequestValidCreator =
-            getModifyCaseUserRolesRequestValidCreator();
-        ModifyCaseUserRolesRequest modifyCaseUserRolesRequestEmpty =
-            ModifyCaseUserRolesRequest.builder().build();
-
-        return Stream.of(Arguments.of(modifyCaseUserRolesRequestValidDefendant, MODIFICATION_TYPE_ASSIGNMENT),
-                         Arguments.of(modifyCaseUserRolesRequestValidDefendant, MODIFICATION_TYPE_REVOKE),
-                         Arguments.of(modifyCaseUserRolesRequestValidCreator, MODIFICATION_TYPE_ASSIGNMENT),
-                         Arguments.of(modifyCaseUserRolesRequestValidCreator, MODIFICATION_TYPE_REVOKE),
-                         Arguments.of(modifyCaseUserRolesRequestValidDefendant, StringUtils.EMPTY),
-                         Arguments.of(null, MODIFICATION_TYPE_ASSIGNMENT),
-                         Arguments.of(modifyCaseUserRolesRequestEmpty, MODIFICATION_TYPE_ASSIGNMENT));
+        return Stream.of(
+            Arguments.of(getModifyCaseUserRolesRequestValidDefendant(), MODIFICATION_TYPE_ASSIGNMENT),
+            Arguments.of(getModifyCaseUserRolesRequestValidDefendant(), MODIFICATION_TYPE_REVOKE),
+            Arguments.of(getModifyCaseUserRolesRequestValidCreator(), MODIFICATION_TYPE_ASSIGNMENT),
+            Arguments.of(getModifyCaseUserRolesRequestValidCreator(), MODIFICATION_TYPE_REVOKE)
+        );
     }
 
     private static ModifyCaseUserRolesRequest getModifyCaseUserRolesRequestValidDefendant() {
