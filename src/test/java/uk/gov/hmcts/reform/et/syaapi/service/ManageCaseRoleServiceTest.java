@@ -64,7 +64,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.EMPLOYMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CCD_API_POST_METHOD_NAME;
@@ -248,13 +247,6 @@ class ManageCaseRoleServiceTest {
                                    any(),
                                    eq(CaseAssignmentUserRolesResponse.class)))
             .thenReturn(new ResponseEntity<>(HttpStatus.OK));
-        lenient().when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN))
-            .thenReturn(UserInfo.builder()
-                            .uid("123456789012345678901234567890")
-                            .givenName("First")
-                            .familyName("Last")
-                            .sub("test@email.com")
-                            .build());
         assertDoesNotThrow(() -> manageCaseRoleService.modifyUserCaseRolesForRespondents(
             DUMMY_AUTHORISATION_TOKEN,
             modifyCaseUserRolesRequest,
@@ -305,25 +297,12 @@ class ManageCaseRoleServiceTest {
     }
 
     private static Stream<Arguments> provideModifyUserCaseRolesForRespondentsTestData() {
-        ModifyCaseUserRole modifyCaseUserRoleValidRoleDefendant = ModifyCaseUserRole.builder()
-            .userId(USER_ID)
-            .caseDataId(CASE_ID)
-            .caseRole(CASE_ROLE_DEFENDANT)
-            .caseTypeId(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES)
-            .respondentName(RESPONDENT_NAME)
-            .build();
-        ModifyCaseUserRole modifyCaseUserRoleValidRoleCreator = ModifyCaseUserRole.builder()
-            .userId(USER_ID)
-            .caseDataId(CASE_ID)
-            .caseRole(CASE_ROLE_CREATOR)
-            .caseTypeId(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES)
-            .respondentName(RESPONDENT_NAME)
-            .build();
-        ModifyCaseUserRolesRequest modifyCaseUserRolesRequestValidDefendant = ModifyCaseUserRolesRequest
-            .builder().modifyCaseUserRoles(List.of(modifyCaseUserRoleValidRoleDefendant)).build();
-        ModifyCaseUserRolesRequest modifyCaseUserRolesRequestValidCreator = ModifyCaseUserRolesRequest
-            .builder().modifyCaseUserRoles(List.of(modifyCaseUserRoleValidRoleCreator)).build();
-        ModifyCaseUserRolesRequest modifyCaseUserRolesRequestEmpty = ModifyCaseUserRolesRequest.builder().build();
+        ModifyCaseUserRolesRequest modifyCaseUserRolesRequestValidDefendant =
+            getModifyCaseUserRolesRequestValidDefendant();
+        ModifyCaseUserRolesRequest modifyCaseUserRolesRequestValidCreator =
+            getModifyCaseUserRolesRequestValidCreator();
+        ModifyCaseUserRolesRequest modifyCaseUserRolesRequestEmpty =
+            ModifyCaseUserRolesRequest.builder().build();
 
         return Stream.of(Arguments.of(modifyCaseUserRolesRequestValidDefendant, MODIFICATION_TYPE_ASSIGNMENT),
                          Arguments.of(modifyCaseUserRolesRequestValidDefendant, MODIFICATION_TYPE_REVOKE),
@@ -332,6 +311,81 @@ class ManageCaseRoleServiceTest {
                          Arguments.of(modifyCaseUserRolesRequestValidDefendant, StringUtils.EMPTY),
                          Arguments.of(null, MODIFICATION_TYPE_ASSIGNMENT),
                          Arguments.of(modifyCaseUserRolesRequestEmpty, MODIFICATION_TYPE_ASSIGNMENT));
+    }
+
+    private static ModifyCaseUserRolesRequest getModifyCaseUserRolesRequestValidDefendant() {
+        ModifyCaseUserRole modifyCaseUserRoleValidRoleDefendant = ModifyCaseUserRole.builder()
+            .userId(USER_ID)
+            .caseDataId(CASE_ID)
+            .caseRole(CASE_ROLE_DEFENDANT)
+            .caseTypeId(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES)
+            .respondentName(RESPONDENT_NAME)
+            .build();
+        return ModifyCaseUserRolesRequest
+            .builder().modifyCaseUserRoles(List.of(modifyCaseUserRoleValidRoleDefendant)).build();
+    }
+
+    private static ModifyCaseUserRolesRequest getModifyCaseUserRolesRequestValidCreator() {
+        ModifyCaseUserRole modifyCaseUserRoleValidRoleCreator = ModifyCaseUserRole.builder()
+            .userId(USER_ID)
+            .caseDataId(CASE_ID)
+            .caseRole(CASE_ROLE_CREATOR)
+            .caseTypeId(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES)
+            .respondentName(RESPONDENT_NAME)
+            .build();
+        return ModifyCaseUserRolesRequest
+            .builder().modifyCaseUserRoles(List.of(modifyCaseUserRoleValidRoleCreator)).build();
+    }
+
+    @Test
+    void modifyUserCaseRolesForRespondents_WithUserInfoEmail() throws IOException {
+        ModifyCaseUserRolesRequest modifyCaseUserRolesRequest = getModifyCaseUserRolesRequestValidDefendant();
+        String modificationType = MODIFICATION_TYPE_ASSIGNMENT;
+        CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
+        setExpectedDetails(modifyCaseUserRolesRequest, modificationType, expectedCaseDetails);
+        when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN))
+            .thenReturn(UserInfo.builder()
+                            .uid("123456789012345678901234567890")
+                            .givenName("First")
+                            .familyName("Last")
+                            .sub("test@email.com")
+                            .build());
+
+        List<CaseDetails> actual = manageCaseRoleService.modifyUserCaseRolesForRespondents(
+            DUMMY_AUTHORISATION_TOKEN,
+            modifyCaseUserRolesRequest,
+            modificationType
+        );
+
+        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(actual.getFirst().getData());
+        assertThat(caseData.getRespondentCollection().getFirst().getValue().getResponseRespondentEmail())
+            .isEqualTo("test@email.com");
+    }
+
+    @Test
+    void modifyUserCaseRolesForRespondents_WithoutUserInfoEmail() throws IOException {
+        ModifyCaseUserRolesRequest modifyCaseUserRolesRequest = getModifyCaseUserRolesRequestValidDefendant();
+        String modificationType = MODIFICATION_TYPE_ASSIGNMENT;
+        CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
+        setExpectedDetails(modifyCaseUserRolesRequest, modificationType, expectedCaseDetails);
+        when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN))
+            .thenReturn(UserInfo.builder()
+                            .uid("123456789012345678901234567890")
+                            .givenName("First")
+                            .familyName("Last")
+                            .build());
+
+        List<CaseDetails> actual = manageCaseRoleService.modifyUserCaseRolesForRespondents(
+            DUMMY_AUTHORISATION_TOKEN,
+            modifyCaseUserRolesRequest,
+            modificationType
+        );
+
+        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(actual.getFirst().getData());
+        assertThat(caseData.getRespondentCollection().getFirst().getValue().getResponseRespondentEmail())
+            .isNull();
     }
 
     @Test
