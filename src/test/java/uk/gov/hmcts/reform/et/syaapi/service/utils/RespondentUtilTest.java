@@ -46,6 +46,7 @@ class RespondentUtilTest {
         "java.lang.Exception: Respondent does not exist for case: %s";
     private static final String EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND =
         "java.lang.Exception: Respondent representative not found for case: %s";
+    private static final String EMAIL = "test@email.com";
 
     @ParameterizedTest
     @MethodSource("provideTheSetRespondentIdamIdAndDefaultLinkStatusesTestData")
@@ -84,11 +85,15 @@ class RespondentUtilTest {
                                                   respondentName,
                                                   idamId,
                                                   modificationType,
-                                                  "test@email.com"
+                                                  EMAIL
         );
         caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
         if (TestConstants.TEST_MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
-            assertThat(caseData.getRespondentCollection().getFirst().getValue().getIdamId()).isEqualTo(idamId);
+            RespondentSumType respondent = caseData.getRespondentCollection().getFirst().getValue();
+            assertThat(respondent.getIdamId())
+                .isEqualTo(idamId);
+            assertThat(respondent.getResponseRespondentEmail())
+                .isEqualTo(EMAIL);
         } else {
             assertThat(caseData.getRespondentCollection().getFirst().getValue().getIdamId())
                 .isEqualTo(StringUtils.EMPTY);
@@ -106,7 +111,7 @@ class RespondentUtilTest {
                                                           respondentName,
                                                           idamId,
                                                           modificationType,
-                                                          "test@email.com"
+                                                          EMAIL
                 )).getMessage())
                 .contains(TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_EMPTY_RESPONDENT_COLLECTION);
             return true;
@@ -121,7 +126,7 @@ class RespondentUtilTest {
                                                           respondentName,
                                                           idamId,
                                                           modificationType,
-                                                          "test@email.com"
+                                                          EMAIL
                 )).getMessage())
                 .contains(TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_RESPONDENT_NOT_FOUND_WITH_RESPONDENT_NAME);
             return true;
