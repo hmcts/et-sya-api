@@ -253,7 +253,8 @@ public class ManageCaseRoleService {
                     caseDetails,
                     modifyCaseUserRole.getRespondentName(),
                     modifyCaseUserRole.getUserId(),
-                    modificationType
+                    modificationType,
+                    getUserEmail(authorisation)
                 );
                 caseDetailsList.add(
                     et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(authorisation,
@@ -262,6 +263,13 @@ public class ManageCaseRoleService {
             }
         }
         return caseDetailsList;
+    }
+
+    private String getUserEmail(String authorisation) {
+        UserInfo userInfo = idamClient.getUserInfo(authorisation);
+        return ObjectUtils.isNotEmpty(userInfo) && StringUtils.isNotBlank(userInfo.getSub())
+            ? userInfo.getSub()
+            : null;
     }
 
     /**

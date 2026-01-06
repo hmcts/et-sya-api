@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.ET3_STATUS_IN_PROGRESS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA;
@@ -53,14 +54,17 @@ public final class RespondentUtil {
      * Finds respondent{@link RespondentSumType} in the respondent collection of caseDetails{@link CaseDetails}
      * by using respondent name and assigns idam id to the respondent. It is assumed that caseDetails, respondentName,
      * and idamId is not empty or blank.
-     * @param caseDetails object received by elastic search.
+     *
+     * @param caseDetails    object received by elastic search.
      * @param respondentName name of the respondent to search in respondent collection.
-     * @param idamId to be assigned to the respondent in the respondent collection.
+     * @param idamId         to be assigned to the respondent in the respondent collection.
+     * @param userEmail      email of the user performing the operation.
      */
     public static void setRespondentIdamIdAndDefaultLinkStatuses(CaseDetails caseDetails,
                                                                  String respondentName,
                                                                  String idamId,
-                                                                 String modificationType) {
+                                                                 String modificationType,
+                                                                 String userEmail) {
         Map<String, Object> existingCaseData = caseDetails.getData();
         if (MapUtils.isEmpty(existingCaseData)) {
             throw new RuntimeException(String.format(EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA, caseDetails.getId()));
@@ -76,7 +80,8 @@ public final class RespondentUtil {
                 setRespondentIdAndLinkStatuses(respondentSumTypeItem,
                                                idamId,
                                                caseDetails.getId().toString(),
-                                               modificationType);
+                                               modificationType,
+                                               userEmail);
             }
             Map<String, Object> updatedCaseData = EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData);
             caseDetails.setData(updatedCaseData);
@@ -154,7 +159,8 @@ public final class RespondentUtil {
     private static void setRespondentIdAndLinkStatuses(RespondentSumTypeItem respondentSumTypeItem,
                                                        String idamId,
                                                        String submissionReference,
-                                                       String modificationType) {
+                                                       String modificationType,
+                                                       String userEmail) {
         if (StringUtils.isBlank(idamId)) {
             throw new RuntimeException(EXCEPTION_INVALID_IDAM_ID);
         }
@@ -168,6 +174,9 @@ public final class RespondentUtil {
         }
         if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
             respondentSumTypeItem.getValue().setIdamId(idamId);
+            if (isBlank(respondentSumTypeItem.getValue().getResponseRespondentEmail())) {
+                respondentSumTypeItem.getValue().setResponseRespondentEmail(userEmail);
+            }
             if (ObjectUtils.isEmpty(respondentSumTypeItem.getValue().getEt3CaseDetailsLinksStatuses())) {
                 respondentSumTypeItem.getValue()
                     .setEt3CaseDetailsLinksStatuses(generateDefaultET3CaseDetailsLinksStatuses());

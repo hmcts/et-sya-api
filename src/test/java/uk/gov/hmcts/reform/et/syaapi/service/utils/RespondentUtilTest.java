@@ -58,7 +58,9 @@ class RespondentUtilTest {
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
-                                                          modificationType)).getMessage())
+                                                          modificationType,
+                                                          null
+                )).getMessage())
                 .contains(TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_CASE_DATA_NOT_FOUND);
             return;
         }
@@ -81,7 +83,9 @@ class RespondentUtilTest {
         setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                   respondentName,
                                                   idamId,
-                                                  modificationType);
+                                                  modificationType,
+                                                  "test@email.com"
+        );
         caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
         if (TestConstants.TEST_MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
             assertThat(caseData.getRespondentCollection().getFirst().getValue().getIdamId()).isEqualTo(idamId);
@@ -101,7 +105,9 @@ class RespondentUtilTest {
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
-                                                          modificationType)).getMessage())
+                                                          modificationType,
+                                                          "test@email.com"
+                )).getMessage())
                 .contains(TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_EMPTY_RESPONDENT_COLLECTION);
             return true;
         }
@@ -114,7 +120,9 @@ class RespondentUtilTest {
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
-                                                          modificationType)).getMessage())
+                                                          modificationType,
+                                                          "test@email.com"
+                )).getMessage())
                 .contains(TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_RESPONDENT_NOT_FOUND_WITH_RESPONDENT_NAME);
             return true;
         }
@@ -131,7 +139,9 @@ class RespondentUtilTest {
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
-                                                          modificationType)).getMessage())
+                                                          modificationType,
+                                                          null
+                )).getMessage())
                 .contains(TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_RESPONDENT_NOT_FOUND_WITH_RESPONDENT_NAME);
             return true;
         }
@@ -148,7 +158,9 @@ class RespondentUtilTest {
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
-                                                          modificationType)).getMessage())
+                                                          modificationType,
+                                                          null
+                )).getMessage())
                 .contains(TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_INVALID_IDAM_ID);
             return true;
         }
@@ -159,7 +171,9 @@ class RespondentUtilTest {
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
-                                                          modificationType)).getMessage())
+                                                          modificationType,
+                                                          null
+                )).getMessage())
                 .contains(TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_IDAM_ID_ALREADY_EXISTS);
             return true;
         }
