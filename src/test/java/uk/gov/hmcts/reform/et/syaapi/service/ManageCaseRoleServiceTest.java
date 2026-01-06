@@ -64,6 +64,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.EMPLOYMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CCD_API_POST_METHOD_NAME;
@@ -74,8 +75,10 @@ import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.REMOVE_OWN_REP_AS_CL
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.REMOVE_OWN_REP_AS_RESPONDENT;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_CASE_SUBMITTED;
 import static uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent.UPDATE_ET3_FORM;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.DUMMY_AUTHORISATION_TOKEN;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_CASE_ID_LONG;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_CASE_ID_STRING;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.YES;
 
 @EqualsAndHashCode
@@ -130,8 +133,6 @@ class ManageCaseRoleServiceTest {
     private static final String CLAIMANT_LAST_NAME = "Claimant Last Name";
     private static final String DUMMY_CASE_SUBMISSION_REFERENCE = "1234567890123456";
     private static final String DUMMY_USER_ID = "123456789012345678901234567890";
-    private static final String DUMMY_AUTHORISATION_TOKEN = "dummy_authorisation_token";
-    private static final String TEST_SERVICE_AUTH_TOKEN = "Bearer TestServiceAuth";
     private static final String USER_CASE_ROLE_DEFENDANT = "[DEFENDANT]";
     private static final String SCOTLAND_CASE_TYPE = "ET_Scotland";
     private static final String AAC_URL_PARAMETER_NAME = "aacUrl";
@@ -216,17 +217,19 @@ class ManageCaseRoleServiceTest {
         }
         if (isModifyCaseUserRolesRequestInvalid(modifyCaseUserRolesRequest)) {
             ManageCaseRoleException exception = assertThrows(ManageCaseRoleException.class, () ->
-                manageCaseRoleService.modifyUserCaseRolesForRespondents(TestConstants.DUMMY_AUTHORISATION_TOKEN,
-                                                                        modifyCaseUserRolesRequest,
-                                                                        modificationType));
+                manageCaseRoleService.modifyUserCaseRolesForRespondents(
+                    DUMMY_AUTHORISATION_TOKEN,
+                    modifyCaseUserRolesRequest,
+                    modificationType));
             assertThat(exception.getMessage()).isEqualTo(INVALID_CASE_ROLE_REQUEST_EXCEPTION_MESSAGE);
             return;
         }
         if (isAnyOfTheModifyCaseUserRoleInvalid(modifyCaseUserRolesRequest)) {
             ManageCaseRoleException exception = assertThrows(ManageCaseRoleException.class, () ->
-                manageCaseRoleService.modifyUserCaseRolesForRespondents(TestConstants.DUMMY_AUTHORISATION_TOKEN,
-                                                                        modifyCaseUserRolesRequest,
-                                                                        modificationType));
+                manageCaseRoleService.modifyUserCaseRolesForRespondents(
+                    DUMMY_AUTHORISATION_TOKEN,
+                    modifyCaseUserRolesRequest,
+                    modificationType));
             assertThat(exception.getMessage()).contains(INVALID_ROLE_MODIFICATION_ITEM_EXCEPTION_MESSAGE);
             return;
         }
@@ -245,8 +248,15 @@ class ManageCaseRoleServiceTest {
                                    any(),
                                    eq(CaseAssignmentUserRolesResponse.class)))
             .thenReturn(new ResponseEntity<>(HttpStatus.OK));
+        lenient().when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN))
+            .thenReturn(UserInfo.builder()
+                            .uid("123456789012345678901234567890")
+                            .givenName("First")
+                            .familyName("Last")
+                            .sub("test@email.com")
+                            .build());
         assertDoesNotThrow(() -> manageCaseRoleService.modifyUserCaseRolesForRespondents(
-            TestConstants.DUMMY_AUTHORISATION_TOKEN,
+            DUMMY_AUTHORISATION_TOKEN,
             modifyCaseUserRolesRequest,
             modificationType));
     }
