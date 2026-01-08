@@ -356,7 +356,17 @@ public class NotificationService {
                                                                   true);
         } else {
             emailToRespondentTemplate = getNonApplicantTemplateId(respondentApplication, isWelsh);
+
             String applicationType = getApplicationType(respondentApplication, true);
+            if (TYPE_C.equals(applicationType) || TYPE_C_RESPONDENT.equals(applicationType)) {
+                return;
+            }
+
+            String copyToOtherParty = getCopyToOtherParty(respondentApplication, true);
+            if (DONT_SEND_COPY.equals(copyToOtherParty)) {
+                return;
+            }
+
             respondentParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, applicationType);
             respondentParameters.put(SEND_EMAIL_PARAMS_DATEPLUS7_KEY,
                                     LocalDate.now().plusDays(7).format(UK_LOCAL_DATE_PATTERN));

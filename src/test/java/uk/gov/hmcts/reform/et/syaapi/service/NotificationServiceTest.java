@@ -31,6 +31,7 @@ import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
+import uk.gov.hmcts.et.common.model.ccd.types.RespondentTse;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
@@ -74,8 +75,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_ABBREVIATED_MONTHS_MAP;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_APPLICANT_NAME_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_EXUI_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_LINK_DOC_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SHORTTEXT_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.MY_HMCTS;
@@ -1459,17 +1463,12 @@ class NotificationServiceTest {
         }
 
         @Test
-        void shouldSendCopyYesEmail() throws NotificationClientException, IOException {
-            when(notificationClient.sendEmail(
-                eq(YES),
-                eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
-                any(),
-                eq(caseTestData.getExpectedDetails().getId().toString())
-            )).thenReturn(caseTestData.getSendEmailResponse());
-
+        void shouldSendCopyYesEmail() throws NotificationClientException {
             notificationService.sendRespondentAppAcknowledgementEmailToRespondent(
                 details,
-                caseTestData.getRespondentApplication(), null);
+                caseTestData.getRespondentApplication(),
+                null
+            );
 
             verify(notificationClient, times(5)).sendEmail(
                 any(),
@@ -1480,20 +1479,17 @@ class NotificationServiceTest {
         }
 
         @Test
-        void shouldSendCopyNoEmail() throws NotificationClientException, IOException {
-            caseTestData.getClaimantApplication().setCopyToOtherPartyYesOrNo("No");
-            when(notificationClient.sendEmail(
-                eq("No"),
-                eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
-                any(),
-                eq(caseTestData.getExpectedDetails().getId().toString())
-            )).thenReturn(caseTestData.getSendEmailResponse());
+        void shouldSendCopyNoEmail() throws NotificationClientException {
+            RespondentTse mockRespondentTse = caseTestData.getRespondentApplication();
+            mockRespondentTse.setCopyToOtherPartyYesOrNo("No");
 
             notificationService.sendRespondentAppAcknowledgementEmailToRespondent(
                 details,
-                caseTestData.getRespondentApplication(), null);
+                caseTestData.getRespondentApplication(),
+                null
+            );
 
-            verify(notificationClient, times(5)).sendEmail(
+            verify(notificationClient, times(1)).sendEmail(
                 any(),
                 any(),
                 respondentParametersCaptor.capture(),
@@ -1502,20 +1498,17 @@ class NotificationServiceTest {
         }
 
         @Test
-        void shouldSendTypeCEmail() throws NotificationClientException, IOException {
-            caseTestData.getClaimantApplication().setContactApplicationType(WITNESS);
-            when(notificationClient.sendEmail(
-                eq("C"),
-                eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
-                any(),
-                eq(caseTestData.getExpectedDetails().getId().toString())
-            )).thenReturn(caseTestData.getSendEmailResponse());
+        void shouldSendTypeCEmail() throws NotificationClientException {
+            RespondentTse mockRespondentTse = caseTestData.getRespondentApplication();
+            mockRespondentTse.setContactApplicationType(WITNESS);
 
             notificationService.sendRespondentAppAcknowledgementEmailToRespondent(
                 details,
-                caseTestData.getRespondentApplication(), null);
+                mockRespondentTse,
+                null
+            );
 
-            verify(notificationClient, times(5)).sendEmail(
+            verify(notificationClient, times(1)).sendEmail(
                 any(),
                 any(),
                 respondentParametersCaptor.capture(),
@@ -1526,25 +1519,21 @@ class NotificationServiceTest {
 
     @Test
     void shouldSendCorrectRespondentParameters() throws NotificationClientException, IOException {
-        details = new CoreEmailDetails(
+        CoreEmailDetails mockDetails = new CoreEmailDetails(
             caseTestData.getCaseData(),
             CLAIMANT,
             "1",
             TEST_RESPONDENT,
             NOT_SET,
-            caseTestData.getExpectedDetails().getId().toString()
+            "1736945212245448"
         );
-        when(notificationClient.sendEmail(
-            eq(YES),
-            eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
-            any(),
-            eq(caseTestData.getExpectedDetails().getId().toString())
-        )).thenReturn(caseTestData.getSendEmailResponse());
         when(notificationsProperties.getRespondentPortalLink()).thenReturn("RespondentPortalLink/");
 
         notificationService.sendRespondentAppAcknowledgementEmailToRespondent(
-            details,
-            caseTestData.getRespondentApplication(), null);
+            mockDetails,
+            caseTestData.getRespondentApplication(),
+            null
+        );
 
         verify(notificationClient, times(5)).sendEmail(
             any(),
@@ -1553,9 +1542,18 @@ class NotificationServiceTest {
             any()
         );
         List<Map<String, Object>> capturedParam = respondentParametersCaptor.getAllValues();
-        String expectedLink = "RespondentPortalLink/" + caseTestData.getExpectedDetails().getId().toString() + "/1";
-        assertThat(capturedParam.getFirst().get(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY)).isEqualTo(expectedLink);
-        assertThat(capturedParam.getFirst().get(SEND_EMAIL_PARAMS_EXUI_LINK_KEY)).isEqualTo(expectedLink);
+        assertThat(capturedParam.getFirst().get(HEARING_DATE_KEY))
+            .isEqualTo(NOT_SET);
+        assertThat(capturedParam.getFirst().get(SEND_EMAIL_PARAMS_APPLICANT_NAME_KEY))
+            .isEqualTo("Test Respondent Organisation -1-");
+        assertThat(capturedParam.getFirst().get(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY))
+            .isEqualTo("RespondentPortalLink/1736945212245448/1");
+        assertThat(capturedParam.getFirst().get(SEND_EMAIL_PARAMS_EXUI_LINK_KEY))
+            .isEqualTo("RespondentPortalLink/1736945212245448/1");
+        assertThat(capturedParam.getFirst().get(SEND_EMAIL_PARAMS_SHORTTEXT_KEY))
+            .isEqualTo("Amend response");
+        assertThat(capturedParam.getFirst().get(SEND_EMAIL_PARAMS_LINK_DOC_KEY))
+            .isNull();
     }
 
     @Nested
