@@ -74,6 +74,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_ABBREVIATED_MONTHS_MAP;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_EXUI_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.MY_HMCTS;
@@ -1520,6 +1522,40 @@ class NotificationServiceTest {
                 any()
             );
         }
+    }
+
+    @Test
+    void shouldSendCorrectRespondentParameters() throws NotificationClientException, IOException {
+        details = new CoreEmailDetails(
+            caseTestData.getCaseData(),
+            CLAIMANT,
+            "1",
+            TEST_RESPONDENT,
+            NOT_SET,
+            caseTestData.getExpectedDetails().getId().toString()
+        );
+        when(notificationClient.sendEmail(
+            eq(YES),
+            eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
+            any(),
+            eq(caseTestData.getExpectedDetails().getId().toString())
+        )).thenReturn(caseTestData.getSendEmailResponse());
+        when(notificationsProperties.getRespondentPortalLink()).thenReturn("RespondentPortalLink/");
+
+        notificationService.sendRespondentAppAcknowledgementEmailToRespondent(
+            details,
+            caseTestData.getRespondentApplication(), null);
+
+        verify(notificationClient, times(5)).sendEmail(
+            any(),
+            any(),
+            respondentParametersCaptor.capture(),
+            any()
+        );
+        List<Map<String, Object>> capturedParam = respondentParametersCaptor.getAllValues();
+        String expectedLink = "RespondentPortalLink/" + caseTestData.getExpectedDetails().getId().toString() + "/1";
+        assertThat(capturedParam.getFirst().get(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY)).isEqualTo(expectedLink);
+        assertThat(capturedParam.getFirst().get(SEND_EMAIL_PARAMS_EXUI_LINK_KEY)).isEqualTo(expectedLink);
     }
 
     @Nested

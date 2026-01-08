@@ -344,10 +344,8 @@ public class NotificationService {
             : getRespondentRepPortalLink(details.caseId());
 
         respondentParameters.put(SEND_EMAIL_PARAMS_APPLICANT_NAME_KEY, applicantName);
-        respondentParameters.put(
-            isRespondent ? SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY : SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
-            linkToCase
-        );
+        respondentParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, linkToCase);
+        respondentParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY, linkToCase);
 
         boolean isApplicant =
             respondentApplication.getRespondentIdamId().equals(respondent.getValue().getIdamId()) && isRespondent;
