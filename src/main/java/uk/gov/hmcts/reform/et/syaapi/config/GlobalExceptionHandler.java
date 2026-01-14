@@ -10,6 +10,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import uk.gov.hmcts.reform.authorisation.exceptions.InvalidTokenException;
 import uk.gov.hmcts.reform.et.syaapi.config.interceptors.ResourceNotFoundException;
 import uk.gov.hmcts.reform.et.syaapi.config.interceptors.UnAuthorisedServiceException;
+import uk.gov.hmcts.reform.et.syaapi.exception.ProfessionalUserException;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseAssignmentResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.ErrorResponse;
 
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -103,5 +105,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .code(NOT_FOUND.value())
                 .build()
         );
+    }
+
+    /**
+     * Intercepts any {@link ProfessionalUserException} occurances within the api and returns a proper response.
+     * This is not an error - it's expected behavior when a professional user attempts to self-assign.
+     * @param exception that just occured
+     * @return {@link CaseAssignmentResponse} with PROFESSIONAL_USER status and 200 OK
+     */
+    @ExceptionHandler(ProfessionalUserException.class)
+    public ResponseEntity<CaseAssignmentResponse> handleProfessionalUserException(ProfessionalUserException exception) {
+        log.info("Professional user detected - returning PROFESSIONAL_USER status.");
+        return ResponseEntity.ok(CaseAssignmentResponse.builder()
+            .status(CaseAssignmentResponse.AssignmentStatus.PROFESSIONAL_USER)
+            .message(exception.getMessage())
+            .build());
     }
 }
