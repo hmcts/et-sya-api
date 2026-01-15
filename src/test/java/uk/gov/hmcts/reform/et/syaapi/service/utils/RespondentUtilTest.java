@@ -81,17 +81,24 @@ class RespondentUtilTest {
         if (hasRespondentNameException(caseData, caseDetails, respondentName, idamId, modificationType)) {
             return;
         }
-        if (hasIdamIdException(caseDetails, respondentName, idamId, caseData, modificationType)) {
+        boolean alreadyAssigned = hasIdamIdAlreadyAssigned(caseData, idamId, modificationType);
+        if (hasIdamIdException(caseDetails, respondentName, idamId, caseData, modificationType, alreadyAssigned)) {
             return;
         }
-        setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
-                                                  respondentName,
-                                                  idamId,
-                                                  modificationType);
+        boolean result = setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
+                                                                    respondentName,
+                                                                    idamId,
+                                                                    modificationType);
         caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
-        if (TestConstants.TEST_MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
+        if (alreadyAssigned) {
+            assertThat(result).isTrue();
+            // IDAM ID should remain unchanged when already assigned
+            assertThat(caseData.getRespondentCollection().getFirst().getValue().getIdamId()).isEqualTo(idamId);
+        } else if (TestConstants.TEST_MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
+            assertThat(result).isFalse();
             assertThat(caseData.getRespondentCollection().getFirst().getValue().getIdamId()).isEqualTo(idamId);
         } else {
+            assertThat(result).isFalse();
             assertThat(caseData.getRespondentCollection().getFirst().getValue().getIdamId())
                 .isEqualTo(StringUtils.EMPTY);
         }
@@ -144,11 +151,20 @@ class RespondentUtilTest {
         return false;
     }
 
+    private static boolean hasIdamIdAlreadyAssigned(CaseData caseData,
+                                                    String idamId,
+                                                    String modificationType) {
+        return TestConstants.TEST_MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)
+            && StringUtils.isNotBlank(caseData.getRespondentCollection().getFirst().getValue().getIdamId())
+            && idamId.equals(caseData.getRespondentCollection().getFirst().getValue().getIdamId());
+    }
+
     private static boolean hasIdamIdException(CaseDetails caseDetails,
                                               String respondentName,
                                               String idamId,
                                               CaseData caseData,
-                                              String modificationType) {
+                                              String modificationType,
+                                              boolean alreadyAssigned) {
         if (StringUtils.isBlank(idamId)) {
             assertThat(assertThrows(RuntimeException.class, () ->
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
@@ -159,7 +175,9 @@ class RespondentUtilTest {
             return true;
         }
 
-        if (StringUtils.isNotBlank(caseData.getRespondentCollection().getFirst().getValue().getIdamId())
+        // Only throw exception if IDAM ID is different (not the same user)
+        if (!alreadyAssigned
+            && StringUtils.isNotBlank(caseData.getRespondentCollection().getFirst().getValue().getIdamId())
             && !idamId.equals(caseData.getRespondentCollection().getFirst().getValue().getIdamId())) {
             assertThat(assertThrows(RuntimeException.class, () ->
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,

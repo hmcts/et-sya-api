@@ -29,7 +29,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.ET
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_EMPTY_RESPONDENT_COLLECTION_NOT_ABLE_TO_ADD_RESPONDENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_IDAM_ID_ALREADY_EXISTS;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_IDAM_ID_ALREADY_EXISTS_SAME_USER;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_INVALID_IDAM_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_INVALID_RESPONDENT_INDEX;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_NO_RESPONDENT_DEFINED;
@@ -59,11 +58,13 @@ public final class RespondentUtil {
      * @param caseDetails object received by elastic search.
      * @param respondentName name of the respondent to search in respondent collection.
      * @param idamId to be assigned to the respondent in the respondent collection.
+     * @param modificationType type of modification (Assignment or Revoke)
+     * @return true if user was already assigned to the case, false otherwise
      */
-    public static void setRespondentIdamIdAndDefaultLinkStatuses(CaseDetails caseDetails,
-                                                                 String respondentName,
-                                                                 String idamId,
-                                                                 String modificationType) {
+    public static boolean setRespondentIdamIdAndDefaultLinkStatuses(CaseDetails caseDetails,
+                                                                     String respondentName,
+                                                                     String idamId,
+                                                                     String modificationType) {
         Map<String, Object> existingCaseData = caseDetails.getData();
         if (MapUtils.isEmpty(existingCaseData)) {
             throw new RuntimeException(String.format(EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA, caseDetails.getId()));
@@ -75,15 +76,17 @@ public final class RespondentUtil {
                                            modificationType,
                                            respondentName,
                                            idamId);
+            boolean alreadyAssigned = false;
             for (RespondentSumTypeItem respondentSumTypeItem : respondentSumTypeItems) {
-                setRespondentIdAndLinkStatuses(respondentSumTypeItem,
-                                               idamId,
-                                               caseDetails.getId().toString(),
-                                               modificationType);
+                boolean wasAlreadyAssigned = setRespondentIdAndLinkStatuses(respondentSumTypeItem,
+                                                                             idamId,
+                                                                             caseDetails.getId().toString(),
+                                                                             modificationType);
+                alreadyAssigned = alreadyAssigned || wasAlreadyAssigned;
             }
             Map<String, Object> updatedCaseData = EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData);
             caseDetails.setData(updatedCaseData);
-            return;
+            return alreadyAssigned;
 
         }
         throw new ManageCaseRoleException(new Exception(String.format(
@@ -154,18 +157,18 @@ public final class RespondentUtil {
         return StringUtils.EMPTY;
     }
 
-    private static void setRespondentIdAndLinkStatuses(RespondentSumTypeItem respondentSumTypeItem,
-                                                       String idamId,
-                                                       String submissionReference,
-                                                       String modificationType) {
+    private static boolean setRespondentIdAndLinkStatuses(RespondentSumTypeItem respondentSumTypeItem,
+                                                          String idamId,
+                                                          String submissionReference,
+                                                          String modificationType) {
         if (StringUtils.isBlank(idamId)) {
             throw new RuntimeException(EXCEPTION_INVALID_IDAM_ID);
         }
         if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)
             && StringUtils.isNotBlank(respondentSumTypeItem.getValue().getIdamId())) {
             if (idamId.equals(respondentSumTypeItem.getValue().getIdamId())) {
-                throw new RuntimeException(String.format(EXCEPTION_IDAM_ID_ALREADY_EXISTS_SAME_USER,
-                                                         submissionReference));
+                log.info("User already assigned to case. UserId: {}, CaseId: {}", idamId, submissionReference);
+                return true;
             }
             throw new RuntimeException(String.format(EXCEPTION_IDAM_ID_ALREADY_EXISTS, submissionReference));
         }
@@ -184,6 +187,7 @@ public final class RespondentUtil {
         } else {
             respondentSumTypeItem.getValue().setIdamId(StringUtils.EMPTY);
         }
+        return false;
     }
 
     private static ET3CaseDetailsLinksStatuses generateDefaultET3CaseDetailsLinksStatuses() {
