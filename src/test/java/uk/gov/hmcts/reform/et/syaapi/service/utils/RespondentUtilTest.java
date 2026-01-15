@@ -4,14 +4,20 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignedUserRolesResponse;
 import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
+import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
+import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 
@@ -24,10 +30,22 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.FIRST_INDEX;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_RESPONDENT_NOT_FOUND_WITH_INDEX;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.RespondentUtil.setRespondentIdamIdAndDefaultLinkStatuses;
+import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CASE_ID;
 
 class RespondentUtilTest {
+
+    private static final String EXCEPTION_INVALID_RESPONDENT_INDEX =
+        "java.lang.Exception: Respondent index, %s is not valid for the case with id, %s";
+    private static final String STRING_ZERO = "0";
+    private static final String STRING_NINE = "9";
+    private static final String STRING_MINUS_ONE = "-1";
+    private static final String INVALID_INTEGER = "abc";
+    private static final String EXCEPTION_INVALID_RESPONDENT_INDEX_WITH_CASE_ID =
+        "java.lang.Exception: Respondent does not exist for case: %s";
+    private static final String EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND =
+        "java.lang.Exception: Respondent representative not found for case: %s";
 
     @ParameterizedTest
     @MethodSource("provideTheSetRespondentIdamIdAndDefaultLinkStatusesTestData")
@@ -57,60 +75,27 @@ class RespondentUtilTest {
         if (hasRespondentNameException(caseData, caseDetails, respondentName, idamId, modificationType)) {
             return;
         }
-        if (hasIdamIdException(caseDetails, respondentName, idamId, caseData, modificationType)) {
+        boolean alreadyAssigned = hasIdamIdAlreadyAssigned(caseData, idamId, modificationType);
+        if (hasIdamIdException(caseDetails, respondentName, idamId, caseData, modificationType, alreadyAssigned)) {
             return;
         }
-        setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
-                                                  respondentName,
-                                                  idamId,
-                                                  modificationType);
+        boolean result = setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
+                                                                    respondentName,
+                                                                    idamId,
+                                                                    modificationType);
         caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
-        if (TestConstants.TEST_MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
-            assertThat(caseData.getRespondentCollection().get(0).getValue().getIdamId()).isEqualTo(idamId);
+        if (alreadyAssigned) {
+            assertThat(result).isTrue();
+            // IDAM ID should remain unchanged when already assigned
+            assertThat(caseData.getRespondentCollection().getFirst().getValue().getIdamId()).isEqualTo(idamId);
+        } else if (TestConstants.TEST_MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
+            assertThat(result).isFalse();
+            assertThat(caseData.getRespondentCollection().getFirst().getValue().getIdamId()).isEqualTo(idamId);
         } else {
-            assertThat(caseData.getRespondentCollection().get(0).getValue().getIdamId()).isEqualTo(StringUtils.EMPTY);
+            assertThat(result).isFalse();
+            assertThat(caseData.getRespondentCollection().getFirst().getValue().getIdamId())
+                .isEqualTo(StringUtils.EMPTY);
         }
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
-                       .getPersonalDetails())
-            .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
-                       .getEt1ClaimForm()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_VIEWED_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
-                       .getRespondentResponse())
-            .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
-                       .getHearingDetails()).isEqualTo(
-                           TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
-                       .getRespondentRequestsAndApplications())
-            .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
-                       .getClaimantApplications()).isEqualTo(
-                           TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
-                       .getContactTribunal()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_OPTIONAL);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
-                       .getTribunalOrders())
-            .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
-                       .getTribunalJudgements()).isEqualTo(
-                           TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3CaseDetailsLinksStatuses()
-                       .getDocuments()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_OPTIONAL);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3HubLinksStatuses()
-                       .getContactDetails()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3HubLinksStatuses()
-                       .getEmployerDetails()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3HubLinksStatuses()
-                       .getConciliationAndEmployeeDetails())
-            .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3HubLinksStatuses()
-                       .getPayPensionBenefitDetails())
-            .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3HubLinksStatuses()
-                       .getContestClaim()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().get(0).getValue().getEt3HubLinksStatuses().getCheckYorAnswers())
-            .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_CANNOT_START_YET);
     }
 
     private static boolean hasRespondentCollectionException(List<?> respondentCollection,
@@ -128,8 +113,8 @@ class RespondentUtilTest {
             return true;
         }
 
-        if (ObjectUtils.isEmpty(respondentCollection.get(0))
-            || ObjectUtils.isEmpty(((LinkedHashMap<?, ?>) respondentCollection.get(0))
+        if (ObjectUtils.isEmpty(respondentCollection.getFirst())
+            || ObjectUtils.isEmpty(((LinkedHashMap<?, ?>) respondentCollection.getFirst())
                                        .get(TestConstants.TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_VALUE_KEY))
             || StringUtils.isBlank(respondentName)) {
             assertThat(assertThrows(RuntimeException.class, () ->
@@ -148,7 +133,7 @@ class RespondentUtilTest {
                                                       String respondentName,
                                                       String idamId,
                                                       String modificationType) {
-        if (!checkRespondentName(caseData.getRespondentCollection().get(0).getValue(), respondentName)) {
+        if (!checkRespondentName(caseData.getRespondentCollection().getFirst().getValue(), respondentName)) {
             assertThat(assertThrows(RuntimeException.class, () ->
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
@@ -160,11 +145,20 @@ class RespondentUtilTest {
         return false;
     }
 
+    private static boolean hasIdamIdAlreadyAssigned(CaseData caseData,
+                                                    String idamId,
+                                                    String modificationType) {
+        return TestConstants.TEST_MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)
+            && StringUtils.isNotBlank(caseData.getRespondentCollection().getFirst().getValue().getIdamId())
+            && idamId.equals(caseData.getRespondentCollection().getFirst().getValue().getIdamId());
+    }
+
     private static boolean hasIdamIdException(CaseDetails caseDetails,
                                               String respondentName,
                                               String idamId,
                                               CaseData caseData,
-                                              String modificationType) {
+                                              String modificationType,
+                                              boolean alreadyAssigned) {
         if (StringUtils.isBlank(idamId)) {
             assertThat(assertThrows(RuntimeException.class, () ->
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
@@ -175,8 +169,10 @@ class RespondentUtilTest {
             return true;
         }
 
-        if (StringUtils.isNotBlank(caseData.getRespondentCollection().get(0).getValue().getIdamId())
-            && !idamId.equals(caseData.getRespondentCollection().get(0).getValue().getIdamId())) {
+        // Only throw exception if IDAM ID is different (not the same user)
+        if (!alreadyAssigned
+            && StringUtils.isNotBlank(caseData.getRespondentCollection().getFirst().getValue().getIdamId())
+            && !idamId.equals(caseData.getRespondentCollection().getFirst().getValue().getIdamId())) {
             assertThat(assertThrows(RuntimeException.class, () ->
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
@@ -236,36 +232,39 @@ class RespondentUtilTest {
 
         CaseDetails caseDetailsWithCorrectRespondentName = new CaseTestData().getCaseDetailsWithCaseData();
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
-        caseData.getRespondentCollection().get(0).getValue().setRespondentName(TestConstants.TEST_RESPONDENT_NAME);
+        caseData.getRespondentCollection().getFirst().getValue().setRespondentName(TestConstants.TEST_RESPONDENT_NAME);
         caseDetailsWithCorrectRespondentName.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
 
         CaseDetails caseDetailsWithCorrectOrganisationName = new CaseTestData().getCaseDetailsWithCaseData();
         caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
-        caseData.getRespondentCollection().get(0).getValue()
+        caseData.getRespondentCollection().getFirst().getValue()
             .setRespondentOrganisation(TestConstants.TEST_RESPONDENT_NAME);
         caseDetailsWithCorrectOrganisationName.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
 
         caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
-        caseData.getRespondentCollection().get(0).getValue().setRespondentFirstName(TestConstants.TEST_RESPONDENT_NAME);
-        caseData.getRespondentCollection().get(0).getValue().setRespondentLastName(StringUtils.EMPTY);
+        caseData.getRespondentCollection().getFirst().getValue()
+            .setRespondentFirstName(TestConstants.TEST_RESPONDENT_NAME);
+        caseData.getRespondentCollection().getFirst().getValue().setRespondentLastName(StringUtils.EMPTY);
         CaseDetails caseDetailsWithCorrectFirstName = new CaseTestData().getCaseDetailsWithCaseData();
         caseDetailsWithCorrectFirstName.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
 
         caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
-        caseData.getRespondentCollection().get(0).getValue().setRespondentLastName(TestConstants.TEST_RESPONDENT_NAME);
-        caseData.getRespondentCollection().get(0).getValue().setRespondentFirstName(StringUtils.EMPTY);
+        caseData.getRespondentCollection().getFirst().getValue()
+            .setRespondentLastName(TestConstants.TEST_RESPONDENT_NAME);
+        caseData.getRespondentCollection().getFirst().getValue().setRespondentFirstName(StringUtils.EMPTY);
         CaseDetails caseDetailsWithCorrectLastName = new CaseTestData().getCaseDetailsWithCaseData();
         caseDetailsWithCorrectLastName.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
 
         caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
-        caseData.getRespondentCollection().get(0).getValue().setRespondentFirstName("Respondent");
-        caseData.getRespondentCollection().get(0).getValue().setRespondentLastName("Name");
+        caseData.getRespondentCollection().getFirst().getValue().setRespondentFirstName("Respondent");
+        caseData.getRespondentCollection().getFirst().getValue().setRespondentLastName("Name");
         CaseDetails caseDetailsWithCorrectFirstAndLastName = new CaseTestData().getCaseDetailsWithCaseData();
         caseDetailsWithCorrectFirstAndLastName.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
 
         caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
-        caseData.getRespondentCollection().get(0).getValue().setRespondentName(TestConstants.TEST_RESPONDENT_NAME);
-        caseData.getRespondentCollection().get(0).getValue().setRespondentName(TestConstants.TEST_RESPONDENT_IDAM_ID_2);
+        caseData.getRespondentCollection().getFirst().getValue().setRespondentName(TestConstants.TEST_RESPONDENT_NAME);
+        caseData.getRespondentCollection().getFirst().getValue()
+            .setRespondentName(TestConstants.TEST_RESPONDENT_IDAM_ID_2);
         CaseDetails caseDetailsWithDifferentIdamId = new CaseTestData().getCaseDetailsWithCaseData();
         caseDetailsWithCorrectRespondentName.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
 
@@ -336,7 +335,7 @@ class RespondentUtilTest {
         if (ObjectUtils.isNotEmpty(caseAssignedUserRolesResponse)
             && CollectionUtils.isNotEmpty(caseAssignedUserRolesResponse.getCaseAssignedUserRoles())
             && CASE_USER_ROLE_CREATOR.equals(caseAssignedUserRolesResponse
-                                                 .getCaseAssignedUserRoles().get(FIRST_INDEX).getCaseRole())) {
+                                                 .getCaseAssignedUserRoles().getFirst().getCaseRole())) {
             assertThat(RespondentUtil.checkIsUserCreator(caseAssignedUserRolesResponse)).isTrue();
             return;
         }
@@ -364,5 +363,133 @@ class RespondentUtilTest {
                          emptyCaseAssignedUserRoles,
                          creatorCaseAssignedUserRoles,
                          defendantCaseAssignedUserRoles);
+    }
+
+    @Test
+    void theFindRespondentSumTypeItemByIndex() {
+        // Test no respondents
+        assertThrows(
+            ManageCaseRoleException.class, () ->
+                RespondentUtil.findRespondentSumTypeItemByIndex(null,
+                                                                STRING_MINUS_ONE,
+                                                                CASE_ID));
+        // Setup valid list
+        List<RespondentSumTypeItem> validList = new ArrayList<>();
+        RespondentSumType validType0 = new RespondentSumType(); // assume default is non-empty
+        RespondentSumType validType1 = new RespondentSumType();
+        RespondentSumTypeItem validTypeItem0 = new RespondentSumTypeItem();
+        validTypeItem0.setValue(validType0);
+        RespondentSumTypeItem validTypeItem1 = new RespondentSumTypeItem();
+        validTypeItem1.setValue(validType1);
+        validList.add(validTypeItem0);
+        validList.add(validTypeItem1);
+
+        // Test valid index "0"
+        RespondentSumTypeItem result0 = RespondentUtil
+            .findRespondentSumTypeItemByIndex(validList, NumberUtils.INTEGER_ZERO.toString(), CASE_ID);
+        assertThat(validType0).isEqualTo(result0.getValue());
+
+        // Test valid index "1"
+        RespondentSumTypeItem result1 = RespondentUtil
+            .findRespondentSumTypeItemByIndex(validList, NumberUtils.INTEGER_ONE.toString(), CASE_ID);
+        assertThat(validType1).isEqualTo(result1.getValue());
+
+        // Test invalid: non-numeric input
+        ManageCaseRoleException ex1 = assertThrows(ManageCaseRoleException.class, () ->
+            RespondentUtil.findRespondentSumTypeItemByIndex(validList, INVALID_INTEGER, CASE_ID));
+        assertThat(ex1.getMessage()).contains(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX,
+                                                            INVALID_INTEGER,
+                                                            CASE_ID));
+
+        // Test invalid: index out of bounds
+        ManageCaseRoleException ex2 = assertThrows(ManageCaseRoleException.class, () ->
+            RespondentUtil.findRespondentSumTypeItemByIndex(validList, STRING_NINE, CASE_ID));
+        assertThat(ex2.getMessage()).contains(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX,
+                                                            STRING_NINE,
+                                                            CASE_ID));
+
+        // Test invalid: null list
+        List<RespondentSumTypeItem> emptyList = new ArrayList<>();
+        assertThrows(ManageCaseRoleException.class, () ->
+            RespondentUtil.findRespondentSumTypeItemByIndex(emptyList, STRING_MINUS_ONE, CASE_ID));
+
+        // Test invalid: null item in list
+        List<RespondentSumTypeItem> listWithNull = new ArrayList<>();
+        listWithNull.add(null);
+        ManageCaseRoleException ex4 = assertThrows(ManageCaseRoleException.class, () ->
+            RespondentUtil.findRespondentSumTypeItemByIndex(listWithNull, STRING_ZERO, CASE_ID));
+        assertThat(ex4.getMessage()).contains(String.format(
+            EXCEPTION_RESPONDENT_NOT_FOUND_WITH_INDEX,
+            NumberUtils.INTEGER_ZERO));
+
+        // Test invalid: item with null value
+        List<RespondentSumTypeItem> listWithNullValue = new ArrayList<>();
+        RespondentSumTypeItem itemWithNullValue = new RespondentSumTypeItem();
+        itemWithNullValue.setValue(null);
+        listWithNullValue.add(itemWithNullValue);
+        ManageCaseRoleException ex5 = assertThrows(ManageCaseRoleException.class, () ->
+            RespondentUtil.findRespondentSumTypeItemByIndex(listWithNullValue, STRING_MINUS_ONE, CASE_ID));
+        assertThat(ex5.getMessage()).contains(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX,
+                                                            STRING_MINUS_ONE,
+                                                            CASE_ID));
+    }
+
+    @Test
+    void testFindRespondentRepresentative_AllScenarios() {
+        String matchingRespondentId = "resp-001";
+
+        // Set up a valid RespondentSumTypeItem
+        RespondentSumTypeItem respondent = new RespondentSumTypeItem();
+        respondent.setId(matchingRespondentId);
+
+        // Set up a matching representative
+        RepresentedTypeR matchingRepValue = new RepresentedTypeR();
+        matchingRepValue.setRespondentId(matchingRespondentId);
+        RepresentedTypeRItem matchingRep = new RepresentedTypeRItem();
+        matchingRep.setValue(matchingRepValue);
+
+        // Non-matching representative
+        RepresentedTypeR nonMatchingRepValue = new RepresentedTypeR();
+        nonMatchingRepValue.setRespondentId("some-other-id");
+        RepresentedTypeRItem nonMatchingRep = new RepresentedTypeRItem();
+        nonMatchingRep.setValue(nonMatchingRepValue);
+
+        // Valid list with match
+        List<RepresentedTypeRItem> repListWithMatch = new ArrayList<>();
+        repListWithMatch.add(nonMatchingRep);
+        repListWithMatch.add(matchingRep);
+
+        // Valid case: should return matchingRep
+        String caseId = "12345";
+        RepresentedTypeRItem result = RespondentUtil.findRespondentRepresentative(
+            respondent, repListWithMatch, caseId);
+        assertThat(matchingRep).isEqualTo(result);
+
+        // Test null respondent
+        ManageCaseRoleException ex1 = assertThrows(ManageCaseRoleException.class, () ->
+            RespondentUtil.findRespondentRepresentative(null, repListWithMatch, caseId));
+        assertThat(ex1.getMessage()).isEqualTo(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX_WITH_CASE_ID, caseId));
+
+        // Test empty representative list
+        List<RepresentedTypeRItem> emptyRepresentativeList = new ArrayList<>();
+        ManageCaseRoleException ex2 = assertThrows(ManageCaseRoleException.class, () ->
+            RespondentUtil.findRespondentRepresentative(respondent, emptyRepresentativeList, caseId));
+        assertThat(ex2.getMessage()).isEqualTo(String.format(EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND, caseId));
+
+        // Test no match
+        List<RepresentedTypeRItem> noMatchList = new ArrayList<>();
+        noMatchList.add(nonMatchingRep);
+        ManageCaseRoleException ex3 = assertThrows(ManageCaseRoleException.class, () ->
+            RespondentUtil.findRespondentRepresentative(respondent, noMatchList, caseId));
+        assertThat(ex3.getMessage()).isEqualTo(String.format(EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND, caseId));
+
+        // Test representative with null value
+        RepresentedTypeRItem nullValueRep = new RepresentedTypeRItem();
+        nullValueRep.setValue(null);
+        List<RepresentedTypeRItem> nullValueList = new ArrayList<>();
+        nullValueList.add(nullValueRep);
+        ManageCaseRoleException ex4 = assertThrows(ManageCaseRoleException.class, () ->
+            RespondentUtil.findRespondentRepresentative(respondent, nullValueList, caseId));
+        assertThat(ex4.getMessage()).isEqualTo(String.format(EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND, caseId));
     }
 }
