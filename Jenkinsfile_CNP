@@ -9,23 +9,19 @@ def product = "et"
 def component = "sya-api"
 def branchesToSync = ['demo', 'ithc']
 
-// def secrets = [
-//     'et-${env}': [
-//         secret('perf-synthetic-monitor-token', 'PERF_SYNTHETIC_MONITOR_TOKEN'),
-//         secret('perf-metrics-token', 'PERF_METRICS_TOKEN'),
-//         secret('perf-event-token', 'PERF_EVENT_TOKEN'),
-//         secret('perf-synthetic-update-token', 'PERF_SYNTHETIC_UPDATE_TOKEN')
-//     ]
-// ]
+def secrets = [
+    'et-${env}': [
+    ]
+]
 
-// static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
-//     [ $class: 'AzureKeyVaultSecret',
-//       secretType: 'Secret',
-//       name: secretName,
-//       version: '',
-//       envVariable: envVar
-//     ]
-// }
+static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
+    [ $class: 'AzureKeyVaultSecret',
+      secretType: 'Secret',
+      name: secretName,
+      version: '',
+      envVariable: envVar
+    ]
+}
 
 withPipeline(type, product, component) {
   loadVaultSecrets(secrets)
