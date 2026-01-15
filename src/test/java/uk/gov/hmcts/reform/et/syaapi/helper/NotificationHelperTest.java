@@ -8,9 +8,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.HearingTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
+import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.Organisation;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
+import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 
 import java.text.ParseException;
@@ -242,5 +244,42 @@ class NotificationHelperTest {
             Arguments.of(MY_HMCTS, YES, null, false),
             Arguments.of(MY_HMCTS, YES, representedTypeCWithoutOrganisation, false)
         );
+    }
+
+    @Test
+    void shouldReturnMatchingRespondent() {
+        RespondentSumType respondent = new RespondentSumType();
+        respondent.setIdamId("idam-123");
+        RespondentSumTypeItem item = new RespondentSumTypeItem();
+        item.setValue(respondent);
+
+        CaseData caseData = new CaseData();
+        caseData.setRespondentCollection(List.of(item));
+
+        RespondentSumTypeItem result = NotificationsHelper.getCurrentRespondent(caseData, "idam-123");
+        assertThat(result).isEqualTo(item);
+    }
+
+    @Test
+    void shouldReturnNullIfNoMatchingRespondent() {
+        RespondentSumType respondent = new RespondentSumType();
+        respondent.setIdamId("idam-456");
+        RespondentSumTypeItem item = new RespondentSumTypeItem();
+        item.setValue(respondent);
+
+        CaseData caseData = new CaseData();
+        caseData.setRespondentCollection(List.of(item));
+
+        RespondentSumTypeItem result = NotificationsHelper.getCurrentRespondent(caseData, "idam-123");
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void shouldReturnNullIfRespondentCollectionIsEmpty() {
+        CaseData caseData = new CaseData();
+        caseData.setRespondentCollection(List.of());
+
+        RespondentSumTypeItem result = NotificationsHelper.getCurrentRespondent(caseData, "idam-123");
+        assertThat(result).isNull();
     }
 }
