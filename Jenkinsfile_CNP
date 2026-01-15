@@ -18,14 +18,14 @@ def branchesToSync = ['demo', 'ithc']
 //     ]
 // ]
 
-static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
-    [ $class: 'AzureKeyVaultSecret',
-      secretType: 'Secret',
-      name: secretName,
-      version: '',
-      envVariable: envVar
-    ]
-}
+// static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
+//     [ $class: 'AzureKeyVaultSecret',
+//       secretType: 'Secret',
+//       name: secretName,
+//       version: '',
+//       envVariable: envVar
+//     ]
+// }
 
 withPipeline(type, product, component) {
   loadVaultSecrets(secrets)
