@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,12 +54,19 @@ class RespondentUtilTest {
                                                       String respondentName,
                                                       String idamId,
                                                       String modificationType) {
+        UserInfo userInfo = UserInfo.builder()
+            .uid("123456789012345678901234567890")
+            .givenName("First")
+            .familyName("Last")
+            .sub("test@email.com")
+            .build();
         if (MapUtils.isEmpty(caseDetails.getData())) {
             assertThat(assertThrows(RuntimeException.class, () ->
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
-                                                          modificationType)).getMessage())
+                                                          modificationType,
+                                                          userInfo)).getMessage())
                 .contains(TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_CASE_DATA_NOT_FOUND);
             return;
         }
@@ -80,9 +88,10 @@ class RespondentUtilTest {
             return;
         }
         boolean result = setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
-                                                                    respondentName,
-                                                                    idamId,
-                                                                    modificationType);
+                                                                   respondentName,
+                                                                   idamId,
+                                                                   modificationType,
+                                                                   userInfo);
         caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
         if (alreadyAssigned) {
             assertThat(result).isTrue();
@@ -91,6 +100,8 @@ class RespondentUtilTest {
         } else if (TestConstants.TEST_MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
             assertThat(result).isFalse();
             assertThat(caseData.getRespondentCollection().getFirst().getValue().getIdamId()).isEqualTo(idamId);
+            assertThat(caseData.getRespondentCollection().getFirst().getValue().getResponseRespondentEmail())
+                .isEqualTo("test@email.com");
         } else {
             assertThat(result).isFalse();
             assertThat(caseData.getRespondentCollection().getFirst().getValue().getIdamId())
@@ -103,12 +114,14 @@ class RespondentUtilTest {
                                                             String respondentName,
                                                             String idamId,
                                                             String modificationType) {
+        UserInfo userInfo = new CaseTestData().getUserInfo();
         if (CollectionUtils.isEmpty(respondentCollection)) {
             assertThat(assertThrows(RuntimeException.class, () ->
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
-                                                          modificationType)).getMessage())
+                                                          modificationType,
+                                                          userInfo)).getMessage())
                 .contains(TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_EMPTY_RESPONDENT_COLLECTION);
             return true;
         }
@@ -121,7 +134,8 @@ class RespondentUtilTest {
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
-                                                          modificationType)).getMessage())
+                                                          modificationType,
+                                                          userInfo)).getMessage())
                 .contains(TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_RESPONDENT_NOT_FOUND_WITH_RESPONDENT_NAME);
             return true;
         }
@@ -133,12 +147,14 @@ class RespondentUtilTest {
                                                       String respondentName,
                                                       String idamId,
                                                       String modificationType) {
+        UserInfo userInfo = new CaseTestData().getUserInfo();
         if (!checkRespondentName(caseData.getRespondentCollection().getFirst().getValue(), respondentName)) {
             assertThat(assertThrows(RuntimeException.class, () ->
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
-                                                          modificationType)).getMessage())
+                                                          modificationType,
+                                                          userInfo)).getMessage())
                 .contains(TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_RESPONDENT_NOT_FOUND_WITH_RESPONDENT_NAME);
             return true;
         }
@@ -159,12 +175,14 @@ class RespondentUtilTest {
                                               CaseData caseData,
                                               String modificationType,
                                               boolean alreadyAssigned) {
+        UserInfo userInfo = new CaseTestData().getUserInfo();
         if (StringUtils.isBlank(idamId)) {
             assertThat(assertThrows(RuntimeException.class, () ->
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
-                                                          modificationType)).getMessage())
+                                                          modificationType,
+                                                          userInfo)).getMessage())
                 .contains(TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_INVALID_IDAM_ID);
             return true;
         }
@@ -177,7 +195,8 @@ class RespondentUtilTest {
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
-                                                          modificationType)).getMessage())
+                                                          modificationType,
+                                                          userInfo)).getMessage())
                 .contains(TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_IDAM_ID_ALREADY_EXISTS);
             return true;
         }
