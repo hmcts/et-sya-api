@@ -31,6 +31,7 @@ import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
+import uk.gov.hmcts.et.common.model.ccd.types.RespondentTse;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.UploadedDocumentType;
@@ -1382,17 +1383,12 @@ class NotificationServiceTest {
         }
 
         @Test
-        void shouldSendCopyYesEmail() throws NotificationClientException, IOException {
-            when(notificationClient.sendEmail(
-                eq(YES),
-                eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
-                any(),
-                eq(caseTestData.getExpectedDetails().getId().toString())
-            )).thenReturn(caseTestData.getSendEmailResponse());
-
+        void shouldSendCopyYesEmail() throws NotificationClientException {
             notificationService.sendRespondentAppAcknowledgementEmailToRespondent(
                 details,
-                caseTestData.getRespondentApplication(), null);
+                caseTestData.getRespondentApplication(),
+                null
+            );
 
             verify(notificationClient, times(5)).sendEmail(
                 any(),
@@ -1404,19 +1400,16 @@ class NotificationServiceTest {
 
         @Test
         void shouldSendCopyNoEmail() throws NotificationClientException, IOException {
-            caseTestData.getClaimantApplication().setCopyToOtherPartyYesOrNo("No");
-            when(notificationClient.sendEmail(
-                eq("No"),
-                eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
-                any(),
-                eq(caseTestData.getExpectedDetails().getId().toString())
-            )).thenReturn(caseTestData.getSendEmailResponse());
+            RespondentTse mockRespondentTse = caseTestData.getRespondentApplication();
+            mockRespondentTse.setCopyToOtherPartyYesOrNo("No");
 
             notificationService.sendRespondentAppAcknowledgementEmailToRespondent(
                 details,
-                caseTestData.getRespondentApplication(), null);
+                caseTestData.getRespondentApplication(),
+                null
+            );
 
-            verify(notificationClient, times(5)).sendEmail(
+            verify(notificationClient, times(1)).sendEmail(
                 any(),
                 any(),
                 respondentParametersCaptor.capture(),
@@ -1426,19 +1419,16 @@ class NotificationServiceTest {
 
         @Test
         void shouldSendTypeCEmail() throws NotificationClientException, IOException {
-            caseTestData.getClaimantApplication().setContactApplicationType(WITNESS);
-            when(notificationClient.sendEmail(
-                eq("C"),
-                eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
-                any(),
-                eq(caseTestData.getExpectedDetails().getId().toString())
-            )).thenReturn(caseTestData.getSendEmailResponse());
+            RespondentTse mockRespondentTse = caseTestData.getRespondentApplication();
+            mockRespondentTse.setContactApplicationType(WITNESS);
 
             notificationService.sendRespondentAppAcknowledgementEmailToRespondent(
                 details,
-                caseTestData.getRespondentApplication(), null);
+                caseTestData.getRespondentApplication(),
+                null
+            );
 
-            verify(notificationClient, times(5)).sendEmail(
+            verify(notificationClient, times(1)).sendEmail(
                 any(),
                 any(),
                 respondentParametersCaptor.capture(),
