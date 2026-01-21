@@ -10,6 +10,7 @@ import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.et3links.ET3CaseDetailsLinksStatuses;
 import uk.gov.hmcts.et.common.model.ccd.types.et3links.ET3HubLinksStatuses;
@@ -20,7 +21,9 @@ import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.ET3_STATUS_IN_PROGRESS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA;
@@ -332,5 +335,42 @@ public final class RespondentUtil {
         }
         throw new ManageCaseRoleException(new Exception(
             String.format(EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND, caseId)));
+    }
+
+    /**
+     * Checks if the respondent is an online respondent based on the presence of an IDAM ID.
+     * @param respondent the respondent to check
+     * @return true if the respondent is online, false otherwise
+     */
+    public static boolean isRespondentCitizenUser(RespondentSumType respondent) {
+        return StringUtils.isNotBlank(respondent.getIdamId());
+    }
+
+    /**
+     * Checks if the respondent's legal representative an online with a valid email address.
+     * @param representative the representative to check
+     * @return true if the representative is online with an email, false otherwise
+     */
+    public static boolean isRespondentLegalRepOnlineWithEmail(RepresentedTypeR representative) {
+        return YES.equals(representative.getMyHmctsYesNo())
+            && ObjectUtils.isNotEmpty(representative.getRespondentOrganisation())
+            && StringUtils.isNotBlank(representative.getRepresentativeEmailAddress());
+    }
+
+    /**
+     * Gets the representative for the respondent if present.
+     */
+    public static RepresentedTypeR getRespondentRepresentative(CaseData caseData, RespondentSumType respondent) {
+        List<RepresentedTypeRItem> repCollection = caseData.getRepCollection();
+
+        if (org.springframework.util.CollectionUtils.isEmpty(repCollection)) {
+            return null;
+        }
+
+        Optional<RepresentedTypeRItem> respondentRep = repCollection.stream()
+            .filter(o -> respondent.getRespondentName().equals(o.getValue().getRespRepName()))
+            .findFirst();
+
+        return respondentRep.map(RepresentedTypeRItem::getValue).orElse(null);
     }
 }

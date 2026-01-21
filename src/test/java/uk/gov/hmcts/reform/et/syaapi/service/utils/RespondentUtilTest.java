@@ -14,6 +14,7 @@ import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.Organisation;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -46,6 +47,11 @@ class RespondentUtilTest {
         "java.lang.Exception: Respondent does not exist for case: %s";
     private static final String EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND =
         "java.lang.Exception: Respondent representative not found for case: %s";
+    private static final String RESPONDENT_NAME = "Respondent Ldt";
+
+    private static final Organisation mockOrganisation = Organisation.builder()
+        .organisationID("my org")
+        .organisationName("New Organisation").build();
 
     @ParameterizedTest
     @MethodSource("provideTheSetRespondentIdamIdAndDefaultLinkStatusesTestData")
@@ -491,5 +497,161 @@ class RespondentUtilTest {
         ManageCaseRoleException ex4 = assertThrows(ManageCaseRoleException.class, () ->
             RespondentUtil.findRespondentRepresentative(respondent, nullValueList, caseId));
         assertThat(ex4.getMessage()).isEqualTo(String.format(EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND, caseId));
+    }
+
+    @Test
+    void isRespondentCitizenUser_shouldReturnTrueWhenIdamIdIsNotBlank() {
+        RespondentSumType respondent = RespondentSumType.builder()
+            .idamId("some-idam-id")
+            .build();
+        assertThat(RespondentUtil.isRespondentCitizenUser(respondent)).isTrue();
+    }
+
+    @Test
+    void isRespondentCitizenUser_shouldReturnFalseWhenIdamIdIsNull() {
+        RespondentSumType respondent = RespondentSumType.builder()
+            .idamId(null)
+            .build();
+        assertThat(RespondentUtil.isRespondentCitizenUser(respondent)).isFalse();
+    }
+
+    @Test
+    void isRespondentCitizenUser_shouldReturnFalseWhenIdamIdIsBlank() {
+        RespondentSumType respondent = RespondentSumType.builder()
+            .idamId("")
+            .build();
+        assertThat(RespondentUtil.isRespondentCitizenUser(respondent)).isFalse();
+    }
+
+    @Test
+    void isRespondentCitizenUser_shouldReturnFalseWhenIdamIdIsWhitespace() {
+        RespondentSumType respondent = RespondentSumType.builder()
+            .idamId("   ")
+            .build();
+        assertThat(RespondentUtil.isRespondentCitizenUser(respondent)).isFalse();
+    }
+
+    @Test
+    void isRespondentLegalRepOnlineWithEmail_shouldReturnTrueWhenAllFieldsValid() {
+        RepresentedTypeR rep = RepresentedTypeR.builder()
+            .myHmctsYesNo("Yes")
+            .respondentOrganisation(mockOrganisation)
+            .representativeEmailAddress("rep@email.com")
+            .build();
+        assertThat(RespondentUtil.isRespondentLegalRepOnlineWithEmail(rep)).isTrue();
+    }
+
+    @Test
+    void isRespondentLegalRepOnlineWithEmail_shouldReturnFalseWhenMyHmctsYesNoIsNotYes() {
+        RepresentedTypeR rep = RepresentedTypeR.builder()
+            .myHmctsYesNo("No")
+            .respondentOrganisation(mockOrganisation)
+            .representativeEmailAddress("rep@email.com")
+            .build();
+        assertThat(RespondentUtil.isRespondentLegalRepOnlineWithEmail(rep)).isFalse();
+    }
+
+    @Test
+    void isRespondentLegalRepOnlineWithEmail_shouldReturnFalseWhenOrganisationIsNull() {
+        RepresentedTypeR rep = RepresentedTypeR.builder()
+            .myHmctsYesNo("Yes")
+            .respondentOrganisation(null)
+            .representativeEmailAddress("rep@email.com")
+            .build();
+        assertThat(RespondentUtil.isRespondentLegalRepOnlineWithEmail(rep)).isFalse();
+    }
+
+    @Test
+    void isRespondentLegalRepOnlineWithEmail_shouldReturnFalseWhenEmailIsBlank() {
+        RepresentedTypeR rep = RepresentedTypeR.builder()
+            .myHmctsYesNo("Yes")
+            .respondentOrganisation(mockOrganisation)
+            .representativeEmailAddress("")
+            .build();
+        assertThat(RespondentUtil.isRespondentLegalRepOnlineWithEmail(rep)).isFalse();
+    }
+
+    @Test
+    void isRespondentLegalRepOnlineWithEmail_shouldReturnFalseWhenEmailIsWhitespace() {
+        RepresentedTypeR rep = RepresentedTypeR.builder()
+            .myHmctsYesNo("Yes")
+            .respondentOrganisation(mockOrganisation)
+            .representativeEmailAddress("   ")
+            .build();
+        assertThat(RespondentUtil.isRespondentLegalRepOnlineWithEmail(rep)).isFalse();
+    }
+
+    @Test
+    void isRespondentLegalRepOnlineWithEmail_shouldReturnFalseWhenEmailIsNull() {
+        RepresentedTypeR rep = RepresentedTypeR.builder()
+            .myHmctsYesNo("Yes")
+            .respondentOrganisation(mockOrganisation)
+            .representativeEmailAddress(null)
+            .build();
+        assertThat(RespondentUtil.isRespondentLegalRepOnlineWithEmail(rep)).isFalse();
+    }
+
+    @Test
+    void getRespondentRepresentative_shouldReturnRepresentativeWhenMatchExists() {
+        CaseData caseData = new CaseData();
+        RespondentSumType respondent = RespondentSumType.builder()
+            .respondentName(RESPONDENT_NAME)
+            .build();
+        RepresentedTypeR rep = RepresentedTypeR.builder()
+            .respRepName(RESPONDENT_NAME)
+            .build();
+        RepresentedTypeRItem repItem = RepresentedTypeRItem.builder()
+            .value(rep)
+            .build();
+        caseData.setRepCollection(List.of(repItem));
+
+        RepresentedTypeR result = RespondentUtil.getRespondentRepresentative(caseData, respondent);
+
+        assertThat(result).isEqualTo(rep);
+    }
+
+    @Test
+    void getRespondentRepresentative_shouldReturnNullWhenNoMatch() {
+        CaseData caseData = new CaseData();
+        RespondentSumType respondent = RespondentSumType.builder()
+            .respondentName(RESPONDENT_NAME)
+            .build();
+        RepresentedTypeR rep = RepresentedTypeR.builder()
+            .respRepName("Other Ltd")
+            .build();
+        RepresentedTypeRItem repItem = RepresentedTypeRItem.builder()
+            .value(rep)
+            .build();
+        caseData.setRepCollection(List.of(repItem));
+
+        RepresentedTypeR result = RespondentUtil.getRespondentRepresentative(caseData, respondent);
+
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void getRespondentRepresentative_shouldReturnNullWhenRepCollectionIsEmpty() {
+        CaseData caseData = new CaseData();
+        caseData.setRepCollection(new ArrayList<>());
+        RespondentSumType respondent = RespondentSumType.builder()
+            .respondentName(RESPONDENT_NAME)
+            .build();
+
+        RepresentedTypeR result = RespondentUtil.getRespondentRepresentative(caseData, respondent);
+
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void getRespondentRepresentative_shouldReturnNullWhenRepCollectionIsNull() {
+        CaseData caseData = new CaseData();
+        caseData.setRepCollection(null);
+        RespondentSumType respondent = RespondentSumType.builder()
+            .respondentName(RESPONDENT_NAME)
+            .build();
+
+        RepresentedTypeR result = RespondentUtil.getRespondentRepresentative(caseData, respondent);
+
+        assertThat(result).isNull();
     }
 }
