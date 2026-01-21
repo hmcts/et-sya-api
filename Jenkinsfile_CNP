@@ -32,12 +32,12 @@ withPipeline(type, product, component) {
   //enableSlackNotifications('#et-builds')
 
   //Enable Gatling test stages
-  enableGatlingLoadTests([
-    repo: 'https://github.com/hmcts/performance-testing.git', //https://github.com/hmcts/et-performance.git
-    branch: 'add-et-tests', //*SHould be master //add-buildpipeline-code employmenttribunal-updates
-    simulation: 'et.simulations.EtSyaApiBuildSimulation', // ETCreateClaim
-    timeout: 10
-  ])
+  // enableGatlingLoadTests([
+  //   repo: 'https://github.com/hmcts/performance-testing.git', //https://github.com/hmcts/et-performance.git
+  //   branch: 'add-et-tests', //*SHould be master //add-buildpipeline-code employmenttribunal-updates
+  //   simulation: 'et.simulations.EtSyaApiBuildSimulation', // ETCreateClaim
+  //   timeout: 10
+  // ])
 
   // //Enable SRG evaluation
   // enableSrgEvaluation([
