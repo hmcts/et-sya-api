@@ -28,16 +28,16 @@ withPipeline(type, product, component) {
   disableLegacyDeployment()
   enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
   syncBranchesWithMaster(branchesToSync)
-  enablePerformanceTestStages(timeout: 60)
+  //enablePerformanceTestStages(timeout: 60)
   //enableSlackNotifications('#et-builds')
 
-  // //Enable Gatling test stages
-  // enableGatlingLoadTests([
-  //   repo: 'https://github.com/hmcts/performance-testing.git', //https://github.com/hmcts/et-performance.git
-  //   branch: 'add-et-tests', //*SHould be master //add-buildpipeline-code employmenttribunal-updates
-  //   simulation: 'et.simulations.EtSyaApiBuildSimulation', // ETCreateClaim
-  //   timeout: 10
-  // ])
+  //Enable Gatling test stages
+  enableGatlingLoadTests([
+    repo: 'https://github.com/hmcts/performance-testing.git', //https://github.com/hmcts/et-performance.git
+    branch: 'add-et-tests', //*SHould be master //add-buildpipeline-code employmenttribunal-updates
+    simulation: 'et.simulations.EtSyaApiBuildSimulation', // ETCreateClaim
+    timeout: 10
+  ])
 
   // //Enable SRG evaluation
   // enableSrgEvaluation([
