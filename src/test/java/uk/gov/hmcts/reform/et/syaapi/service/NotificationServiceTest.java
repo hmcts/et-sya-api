@@ -75,7 +75,12 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_ABBREVIATED_MONTHS_MAP;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.NOT_SET;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_APPLICANT_NAME_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_EXUI_LINK_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_HEARING_DATE_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_LINK_DOC_KEY;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_SHORTTEXT_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.MY_HMCTS;
@@ -540,6 +545,45 @@ class NotificationServiceTest {
                 caseTestData.getClaimantApplication()
             ).getNotificationId()).isEqualTo(NOTIFICATION_CONFIRMATION_ID);
         }
+    }
+
+    @Test
+    void shouldSendCorrectRespondentParameters() throws NotificationClientException {
+        CoreEmailDetails mockDetails = new CoreEmailDetails(
+            caseTestData.getCaseData(),
+            CLAIMANT,
+            "1",
+            TEST_RESPONDENT,
+            NOT_SET,
+            "1736945212245448"
+        );
+        when(notificationsProperties.getRespondentPortalLink()).thenReturn("RespondentPortalLink/");
+
+        notificationService.sendRespondentAppAcknowledgementEmailToRespondent(
+            mockDetails,
+            caseTestData.getRespondentApplication(),
+            null
+        );
+
+        verify(notificationClient, times(5)).sendEmail(
+            any(),
+            any(),
+            respondentParametersCaptor.capture(),
+            any()
+        );
+        List<Map<String, Object>> capturedParam = respondentParametersCaptor.getAllValues();
+        assertThat(capturedParam.getFirst().get(SEND_EMAIL_PARAMS_HEARING_DATE_KEY))
+            .isEqualTo(NOT_SET);
+        assertThat(capturedParam.getFirst().get(SEND_EMAIL_PARAMS_APPLICANT_NAME_KEY))
+            .isEqualTo("Test Respondent Organisation -1-");
+        assertThat(capturedParam.getFirst().get(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY))
+            .isEqualTo("RespondentPortalLink/1736945212245448/1");
+        assertThat(capturedParam.getFirst().get(SEND_EMAIL_PARAMS_EXUI_LINK_KEY))
+            .isEqualTo("RespondentPortalLink/1736945212245448/1");
+        assertThat(capturedParam.getFirst().get(SEND_EMAIL_PARAMS_SHORTTEXT_KEY))
+            .isEqualTo("Amend response");
+        assertThat(capturedParam.getFirst().get(SEND_EMAIL_PARAMS_LINK_DOC_KEY))
+            .isNull();
     }
 
     @Nested
