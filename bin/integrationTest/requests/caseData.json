@@ -1,0 +1,13 @@
+{
+  "case_id": "1652699636396317",
+  "claimantIndType": {
+    "claimantFirstNames": "TestFirstName",
+    "claimantLastName": "TestLastName"
+  },
+  "claimantType": {
+    "claimantEmailAddress": "test.claimant@example.com"
+  },
+  "claimantRequests": {
+    "claimDescriptionDocument": "dummy-document-id"
+  }
+}

@@ -1,0 +1,180 @@
+ {
+      "ccdID": "1654880362724199",
+      "receiptDate": "2021-07-12",
+      "feeGroupReference": "145678900011",
+      "managingOffice": "Manchester",
+      "stateAPI": null,
+      "caseRefNumberCount": null,
+      "startCaseRefNumber": null,
+      "multipleRefNumber": null,
+      "caseType": null,
+      "multipleReference": null,
+      "leadClaimant": null,
+      "claimant_TypeOfClaimant": "Individual",
+      "claimant_Company": null,
+      "claimantIndType": {
+        "claimant_preferred_title": "Mr",
+        "claimant_title_other": null,
+        "claimant_first_names": "Henry",
+        "claimant_last_name": "Robertson",
+        "claimant_date_of_birth": "1976-07-12",
+        "claimant_sex": "Male"
+      },
+      "claimantType": {
+        "claimant_phone_number": "07555555555",
+        "claimant_mobile_number": null,
+        "claimant_email_address": null,
+        "claimant_contact_preference": "Post",
+        "claimant_addressUK": {
+          "AddressLine1": "Flat 19",
+          "AddressLine2": "Cameron House",
+          "AddressLine3": "Highland Road",
+          "PostTown": "Bromley",
+          "County": null,
+          "Country": "United Kingdom",
+          "PostCode": "BR1 4AG"
+        }
+      },
+      "respondentCollection": [
+        {
+          "value": {
+            "respondent_name": "Granite Construction Ltd",
+            "respondent_ACAS_question": "No",
+            "respondent_ACAS": "1456",
+            "respondent_ACAS_no": "No Power",
+            "respondent_phone1": null,
+            "responseReceived": "Yes",
+            "responseContinue": null,
+            "responseReceivedDate": null,
+            "responseStruckOut": null,
+            "responseRespondentName": null,
+            "responseReference": null,
+            "response_status": null,
+            "responseToClaim": null,
+            "rejection_reason": null,
+            "rejection_reason_other": null,
+            "responseOutOfTime": null,
+            "responseNotOnPrescribedForm": null,
+            "responseRequiredInfoAbsent": null,
+            "responseStruckOutDate": null,
+            "responseStruckOutChairman": null,
+            "responseStruckOutReason": null,
+            "respondent_phone2": null,
+            "respondent_email": null,
+            "respondent_contact_preference": null,
+            "responseRespondentPhone1": null,
+            "responseRespondentPhone2": null,
+            "responseRespondentEmail": null,
+            "responseRespondentContactPreference": null,
+            "response_referred_to_judge": null,
+            "response_returned_from_judge": null,
+            "responseNotes": null,
+            "respondent_address": {
+              "AddressLine1": "25 Beverley Close",
+              "AddressLine2": "",
+              "AddressLine3": "",
+              "PostTown": "Exeter",
+              "County": "",
+              "Country": "United Kingdom",
+              "PostCode": "EX2 5NN"
+            },
+            "responseRespondentAddress": {
+              "AddressLine1": null,
+              "AddressLine2": null,
+              "AddressLine3": null,
+              "PostTown": null,
+              "County": null,
+              "PostCode": null,
+              "Country": null
+            }
+          },
+          "id": "40b28633-078d-4f3e-8f62-a6285e2c213e"
+        }
+      ],
+      "claimantWorkAddressQuestion": "Yes",
+      "claimantWorkAddress": {
+        "claimant_work_address": {
+          "AddressLine1": "25 Beverley Close",
+          "AddressLine2": "",
+          "AddressLine3": "",
+          "PostTown": "Exeter",
+          "County": "",
+          "Country": "United Kingdom",
+          "PostCode": "EX2 5NN"
+        }
+      },
+      "claimantWorkAddressQRespondent": {
+        "value": {
+          "code": "Granite Construction Ltd",
+          "label": "Granite Construction Ltd - 25 Beverley Close, Exeter, EX2 5NN, United Kingdom"
+        },
+        "list_items": [
+          {
+            "code": "Granite Construction Ltd",
+            "label": "Granite Construction Ltd - 25 Beverley Close, Exeter, EX2 5NN, United Kingdom"
+          }
+        ]
+      },
+      "claimantOtherType": {
+        "pastEmployer": "Yes",
+        "stillWorking": "No longer working",
+        "claimant_occupation": "Builder",
+        "claimant_employed_from": "2009-05-14",
+        "claimant_notice_period": "Yes",
+        "claimant_notice_period_unit": "Months",
+        "claimant_notice_period_duration": "1",
+        "claimant_average_weekly_hours": "37",
+        "claimant_pay_before_tax": "62000",
+        "claimant_pay_after_tax": "34000",
+        "claimant_pay_cycle": "Months",
+        "claimant_pension_contribution": "Yes",
+        "claimant_pension_weekly_contribution": null,
+        "claimant_benefits": "No",
+        "claimant_benefits_detail": null,
+        "claimant_employed_to": "2021-04-20",
+        "claimant_employed_notice_period": null
+      },
+      "newEmploymentType": {
+        "new_job": "Yes",
+        "newly_employed_from": "2021-04-20",
+        "new_pay_before_tax": "62000",
+        "new_job_pay_interval": "Weeks"
+      },
+      "typesOfClaim": ["discrimination", "whistleBlowing", "payRelated"],
+      "claimantRequests": {
+        "discrimination_claims": ["Age", "Ethnicity", "Disability"],
+        "pay_claims": ["Arrears", "Redundancy pay", "Holiday pay", "Notice pay", "Other payments"],
+        "claim_description": "Let go due to age and ethnicity",
+        "claim_outcome": ["compensation"],
+        "claimant_compensation_text": "Sample text",
+        "claimant_compensation_amount": "75000",
+        "claimant_tribunal_recommendation": null,
+        "whistleblowing": "Yes",
+        "whistleblowing_authority": "Random",
+        "linked_cases": "Yes",
+        "linked_cases_detail": "Test Detail",
+        "claim_description_document": null,
+        "other_claim": null
+      },
+   "representativeClaimantType": {
+     "name_of_organisation": "test",
+     "name_of_representative": "Test",
+     "representative_address": {
+       "AddressLine1": "25 Beverley Close",
+       "AddressLine2": "",
+       "AddressLine3": "",
+       "PostTown": "Exeter",
+       "County": "",
+       "Country": "United Kingdom",
+       "PostCode": "EX2 5NN"
+     },
+     "representative_reference": "tesst",
+     "representative_occupation": "Solicitor",
+     "representative_preference": "Email",
+     "representative_phone_number": "07777777777",
+     "representative_email_address": "a@hotmail.com",
+     "representative_mobile_number": "07777777777",
+     "representative_occupation_other": null
+   },
+   "claimantRepresentedQuestion": "Yes"
+ }

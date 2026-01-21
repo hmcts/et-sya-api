@@ -1,0 +1,11 @@
+{
+    "contactApplicationType": "withdraw",
+    "contactApplicationText": "1",
+    "contactApplicationFile": {
+      "document_binary_url": "https://document.binary.url",
+      "document_filename": "filename",
+      "document_url": "https://document.url"
+    },
+    "copyToOtherPartyYesOrNo": "No",
+    "copyToOtherPartyText": "3"
+}
