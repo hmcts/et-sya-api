@@ -11,6 +11,7 @@ import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.types.Organisation;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
+import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 
 import java.text.ParseException;
@@ -29,11 +30,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ET1;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.NOT_SET;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.MY_HMCTS;
 
 class NotificationHelperTest {
 
-    private static final String NOT_SET = "Not set";
     private final CaseTestData caseTestData;
 
     NotificationHelperTest() {
@@ -52,26 +53,38 @@ class NotificationHelperTest {
         assertThat(respondentNames).isEqualTo(StringUtils.EMPTY);
     }
 
+    List<String> getEmailAddressesForRespondent(CaseData caseData, RespondentSumType respondent) {
+        return NotificationsHelper.getRespondentAndRespRepEmailAddressesMap(caseData, respondent)
+            .keySet().stream().toList();
+    }
+
     @Test
     void shouldReturnRepEmail() {
         // Given
         String repEmail = "rep@email.com";
-        var rep = new RepresentedTypeR();
-        rep.setId("11");
-        rep.setRepresentativeEmailAddress(repEmail);
-        rep.setRespRepName("Test Respondent Organisation -1-");
-        RepresentedTypeRItem repItem = new RepresentedTypeRItem();
-        repItem.setId("1");
-        repItem.setValue(rep);
+        Organisation organisation = Organisation.builder()
+            .organisationID("my org")
+            .organisationName("New Organisation").build();
+        RepresentedTypeR rep = RepresentedTypeR.builder()
+            .id("11")
+            .representativeEmailAddress(repEmail)
+            .respRepName("Test Respondent Organisation -1-")
+            .myHmctsYesNo(YES)
+            .respondentOrganisation(organisation)
+            .build();
+        RepresentedTypeRItem repItem = RepresentedTypeRItem.builder()
+            .id("1")
+            .value(rep)
+            .build();
         List<RepresentedTypeRItem> itemList = new ArrayList<>();
         itemList.add(repItem);
         CaseData caseData = caseTestData.getCaseData();
         caseData.setRepCollection(itemList);
 
         // When
-        List<String> emails = NotificationsHelper.getEmailAddressesForRespondent(
+        List<String> emails = getEmailAddressesForRespondent(
             caseData,
-            caseData.getRespondentCollection().get(0).getValue()
+            caseData.getRespondentCollection().getFirst().getValue()
         );
 
         //Then
@@ -91,13 +104,13 @@ class NotificationHelperTest {
         itemList.add(repItem);
 
         CaseData caseData = caseTestData.getCaseData();
-        caseData.getRespondentCollection().get(0).getValue().setRespondentEmail(null);
+        caseData.getRespondentCollection().getFirst().getValue().setRespondentEmail(null);
         caseData.setRepCollection(itemList);
 
         // When
-        List<String> emails = NotificationsHelper.getEmailAddressesForRespondent(
+        List<String> emails = getEmailAddressesForRespondent(
             caseData,
-            caseData.getRespondentCollection().get(0).getValue()
+            caseData.getRespondentCollection().getFirst().getValue()
         );
 
         // Then
@@ -108,12 +121,12 @@ class NotificationHelperTest {
     void shouldNotReturnRespondentEmail() {
         // Given
         CaseData caseData = caseTestData.getCaseData();
-        caseData.getRespondentCollection().get(0).getValue().setRespondentEmail(null);
+        caseData.getRespondentCollection().getFirst().getValue().setRespondentEmail(null);
 
         // When
-        List<String> emails = NotificationsHelper.getEmailAddressesForRespondent(
+        List<String> emails = getEmailAddressesForRespondent(
             caseData,
-            caseData.getRespondentCollection().get(0).getValue()
+            caseData.getRespondentCollection().getFirst().getValue()
         );
 
         // Then
@@ -141,8 +154,8 @@ class NotificationHelperTest {
         CaseData caseData = caseTestData.getCaseData();
 
         String futureDate = LocalDateTime.now().plusDays(5).toString();
-        caseData.getHearingCollection().get(0).getValue().getHearingDateCollection().get(0).getValue().setListedDate(
-            futureDate);
+        caseData.getHearingCollection().getFirst().getValue()
+            .getHearingDateCollection().getFirst().getValue().setListedDate(futureDate);
 
         Date hearingStartDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.ENGLISH).parse(futureDate);
         String simpleDate = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH).format(hearingStartDate);
@@ -163,8 +176,8 @@ class NotificationHelperTest {
         CaseData caseData = caseTestData.getCaseData();
 
         String futureDate = LocalDateTime.now().plusDays(5).toString();
-        caseData.getHearingCollection().get(0).getValue().getHearingDateCollection().get(0).getValue().setListedDate(
-            futureDate);
+        caseData.getHearingCollection().getFirst().getValue()
+            .getHearingDateCollection().getFirst().getValue().setListedDate(futureDate);
 
         Date hearingStartDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.ENGLISH).parse(futureDate);
         String simpleDate = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH).format(hearingStartDate);
