@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.ET3_STATUS_IN_PROGRESS;
@@ -180,7 +179,7 @@ public final class RespondentUtil {
         }
         if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
             respondentSumTypeItem.getValue().setIdamId(idamId);
-            if (isBlank(respondentSumTypeItem.getValue().getResponseRespondentEmail())) {
+            if (StringUtils.isBlank(respondentSumTypeItem.getValue().getResponseRespondentEmail())) {
                 String userEmail = ObjectUtils.isNotEmpty(userInfo) && StringUtils.isNotBlank(userInfo.getSub())
                     ? userInfo.getSub()
                     : null;
