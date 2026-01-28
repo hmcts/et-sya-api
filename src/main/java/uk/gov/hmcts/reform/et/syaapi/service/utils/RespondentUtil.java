@@ -17,6 +17,7 @@ import uk.gov.hmcts.et.common.model.ccd.types.et3links.ET3HubLinksStatuses;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,12 +60,14 @@ public final class RespondentUtil {
      * @param respondentName name of the respondent to search in respondent collection.
      * @param idamId to be assigned to the respondent in the respondent collection.
      * @param modificationType type of modification (Assignment or Revoke)
+     * @param userInfo info of the user performing the operation.
      * @return true if user was already assigned to the case, false otherwise
      */
     public static boolean setRespondentIdamIdAndDefaultLinkStatuses(CaseDetails caseDetails,
-                                                                     String respondentName,
-                                                                     String idamId,
-                                                                     String modificationType) {
+                                                                    String respondentName,
+                                                                    String idamId,
+                                                                    String modificationType,
+                                                                    UserInfo userInfo) {
         Map<String, Object> existingCaseData = caseDetails.getData();
         if (MapUtils.isEmpty(existingCaseData)) {
             throw new RuntimeException(String.format(EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA, caseDetails.getId()));
@@ -79,9 +82,10 @@ public final class RespondentUtil {
             boolean alreadyAssigned = false;
             for (RespondentSumTypeItem respondentSumTypeItem : respondentSumTypeItems) {
                 boolean wasAlreadyAssigned = setRespondentIdAndLinkStatuses(respondentSumTypeItem,
-                                                                             idamId,
-                                                                             caseDetails.getId().toString(),
-                                                                             modificationType);
+                                                                            idamId,
+                                                                            caseDetails.getId().toString(),
+                                                                            modificationType,
+                                                                            userInfo);
                 alreadyAssigned = alreadyAssigned || wasAlreadyAssigned;
             }
             Map<String, Object> updatedCaseData = EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData);
@@ -160,7 +164,8 @@ public final class RespondentUtil {
     private static boolean setRespondentIdAndLinkStatuses(RespondentSumTypeItem respondentSumTypeItem,
                                                           String idamId,
                                                           String submissionReference,
-                                                          String modificationType) {
+                                                          String modificationType,
+                                                          UserInfo userInfo) {
         if (StringUtils.isBlank(idamId)) {
             throw new RuntimeException(EXCEPTION_INVALID_IDAM_ID);
         }
@@ -174,6 +179,12 @@ public final class RespondentUtil {
         }
         if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
             respondentSumTypeItem.getValue().setIdamId(idamId);
+            if (StringUtils.isBlank(respondentSumTypeItem.getValue().getResponseRespondentEmail())) {
+                String userEmail = ObjectUtils.isNotEmpty(userInfo) && StringUtils.isNotBlank(userInfo.getSub())
+                    ? userInfo.getSub()
+                    : null;
+                respondentSumTypeItem.getValue().setResponseRespondentEmail(userEmail);
+            }
             if (ObjectUtils.isEmpty(respondentSumTypeItem.getValue().getEt3CaseDetailsLinksStatuses())) {
                 respondentSumTypeItem.getValue()
                     .setEt3CaseDetailsLinksStatuses(generateDefaultET3CaseDetailsLinksStatuses());
