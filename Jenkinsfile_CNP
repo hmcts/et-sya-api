@@ -64,10 +64,6 @@ withPipeline(type, product, component) {
   }
 
    afterAlways('functionalTest:preview') {
-
-        stage("Temp Wait to keep Pods") {
-            sleep 1200
-        }
    }
 
   before('smoketest:aat') {
