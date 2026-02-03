@@ -85,6 +85,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.MY_HMCTS;
+import static uk.gov.hmcts.reform.et.syaapi.service.NotificationService.TYPE_C_RESPONDENT;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.ENGLISH_LANGUAGE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOTIFICATION_CONFIRMATION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SUBMIT_CASE_PDF_FILE_RESPONSE;
@@ -1405,7 +1406,7 @@ class NotificationServiceTest {
 
             notificationService.sendRespondentAppAcknowledgementEmailToRespondent(
                 details,
-                caseTestData.getRespondentApplication(),
+                mockRespondentTse,
                 null
             );
 
@@ -1424,7 +1425,26 @@ class NotificationServiceTest {
 
             notificationService.sendRespondentAppAcknowledgementEmailToRespondent(
                 details,
-                caseTestData.getRespondentApplication(),
+                mockRespondentTse,
+                null
+            );
+
+            verify(notificationClient, times(1)).sendEmail(
+                any(),
+                any(),
+                respondentParametersCaptor.capture(),
+                any()
+            );
+        }
+
+        @Test
+        void shouldSendTypeCRespondentEmail() throws NotificationClientException {
+            RespondentTse mockRespondentTse = caseTestData.getRespondentApplication();
+            mockRespondentTse.setContactApplicationType(TYPE_C_RESPONDENT);
+
+            notificationService.sendRespondentAppAcknowledgementEmailToRespondent(
+                details,
+                mockRespondentTse,
                 null
             );
 

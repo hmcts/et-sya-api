@@ -322,6 +322,7 @@ public class NotificationService {
         String applicantName = getCurrentRespondentName(caseData, respondentApplication.getRespondentIdamId());
 
         if (TYPE_C_RESPONDENT.equals(respondentApplication.getContactApplicationType())
+            || TYPE_C.equals(respondentApplication.getContactApplicationType())
             || DONT_SEND_COPY.equals(respondentApplication.getCopyToOtherPartyYesOrNo())) {
             RespondentSumTypeItem currentRespondent =
                 getCurrentRespondent(caseData, respondentApplication.getRespondentIdamId());
@@ -380,15 +381,7 @@ public class NotificationService {
                                                                   true);
         } else {
             emailToRespondentTemplate = getNonApplicantTemplateId(respondentApplication, isWelsh);
-
             String applicationType = getApplicationType(respondentApplication, true);
-            if (TYPE_C.equals(applicationType) || TYPE_C_RESPONDENT.equals(applicationType)) {
-                return;
-            }
-            String copyToOtherParty = getCopyToOtherParty(respondentApplication, true);
-            if (NO.equals(copyToOtherParty)) {
-                return;
-            }
 
             respondentParameters.put(SEND_EMAIL_PARAMS_SHORTTEXT_KEY, applicationType);
             respondentParameters.put(SEND_EMAIL_PARAMS_DATEPLUS7_KEY,
