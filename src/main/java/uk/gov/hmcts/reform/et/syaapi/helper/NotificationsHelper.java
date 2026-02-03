@@ -9,6 +9,7 @@ import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.DateListedTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.items.HearingTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
@@ -183,6 +184,20 @@ public final class NotificationsHelper {
         return caseData.getRespondentCollection().stream()
             .filter(r -> applicantIdamId.equals(r.getValue().getIdamId()))
             .map(r -> r.getValue().getRespondentName())
+            .findFirst()
+            .orElse(null);
+    }
+
+    /**
+     * Get the current respondent object.
+     *
+     * @param caseData      existing case data
+     * @param applicantIdamId idam id of the applicant
+     * @return respondent object
+     */
+    public static RespondentSumTypeItem getCurrentRespondent(CaseData caseData, String applicantIdamId) {
+        return caseData.getRespondentCollection().stream()
+            .filter(r -> applicantIdamId.equals(r.getValue().getIdamId()))
             .findFirst()
             .orElse(null);
     }

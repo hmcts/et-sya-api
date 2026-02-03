@@ -80,6 +80,7 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGU
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.WELSH_LANGUAGE_PARAM_WITHOUT_FWDSLASH;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.RESPONDING_USER_EMAIL_STRING;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyrConstants.THE_RESPONDENT_EMAIL_STRING;
+import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getCurrentRespondent;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getCurrentRespondentName;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentAndRespRepEmailAddressesMap;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.getRespondentNames;
@@ -104,7 +105,9 @@ public class NotificationService {
         "Change my personal details", "Consider a decision afresh",
         "Reconsider judgment"};
     private static final String TYPE_C = "witness";
-    private static final String TYPE_C_RESPONDENT = "Order a witness to attend to give evidence";
+    public static final String TYPE_C_RESPONDENT = "Order a witness to attend to give evidence";
+    private static final String DONT_SEND_COPY = "No";
+    public static final String HEARING_DATE_KEY = "hearingDate";
     private static final String NO_CLAIMANT_EMAIL_FOUND =
         "No claimant email found - Application response acknowledgment not being sent";
     private static final String HEARING_DATE_NOT_SET_WELSH = "Heb ei anfon";
@@ -318,16 +321,38 @@ public class NotificationService {
         Set<String> sentEmailAddresses = new HashSet<>();
         String applicantName = getCurrentRespondentName(caseData, respondentApplication.getRespondentIdamId());
 
-        caseData.getRespondentCollection().forEach(resp -> {
-            Map<String, Boolean> emailAddressesMap =
-                getRespondentAndRespRepEmailAddressesMap(caseData, resp.getValue());
+        if (TYPE_C_RESPONDENT.equals(respondentApplication.getContactApplicationType())
+            || DONT_SEND_COPY.equals(respondentApplication.getCopyToOtherPartyYesOrNo())) {
+            RespondentSumTypeItem currentRespondent =
+                getCurrentRespondent(caseData, respondentApplication.getRespondentIdamId());
+            handleAndSendRespondentsAndRespRepsEmails(caseData, respondentApplication, details,
+                                                       sentEmailAddresses, applicantName, documentJson,
+                                                       currentRespondent);
+        } else {
+            caseData.getRespondentCollection().forEach(resp ->
+                handleAndSendRespondentsAndRespRepsEmails(
+                    caseData, respondentApplication, details,
+                    sentEmailAddresses, applicantName, documentJson, resp
+                )
+            );
+        }
+    }
 
-            emailAddressesMap.forEach((email, isRespondent) -> {
-                if (sentEmailAddresses.add(email)) {
-                    prepareAndSendEmail(details, resp, respondentApplication, email,
-                                        isRespondent, applicantName, documentJson);
-                }
-            });
+    private void handleAndSendRespondentsAndRespRepsEmails(CaseData caseData,
+                                                           RespondentTse respondentApplication,
+                                                           CoreEmailDetails details,
+                                                           Set<String> sentEmailAddresses,
+                                                           String applicantName,
+                                                           JSONObject documentJson,
+                                                           RespondentSumTypeItem respondent) {
+        Map<String, Boolean> emailAddressesMap =
+            getRespondentAndRespRepEmailAddressesMap(caseData, respondent.getValue());
+
+        emailAddressesMap.forEach((email, isRespondent) -> {
+            if (sentEmailAddresses.add(email)) {
+                prepareAndSendEmail(details, respondent, respondentApplication, email,
+                                    isRespondent, applicantName, documentJson);
+            }
         });
     }
 

@@ -1399,7 +1399,7 @@ class NotificationServiceTest {
         }
 
         @Test
-        void shouldSendCopyNoEmail() throws NotificationClientException, IOException {
+        void shouldSendCopyNoEmail() throws NotificationClientException {
             RespondentTse mockRespondentTse = caseTestData.getRespondentApplication();
             mockRespondentTse.setCopyToOtherPartyYesOrNo("No");
 
@@ -1418,7 +1418,7 @@ class NotificationServiceTest {
         }
 
         @Test
-        void shouldSendTypeCEmail() throws NotificationClientException, IOException {
+        void shouldSendTypeCEmail() throws NotificationClientException {
             RespondentTse mockRespondentTse = caseTestData.getRespondentApplication();
             mockRespondentTse.setContactApplicationType(WITNESS);
 
