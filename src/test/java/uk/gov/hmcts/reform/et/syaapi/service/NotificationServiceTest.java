@@ -74,6 +74,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.et.common.model.ccd.types.citizenhub.ClaimantTse.CY_ABBREVIATED_MONTHS_MAP;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.NOT_SET;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.SEND_EMAIL_PARAMS_HEARING_DATE_KEY;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.UNASSIGNED_OFFICE;
 import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper.MY_HMCTS;
@@ -84,12 +86,10 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NOTIFICA
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SUBMIT_CASE_PDF_FILE_RESPONSE;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.WELSH_LANGUAGE;
 
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.WARN)
 class NotificationServiceTest {
     public static final String CLAIMANT = "Michael Jackson";
-    public static final String NOT_SET = "Not set";
     public static final String TEST_RESPONDENT = "Test Respondent";
     private static final String WITNESS = "witness";
     private static final String DATE_DAY = "12";
@@ -126,10 +126,12 @@ class NotificationServiceTest {
     void before() throws NotificationClientException {
         parameters.put("firstname", "test");
         parameters.put("references", "123456789");
+
         notificationClient = mock(NotificationClient.class);
         notificationsProperties = mock(NotificationsProperties.class);
         notificationService = new NotificationService(
             notificationClient, notificationsProperties, featureToggleService);
+
         given(notificationClient.sendEmail(anyString(), anyString(), any(), anyString()))
             .willReturn(TestConstants.INPUT_SEND_EMAIL_RESPONSE);
         given(notificationsProperties.getCySubmitCaseEmailTemplateId())
@@ -154,11 +156,6 @@ class NotificationServiceTest {
         given(notificationsProperties.getTribunalAcknowledgementTemplateId()).willReturn("Tribunal");
         given(notificationsProperties.getRespondentTseEmailTypeATemplateId()).willReturn("A");
         given(notificationsProperties.getRespondentTseEmailTypeBTemplateId()).willReturn("B");
-        // todo add pse / tse?
-        given(notificationsProperties.getPseClaimantResponseYesTemplateId())
-            .willReturn("claimantResponseYesTemplateId");
-        given(notificationsProperties.getPseClaimantResponseNoTemplateId())
-            .willReturn("claimantResponseNoTemplateId");
 
         given(notificationsProperties.getTseTribunalResponseToRequestTemplateId())
             .willReturn("tseTribunalResponseToRequestTemplateId");
@@ -170,6 +167,7 @@ class NotificationServiceTest {
             .willReturn("claimantTseEmailStoredTemplateId");
         given(notificationsProperties.getClaimantTseEmailSubmitStoredTemplateId())
             .willReturn("claimantTseEmailSubmitStoredTemplateId");
+
         caseData = new CaseData();
         caseTestData = new CaseTestData();
         caseTestData.getCaseData().setRepCollection(List.of(
@@ -577,7 +575,8 @@ class NotificationServiceTest {
             notificationService.sendAcknowledgementEmailToClaimant(details, caseTestData.getClaimantApplication());
 
             Map<String, Object> capturedClaimantParameters = claimantParametersCaptor.getValue();
-            String translatedHearingDate = capturedClaimantParameters.get(HEARING_DATE_KEY).toString();
+            String translatedHearingDate =
+                capturedClaimantParameters.get(SEND_EMAIL_PARAMS_HEARING_DATE_KEY).toString();
             assertThat(translatedHearingDate).isEqualTo(DATE_DAY + " " + welshMonth + " " + DATE_YEAR);
         }
 
@@ -629,7 +628,7 @@ class NotificationServiceTest {
             );
 
             Map<String, Object> capturedClaimantParameters = claimantParametersCaptor.getValue();
-            String actualHearingDate = capturedClaimantParameters.get(HEARING_DATE_KEY).toString();
+            String actualHearingDate = capturedClaimantParameters.get(SEND_EMAIL_PARAMS_HEARING_DATE_KEY).toString();
             assertThat(actualHearingDate).isEqualTo(expectedOutcome);
         }
     }
@@ -1038,6 +1037,7 @@ class NotificationServiceTest {
             respondent.setValue(RespondentSumType.builder()
                                     .respondentEmail("email")
                                     .respondentName("RespondentName")
+                                    .idamId("1f3a9b7c-8d4e-4f21-9abc-1234567890ab")
                                     .build());
             caseData.setRespondentCollection(List.of(respondent));
         }
@@ -1101,7 +1101,7 @@ class NotificationServiceTest {
 
             verify(notificationClient, times(1)).sendEmail(
                 any(),
-                eq(caseTestData.getCaseData().getRespondentCollection().get(0).getValue().getRespondentEmail()),
+                eq(caseTestData.getCaseData().getRespondentCollection().getFirst().getValue().getRespondentEmail()),
                 any(),
                 eq(caseTestData.getExpectedDetails().getId().toString())
             );
@@ -1117,7 +1117,7 @@ class NotificationServiceTest {
 
             verify(notificationClient, times(0)).sendEmail(
                 any(),
-                eq(caseTestData.getCaseData().getRespondentCollection().get(0).getValue().getRespondentEmail()),
+                eq(caseTestData.getCaseData().getRespondentCollection().getFirst().getValue().getRespondentEmail()),
                 any(),
                 eq(caseTestData.getExpectedDetails().getId().toString())
             );
@@ -1126,14 +1126,28 @@ class NotificationServiceTest {
         @Test
         void shouldSendResponseEmailToRespondentResp() throws NotificationClientException {
             RespondentSumTypeItem respondentSumTypeItem = new RespondentSumTypeItem();
-            respondentSumTypeItem.setValue(RespondentSumType.builder()
-                                               .respondentEmail("test@resRep.com")
-                                               .respondentName("RespondentName")
-                                               .build());
             respondentSumTypeItem.setId(String.valueOf(UUID.randomUUID()));
+            respondentSumTypeItem.setValue(RespondentSumType.builder()
+                                               .respondentEmail("test1@respondent.com")
+                                               .responseRespondentEmail("test2@respondent.com")
+                                               .respondentName("RespondentName2")
+                                               .build());
+            Organisation organisation = Organisation.builder()
+                .organisationID("my org")
+                .organisationName("New Organisation").build();
+            RepresentedTypeRItem representedTypeRItem = RepresentedTypeRItem.builder()
+                .id(String.valueOf(UUID.randomUUID()))
+                .value(RepresentedTypeR.builder()
+                           .myHmctsYesNo(YES)
+                           .respRepName("RespondentName2")
+                           .representativeEmailAddress("test@resRep.com")
+                           .respondentOrganisation(organisation)
+                           .build())
+                .build();
 
             caseData = caseTestData.getCaseData();
-            caseData.getRespondentCollection().add(respondentSumTypeItem);
+            caseData.setRespondentCollection(List.of(respondentSumTypeItem));
+            caseData.setRepCollection(List.of(representedTypeRItem));
 
             notificationService.sendResponseEmailToRespondent(
                 details,
@@ -1181,138 +1195,6 @@ class NotificationServiceTest {
                 eq(caseTestData.getExpectedDetails().getId().toString())
             );
         }
-    }
-
-    @Test
-    void sendResponseNotificationEmailToTribunal() throws NotificationClientException {
-        caseTestData.getCaseData().setTribunalCorrespondenceEmail("tribunal@test.com");
-        notificationService.sendResponseNotificationEmailToTribunal(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString()
-        );
-
-        verify(notificationClient, times(1)).sendEmail(
-            any(),
-            eq(caseTestData.getCaseData().getTribunalCorrespondenceEmail()),
-            any(),
-            eq(caseTestData.getExpectedDetails().getId().toString())
-        );
-    }
-
-    @Test
-    void sendNotResponseNotificationEmailToTribunalMissingEmail() throws NotificationClientException {
-        caseTestData.getCaseData().setTribunalCorrespondenceEmail(null);
-        notificationService.sendResponseNotificationEmailToTribunal(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString()
-        );
-
-        verify(notificationClient, times(0)).sendEmail(
-            any(),
-            any(),
-            any(),
-            any()
-        );
-    }
-
-    @Test
-    void sendResponseNotificationEmailToRespondent() throws NotificationClientException {
-        notificationService.sendResponseNotificationEmailToRespondent(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString(),
-            YES
-        );
-
-        verify(notificationClient, times(1)).sendEmail(
-            any(),
-            eq(caseTestData.getCaseData().getRespondentCollection().get(0).getValue().getRespondentEmail()),
-            any(),
-            eq(caseTestData.getExpectedDetails().getId().toString())
-        );
-    }
-
-    @Test
-    void sendNotResponseNotificationEmailToRespondentDoNotCopy() throws NotificationClientException {
-        notificationService.sendResponseNotificationEmailToRespondent(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString(),
-            NO
-        );
-
-        verify(notificationClient, times(0)).sendEmail(
-            any(),
-            any(),
-            any(),
-            any()
-        );
-    }
-
-    @Test
-    void sendNotResponseNotificationEmailToRespondentMissingEmail() throws NotificationClientException {
-        for (RespondentSumTypeItem respondentSumTypeItem : caseTestData.getCaseData().getRespondentCollection()) {
-            respondentSumTypeItem.getValue().setRespondentEmail(null);
-        }
-        notificationService.sendResponseNotificationEmailToRespondent(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString(),
-            YES
-        );
-
-        verify(notificationClient, times(0)).sendEmail(
-            any(),
-            any(),
-            any(),
-            any()
-        );
-    }
-
-    @Test
-    void sendResponseNotificationEmailToClaimant() throws NotificationClientException {
-        notificationService.sendResponseNotificationEmailToClaimant(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString(),
-            YES
-        );
-
-        verify(notificationClient, times(1)).sendEmail(
-            eq("claimantResponseYesTemplateId"),
-            eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
-            any(),
-            eq(caseTestData.getExpectedDetails().getId().toString())
-        );
-    }
-
-    @Test
-    void sendResponseNotificationEmailToClaimantDoNotCopy() throws NotificationClientException {
-        notificationService.sendResponseNotificationEmailToClaimant(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString(),
-            NO
-        );
-
-        verify(notificationClient, times(1)).sendEmail(
-            eq("claimantResponseNoTemplateId"),
-            eq(caseTestData.getCaseData().getClaimantType().getClaimantEmailAddress()),
-            any(),
-            eq(caseTestData.getExpectedDetails().getId().toString())
-        );
-    }
-
-    @Test
-    void sendNotResponseNotificationEmailToClaimantMissingEmail() throws NotificationClientException {
-        caseTestData.getCaseData().getClaimantType().setClaimantEmailAddress(null);
-        notificationService.sendResponseNotificationEmailToClaimant(
-            caseTestData.getCaseData(),
-            caseTestData.getExpectedDetails().getId().toString(),
-            YES
-        );
-
-        verify(notificationClient, times(0)).sendEmail(
-            any(),
-            any(),
-            any(),
-            any()
-        );
     }
 
     @Nested
@@ -1367,8 +1249,8 @@ class NotificationServiceTest {
 
         caseData = caseTestData.getCaseData();
         String futureDate = LocalDateTime.now().plusDays(5).toString();
-        caseData.getHearingCollection().get(0).getValue().getHearingDateCollection().get(0).getValue().setListedDate(
-            futureDate);
+        caseData.getHearingCollection().getFirst().getValue()
+            .getHearingDateCollection().getFirst().getValue().setListedDate(futureDate);
 
         notificationService.sendBundlesEmails(
             caseData,
@@ -1558,7 +1440,8 @@ class NotificationServiceTest {
 
             List<Map<String, Object>> capturedParameters = respondentParametersCaptor.getAllValues();
             for (Map<String, Object> params : capturedParameters) {
-                assertEquals(DATE_DAY + " " + welshMonth + " " + DATE_YEAR, params.get(HEARING_DATE_KEY));
+                assertEquals(DATE_DAY + " " + welshMonth + " " + DATE_YEAR,
+                             params.get(SEND_EMAIL_PARAMS_HEARING_DATE_KEY));
             }
         }
 

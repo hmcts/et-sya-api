@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.NotificationsHelper;
 import uk.gov.hmcts.reform.et.syaapi.helper.TseApplicationHelper;
 import uk.gov.hmcts.reform.et.syaapi.models.SendNotificationAddResponseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredRespondToTribunalRequest;
+import uk.gov.hmcts.reform.et.syaapi.service.NotificationService.CoreEmailDetails;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -44,6 +45,7 @@ public class StoredRespondToTribunalService {
     private final CaseDocumentService caseDocumentService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final NotificationService notificationService;
+    private final NotificationPseService notificationPseService;
     private final FeatureToggleService featureToggleService;
 
     private static final String RESPOND_ID_INCORRECT = "Respond id provided is incorrect";
@@ -101,9 +103,8 @@ public class StoredRespondToTribunalService {
         CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
 
         // send email
-        NotificationService.CoreEmailDetails details =
-            notificationService.formatCoreEmailDetails(caseData, request.getCaseId());
-        notificationService.sendStoredEmailToClaimant(
+        CoreEmailDetails details = notificationService.formatCoreEmailDetails(caseData, request.getCaseId());
+        notificationPseService.sendNotificationStoredEmailToClaimant(
             details,
             request.getPseResponseType().getResponse()
         );
@@ -228,7 +229,7 @@ public class StoredRespondToTribunalService {
     }
 
     private void sendEmailForRespondToTribunal(CaseData caseData, String caseId, String shortText) {
-        notificationService.sendResponseNotificationEmailToTribunal(caseData, caseId);
+        notificationPseService.sendResponseNotificationEmailToTribunal(caseData, caseId);
         notificationService.sendSubmitStoredEmailToClaimant(
             notificationService.formatCoreEmailDetails(caseData, caseId), shortText);
     }

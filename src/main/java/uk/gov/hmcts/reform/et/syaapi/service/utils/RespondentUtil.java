@@ -10,23 +10,26 @@ import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.et3links.ET3CaseDetailsLinksStatuses;
 import uk.gov.hmcts.et.common.model.ccd.types.et3links.ET3HubLinksStatuses;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.ET3_STATUS_IN_PROGRESS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_EMPTY_RESPONDENT_COLLECTION_NOT_ABLE_TO_ADD_RESPONDENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_IDAM_ID_ALREADY_EXISTS;
-import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_IDAM_ID_ALREADY_EXISTS_SAME_USER;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_INVALID_IDAM_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_INVALID_RESPONDENT_INDEX;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_NO_RESPONDENT_DEFINED;
@@ -56,11 +59,15 @@ public final class RespondentUtil {
      * @param caseDetails object received by elastic search.
      * @param respondentName name of the respondent to search in respondent collection.
      * @param idamId to be assigned to the respondent in the respondent collection.
+     * @param modificationType type of modification (Assignment or Revoke)
+     * @param userInfo info of the user performing the operation.
+     * @return true if user was already assigned to the case, false otherwise
      */
-    public static void setRespondentIdamIdAndDefaultLinkStatuses(CaseDetails caseDetails,
-                                                                 String respondentName,
-                                                                 String idamId,
-                                                                 String modificationType) {
+    public static boolean setRespondentIdamIdAndDefaultLinkStatuses(CaseDetails caseDetails,
+                                                                    String respondentName,
+                                                                    String idamId,
+                                                                    String modificationType,
+                                                                    UserInfo userInfo) {
         Map<String, Object> existingCaseData = caseDetails.getData();
         if (MapUtils.isEmpty(existingCaseData)) {
             throw new RuntimeException(String.format(EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA, caseDetails.getId()));
@@ -72,15 +79,18 @@ public final class RespondentUtil {
                                            modificationType,
                                            respondentName,
                                            idamId);
+            boolean alreadyAssigned = false;
             for (RespondentSumTypeItem respondentSumTypeItem : respondentSumTypeItems) {
-                setRespondentIdAndLinkStatuses(respondentSumTypeItem,
-                                               idamId,
-                                               caseDetails.getId().toString(),
-                                               modificationType);
+                boolean wasAlreadyAssigned = setRespondentIdAndLinkStatuses(respondentSumTypeItem,
+                                                                            idamId,
+                                                                            caseDetails.getId().toString(),
+                                                                            modificationType,
+                                                                            userInfo);
+                alreadyAssigned = alreadyAssigned || wasAlreadyAssigned;
             }
             Map<String, Object> updatedCaseData = EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData);
             caseDetails.setData(updatedCaseData);
-            return;
+            return alreadyAssigned;
 
         }
         throw new ManageCaseRoleException(new Exception(String.format(
@@ -151,30 +161,44 @@ public final class RespondentUtil {
         return StringUtils.EMPTY;
     }
 
-    private static void setRespondentIdAndLinkStatuses(RespondentSumTypeItem respondentSumTypeItem,
-                                                       String idamId,
-                                                       String submissionReference,
-                                                       String modificationType) {
+    private static boolean setRespondentIdAndLinkStatuses(RespondentSumTypeItem respondentSumTypeItem,
+                                                          String idamId,
+                                                          String submissionReference,
+                                                          String modificationType,
+                                                          UserInfo userInfo) {
         if (StringUtils.isBlank(idamId)) {
             throw new RuntimeException(EXCEPTION_INVALID_IDAM_ID);
         }
         if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)
             && StringUtils.isNotBlank(respondentSumTypeItem.getValue().getIdamId())) {
             if (idamId.equals(respondentSumTypeItem.getValue().getIdamId())) {
-                throw new RuntimeException(String.format(EXCEPTION_IDAM_ID_ALREADY_EXISTS_SAME_USER,
-                                                         submissionReference));
+                log.info("User already assigned to case. UserId: {}, CaseId: {}", idamId, submissionReference);
+                return true;
             }
             throw new RuntimeException(String.format(EXCEPTION_IDAM_ID_ALREADY_EXISTS, submissionReference));
         }
         if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
             respondentSumTypeItem.getValue().setIdamId(idamId);
-            respondentSumTypeItem.getValue()
-                .setEt3CaseDetailsLinksStatuses(generateDefaultET3CaseDetailsLinksStatuses());
-            respondentSumTypeItem.getValue().setEt3HubLinksStatuses(generateDefaultET3HubLinksStatuses());
-            respondentSumTypeItem.getValue().setEt3Status(ET3_STATUS_IN_PROGRESS);
+            if (StringUtils.isBlank(respondentSumTypeItem.getValue().getResponseRespondentEmail())) {
+                String userEmail = ObjectUtils.isNotEmpty(userInfo) && StringUtils.isNotBlank(userInfo.getSub())
+                    ? userInfo.getSub()
+                    : null;
+                respondentSumTypeItem.getValue().setResponseRespondentEmail(userEmail);
+            }
+            if (ObjectUtils.isEmpty(respondentSumTypeItem.getValue().getEt3CaseDetailsLinksStatuses())) {
+                respondentSumTypeItem.getValue()
+                    .setEt3CaseDetailsLinksStatuses(generateDefaultET3CaseDetailsLinksStatuses());
+            }
+            if (ObjectUtils.isEmpty(respondentSumTypeItem.getValue().getEt3HubLinksStatuses())) {
+                respondentSumTypeItem.getValue().setEt3HubLinksStatuses(generateDefaultET3HubLinksStatuses());
+            }
+            if (ObjectUtils.isEmpty(respondentSumTypeItem.getValue().getEt3Status())) {
+                respondentSumTypeItem.getValue().setEt3Status(ET3_STATUS_IN_PROGRESS);
+            }
         } else {
             respondentSumTypeItem.getValue().setIdamId(StringUtils.EMPTY);
         }
+        return false;
     }
 
     private static ET3CaseDetailsLinksStatuses generateDefaultET3CaseDetailsLinksStatuses() {
@@ -322,5 +346,42 @@ public final class RespondentUtil {
         }
         throw new ManageCaseRoleException(new Exception(
             String.format(EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND, caseId)));
+    }
+
+    /**
+     * Checks if the respondent is an online respondent based on the presence of an IDAM ID.
+     * @param respondent the respondent to check
+     * @return true if the respondent is online, false otherwise
+     */
+    public static boolean isRespondentCitizenUser(RespondentSumType respondent) {
+        return StringUtils.isNotBlank(respondent.getIdamId());
+    }
+
+    /**
+     * Checks if the respondent's legal representative an online with a valid email address.
+     * @param representative the representative to check
+     * @return true if the representative is online with an email, false otherwise
+     */
+    public static boolean isRespondentLegalRepOnlineWithEmail(RepresentedTypeR representative) {
+        return YES.equals(representative.getMyHmctsYesNo())
+            && ObjectUtils.isNotEmpty(representative.getRespondentOrganisation())
+            && StringUtils.isNotBlank(representative.getRepresentativeEmailAddress());
+    }
+
+    /**
+     * Gets the representative for the respondent if present.
+     */
+    public static RepresentedTypeR getRespondentRepresentative(CaseData caseData, RespondentSumType respondent) {
+        List<RepresentedTypeRItem> repCollection = caseData.getRepCollection();
+
+        if (org.springframework.util.CollectionUtils.isEmpty(repCollection)) {
+            return null;
+        }
+
+        Optional<RepresentedTypeRItem> respondentRep = repCollection.stream()
+            .filter(o -> respondent.getRespondentName().equals(o.getValue().getRespRepName()))
+            .findFirst();
+
+        return respondentRep.map(RepresentedTypeRItem::getValue).orElse(null);
     }
 }

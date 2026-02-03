@@ -14,12 +14,14 @@ import uk.gov.hmcts.ecm.common.model.ccd.CaseAssignmentUserRole;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.items.RepresentedTypeRItem;
 import uk.gov.hmcts.et.common.model.ccd.items.RespondentSumTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.Organisation;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,6 +48,11 @@ class RespondentUtilTest {
         "java.lang.Exception: Respondent does not exist for case: %s";
     private static final String EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND =
         "java.lang.Exception: Respondent representative not found for case: %s";
+    private static final String RESPONDENT_NAME = "Respondent Ldt";
+
+    private static final Organisation mockOrganisation = Organisation.builder()
+        .organisationID("my org")
+        .organisationName("New Organisation").build();
 
     @ParameterizedTest
     @MethodSource("provideTheSetRespondentIdamIdAndDefaultLinkStatusesTestData")
@@ -53,12 +60,19 @@ class RespondentUtilTest {
                                                       String respondentName,
                                                       String idamId,
                                                       String modificationType) {
+        UserInfo userInfo = UserInfo.builder()
+            .uid("123456789012345678901234567890")
+            .givenName("First")
+            .familyName("Last")
+            .sub("test@email.com")
+            .build();
         if (MapUtils.isEmpty(caseDetails.getData())) {
             assertThat(assertThrows(RuntimeException.class, () ->
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
-                                                          modificationType)).getMessage())
+                                                          modificationType,
+                                                          userInfo)).getMessage())
                 .contains(TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_CASE_DATA_NOT_FOUND);
             return;
         }
@@ -75,62 +89,30 @@ class RespondentUtilTest {
         if (hasRespondentNameException(caseData, caseDetails, respondentName, idamId, modificationType)) {
             return;
         }
-        if (hasIdamIdException(caseDetails, respondentName, idamId, caseData, modificationType)) {
+        boolean alreadyAssigned = hasIdamIdAlreadyAssigned(caseData, idamId, modificationType);
+        if (hasIdamIdException(caseDetails, respondentName, idamId, caseData, modificationType, alreadyAssigned)) {
             return;
         }
-        setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
-                                                  respondentName,
-                                                  idamId,
-                                                  modificationType);
+        boolean result = setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
+                                                                   respondentName,
+                                                                   idamId,
+                                                                   modificationType,
+                                                                   userInfo);
         caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
-        if (TestConstants.TEST_MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
+        if (alreadyAssigned) {
+            assertThat(result).isTrue();
+            // IDAM ID should remain unchanged when already assigned
             assertThat(caseData.getRespondentCollection().getFirst().getValue().getIdamId()).isEqualTo(idamId);
+        } else if (TestConstants.TEST_MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
+            assertThat(result).isFalse();
+            assertThat(caseData.getRespondentCollection().getFirst().getValue().getIdamId()).isEqualTo(idamId);
+            assertThat(caseData.getRespondentCollection().getFirst().getValue().getResponseRespondentEmail())
+                .isEqualTo("test@email.com");
         } else {
+            assertThat(result).isFalse();
             assertThat(caseData.getRespondentCollection().getFirst().getValue().getIdamId())
                 .isEqualTo(StringUtils.EMPTY);
         }
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
-                       .getPersonalDetails())
-            .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
-                       .getEt1ClaimForm()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_VIEWED_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
-                       .getRespondentResponse())
-            .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
-                       .getHearingDetails()).isEqualTo(
-                           TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
-                       .getRespondentRequestsAndApplications())
-            .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
-                       .getClaimantApplications()).isEqualTo(
-                           TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
-                       .getContactTribunal()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_OPTIONAL);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
-                       .getTribunalOrders())
-            .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
-                       .getTribunalJudgements()).isEqualTo(
-                           TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_AVAILABLE_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3CaseDetailsLinksStatuses()
-                       .getDocuments()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_OPTIONAL);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3HubLinksStatuses()
-                       .getContactDetails()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3HubLinksStatuses()
-                       .getEmployerDetails()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3HubLinksStatuses()
-                       .getConciliationAndEmployeeDetails())
-            .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3HubLinksStatuses()
-                       .getPayPensionBenefitDetails())
-            .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3HubLinksStatuses()
-                       .getContestClaim()).isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_NOT_STARTED_YET);
-        assertThat(caseData.getRespondentCollection().getFirst().getValue().getEt3HubLinksStatuses()
-                       .getCheckYorAnswers())
-            .isEqualTo(TestConstants.TEST_RESPONDENT_UTIL_LINK_STATUS_CANNOT_START_YET);
     }
 
     private static boolean hasRespondentCollectionException(List<?> respondentCollection,
@@ -138,12 +120,14 @@ class RespondentUtilTest {
                                                             String respondentName,
                                                             String idamId,
                                                             String modificationType) {
+        UserInfo userInfo = new CaseTestData().getUserInfo();
         if (CollectionUtils.isEmpty(respondentCollection)) {
             assertThat(assertThrows(RuntimeException.class, () ->
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
-                                                          modificationType)).getMessage())
+                                                          modificationType,
+                                                          userInfo)).getMessage())
                 .contains(TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_EMPTY_RESPONDENT_COLLECTION);
             return true;
         }
@@ -156,7 +140,8 @@ class RespondentUtilTest {
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
-                                                          modificationType)).getMessage())
+                                                          modificationType,
+                                                          userInfo)).getMessage())
                 .contains(TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_RESPONDENT_NOT_FOUND_WITH_RESPONDENT_NAME);
             return true;
         }
@@ -168,40 +153,56 @@ class RespondentUtilTest {
                                                       String respondentName,
                                                       String idamId,
                                                       String modificationType) {
+        UserInfo userInfo = new CaseTestData().getUserInfo();
         if (!checkRespondentName(caseData.getRespondentCollection().getFirst().getValue(), respondentName)) {
             assertThat(assertThrows(RuntimeException.class, () ->
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
-                                                          modificationType)).getMessage())
+                                                          modificationType,
+                                                          userInfo)).getMessage())
                 .contains(TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_RESPONDENT_NOT_FOUND_WITH_RESPONDENT_NAME);
             return true;
         }
         return false;
     }
 
+    private static boolean hasIdamIdAlreadyAssigned(CaseData caseData,
+                                                    String idamId,
+                                                    String modificationType) {
+        return TestConstants.TEST_MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)
+            && StringUtils.isNotBlank(caseData.getRespondentCollection().getFirst().getValue().getIdamId())
+            && idamId.equals(caseData.getRespondentCollection().getFirst().getValue().getIdamId());
+    }
+
     private static boolean hasIdamIdException(CaseDetails caseDetails,
                                               String respondentName,
                                               String idamId,
                                               CaseData caseData,
-                                              String modificationType) {
+                                              String modificationType,
+                                              boolean alreadyAssigned) {
+        UserInfo userInfo = new CaseTestData().getUserInfo();
         if (StringUtils.isBlank(idamId)) {
             assertThat(assertThrows(RuntimeException.class, () ->
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
-                                                          modificationType)).getMessage())
+                                                          modificationType,
+                                                          userInfo)).getMessage())
                 .contains(TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_INVALID_IDAM_ID);
             return true;
         }
 
-        if (StringUtils.isNotBlank(caseData.getRespondentCollection().getFirst().getValue().getIdamId())
+        // Only throw exception if IDAM ID is different (not the same user)
+        if (!alreadyAssigned
+            && StringUtils.isNotBlank(caseData.getRespondentCollection().getFirst().getValue().getIdamId())
             && !idamId.equals(caseData.getRespondentCollection().getFirst().getValue().getIdamId())) {
             assertThat(assertThrows(RuntimeException.class, () ->
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
-                                                          modificationType)).getMessage())
+                                                          modificationType,
+                                                          userInfo)).getMessage())
                 .contains(TestConstants.TEST_RESPONDENT_UTIL_EXCEPTION_IDAM_ID_ALREADY_EXISTS);
             return true;
         }
@@ -515,5 +516,161 @@ class RespondentUtilTest {
         ManageCaseRoleException ex4 = assertThrows(ManageCaseRoleException.class, () ->
             RespondentUtil.findRespondentRepresentative(respondent, nullValueList, caseId));
         assertThat(ex4.getMessage()).isEqualTo(String.format(EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND, caseId));
+    }
+
+    @Test
+    void isRespondentCitizenUser_shouldReturnTrueWhenIdamIdIsNotBlank() {
+        RespondentSumType respondent = RespondentSumType.builder()
+            .idamId("some-idam-id")
+            .build();
+        assertThat(RespondentUtil.isRespondentCitizenUser(respondent)).isTrue();
+    }
+
+    @Test
+    void isRespondentCitizenUser_shouldReturnFalseWhenIdamIdIsNull() {
+        RespondentSumType respondent = RespondentSumType.builder()
+            .idamId(null)
+            .build();
+        assertThat(RespondentUtil.isRespondentCitizenUser(respondent)).isFalse();
+    }
+
+    @Test
+    void isRespondentCitizenUser_shouldReturnFalseWhenIdamIdIsBlank() {
+        RespondentSumType respondent = RespondentSumType.builder()
+            .idamId("")
+            .build();
+        assertThat(RespondentUtil.isRespondentCitizenUser(respondent)).isFalse();
+    }
+
+    @Test
+    void isRespondentCitizenUser_shouldReturnFalseWhenIdamIdIsWhitespace() {
+        RespondentSumType respondent = RespondentSumType.builder()
+            .idamId("   ")
+            .build();
+        assertThat(RespondentUtil.isRespondentCitizenUser(respondent)).isFalse();
+    }
+
+    @Test
+    void isRespondentLegalRepOnlineWithEmail_shouldReturnTrueWhenAllFieldsValid() {
+        RepresentedTypeR rep = RepresentedTypeR.builder()
+            .myHmctsYesNo("Yes")
+            .respondentOrganisation(mockOrganisation)
+            .representativeEmailAddress("rep@email.com")
+            .build();
+        assertThat(RespondentUtil.isRespondentLegalRepOnlineWithEmail(rep)).isTrue();
+    }
+
+    @Test
+    void isRespondentLegalRepOnlineWithEmail_shouldReturnFalseWhenMyHmctsYesNoIsNotYes() {
+        RepresentedTypeR rep = RepresentedTypeR.builder()
+            .myHmctsYesNo("No")
+            .respondentOrganisation(mockOrganisation)
+            .representativeEmailAddress("rep@email.com")
+            .build();
+        assertThat(RespondentUtil.isRespondentLegalRepOnlineWithEmail(rep)).isFalse();
+    }
+
+    @Test
+    void isRespondentLegalRepOnlineWithEmail_shouldReturnFalseWhenOrganisationIsNull() {
+        RepresentedTypeR rep = RepresentedTypeR.builder()
+            .myHmctsYesNo("Yes")
+            .respondentOrganisation(null)
+            .representativeEmailAddress("rep@email.com")
+            .build();
+        assertThat(RespondentUtil.isRespondentLegalRepOnlineWithEmail(rep)).isFalse();
+    }
+
+    @Test
+    void isRespondentLegalRepOnlineWithEmail_shouldReturnFalseWhenEmailIsBlank() {
+        RepresentedTypeR rep = RepresentedTypeR.builder()
+            .myHmctsYesNo("Yes")
+            .respondentOrganisation(mockOrganisation)
+            .representativeEmailAddress("")
+            .build();
+        assertThat(RespondentUtil.isRespondentLegalRepOnlineWithEmail(rep)).isFalse();
+    }
+
+    @Test
+    void isRespondentLegalRepOnlineWithEmail_shouldReturnFalseWhenEmailIsWhitespace() {
+        RepresentedTypeR rep = RepresentedTypeR.builder()
+            .myHmctsYesNo("Yes")
+            .respondentOrganisation(mockOrganisation)
+            .representativeEmailAddress("   ")
+            .build();
+        assertThat(RespondentUtil.isRespondentLegalRepOnlineWithEmail(rep)).isFalse();
+    }
+
+    @Test
+    void isRespondentLegalRepOnlineWithEmail_shouldReturnFalseWhenEmailIsNull() {
+        RepresentedTypeR rep = RepresentedTypeR.builder()
+            .myHmctsYesNo("Yes")
+            .respondentOrganisation(mockOrganisation)
+            .representativeEmailAddress(null)
+            .build();
+        assertThat(RespondentUtil.isRespondentLegalRepOnlineWithEmail(rep)).isFalse();
+    }
+
+    @Test
+    void getRespondentRepresentative_shouldReturnRepresentativeWhenMatchExists() {
+        CaseData caseData = new CaseData();
+        RespondentSumType respondent = RespondentSumType.builder()
+            .respondentName(RESPONDENT_NAME)
+            .build();
+        RepresentedTypeR rep = RepresentedTypeR.builder()
+            .respRepName(RESPONDENT_NAME)
+            .build();
+        RepresentedTypeRItem repItem = RepresentedTypeRItem.builder()
+            .value(rep)
+            .build();
+        caseData.setRepCollection(List.of(repItem));
+
+        RepresentedTypeR result = RespondentUtil.getRespondentRepresentative(caseData, respondent);
+
+        assertThat(result).isEqualTo(rep);
+    }
+
+    @Test
+    void getRespondentRepresentative_shouldReturnNullWhenNoMatch() {
+        CaseData caseData = new CaseData();
+        RespondentSumType respondent = RespondentSumType.builder()
+            .respondentName(RESPONDENT_NAME)
+            .build();
+        RepresentedTypeR rep = RepresentedTypeR.builder()
+            .respRepName("Other Ltd")
+            .build();
+        RepresentedTypeRItem repItem = RepresentedTypeRItem.builder()
+            .value(rep)
+            .build();
+        caseData.setRepCollection(List.of(repItem));
+
+        RepresentedTypeR result = RespondentUtil.getRespondentRepresentative(caseData, respondent);
+
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void getRespondentRepresentative_shouldReturnNullWhenRepCollectionIsEmpty() {
+        CaseData caseData = new CaseData();
+        caseData.setRepCollection(new ArrayList<>());
+        RespondentSumType respondent = RespondentSumType.builder()
+            .respondentName(RESPONDENT_NAME)
+            .build();
+
+        RepresentedTypeR result = RespondentUtil.getRespondentRepresentative(caseData, respondent);
+
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void getRespondentRepresentative_shouldReturnNullWhenRepCollectionIsNull() {
+        CaseData caseData = new CaseData();
+        caseData.setRepCollection(null);
+        RespondentSumType respondent = RespondentSumType.builder()
+            .respondentName(RESPONDENT_NAME)
+            .build();
+
+        RepresentedTypeR result = RespondentUtil.getRespondentRepresentative(caseData, respondent);
+
+        assertThat(result).isNull();
     }
 }

@@ -58,4 +58,13 @@ public class FeatureToggleService {
         return this.featureToggleApi.isFeatureEnabled("acasVetAndAccept");
     }
 
+    /**
+     * This method is used to check if the et3-self-assignment feature is enabled.
+     * When enabled, supports professional user detection and already-assigned status.
+     *
+     * @return true if the feature toggle is enabled, false otherwise
+     */
+    public boolean isEt3SelfAssignmentEnabled() {
+        return this.featureToggleApi.isFeatureEnabled("et3-self-assignment");
+    }
 }

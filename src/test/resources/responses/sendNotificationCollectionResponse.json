@@ -116,6 +116,20 @@
                 }
               }
             ],
+            "respondentRespondStoredCollection": [
+              {
+                "id": "9b1deb4d-3b7d-4d6f-9b7f-9e8a2c4d5e6f",
+                "value": {
+                  "date": "12 Feb 2025",
+                  "dateTime": "2022-11-23T00:00:00",
+                  "from": "Respondent",
+                  "fromIdamId": "550e8400-e29b-41d4-a716-446655440000",
+                  "response": "Respondent response stored",
+                  "copyToOtherParty": "Yes",
+                  "hasSupportingMaterial": "No"
+                }
+              }
+            ],
             "respondNotificationTypeCollection": [
               {
                 "id": "777",
