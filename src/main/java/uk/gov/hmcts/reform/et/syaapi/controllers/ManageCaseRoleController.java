@@ -40,12 +40,13 @@ public class ManageCaseRoleController {
     @Operation(summary = "Modifies user roles of the case")
     @ApiResponseGroup
     public ResponseEntity<CaseDetails> findCaseForRoleModification(
+        @RequestHeader(AUTHORIZATION) String authorisation,
         @NotNull @RequestBody FindCaseForRoleModificationRequest findCaseForRoleModificationRequest
     ) {
         CaseDetails caseDetails;
         try {
             caseDetails =
-                manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest);
+                manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest, authorisation);
         } catch (IOException e) {
             throw new ManageCaseRoleException(e);
         }

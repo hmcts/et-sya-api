@@ -138,7 +138,7 @@ class ManageCaseRoleControllerTest {
             .claimantLastName(CLAIMANT_LAST_NAME)
             .applicationName(APPLICATION_NAME_VALUE)
             .build();
-        when(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest))
+        when(manageCaseRoleService.findCaseForRoleModification(any(), any()))
             .thenReturn(CaseDetails.builder()
                             .id(Long.parseLong(CASE_ID))
                             .caseTypeId(ENGLAND_CASE_TYPE)

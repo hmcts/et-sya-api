@@ -48,7 +48,9 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static uk.gov.hmcts.ecm.common.client.CcdClient.EXPERIMENTAL;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.EMPLOYMENT;
@@ -124,34 +126,61 @@ public class ManageCaseRoleService {
      *              types.
      */
     public CaseDetails findCaseForRoleModification(
-        FindCaseForRoleModificationRequest request) throws IOException {
+        FindCaseForRoleModificationRequest request,
+        String authorisation) throws IOException {
         log.info("Fetching case for role modification. Submission Reference: {}, Claimant: {} {}, Application: {}",
                  request.getCaseSubmissionReference(),
                  request.getClaimantFirstNames(),
                  request.getClaimantLastName(),
                  request.getApplicationName());
+
         String adminUserToken = adminUserService.getAdminUserToken();
         String elasticSearchQuery = ET_SYA_FRONTEND.equals(request.getApplicationName())
             ? ElasticSearchQueryBuilder.buildByFindCaseForRoleModificationRequestCitizen(request)
             : ElasticSearchQueryBuilder.buildByFindCaseForRoleModificationRequest(request);
 
-        SearchResult searchResult = ccdApi.searchCases(adminUserToken, authTokenGenerator.generate(),
-                                                       ENGLAND_CASE_TYPE, elasticSearchQuery
-        );
+        if (ET_SYA_FRONTEND.equals(request.getApplicationName())) {
+            CaseDetails caseDetails = findCaseInSearchResults(adminUserToken, elasticSearchQuery, ENGLAND_CASE_TYPE);
+            if (caseDetails != null) {
+                return caseDetails;
+            }
+            return findCaseInSearchResults(adminUserToken, elasticSearchQuery, SCOTLAND_CASE_TYPE);
+        }
 
+        CaseDetails caseDetails = findCaseByCaseType(adminUserToken, ENGLAND_CASE_TYPE,
+                                                     elasticSearchQuery, authorisation);
+        if (caseDetails != null) {
+            return caseDetails;
+        }
+        return findCaseByCaseType(adminUserToken, SCOTLAND_CASE_TYPE, elasticSearchQuery, authorisation);
+    }
+
+    private CaseDetails findCaseInSearchResults(String adminUserToken, String query, String caseType) {
+        SearchResult searchResult = ccdApi.searchCases(adminUserToken, authTokenGenerator.generate(), caseType, query);
         if (ObjectUtils.isNotEmpty(searchResult) && CollectionUtils.isNotEmpty(searchResult.getCases())) {
             return searchResult.getCases().getFirst();
         }
-
-        searchResult = ccdApi.searchCases(adminUserToken, authTokenGenerator.generate(),
-                                                       SCOTLAND_CASE_TYPE, elasticSearchQuery
-        );
-        if (ObjectUtils.isNotEmpty(searchResult) && CollectionUtils.isNotEmpty(searchResult.getCases())) {
-            return searchResult.getCases().getFirst();
-        }
-
-        log.info("Case not found for the parameters, submission reference: {}", request.getCaseSubmissionReference());
         return null;
+    }
+
+    private CaseDetails findCaseByCaseType(String adminUserToken,
+                                           String caseType,
+                                           String elasticSearchQuery,
+                                           String authorisation) throws IOException {
+        List<CaseDetails> caseDetailsList = Optional.ofNullable(ccdApi.searchCases(
+            adminUserToken,
+            authTokenGenerator.generate(),
+            caseType,
+            elasticSearchQuery
+        ).getCases()).orElse(Collections.emptyList());
+        return checkIsUserCreator(authorisation, caseDetailsList)
+            ? null
+            : ManageCaseRoleServiceUtil.checkCaseDetailsList(caseDetailsList);
+    }
+
+    private boolean checkIsUserCreator(String authorisation, List<CaseDetails> caseDetailsList) throws IOException {
+        return RespondentUtil
+            .checkIsUserCreator(getCaseUserRolesByCaseAndUserIdsCcd(authorisation, caseDetailsList));
     }
 
     /**

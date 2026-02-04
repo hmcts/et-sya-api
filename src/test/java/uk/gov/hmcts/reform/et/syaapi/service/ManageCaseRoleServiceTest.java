@@ -426,6 +426,8 @@ class ManageCaseRoleServiceTest {
 
     @Test
     void theFindCaseForRoleModificationForEnglandWales() throws IOException {
+        ReflectionTestUtils.setField(manageCaseRoleService, CCD_API_URL_PARAMETER_NAME,
+                                     CCD_API_URL_PARAMETER_TEST_VALUE);
         FindCaseForRoleModificationRequest findCaseForRoleModificationRequest =
             FindCaseForRoleModificationRequest.builder()
                 .caseSubmissionReference(CASE_SUBMISSION_REFERENCE)
@@ -448,17 +450,29 @@ class ManageCaseRoleServiceTest {
                                                                  .id(Long.parseLong(CASE_SUBMISSION_REFERENCE))
                                                                  .state(TestConstants.TEST_CASE_STATE_ACCEPTED)
                                                                  .build())).total(1).build());
-        assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest)).isNotNull();
+        // Mock idamClient to return user info for the authorization check
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN))
+            .thenReturn(UserInfo.builder().uid(DUMMY_USER_ID).build());
+        // Mock restTemplate to return empty response (user is NOT the creator)
+        when(restTemplate.postForObject(
+            eq(CCD_API_URL_PARAMETER_TEST_VALUE + CASE_USER_ROLE_CCD_API_POST_METHOD_NAME),
+            any(HttpEntity.class),
+            eq(CaseAssignedUserRolesResponse.class)))
+            .thenReturn(CaseAssignedUserRolesResponse.builder().caseAssignedUserRoles(List.of()).build());
         assertThat(manageCaseRoleService.findCaseForRoleModification(
-            findCaseForRoleModificationRequest).getId().toString())
+            findCaseForRoleModificationRequest, TEST_SERVICE_AUTH_TOKEN)).isNotNull();
+        assertThat(manageCaseRoleService.findCaseForRoleModification(
+            findCaseForRoleModificationRequest, TEST_SERVICE_AUTH_TOKEN).getId().toString())
             .hasToString(CASE_SUBMISSION_REFERENCE);
         assertThat(manageCaseRoleService.findCaseForRoleModification(
-            findCaseForRoleModificationRequest).getCaseTypeId())
+            findCaseForRoleModificationRequest, TEST_SERVICE_AUTH_TOKEN).getCaseTypeId())
             .isEqualTo(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES);
     }
 
     @Test
     void theFindCaseForRoleModificationForScotland() throws IOException {
+        ReflectionTestUtils.setField(manageCaseRoleService, CCD_API_URL_PARAMETER_NAME,
+                                     CCD_API_URL_PARAMETER_TEST_VALUE);
         FindCaseForRoleModificationRequest findCaseForRoleModificationRequest =
             FindCaseForRoleModificationRequest.builder()
                 .caseSubmissionReference(CASE_SUBMISSION_REFERENCE)
@@ -484,13 +498,22 @@ class ManageCaseRoleServiceTest {
                                                                  .id(Long.parseLong(CASE_SUBMISSION_REFERENCE))
                                                                  .state(TestConstants.TEST_CASE_STATE_ACCEPTED)
                                                                  .build())).total(1).build());
+        // Mock idamClient to return user info for the authorization check
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN))
+            .thenReturn(UserInfo.builder().uid(DUMMY_USER_ID).build());
+        // Mock restTemplate to return empty response (user is NOT the creator)
+        when(restTemplate.postForObject(
+            eq(CCD_API_URL_PARAMETER_TEST_VALUE + CASE_USER_ROLE_CCD_API_POST_METHOD_NAME),
+            any(HttpEntity.class),
+            eq(CaseAssignedUserRolesResponse.class)))
+            .thenReturn(CaseAssignedUserRolesResponse.builder().caseAssignedUserRoles(List.of()).build());
         assertThat(manageCaseRoleService.findCaseForRoleModification(
-            findCaseForRoleModificationRequest)).isNotNull();
+            findCaseForRoleModificationRequest, TEST_SERVICE_AUTH_TOKEN)).isNotNull();
         assertThat(manageCaseRoleService.findCaseForRoleModification(
-            findCaseForRoleModificationRequest).getId().toString())
+            findCaseForRoleModificationRequest, TEST_SERVICE_AUTH_TOKEN).getId().toString())
             .hasToString(CASE_SUBMISSION_REFERENCE);
         assertThat(manageCaseRoleService.findCaseForRoleModification(
-            findCaseForRoleModificationRequest).getCaseTypeId())
+            findCaseForRoleModificationRequest, TEST_SERVICE_AUTH_TOKEN).getCaseTypeId())
             .isEqualTo(SCOTLAND_CASE_TYPE);
     }
 
@@ -519,12 +542,12 @@ class ManageCaseRoleServiceTest {
                                                                  .state(TestConstants.TEST_CASE_STATE_ACCEPTED)
                                                                  .build())).total(1).build());
         assertThat(manageCaseRoleService.findCaseForRoleModification(
-            findCaseForRoleModificationRequest)).isNotNull();
+            findCaseForRoleModificationRequest, TEST_SERVICE_AUTH_TOKEN)).isNotNull();
         assertThat(manageCaseRoleService.findCaseForRoleModification(
-            findCaseForRoleModificationRequest).getId().toString())
+            findCaseForRoleModificationRequest, TEST_SERVICE_AUTH_TOKEN).getId().toString())
             .hasToString(CASE_SUBMISSION_REFERENCE);
         assertThat(manageCaseRoleService.findCaseForRoleModification(
-            findCaseForRoleModificationRequest).getCaseTypeId())
+            findCaseForRoleModificationRequest, TEST_SERVICE_AUTH_TOKEN).getCaseTypeId())
             .isEqualTo(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES);
     }
 
@@ -550,7 +573,8 @@ class ManageCaseRoleServiceTest {
                                 TEST_SERVICE_AUTH_TOKEN,
                                 SCOTLAND_CASE_TYPE,
                                 elasticSearchQuery)).thenReturn(SearchResult.builder().build());
-        assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest)).isNull();
+        assertThat(manageCaseRoleService.findCaseForRoleModification(
+            findCaseForRoleModificationRequest, TEST_SERVICE_AUTH_TOKEN)).isNull();
     }
 
     @Test
