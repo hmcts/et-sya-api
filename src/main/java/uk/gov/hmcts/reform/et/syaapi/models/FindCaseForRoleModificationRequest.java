@@ -19,5 +19,7 @@ public class FindCaseForRoleModificationRequest {
     private String claimantFirstNames;
     @JsonProperty("claimantLastName")
     private String claimantLastName;
+    @JsonProperty("applicationName")
+    private String applicationName;
 
 }

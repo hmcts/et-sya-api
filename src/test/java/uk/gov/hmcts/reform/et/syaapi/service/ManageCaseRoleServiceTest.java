@@ -438,7 +438,6 @@ class ManageCaseRoleServiceTest {
         );
         when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new CaseTestData().getUserInfo());
         when(ccdApi.searchCases(TEST_SERVICE_AUTH_TOKEN,
                                 TEST_SERVICE_AUTH_TOKEN,
                                 TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES,
@@ -449,15 +448,13 @@ class ManageCaseRoleServiceTest {
                                                                  .id(Long.parseLong(CASE_SUBMISSION_REFERENCE))
                                                                  .state(TestConstants.TEST_CASE_STATE_ACCEPTED)
                                                                  .build())).total(1).build());
-        assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest,
-                                                                     TEST_SERVICE_AUTH_TOKEN)).isNotNull();
-        assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest,
-                                                                     TEST_SERVICE_AUTH_TOKEN).getId().toString())
+        assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest)).isNotNull();
+        assertThat(manageCaseRoleService.findCaseForRoleModification(
+            findCaseForRoleModificationRequest).getId().toString())
             .hasToString(CASE_SUBMISSION_REFERENCE);
-        assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest,
-                                                                     TEST_SERVICE_AUTH_TOKEN).getCaseTypeId())
+        assertThat(manageCaseRoleService.findCaseForRoleModification(
+            findCaseForRoleModificationRequest).getCaseTypeId())
             .isEqualTo(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES);
-
     }
 
     @Test
@@ -474,7 +471,6 @@ class ManageCaseRoleServiceTest {
         );
         when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN)).thenReturn(new CaseTestData().getUserInfo());
         when(ccdApi.searchCases(TEST_SERVICE_AUTH_TOKEN,
                                 TEST_SERVICE_AUTH_TOKEN,
                                 TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES,
@@ -488,14 +484,48 @@ class ManageCaseRoleServiceTest {
                                                                  .id(Long.parseLong(CASE_SUBMISSION_REFERENCE))
                                                                  .state(TestConstants.TEST_CASE_STATE_ACCEPTED)
                                                                  .build())).total(1).build());
-        assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest,
-                                                                     TEST_SERVICE_AUTH_TOKEN)).isNotNull();
-        assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest,
-                                                                     TEST_SERVICE_AUTH_TOKEN).getId().toString())
+        assertThat(manageCaseRoleService.findCaseForRoleModification(
+            findCaseForRoleModificationRequest)).isNotNull();
+        assertThat(manageCaseRoleService.findCaseForRoleModification(
+            findCaseForRoleModificationRequest).getId().toString())
             .hasToString(CASE_SUBMISSION_REFERENCE);
-        assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest,
-                                                                     TEST_SERVICE_AUTH_TOKEN).getCaseTypeId())
+        assertThat(manageCaseRoleService.findCaseForRoleModification(
+            findCaseForRoleModificationRequest).getCaseTypeId())
             .isEqualTo(SCOTLAND_CASE_TYPE);
+    }
+
+    @Test
+    void theFindCaseForRoleModificationForCitizen() throws IOException {
+        FindCaseForRoleModificationRequest findCaseForRoleModificationRequest =
+            FindCaseForRoleModificationRequest.builder()
+                .caseSubmissionReference(CASE_SUBMISSION_REFERENCE)
+                .claimantFirstNames(CLAIMANT_FIRST_NAMES)
+                .claimantLastName(CLAIMANT_LAST_NAME)
+                .applicationName("et-sya-frontend")
+                .build();
+        String elasticSearchQuery = ElasticSearchQueryBuilder.buildByFindCaseForRoleModificationRequestCitizen(
+            findCaseForRoleModificationRequest
+        );
+        when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(ccdApi.searchCases(TEST_SERVICE_AUTH_TOKEN,
+                                TEST_SERVICE_AUTH_TOKEN,
+                                TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES,
+                                elasticSearchQuery))
+            .thenReturn(SearchResult.builder().cases(List.of(CaseDetails.builder()
+                                                                 .caseTypeId(
+                                                                     TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES)
+                                                                 .id(Long.parseLong(CASE_SUBMISSION_REFERENCE))
+                                                                 .state(TestConstants.TEST_CASE_STATE_ACCEPTED)
+                                                                 .build())).total(1).build());
+        assertThat(manageCaseRoleService.findCaseForRoleModification(
+            findCaseForRoleModificationRequest)).isNotNull();
+        assertThat(manageCaseRoleService.findCaseForRoleModification(
+            findCaseForRoleModificationRequest).getId().toString())
+            .hasToString(CASE_SUBMISSION_REFERENCE);
+        assertThat(manageCaseRoleService.findCaseForRoleModification(
+            findCaseForRoleModificationRequest).getCaseTypeId())
+            .isEqualTo(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES);
     }
 
     @Test
@@ -520,8 +550,7 @@ class ManageCaseRoleServiceTest {
                                 TEST_SERVICE_AUTH_TOKEN,
                                 SCOTLAND_CASE_TYPE,
                                 elasticSearchQuery)).thenReturn(SearchResult.builder().build());
-        assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest,
-                                                                     TEST_SERVICE_AUTH_TOKEN)).isNull();
+        assertThat(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest)).isNull();
     }
 
     @Test
