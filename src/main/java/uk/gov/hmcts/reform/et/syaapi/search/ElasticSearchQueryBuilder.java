@@ -138,7 +138,7 @@ public final class ElasticSearchQueryBuilder {
      *                                           claimantFirstNames and claimantLastName
      * @return the string value of the elastic search query
      */
-    public static String buildByFindCaseForRoleModificationRequestCitizen(
+    public static String buildByFindCaseForRoleModificationRequestClaimant(
         FindCaseForRoleModificationRequest findCaseForRoleModificationRequest
     ) {
         return "{\"size\":1,\"query\":{\"bool\":{\"must\":[{\"match\":{\"" + FIELD_NAME_SUBMISSION_REFERENCE + "\":"

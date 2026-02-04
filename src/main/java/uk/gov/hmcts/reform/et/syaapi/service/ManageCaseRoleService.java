@@ -128,15 +128,11 @@ public class ManageCaseRoleService {
     public CaseDetails findCaseForRoleModification(
         FindCaseForRoleModificationRequest request,
         String authorisation) throws IOException {
-        log.info("Fetching case for role modification. Submission Reference: {}, Claimant: {} {}, Application: {}",
-                 request.getCaseSubmissionReference(),
-                 request.getClaimantFirstNames(),
-                 request.getClaimantLastName(),
-                 request.getApplicationName());
+        log.info("Fetching case for role modification. Submission Reference: {}", request.getCaseSubmissionReference());
 
         String adminUserToken = adminUserService.getAdminUserToken();
         String elasticSearchQuery = ET_SYA_FRONTEND.equals(request.getApplicationName())
-            ? ElasticSearchQueryBuilder.buildByFindCaseForRoleModificationRequestCitizen(request)
+            ? ElasticSearchQueryBuilder.buildByFindCaseForRoleModificationRequestClaimant(request)
             : ElasticSearchQueryBuilder.buildByFindCaseForRoleModificationRequest(request);
 
         if (ET_SYA_FRONTEND.equals(request.getApplicationName())) {

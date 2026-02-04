@@ -526,7 +526,7 @@ class ManageCaseRoleServiceTest {
                 .claimantLastName(CLAIMANT_LAST_NAME)
                 .applicationName("et-sya-frontend")
                 .build();
-        String elasticSearchQuery = ElasticSearchQueryBuilder.buildByFindCaseForRoleModificationRequestCitizen(
+        String elasticSearchQuery = ElasticSearchQueryBuilder.buildByFindCaseForRoleModificationRequestClaimant(
             findCaseForRoleModificationRequest
         );
         when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
