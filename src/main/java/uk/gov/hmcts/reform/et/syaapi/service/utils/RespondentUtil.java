@@ -216,7 +216,7 @@ public final class RespondentUtil {
         return et3CaseDetailsLinksStatuses;
     }
 
-    private static ET3HubLinksStatuses generateDefaultET3HubLinksStatuses() {
+    public static ET3HubLinksStatuses generateDefaultET3HubLinksStatuses() {
         ET3HubLinksStatuses et3HubLinksStatuses = new ET3HubLinksStatuses();
         et3HubLinksStatuses.setContactDetails(LINK_STATUS_NOT_STARTED_YET);
         et3HubLinksStatuses.setEmployerDetails(LINK_STATUS_NOT_STARTED_YET);
