@@ -201,7 +201,7 @@ public final class RespondentUtil {
         return false;
     }
 
-    private static ET3CaseDetailsLinksStatuses generateDefaultET3CaseDetailsLinksStatuses() {
+    public static ET3CaseDetailsLinksStatuses generateDefaultET3CaseDetailsLinksStatuses() {
         ET3CaseDetailsLinksStatuses et3CaseDetailsLinksStatuses = new ET3CaseDetailsLinksStatuses();
         et3CaseDetailsLinksStatuses.setPersonalDetails(LINK_STATUS_NOT_AVAILABLE_YET);
         et3CaseDetailsLinksStatuses.setEt1ClaimForm(LINK_STATUS_NOT_VIEWED_YET);
