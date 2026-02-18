@@ -287,4 +287,25 @@ public class ManageCaseController {
         var caseDetails = caseService.updateCaseSubmitted(authorization, caseRequest);
         return ok(caseDetails);
     }
+
+    /**
+     * Deletes a draft case.
+     *
+     * @param authorization jwt of the user
+     * @param caseRequest   the case to be deleted {@link CaseRequest} object
+     * @return ResponseEntity with no content
+     */
+    @PostMapping("/delete-draft-case")
+    @Operation(summary = "Delete a draft case for the user")
+    @ApiResponseGroup
+    public ResponseEntity<CaseDetails> deleteDraftCase(
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @NotNull @RequestBody CaseRequest caseRequest
+    ) {
+        log.info("Received delete-draft-case request - caseTypeId: {} caseId: {}",
+                 caseRequest.getCaseTypeId(), caseRequest.getCaseId()
+        );
+        CaseDetails caseDetails = caseService.deleteDraftCase(authorization, caseRequest);
+        return ok(caseDetails);
+    }
 }

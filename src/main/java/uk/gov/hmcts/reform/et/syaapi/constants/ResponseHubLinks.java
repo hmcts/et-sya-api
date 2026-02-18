@@ -1,8 +1,10 @@
 package uk.gov.hmcts.reform.et.syaapi.constants;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.HubLinksUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.RespondentUtil;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.SECTION_STATUS_COMPLETED;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.SECTION_STATUS_IN_PROGRESS;
@@ -40,6 +42,10 @@ public enum ResponseHubLinks {
     public static void setResponseHubLinkStatus(RespondentSumType respondent,
                                                 String sectionId,
                                                 String sectionStatus) {
+        // Initialize et3HubLinksStatuses with defaults if null, following the pattern from RespondentUtil.java
+        if (ObjectUtils.isEmpty(respondent.getEt3HubLinksStatuses())) {
+            respondent.setEt3HubLinksStatuses(RespondentUtil.generateDefaultET3HubLinksStatuses());
+        }
         switch (sectionId) {
             case RESPONSE_HUB_SECTION_CONTACT_DETAILS: {
                 respondent.getEt3HubLinksStatuses().setContactDetails(
