@@ -1,22 +1,57 @@
 #!groovy
 import uk.gov.hmcts.contino.AppPipelineDsl
 
-@Library("Infrastructure")
+//@Library("Infrastructure")
+@Library("Infrastructure@performance-stages-tidy") _   //add-perftest-vars  //test-performance-repo 
 
 def type = "java"
 def product = "et"
 def component = "sya-api"
 def branchesToSync = ['demo', 'ithc']
 
+def secrets = [
+    'et-${env}': [
+    ]
+]
+
+static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
+    [ $class: 'AzureKeyVaultSecret',
+      secretType: 'Secret',
+      name: secretName,
+      version: '',
+      envVariable: envVar
+    ]
+}
+
 withPipeline(type, product, component) {
+  loadVaultSecrets(secrets)
   disableLegacyDeployment()
   enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
   syncBranchesWithMaster(branchesToSync)
-  enableSlackNotifications('#et-builds')
+  //enablePerformanceTestStages(timeout: 60)
+  //enableSlackNotifications('#et-builds')
+
+  //Enable Gatling test stages
+  // enableGatlingLoadTests([
+  //   repo: 'https://github.com/hmcts/performance-testing.git', //https://github.com/hmcts/et-performance.git
+  //   branch: 'add-et-tests', //*SHould be master //add-buildpipeline-code employmenttribunal-updates
+  //   simulation: 'et.simulations.EtSyaApiBuildSimulation', // ETCreateClaim
+  //   timeout: 10
+  // ])
+
+  // //Enable SRG evaluation
+  // enableSrgEvaluation([
+    // serviceName: 'et-sya-service',
+    // failureBehavior: 'warn'
+  // ])
 
   before('smoketest:preview') {
     env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
     env.FT_SYA_URL = "https://et-sya-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+  }
+
+  before('gatlingLoadTests:preview') {
+    env.CCD_DATA_STORE_API_URL = "http://ccd-data-store-api-aat.service.core-compute-aat.internal"
   }
 
   before('functionalTest:preview') {
@@ -27,6 +62,9 @@ withPipeline(type, product, component) {
   afterAlways('functionalTest:preview') {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/reports/tests/functional/**/*'
   }
+
+   afterAlways('functionalTest:preview') {
+   }
 
   before('smoketest:aat') {
     env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
@@ -42,5 +80,14 @@ withPipeline(type, product, component) {
   afterAlways('functionalTest:aat') {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/reports/tests/functional/**/*'
   }
+
+
+
+
+
+
+
+
+  
 
 }

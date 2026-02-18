@@ -1,0 +1,32 @@
+{
+  "id": 1646225213651590,
+  "jurisdiction": "EMPLOYMENT",
+  "state": "AWAITING_SUBMISSION_TO_HMCTS",
+  "case_type_id": "ET_Scotland",
+  "created_date": "2022-03-02T12:46:53.673626",
+  "last_modified": "2022-03-02T12:46:53.676743",
+  "locked_by_user_id": null,
+  "security_level": null,
+  "case_data": {
+    "caseType": "Single",
+    "caseSource": "Manually Created",
+    "claimantIndType": {
+      "claimant_first_names": "Michael",
+      "claimant_last_name": "Jackson"
+    },
+    "ethosCaseReference": "1646225213651590",
+    "claimantType": {
+      "claimant_email_address": "test@gmail.com"
+    },
+    "et1OnlineSubmission": "Yes",
+    "respondentCollection": [{
+      "id": "123456789",
+      "value": {
+        "idamId": "dda9d1c3-1a11-3c3a-819e-74174fbec26b"
+      }
+    }],
+    "documentCollection": []
+  },
+  "security_classification": "PUBLIC",
+  "callback_response_status": null
+}

@@ -1,0 +1,92 @@
+[
+  {
+    "id": 1646225213651598,
+    "jurisdiction": "EMPLOYMENT",
+    "state": "AWAITING_SUBMISSION_TO_HMCTS",
+    "case_type_id": "ET_EnglandWales",
+    "created_date": "2022-04-02T12:46:53.673626",
+    "last_modified": "2022-04-02T12:46:53.676743",
+    "locked_by_user_id": null,
+    "security_level": null,
+    "case_data": {
+      "caseType": "Single",
+      "caseSource": "Manually Created",
+      "claimantRequests": {
+        "claim_description_document": {
+          "document_url": "http://document.binary.url/documents/2333482f-1eb9-44f1-9b78-f5d8f0c74b15",
+          "document_filename": "SupportingDoc.docx",
+          "document_binary_url": "http://document.secure.url/documents/2333482f-1eb9-44f1-9b78-f5d8f0c74b15/binary"
+        }
+      },
+      "documentCollection" : [
+        {
+          "id":  "1",
+          "value": {
+            "typeOfDocument": "ET1",
+            "uploadedDocument": {
+              "document_binary_url": "https://document.binary.url/402d3272-ac5c-11ed-afa1-0242ac120002/binary",
+              "document_filename": "Michael_Jackson_123456789.pdf",
+              "document_url": "https://document.secure.url/402d3272-ac5c-11ed-afa1-0242ac120002"
+            },
+            "shortDescription": "Case Document Michael Jackson pdf"
+          }
+        },
+        {
+          "id":  "2",
+          "value": {
+            "typeOfDocument": "ACAS Certificate",
+            "uploadedDocument": {
+              "document_binary_url": "https://acas_document.binary.url/532f826c-ac5c-11ed-afa1-0242ac120002/binary",
+              "document_filename": "Michael_Jackson_R123456_12_34.pdf",
+              "document_url": "https://acas_document.secure.url/532f826c-ac5c-11ed-afa1-0242ac120002"
+            },
+            "shortDescription": "ACAS Certificate Michael Jackson pdf"
+          }
+        },
+        {
+          "id":  "3",
+          "value": {
+            "typeOfDocument": "Tribunal case file",
+            "uploadedDocument": {
+              "document_binary_url": "https://tribunal_case_file.binary.url/532f826c-ac5c-11ed-afa1-0242ac120002/binary",
+              "document_filename": "Mribunal Case File.pdf",
+              "document_url": "https://tribunal_case_file.binary.url/532f826c-ac5c-11ed-afa1-0242ac120002/"
+            },
+            "shortDescription": "Tribunal case file not to be shared with ACAS pdf"
+          }
+        },
+        {
+          "id":  "4",
+          "value": {
+            "typeOfDocument": "ET3",
+            "uploadedDocument": {
+              "document_url": "http://dm-store:8080/documents/da442cba-0464-4301-a64b-feade7f07260",
+              "document_filename": "sdgds - ET3 Response.pdf",
+              "document_binary_url": "http://dm-store:8080/documents/da442cba-0464-4301-a64b-feade7f07260/binary"
+            },
+            "shortDescription": "ET3 to be shared with ACAS pdf"
+          }
+        }
+      ],
+      "respondentCollection": [
+        {
+          "id": "548e3b93-9a2b-41ab-8091-633fa361fce6",
+          "value": {
+            "et3Form": {
+              "document_url": "http://dm-store:8080/documents/da442cba-0464-4301-a64b-feade7f07260",
+              "document_filename": "sdgds - ET3 Response.pdf",
+              "document_binary_url": "http://dm-store:8080/documents/da442cba-0464-4301-a64b-feade7f07260/binary"
+            },
+            "et3ResponseRespondentSupportDocument": {
+              "document_url": "http://host.docker.internal:5005/documents/8a2423cc-6855-41a5-9400-33c36ea10a5d",
+              "document_filename": "KV Secrets -1.docx",
+              "document_binary_url": "http://host.docker.internal:5005/documents/8a2423cc-6855-41a5-9400-33c36ea10a5d/binary"
+            }
+          }
+        }
+      ]
+    },
+    "security_classification": "PUBLIC",
+    "callback_response_status": null
+  }
+]

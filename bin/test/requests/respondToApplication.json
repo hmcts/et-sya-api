@@ -1,0 +1,30 @@
+{
+  "case_id": "12345",
+  "case_type_id": "ET_EnglandWales",
+  "applicationId": "1xx567",
+  "supportingMaterialFile": {
+    "document_binary_url" : "https://document.binary.url",
+    "document_filename" : "filename",
+    "document_url" : "https://document.url"
+  },
+  "isRespondingToRequestOrOrder": false,
+  "response": {
+    "response": "Need help",
+    "hasSupportingMaterial": "Yes",
+    "supportingMaterial": [
+      {
+        "id": "1",
+        "value": {
+          "typeOfDocument": "doc",
+          "uploadedDocument": {
+            "document_binary_url" : "https://document.binary.url",
+            "document_filename" : "filename",
+            "document_url" : "https://document.url"
+          }
+        }
+      }
+    ],
+    "copyToOtherParty": "No",
+    "copyNoGiveDetails": "It's a secret"
+  }
+}

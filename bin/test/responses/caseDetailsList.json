@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1646225213651590,
+    "jurisdiction": "EMPLOYMENT",
+    "state": "Draft",
+    "case_type_id": "ET_Scotland",
+    "created_date": "2022-03-02T12:46:53.673626",
+    "last_modified": "2022-03-02T12:46:53.676743",
+    "locked_by_user_id": null,
+    "security_level": null,
+    "case_data": {},
+    "security_classification": "PUBLIC",
+    "callback_response_status": null
+  },
+  {
+    "id": 1646225213651591,
+    "jurisdiction": "EMPLOYMENT",
+    "state": "Draft",
+    "case_type_id": "ET_Scotland",
+    "created_date": "2022-03-02T12:46:53.673626",
+    "last_modified": "2022-03-02T12:46:53.676743",
+    "locked_by_user_id": null,
+    "security_level": null,
+    "case_data": {},
+    "security_classification": "PUBLIC",
+    "callback_response_status": null
+  }
+]
+

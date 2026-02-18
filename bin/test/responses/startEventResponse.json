@@ -1,0 +1,17 @@
+{
+  "event_id": "INITIATE_CASE_DRAFT",
+  "token": "123",
+  "case_details": {
+    "id": null,
+    "jurisdiction": "EMPLOYMENT",
+    "state": null,
+    "case_type_id": "ET_Scotland",
+    "created_date": null,
+    "last_modified": null,
+    "locked_by_user_id": null,
+    "security_level": null,
+    "case_data": {},
+    "security_classification": null,
+    "callback_response_status": null
+  }
+}
