@@ -277,6 +277,10 @@ class ManageCaseRoleServiceTest {
                                                 .getModifyCaseUserRoles()
                                                 .getFirst().getCaseRole())) {
             setExpectedDetails(modifyCaseUserRolesRequest, modificationType, expectedCaseDetails);
+        } else if (CASE_USER_ROLE_CREATOR.equals(modifyCaseUserRolesRequest
+                                                     .getModifyCaseUserRoles()
+                                                     .getFirst().getCaseRole())) {
+            setExpectedDetailsForCreator(modifyCaseUserRolesRequest, modificationType, expectedCaseDetails);
         }
         HttpMethod httpMethod = MODIFICATION_TYPE_REVOKE.equals(modificationType) ? HttpMethod.DELETE : HttpMethod.POST;
         when(restTemplate.exchange(ArgumentMatchers.anyString(),
@@ -315,6 +319,31 @@ class ManageCaseRoleServiceTest {
             DUMMY_AUTHORISATION_TOKEN,
             expectedCaseDetails,
             UPDATE_ET3_FORM
+        )).thenReturn(expectedCaseDetails);
+    }
+
+    private void setExpectedDetailsForCreator(ModifyCaseUserRolesRequest modifyCaseUserRolesRequest,
+                                              String modificationType,
+                                              CaseDetails expectedCaseDetails) {
+        if (ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
+            CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(expectedCaseDetails.getData());
+            caseData.setClaimantId(null); // Ensure not already assigned
+            expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+        }
+        if (ManageCaseRoleConstants.MODIFICATION_TYPE_REVOKE.equals(modificationType)) {
+            CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(expectedCaseDetails.getData());
+            caseData.setClaimantId(USER_ID);
+            expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+        }
+        when(ccdApi.getCase(any(), any(), eq(modifyCaseUserRolesRequest
+                                                 .getModifyCaseUserRoles()
+                                                 .getFirst().getCaseDataId()))).thenReturn(expectedCaseDetails);
+        when(caseService.triggerEvent(
+            any(),
+            any(),
+            eq(UPDATE_CASE_SUBMITTED),
+            any(),
+            any()
         )).thenReturn(expectedCaseDetails);
     }
 
@@ -826,6 +855,99 @@ class ManageCaseRoleServiceTest {
             DUMMY_AUTHORISATION_TOKEN,
             expectedCaseDetails,
             UPDATE_ET3_FORM
+        )).thenReturn(expectedCaseDetails);
+        when(restTemplate.exchange(ArgumentMatchers.anyString(),
+                                   ArgumentMatchers.eq(HttpMethod.POST),
+                                   ArgumentMatchers.any(),
+                                   ArgumentMatchers.eq(CaseAssignmentUserRolesResponse.class)))
+            .thenReturn(new ResponseEntity<>(HttpStatus.OK));
+
+        ModifyCaseUserRolesRequest modifyCaseUserRolesRequest = ModifyCaseUserRolesRequest
+            .builder().modifyCaseUserRoles(List.of(modifyCaseUserRole)).build();
+        CaseAssignmentResponse response = manageCaseRoleService.modifyUserCaseRoles(
+            DUMMY_AUTHORISATION_TOKEN,
+            modifyCaseUserRolesRequest,
+            MODIFICATION_TYPE_ASSIGNMENT);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatus()).isEqualTo(CaseAssignmentResponse.AssignmentStatus.ALREADY_ASSIGNED);
+        assertThat(response.getMessage()).contains("already assigned");
+        assertThat(response.getCaseDetails()).isNotNull();
+        assertThat(response.getCaseDetails()).hasSize(1);
+    }
+
+    @Test
+    @SneakyThrows
+    void shouldAssignCreatorRoleSuccessfully() {
+        final ModifyCaseUserRole modifyCaseUserRole = ModifyCaseUserRole.builder()
+            .userId(USER_ID)
+            .caseDataId(CASE_ID)
+            .caseRole(CASE_ROLE_CREATOR)
+            .caseTypeId(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES)
+            .respondentName(RESPONDENT_NAME)
+            .build();
+
+        CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
+        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(expectedCaseDetails.getData());
+        expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+
+        when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(ccdApi.getCase(DUMMY_AUTHORISATION_TOKEN, TEST_SERVICE_AUTH_TOKEN, CASE_ID))
+            .thenReturn(expectedCaseDetails);
+        when(caseService.triggerEvent(
+            eq(DUMMY_AUTHORISATION_TOKEN),
+            eq(expectedCaseDetails.getId().toString()),
+            eq(UPDATE_CASE_SUBMITTED),
+            eq(expectedCaseDetails.getCaseTypeId()),
+            any()
+        )).thenReturn(expectedCaseDetails);
+        when(restTemplate.exchange(ArgumentMatchers.anyString(),
+                                   ArgumentMatchers.eq(HttpMethod.POST),
+                                   ArgumentMatchers.any(),
+                                   ArgumentMatchers.eq(CaseAssignmentUserRolesResponse.class)))
+            .thenReturn(new ResponseEntity<>(HttpStatus.OK));
+
+        ModifyCaseUserRolesRequest modifyCaseUserRolesRequest = ModifyCaseUserRolesRequest
+            .builder().modifyCaseUserRoles(List.of(modifyCaseUserRole)).build();
+        CaseAssignmentResponse response = manageCaseRoleService.modifyUserCaseRoles(
+            DUMMY_AUTHORISATION_TOKEN,
+            modifyCaseUserRolesRequest,
+            MODIFICATION_TYPE_ASSIGNMENT);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatus()).isEqualTo(CaseAssignmentResponse.AssignmentStatus.ASSIGNED);
+        assertThat(response.getCaseDetails()).isNotNull();
+        assertThat(response.getCaseDetails()).hasSize(1);
+    }
+
+    @Test
+    @SneakyThrows
+    void shouldReturnAlreadyAssignedWhenClaimantAlreadyAssigned() {
+        final ModifyCaseUserRole modifyCaseUserRole = ModifyCaseUserRole.builder()
+            .userId(USER_ID)
+            .caseDataId(CASE_ID)
+            .caseRole(CASE_ROLE_CREATOR)
+            .caseTypeId(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES)
+            .respondentName(RESPONDENT_NAME)
+            .build();
+
+        CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
+        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(expectedCaseDetails.getData());
+        // Set the user as already assigned as claimant
+        caseData.setClaimantId(USER_ID);
+        expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+
+        when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(ccdApi.getCase(DUMMY_AUTHORISATION_TOKEN, TEST_SERVICE_AUTH_TOKEN, CASE_ID))
+            .thenReturn(expectedCaseDetails);
+        when(caseService.triggerEvent(
+            eq(DUMMY_AUTHORISATION_TOKEN),
+            eq(expectedCaseDetails.getId().toString()),
+            eq(UPDATE_CASE_SUBMITTED),
+            eq(expectedCaseDetails.getCaseTypeId()),
+            any()
         )).thenReturn(expectedCaseDetails);
         when(restTemplate.exchange(ArgumentMatchers.anyString(),
                                    ArgumentMatchers.eq(HttpMethod.POST),

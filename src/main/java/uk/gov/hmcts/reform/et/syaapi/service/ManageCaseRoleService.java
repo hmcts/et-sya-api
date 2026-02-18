@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
+import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.exception.ProfessionalUserException;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
@@ -39,6 +40,7 @@ import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseAssignmentResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.ClaimantUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.DocumentUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ManageCaseRoleServiceUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.RemoteServiceUtil;
@@ -330,6 +332,22 @@ public class ManageCaseRoleService {
                         et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(authorisation,
                                                                                        caseDetails,
                                                                                        UPDATE_ET3_FORM));
+                } else if (CASE_USER_ROLE_CREATOR.equals(modifyCaseUserRole.getCaseRole())) {
+                    CaseDetails caseDetails =
+                        ccdApi.getCase(authorisation, authTokenGenerator.generate(),
+                                       modifyCaseUserRole.getCaseDataId());
+                    boolean isAlreadyAssigned = ClaimantUtil.setClaimantIdamId(
+                        caseDetails,
+                        modifyCaseUserRole.getUserId(),
+                        modificationType
+                    );
+                    wasAlreadyAssigned = wasAlreadyAssigned || isAlreadyAssigned;
+                    updatedCases.add(
+                        caseService.triggerEvent(authorisation,
+                                                 caseDetails.getId().toString(),
+                                                 CaseEvent.UPDATE_CASE_SUBMITTED,
+                                                 caseDetails.getCaseTypeId(),
+                                                 caseDetails.getData()));
                 }
             }
 
@@ -406,6 +424,20 @@ public class ManageCaseRoleService {
                     et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(authorisation,
                                                                                    caseDetails,
                                                                                    UPDATE_ET3_FORM));
+            } else if (CASE_USER_ROLE_CREATOR.equals(modifyCaseUserRole.getCaseRole())) {
+                CaseDetails caseDetails =
+                    ccdApi.getCase(authorisation, authTokenGenerator.generate(), modifyCaseUserRole.getCaseDataId());
+                ClaimantUtil.setClaimantIdamId(
+                    caseDetails,
+                    modifyCaseUserRole.getUserId(),
+                    modificationType
+                );
+                caseDetailsList.add(
+                    caseService.triggerEvent(authorisation,
+                                             caseDetails.getId().toString(),
+                                             CaseEvent.UPDATE_CASE_SUBMITTED,
+                                             caseDetails.getCaseTypeId(),
+                                             caseDetails.getData()));
             }
         }
         return caseDetailsList;
