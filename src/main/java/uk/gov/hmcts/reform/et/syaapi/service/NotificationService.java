@@ -106,8 +106,6 @@ public class NotificationService {
         "Reconsider judgment"};
     private static final String TYPE_C = "witness";
     public static final String TYPE_C_RESPONDENT = "Order a witness to attend to give evidence";
-    private static final String DONT_SEND_COPY = "No";
-    public static final String HEARING_DATE_KEY = "hearingDate";
     private static final String NO_CLAIMANT_EMAIL_FOUND =
         "No claimant email found - Application response acknowledgment not being sent";
     private static final String HEARING_DATE_NOT_SET_WELSH = "Heb ei anfon";
@@ -321,8 +319,9 @@ public class NotificationService {
         Set<String> sentEmailAddresses = new HashSet<>();
         String applicantName = getCurrentRespondentName(caseData, respondentApplication.getRespondentIdamId());
 
-        if (TYPE_C_RESPONDENT.equals(respondentApplication.getContactApplicationType())
-            || DONT_SEND_COPY.equals(respondentApplication.getCopyToOtherPartyYesOrNo())) {
+        if (TYPE_C.equals(respondentApplication.getContactApplicationType())
+            || TYPE_C_RESPONDENT.equals(respondentApplication.getContactApplicationType())
+            || NO.equals(respondentApplication.getCopyToOtherPartyYesOrNo())) {
             RespondentSumTypeItem currentRespondent =
                 getCurrentRespondent(caseData, respondentApplication.getRespondentIdamId());
             handleAndSendRespondentsAndRespRepsEmails(caseData, respondentApplication, details,
@@ -368,10 +367,8 @@ public class NotificationService {
             : getRespondentRepPortalLink(details.caseId());
 
         respondentParameters.put(SEND_EMAIL_PARAMS_APPLICANT_NAME_KEY, applicantName);
-        respondentParameters.put(
-            isRespondent ? SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY : SEND_EMAIL_PARAMS_EXUI_LINK_KEY,
-            linkToCase
-        );
+        respondentParameters.put(SEND_EMAIL_PARAMS_CITIZEN_PORTAL_LINK_KEY, linkToCase);
+        respondentParameters.put(SEND_EMAIL_PARAMS_EXUI_LINK_KEY, linkToCase);
 
         boolean isApplicant =
             respondentApplication.getRespondentIdamId().equals(respondent.getValue().getIdamId()) && isRespondent;
@@ -486,6 +483,7 @@ public class NotificationService {
                                                JSONObject documentJson,
                                                ClaimantTse claimantApplication) {
         if (TYPE_C.equals(claimantApplication.getContactApplicationType())
+            || TYPE_C_RESPONDENT.equals(claimantApplication.getContactApplicationType())
             || NO.equals(claimantApplication.getCopyToOtherPartyYesOrNo())) {
             log.info("Acknowledgement email not sent to respondents for this application type");
             return;
@@ -518,7 +516,8 @@ public class NotificationService {
     void sendRespondentAppAcknowledgementEmailToClaimant(CoreEmailDetails details,
                                                JSONObject documentJson,
                                                RespondentTse respondentTse) {
-        if (TYPE_C_RESPONDENT.equals(respondentTse.getContactApplicationType())
+        if (TYPE_C.equals(respondentTse.getContactApplicationType())
+            || TYPE_C_RESPONDENT.equals(respondentTse.getContactApplicationType())
             || NO.equals(respondentTse.getCopyToOtherPartyYesOrNo())) {
             log.info("Acknowledgement email not sent to claimant for this application type");
             return;
@@ -828,8 +827,8 @@ public class NotificationService {
      * @param copyToOtherParty should copy response to other party
      */
     void sendResponseEmailToRespondent(CoreEmailDetails details, String applicationType, String copyToOtherParty) {
-        if (TYPE_C.equals(applicationType) || NO.equals(copyToOtherParty)
-            || TYPE_C_RESPONDENT.equals(applicationType)) {
+        if (TYPE_C.equals(applicationType) || TYPE_C_RESPONDENT.equals(applicationType)
+            || NO.equals(copyToOtherParty)) {
             log.info("Acknowledgement email not sent to respondents for this application type");
             return;
         }
