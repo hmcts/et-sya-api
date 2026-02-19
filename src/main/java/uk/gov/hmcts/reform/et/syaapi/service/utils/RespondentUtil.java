@@ -201,7 +201,7 @@ public final class RespondentUtil {
         return false;
     }
 
-    private static ET3CaseDetailsLinksStatuses generateDefaultET3CaseDetailsLinksStatuses() {
+    public static ET3CaseDetailsLinksStatuses generateDefaultET3CaseDetailsLinksStatuses() {
         ET3CaseDetailsLinksStatuses et3CaseDetailsLinksStatuses = new ET3CaseDetailsLinksStatuses();
         et3CaseDetailsLinksStatuses.setPersonalDetails(LINK_STATUS_NOT_AVAILABLE_YET);
         et3CaseDetailsLinksStatuses.setEt1ClaimForm(LINK_STATUS_NOT_VIEWED_YET);
@@ -216,7 +216,7 @@ public final class RespondentUtil {
         return et3CaseDetailsLinksStatuses;
     }
 
-    private static ET3HubLinksStatuses generateDefaultET3HubLinksStatuses() {
+    public static ET3HubLinksStatuses generateDefaultET3HubLinksStatuses() {
         ET3HubLinksStatuses et3HubLinksStatuses = new ET3HubLinksStatuses();
         et3HubLinksStatuses.setContactDetails(LINK_STATUS_NOT_STARTED_YET);
         et3HubLinksStatuses.setEmployerDetails(LINK_STATUS_NOT_STARTED_YET);
