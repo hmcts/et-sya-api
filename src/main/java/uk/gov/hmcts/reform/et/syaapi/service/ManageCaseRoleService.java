@@ -424,20 +424,6 @@ public class ManageCaseRoleService {
                     et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(authorisation,
                                                                                    caseDetails,
                                                                                    UPDATE_ET3_FORM));
-            } else if (CASE_USER_ROLE_CREATOR.equals(modifyCaseUserRole.getCaseRole())) {
-                CaseDetails caseDetails =
-                    ccdApi.getCase(authorisation, authTokenGenerator.generate(), modifyCaseUserRole.getCaseDataId());
-                ClaimantUtil.setClaimantIdamId(
-                    caseDetails,
-                    modifyCaseUserRole.getUserId(),
-                    modificationType
-                );
-                caseDetailsList.add(
-                    caseService.triggerEvent(authorisation,
-                                             caseDetails.getId().toString(),
-                                             CaseEvent.UPDATE_CASE_SUBMITTED,
-                                             caseDetails.getCaseTypeId(),
-                                             caseDetails.getData()));
             }
         }
         return caseDetailsList;

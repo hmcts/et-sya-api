@@ -329,22 +329,23 @@ class ManageCaseRoleServiceTest {
             CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(expectedCaseDetails.getData());
             caseData.setClaimantId(null); // Ensure not already assigned
             expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+
+            when(ccdApi.getCase(any(), any(), eq(modifyCaseUserRolesRequest
+                                                     .getModifyCaseUserRoles()
+                                                     .getFirst().getCaseDataId()))).thenReturn(expectedCaseDetails);
+            when(caseService.triggerEvent(
+                any(),
+                any(),
+                eq(UPDATE_CASE_SUBMITTED),
+                any(),
+                any()
+            )).thenReturn(expectedCaseDetails);
         }
         if (ManageCaseRoleConstants.MODIFICATION_TYPE_REVOKE.equals(modificationType)) {
             CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(expectedCaseDetails.getData());
             caseData.setClaimantId(USER_ID);
             expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
         }
-        when(ccdApi.getCase(any(), any(), eq(modifyCaseUserRolesRequest
-                                                 .getModifyCaseUserRoles()
-                                                 .getFirst().getCaseDataId()))).thenReturn(expectedCaseDetails);
-        when(caseService.triggerEvent(
-            any(),
-            any(),
-            eq(UPDATE_CASE_SUBMITTED),
-            any(),
-            any()
-        )).thenReturn(expectedCaseDetails);
     }
 
     private static boolean isAnyOfTheModifyCaseUserRoleInvalid(ModifyCaseUserRolesRequest modifyCaseUserRolesRequest) {

@@ -13,6 +13,7 @@ import java.util.Map;
 import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.EXCEPTION_IDAM_ID_ALREADY_EXISTS;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.MODIFICATION_TYPE_ASSIGNMENT;
 
 @Slf4j
@@ -55,7 +56,6 @@ public final class ClaimantUtil {
         }
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(existingCaseData);
 
-        // Check if already assigned
         if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
             String existingClaimantIdamId = caseData.getClaimantId();
             if (StringUtils.isNotBlank(existingClaimantIdamId)) {
@@ -64,15 +64,10 @@ public final class ClaimantUtil {
                              idamId, caseDetails.getId());
                     return true;
                 }
-                throw new RuntimeException(String.format("Claimant IDAM ID already exists for case %s",
-                                                         caseDetails.getId()));
+                throw new RuntimeException(String.format(EXCEPTION_IDAM_ID_ALREADY_EXISTS, caseDetails.getId()));
             }
-
-            // Set claimant IDAM ID
             caseData.setClaimantId(idamId);
-
         } else {
-            // Revoke - clear the claimant IDAM ID
             caseData.setClaimantId(StringUtils.EMPTY);
         }
 

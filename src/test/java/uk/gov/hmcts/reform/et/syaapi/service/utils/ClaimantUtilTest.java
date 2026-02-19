@@ -102,7 +102,7 @@ class ClaimantUtilTest {
             ClaimantUtil.setClaimantIdamId(
                 caseDetails, TEST_USER_ID, MODIFICATION_TYPE_ASSIGNMENT));
 
-        assertThat(exception.getMessage()).contains("Claimant IDAM ID already exists");
+        assertThat(exception.getMessage()).contains("case has already been assigned");
     }
 
     @Test
