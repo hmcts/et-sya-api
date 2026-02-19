@@ -55,6 +55,7 @@ class ManageCaseRoleControllerTest {
     private static final String CLAIMANT_FIRST_NAMES = "Claimant First Names";
     private static final String CLAIMANT_LAST_NAME = "Claimant Last Name";
     private static final String STRING_ZERO = "0";
+    private static final String APPLICATION_NAME_VALUE = "et-sya-frontend";
 
     @Autowired
     private WebApplicationContext webApplicationContext;
@@ -135,8 +136,9 @@ class ManageCaseRoleControllerTest {
             .respondentName(RESPONDENT_NAME)
             .claimantFirstNames(CLAIMANT_FIRST_NAMES)
             .claimantLastName(CLAIMANT_LAST_NAME)
+            .applicationName(APPLICATION_NAME_VALUE)
             .build();
-        when(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest, AUTH_TOKEN))
+        when(manageCaseRoleService.findCaseForRoleModification(any(), any()))
             .thenReturn(CaseDetails.builder()
                             .id(Long.parseLong(CASE_ID))
                             .caseTypeId(ENGLAND_CASE_TYPE)

@@ -130,6 +130,31 @@ public final class ElasticSearchQueryBuilder {
     }
 
     /**
+     * Generates query to search case by caseSubmissionReference, claimantFirstNames,
+     * and claimantLastName. This query is used to check if the claimant's entered data for self
+     * assignment exists or not.
+     * Compares claimant name with the fields, claimant first names, claimant last name, and full name.
+     * @param findCaseForRoleModificationRequest is the parameter object which has caseSubmissionReference,
+     *                                           claimantFirstNames and claimantLastName
+     * @return the string value of the elastic search query
+     */
+    public static String buildByFindCaseForRoleModificationRequestClaimant(
+        FindCaseForRoleModificationRequest findCaseForRoleModificationRequest
+    ) {
+        return "{\"size\":1,\"query\":{\"bool\":{\"must\":[{\"match\":{\"" + FIELD_NAME_SUBMISSION_REFERENCE + "\":"
+            + "{\"query\":\"" + findCaseForRoleModificationRequest.getCaseSubmissionReference()
+            + "\"}}}],\"filter\":[{\"bool\":{\"should\":[{\"bool\":{\"filter\":[{\"term\":{\""
+            + FIELD_NAME_CLAIMANT_FIRST_NAMES
+            + "\":{\"value\":\"" + findCaseForRoleModificationRequest.getClaimantFirstNames() + "\"}}}],"
+            + "\"boost\":1.0}},{\"bool\":{\"filter\":[{\"term\":{\"" + FIELD_NAME_CLAIMANT_LAST_NAME + "\""
+            + ":{\"value\":\"" + findCaseForRoleModificationRequest.getClaimantLastName() + "\"}}}],\"boost\":1.0}},"
+            + "{\"bool\":{\"filter\":[{\"term\":{\"" + FIELD_NAME_CLAIMANT_FULL_NAME
+            + "\":{\"value\":\"" + findCaseForRoleModificationRequest.getClaimantFirstNames()
+            + StringUtils.SPACE + findCaseForRoleModificationRequest.getClaimantLastName()
+            + "\",\"case_insensitive\":true}}}],\"boost\":1.0}}],\"boost\":1.0}}],\"boost\":1.0}}}";
+    }
+
+    /**
      * This query is used to get the specific case with the entered case submission reference to find the case.
      * that will be assigned to the respondent.
      * @param submissionReference submissionReference of the case
