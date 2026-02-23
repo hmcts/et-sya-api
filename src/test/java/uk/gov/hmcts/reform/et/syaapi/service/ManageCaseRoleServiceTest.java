@@ -40,6 +40,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
+import uk.gov.hmcts.reform.et.syaapi.exception.CaseUserRoleConflictException;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
@@ -1453,5 +1454,118 @@ class ManageCaseRoleServiceTest {
         assertThat(response).isNotNull();
         assertThat(response.getStatus()).isEqualTo(CaseAssignmentResponse.AssignmentStatus.ASSIGNED);
         assertThat(response.getCaseDetails()).isNotNull();
+    }
+    @Test
+    @SneakyThrows
+    void modifyUserCaseRoles_ShouldNotRollback_WhenConflictException() {
+        // Setup: Existing respondent has IDAM ID "existing-id"
+        // Request: Assign NEW IDAM ID "new-id"
+        // Expectation: CaseUserRoleConflictException thrown, NO rollback (DELETE) called.
+
+        ModifyCaseUserRole modifyCaseUserRole = ModifyCaseUserRole.builder()
+            .userId("new-id")
+            .caseDataId(CASE_ID)
+            .caseRole(CASE_ROLE_DEFENDANT)
+            .caseTypeId(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES)
+            .respondentName(RESPONDENT_NAME)
+            .build();
+
+        CaseDetails caseDetails = new CaseTestData().getCaseDetailsWithCaseData();
+        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
+        caseData.getRespondentCollection().getFirst().getValue().setRespondentName(RESPONDENT_NAME);
+        caseData.getRespondentCollection().getFirst().getValue().setIdamId("existing-id"); // Different ID
+        caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+
+        when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(et3Service.findCaseBySubmissionReference(CASE_ID)).thenReturn(caseDetails);
+        when(restTemplate.exchange(ArgumentMatchers.anyString(),
+                                   ArgumentMatchers.eq(HttpMethod.POST),
+                                   ArgumentMatchers.any(),
+                                   ArgumentMatchers.eq(CaseAssignmentUserRolesResponse.class)))
+            .thenReturn(new ResponseEntity<>(HttpStatus.OK));
+
+        ModifyCaseUserRolesRequest request = ModifyCaseUserRolesRequest.builder()
+            .modifyCaseUserRoles(List.of(modifyCaseUserRole))
+            .build();
+
+        assertThrows(CaseUserRoleConflictException.class, () ->
+            manageCaseRoleService.modifyUserCaseRoles(
+                DUMMY_AUTHORISATION_TOKEN,
+                request,
+                MODIFICATION_TYPE_ASSIGNMENT
+            ));
+
+        // Verify POST was called (assignment attempt)
+        org.mockito.Mockito.verify(restTemplate, org.mockito.Mockito.times(1)).exchange(
+            ArgumentMatchers.anyString(),
+            ArgumentMatchers.eq(HttpMethod.POST), // Assignment
+            ArgumentMatchers.any(),
+            ArgumentMatchers.eq(CaseAssignmentUserRolesResponse.class)
+        );
+
+        // Verify DELETE was NOT called (Rollback skipped)
+        org.mockito.Mockito.verify(restTemplate, org.mockito.Mockito.never()).exchange(
+            ArgumentMatchers.anyString(),
+            ArgumentMatchers.eq(HttpMethod.DELETE), // Revoke/Rollback
+            ArgumentMatchers.any(),
+            ArgumentMatchers.eq(CaseAssignmentUserRolesResponse.class)
+        );
+    }
+
+    @Test
+    @SneakyThrows
+    void modifyUserCaseRoles_ShouldRollback_WhenGenericException() {
+        // Setup: Throw RuntimeException during update
+        // Expectation: ManageCaseRoleException thrown, Rollback (DELETE) called.
+
+        ModifyCaseUserRole modifyCaseUserRole = ModifyCaseUserRole.builder()
+            .userId(USER_ID)
+            .caseDataId(CASE_ID)
+            .caseRole(CASE_ROLE_DEFENDANT)
+            .caseTypeId(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES)
+            .respondentName(RESPONDENT_NAME)
+            .build();
+
+        // Force error in RespondentUtil by passing null case data (if possible) or mocking et3Service to throw
+        // Easier to mock et3Service.findCaseBySubmissionReference to throw RuntimeException
+        when(et3Service.findCaseBySubmissionReference(CASE_ID)).thenThrow(new RuntimeException("Generic Error"));
+
+        when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(restTemplate.exchange(ArgumentMatchers.anyString(),
+                                   ArgumentMatchers.eq(HttpMethod.POST),
+                                   ArgumentMatchers.any(),
+                                   ArgumentMatchers.eq(CaseAssignmentUserRolesResponse.class)))
+            .thenReturn(new ResponseEntity<>(HttpStatus.OK));
+
+        ModifyCaseUserRolesRequest request = ModifyCaseUserRolesRequest.builder()
+            .modifyCaseUserRoles(List.of(modifyCaseUserRole))
+            .build();
+
+        assertThrows(ManageCaseRoleException.class, () ->
+            manageCaseRoleService.modifyUserCaseRoles(
+                DUMMY_AUTHORISATION_TOKEN,
+                request,
+                MODIFICATION_TYPE_ASSIGNMENT
+            ));
+
+        // Verify POST was called (assignment attempt)
+        org.mockito.Mockito.verify(restTemplate, org.mockito.Mockito.times(1)).exchange(
+            ArgumentMatchers.anyString(),
+            ArgumentMatchers.eq(HttpMethod.POST),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.eq(CaseAssignmentUserRolesResponse.class)
+        );
+
+        // Verify DELETE WAS called (Rollback)
+        // Note: The service calls restCallToModifyUserCaseRoles which calls restTemplate.exchange.
+        // We verify that exchange was called with DELETE.
+        org.mockito.Mockito.verify(restTemplate, org.mockito.Mockito.times(1)).exchange(
+            ArgumentMatchers.anyString(),
+            ArgumentMatchers.eq(HttpMethod.DELETE),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.eq(CaseAssignmentUserRolesResponse.class)
+        );
     }
 }

@@ -352,7 +352,11 @@ class RespondentUtilTest {
                          Arguments.of(caseDetailsWithCorrectRespondentName,
                                       TestConstants.TEST_RESPONDENT_NAME,
                                       TestConstants.TEST_RESPONDENT_IDAM_ID_1,
-                                      TestConstants.TEST_MODIFICATION_TYPE_REVOKE));
+                                      TestConstants.TEST_MODIFICATION_TYPE_REVOKE),
+                         Arguments.of(caseDetailsWithCorrectRespondentName,
+                                      TestConstants.TEST_RESPONDENT_NAME,
+                                      TestConstants.TEST_RESPONDENT_IDAM_ID_1,
+                                      "InvalidType"));
 
     }
 
