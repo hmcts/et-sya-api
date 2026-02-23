@@ -67,6 +67,7 @@ class ManageCaseControllerTest {
     private static final String USER_ID = "1234";
 
     private static final String UPDATE_CASE_SUBMITTED_API_URL = "/cases/update-case-submitted";
+    private static final String DELETE_DRAFT_CASE_API_URL = "/cases/delete-draft-case";
 
     private final CaseDetails expectedDetails;
 
@@ -467,5 +468,29 @@ class ManageCaseControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(ResourceLoader.toJson(caseRequest)))
             .andExpect(status().isOk());
+    }
+
+    @Test
+    @SneakyThrows
+    void shouldDeleteDraftCase() {
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseId(CASE_ID)
+            .caseTypeId(SCOTLAND_CASE_TYPE)
+            .build();
+
+        when(verifyTokenService.verifyTokenSignature(any())).thenReturn(true);
+        when(caseService.deleteDraftCase(TEST_SERVICE_AUTH_TOKEN, caseRequest)).thenReturn(expectedDetails);
+
+        mockMvc.perform(post(DELETE_DRAFT_CASE_API_URL)
+                .header(HttpHeaders.AUTHORIZATION, TEST_SERVICE_AUTH_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ResourceLoader.toJson(caseRequest)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(expectedDetails.getId()))
+            .andExpect(jsonPath("$.case_type_id").value(expectedDetails.getCaseTypeId()))
+            .andExpect(jsonPath("$.jurisdiction").value(expectedDetails.getJurisdiction()))
+            .andExpect(jsonPath("$.state").value(expectedDetails.getState()))
+            .andExpect(jsonPath("$.created_date").exists())
+            .andExpect(jsonPath("$.last_modified").exists());
     }
 }
