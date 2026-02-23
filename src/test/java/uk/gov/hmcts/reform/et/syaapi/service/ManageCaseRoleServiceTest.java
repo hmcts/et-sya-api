@@ -1455,20 +1455,13 @@ class ManageCaseRoleServiceTest {
         assertThat(response.getStatus()).isEqualTo(CaseAssignmentResponse.AssignmentStatus.ASSIGNED);
         assertThat(response.getCaseDetails()).isNotNull();
     }
+
     @Test
     @SneakyThrows
     void modifyUserCaseRoles_ShouldNotRollback_WhenConflictException() {
         // Setup: Existing respondent has IDAM ID "existing-id"
         // Request: Assign NEW IDAM ID "new-id"
         // Expectation: CaseUserRoleConflictException thrown, NO rollback (DELETE) called.
-
-        ModifyCaseUserRole modifyCaseUserRole = ModifyCaseUserRole.builder()
-            .userId("new-id")
-            .caseDataId(CASE_ID)
-            .caseRole(CASE_ROLE_DEFENDANT)
-            .caseTypeId(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES)
-            .respondentName(RESPONDENT_NAME)
-            .build();
 
         CaseDetails caseDetails = new CaseTestData().getCaseDetailsWithCaseData();
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
@@ -1484,6 +1477,14 @@ class ManageCaseRoleServiceTest {
                                    ArgumentMatchers.any(),
                                    ArgumentMatchers.eq(CaseAssignmentUserRolesResponse.class)))
             .thenReturn(new ResponseEntity<>(HttpStatus.OK));
+
+        ModifyCaseUserRole modifyCaseUserRole = ModifyCaseUserRole.builder()
+            .userId("new-id")
+            .caseDataId(CASE_ID)
+            .caseRole(CASE_ROLE_DEFENDANT)
+            .caseTypeId(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES)
+            .respondentName(RESPONDENT_NAME)
+            .build();
 
         ModifyCaseUserRolesRequest request = ModifyCaseUserRolesRequest.builder()
             .modifyCaseUserRoles(List.of(modifyCaseUserRole))

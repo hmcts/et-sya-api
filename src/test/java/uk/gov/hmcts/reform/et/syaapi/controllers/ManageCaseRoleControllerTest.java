@@ -20,12 +20,12 @@ import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRolesRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.SyaApiApplication;
-import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
-import uk.gov.hmcts.reform.et.syaapi.models.CaseAssignmentResponse;
-import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.exception.CaseUserRoleConflictException;
 import uk.gov.hmcts.reform.et.syaapi.exception.CaseUserRoleNotFoundException;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
+import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
+import uk.gov.hmcts.reform.et.syaapi.models.CaseAssignmentResponse;
+import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.service.ManageCaseRoleService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
@@ -178,6 +178,7 @@ class ManageCaseRoleControllerTest {
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN))
             .andExpect(status().isOk());
     }
+
     @Test
     @SneakyThrows
     void modifyUserRoles_CaseUserRoleConflictException() {
