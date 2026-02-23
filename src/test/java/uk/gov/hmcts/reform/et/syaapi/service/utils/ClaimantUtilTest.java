@@ -7,6 +7,8 @@ import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.HubLinksStatuses;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.et.syaapi.exception.CaseUserRoleConflictException;
+import uk.gov.hmcts.reform.et.syaapi.exception.CaseUserRoleNotFoundException;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 
 import java.util.HashMap;
@@ -98,7 +100,7 @@ class ClaimantUtilTest {
         caseData.setClaimantId(DIFFERENT_USER_ID);
         caseDetails = createCaseDetailsWithCaseData(caseData);
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+        CaseUserRoleConflictException exception = assertThrows(CaseUserRoleConflictException.class, () ->
             ClaimantUtil.setClaimantIdamId(
                 caseDetails, TEST_USER_ID, MODIFICATION_TYPE_ASSIGNMENT));
 
@@ -136,7 +138,7 @@ class ClaimantUtilTest {
     void setClaimantIdamId_EmptyCaseData_ThrowsException() {
         CaseDetails emptyCaseDetails = CaseDetails.builder().id(TEST_CASE_ID).data(null).build();
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+        CaseUserRoleNotFoundException exception = assertThrows(CaseUserRoleNotFoundException.class, () ->
             ClaimantUtil.setClaimantIdamId(
                 emptyCaseDetails, TEST_USER_ID, MODIFICATION_TYPE_ASSIGNMENT));
 

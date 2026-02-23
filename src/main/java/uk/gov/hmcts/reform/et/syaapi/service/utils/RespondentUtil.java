@@ -15,6 +15,9 @@ import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.et.common.model.ccd.types.et3links.ET3CaseDetailsLinksStatuses;
 import uk.gov.hmcts.et.common.model.ccd.types.et3links.ET3HubLinksStatuses;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.et.syaapi.exception.CaseUserRoleConflictException;
+import uk.gov.hmcts.reform.et.syaapi.exception.CaseUserRoleNotFoundException;
+import uk.gov.hmcts.reform.et.syaapi.exception.CaseUserRoleValidationException;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -70,7 +73,7 @@ public final class RespondentUtil {
                                                                     UserInfo userInfo) {
         Map<String, Object> existingCaseData = caseDetails.getData();
         if (MapUtils.isEmpty(existingCaseData)) {
-            throw new RuntimeException(String.format(EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA, caseDetails.getId()));
+            throw new CaseUserRoleNotFoundException(String.format(EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA, caseDetails.getId()));
         }
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(existingCaseData);
         if (CollectionUtils.isNotEmpty(caseData.getRespondentCollection())) {
@@ -93,9 +96,9 @@ public final class RespondentUtil {
             return alreadyAssigned;
 
         }
-        throw new ManageCaseRoleException(new Exception(String.format(
+        throw new CaseUserRoleNotFoundException(String.format(
             EXCEPTION_EMPTY_RESPONDENT_COLLECTION_NOT_ABLE_TO_ADD_RESPONDENT,
-            caseDetails.getId())));
+            caseDetails.getId()));
     }
 
     private static List<RespondentSumTypeItem> findRespondentSumTypeItems(
@@ -117,7 +120,7 @@ public final class RespondentUtil {
         if (CollectionUtils.isNotEmpty(respondentSumTypeItems)) {
             return respondentSumTypeItems;
         }
-        throw new RuntimeException(String.format(EXCEPTION_RESPONDENT_NOT_FOUND, respondentName));
+        throw new CaseUserRoleNotFoundException(String.format(EXCEPTION_RESPONDENT_NOT_FOUND, respondentName));
     }
 
     private static RespondentSumTypeItem getRespondentSumTypeByModificationType(
@@ -167,7 +170,7 @@ public final class RespondentUtil {
                                                           String modificationType,
                                                           UserInfo userInfo) {
         if (StringUtils.isBlank(idamId)) {
-            throw new RuntimeException(EXCEPTION_INVALID_IDAM_ID);
+            throw new CaseUserRoleValidationException(EXCEPTION_INVALID_IDAM_ID);
         }
         if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)
             && StringUtils.isNotBlank(respondentSumTypeItem.getValue().getIdamId())) {
@@ -175,7 +178,7 @@ public final class RespondentUtil {
                 log.info("User already assigned to case. UserId: {}, CaseId: {}", idamId, submissionReference);
                 return true;
             }
-            throw new RuntimeException(String.format(EXCEPTION_IDAM_ID_ALREADY_EXISTS, submissionReference));
+            throw new CaseUserRoleConflictException(String.format(EXCEPTION_IDAM_ID_ALREADY_EXISTS, submissionReference));
         }
         if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
             respondentSumTypeItem.getValue().setIdamId(idamId);
@@ -275,20 +278,20 @@ public final class RespondentUtil {
         List<RespondentSumTypeItem> respondentSumTypeItems, String respondentIndex, String caseId) {
         try {
             if (CollectionUtils.isEmpty(respondentSumTypeItems)) {
-                throw new ManageCaseRoleException(new Exception(
-                    String.format(EXCEPTION_NO_RESPONDENT_DEFINED, caseId)));
+                throw new CaseUserRoleNotFoundException(
+                    String.format(EXCEPTION_NO_RESPONDENT_DEFINED, caseId));
             }
             int index = Integer.parseInt(respondentIndex);
             RespondentSumTypeItem respondentSumTypeItem = respondentSumTypeItems.get(index);
             if (ObjectUtils.isEmpty(respondentSumTypeItem)
                 || ObjectUtils.isEmpty(respondentSumTypeItem.getValue())) {
-                throw new ManageCaseRoleException(new Exception(
-                    String.format(EXCEPTION_RESPONDENT_NOT_FOUND_WITH_INDEX, respondentIndex)));
+                throw new CaseUserRoleNotFoundException(
+                    String.format(EXCEPTION_RESPONDENT_NOT_FOUND_WITH_INDEX, respondentIndex));
             }
             return respondentSumTypeItem;
         } catch (NumberFormatException | IndexOutOfBoundsException e) {
-            throw new ManageCaseRoleException(
-                new Exception(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, respondentIndex, caseId)));
+            throw new CaseUserRoleValidationException(
+                String.format(EXCEPTION_INVALID_RESPONDENT_INDEX, respondentIndex, caseId));
         }
     }
 
@@ -328,12 +331,12 @@ public final class RespondentUtil {
                                                                     List<RepresentedTypeRItem> representativeCollection,
                                                                     String caseId) {
         if (ObjectUtils.isEmpty(respondentSumTypeItem)) {
-            throw new ManageCaseRoleException(new Exception(
-                String.format(EXCEPTION_RESPONDENT_NOT_EXISTS, caseId)));
+            throw new CaseUserRoleNotFoundException(
+                String.format(EXCEPTION_RESPONDENT_NOT_EXISTS, caseId));
         }
         if (CollectionUtils.isEmpty(representativeCollection)) {
-            throw new ManageCaseRoleException(new Exception(
-                String.format(EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND, caseId)));
+            throw new CaseUserRoleNotFoundException(
+                String.format(EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND, caseId));
         }
         for (RepresentedTypeRItem representativeType : representativeCollection) {
             if (ObjectUtils.isNotEmpty(representativeType)
@@ -344,8 +347,8 @@ public final class RespondentUtil {
                 return representativeType;
             }
         }
-        throw new ManageCaseRoleException(new Exception(
-            String.format(EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND, caseId)));
+        throw new CaseUserRoleNotFoundException(
+            String.format(EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND, caseId));
     }
 
     /**

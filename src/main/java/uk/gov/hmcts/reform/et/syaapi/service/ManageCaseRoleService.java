@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
 import uk.gov.hmcts.reform.et.syaapi.enums.CaseEvent;
+import uk.gov.hmcts.reform.et.syaapi.exception.CaseUserRoleConflictException;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.exception.ProfessionalUserException;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
@@ -241,6 +242,9 @@ public class ManageCaseRoleService {
             if (!ManageCaseRoleServiceUtil.isCaseRoleAssignmentExceptionForSameUser(e)) {
                 restCallToModifyUserCaseRolesOld(caseAssignmentUserRolesRequest, HttpMethod.DELETE);
             }
+            if (e instanceof ManageCaseRoleException) {
+                throw (ManageCaseRoleException) e;
+            }
             throw new ManageCaseRoleException(e);
         }
 
@@ -354,9 +358,17 @@ public class ManageCaseRoleService {
             caseDetailsList = updatedCases;
             alreadyAssigned = wasAlreadyAssigned;
         } catch (Exception e) {
-            // If unable to update existing respondent data with idamId, case details link statuses
+            // If unable to update existing data with idamId, case details link statuses
             // and response hub links statuses after assigning user case role, revokes assigned role!....
-            restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, HttpMethod.DELETE);
+            if (!(e instanceof ManageCaseRoleException)) {
+                restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, HttpMethod.DELETE);
+            } else if (!(e instanceof CaseUserRoleConflictException)) {
+                restCallToModifyUserCaseRoles(caseAssignmentUserRolesRequest, HttpMethod.DELETE);
+            }
+
+            if (e instanceof ManageCaseRoleException) {
+                throw (ManageCaseRoleException) e;
+            }
             throw new ManageCaseRoleException(e);
         }
 
