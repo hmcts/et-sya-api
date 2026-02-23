@@ -54,7 +54,8 @@ public final class ClaimantUtil {
                                             String modificationType) {
         Map<String, Object> existingCaseData = caseDetails.getData();
         if (MapUtils.isEmpty(existingCaseData)) {
-            throw new CaseUserRoleNotFoundException(String.format("Case details %s does not have case data", caseDetails.getId()));
+            throw new CaseUserRoleNotFoundException(String.format("Case details %s does not have case data",
+                                                                  caseDetails.getId()));
         }
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(existingCaseData);
 
@@ -66,7 +67,8 @@ public final class ClaimantUtil {
                              idamId, caseDetails.getId());
                     return true;
                 }
-                throw new CaseUserRoleConflictException(String.format(EXCEPTION_IDAM_ID_ALREADY_EXISTS, caseDetails.getId()));
+                throw new CaseUserRoleConflictException(String.format(EXCEPTION_IDAM_ID_ALREADY_EXISTS,
+                                                                      caseDetails.getId()));
             }
             caseData.setClaimantId(idamId);
         } else {

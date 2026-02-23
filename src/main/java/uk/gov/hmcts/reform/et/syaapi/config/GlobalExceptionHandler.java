@@ -130,7 +130,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * Intercepts any {@link CaseUserRoleConflictException} occurances within the api and builds an appropriate response.
+     * Intercepts any {@link CaseUserRoleConflictException} occurances within the api
+     *  and builds an appropriate response.
      * @param exception that just occured
      * @return {@link ErrorResponse} with the Conflict (409) response
      */
@@ -146,7 +147,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * Intercepts any {@link CaseUserRoleNotFoundException} occurances within the api and builds an appropriate response.
+     * Intercepts any {@link CaseUserRoleNotFoundException} occurances within the api
+     *  and builds an appropriate response.
      * @param exception that just occured
      * @return {@link ErrorResponse} with the Not Found (404) response
      */
@@ -162,12 +164,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * Intercepts any {@link CaseUserRoleValidationException} occurances within the api and builds an appropriate response.
+     * Intercepts any {@link CaseUserRoleValidationException} occurances within the api
+     *  and builds an appropriate response.
      * @param exception that just occured
      * @return {@link ErrorResponse} with the Bad Request (400) response
      */
     @ExceptionHandler(CaseUserRoleValidationException.class)
-    public ResponseEntity<ErrorResponse> handleCaseUserRoleValidationException(CaseUserRoleValidationException exception) {
+    public ResponseEntity<ErrorResponse> handleCaseUserRoleValidationException(
+        CaseUserRoleValidationException exception) {
         log.error(exception.getMessage(), exception);
         return ResponseEntity.status(BAD_REQUEST).body(
             ErrorResponse.builder()
@@ -178,7 +182,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * Intercepts any {@link ManageCaseRoleException} occurances within the api and builds an appropriate response.
+     * Intercepts any {@link ManageCaseRoleException} occurances within the api
+     *  and builds an appropriate response.
      * This acts as a fallback for any other ManageCaseRoleException that is not specifically handled.
      * @param exception that just occured
      * @return {@link ErrorResponse} with the Internal Server Error (500) response

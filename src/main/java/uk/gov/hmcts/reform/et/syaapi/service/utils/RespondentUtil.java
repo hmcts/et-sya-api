@@ -73,7 +73,8 @@ public final class RespondentUtil {
                                                                     UserInfo userInfo) {
         Map<String, Object> existingCaseData = caseDetails.getData();
         if (MapUtils.isEmpty(existingCaseData)) {
-            throw new CaseUserRoleNotFoundException(String.format(EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA, caseDetails.getId()));
+            throw new CaseUserRoleNotFoundException(String.format(EXCEPTION_CASE_DETAILS_NOT_HAVE_CASE_DATA,
+                                                                  caseDetails.getId()));
         }
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(existingCaseData);
         if (CollectionUtils.isNotEmpty(caseData.getRespondentCollection())) {
@@ -178,7 +179,8 @@ public final class RespondentUtil {
                 log.info("User already assigned to case. UserId: {}, CaseId: {}", idamId, submissionReference);
                 return true;
             }
-            throw new CaseUserRoleConflictException(String.format(EXCEPTION_IDAM_ID_ALREADY_EXISTS, submissionReference));
+            throw new CaseUserRoleConflictException(String.format(EXCEPTION_IDAM_ID_ALREADY_EXISTS,
+                                                                  submissionReference));
         }
         if (MODIFICATION_TYPE_ASSIGNMENT.equals(modificationType)) {
             respondentSumTypeItem.getValue().setIdamId(idamId);
