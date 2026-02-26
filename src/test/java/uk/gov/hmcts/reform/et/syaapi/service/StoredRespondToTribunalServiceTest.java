@@ -3,9 +3,11 @@ package uk.gov.hmcts.reform.et.syaapi.service;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.types.PseResponseType;
 import uk.gov.hmcts.et.common.model.ccd.types.SendNotificationType;
@@ -21,7 +23,6 @@ import uk.gov.hmcts.reform.et.syaapi.models.SubmitStoredRespondToTribunalRequest
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -30,7 +31,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.CLAIMANT_TITLE;
@@ -38,16 +38,23 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.NO;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.TEST_SERVICE_AUTH_TOKEN;
 import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.YES;
 
+@ExtendWith(MockitoExtension.class)
 class StoredRespondToTribunalServiceTest {
 
-    @MockBean
+    @Mock
     private CaseService caseService;
-    @MockBean
+    @Mock
+    private CaseDocumentService caseDocumentService;
+    @Mock
     private CaseDetailsConverter caseDetailsConverter;
+    @Mock
+    private NotificationService notificationService;
+    @Mock
+    private NotificationPseService notificationPseService;
+    @Mock
+    private FeatureToggleService featureToggleService;
     @InjectMocks
     private StoredRespondToTribunalService storedRespondToTribunalService;
-    @MockBean
-    private FeatureToggleService featureToggleService;
 
     private final TestData testData;
 
@@ -60,9 +67,8 @@ class StoredRespondToTribunalServiceTest {
     private static final String STORED_RESPOND_ID = "f47ac10b-58cc-4372-a567-0e02b2c3d479";
     private static final String TEST = "Test";
     private static final List<String> NOTIFICATION_SUBJECT_IS_ECC =
-        Arrays.asList("Employer Contract Claim", "Case management orders / requests");
-    private static final List<String> NOTIFICATION_SUBJECT_IS_NOT_ECC =
-        Arrays.asList("Case management orders / requests");
+        List.of("Employer Contract Claim", "Case management orders / requests");
+    private static final List<String> NOTIFICATION_SUBJECT_IS_NOT_ECC = List.of("Case management orders / requests");
     DateTimeFormatter formatter = ISO_LOCAL_DATE_TIME;
 
     StoredRespondToTribunalServiceTest() {
@@ -70,19 +76,7 @@ class StoredRespondToTribunalServiceTest {
     }
 
     @BeforeEach
-    void before() {
-        caseService = mock(CaseService.class);
-        caseDetailsConverter = mock(CaseDetailsConverter.class);
-        featureToggleService = mock(FeatureToggleService.class);
-
-        storedRespondToTribunalService = new StoredRespondToTribunalService(
-            caseService,
-            mock(CaseDocumentService.class),
-            caseDetailsConverter,
-            mock(NotificationService.class),
-            featureToggleService
-        );
-
+    void beforeEach() {
         when(caseService.startUpdate(
             any(),
             any(),
@@ -119,14 +113,15 @@ class StoredRespondToTribunalServiceTest {
         ArgumentCaptor<CaseData> argumentCaptor = ArgumentCaptor.forClass(CaseData.class);
         verify(caseDetailsConverter).caseDataContent(any(), argumentCaptor.capture());
 
-        SendNotificationType notification = argumentCaptor.getValue().getSendNotificationCollection().get(0).getValue();
+        SendNotificationType notification = argumentCaptor.getValue()
+            .getSendNotificationCollection().getFirst().getValue();
         int responseIndex = notification.getRespondStoredCollection().size() - 1;
         PseResponseType actual = notification.getRespondStoredCollection().get(responseIndex).getValue();
 
         assertThat(actual.getDate()).isEqualTo(TseApplicationHelper.formatCurrentDate(LocalDate.now()));
         assertThat(actual.getResponse()).isEqualTo("Response Text");
         assertThat(actual.getFrom()).isEqualTo(CLAIMANT_TITLE);
-        assertThat(notification.getRespondNotificationTypeCollection().get(0).getValue().getIsClaimantResponseDue())
+        assertThat(notification.getRespondNotificationTypeCollection().getFirst().getValue().getIsClaimantResponseDue())
             .isNull();
     }
 
@@ -179,7 +174,7 @@ class StoredRespondToTribunalServiceTest {
         ArgumentCaptor<CaseData> argumentCaptor = ArgumentCaptor.forClass(CaseData.class);
         verify(caseDetailsConverter).caseDataContent(any(), argumentCaptor.capture());
 
-        SendNotificationType actual = argumentCaptor.getValue().getSendNotificationCollection().get(0).getValue();
+        SendNotificationType actual = argumentCaptor.getValue().getSendNotificationCollection().getFirst().getValue();
         assertThat(actual.getRespondCollection()).hasSize(2);
 
         int responseIndex = actual.getRespondCollection().size() - 1;
@@ -216,7 +211,7 @@ class StoredRespondToTribunalServiceTest {
         ArgumentCaptor<CaseData> argumentCaptor = ArgumentCaptor.forClass(CaseData.class);
         verify(caseDetailsConverter).caseDataContent(any(), argumentCaptor.capture());
 
-        SendNotificationType actual = argumentCaptor.getValue().getSendNotificationCollection().get(0).getValue();
+        SendNotificationType actual = argumentCaptor.getValue().getSendNotificationCollection().getFirst().getValue();
         assertThat(actual.getRespondCollection()).hasSize(2);
 
         int responseIndex = actual.getRespondCollection().size() - 1;
@@ -276,7 +271,7 @@ class StoredRespondToTribunalServiceTest {
     private static void addNotificationSubject(
         StartEventResponse startEventResponse1, List<String> notificationSubject) {
         Object notifications = startEventResponse1.getCaseDetails().getData().get("sendNotificationCollection");
-        ((List<LinkedHashMap<String, LinkedHashMap<String, Object>>>) notifications).get(0).get("value")
+        ((List<LinkedHashMap<String, LinkedHashMap<String, Object>>>) notifications).getFirst().get("value")
             .put("sendNotificationSubject", notificationSubject);
     }
 }

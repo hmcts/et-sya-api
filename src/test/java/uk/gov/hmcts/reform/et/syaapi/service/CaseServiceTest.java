@@ -664,4 +664,133 @@ class CaseServiceTest {
         assertThrows(DocumentGenerationException.class, () -> caseService.uploadRespondentTseAsPdf(
             "", caseTestData.getCaseDetails(), caseTestData.getRespondentTse(), ""));
     }
+
+    @Test
+    void deleteDraftCase_shouldReturnCaseDetails_whenSuccessful() {
+        String authorization = "Bearer test-token";
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseId("12345")
+            .caseTypeId("TestType")
+            .postCode("")
+            .caseData(new HashMap<>())
+            .build();
+
+        CaseDetails startCaseDetails = CaseDetails.builder()
+            .id(12345L)
+            .caseTypeId("TestType")
+            .jurisdiction("ET")
+            .createdDate(null)
+            .lastModified(null)
+            .state(null)
+            .securityClassification(null)
+            .data(new HashMap<>())
+            .build();
+        StartEventResponse startEventResponse = StartEventResponse.builder()
+            .caseDetails(startCaseDetails)
+            .eventId("deleteDraft")
+            .token("token")
+            .build();
+
+        CaseDetails expectedCaseDetails = CaseDetails.builder()
+            .id(12345L)
+            .caseTypeId("TestType")
+            .jurisdiction("ET")
+            .createdDate(null)
+            .lastModified(null)
+            .state(null)
+            .securityClassification(null)
+            .data(new HashMap<>())
+            .build();
+
+        // Mock startUpdate and submitUpdate
+        CaseService caseServiceSpy = org.mockito.Mockito.spy(caseService);
+        org.mockito.Mockito.doReturn(startEventResponse)
+            .when(caseServiceSpy).startUpdate(
+                org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.any()
+            );
+        org.mockito.Mockito.doReturn(expectedCaseDetails)
+            .when(caseServiceSpy).submitUpdate(
+                org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.any(),
+                org.mockito.ArgumentMatchers.anyString()
+            );
+
+        CaseDetails result = caseServiceSpy.deleteDraftCase(authorization, caseRequest);
+        assertThat(result).isEqualTo(expectedCaseDetails);
+    }
+
+    @Test
+    void deleteDraftCase_shouldThrowException_whenStartUpdateFails() {
+        String authorization = "Bearer test-token";
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseId("12345")
+            .caseTypeId("TestType")
+            .postCode("")
+            .caseData(new HashMap<>())
+            .build();
+
+        CaseService caseServiceSpy = org.mockito.Mockito.spy(caseService);
+        org.mockito.Mockito.doThrow(new RuntimeException("startUpdate failed"))
+            .when(caseServiceSpy).startUpdate(
+                org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.any()
+            );
+
+        assertThrows(RuntimeException.class, () ->
+            caseServiceSpy.deleteDraftCase(authorization, caseRequest)
+        );
+    }
+
+    @Test
+    void deleteDraftCase_shouldThrowException_whenSubmitUpdateFails() {
+        String authorization = "Bearer test-token";
+        CaseRequest caseRequest = CaseRequest.builder()
+            .caseId("12345")
+            .caseTypeId("TestType")
+            .postCode("")
+            .caseData(new HashMap<>())
+            .build();
+
+        CaseDetails startCaseDetails = CaseDetails.builder()
+            .id(12345L)
+            .caseTypeId("TestType")
+            .jurisdiction("ET")
+            .createdDate(null)
+            .lastModified(null)
+            .state(null)
+            .securityClassification(null)
+            .data(new HashMap<>())
+            .build();
+        StartEventResponse startEventResponse = StartEventResponse.builder()
+            .caseDetails(startCaseDetails)
+            .eventId("deleteDraft")
+            .token("token")
+            .build();
+
+        CaseService caseServiceSpy = org.mockito.Mockito.spy(caseService);
+        org.mockito.Mockito.doReturn(startEventResponse)
+            .when(caseServiceSpy).startUpdate(
+                org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.any()
+            );
+        org.mockito.Mockito.doThrow(new RuntimeException("submitUpdate failed"))
+            .when(caseServiceSpy).submitUpdate(
+                org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.any(),
+                org.mockito.ArgumentMatchers.anyString()
+            );
+
+        assertThrows(RuntimeException.class, () ->
+            caseServiceSpy.deleteDraftCase(authorization, caseRequest)
+        );
+    }
 }
