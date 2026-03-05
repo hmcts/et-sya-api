@@ -17,12 +17,14 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.SyaApiApplication;
+import uk.gov.hmcts.reform.et.syaapi.config.AcasRoleAuthorizationAspect;
 import uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
 import uk.gov.hmcts.reform.et.syaapi.service.AcasCaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.AdminUserService;
 import uk.gov.hmcts.reform.et.syaapi.service.CaseDocumentService;
 import uk.gov.hmcts.reform.et.syaapi.service.FeatureToggleService;
+import uk.gov.hmcts.reform.et.syaapi.service.RoleValidationService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 
 import java.time.LocalDateTime;
@@ -32,6 +34,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -39,7 +42,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest({AcasController.class})
+@WebMvcTest({AcasController.class, AcasRoleAuthorizationAspect.class})
 @ContextConfiguration(classes = SyaApiApplication.class)
 @SuppressWarnings({"PMD.LinguisticNaming", "PMD.TooManyMethods"})
 class AcasControllerTest {
@@ -67,12 +70,17 @@ class AcasControllerTest {
     @MockBean
     private AdminUserService adminUserService;
 
+    @MockBean
+    private RoleValidationService roleValidationService;
+
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         when(acasCaseService.getCaseData(anyString(), any())).thenReturn(new ArrayList<>());
+        // Default: user has required roles
+        when(roleValidationService.hasAnyRole(anyString(), anyList())).thenReturn(true);
     }
 
     @Test
@@ -249,6 +257,56 @@ class AcasControllerTest {
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                             .param(CASE_ID_PARAM, "1234567890123456"))
             .andExpect(status().isOk());
+    }
+
+    @Test
+    void getLastModifiedCaseListWhenUserDoesNotHaveRequiredRole() throws Exception {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+        when(roleValidationService.hasAnyRole(anyString(), anyList())).thenReturn(false);
+        mockMvc.perform(get(GET_LAST_MODIFIED_CASE_LIST_URL)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                            .param("datetime", REQUEST_DATE_TIME_STRING))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getCaseDataWhenUserDoesNotHaveRequiredRole() throws Exception {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+        when(roleValidationService.hasAnyRole(anyString(), anyList())).thenReturn(false);
+        mockMvc.perform(get(GET_CASE_DATA_URL)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                            .param("caseIds", caseIds.toString()))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getAcasDocumentsWhenUserDoesNotHaveRequiredRole() throws Exception {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+        when(roleValidationService.hasAnyRole(anyString(), anyList())).thenReturn(false);
+        mockMvc.perform(get(GET_ACAS_DOCUMENTS_URL)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                            .param(CASE_ID_PARAM, "123"))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void downloadAcasDocumentsWhenUserDoesNotHaveRequiredRole() throws Exception {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+        when(roleValidationService.hasAnyRole(anyString(), anyList())).thenReturn(false);
+        mockMvc.perform(get(DOWNLOAD_ACAS_DOCUMENTS_URL)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                            .param("documentId", UUID.randomUUID().toString()))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void vetAndAcceptCaseWhenUserDoesNotHaveRequiredRole() throws Exception {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+        when(roleValidationService.hasAnyRole(anyString(), anyList())).thenReturn(false);
+        mockMvc.perform(post(VET_AND_ACCEPT_CASE)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                            .param(CASE_ID_PARAM, "1234567890123456"))
+            .andExpect(status().isForbidden());
     }
 
     private ResponseEntity<ByteArrayResource> getDocumentBinaryContent() {
