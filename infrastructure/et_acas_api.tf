@@ -15,16 +15,16 @@ module "api-et-acas-mgmt-product" {
 module "et-acas-mgmt-api" {
   source = "git@github.com:hmcts/cnp-module-api-mgmt-api?ref=master"
 
-  api_mgmt_name = local.api_mgmt_name
-  api_mgmt_rg   = local.api_mgmt_rg
-  revision      = "2"
-  service_url   = local.et_sya_api_url
-  product_id    = module.api-et-acas-mgmt-product.product_id
-  name          = join("-", [var.et_acas_product_name, "api"])
-  display_name  = "ET ACAS Api"
-  path          = "et-sya-api"
-  protocols     = ["http", "https"]
-  swagger_url   = var.acas_swagger_url
+  api_mgmt_name  = local.api_mgmt_name
+  api_mgmt_rg    = local.api_mgmt_rg
+  revision       = "2"
+  service_url    = local.et_sya_api_url
+  product_id     = module.api-et-acas-mgmt-product.product_id
+  name           = join("-", [var.et_acas_product_name, "api"])
+  display_name   = "ET ACAS Api"
+  path           = "et-sya-api"
+  protocols      = ["http", "https"]
+  swagger_url    = var.acas_swagger_url
   content_format = "openapi-link"
 
   providers = {
