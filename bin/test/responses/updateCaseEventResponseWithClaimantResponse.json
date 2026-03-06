@@ -1,0 +1,89 @@
+{
+  "event_id": "UPDATE_CASE_SUBMITTED",
+  "token": "123",
+  "case_details": {
+    "id": 1646225213651590,
+    "jurisdiction": "EMPLOYMENT",
+    "state": "ACCEPTED",
+    "case_type_id": "ET_EnglandWales",
+    "created_date": "2022-04-02T12:46:53.673626",
+    "last_modified": "2022-04-02T12:46:53.676743",
+    "locked_by_user_id": null,
+    "security_level": null,
+    "case_data": {
+      "caseType": "Single",
+      "caseSource": "Manually Created",
+      "claimantIndType": {
+        "claimant_first_names": "Michael",
+        "claimant_last_name": "Jackson"
+      },
+      "ethosCaseReference": "1646225213651590",
+      "claimantType": {
+        "claimant_email_address": "test@gmail.com"
+      },
+      "documentCollection": [],
+      "genericTseApplicationCollection": [
+        {
+          "id": "1xx567",
+          "value": {
+            "number": "1234",
+            "type": "Amend details",
+            "applicant": "Respondent",
+            "date": "2023-05-01",
+            "details": "Need to amend",
+            "copyToOtherPartyYesOrNo": "Yes",
+            "dueDate": "2023-05-08",
+            "responsesCount": 0,
+            "status": "Open",
+            "applicationState": "notStartedYet",
+            "respondCollection": [
+              {
+                "id": "777",
+                "value": {
+                }
+              }
+            ],
+            "adminDecision": [
+              {
+                "id": "777",
+                "value": {
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "sendNotificationCollection": [
+        {
+          "id": "777",
+          "value": {
+            "notificationState": "notViewedYet",
+            "respondCollection": [
+              {
+                "id": "777",
+                "value": {
+                  "from": "Claimant",
+                  "hasSupportingMaterial": "No",
+                  "response": "Some response text"
+                }
+              }
+            ],
+            "respondNotificationTypeCollection": [
+              {
+                "id": "777",
+                "value": {
+                  "state": "notViewedYet",
+                  "isClaimantResponseDue": "Yes"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "security_classification": "PUBLIC",
+    "callback_response_status": null,
+    "security_classification": null,
+    "callback_response_status": null
+  }
+}

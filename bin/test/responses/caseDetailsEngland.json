@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1646225213651598,
+    "jurisdiction": "EMPLOYMENT",
+    "state": "AWAITING_SUBMISSION_TO_HMCTS",
+    "case_type_id": "ET_EnglandWales",
+    "created_date": "2022-04-02T12:46:53.673626",
+    "last_modified": "2022-04-02T12:46:53.676743",
+    "locked_by_user_id": null,
+    "security_level": null,
+    "case_data": {
+      "caseType": "Single",
+      "caseSource": "Manually Created"
+    },
+    "security_classification": "PUBLIC",
+    "callback_response_status": null
+  }
+]
