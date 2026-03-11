@@ -1,7 +1,9 @@
 package uk.gov.hmcts.reform.et.syaapi.constants;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.RespondentUtil;
 
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.SECTION_STATUS_COMPLETED;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ResponseConstants.CASE_DETAILS_SECTION_CLAIMANT_APPLICATIONS;
@@ -43,6 +45,10 @@ public enum CaseDetailsLinks {
     }
 
     public static void setCaseDetailsLinkStatus(RespondentSumType respondent, String sectionId, String sectionStatus) {
+        // Initialize et3CaseDetailsLinksStatuses with defaults if null, following the pattern from RespondentUtil.java
+        if (ObjectUtils.isEmpty(respondent.getEt3CaseDetailsLinksStatuses())) {
+            respondent.setEt3CaseDetailsLinksStatuses(RespondentUtil.generateDefaultET3CaseDetailsLinksStatuses());
+        }
         switch (sectionId) {
             case CASE_DETAILS_SECTION_PERSONAL_DETAILS:
                 respondent.getEt3CaseDetailsLinksStatuses().setPersonalDetails(getSectionValue(

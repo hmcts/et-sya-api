@@ -578,4 +578,26 @@ public class CaseService {
 
         caseDetails.getData().put(DOCUMENT_COLLECTION, docList);
     }
+
+    public CaseDetails deleteDraftCase(String authorization, CaseRequest caseRequest) {
+        StartEventResponse startEventResponse = startUpdate(
+            authorization,
+            caseRequest.getCaseId(),
+            caseRequest.getCaseTypeId(),
+            CaseEvent.DELETE_DRAFT_CASE
+        );
+
+        CaseData caseData = EmployeeObjectMapper
+            .convertCaseDataMapToCaseDataObject(startEventResponse.getCaseDetails().getData());
+        ObjectMapper objectMapper = new ObjectMapper();
+        CaseDetailsConverter caseDetailsConverter = new CaseDetailsConverter(objectMapper);
+        CaseDataContent content = caseDetailsConverter.caseDataContent(startEventResponse, caseData);
+
+        return submitUpdate(
+            authorization,
+            caseRequest.getCaseId(),
+            content,
+            caseRequest.getCaseTypeId()
+        );
+    }
 }

@@ -200,7 +200,8 @@
         "extensionGranted": null,
         "extensionDate": null,
         "et3Vetting": null,
-        "et3VettingCompleted": null
+        "et3VettingCompleted": null,
+        "idamId": "2b7c9e4d-1a2f-4b5c-8d9e-2345678901bc"
       }
     },
     {
@@ -253,7 +254,8 @@
         "extensionGranted": null,
         "extensionDate": null,
         "et3Vetting": null,
-        "et3VettingCompleted": null
+        "et3VettingCompleted": null,
+        "idamId": "3e4f1a2b-9c8d-4e7f-1a2b-3456789012cd"
       }
     },
     {
@@ -306,7 +308,8 @@
         "extensionGranted": null,
         "extensionDate": null,
         "et3Vetting": null,
-        "et3VettingCompleted": null
+        "et3VettingCompleted": null,
+        "idamId": "4a1b3c5d-2f6e-4a9b-8c7d-4567890123de"
       }
     },
     {
@@ -359,7 +362,61 @@
         "extensionGranted": null,
         "extensionDate": null,
         "et3Vetting": null,
-        "et3VettingCompleted": null
+        "et3VettingCompleted": null,
+        "idamId": "5d2f4b6c-3e7a-4c1d-9b8e-5678901234ef"
+      }
+    },
+    {
+      "id": "6",
+      "value": {
+        "response_status": null,
+        "responseToClaim": null,
+        "rejection_reason": null,
+        "rejection_reason_other": null,
+        "responseOutOfTime": null,
+        "responseNotOnPrescribedForm": null,
+        "responseRequiredInfoAbsent": null,
+        "responseNotes": null,
+        "response_referred_to_judge": null,
+        "response_returned_from_judge": null,
+        "respondent_name": "Jeniffer Lopez",
+        "respondent_ACAS_question": "No",
+        "respondent_ACAS_no": "Employer already in touch",
+        "respondent_address": {
+          "AddressLine1": "99 Furrow way",
+          "AddressLine2": "99 Furrow yolu",
+          "AddressLine3": null,
+          "PostTown": "Las Vegas",
+          "County": "Central Gambling",
+          "PostCode": "LV1 1AA",
+          "Country": "I LOVE UNITED STATES OF AMERICA"
+        },
+        "respondent_phone1": "05239863657",
+        "respondent_phone2": "08915826548",
+        "respondent_email": "",
+        "respondent_contact_preference": "Post",
+        "responseStruckOut": null,
+        "responseStruckOutDate": null,
+        "responseStruckOutChairman": null,
+        "responseStruckOutReason": null,
+        "responseRespondentAddress": null,
+        "responseRespondentPhone1": null,
+        "responseRespondentPhone2": null,
+        "responseRespondentEmail": null,
+        "responseRespondentContactPreference": null,
+        "responseReceived": null,
+        "responseReceivedDate": null,
+        "responseRespondentNameQuestion": null,
+        "responseRespondentName": null,
+        "responseContinue": null,
+        "responseCounterClaim": null,
+        "responseReference": null,
+        "extensionRequested": null,
+        "extensionGranted": null,
+        "extensionDate": null,
+        "et3Vetting": null,
+        "et3VettingCompleted": null,
+        "idamId": "notifications-test-idam-id"
       }
     }
   ],

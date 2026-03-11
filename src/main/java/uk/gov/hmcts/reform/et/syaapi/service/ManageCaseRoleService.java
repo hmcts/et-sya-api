@@ -311,7 +311,8 @@ public class ManageCaseRoleService {
                         caseDetails,
                         modifyCaseUserRole.getRespondentName(),
                         modifyCaseUserRole.getUserId(),
-                        modificationType
+                        modificationType,
+                        idamClient.getUserInfo(authorisation)
                     );
                     wasAlreadyAssigned = wasAlreadyAssigned || isAlreadyAssigned;
                     updatedCases.add(
@@ -387,7 +388,8 @@ public class ManageCaseRoleService {
                     caseDetails,
                     modifyCaseUserRole.getRespondentName(),
                     modifyCaseUserRole.getUserId(),
-                    modificationType
+                    modificationType,
+                    idamClient.getUserInfo(authorisation)
                 );
                 caseDetailsList.add(
                     et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(authorisation,
@@ -873,7 +875,8 @@ public class ManageCaseRoleService {
                     caseDetails,
                     modifyCaseUserRole.getRespondentName(),
                     modifyCaseUserRole.getUserId(),
-                    modificationType
+                    modificationType,
+                    idamClient.getUserInfo(authorisation)
                 );
                 caseDetailsList.add(
                     et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(authorisation,
