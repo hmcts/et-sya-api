@@ -5,7 +5,7 @@ this.dynatraceMetricTag = 'namespace:et'
 this.dynatraceSyntheticTestPreview = "HTTP_CHECK-467146A25406C026"
 this.dynatraceDashboardIdPreview = "f44ff1f7-e13a-4a6a-95b9-4e3ab44e6587"
 this.dynatraceDashboardURLPreview = "https://yrk32651.live.dynatrace.com/#dashboard;id=f44ff1f7-e13a-4a6a-95b9-4e3ab44e6587;applyDashboardDefaults=true"
-this.dynatraceEntitySelectorPreview = 'type(service),tag(\\"[Kubernetes]namespace:et\\"),tag(\\"Environment:PREVIEW\\"),,entityName.equals(\\"ManageCaseController (PREVIEW)\\")' //SERVICE-85A65FBFF3C9F37E //SERVICE-94E67F588E12D9D6
+this.dynatraceEntitySelectorPreview = 'type(service),tag(\\"[Kubernetes]namespace:et\\"),tag(\\"Environment:PREVIEW\\"),entityName.equals(\\"ManageCaseController (PREVIEW)\\")' //SERVICE-85A65FBFF3C9F37E //SERVICE-94E67F588E12D9D6
 //this.dynatraceEntitySelectorPreview = 'type(service),tag(\\"[Kubernetes]namespace:et\\"),tag(\\"Environment:PREVIEW\\"),entityId(\\"SERVICE-A1223BBF43F01226\\")'
 
 //AAT Config
