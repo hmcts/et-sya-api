@@ -1,8 +1,7 @@
 #!groovy
 import uk.gov.hmcts.contino.AppPipelineDsl
 
-//@Library("Infrastructure")
-@Library("Infrastructure@performance-stages-update") _   //add-perftest-vars  //test-performance-repo 
+@Library("Infrastructure")
 
 def type = "java"
 def product = "et"
