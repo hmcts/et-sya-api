@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.et.syaapi.annotation.ApiResponseGroup;
+import uk.gov.hmcts.reform.et.syaapi.annotation.RequiresAcasRole;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseDocumentAcasResponse;
 import uk.gov.hmcts.reform.et.syaapi.service.AcasCaseService;
 import uk.gov.hmcts.reform.et.syaapi.service.AdminUserService;
@@ -51,6 +52,7 @@ public class AcasController {
     @GetMapping(value = "/getLastModifiedCaseList")
     @Operation(summary = "Return a list of CCD case IDs from a provided date")
     @ApiResponseGroup
+    @RequiresAcasRole
     public ResponseEntity<Object> getLastModifiedCaseList(
         @RequestHeader(value = HttpHeaders.AUTHORIZATION) String userToken,
         @RequestParam(name = "datetime")
@@ -68,6 +70,7 @@ public class AcasController {
     @GetMapping(value = "/getCaseData")
     @Operation(summary = "Provide a JSON format of the case data for a specific CCD case")
     @ApiResponseGroup
+    @RequiresAcasRole
     public ResponseEntity<Object> getCaseData(
         @RequestHeader(value = HttpHeaders.AUTHORIZATION) String authorisation,
         @RequestParam(name = "caseIds") List<String> caseIds) {
@@ -84,6 +87,7 @@ public class AcasController {
     @GetMapping(value = "/getAcasDocuments")
     @Operation(summary = "Return a list of documents on a case")
     @ApiResponseGroup
+    @RequiresAcasRole
     public ResponseEntity<Object> getAcasDocuments(
         @RequestHeader(value = HttpHeaders.AUTHORIZATION) String authorisation,
         @RequestParam(name = "caseId") String caseId) {
@@ -102,6 +106,7 @@ public class AcasController {
     @GetMapping("/downloadAcasDocuments")
     @Operation(summary = "Get a document from CDAM in binary format")
     @ApiResponseGroup
+    @RequiresAcasRole
     public ResponseEntity<ByteArrayResource> getDocumentBinaryContent(
         @RequestParam(name = "documentId") final UUID documentId,
         @RequestHeader(AUTHORIZATION) String authToken) {
@@ -120,6 +125,7 @@ public class AcasController {
     @PostMapping("/vetAndAcceptCase")
     @Operation(summary = "Endpoint to vet and accept a case")
     @ApiResponseGroup
+    @RequiresAcasRole
     public ResponseEntity<Object> vetAndAcceptCase(
         @RequestParam(name = "caseId") final String caseId,
         @RequestHeader(AUTHORIZATION) String authToken) {
