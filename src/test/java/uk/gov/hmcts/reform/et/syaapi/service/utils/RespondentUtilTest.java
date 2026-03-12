@@ -18,7 +18,9 @@ import uk.gov.hmcts.et.common.model.ccd.types.Organisation;
 import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeR;
 import uk.gov.hmcts.et.common.model.ccd.types.RespondentSumType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
+import uk.gov.hmcts.reform.et.syaapi.exception.CaseUserRoleConflictException;
+import uk.gov.hmcts.reform.et.syaapi.exception.CaseUserRoleNotFoundException;
+import uk.gov.hmcts.reform.et.syaapi.exception.CaseUserRoleValidationException;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -39,15 +41,15 @@ import static uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants.CASE_ID;
 class RespondentUtilTest {
 
     private static final String EXCEPTION_INVALID_RESPONDENT_INDEX =
-        "java.lang.Exception: Respondent index, %s is not valid for the case with id, %s";
+        "Respondent index, %s is not valid for the case with id, %s";
     private static final String STRING_ZERO = "0";
     private static final String STRING_NINE = "9";
     private static final String STRING_MINUS_ONE = "-1";
     private static final String INVALID_INTEGER = "abc";
     private static final String EXCEPTION_INVALID_RESPONDENT_INDEX_WITH_CASE_ID =
-        "java.lang.Exception: Respondent does not exist for case: %s";
+        "Respondent does not exist for case: %s";
     private static final String EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND =
-        "java.lang.Exception: Respondent representative not found for case: %s";
+        "Respondent representative not found for case: %s";
     private static final String RESPONDENT_NAME = "Respondent Ldt";
 
     private static final Organisation mockOrganisation = Organisation.builder()
@@ -67,7 +69,7 @@ class RespondentUtilTest {
             .sub("test@email.com")
             .build();
         if (MapUtils.isEmpty(caseDetails.getData())) {
-            assertThat(assertThrows(RuntimeException.class, () ->
+            assertThat(assertThrows(CaseUserRoleNotFoundException.class, () ->
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
@@ -122,7 +124,7 @@ class RespondentUtilTest {
                                                             String modificationType) {
         UserInfo userInfo = new CaseTestData().getUserInfo();
         if (CollectionUtils.isEmpty(respondentCollection)) {
-            assertThat(assertThrows(RuntimeException.class, () ->
+            assertThat(assertThrows(CaseUserRoleNotFoundException.class, () ->
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
@@ -136,7 +138,7 @@ class RespondentUtilTest {
             || ObjectUtils.isEmpty(((LinkedHashMap<?, ?>) respondentCollection.getFirst())
                                        .get(TestConstants.TEST_HASHMAP_RESPONDENT_SUM_TYPE_ITEM_VALUE_KEY))
             || StringUtils.isBlank(respondentName)) {
-            assertThat(assertThrows(RuntimeException.class, () ->
+            assertThat(assertThrows(CaseUserRoleNotFoundException.class, () ->
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
@@ -155,7 +157,7 @@ class RespondentUtilTest {
                                                       String modificationType) {
         UserInfo userInfo = new CaseTestData().getUserInfo();
         if (!checkRespondentName(caseData.getRespondentCollection().getFirst().getValue(), respondentName)) {
-            assertThat(assertThrows(RuntimeException.class, () ->
+            assertThat(assertThrows(CaseUserRoleNotFoundException.class, () ->
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
@@ -183,7 +185,7 @@ class RespondentUtilTest {
                                               boolean alreadyAssigned) {
         UserInfo userInfo = new CaseTestData().getUserInfo();
         if (StringUtils.isBlank(idamId)) {
-            assertThat(assertThrows(RuntimeException.class, () ->
+            assertThat(assertThrows(CaseUserRoleValidationException.class, () ->
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
@@ -197,7 +199,7 @@ class RespondentUtilTest {
         if (!alreadyAssigned
             && StringUtils.isNotBlank(caseData.getRespondentCollection().getFirst().getValue().getIdamId())
             && !idamId.equals(caseData.getRespondentCollection().getFirst().getValue().getIdamId())) {
-            assertThat(assertThrows(RuntimeException.class, () ->
+            assertThat(assertThrows(CaseUserRoleConflictException.class, () ->
                 setRespondentIdamIdAndDefaultLinkStatuses(caseDetails,
                                                           respondentName,
                                                           idamId,
@@ -350,7 +352,11 @@ class RespondentUtilTest {
                          Arguments.of(caseDetailsWithCorrectRespondentName,
                                       TestConstants.TEST_RESPONDENT_NAME,
                                       TestConstants.TEST_RESPONDENT_IDAM_ID_1,
-                                      TestConstants.TEST_MODIFICATION_TYPE_REVOKE));
+                                      TestConstants.TEST_MODIFICATION_TYPE_REVOKE),
+                         Arguments.of(caseDetailsWithCorrectRespondentName,
+                                      TestConstants.TEST_RESPONDENT_NAME,
+                                      TestConstants.TEST_RESPONDENT_IDAM_ID_1,
+                                      "InvalidType"));
 
     }
 
@@ -394,7 +400,7 @@ class RespondentUtilTest {
     void theFindRespondentSumTypeItemByIndex() {
         // Test no respondents
         assertThrows(
-            ManageCaseRoleException.class, () ->
+            CaseUserRoleNotFoundException.class, () ->
                 RespondentUtil.findRespondentSumTypeItemByIndex(null,
                                                                 STRING_MINUS_ONE,
                                                                 CASE_ID));
@@ -420,14 +426,14 @@ class RespondentUtilTest {
         assertThat(validType1).isEqualTo(result1.getValue());
 
         // Test invalid: non-numeric input
-        ManageCaseRoleException ex1 = assertThrows(ManageCaseRoleException.class, () ->
+        CaseUserRoleValidationException ex1 = assertThrows(CaseUserRoleValidationException.class, () ->
             RespondentUtil.findRespondentSumTypeItemByIndex(validList, INVALID_INTEGER, CASE_ID));
         assertThat(ex1.getMessage()).contains(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX,
                                                             INVALID_INTEGER,
                                                             CASE_ID));
 
         // Test invalid: index out of bounds
-        ManageCaseRoleException ex2 = assertThrows(ManageCaseRoleException.class, () ->
+        CaseUserRoleValidationException ex2 = assertThrows(CaseUserRoleValidationException.class, () ->
             RespondentUtil.findRespondentSumTypeItemByIndex(validList, STRING_NINE, CASE_ID));
         assertThat(ex2.getMessage()).contains(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX,
                                                             STRING_NINE,
@@ -435,13 +441,13 @@ class RespondentUtilTest {
 
         // Test invalid: null list
         List<RespondentSumTypeItem> emptyList = new ArrayList<>();
-        assertThrows(ManageCaseRoleException.class, () ->
+        assertThrows(CaseUserRoleNotFoundException.class, () ->
             RespondentUtil.findRespondentSumTypeItemByIndex(emptyList, STRING_MINUS_ONE, CASE_ID));
 
         // Test invalid: null item in list
         List<RespondentSumTypeItem> listWithNull = new ArrayList<>();
         listWithNull.add(null);
-        ManageCaseRoleException ex4 = assertThrows(ManageCaseRoleException.class, () ->
+        CaseUserRoleNotFoundException ex4 = assertThrows(CaseUserRoleNotFoundException.class, () ->
             RespondentUtil.findRespondentSumTypeItemByIndex(listWithNull, STRING_ZERO, CASE_ID));
         assertThat(ex4.getMessage()).contains(String.format(
             EXCEPTION_RESPONDENT_NOT_FOUND_WITH_INDEX,
@@ -452,7 +458,7 @@ class RespondentUtilTest {
         RespondentSumTypeItem itemWithNullValue = new RespondentSumTypeItem();
         itemWithNullValue.setValue(null);
         listWithNullValue.add(itemWithNullValue);
-        ManageCaseRoleException ex5 = assertThrows(ManageCaseRoleException.class, () ->
+        CaseUserRoleValidationException ex5 = assertThrows(CaseUserRoleValidationException.class, () ->
             RespondentUtil.findRespondentSumTypeItemByIndex(listWithNullValue, STRING_MINUS_ONE, CASE_ID));
         assertThat(ex5.getMessage()).contains(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX,
                                                             STRING_MINUS_ONE,
@@ -491,20 +497,20 @@ class RespondentUtilTest {
         assertThat(matchingRep).isEqualTo(result);
 
         // Test null respondent
-        ManageCaseRoleException ex1 = assertThrows(ManageCaseRoleException.class, () ->
+        CaseUserRoleNotFoundException ex1 = assertThrows(CaseUserRoleNotFoundException.class, () ->
             RespondentUtil.findRespondentRepresentative(null, repListWithMatch, caseId));
         assertThat(ex1.getMessage()).isEqualTo(String.format(EXCEPTION_INVALID_RESPONDENT_INDEX_WITH_CASE_ID, caseId));
 
         // Test empty representative list
         List<RepresentedTypeRItem> emptyRepresentativeList = new ArrayList<>();
-        ManageCaseRoleException ex2 = assertThrows(ManageCaseRoleException.class, () ->
+        CaseUserRoleNotFoundException ex2 = assertThrows(CaseUserRoleNotFoundException.class, () ->
             RespondentUtil.findRespondentRepresentative(respondent, emptyRepresentativeList, caseId));
         assertThat(ex2.getMessage()).isEqualTo(String.format(EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND, caseId));
 
         // Test no match
         List<RepresentedTypeRItem> noMatchList = new ArrayList<>();
         noMatchList.add(nonMatchingRep);
-        ManageCaseRoleException ex3 = assertThrows(ManageCaseRoleException.class, () ->
+        CaseUserRoleNotFoundException ex3 = assertThrows(CaseUserRoleNotFoundException.class, () ->
             RespondentUtil.findRespondentRepresentative(respondent, noMatchList, caseId));
         assertThat(ex3.getMessage()).isEqualTo(String.format(EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND, caseId));
 
@@ -513,7 +519,7 @@ class RespondentUtilTest {
         nullValueRep.setValue(null);
         List<RepresentedTypeRItem> nullValueList = new ArrayList<>();
         nullValueList.add(nullValueRep);
-        ManageCaseRoleException ex4 = assertThrows(ManageCaseRoleException.class, () ->
+        CaseUserRoleNotFoundException ex4 = assertThrows(CaseUserRoleNotFoundException.class, () ->
             RespondentUtil.findRespondentRepresentative(respondent, nullValueList, caseId));
         assertThat(ex4.getMessage()).isEqualTo(String.format(EXCEPTION_RESPONDENT_REPRESENTATIVE_NOT_FOUND, caseId));
     }

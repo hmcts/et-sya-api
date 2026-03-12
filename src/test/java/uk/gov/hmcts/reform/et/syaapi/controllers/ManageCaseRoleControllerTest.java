@@ -20,6 +20,9 @@ import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRole;
 import uk.gov.hmcts.ecm.common.model.ccd.ModifyCaseUserRolesRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.SyaApiApplication;
+import uk.gov.hmcts.reform.et.syaapi.exception.CaseUserRoleConflictException;
+import uk.gov.hmcts.reform.et.syaapi.exception.CaseUserRoleNotFoundException;
+import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseAssignmentResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
@@ -55,6 +58,7 @@ class ManageCaseRoleControllerTest {
     private static final String CLAIMANT_FIRST_NAMES = "Claimant First Names";
     private static final String CLAIMANT_LAST_NAME = "Claimant Last Name";
     private static final String STRING_ZERO = "0";
+    private static final String APPLICATION_NAME_VALUE = "et-sya-frontend";
 
     @Autowired
     private WebApplicationContext webApplicationContext;
@@ -135,8 +139,9 @@ class ManageCaseRoleControllerTest {
             .respondentName(RESPONDENT_NAME)
             .claimantFirstNames(CLAIMANT_FIRST_NAMES)
             .claimantLastName(CLAIMANT_LAST_NAME)
+            .applicationName(APPLICATION_NAME_VALUE)
             .build();
-        when(manageCaseRoleService.findCaseForRoleModification(findCaseForRoleModificationRequest, AUTH_TOKEN))
+        when(manageCaseRoleService.findCaseForRoleModification(any(), any()))
             .thenReturn(CaseDetails.builder()
                             .id(Long.parseLong(CASE_ID))
                             .caseTypeId(ENGLAND_CASE_TYPE)
@@ -172,5 +177,81 @@ class ManageCaseRoleControllerTest {
                                  + "?caseSubmissionReference=" + CASE_ID + "&respondentIndex=" + STRING_ZERO)
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN))
             .andExpect(status().isOk());
+    }
+
+    @Test
+    @SneakyThrows
+    void modifyUserRoles_CaseUserRoleConflictException() {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+        ModifyCaseUserRolesRequest modifyCaseUserRolesRequest = ModifyCaseUserRolesRequest.builder()
+            .modifyCaseUserRoles(List.of(ModifyCaseUserRole.builder().build()))
+            .build();
+
+        when(manageCaseRoleService.modifyUserCaseRoles(any(), any(), any()))
+            .thenThrow(new CaseUserRoleConflictException("Conflict"));
+
+        mockMvc.perform(post(POST_MODIFY_CASE_USER_ROLE_URL)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                            .param(MODIFICATION_TYPE_PARAMETER_NAME, MODIFICATION_TYPE_PARAMETER_VALUE_REVOKE)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(ResourceLoader.toJson(modifyCaseUserRolesRequest)))
+            .andExpect(status().isConflict());
+    }
+
+    @Test
+    @SneakyThrows
+    void modifyUserRoles_CaseUserRoleNotFoundException() {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+        ModifyCaseUserRolesRequest modifyCaseUserRolesRequest = ModifyCaseUserRolesRequest.builder()
+            .modifyCaseUserRoles(List.of(ModifyCaseUserRole.builder().build()))
+            .build();
+
+        when(manageCaseRoleService.modifyUserCaseRoles(any(), any(), any()))
+            .thenThrow(new CaseUserRoleNotFoundException("Not Found"));
+
+        mockMvc.perform(post(POST_MODIFY_CASE_USER_ROLE_URL)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                            .param(MODIFICATION_TYPE_PARAMETER_NAME, MODIFICATION_TYPE_PARAMETER_VALUE_REVOKE)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(ResourceLoader.toJson(modifyCaseUserRolesRequest)))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @SneakyThrows
+    void modifyUserRoles_GenericManageCaseRoleException() {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+        ModifyCaseUserRolesRequest modifyCaseUserRolesRequest = ModifyCaseUserRolesRequest.builder()
+            .modifyCaseUserRoles(List.of(ModifyCaseUserRole.builder().build()))
+            .build();
+
+        when(manageCaseRoleService.modifyUserCaseRoles(any(), any(), any()))
+            .thenThrow(new ManageCaseRoleException(new Exception("Internal Error")));
+
+        mockMvc.perform(post(POST_MODIFY_CASE_USER_ROLE_URL)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                            .param(MODIFICATION_TYPE_PARAMETER_NAME, MODIFICATION_TYPE_PARAMETER_VALUE_REVOKE)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(ResourceLoader.toJson(modifyCaseUserRolesRequest)))
+            .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @SneakyThrows
+    void modifyUserRoles_RuntimeException_Wrapped() {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+        ModifyCaseUserRolesRequest modifyCaseUserRolesRequest = ModifyCaseUserRolesRequest.builder()
+            .modifyCaseUserRoles(List.of(ModifyCaseUserRole.builder().build()))
+            .build();
+
+        when(manageCaseRoleService.modifyUserCaseRoles(any(), any(), any()))
+            .thenThrow(new RuntimeException("Runtime Error"));
+
+        mockMvc.perform(post(POST_MODIFY_CASE_USER_ROLE_URL)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                            .param(MODIFICATION_TYPE_PARAMETER_NAME, MODIFICATION_TYPE_PARAMETER_VALUE_REVOKE)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(ResourceLoader.toJson(modifyCaseUserRolesRequest)))
+            .andExpect(status().isInternalServerError());
     }
 }

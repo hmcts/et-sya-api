@@ -75,6 +75,9 @@ public class ManageCaseRoleController {
                                                                                         modifyCaseUserRolesRequest),
                 modificationType);
         } catch (Exception e) {
+            if (e instanceof ManageCaseRoleException manageCaseRoleException) {
+                throw manageCaseRoleException;
+            }
             throw new ManageCaseRoleException(e);
         }
         return ok(response);
@@ -90,6 +93,9 @@ public class ManageCaseRoleController {
         try {
             caseDetails = manageCaseRoleService.revokeClaimantSolicitorRole(authorisation, caseSubmissionReference);
         } catch (Exception e) {
+            if (e instanceof ManageCaseRoleException manageCaseRoleException) {
+                throw manageCaseRoleException;
+            }
             throw new ManageCaseRoleException(e);
         }
         return ok(caseDetails);
@@ -108,6 +114,9 @@ public class ManageCaseRoleController {
                                                                               caseSubmissionReference,
                                                                               respondentIndex);
         } catch (Exception e) {
+            if (e instanceof ManageCaseRoleException manageCaseRoleException) {
+                throw manageCaseRoleException;
+            }
             throw new ManageCaseRoleException(e);
         }
         return ok(caseDetails);
