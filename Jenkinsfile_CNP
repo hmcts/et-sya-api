@@ -31,7 +31,7 @@ withPipeline(type, product, component) {
   enablePerformanceTestStages(timeout: 10)
   enableSlackNotifications('#et-builds')
 
-  Enable Gatling test stages
+  //Enable Gatling test stages
   enableGatlingLoadTests([
     repo: 'https://github.com/hmcts/performance-testing.git',
     branch: 'add-et-tests', //*SHould be master 
