@@ -1,0 +1,15 @@
+{
+  "case_data": {
+    "claimantTse": {
+      "numberOfSelectedLabels": "test",
+      "contactApplicationText": "ytest",
+      "claim_description_document" : {
+        "document_binary_url" : "https://document.binary.url",
+        "document_filename" : "filename",
+        "document_url" : "https://document.url"
+      }
+    },
+    "resTseCopyToOtherPartyYesOrNo": "Yes",
+    "resTseCopyToOtherPartyTextArea": "Test"
+  }
+}

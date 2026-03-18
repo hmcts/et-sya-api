@@ -1,0 +1,30 @@
+[
+  {
+    "id":  "1",
+    "value": {
+      "typeOfDocument": "ET1-CasePdf",
+      "uploadedDocument": {
+        "document_binary_url": "https://document.binary.url",
+        "document_filename": "Michael_Jackson_123456789.pdf",
+        "document_url": "https://document.secure.url"
+      },
+      "ownerDocument": "",
+      "creationDate": "",
+      "shortDescription": "Case Document Michael Jackson pdf"
+    }
+  },
+  {
+    "id":  "2",
+    "value": {
+      "typeOfDocument": "ET1-ACASCertificate",
+      "uploadedDocument": {
+        "document_binary_url": "https://acas_document.binary.url",
+        "document_filename": "Michael_Jackson_R123456_12_34.pdf",
+        "document_url": "https://acas_document.secure.url"
+      },
+      "ownerDocument": "",
+      "creationDate": "",
+      "shortDescription": "ACAS Certificate Michael Jackson pdf"
+    }
+  }
+]
