@@ -1,7 +1,7 @@
 #!groovy
 import uk.gov.hmcts.contino.AppPipelineDsl
 
-@Library("Infrastructure")
+//@Library("Infrastructure")
 @Library("Infrastructure@performance-stages-update")
 
 def type = "java"
