@@ -40,7 +40,6 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
-import uk.gov.hmcts.reform.et.syaapi.exception.CaseUserRoleConflictException;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
@@ -66,7 +65,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.EMPLOYMENT;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CCD_API_POST_METHOD_NAME;
@@ -157,11 +155,9 @@ class ManageCaseRoleServiceTest {
                                                           ccdApi,
                                                           et3Service,
                                                           caseService,
-                                                          caseDetailsConverter,
-                                                          featureToggleService);
+                                                          caseDetailsConverter);
         // Mock feature flag to be enabled for these tests (new behavior)
         // Using lenient() because not all tests call modifyUserCaseRoles
-        lenient().when(featureToggleService.isEt3SelfAssignmentEnabled()).thenReturn(true);
         userInfo = new CaseTestData().getUserInfo();
         caseAssignmentUserRole1 = CaseAssignmentUserRole.builder()
             .userId(DUMMY_USER_ID)
@@ -1357,111 +1353,10 @@ class ManageCaseRoleServiceTest {
 
     @Test
     @SneakyThrows
-    void shouldUseOldBehaviorWhenFeatureFlagIsOff() {
-        // Reset the feature toggle to return false (old behavior)
-        when(featureToggleService.isEt3SelfAssignmentEnabled()).thenReturn(false);
-
-        CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
-        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(expectedCaseDetails.getData());
-        caseData.getRespondentCollection().getFirst().getValue().setRespondentName(RESPONDENT_NAME);
-        expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
-
-        when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(et3Service.findCaseBySubmissionReference(CASE_ID)).thenReturn(expectedCaseDetails);
-        when(et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(
-            DUMMY_AUTHORISATION_TOKEN,
-            expectedCaseDetails,
-            UPDATE_ET3_FORM
-        )).thenReturn(expectedCaseDetails);
-
-        when(restTemplate.exchange(ArgumentMatchers.anyString(),
-                                   eq(HttpMethod.POST),
-                                   any(),
-                                   eq(CaseAssignmentUserRolesResponse.class)))
-            .thenReturn(new ResponseEntity<>(HttpStatus.OK));
-
-        ModifyCaseUserRole modifyCaseUserRole = ModifyCaseUserRole.builder()
-            .userId(USER_ID)
-            .caseDataId(CASE_ID)
-            .caseRole(CASE_ROLE_DEFENDANT)
-            .caseTypeId(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES)
-            .respondentName(RESPONDENT_NAME)
-            .build();
-
-        ModifyCaseUserRolesRequest request = ModifyCaseUserRolesRequest.builder()
-            .modifyCaseUserRoles(List.of(modifyCaseUserRole))
-            .build();
-
-        CaseAssignmentResponse response = manageCaseRoleService.modifyUserCaseRoles(
-            DUMMY_AUTHORISATION_TOKEN,
-            request,
-            MODIFICATION_TYPE_ASSIGNMENT
-        );
-
-        // Old behavior: should return ASSIGNED status (no ALREADY_ASSIGNED or PROFESSIONAL_USER)
-        assertThat(response).isNotNull();
-        assertThat(response.getStatus()).isEqualTo(CaseAssignmentResponse.AssignmentStatus.ASSIGNED);
-        assertThat(response.getCaseDetails()).isNotNull();
-    }
-
-    @Test
-    @SneakyThrows
-    void shouldUseOldBehaviorForRevokeWhenFeatureFlagIsOff() {
-        // Reset the feature toggle to return false (old behavior)
-        when(featureToggleService.isEt3SelfAssignmentEnabled()).thenReturn(false);
-
-        CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
-        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(expectedCaseDetails.getData());
-        caseData.getRespondentCollection().getFirst().getValue().setRespondentName(RESPONDENT_NAME);
-        caseData.getRespondentCollection().getFirst().getValue().setIdamId(USER_ID);
-        expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
-
-        when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
-        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(et3Service.findCaseBySubmissionReference(CASE_ID)).thenReturn(expectedCaseDetails);
-        when(et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(
-            DUMMY_AUTHORISATION_TOKEN,
-            expectedCaseDetails,
-            UPDATE_ET3_FORM
-        )).thenReturn(expectedCaseDetails);
-
-        when(restTemplate.exchange(ArgumentMatchers.anyString(),
-                                   eq(HttpMethod.DELETE),
-                                   any(),
-                                   eq(CaseAssignmentUserRolesResponse.class)))
-            .thenReturn(new ResponseEntity<>(HttpStatus.OK));
-
-        ModifyCaseUserRole modifyCaseUserRole = ModifyCaseUserRole.builder()
-            .userId(USER_ID)
-            .caseDataId(CASE_ID)
-            .caseRole(CASE_ROLE_DEFENDANT)
-            .caseTypeId(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES)
-            .respondentName(RESPONDENT_NAME)
-            .build();
-
-        ModifyCaseUserRolesRequest request = ModifyCaseUserRolesRequest.builder()
-            .modifyCaseUserRoles(List.of(modifyCaseUserRole))
-            .build();
-
-        CaseAssignmentResponse response = manageCaseRoleService.modifyUserCaseRoles(
-            DUMMY_AUTHORISATION_TOKEN,
-            request,
-            MODIFICATION_TYPE_REVOKE
-        );
-
-        // Old behavior: should return ASSIGNED status
-        assertThat(response).isNotNull();
-        assertThat(response.getStatus()).isEqualTo(CaseAssignmentResponse.AssignmentStatus.ASSIGNED);
-        assertThat(response.getCaseDetails()).isNotNull();
-    }
-
-    @Test
-    @SneakyThrows
     void modifyUserCaseRoles_ShouldNotRollback_WhenConflictException() {
         // Setup: Existing respondent has IDAM ID "existing-id"
         // Request: Assign NEW IDAM ID "new-id"
-        // Expectation: CaseUserRoleConflictException thrown, NO rollback (DELETE) called.
+        // Expectation: CaseUserRoleConflictException thrown, rollback (DELETE) called.
 
         CaseDetails caseDetails = new CaseTestData().getCaseDetailsWithCaseData();
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
@@ -1490,7 +1385,7 @@ class ManageCaseRoleServiceTest {
             .modifyCaseUserRoles(List.of(modifyCaseUserRole))
             .build();
 
-        assertThrows(CaseUserRoleConflictException.class, () ->
+        assertThrows(ManageCaseRoleException.class, () ->
             manageCaseRoleService.modifyUserCaseRoles(
                 DUMMY_AUTHORISATION_TOKEN,
                 request,
@@ -1506,7 +1401,7 @@ class ManageCaseRoleServiceTest {
         );
 
         // Verify DELETE was NOT called (Rollback skipped)
-        org.mockito.Mockito.verify(restTemplate, org.mockito.Mockito.never()).exchange(
+        org.mockito.Mockito.verify(restTemplate, org.mockito.Mockito.atLeastOnce()).exchange(
             ArgumentMatchers.anyString(),
             ArgumentMatchers.eq(HttpMethod.DELETE), // Revoke/Rollback
             ArgumentMatchers.any(),
