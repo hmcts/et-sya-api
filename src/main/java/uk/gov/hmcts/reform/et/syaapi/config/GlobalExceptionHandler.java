@@ -10,11 +10,18 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import uk.gov.hmcts.reform.authorisation.exceptions.InvalidTokenException;
 import uk.gov.hmcts.reform.et.syaapi.config.interceptors.ResourceNotFoundException;
 import uk.gov.hmcts.reform.et.syaapi.config.interceptors.UnAuthorisedServiceException;
+import uk.gov.hmcts.reform.et.syaapi.exception.CaseUserRoleConflictException;
+import uk.gov.hmcts.reform.et.syaapi.exception.CaseUserRoleNotFoundException;
+import uk.gov.hmcts.reform.et.syaapi.exception.CaseUserRoleValidationException;
+import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
 import uk.gov.hmcts.reform.et.syaapi.exception.ProfessionalUserException;
 import uk.gov.hmcts.reform.et.syaapi.models.CaseAssignmentResponse;
 import uk.gov.hmcts.reform.et.syaapi.models.ErrorResponse;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
@@ -120,5 +127,75 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             .status(CaseAssignmentResponse.AssignmentStatus.PROFESSIONAL_USER)
             .message(exception.getMessage())
             .build());
+    }
+
+    /**
+     * Intercepts any {@link CaseUserRoleConflictException} occurances within the api
+     *  and builds an appropriate response.
+     * @param exception that just occured
+     * @return {@link ErrorResponse} with the Conflict (409) response
+     */
+    @ExceptionHandler(CaseUserRoleConflictException.class)
+    public ResponseEntity<ErrorResponse> handleCaseUserRoleConflictException(CaseUserRoleConflictException exception) {
+        log.error(exception.getMessage(), exception);
+        return ResponseEntity.status(CONFLICT).body(
+            ErrorResponse.builder()
+                .message(exception.getMessage())
+                .code(CONFLICT.value())
+                .build()
+        );
+    }
+
+    /**
+     * Intercepts any {@link CaseUserRoleNotFoundException} occurances within the api
+     *  and builds an appropriate response.
+     * @param exception that just occured
+     * @return {@link ErrorResponse} with the Not Found (404) response
+     */
+    @ExceptionHandler(CaseUserRoleNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleCaseUserRoleNotFoundException(CaseUserRoleNotFoundException exception) {
+        log.error(exception.getMessage(), exception);
+        return ResponseEntity.status(NOT_FOUND).body(
+            ErrorResponse.builder()
+                .message(exception.getMessage())
+                .code(NOT_FOUND.value())
+                .build()
+        );
+    }
+
+    /**
+     * Intercepts any {@link CaseUserRoleValidationException} occurances within the api
+     *  and builds an appropriate response.
+     * @param exception that just occured
+     * @return {@link ErrorResponse} with the Bad Request (400) response
+     */
+    @ExceptionHandler(CaseUserRoleValidationException.class)
+    public ResponseEntity<ErrorResponse> handleCaseUserRoleValidationException(
+        CaseUserRoleValidationException exception) {
+        log.error(exception.getMessage(), exception);
+        return ResponseEntity.status(BAD_REQUEST).body(
+            ErrorResponse.builder()
+                .message(exception.getMessage())
+                .code(BAD_REQUEST.value())
+                .build()
+        );
+    }
+
+    /**
+     * Intercepts any {@link ManageCaseRoleException} occurances within the api
+     *  and builds an appropriate response.
+     * This acts as a fallback for any other ManageCaseRoleException that is not specifically handled.
+     * @param exception that just occured
+     * @return {@link ErrorResponse} with the Internal Server Error (500) response
+     */
+    @ExceptionHandler(ManageCaseRoleException.class)
+    public ResponseEntity<ErrorResponse> handleManageCaseRoleException(ManageCaseRoleException exception) {
+        log.error(exception.getMessage(), exception);
+        return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(
+            ErrorResponse.builder()
+                .message(exception.getMessage())
+                .code(INTERNAL_SERVER_ERROR.value())
+                .build()
+        );
     }
 }
