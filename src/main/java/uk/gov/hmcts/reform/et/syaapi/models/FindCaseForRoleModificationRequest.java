@@ -13,11 +13,15 @@ public class FindCaseForRoleModificationRequest {
 
     @JsonProperty("caseSubmissionReference")
     private String caseSubmissionReference;
+    @JsonProperty("ethosCaseReference")
+    private String ethosCaseReference;
     @JsonProperty("respondentName")
     private String respondentName;
     @JsonProperty("claimantFirstNames")
     private String claimantFirstNames;
     @JsonProperty("claimantLastName")
     private String claimantLastName;
+    @JsonProperty("applicationName")
+    private String applicationName;
 
 }

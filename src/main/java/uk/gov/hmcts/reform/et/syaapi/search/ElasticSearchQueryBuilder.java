@@ -12,6 +12,7 @@ public final class ElasticSearchQueryBuilder {
         = "data.respondentCollection.value.respondent_name.keyword";
     private static final String FIELD_NAME_RESPONDENT = "data.respondent.keyword";
     private static final String FIELD_NAME_SUBMISSION_REFERENCE = "reference.keyword";
+    private static final String FIELD_NAME_ETHOS_CASE_REFERENCE = "data.ethosCaseReference.keyword";
     private static final String FIELD_NAME_CLAIMANT_FIRST_NAMES = "data.claimantIndType.claimant_first_names.keyword";
     private static final String FIELD_NAME_CLAIMANT_LAST_NAME = "data.claimantIndType.claimant_last_name.keyword";
     private static final String FIELD_NAME_CLAIMANT_FULL_NAME = "data.claimant.keyword";
@@ -127,6 +128,50 @@ public final class ElasticSearchQueryBuilder {
             + StringUtils.SPACE + findCaseForRoleModificationRequest.getClaimantLastName()
             + "\",\"case_insensitive\":true}}}],"
             + "\"boost\":1.0}}],\"boost\":1.0}}],\"boost\":1.0}}}";
+    }
+
+    /**
+     * Generates query to search case by caseSubmissionReference, claimantFirstNames,
+     * and claimantLastName. This query is used to check if the claimant's entered data for self
+     * assignment exists or not.
+     * Compares claimant name with the fields, claimant first names, claimant last name, and full name.
+     * @param findCaseForRoleModificationRequest is the parameter object which has caseSubmissionReference,
+     *                                           claimantFirstNames and claimantLastName
+     * @return the string value of the elastic search query
+     */
+    public static String buildByFindCaseForRoleModificationRequestClaimant(
+        FindCaseForRoleModificationRequest findCaseForRoleModificationRequest
+    ) {
+        return "{\"size\":1,\"query\":{\"bool\":{"
+            // --- MUST MATCH SECTION ---
+            // Keeps the primary Submission Reference as the core match criteria
+            + "\"must\":["
+            + "{\"match\":{\"" + FIELD_NAME_SUBMISSION_REFERENCE + "\":{\"query\":\""
+            + findCaseForRoleModificationRequest.getCaseSubmissionReference() + "\"}}}"
+            + "],"
+
+            // --- FILTER SECTION ---
+            // Optimized for performance: exact matches and identity verification
+            + "\"filter\":[{\"bool\":{\"must\":["
+
+            // 1. Ethos Case Reference
+            + "{\"bool\":{\"filter\":[{\"term\":{\"" + FIELD_NAME_ETHOS_CASE_REFERENCE + "\":{\"value\":\""
+            + findCaseForRoleModificationRequest.getEthosCaseReference() + "\"}}}],\"boost\":1.0}},"
+
+            // 2. Claimant First Names
+            + "{\"bool\":{\"filter\":[{\"term\":{\"" + FIELD_NAME_CLAIMANT_FIRST_NAMES + "\":{\"value\":\""
+            + findCaseForRoleModificationRequest.getClaimantFirstNames() + "\"}}}],\"boost\":1.0}},"
+
+            // 3. Claimant Last Name
+            + "{\"bool\":{\"filter\":[{\"term\":{\"" + FIELD_NAME_CLAIMANT_LAST_NAME + "\":{\"value\":\""
+            + findCaseForRoleModificationRequest.getClaimantLastName() + "\"}}}],\"boost\":1.0}},"
+
+            // 4. Claimant Full Name (Case Insensitive)
+            + "{\"bool\":{\"filter\":[{\"term\":{\"" + FIELD_NAME_CLAIMANT_FULL_NAME + "\":{\"value\":\""
+            + findCaseForRoleModificationRequest.getClaimantFirstNames() + StringUtils.SPACE
+            + findCaseForRoleModificationRequest.getClaimantLastName()
+            + "\",\"case_insensitive\":true}}}],\"boost\":1.0}}"
+            + "],\"boost\":1.0}}],\"boost\":1.0}}}";
     }
 
     /**
