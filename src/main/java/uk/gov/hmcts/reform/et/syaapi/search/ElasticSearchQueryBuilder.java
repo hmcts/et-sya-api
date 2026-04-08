@@ -12,6 +12,7 @@ public final class ElasticSearchQueryBuilder {
         = "data.respondentCollection.value.respondent_name.keyword";
     private static final String FIELD_NAME_RESPONDENT = "data.respondent.keyword";
     private static final String FIELD_NAME_SUBMISSION_REFERENCE = "reference.keyword";
+    private static final String FIELD_NAME_STATE = "state.keyword";
     private static final String FIELD_NAME_ETHOS_CASE_REFERENCE = "data.ethosCaseReference.keyword";
     private static final String FIELD_NAME_CLAIMANT_FIRST_NAMES = "data.claimantIndType.claimant_first_names.keyword";
     private static final String FIELD_NAME_CLAIMANT_LAST_NAME = "data.claimantIndType.claimant_last_name.keyword";
@@ -144,14 +145,21 @@ public final class ElasticSearchQueryBuilder {
     ) {
         return "{\"size\":1,\"query\":{\"bool\":{"
             // --- MUST MATCH SECTION ---
-            // Keeps the primary Submission Reference as the core match criteria
             + "\"must\":["
             + "{\"match\":{\"" + FIELD_NAME_SUBMISSION_REFERENCE + "\":{\"query\":\""
-            + findCaseForRoleModificationRequest.getCaseSubmissionReference() + "\"}}}"
+            + findCaseForRoleModificationRequest.getCaseSubmissionReference() + "\"}}},"
+            + "{\"match\":{\"" + FIELD_NAME_ETHOS_CASE_REFERENCE + "\":{\"query\":\""
+            + findCaseForRoleModificationRequest.getEthosCaseReference() + "\"}}}"
+            + "],"
+
+            // --- EXCLUSION SECTION ---
+            + "\"must_not\":["
+            + "{\"terms\":{\"" + FIELD_NAME_STATE + "\": ["
+            + "\"Delete\", \"Transferred\", \"AWAITING_SUBMISSION_TO_HMCTS\""
+            + "]}}"
             + "],"
 
             // --- FILTER SECTION ---
-            // Optimized for performance: exact matches and identity verification
             + "\"filter\":[{\"bool\":{\"must\":["
 
             // 1. Ethos Case Reference
@@ -171,6 +179,7 @@ public final class ElasticSearchQueryBuilder {
             + findCaseForRoleModificationRequest.getClaimantFirstNames() + StringUtils.SPACE
             + findCaseForRoleModificationRequest.getClaimantLastName()
             + "\",\"case_insensitive\":true}}}],\"boost\":1.0}}"
+
             + "],\"boost\":1.0}}],\"boost\":1.0}}}";
     }
 
@@ -199,31 +208,40 @@ public final class ElasticSearchQueryBuilder {
      */
     public static String buildByEthosCaseReference(String ethosCaseReference) {
         return """
-            {
-              "size": 1,
-              "query": {
-                "bool": {
-                  "must": [
-                    {
-                      "match": {
-                        "data.ethosCaseReference.keyword": {
-                          "query": "%s"
-                        }
-                      }
+        {
+          "size": 1,
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "match": {
+                    "data.ethosCaseReference.keyword": {
+                      "query": "%s"
                     }
-                  ],
-                  "must_not": [
-                    {
-                      "match": {
-                        "data.migratedFromEcm": {
-                          "query": "Yes"
-                        }
-                      }
-                    }
-                  ]
+                  }
                 }
-              }
+              ],
+              "must_not": [
+                {
+                  "match": {
+                    "data.migratedFromEcm": {
+                      "query": "Yes"
+                    }
+                  }
+                },
+                {
+                  "terms": {
+                    "state.keyword": [
+                      "Delete",
+                      "Transferred",
+                      "AWAITING_SUBMISSION_TO_HMCTS"
+                    ]
+                  }
+                }
+              ]
             }
-            """.formatted(ethosCaseReference);
+          }
+        }
+        """.formatted(ethosCaseReference);
     }
 }
