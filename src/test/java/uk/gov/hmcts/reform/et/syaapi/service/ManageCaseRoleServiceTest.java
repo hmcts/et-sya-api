@@ -952,8 +952,6 @@ class ManageCaseRoleServiceTest {
             .respondentName(RESPONDENT_NAME)
             .build();
 
-        CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
-
         when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         ReflectionTestUtils.setField(manageCaseRoleService,
@@ -971,6 +969,7 @@ class ManageCaseRoleServiceTest {
                                    any(HttpEntity.class),
                                    eq(CaseUserAssignmentData.class))).thenReturn(
                                        new ResponseEntity<>(assignmentData, HttpStatus.OK));
+        CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
         when(ccdApi.getCase(DUMMY_AUTHORISATION_TOKEN, TEST_SERVICE_AUTH_TOKEN, CASE_ID))
             .thenReturn(expectedCaseDetails);
         when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN))
