@@ -83,6 +83,33 @@ public class ManageCaseRoleController {
         return ok(response);
     }
 
+    /**
+     * Assigns the creator role to a claimant for a case. Performs data setup and validation
+     * before assigning the role.
+     * @param modifyCaseUserRolesRequest request object which contains modify user case roles
+     * @return CaseAssignmentResponse containing case details and assignment status
+     */
+    @PostMapping("/assignCreatorRole")
+    @Operation(summary = "Assigns creator role to a claimant for a case")
+    @ApiResponseGroup
+    public ResponseEntity<CaseAssignmentResponse> assignCreatorRole(
+        @RequestHeader(AUTHORIZATION) String authorisation,
+        @NotNull @RequestBody ModifyCaseUserRolesRequest modifyCaseUserRolesRequest
+    ) {
+        CaseAssignmentResponse response;
+        try {
+            response = manageCaseRoleService.assignCreatorRole(
+                authorisation, manageCaseRoleService.generateModifyCaseUserRolesRequest(authorisation,
+                                                                                        modifyCaseUserRolesRequest));
+        } catch (Exception e) {
+            if (e instanceof ManageCaseRoleException manageCaseRoleException) {
+                throw manageCaseRoleException;
+            }
+            throw new ManageCaseRoleException(e);
+        }
+        return ok(response);
+    }
+
     @PostMapping("/revokeClaimantSolicitorRole")
     @Operation(summary = "Modifies user roles of the case")
     @ApiResponseGroup

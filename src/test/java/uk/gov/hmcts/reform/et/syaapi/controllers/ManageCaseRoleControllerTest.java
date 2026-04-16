@@ -47,6 +47,7 @@ class ManageCaseRoleControllerTest {
     private static final String CASE_ROLE = "[DEFENDANT]";
     private static final String AUTH_TOKEN = "some-token";
     private static final String POST_MODIFY_CASE_USER_ROLE_URL = "/manageCaseRole/modifyCaseUserRoles";
+    private static final String POST_ASSIGN_CREATOR_ROLE_URL = "/manageCaseRole/assignCreatorRole";
     private static final String REVOKE_CLAIMANT_SOLICITOR_ROLE_URL = "/manageCaseRole/revokeClaimantSolicitorRole";
     private static final String REVOKE_RESPONDENT_SOLICITOR_ROLE_URL = "/manageCaseRole/revokeRespondentSolicitorRole";
     private static final String POST_FIND_CASE_FOR_ROLE_MODIFICATION
@@ -150,6 +151,34 @@ class ManageCaseRoleControllerTest {
                             .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(ResourceLoader.toJson(findCaseForRoleModificationRequest)))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @SneakyThrows
+    void assignCreatorRole() {
+        when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
+        ModifyCaseUserRole modifyCaseUserRole = ModifyCaseUserRole
+            .builder()
+            .caseRole("[CREATOR]")
+            .caseDataId(CASE_ID)
+            .userId(USER_ID)
+            .caseTypeId(ENGLAND_CASE_TYPE)
+            .respondentName(RESPONDENT_NAME).build();
+        ModifyCaseUserRolesRequest modifyCaseUserRolesRequest = ModifyCaseUserRolesRequest
+            .builder()
+            .modifyCaseUserRoles(List.of(modifyCaseUserRole))
+            .build();
+        when(manageCaseRoleService.assignCreatorRole(any(), any())).thenReturn(
+            CaseAssignmentResponse.builder()
+                .caseDetails(List.of(new CaseTestData().getCaseDetails()))
+                .status(CaseAssignmentResponse.AssignmentStatus.ASSIGNED)
+                .message("User successfully assigned to case as creator")
+                .build());
+        mockMvc.perform(post(POST_ASSIGN_CREATOR_ROLE_URL)
+                            .header(HttpHeaders.AUTHORIZATION, AUTH_TOKEN)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(ResourceLoader.toJson(modifyCaseUserRolesRequest)))
             .andExpect(status().isOk());
     }
 

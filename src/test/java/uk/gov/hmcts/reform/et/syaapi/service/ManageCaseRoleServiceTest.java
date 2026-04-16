@@ -327,6 +327,17 @@ class ManageCaseRoleServiceTest {
             caseData.setClaimantId(null); // Ensure not already assigned
             expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
 
+            ReflectionTestUtils.setField(manageCaseRoleService,
+                                         CCD_API_URL_PARAMETER_NAME,
+                                         CCD_API_URL_PARAMETER_TEST_VALUE);
+            CaseUserAssignmentData caseUserAssignmentData = CaseUserAssignmentData.builder()
+                .caseUserAssignments(List.of())
+                .build();
+            when(restTemplate.exchange(anyString(),
+                                       eq(HttpMethod.GET),
+                                       any(HttpEntity.class),
+                                       eq(CaseUserAssignmentData.class))).thenReturn(
+                                           new ResponseEntity<>(caseUserAssignmentData, HttpStatus.OK));
             when(ccdApi.getCase(any(), any(), eq(modifyCaseUserRolesRequest
                                                      .getModifyCaseUserRoles()
                                                      .getFirst().getCaseDataId()))).thenReturn(expectedCaseDetails);
@@ -367,7 +378,6 @@ class ManageCaseRoleServiceTest {
         return Stream.of(
             Arguments.of(modifyCaseUserRolesRequestValidDefendant, MODIFICATION_TYPE_ASSIGNMENT),
             Arguments.of(modifyCaseUserRolesRequestValidDefendant, MODIFICATION_TYPE_REVOKE),
-            Arguments.of(modifyCaseUserRolesRequestValidCreator, MODIFICATION_TYPE_ASSIGNMENT),
             Arguments.of(modifyCaseUserRolesRequestValidCreator, MODIFICATION_TYPE_REVOKE)
         );
     }
@@ -891,8 +901,21 @@ class ManageCaseRoleServiceTest {
 
         when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        ReflectionTestUtils.setField(manageCaseRoleService,
+                                     CCD_API_URL_PARAMETER_NAME,
+                                     CCD_API_URL_PARAMETER_TEST_VALUE);
+        CaseUserAssignmentData emptyAssignmentData = CaseUserAssignmentData.builder()
+            .caseUserAssignments(List.of())
+            .build();
+        when(restTemplate.exchange(anyString(),
+                                   eq(HttpMethod.GET),
+                                   any(HttpEntity.class),
+                                   eq(CaseUserAssignmentData.class))).thenReturn(
+                                       new ResponseEntity<>(emptyAssignmentData, HttpStatus.OK));
         when(ccdApi.getCase(DUMMY_AUTHORISATION_TOKEN, TEST_SERVICE_AUTH_TOKEN, CASE_ID))
             .thenReturn(expectedCaseDetails);
+        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN))
+            .thenReturn(UserInfo.builder().uid(USER_ID).sub("test@email.com").build());
         when(caseService.triggerEvent(
             eq(DUMMY_AUTHORISATION_TOKEN),
             eq(expectedCaseDetails.getId().toString()),
@@ -908,10 +931,9 @@ class ManageCaseRoleServiceTest {
 
         ModifyCaseUserRolesRequest modifyCaseUserRolesRequest = ModifyCaseUserRolesRequest
             .builder().modifyCaseUserRoles(List.of(modifyCaseUserRole)).build();
-        CaseAssignmentResponse response = manageCaseRoleService.modifyUserCaseRoles(
+        CaseAssignmentResponse response = manageCaseRoleService.assignCreatorRole(
             DUMMY_AUTHORISATION_TOKEN,
-            modifyCaseUserRolesRequest,
-            MODIFICATION_TYPE_ASSIGNMENT);
+            modifyCaseUserRolesRequest);
 
         assertThat(response).isNotNull();
         assertThat(response.getStatus()).isEqualTo(CaseAssignmentResponse.AssignmentStatus.ASSIGNED);
@@ -931,34 +953,34 @@ class ManageCaseRoleServiceTest {
             .build();
 
         CaseDetails expectedCaseDetails = new CaseTestData().getCaseDetailsWithCaseData();
-        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(expectedCaseDetails.getData());
-        // Set the user as already assigned as claimant
-        caseData.setClaimantId(USER_ID);
-        expectedCaseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
 
         when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        ReflectionTestUtils.setField(manageCaseRoleService,
+                                     CCD_API_URL_PARAMETER_NAME,
+                                     CCD_API_URL_PARAMETER_TEST_VALUE);
+        CaseUserAssignmentData assignmentData = CaseUserAssignmentData.builder()
+            .caseUserAssignments(List.of(CaseUserAssignment.builder()
+                                             .caseId(CASE_ID)
+                                             .userId(USER_ID)
+                                             .caseRole(CASE_ROLE_CREATOR)
+                                             .build()))
+            .build();
+        when(restTemplate.exchange(anyString(),
+                                   eq(HttpMethod.GET),
+                                   any(HttpEntity.class),
+                                   eq(CaseUserAssignmentData.class))).thenReturn(
+                                       new ResponseEntity<>(assignmentData, HttpStatus.OK));
         when(ccdApi.getCase(DUMMY_AUTHORISATION_TOKEN, TEST_SERVICE_AUTH_TOKEN, CASE_ID))
             .thenReturn(expectedCaseDetails);
-        when(caseService.triggerEvent(
-            eq(DUMMY_AUTHORISATION_TOKEN),
-            eq(expectedCaseDetails.getId().toString()),
-            eq(UPDATE_CASE_SUBMITTED),
-            eq(expectedCaseDetails.getCaseTypeId()),
-            any()
-        )).thenReturn(expectedCaseDetails);
-        when(restTemplate.exchange(ArgumentMatchers.anyString(),
-                                   ArgumentMatchers.eq(HttpMethod.POST),
-                                   ArgumentMatchers.any(),
-                                   ArgumentMatchers.eq(CaseAssignmentUserRolesResponse.class)))
-            .thenReturn(new ResponseEntity<>(HttpStatus.OK));
+        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN))
+            .thenReturn(UserInfo.builder().uid(USER_ID).sub("test@email.com").build());
 
         ModifyCaseUserRolesRequest modifyCaseUserRolesRequest = ModifyCaseUserRolesRequest
             .builder().modifyCaseUserRoles(List.of(modifyCaseUserRole)).build();
-        CaseAssignmentResponse response = manageCaseRoleService.modifyUserCaseRoles(
+        CaseAssignmentResponse response = manageCaseRoleService.assignCreatorRole(
             DUMMY_AUTHORISATION_TOKEN,
-            modifyCaseUserRolesRequest,
-            MODIFICATION_TYPE_ASSIGNMENT);
+            modifyCaseUserRolesRequest);
 
         assertThat(response).isNotNull();
         assertThat(response.getStatus()).isEqualTo(CaseAssignmentResponse.AssignmentStatus.ALREADY_ASSIGNED);
