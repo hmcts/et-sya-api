@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -266,6 +267,7 @@ public class ManageCaseRoleService {
                         modificationType,
                         idamClient.getUserInfo(authorisation)
                     );
+
                     wasAlreadyAssigned = wasAlreadyAssigned || isAlreadyAssigned;
                     updatedCases.add(
                         et3Service.updateSubmittedCaseWithCaseDetailsForCaseAssignment(authorisation,
@@ -306,11 +308,9 @@ public class ManageCaseRoleService {
      * @param authorisation Authorisation token of the user
      * @param modifyCaseUserRolesRequest request containing the case roles to assign
      * @return CaseAssignmentResponse containing case details and assignment status.
-     * @throws IOException if an error occurs during the API call
      */
     public CaseAssignmentResponse assignCreatorRole(String authorisation,
-                                                    ModifyCaseUserRolesRequest modifyCaseUserRolesRequest)
-        throws IOException {
+                                                    ModifyCaseUserRolesRequest modifyCaseUserRolesRequest) {
         ManageCaseRoleServiceUtil.checkModifyCaseUserRolesRequest(modifyCaseUserRolesRequest);
 
         CaseAssignmentUserRolesRequest assignmentRequest =
@@ -320,79 +320,86 @@ public class ManageCaseRoleService {
         // Phase 1: Validate and prepare data (before role assignment)
         List<CaseDetails> preparedCases = new ArrayList<>();
         boolean wasAlreadyAssigned = false;
+        List<CaseDetails> updatedCases = new ArrayList<>();
 
         try {
-            String adminToken = adminUserService.getAdminUserToken();
-
             for (ModifyCaseUserRole roleReq : modifyCaseUserRolesRequest.getModifyCaseUserRoles()) {
                 if (!CASE_USER_ROLE_CREATOR.equals(roleReq.getCaseRole())) {
                     continue;
                 }
 
-                CaseDetails caseDetails = ccdApi.getCase(adminToken, authTokenGenerator.generate(),
-                                                         roleReq.getCaseDataId());
+                StartEventResponse startEventResponse = caseService.startUpdate(
+                    authorisation, roleReq.getCaseDataId(), roleReq.getCaseTypeId(), CaseEvent.UPDATE_CASE_SUBMITTED
+                );
+
+                CaseDetails caseDetails = startEventResponse.getCaseDetails();
                 CaseUserAssignmentData assignments =
                     fetchCaseUserAssignmentsByCaseId(caseDetails.getId().toString());
                 UserInfo userInfo = idamClient.getUserInfo(authorisation);
 
                 boolean isAlreadyInRole = ClaimantUtil.setClaimantIdamId(
                     caseDetails, assignments, roleReq.getUserId(), userInfo.getSub());
-
                 if (isAlreadyInRole) {
                     wasAlreadyAssigned = true;
                 }
                 preparedCases.add(caseDetails);
+
+                if (wasAlreadyAssigned) {
+                    log.info("User already assigned as creator - skipping role modification API");
+                    return CaseAssignmentResponse.builder()
+                        .caseDetails(preparedCases)
+                        .status(CaseAssignmentResponse.AssignmentStatus.ALREADY_ASSIGNED)
+                        .message("User was already assigned to this case")
+                        .build();
+                }
+                // Phase 2: Assign the role
+                log.info("Processing creator role assignment request");
+                try {
+                    restCallToModifyUserCaseRoles(assignmentRequest, HttpMethod.POST);
+                } catch (ProfessionalUserException e) {
+                    return CaseAssignmentResponse.builder()
+                        .status(CaseAssignmentResponse.AssignmentStatus.PROFESSIONAL_USER)
+                        .message(e.getMessage())
+                        .build();
+                } catch (RestClientResponseException | IOException e) {
+                    log.error("Error during creator role assignment: {}", e.getMessage());
+                    throw e;
+                }
+
+                // Phase 3: Persist the data update (user now has the role)
+                phase3(authorisation, caseDetails, startEventResponse, updatedCases, assignmentRequest);
+
+                log.info("Creator role assignment successfully completed");
+
             }
         } catch (Exception e) {
             throw new ManageCaseRoleException(e);
         }
-
-        if (wasAlreadyAssigned) {
-            log.info("User already assigned as creator - skipping role modification API");
-            return CaseAssignmentResponse.builder()
-                .caseDetails(preparedCases)
-                .status(CaseAssignmentResponse.AssignmentStatus.ALREADY_ASSIGNED)
-                .message("User was already assigned to this case")
-                .build();
-        }
-
-        // Phase 2: Assign the role
-        log.info("Processing creator role assignment request");
-        try {
-            restCallToModifyUserCaseRoles(assignmentRequest, HttpMethod.POST);
-        } catch (ProfessionalUserException e) {
-            return CaseAssignmentResponse.builder()
-                .status(CaseAssignmentResponse.AssignmentStatus.PROFESSIONAL_USER)
-                .message(e.getMessage())
-                .build();
-        } catch (RestClientResponseException | IOException e) {
-            log.error("Error during creator role assignment: {}", e.getMessage());
-            throw e;
-        }
-
-        // Phase 3: Persist the data update (user now has the role)
-        List<CaseDetails> updatedCases = new ArrayList<>();
-        try {
-            for (CaseDetails caseDetails : preparedCases) {
-                updatedCases.add(
-                    caseService.triggerEvent(authorisation,
-                                             caseDetails.getId().toString(),
-                                             CaseEvent.UPDATE_CASE_SUBMITTED,
-                                             caseDetails.getCaseTypeId(),
-                                             caseDetails.getData()));
-            }
-        } catch (Exception e) {
-            // Rollback: revoke the role if we can't persist the data
-            restCallToModifyUserCaseRoles(assignmentRequest, HttpMethod.DELETE);
-            throw new ManageCaseRoleException(e);
-        }
-
-        log.info("Creator role assignment successfully completed");
         return CaseAssignmentResponse.builder()
             .caseDetails(updatedCases)
             .status(CaseAssignmentResponse.AssignmentStatus.ASSIGNED)
             .message("User successfully assigned to case as creator")
             .build();
+
+    }
+
+    private void phase3(String authorisation, CaseDetails caseDetails, StartEventResponse startEventResponse,
+                        List<CaseDetails> updatedCases, CaseAssignmentUserRolesRequest assignmentRequest)
+        throws IOException {
+        try {
+            CaseDetails submittedCaseDetails = caseService.submitUpdate(
+                authorisation,
+                caseDetails.getId().toString(),
+                caseDetailsConverter.caseDataContent(startEventResponse,
+                    EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData())),
+                caseDetails.getCaseTypeId()
+            );
+            updatedCases.add(submittedCaseDetails);
+        } catch (Exception e) {
+            // Rollback: revoke the role if we can't persist the data
+            restCallToModifyUserCaseRoles(assignmentRequest, HttpMethod.DELETE);
+            throw new ManageCaseRoleException(e);
+        }
     }
 
     private void restCallToModifyUserCaseRoles(

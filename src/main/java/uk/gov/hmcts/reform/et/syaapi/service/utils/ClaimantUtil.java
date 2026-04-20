@@ -86,13 +86,10 @@ public final class ClaimantUtil {
         // Only mutate and map data if the user wasn't already assigned
         CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(existingCaseData);
         caseData.setClaimantId(idamId);
-        if (caseData.getClaimantType() != null) {
-            caseData.getClaimantType().setClaimantEmailAddress(userEmailAddress);
-        } else {
-            ClaimantType claimantType = new ClaimantType();
-            claimantType.setClaimantEmailAddress(userEmailAddress);
-            caseData.setClaimantType(claimantType);
+        if (ObjectUtils.isEmpty(caseData.getClaimantType())) {
+            caseData.setClaimantType(new ClaimantType());
         }
+        caseData.getClaimantType().setClaimantEmailAddress(userEmailAddress);
         caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
         return false;
     }
