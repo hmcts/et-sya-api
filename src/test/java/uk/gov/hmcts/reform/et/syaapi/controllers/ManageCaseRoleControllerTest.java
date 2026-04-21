@@ -30,9 +30,13 @@ import uk.gov.hmcts.reform.et.syaapi.service.ManageCaseRoleService;
 import uk.gov.hmcts.reform.et.syaapi.service.VerifyTokenService;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ResourceLoader;
 
+import java.io.IOException;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -44,7 +48,8 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CAS
 class ManageCaseRoleControllerTest {
     private static final String CASE_ID = "1646225213651590";
     private static final String USER_ID = "1234564789";
-    private static final String CASE_ROLE = "[DEFENDANT]";
+    private static final String CREATOR_ROLE = "[CREATOR]";
+    private static final String DEFENDANT_ROLE = "[DEFENDANT]";
     private static final String AUTH_TOKEN = "some-token";
     private static final String POST_MODIFY_CASE_USER_ROLE_URL = "/manageCaseRole/modifyCaseUserRoles";
     private static final String POST_ASSIGN_CREATOR_ROLE_URL = "/manageCaseRole/assignCreatorRole";
@@ -70,6 +75,9 @@ class ManageCaseRoleControllerTest {
     @MockBean
     private ManageCaseRoleService manageCaseRoleService;
 
+    @Autowired
+    private ManageCaseRoleController manageCaseRoleController;
+
     private MockMvc mockMvc;
 
     @BeforeEach
@@ -83,7 +91,7 @@ class ManageCaseRoleControllerTest {
         when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
         ModifyCaseUserRole modifyCaseUserRole = ModifyCaseUserRole
             .builder()
-            .caseRole(CASE_ROLE)
+            .caseRole(DEFENDANT_ROLE)
             .caseDataId(CASE_ID)
             .userId(USER_ID)
             .caseTypeId(ENGLAND_CASE_TYPE)
@@ -111,7 +119,7 @@ class ManageCaseRoleControllerTest {
     void modifyUserRolesWithoutUserId() {
         when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
         CaseAssignmentUserRole caseAssignmentUserRole = CaseAssignmentUserRole
-            .builder().caseRole(CASE_ROLE).caseDataId(CASE_ID).userId(null).build();
+            .builder().caseRole(DEFENDANT_ROLE).caseDataId(CASE_ID).userId(null).build();
         CaseAssignmentUserRolesRequest caseAssignmentUserRolesRequest = CaseAssignmentUserRolesRequest.builder()
             .caseAssignmentUserRoles(List.of(caseAssignmentUserRole))
             .build();
@@ -160,7 +168,7 @@ class ManageCaseRoleControllerTest {
         when(verifyTokenService.verifyTokenSignature(AUTH_TOKEN)).thenReturn(true);
         ModifyCaseUserRole modifyCaseUserRole = ModifyCaseUserRole
             .builder()
-            .caseRole("[CREATOR]")
+            .caseRole(CREATOR_ROLE)
             .caseDataId(CASE_ID)
             .userId(USER_ID)
             .caseTypeId(ENGLAND_CASE_TYPE)
@@ -282,5 +290,154 @@ class ManageCaseRoleControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(ResourceLoader.toJson(modifyCaseUserRolesRequest)))
             .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @SneakyThrows
+    void findCaseForRoleModification_shouldWrapIOException() {
+        when(manageCaseRoleService.findCaseForRoleModification(any(), anyString()))
+            .thenThrow(new IOException("io error"));
+
+        ManageCaseRoleException exception = assertThrows(
+            ManageCaseRoleException.class,
+            () -> manageCaseRoleController.findCaseForRoleModification(AUTH_TOKEN, buildFindCaseRequest())
+        );
+
+        assertThat(exception.getCause()).isInstanceOf(IOException.class);
+    }
+
+    @Test
+    @SneakyThrows
+    void assignCreatorRole_shouldRethrowManageCaseRoleException() {
+        ModifyCaseUserRolesRequest request = buildModifyCaseUserRolesRequest();
+        ManageCaseRoleException expectedException = new ManageCaseRoleException(new Exception("existing"));
+
+        when(manageCaseRoleService.generateModifyCaseUserRolesRequest(AUTH_TOKEN, request)).thenReturn(request);
+        when(manageCaseRoleService.assignCreatorRole(AUTH_TOKEN, request)).thenThrow(expectedException);
+
+        ManageCaseRoleException actualException = assertThrows(
+            ManageCaseRoleException.class,
+            () -> manageCaseRoleController.assignCreatorRole(AUTH_TOKEN, request)
+        );
+
+        assertThat(actualException).isSameAs(expectedException);
+    }
+
+    @Test
+    @SneakyThrows
+    void assignCreatorRole_shouldWrapRuntimeException() {
+        ModifyCaseUserRolesRequest request = buildModifyCaseUserRolesRequest();
+        RuntimeException expectedException = new RuntimeException("runtime");
+
+        when(manageCaseRoleService.generateModifyCaseUserRolesRequest(AUTH_TOKEN, request)).thenReturn(request);
+        when(manageCaseRoleService.assignCreatorRole(AUTH_TOKEN, request)).thenThrow(expectedException);
+
+        ManageCaseRoleException actualException = assertThrows(
+            ManageCaseRoleException.class,
+            () -> manageCaseRoleController.assignCreatorRole(AUTH_TOKEN, request)
+        );
+
+        assertThat(actualException.getCause()).isSameAs(expectedException);
+    }
+
+    @Test
+    @SneakyThrows
+    void revokeClaimantSolicitorRole_shouldRethrowManageCaseRoleException() {
+        ManageCaseRoleException expectedException = new ManageCaseRoleException(new Exception("existing"));
+
+        when(manageCaseRoleService.revokeClaimantSolicitorRole(AUTH_TOKEN, CASE_SUBMISSION_REFERENCE))
+            .thenThrow(expectedException);
+
+        ManageCaseRoleException actualException = assertThrows(
+            ManageCaseRoleException.class,
+            () -> manageCaseRoleController.revokeClaimantSolicitorRole(AUTH_TOKEN, CASE_SUBMISSION_REFERENCE)
+        );
+
+        assertThat(actualException).isSameAs(expectedException);
+    }
+
+    @Test
+    @SneakyThrows
+    void revokeClaimantSolicitorRole_shouldWrapRuntimeException() {
+        RuntimeException expectedException = new RuntimeException("runtime");
+
+        when(manageCaseRoleService.revokeClaimantSolicitorRole(AUTH_TOKEN, CASE_SUBMISSION_REFERENCE))
+            .thenThrow(expectedException);
+
+        ManageCaseRoleException actualException = assertThrows(
+            ManageCaseRoleException.class,
+            () -> manageCaseRoleController.revokeClaimantSolicitorRole(AUTH_TOKEN, CASE_SUBMISSION_REFERENCE)
+        );
+
+        assertThat(actualException.getCause()).isSameAs(expectedException);
+    }
+
+    @Test
+    @SneakyThrows
+    void revokeRespondentSolicitorRole_shouldRethrowManageCaseRoleException() {
+        ManageCaseRoleException expectedException = new ManageCaseRoleException(new Exception("existing"));
+
+        when(manageCaseRoleService.revokeRespondentSolicitorRole(
+            AUTH_TOKEN,
+            CASE_SUBMISSION_REFERENCE,
+            STRING_ZERO
+        )).thenThrow(expectedException);
+
+        ManageCaseRoleException actualException = assertThrows(
+            ManageCaseRoleException.class,
+            () -> manageCaseRoleController.revokeRespondentSolicitorRole(
+                AUTH_TOKEN,
+                CASE_SUBMISSION_REFERENCE,
+                STRING_ZERO
+            )
+        );
+
+        assertThat(actualException).isSameAs(expectedException);
+    }
+
+    @Test
+    @SneakyThrows
+    void revokeRespondentSolicitorRole_shouldWrapRuntimeException() {
+        RuntimeException expectedException = new RuntimeException("runtime");
+
+        when(manageCaseRoleService.revokeRespondentSolicitorRole(
+            AUTH_TOKEN,
+            CASE_SUBMISSION_REFERENCE,
+            STRING_ZERO
+        )).thenThrow(expectedException);
+
+        ManageCaseRoleException actualException = assertThrows(
+            ManageCaseRoleException.class,
+            () -> manageCaseRoleController.revokeRespondentSolicitorRole(
+                AUTH_TOKEN,
+                CASE_SUBMISSION_REFERENCE,
+                STRING_ZERO
+            )
+        );
+
+        assertThat(actualException.getCause()).isSameAs(expectedException);
+    }
+
+    private static ModifyCaseUserRolesRequest buildModifyCaseUserRolesRequest() {
+        return ModifyCaseUserRolesRequest.builder()
+            .modifyCaseUserRoles(List.of(
+                ModifyCaseUserRole.builder()
+                    .caseRole(CREATOR_ROLE)
+                    .caseDataId(CASE_ID)
+                    .userId(USER_ID)
+                    .caseTypeId(ENGLAND_CASE_TYPE)
+                    .respondentName(RESPONDENT_NAME)
+                    .build()
+            ))
+            .build();
+    }
+
+    private static FindCaseForRoleModificationRequest buildFindCaseRequest() {
+        return FindCaseForRoleModificationRequest.builder()
+            .caseSubmissionReference(CASE_SUBMISSION_REFERENCE)
+            .respondentName(RESPONDENT_NAME)
+            .claimantFirstNames(CLAIMANT_FIRST_NAMES)
+            .claimantLastName(CLAIMANT_LAST_NAME)
+            .build();
     }
 }

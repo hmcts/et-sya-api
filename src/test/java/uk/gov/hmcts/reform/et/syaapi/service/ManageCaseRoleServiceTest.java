@@ -14,6 +14,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -41,6 +42,7 @@ import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants;
 import uk.gov.hmcts.reform.et.syaapi.exception.ManageCaseRoleException;
+import uk.gov.hmcts.reform.et.syaapi.exception.ProfessionalUserException;
 import uk.gov.hmcts.reform.et.syaapi.helper.CaseDetailsConverter;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 import uk.gov.hmcts.reform.et.syaapi.model.CaseTestData;
@@ -49,6 +51,7 @@ import uk.gov.hmcts.reform.et.syaapi.models.CaseRequest;
 import uk.gov.hmcts.reform.et.syaapi.models.FindCaseForRoleModificationRequest;
 import uk.gov.hmcts.reform.et.syaapi.search.ElasticSearchQueryBuilder;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.ManageCaseRoleServiceUtil;
+import uk.gov.hmcts.reform.et.syaapi.service.utils.RemoteServiceUtil;
 import uk.gov.hmcts.reform.et.syaapi.service.utils.TestConstants;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -65,8 +68,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.EMPLOYMENT;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.ENGLAND_CASE_TYPE;
+import static uk.gov.hmcts.reform.et.syaapi.constants.EtSyaConstants.JURISDICTION_ID;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CCD_API_POST_METHOD_NAME;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
@@ -1452,9 +1459,6 @@ class ManageCaseRoleServiceTest {
     @Test
     @SneakyThrows
     void modifyUserCaseRoles_ShouldRollback_WhenGenericException() {
-        // Setup: Throw RuntimeException during update
-        // Expectation: ManageCaseRoleException thrown, Rollback (DELETE) called.
-
         ModifyCaseUserRole modifyCaseUserRole = ModifyCaseUserRole.builder()
             .userId(USER_ID)
             .caseDataId(CASE_ID)
@@ -1463,8 +1467,6 @@ class ManageCaseRoleServiceTest {
             .respondentName(RESPONDENT_NAME)
             .build();
 
-        // Force error in RespondentUtil by passing null case data (if possible) or mocking et3Service to throw
-        // Easier to mock et3Service.findCaseBySubmissionReference to throw RuntimeException
         when(et3Service.findCaseBySubmissionReference(CASE_ID)).thenThrow(new RuntimeException("Generic Error"));
 
         when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
@@ -1495,13 +1497,328 @@ class ManageCaseRoleServiceTest {
         );
 
         // Verify DELETE WAS called (Rollback)
-        // Note: The service calls restCallToModifyUserCaseRoles which calls restTemplate.exchange.
-        // We verify that exchange was called with DELETE.
         org.mockito.Mockito.verify(restTemplate, org.mockito.Mockito.times(1)).exchange(
             ArgumentMatchers.anyString(),
             ArgumentMatchers.eq(HttpMethod.DELETE),
             ArgumentMatchers.any(),
             ArgumentMatchers.eq(CaseAssignmentUserRolesResponse.class)
         );
+    }
+
+    @Test
+    void findCaseForRoleModification_shouldFallBackToScotlandForCitizenSearch() throws IOException {
+        FindCaseForRoleModificationRequest request = FindCaseForRoleModificationRequest.builder()
+            .caseSubmissionReference(CASE_SUBMISSION_REFERENCE)
+            .claimantFirstNames(CLAIMANT_FIRST_NAMES)
+            .claimantLastName(CLAIMANT_LAST_NAME)
+            .applicationName("et-sya-frontend")
+            .build();
+        String elasticSearchQuery =
+            ElasticSearchQueryBuilder.buildByFindCaseForRoleModificationRequestClaimant(request);
+        CaseDetails expectedCaseDetails = CaseDetails.builder()
+            .id(Long.parseLong(CASE_SUBMISSION_REFERENCE))
+            .caseTypeId(SCOTLAND_CASE_TYPE)
+            .state(TestConstants.TEST_CASE_STATE_ACCEPTED)
+            .build();
+
+        when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(ccdApi.searchCases(TEST_SERVICE_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, ENGLAND_CASE_TYPE, elasticSearchQuery))
+            .thenReturn(SearchResult.builder().build());
+        when(ccdApi.searchCases(TEST_SERVICE_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN,
+                                SCOTLAND_CASE_TYPE, elasticSearchQuery))
+            .thenReturn(SearchResult.builder().cases(List.of(expectedCaseDetails)).total(1).build());
+
+        assertThat(manageCaseRoleService.findCaseForRoleModification(request, TEST_SERVICE_AUTH_TOKEN))
+            .isEqualTo(expectedCaseDetails);
+    }
+
+    @Test
+    void findCaseForRoleModification_shouldReturnNullWhenRequesterIsCreator() throws IOException {
+        ReflectionTestUtils.setField(manageCaseRoleService, CCD_API_URL_PARAMETER_NAME,
+                                     CCD_API_URL_PARAMETER_TEST_VALUE);
+        FindCaseForRoleModificationRequest request = FindCaseForRoleModificationRequest.builder()
+            .caseSubmissionReference(CASE_SUBMISSION_REFERENCE)
+            .respondentName(RESPONDENT_NAME)
+            .claimantFirstNames(CLAIMANT_FIRST_NAMES)
+            .claimantLastName(CLAIMANT_LAST_NAME)
+            .build();
+        String elasticSearchQuery = ElasticSearchQueryBuilder.buildByFindCaseForRoleModificationRequest(request);
+        CaseDetails caseDetails = CaseDetails.builder()
+            .id(Long.parseLong(CASE_SUBMISSION_REFERENCE))
+            .caseTypeId(ENGLAND_CASE_TYPE)
+            .state(TestConstants.TEST_CASE_STATE_ACCEPTED)
+            .build();
+
+        when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(ccdApi.searchCases(TEST_SERVICE_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN,
+                                TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES, elasticSearchQuery))
+            .thenReturn(SearchResult.builder().cases(List.of(caseDetails)).total(1).build());
+        when(ccdApi.searchCases(TEST_SERVICE_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN,
+                                SCOTLAND_CASE_TYPE, elasticSearchQuery))
+            .thenReturn(SearchResult.builder().build());
+        when(idamClient.getUserInfo(TEST_SERVICE_AUTH_TOKEN))
+            .thenReturn(UserInfo.builder().uid(DUMMY_USER_ID).build());
+        when(restTemplate.postForObject(
+            eq(CCD_API_URL_PARAMETER_TEST_VALUE + CASE_USER_ROLE_CCD_API_POST_METHOD_NAME),
+            any(HttpEntity.class),
+            eq(CaseAssignedUserRolesResponse.class)
+        )).thenReturn(CaseAssignedUserRolesResponse.builder()
+                          .caseAssignedUserRoles(List.of(
+                              CaseAssignmentUserRole.builder()
+                                  .caseDataId(CASE_SUBMISSION_REFERENCE)
+                                  .caseRole(CASE_USER_ROLE_CREATOR)
+                                  .userId(DUMMY_USER_ID)
+                                  .build()
+                          ))
+                          .build());
+
+        assertThat(manageCaseRoleService.findCaseForRoleModification(request, TEST_SERVICE_AUTH_TOKEN)).isNull();
+    }
+
+    @Test
+    void getUserCaseByCaseUserRole_shouldThrowWhenCaseNotFound() {
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(ccdApi.getCase(DUMMY_AUTHORISATION_TOKEN, TEST_SERVICE_AUTH_TOKEN, TEST_CASE_ID_STRING)).thenReturn(null);
+
+        ManageCaseRoleException exception = assertThrows(
+            ManageCaseRoleException.class,
+            () -> manageCaseRoleService.getUserCaseByCaseUserRole(
+                DUMMY_AUTHORISATION_TOKEN,
+                TEST_CASE_ID_STRING,
+                CASE_USER_ROLE_CREATOR
+            )
+        );
+
+        assertThat(exception.getMessage()).contains("Unable to find user case by case id");
+    }
+
+    @Test
+    void assignCreatorRole_shouldReturnProfessionalUserWhenRoleAssignmentDetectsProfessionalUser() {
+        ReflectionTestUtils.setField(manageCaseRoleService, CCD_API_URL_PARAMETER_NAME,
+                                     CCD_API_URL_PARAMETER_TEST_VALUE);
+        ModifyCaseUserRolesRequest request = buildCreatorRoleRequest();
+        CaseDetails caseDetails = caseTestData.getCaseDetailsWithCaseData();
+        StartEventResponse startEventResponse = StartEventResponse.builder()
+            .caseDetails(caseDetails)
+            .eventId(UPDATE_CASE_SUBMITTED.toString())
+            .token(DUMMY_AUTHORISATION_TOKEN)
+            .build();
+
+        when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(restTemplate.exchange(anyString(),
+                                   eq(HttpMethod.GET),
+                                   any(HttpEntity.class),
+                                   eq(CaseUserAssignmentData.class)))
+            .thenReturn(new ResponseEntity<>(
+                CaseUserAssignmentData.builder()
+                    .caseUserAssignments(List.of())
+                    .build(),
+                HttpStatus.OK
+            ));
+        when(ccdApi.getCase(DUMMY_AUTHORISATION_TOKEN, TEST_SERVICE_AUTH_TOKEN, CASE_ID)).thenReturn(caseDetails);
+        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN))
+            .thenReturn(UserInfo.builder().uid(USER_ID).sub("test@email.com").build());
+        when(ccdApi.startEventForCaseWorker(
+            eq(DUMMY_AUTHORISATION_TOKEN),
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(USER_ID),
+            eq(EMPLOYMENT),
+            eq(caseDetails.getCaseTypeId()),
+            eq(CASE_ID),
+            eq(UPDATE_CASE_SUBMITTED.toString())
+        )).thenReturn(startEventResponse);
+        when(restTemplate.exchange(
+            eq(CCD_API_URL_PARAMETER_TEST_VALUE + ManageCaseRoleConstants.CASE_USERS_API_URL),
+            eq(HttpMethod.POST),
+            any(HttpEntity.class),
+            eq(CaseAssignmentUserRolesResponse.class)
+        )).thenThrow(new ProfessionalUserException("professional user"));
+
+        CaseAssignmentResponse response = manageCaseRoleService.assignCreatorRole(DUMMY_AUTHORISATION_TOKEN, request);
+
+        assertThat(response.getStatus()).isEqualTo(CaseAssignmentResponse.AssignmentStatus.PROFESSIONAL_USER);
+        assertThat(response.getMessage()).contains("professional user");
+    }
+
+    @Test
+    void assignCreatorRole_shouldRollbackWhenSubmitUpdateFails() {
+        ReflectionTestUtils.setField(manageCaseRoleService, CCD_API_URL_PARAMETER_NAME,
+                                     CCD_API_URL_PARAMETER_TEST_VALUE);
+        ModifyCaseUserRolesRequest request = buildCreatorRoleRequest();
+        CaseDetails caseDetails = caseTestData.getCaseDetailsWithCaseData();
+        StartEventResponse startEventResponse = StartEventResponse.builder()
+            .caseDetails(caseDetails)
+            .eventId(UPDATE_CASE_SUBMITTED.toString())
+            .token(DUMMY_AUTHORISATION_TOKEN)
+            .build();
+
+        when(adminUserService.getAdminUserToken()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+        when(restTemplate.exchange(anyString(),
+                                   eq(HttpMethod.GET),
+                                   any(HttpEntity.class),
+                                   eq(CaseUserAssignmentData.class)))
+            .thenReturn(new ResponseEntity<>(
+                CaseUserAssignmentData.builder()
+                    .caseUserAssignments(List.of())
+                    .build(),
+                HttpStatus.OK
+            ));
+        when(ccdApi.getCase(DUMMY_AUTHORISATION_TOKEN, TEST_SERVICE_AUTH_TOKEN, CASE_ID)).thenReturn(caseDetails);
+        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN))
+            .thenReturn(UserInfo.builder().uid(USER_ID).sub("test@email.com").build());
+        when(ccdApi.startEventForCaseWorker(
+            eq(DUMMY_AUTHORISATION_TOKEN),
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(USER_ID),
+            eq(EMPLOYMENT),
+            eq(caseDetails.getCaseTypeId()),
+            eq(CASE_ID),
+            eq(UPDATE_CASE_SUBMITTED.toString())
+        )).thenReturn(startEventResponse);
+        when(restTemplate.exchange(
+            eq(CCD_API_URL_PARAMETER_TEST_VALUE + ManageCaseRoleConstants.CASE_USERS_API_URL),
+            eq(HttpMethod.POST),
+            any(HttpEntity.class),
+            eq(CaseAssignmentUserRolesResponse.class)
+        )).thenReturn(new ResponseEntity<>(HttpStatus.OK));
+        when(restTemplate.exchange(
+            eq(CCD_API_URL_PARAMETER_TEST_VALUE + ManageCaseRoleConstants.CASE_USERS_API_URL),
+            eq(HttpMethod.DELETE),
+            any(HttpEntity.class),
+            eq(CaseAssignmentUserRolesResponse.class)
+        )).thenReturn(new ResponseEntity<>(HttpStatus.OK));
+        when(caseDetailsConverter.caseDataContent(eq(startEventResponse), any(CaseData.class)))
+            .thenReturn(null);
+        when(ccdApi.submitEventForCaseWorker(
+            eq(DUMMY_AUTHORISATION_TOKEN),
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(USER_ID),
+            eq(EMPLOYMENT),
+            eq(caseDetails.getCaseTypeId()),
+            eq(caseDetails.getId().toString()),
+            eq(true),
+            eq(null)
+        )).thenThrow(new RuntimeException("submit failed"));
+
+        assertThrows(ManageCaseRoleException.class,
+                     () -> manageCaseRoleService.assignCreatorRole(DUMMY_AUTHORISATION_TOKEN, request));
+
+        verify(restTemplate).exchange(
+            eq(CCD_API_URL_PARAMETER_TEST_VALUE + ManageCaseRoleConstants.CASE_USERS_API_URL),
+            eq(HttpMethod.DELETE),
+            any(HttpEntity.class),
+            eq(CaseAssignmentUserRolesResponse.class)
+        );
+    }
+
+    @Test
+    void getCaseUserRolesByCaseAndUserIdsAac_shouldPropagateIOExceptionFromHeaderCreation() {
+        ReflectionTestUtils.setField(manageCaseRoleService, AAC_URL_PARAMETER_NAME, AAC_URL_PARAMETER_TEST_VALUE);
+        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+
+        try (MockedStatic<RemoteServiceUtil> remoteServiceUtil = mockStatic(RemoteServiceUtil.class)) {
+            remoteServiceUtil.when(() -> RemoteServiceUtil.buildHeaders(
+                DUMMY_AUTHORISATION_TOKEN,
+                TEST_SERVICE_AUTH_TOKEN
+            )).thenThrow(new IOException("boom"));
+
+            assertThrows(
+                IOException.class,
+                () -> manageCaseRoleService.getCaseUserRolesByCaseAndUserIdsAac(
+                    DUMMY_AUTHORISATION_TOKEN,
+                    List.of(caseTestData.getCaseDetails())
+                )
+            );
+        }
+    }
+
+    @Test
+    void getCaseUserRolesByCaseAndUserIdsCcd_shouldPropagateIOExceptionFromHeaderCreation() {
+        ReflectionTestUtils.setField(manageCaseRoleService, CCD_API_URL_PARAMETER_NAME,
+                                     CCD_API_URL_PARAMETER_TEST_VALUE);
+        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
+        when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
+
+        try (MockedStatic<RemoteServiceUtil> remoteServiceUtil = mockStatic(RemoteServiceUtil.class)) {
+            remoteServiceUtil.when(() -> RemoteServiceUtil.buildHeaders(
+                DUMMY_AUTHORISATION_TOKEN,
+                TEST_SERVICE_AUTH_TOKEN
+            )).thenThrow(new IOException("boom"));
+
+            assertThrows(
+                IOException.class,
+                () -> manageCaseRoleService.getCaseUserRolesByCaseAndUserIdsCcd(
+                    DUMMY_AUTHORISATION_TOKEN,
+                    List.of(caseTestData.getCaseDetails())
+                )
+            );
+        }
+    }
+
+    @Test
+    void removeRespondentRepresentativeFromCaseData_shouldSkipOrganisationResetWhenRoleBlank() {
+        CaseDetails caseDetails = caseTestData.getCaseDetailsWithCaseData();
+        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
+        caseData.getRespondentCollection().getFirst().setId(USER_ID);
+        caseData.setRepCollection(List.of(RepresentedTypeRItem.builder().value(
+            RepresentedTypeR.builder().respondentId(USER_ID).build()).build()));
+        caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
+        StartEventResponse startEventResponse = StartEventResponse.builder()
+            .caseDetails(caseDetails)
+            .eventId(UPDATE_CASE_SUBMITTED.name())
+            .token(DUMMY_AUTHORISATION_TOKEN)
+            .build();
+
+        when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
+        when(authTokenGenerator.generate()).thenReturn(DUMMY_AUTHORISATION_TOKEN);
+        when(ccdApi.startEventForCitizen(
+            DUMMY_AUTHORISATION_TOKEN,
+            DUMMY_AUTHORISATION_TOKEN,
+            userInfo.getUid(),
+            EMPLOYMENT,
+            caseDetails.getCaseTypeId(),
+            caseDetails.getId().toString(),
+            REMOVE_OWN_REP_AS_RESPONDENT.name()
+        )).thenReturn(startEventResponse);
+        when(caseDetailsConverter.caseDataContent(eq(startEventResponse), any(CaseData.class)))
+            .thenReturn(null);
+        when(ccdApi.submitEventForCitizen(
+            DUMMY_AUTHORISATION_TOKEN,
+            DUMMY_AUTHORISATION_TOKEN,
+            userInfo.getUid(),
+            JURISDICTION_ID,
+            caseDetails.getCaseTypeId(),
+            caseDetails.getId().toString(),
+            true,
+            null
+        )).thenReturn(caseDetails);
+
+        CaseDetails updatedCaseDetails = manageCaseRoleService.removeRespondentRepresentativeFromCaseData(
+            DUMMY_AUTHORISATION_TOKEN,
+            caseDetails,
+            "0",
+            ""
+        );
+
+        assertThat(updatedCaseDetails).isNotNull();
+    }
+
+    private static ModifyCaseUserRolesRequest buildCreatorRoleRequest() {
+        return ModifyCaseUserRolesRequest.builder()
+            .modifyCaseUserRoles(List.of(
+                ModifyCaseUserRole.builder()
+                    .userId(USER_ID)
+                    .caseDataId(CASE_ID)
+                    .caseRole(CASE_USER_ROLE_CREATOR)
+                    .caseTypeId(TestConstants.TEST_CASE_TYPE_ID_ENGLAND_WALES)
+                    .respondentName(RESPONDENT_NAME)
+                    .build()
+            ))
+            .build();
     }
 }

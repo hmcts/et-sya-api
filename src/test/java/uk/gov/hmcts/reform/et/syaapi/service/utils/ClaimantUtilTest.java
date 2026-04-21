@@ -7,6 +7,8 @@ import uk.gov.hmcts.et.common.model.ccd.CaseUserAssignment;
 import uk.gov.hmcts.et.common.model.ccd.CaseUserAssignmentData;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationType;
 import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
+import uk.gov.hmcts.et.common.model.ccd.types.Organisation;
+import uk.gov.hmcts.et.common.model.ccd.types.RepresentedTypeC;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.HubLinksStatuses;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.exception.CaseUserRoleConflictException;
@@ -23,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.RESPONDENT_TITLE;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.YES;
 import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_CREATOR;
+import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CASE_USER_ROLE_DEFENDANT;
 
 class ClaimantUtilTest {
 
@@ -39,7 +42,23 @@ class ClaimantUtilTest {
         caseDetails = createCaseDetailsWithCaseData(caseData);
     }
 
-    // ==================== isClaimantNonSystemUser tests ====================
+    @Test
+    void isClaimantNonSystemUser_shouldReturnTrueWhenCaseDataIsNull() {
+        assertTrue(ClaimantUtil.isClaimantNonSystemUser(null));
+    }
+
+    @Test
+    void isClaimantNonSystemUser_shouldReturnFalseForRepresentedClaimantWithMyHmctsCase() {
+        CaseData representedCaseData = new CaseData();
+        representedCaseData.setMigratedFromEcm(YES);
+        representedCaseData.setClaimantRepresentedQuestion(YES);
+        representedCaseData.setRepresentativeClaimantType(new RepresentedTypeC());
+        representedCaseData.getRepresentativeClaimantType().setMyHmctsOrganisation(
+            Organisation.builder().organisationID("org-1").organisationName("Org").build()
+        );
+
+        assertFalse(ClaimantUtil.isClaimantNonSystemUser(representedCaseData));
+    }
 
     @Test
     void isClaimantNonSystemUserTest_BothNull() {
@@ -150,6 +169,26 @@ class ClaimantUtilTest {
         boolean result = ClaimantUtil.validateClaimantAssignment(emptyCaseDetails, null, TEST_USER_ID);
 
         assertFalse(result);
+    }
+
+    @Test
+    void validateClaimantAssignment_shouldReturnFalseWhenAssignmentsContainNoCreatorRole() {
+        CaseUserAssignmentData assignmentData = CaseUserAssignmentData.builder()
+            .caseUserAssignments(List.of(
+                CaseUserAssignment.builder()
+                    .userId(DIFFERENT_USER_ID)
+                    .caseRole(CASE_USER_ROLE_DEFENDANT)
+                    .build()
+            ))
+            .build();
+
+        boolean result = ClaimantUtil.validateClaimantAssignment(
+            CaseDetails.builder().id(TEST_CASE_ID).build(),
+            assignmentData,
+            TEST_USER_ID
+        );
+
+        assertThat(result).isFalse();
     }
 
     @Test
