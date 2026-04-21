@@ -10,7 +10,6 @@ import uk.gov.hmcts.et.common.model.ccd.items.GenericTseApplicationTypeItem;
 import uk.gov.hmcts.et.common.model.ccd.types.citizenhub.HubLinksStatuses;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.exception.CaseUserRoleConflictException;
-import uk.gov.hmcts.reform.et.syaapi.exception.CaseUserRoleNotFoundException;
 import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 
 import java.util.HashMap;
@@ -28,7 +27,6 @@ import static uk.gov.hmcts.reform.et.syaapi.constants.ManageCaseRoleConstants.CA
 class ClaimantUtilTest {
 
     private static final String TEST_USER_ID = "test-user-id-12345";
-    private static final String TEST_USER_EMAIL = "test@test.com";
     private static final String DIFFERENT_USER_ID = "different-user-id-67890";
     private static final Long TEST_CASE_ID = 1646225213651590L;
 
@@ -72,22 +70,22 @@ class ClaimantUtilTest {
         assertTrue(ClaimantUtil.isClaimantNonSystemUser(caseData));
     }
 
-    // ==================== setClaimantIdamId tests ====================
+    // ==================== validateClaimantAssignment tests ====================
 
     @Test
-    void setClaimantIdamId_Assignment_SetsClaimantIdAndHubLinksStatuses() {
+    void validateClaimantAssignment_Assignment_NoExistingAssignments_ReturnsFalseWithoutMutatingCaseData() {
         caseDetails = createCaseDetailsWithCaseData(caseData);
 
-        boolean result = ClaimantUtil.setClaimantIdamId(
-            caseDetails, null, TEST_USER_ID, TEST_USER_EMAIL);
+        boolean result = ClaimantUtil.validateClaimantAssignment(
+            caseDetails, null, TEST_USER_ID);
 
         assertFalse(result);
         CaseData updatedCaseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
-        assertThat(updatedCaseData.getClaimantId()).isEqualTo(TEST_USER_ID, TEST_USER_EMAIL);
+        assertThat(updatedCaseData.getClaimantId()).isNull();
     }
 
     @Test
-    void setClaimantIdamId_Assignment_AlreadyAssignedSameUser_ReturnsTrue() {
+    void validateClaimantAssignment_Assignment_AlreadyAssignedSameUser_ReturnsTrue() {
         CaseUserAssignmentData assignmentData = CaseUserAssignmentData.builder()
             .caseUserAssignments(List.of(CaseUserAssignment.builder()
                                              .userId(TEST_USER_ID)
@@ -96,14 +94,14 @@ class ClaimantUtilTest {
             .build();
         caseDetails = createCaseDetailsWithCaseData(caseData);
 
-        boolean result = ClaimantUtil.setClaimantIdamId(
-            caseDetails, assignmentData, TEST_USER_ID, TEST_USER_EMAIL);
+        boolean result = ClaimantUtil.validateClaimantAssignment(
+            caseDetails, assignmentData, TEST_USER_ID);
 
         assertTrue(result);
     }
 
     @Test
-    void setClaimantIdamId_Assignment_AlreadyAssignedDifferentUser_ThrowsException() {
+    void validateClaimantAssignment_Assignment_AlreadyAssignedDifferentUser_ThrowsException() {
         CaseUserAssignmentData assignmentData = CaseUserAssignmentData.builder()
             .caseUserAssignments(List.of(CaseUserAssignment.builder()
                                              .userId(DIFFERENT_USER_ID)
@@ -113,33 +111,33 @@ class ClaimantUtilTest {
         caseDetails = createCaseDetailsWithCaseData(caseData);
 
         CaseUserRoleConflictException exception = assertThrows(CaseUserRoleConflictException.class, () ->
-            ClaimantUtil.setClaimantIdamId(
-                caseDetails, assignmentData, TEST_USER_ID, TEST_USER_EMAIL));
+            ClaimantUtil.validateClaimantAssignment(
+                caseDetails, assignmentData, TEST_USER_ID));
 
         assertThat(exception.getMessage()).contains("case has already been assigned");
     }
 
     @Test
-    void setClaimantIdamId_Assignment_DoesNotOverwriteExistingHubLinksStatuses() {
+    void validateClaimantAssignment_Assignment_DoesNotOverwriteExistingHubLinksStatuses() {
         HubLinksStatuses existingStatuses = new HubLinksStatuses();
         existingStatuses.setPersonalDetails("completed");
         caseData.setHubLinksStatuses(existingStatuses);
         caseDetails = createCaseDetailsWithCaseData(caseData);
 
-        ClaimantUtil.setClaimantIdamId(
-            caseDetails, null, TEST_USER_ID, TEST_USER_EMAIL);
+        ClaimantUtil.validateClaimantAssignment(
+            caseDetails, null, TEST_USER_ID);
 
         CaseData updatedCaseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
         assertThat(updatedCaseData.getHubLinksStatuses().getPersonalDetails()).isEqualTo("completed");
     }
 
     @Test
-    void setClaimantIdamId_Revoke_DoesNotModifyCaseData() {
+    void validateClaimantDataOnCase_Revoke_DoesNotModifyCaseData() {
         caseData.setClaimantId(TEST_USER_ID);
         caseDetails = createCaseDetailsWithCaseData(caseData);
 
-        boolean result = ClaimantUtil.setClaimantIdamId(
-            caseDetails, null, TEST_USER_ID, TEST_USER_EMAIL);
+        boolean result = ClaimantUtil.validateClaimantAssignment(
+            caseDetails, null, TEST_USER_ID);
 
         assertFalse(result);
         CaseData updatedCaseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(caseDetails.getData());
@@ -147,14 +145,11 @@ class ClaimantUtilTest {
     }
 
     @Test
-    void setClaimantIdamId_EmptyCaseData_ThrowsException() {
+    void validateClaimantAssignment_EmptyCaseData_ReturnsFalse() {
         CaseDetails emptyCaseDetails = CaseDetails.builder().id(TEST_CASE_ID).data(null).build();
+        boolean result = ClaimantUtil.validateClaimantAssignment(emptyCaseDetails, null, TEST_USER_ID);
 
-        CaseUserRoleNotFoundException exception = assertThrows(CaseUserRoleNotFoundException.class, () ->
-            ClaimantUtil.setClaimantIdamId(
-                emptyCaseDetails, null, TEST_USER_ID, TEST_USER_EMAIL));
-
-        assertThat(exception.getMessage()).contains("does not have case data");
+        assertFalse(result);
     }
 
     @Test

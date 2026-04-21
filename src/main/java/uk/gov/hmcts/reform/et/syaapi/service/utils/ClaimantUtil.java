@@ -2,19 +2,14 @@ package uk.gov.hmcts.reform.et.syaapi.service.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.et.common.model.ccd.CaseUserAssignment;
 import uk.gov.hmcts.et.common.model.ccd.CaseUserAssignmentData;
-import uk.gov.hmcts.et.common.model.ccd.types.ClaimantType;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.et.syaapi.exception.CaseUserRoleConflictException;
-import uk.gov.hmcts.reform.et.syaapi.exception.CaseUserRoleNotFoundException;
-import uk.gov.hmcts.reform.et.syaapi.helper.EmployeeObjectMapper;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 import static uk.gov.hmcts.ecm.common.model.helper.Constants.NO;
@@ -53,16 +48,9 @@ public final class ClaimantUtil {
             && ObjectUtils.isNotEmpty(caseData.getRepresentativeClaimantType().getMyHmctsOrganisation());
     }
 
-    public static boolean setClaimantIdamId(CaseDetails caseDetails,
-                                            CaseUserAssignmentData caseUserAssignmentData,
-                                            String idamId,
-                                            String userEmailAddress) {
-        Map<String, Object> existingCaseData = caseDetails.getData();
-        if (MapUtils.isEmpty(existingCaseData)) {
-            throw new CaseUserRoleNotFoundException(
-                String.format("Case details %s does not have case data", caseDetails.getId()));
-        }
-
+    public static boolean validateClaimantAssignment(CaseDetails caseDetails,
+                                                     CaseUserAssignmentData caseUserAssignmentData,
+                                                     String idamId) {
         List<CaseUserAssignment> assignments =
             caseUserAssignmentData == null ? null : caseUserAssignmentData.getCaseUserAssignments();
 
@@ -82,18 +70,6 @@ public final class ClaimantUtil {
                     String.format(EXCEPTION_IDAM_ID_ALREADY_EXISTS, caseDetails.getId()));
             }
         }
-
-        // Only mutate and map data if the user wasn't already assigned
-        CaseData caseData = EmployeeObjectMapper.convertCaseDataMapToCaseDataObject(existingCaseData);
-        caseData.setClaimantId(idamId);
-        if (caseData.getClaimantType() != null) {
-            caseData.getClaimantType().setClaimantEmailAddress(userEmailAddress);
-        } else {
-            ClaimantType claimantType = new ClaimantType();
-            claimantType.setClaimantEmailAddress(userEmailAddress);
-            caseData.setClaimantType(claimantType);
-        }
-        caseDetails.setData(EmployeeObjectMapper.mapCaseDataToLinkedHashMap(caseData));
         return false;
     }
 }

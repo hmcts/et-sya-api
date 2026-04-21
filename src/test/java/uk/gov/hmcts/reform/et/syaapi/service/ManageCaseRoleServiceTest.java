@@ -914,13 +914,32 @@ class ManageCaseRoleServiceTest {
                                        new ResponseEntity<>(emptyAssignmentData, HttpStatus.OK));
         when(ccdApi.getCase(DUMMY_AUTHORISATION_TOKEN, TEST_SERVICE_AUTH_TOKEN, CASE_ID))
             .thenReturn(expectedCaseDetails);
+        StartEventResponse startEventResponse = StartEventResponse.builder()
+            .caseDetails(expectedCaseDetails)
+            .eventId(UPDATE_CASE_SUBMITTED.toString())
+            .token(DUMMY_AUTHORISATION_TOKEN)
+            .build();
+        when(ccdApi.startEventForCaseWorker(
+            eq(DUMMY_AUTHORISATION_TOKEN),
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(USER_ID),
+            eq(EMPLOYMENT),
+            eq(expectedCaseDetails.getCaseTypeId()),
+            eq(CASE_ID),
+            eq(UPDATE_CASE_SUBMITTED.toString())
+        )).thenReturn(startEventResponse);
         when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN))
             .thenReturn(UserInfo.builder().uid(USER_ID).sub("test@email.com").build());
-        when(caseService.triggerEvent(
+        when(caseDetailsConverter.caseDataContent(eq(startEventResponse), any(CaseData.class)))
+            .thenReturn(null);
+        when(ccdApi.submitEventForCaseWorker(
             eq(DUMMY_AUTHORISATION_TOKEN),
-            eq(expectedCaseDetails.getId().toString()),
-            eq(UPDATE_CASE_SUBMITTED),
+            eq(TEST_SERVICE_AUTH_TOKEN),
+            eq(USER_ID),
+            eq(EMPLOYMENT),
             eq(expectedCaseDetails.getCaseTypeId()),
+            eq(expectedCaseDetails.getId().toString()),
+            eq(true),
             any()
         )).thenReturn(expectedCaseDetails);
         when(restTemplate.exchange(ArgumentMatchers.anyString(),
