@@ -1523,7 +1523,10 @@ class ManageCaseRoleServiceTest {
 
         when(adminUserService.getAdminUserToken()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
-        when(ccdApi.searchCases(TEST_SERVICE_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN, ENGLAND_CASE_TYPE, elasticSearchQuery))
+        when(ccdApi.searchCases(TEST_SERVICE_AUTH_TOKEN,
+                                TEST_SERVICE_AUTH_TOKEN,
+                                ENGLAND_CASE_TYPE,
+                                elasticSearchQuery))
             .thenReturn(SearchResult.builder().build());
         when(ccdApi.searchCases(TEST_SERVICE_AUTH_TOKEN, TEST_SERVICE_AUTH_TOKEN,
                                 SCOTLAND_CASE_TYPE, elasticSearchQuery))
@@ -1647,7 +1650,6 @@ class ManageCaseRoleServiceTest {
     void assignCreatorRole_shouldRollbackWhenSubmitUpdateFails() {
         ReflectionTestUtils.setField(manageCaseRoleService, CCD_API_URL_PARAMETER_NAME,
                                      CCD_API_URL_PARAMETER_TEST_VALUE);
-        ModifyCaseUserRolesRequest request = buildCreatorRoleRequest();
         CaseDetails caseDetails = caseTestData.getCaseDetailsWithCaseData();
         StartEventResponse startEventResponse = StartEventResponse.builder()
             .caseDetails(caseDetails)
@@ -1704,6 +1706,7 @@ class ManageCaseRoleServiceTest {
             eq(null)
         )).thenThrow(new RuntimeException("submit failed"));
 
+        ModifyCaseUserRolesRequest request = buildCreatorRoleRequest();
         assertThrows(ManageCaseRoleException.class,
                      () -> manageCaseRoleService.assignCreatorRole(DUMMY_AUTHORISATION_TOKEN, request));
 
@@ -1716,7 +1719,7 @@ class ManageCaseRoleServiceTest {
     }
 
     @Test
-    void getCaseUserRolesByCaseAndUserIdsAac_shouldPropagateIOExceptionFromHeaderCreation() {
+    void getCaseUserRolesByCaseAndUserIdsAac_shouldPropagateIoExceptionFromHeaderCreation() {
         ReflectionTestUtils.setField(manageCaseRoleService, AAC_URL_PARAMETER_NAME, AAC_URL_PARAMETER_TEST_VALUE);
         when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_AUTH_TOKEN);
@@ -1738,7 +1741,7 @@ class ManageCaseRoleServiceTest {
     }
 
     @Test
-    void getCaseUserRolesByCaseAndUserIdsCcd_shouldPropagateIOExceptionFromHeaderCreation() {
+    void getCaseUserRolesByCaseAndUserIdsCcd_shouldPropagateIoExceptionFromHeaderCreation() {
         ReflectionTestUtils.setField(manageCaseRoleService, CCD_API_URL_PARAMETER_NAME,
                                      CCD_API_URL_PARAMETER_TEST_VALUE);
         when(idamClient.getUserInfo(DUMMY_AUTHORISATION_TOKEN)).thenReturn(userInfo);

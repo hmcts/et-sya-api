@@ -294,7 +294,7 @@ class ManageCaseRoleControllerTest {
 
     @Test
     @SneakyThrows
-    void findCaseForRoleModification_shouldWrapIOException() {
+    void findCaseForRoleModification_shouldWrapIoException() {
         when(manageCaseRoleService.findCaseForRoleModification(any(), anyString()))
             .thenThrow(new IOException("io error"));
 
