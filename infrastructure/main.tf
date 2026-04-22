@@ -55,6 +55,12 @@ module "key-vault" {
   product_group_name          = "DTS Employment Tribunals"
   common_tags                 = local.tags
   managed_identity_object_ids = [data.azurerm_user_assigned_identity.et-identity.principal_id]
+  jenkins_object_id           = data.azurerm_user_assigned_identity.jenkins.principal_id
+}
+
+data "azurerm_user_assigned_identity" "jenkins" {
+  name                = "jenkins-${var.env}-mi"
+  resource_group_name = "managed-identities-${var.env}-rg"
 }
 
 resource "azurerm_key_vault_secret" "et_sya_api_s2s_secret" {
