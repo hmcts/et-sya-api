@@ -177,6 +177,57 @@ class ManageCaseRoleServiceUtilTest {
     }
 
     @Test
+    void isCaseRoleAssignmentExceptionForSameUser_shouldReturnFalseWhenMessageIsNull() {
+        assertThat(ManageCaseRoleServiceUtil.isCaseRoleAssignmentExceptionForSameUser(new Exception())).isFalse();
+    }
+
+    @Test
+    void createAacSearchCaseUsersUriByCaseAndUserIds_shouldReturnEmptyWhenCaseIdsCannotBeDerived() {
+        List<CaseDetails> invalidCaseDetails = new ArrayList<>();
+        invalidCaseDetails.add(CaseDetails.builder().build());
+        invalidCaseDetails.add(null);
+        String uri = ManageCaseRoleServiceUtil.createAacSearchCaseUsersUriByCaseAndUserIds(
+            AAC_URL_TEST_VALUE,
+            invalidCaseDetails,
+            List.of(UserInfo.builder().uid("123").build())
+        );
+
+        assertThat(uri).isEmpty();
+    }
+
+    @Test
+    void createAacSearchCaseUsersUriByCaseAndUserIds_shouldIgnoreInvalidUserInfos() {
+        List<CaseDetails> caseDetailsList = new CaseTestData().getRequestCaseDataListScotland();
+        List<UserInfo> invalidUserInfos = new ArrayList<>();
+        invalidUserInfos.add(null);
+        invalidUserInfos.add(UserInfo.builder().uid("").build());
+        invalidUserInfos.add(UserInfo.builder().uid(" ").build());
+
+        String uri = ManageCaseRoleServiceUtil.createAacSearchCaseUsersUriByCaseAndUserIds(
+            AAC_URL_TEST_VALUE,
+            caseDetailsList,
+            invalidUserInfos
+        );
+
+        String expectedUri = AAC_URL_TEST_VALUE
+            + ManageCaseRoleConstants.CASE_USERS_API_URL
+            + "?case_ids=" + caseDetailsList.getFirst().getId()
+            + "&case_ids=" + caseDetailsList.get(1).getId();
+
+        assertThat(uri).isEqualTo(expectedUri);
+    }
+
+    @Test
+    void checkCaseDetailsList_shouldReturnNullWhenFirstCaseStateIsNotAccepted() {
+        CaseDetails caseDetails = CaseDetails.builder()
+            .id(1234567890123456L)
+            .state("Submitted")
+            .build();
+
+        assertThat(ManageCaseRoleServiceUtil.checkCaseDetailsList(List.of(caseDetails))).isNull();
+    }
+
+    @Test
     void theCreateCaseUserRoleRequest() {
         CaseAssignmentUserRolesRequest expectedCaseAssignmentUserRolesRequest = CaseAssignmentUserRolesRequest.builder()
             .caseAssignmentUserRoles(List.of(CaseAssignmentUserRole.builder()

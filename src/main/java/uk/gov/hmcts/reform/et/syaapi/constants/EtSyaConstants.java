@@ -42,6 +42,7 @@ public final class EtSyaConstants {
     public static final String ET1_ATTACHMENT = "ET1 Attachment";
     public static final String REMOTE_REPO = "https://github.com/hmcts/et-sya-api";
     public static final String RESOURCE_NOT_FOUND = "Resource not found for case id %s, reason: %s";
+    public static final String ET_SYA_FRONTEND = "et-sya-frontend";
 
     public static final String SEND_EMAIL_PARAMS_ACAS_PDF1_LINK_KEY = "link_to_acas_cert_pdf_file_1";
     public static final String SEND_EMAIL_PARAMS_ACAS_PDF2_LINK_KEY = "link_to_acas_cert_pdf_file_2";

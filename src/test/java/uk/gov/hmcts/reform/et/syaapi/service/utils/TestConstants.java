@@ -141,6 +141,15 @@ public final class TestConstants {
                       "query": "Yes"
                     }
                   }
+                },
+                {
+                  "terms": {
+                    "state.keyword": [
+                      "Delete",
+                      "Transferred",
+                      "AWAITING_SUBMISSION_TO_HMCTS"
+                    ]
+                  }
                 }
               ]
             }
