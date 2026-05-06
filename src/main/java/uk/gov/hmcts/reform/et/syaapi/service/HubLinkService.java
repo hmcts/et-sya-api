@@ -1,7 +1,10 @@
 package uk.gov.hmcts.reform.et.syaapi.service;
 
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.et.common.model.ccd.CaseData;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -28,6 +31,7 @@ public class HubLinkService {
      * @param authorization is used to find the {@link UserInfo} for request
      * @return the associated {@link CaseDetails} if the case is created
      */
+    @Retryable(retryFor = FeignException.Conflict.class, backoff = @Backoff(delay = 200, multiplier = 2.0))
     public CaseDetails updateHubLinkStatuses(HubLinksStatusesRequest request,
                                              String authorization,
                                              String caseUserRole) {
