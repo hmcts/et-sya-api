@@ -63,6 +63,7 @@ data "azurerm_user_assigned_identity" "jenkins" {
   resource_group_name = "managed-identities-${var.env}-rg"
 }
 
+
 resource "azurerm_key_vault_secret" "et_sya_api_s2s_secret" {
   name         = "et-sya-api-s2s-secret"
   value        = data.azurerm_key_vault_secret.et_sya_api_s2s_key.value
