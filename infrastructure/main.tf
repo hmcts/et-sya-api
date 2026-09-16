@@ -45,7 +45,7 @@ data "azurerm_key_vault_secret" "et_sya_api_s2s_key" {
 }
 
 module "key-vault" {
-  source                      = "git@github.com:hmcts/cnp-module-key-vault?ref=master"
+  source                      = "git@github.com:hmcts/cnp-module-key-vault?ref=DTSPO-31965/remove-jenkins-ptl-access"
   name                        = "${var.product}-${var.component}-${var.env}"
   product                     = var.product
   env                         = var.env
