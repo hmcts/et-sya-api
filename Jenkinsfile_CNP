@@ -1,7 +1,7 @@
 #!groovy
 import uk.gov.hmcts.contino.AppPipelineDsl
 
-@Library("Infrastructure@DTSPO-35133/master")
+@Library("Infrastructure@DTSPO-35113/master")
 
 def type = "java"
 def product = "et"
