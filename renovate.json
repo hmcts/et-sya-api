@@ -3,5 +3,30 @@
   "extends": [
     "local>hmcts/.github:renovate-config",
     "local>hmcts/.github//renovate/automerge-all"
+  ],
+  "schedule": ["after 7am and before 9am every weekday"],
+  "updateNotScheduled": false,
+  "prConcurrentLimit": 3,
+  "branchConcurrentLimit": 3,
+  "automergeSchedule": ["before 12pm every weekday"],
+  "lockFileMaintenance": {
+    "enabled": false
+  },
+  "packageRules": [
+    {
+      "matchPackageNames": ["org.elasticsearch:elasticsearch"],
+      "allowedVersions": "<=7"
+    },
+    {
+      "matchPackageNames": ["com.github.hmcts.java-logging:**"],
+      "allowedVersions": "<=5"
+    },
+    {
+      "matchPackageNames": [
+        "au.com.dius.pact.consumer:java8",
+        "au.com.dius.pact.consumer:junit5"
+      ],
+      "allowedVersions": "<=4.1"
+    }
   ]
 }
