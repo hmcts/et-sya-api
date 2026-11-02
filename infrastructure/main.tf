@@ -15,12 +15,6 @@ locals {
     })
   )
 
-  api_mgmt_suffix = var.apim_suffix == "" ? var.env : var.apim_suffix
-  api_mgmt_name   = "cft-api-mgmt-${local.api_mgmt_suffix}"
-  api_mgmt_rg     = join("-", ["cft", var.env, "network-rg"])
-
-  et_sya_api_url = join("", ["http://et-sya-api-", var.env, ".service.core-compute-", var.env, ".internal"])
-  s2sUrl         = join("", ["http://rpe-service-auth-provider-", var.env, ".service.core-compute-", var.env, ".internal"])
 }
 
 resource "azurerm_resource_group" "rg" {
@@ -67,11 +61,6 @@ resource "azurerm_key_vault_secret" "et_sya_api_s2s_secret" {
   name         = "et-sya-api-s2s-secret"
   value        = data.azurerm_key_vault_secret.et_sya_api_s2s_key.value
   key_vault_id = module.key-vault.key_vault_id
-}
-
-data "azurerm_key_vault_secret" "s2s_client_id" {
-  key_vault_id = module.key-vault.key_vault_id
-  name         = "et-sya-api-s2s-client-id"
 }
 
 data "azurerm_key_vault" "et-cos-vault" {
